@@ -1,0 +1,10 @@
+# The repo dir
+export FLETCHER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+export FLETCHER_RUNTIME_DIR=$FLETCHER_DIR/runtime
+export FLETCHER_CODEGEN_DIR=$FLETCHER_DIR/codegen
+export FLETCHER_HARDWARE_DIR=$FLETCHER_DIR/hardware
+export FLETCHER_PLATFORM_DIR=$FLETCHER_DIR/platforms
+
+# Library dir
+export LD_LIBRARY_PATH=$FLETCHER_RUNTIME_DIR:$LD_LIBRARY_PATH

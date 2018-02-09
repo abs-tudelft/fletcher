@@ -1,0 +1,14 @@
+.idea/*
+*.pyc
+.cproject
+.settings/
+.project
+/Default/
+
+platforms/aws-f1/cl_arrow/software/runtime/regexp/Release/
+
+platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.txt
+
+platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.csv
+
+*.dat

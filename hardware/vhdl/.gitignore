@@ -1,0 +1,14 @@
+*.qtl
+*.qdb
+*.qpg
+*.bak
+*.mti
+*.mpf
+*.do
+*.wlf
+_info
+_vmake
+*.xml
+*.project
+*.prefs
+transcript
