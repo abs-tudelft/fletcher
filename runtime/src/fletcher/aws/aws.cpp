@@ -18,8 +18,10 @@
 
 #include <arrow/api.h>
 
-#include "../../../include/fletcher/logging.h"
-#include "../../../include/fletcher/aws/aws.h"
+#include "fletcher.h"
+#include "fletcher/logging.h"
+
+#include "fletcher/aws/aws.h"
 
 extern "C" {
 #include <fpga_pci.h>
@@ -194,7 +196,7 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
   return bytes;
 }
 
-void AWSPlatform::write_mmio(uint64_t offset, fr_t value)
+int AWSPlatform::write_mmio(uint64_t offset, fr_t value)
 {
   if (!error) {
     int rc = 0;
@@ -211,12 +213,13 @@ void AWSPlatform::write_mmio(uint64_t offset, fr_t value)
     // We can't write MMIO
     if (rc != 0) {
       LOGE("[AWSPlatform] MMIO write failed.");
-      throw std::runtime_error("Unable to write to memory-mapped slave register.");
+      return FLETCHER_ERROR;
     }
   }
+  return FLETCHER_OK;
 }
 
-fr_t AWSPlatform::read_mmio(uint64_t offset)
+int AWSPlatform::read_mmio(uint64_t offset, fr_t* dest)
 {
   if (!error) {
     int rc = 0;
@@ -235,12 +238,13 @@ fr_t AWSPlatform::read_mmio(uint64_t offset)
 
     if (rc != 0) {
       LOGD("[AWSPlatform] MMIO read failed.");
-      throw std::runtime_error("Unable to read from memory-mapped slave register.");
+      return FLETCHER_ERROR;
     }
 
-    return conv_value.full;
+    *dest = conv_value.full;
+    return FLETCHER_OK;
   } else {
-    return -1;
+    return FLETCHER_ERROR;
   }
 }
 
