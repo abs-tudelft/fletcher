@@ -19,10 +19,16 @@
 #include "fletcher/logging.h"
 #include "fletcher/UserCore.h"
 
-#ifndef NO_AWS
+#ifdef USE_AWS
 #include "fletcher/aws/aws.h"
 #endif
 
-#ifndef NO_OPENCAPI
-#include "fletcher/opencapi/opencapi.h"
+#ifdef USE_SNAP
+#include "fletcher/snap/snap.h"
 #endif
+
+// The boilerplate code for FPGA platform implementation
+#include "fletcher/echo/echo.h"
+
+#define FLETCHER_OK 0
+#define FLETCHER_ERROR -1
