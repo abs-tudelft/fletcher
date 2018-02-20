@@ -517,7 +517,7 @@ int main(int argc, char ** argv)
     // Match on FPGA
     if (emask & 16) {
       // Create a platform
-      shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
+      shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
 
       // Prepare the colummn buffers
       start = omp_get_wtime();
@@ -579,7 +579,7 @@ int main(int argc, char ** argv)
     }
   }
 
-  // Print matches. Not necessarily equal to insertions as lots of random dogs or cats can pop up
+  // Print matches. Not necessarily equal to insertions as lots of random dogs and cats can pop up
   //for (int p = 0; p < np; p++) {
   //  printf("%u,%u,%u,%u,%u,", a_vcpu[p], a_vomp[p], a_acpu[p], a_aomp[p], a_fpga[p]);
   //}

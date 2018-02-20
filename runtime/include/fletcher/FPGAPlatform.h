@@ -60,13 +60,13 @@ class FPGAPlatform
    * \brief Write a 64-bit value to a memory mapped slave register at 
    * some offset (address).
    */
-  virtual void write_mmsr(uint64_t offset, fr_t value)=0;
+  virtual int write_mmio(uint64_t offset, fr_t value)=0;
 
   /**
    * \brief Read a 64-bit value from a memory mapped slave register at
-   * some offset (address).
+   * some offset (address) and store it in dest
    */
-  virtual fr_t read_mmsr(uint64_t offset)=0;
+  virtual int read_mmio(uint64_t offset, fr_t* dest)=0;
 
   /**
    * \brief Prepare the chunks of a column.
@@ -88,6 +88,11 @@ class FPGAPlatform
    */
   std::string name();
 
+  /**
+   * \brief Returns true if the platform is OK for use, false otherwise.
+   */
+  virtual bool good()=0;
+
  private:
   uint64_t _argument_offset = UC_REG_BUFFERS;
 
@@ -102,7 +107,7 @@ class FPGAPlatform
    *        on the FPGA platform for.
    * \return the number of bytes organized
    */
-  virtual uint64_t organize_buffers(std::vector<BufConfig>& source_buffers,
+  virtual uint64_t organize_buffers(const std::vector<BufConfig>& source_buffers,
                                     std::vector<BufConfig>& dest_buffers)=0;
 
   /**

@@ -21,6 +21,11 @@
 #include "../../../include/fletcher/logging.h"
 #include "../../../include/fletcher/aws/aws.h"
 
+extern "C" {
+#include <fpga_pci.h>
+#include <fpga_mgmt.h>
+}
+
 namespace fletcher {
 
 AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
@@ -35,7 +40,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
   rc = fpga_mgmt_init();
 
   if (rc != 0) {
-    LOGI("[AWSPlatform] Cannot initialize FPGA management library. Entering error state.");
+    LOGE("[AWSPlatform] Cannot initialize FPGA management library. Entering error state.");
     error = true;
     return;
   }
@@ -52,7 +57,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
     edma_fd[q] = open(device_filename, O_RDWR);
 
     if (edma_fd[q] < 0) {
-      LOGI("[AWSPlatform] Did not get a valid file descriptor. FD: " << edma_fd[q] << ". Is the EDMA driver installed? Entering error state.");
+      LOGE("[AWSPlatform] Did not get a valid file descriptor. FD: " << edma_fd[q] << ". Is the EDMA driver installed? Entering error state.");
       error = true;
       return;
     }
@@ -65,7 +70,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
   int ret = fpga_pci_attach(slot_id, pf_id, bar_id, 0, &pci_bar_handle);
 
   if (ret != 0) {
-    LOGI("[AWSPlatform] Could not attach PCI <-> FPGA. Are you running as root? Entering error state. fpga_pci_attach: " << ret);
+    LOGE("[AWSPlatform] Could not attach PCI <-> FPGA. Are you running as root? Entering error state. fpga_pci_attach: " << ret);
     error = true;
   }
 }
@@ -121,9 +126,9 @@ size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
                     (void*) ((uint64_t) qsource + written[q]),
                     qtotal - written[q],
                     qdest + written[q]);
-        // If rc is negative there is something else going wrong
+        // If rc is negative there is something else going wrong. Abort the mission
         if (rc < 0) {
-          LOGD("[AWSPlatform] Copy to DDR failed, Queue: " << q << " RC=" << rc);
+          LOGE("[AWSPlatform] Copy to DDR failed, Queue: " << q << " RC=" << rc);
           throw std::runtime_error("Copy to DDR failed.");
         }
         written[q] += rc;
@@ -136,7 +141,7 @@ size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
   return total;
 }
 
-uint64_t AWSPlatform::organize_buffers(std::vector<BufConfig> &source_buffers,
+uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buffers,
                                        std::vector<BufConfig> &dest_buffers)
 {
   uint64_t bytes = 0;
@@ -172,7 +177,7 @@ uint64_t AWSPlatform::organize_buffers(std::vector<BufConfig> &source_buffers,
                            (size_t) dest_buf.size);
 
       // Set the buffer address in the MMSRs:
-      write_mmsr(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
+      write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
 
       dest_buffers.push_back(dest_buf);
 
@@ -189,7 +194,7 @@ uint64_t AWSPlatform::organize_buffers(std::vector<BufConfig> &source_buffers,
   return bytes;
 }
 
-void AWSPlatform::write_mmsr(uint64_t offset, fr_t value)
+void AWSPlatform::write_mmio(uint64_t offset, fr_t value)
 {
   if (!error) {
     int rc = 0;
@@ -203,14 +208,15 @@ void AWSPlatform::write_mmsr(uint64_t offset, fr_t value)
 
     rc |= fpga_pci_poke(pci_bar_handle, 4 * (2 * offset + 1), conv_value.half.lo);
 
+    // We can't write MMIO
     if (rc != 0) {
-      LOGD("[AWSPlatform] MMSR write failed.");
+      LOGE("[AWSPlatform] MMIO write failed.");
       throw std::runtime_error("Unable to write to memory-mapped slave register.");
     }
   }
 }
 
-fr_t AWSPlatform::read_mmsr(uint64_t offset)
+fr_t AWSPlatform::read_mmio(uint64_t offset)
 {
   if (!error) {
     int rc = 0;
@@ -228,7 +234,7 @@ fr_t AWSPlatform::read_mmsr(uint64_t offset)
     LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2*offset+1) << " addr " << 4 * (2 * offset+1));
 
     if (rc != 0) {
-      LOGD("[AWSPlatform] MMSR read failed.");
+      LOGD("[AWSPlatform] MMIO read failed.");
       throw std::runtime_error("Unable to read from memory-mapped slave register.");
     }
 

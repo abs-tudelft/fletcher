@@ -23,11 +23,6 @@
 #include "../FPGAPlatform.h"
 #include "../UserCore.h"
 
-extern "C" {
-#include <fpga_pci.h>
-#include <fpga_mgmt.h>
-}
-
 #define AWS_QUEUE_THRESHOLD 1024*1024*1 // 1 MiB
 #define AWS_NUM_QUEUES 4
 
@@ -49,8 +44,8 @@ class AWSPlatform : public FPGAPlatform
    */
   AWSPlatform(int slot_id = 0, int pf_id = FPGA_APP_PF, int bar_id = APP_PF_BAR1);
 
-  void write_mmsr(uint64_t offset, fr_t value);
-  fr_t read_mmsr(uint64_t offset);
+  void write_mmio(uint64_t offset, fr_t value);
+  fr_t read_mmio(uint64_t offset);
 
   void set_alignment(uint64_t alignment);
 
@@ -66,7 +61,7 @@ class AWSPlatform : public FPGAPlatform
 
   size_t copy_to_ddr(void* source, fa_t offset, size_t size);
 
-  uint64_t organize_buffers(std::vector<BufConfig> &source_buffers,
+  uint64_t organize_buffers(const std::vector<BufConfig> &source_buffers,
                             std::vector<BufConfig> &dest_buffers);
 
   bool error = false;
