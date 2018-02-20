@@ -51,7 +51,7 @@
 #include <arrow/api.h>
 
 // Fletcher
-#include "fletcher.h"
+#include <fletcher/fletcher.h>
 
 // RegEx FPGA UserCore
 #include "RegExUserCore.h"

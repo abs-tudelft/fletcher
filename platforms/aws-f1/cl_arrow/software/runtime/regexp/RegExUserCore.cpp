@@ -23,10 +23,10 @@ RegExUserCore::RegExUserCore(std::shared_ptr<fletcher::FPGAPlatform> platform)
 {
   // Some settings that are different from standard implementation
   // concerning start, reset and status register.
-  ctrl_start = 0x000000000000FFFF;
-  ctrl_reset = 0x00000000FFFF0000;
-  done_status = 0x00000000FFFF0000;
-  done_status_mask = 0x00000000FFFF0000;
+  //ctrl_start = 0x000000000000FFFF;
+  //ctrl_reset = 0x00000000FFFF0000;
+  //done_status = 0x00000000FFFF0000;
+  //done_status_mask = 0x00000000FFFF0000;
 }
 
 std::vector<fr_t> RegExUserCore::generate_unit_arguments(uint32_t first_index,
@@ -86,7 +86,7 @@ void RegExUserCore::get_matches(std::vector<uint32_t>& matches)
 
   for (int p = 0; p < np / 2; p++) {
     reg_conv_t conv;
-    conv.full = this->platform()->read_mmsr(REUC_RESULT_OFFSET + p);
+    this->platform()->read_mmio(REUC_RESULT_OFFSET + p, &conv.full);
     matches[2 * p] += conv.half.hi;
     matches[2 * p + 1] += conv.half.lo;
   }
