@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2017.1_sdx_AR70350 (64-bit)
+# SW Build 1933108 on Fri Jul 14 11:54:19 MDT 2017
+# IP Build 1908669 on Fri Jul 14 13:31:24 MDT 2017
+# Start of session at: Wed Feb 21 18:57:51 2018
+# Process ID: 12293
+# Current directory: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp
+# Command line: vivado -mode batch -source generate_ip.tcl
+# Log file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/vivado.log
+# Journal file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/vivado.jou
+#-----------------------------------------------------------
+source generate_ip.tcl
+create_project -in_memory generateNetlistIP -part xcvu9p-flgb2104-2-i
+read_ip /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top.xci
