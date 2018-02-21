@@ -44,19 +44,21 @@ set(PLATFORM_LIBS "")
 set(PLATFORM_SOURCES "")
 set(PLATFORM_INCLUDE_DIRS "")
 
+# AWS:
 option(PLATFORM_AWS "Use the Amazon EC2 F1 instances FPGA platform." OFF)
 
 if (PLATFORM_AWS)
   if(NOT EXISTS "$ENV{SDK_DIR}")
-    message( FATAL_ERROR ">>> SDK_DIR is not set. Did you source sdk_setup.sh in aws-fpga?")
-  endif(NOT EXISTS "$ENV{SDK_DIR}")
+    message(FATAL_ERROR "Attempting to CMake with AWS EC2 F1 support, but SDK_DIR is not set. Please source the sdk_setup.sh script first.")
+  endif()
   
   set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/aws/aws.cpp)
   set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SDK_DIR}/userspace/include)
   
-  find_library(LIB_AWS_FPGA_MGMT -lfpga_mgmt)
+  find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
+  message(STATUS "AWS EC2 F1 libfpga_mgmt.so at: " ${LIB_AWS_FPGA_MGMT})
   set(PLATFORM_LIBS ${PLATFORM_LIBS} ${LIB_AWS_FPGA_MGMT})
-endif(PLATFORM_AWS)
+endif()
 
 ##################
 # Final settings
@@ -68,9 +70,8 @@ set(SOURCES ${SOURCES} ${PLATFORM_SOURCES})
 include_directories(${CMAKE_SOURCE_DIR}/include ${PLATFORM_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW} 
-)
+target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
-install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
+install(DIRECTORY include/fletcher DESTINATION include)

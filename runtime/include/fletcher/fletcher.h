@@ -19,13 +19,8 @@
 #include "fletcher/logging.h"
 #include "fletcher/UserCore.h"
 
-#ifdef USE_AWS
 #include "fletcher/aws/aws.h"
-#endif
-
-#ifdef USE_SNAP
 #include "fletcher/snap/snap.h"
-#endif
 
 // The boilerplate code for FPGA platform implementation
 #include "fletcher/echo/echo.h"

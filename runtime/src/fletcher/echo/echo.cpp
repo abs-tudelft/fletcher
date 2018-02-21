@@ -19,9 +19,9 @@
 
 #include <arrow/api.h>
 
-#include "../../../include/fletcher.h"
-#include "../../../include/fletcher/logging.h"
-#include "../../../include/fletcher/echo/echo.h"
+#include "fletcher/fletcher.h"
+#include "fletcher/logging.h"
+#include "fletcher/echo/echo.h"
 
 namespace fletcher {
 

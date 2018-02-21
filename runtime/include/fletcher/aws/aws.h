@@ -26,10 +26,8 @@
 #define AWS_QUEUE_THRESHOLD 1024*1024*1 // 1 MiB
 #define AWS_NUM_QUEUES 4
 
-extern "C" {
-#include <fpga_pci.h>
-#include <fpga_mgmt.h>
-}
+// Forward declarations:
+typedef int pci_bar_handle_t;
 
 namespace fletcher {
 
@@ -43,16 +41,18 @@ class AWSPlatform : public FPGAPlatform
    * \brief AWSPlatform constructor
    * 
    * \param slotd_id The FPGA slot ID you want to use
-   * \param pf_id    The FPGA pf_id you want to use. Default is FPGA_APP_PF.
+   * \param pf_id    The FPGA pf_id you want to use. Default is FPGA_APP_PF=0.
    * \param bar_id   The BAR id you want to use for the memory-mapped slave 
    *                 registers. Default is APP_PF_BAR1.
    */
-  AWSPlatform(int slot_id = 0, int pf_id = FPGA_APP_PF, int bar_id = APP_PF_BAR1);
+  AWSPlatform(int slot_id = 0, int pf_id = 0, int bar_id = 1);
 
   int write_mmio(uint64_t offset, fr_t value);
   int read_mmio(uint64_t offset, fr_t* dest);
 
   void set_alignment(uint64_t alignment);
+  
+  bool good();
 
  private:
   std::string _name = "AWS EC2 F1";

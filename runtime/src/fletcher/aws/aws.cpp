@@ -18,7 +18,7 @@
 
 #include <arrow/api.h>
 
-#include "fletcher.h"
+#include "fletcher/fletcher.h"
 #include "fletcher/logging.h"
 
 #include "fletcher/aws/aws.h"
@@ -246,6 +246,11 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t* dest)
   } else {
     return FLETCHER_ERROR;
   }
+}
+
+bool AWSPlatform::good()
+{
+  return !error;
 }
 
 }

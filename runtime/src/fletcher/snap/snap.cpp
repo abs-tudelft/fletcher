@@ -19,9 +19,9 @@
 
 #include <arrow/api.h>
 
-#include "../../../include/fletcher.h"
-#include "../../../include/fletcher/logging.h"
-#include "../../../include/fletcher/snap/snap.h"
+#include "fletcher/fletcher.h"
+#include "fletcher/logging.h"
+#include "fletcher/snap/snap.h"
 
 extern "C" {
 #include "libsnap.h"

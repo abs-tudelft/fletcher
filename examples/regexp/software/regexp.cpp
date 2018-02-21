@@ -56,6 +56,10 @@
 // RegEx FPGA UserCore
 #include "RegExUserCore.h"
 
+#ifndef PLATFORM
+  #define PLATFORM 0
+#endif
+
 using namespace std;
 
 /**
@@ -517,7 +521,15 @@ int main(int argc, char ** argv)
     // Match on FPGA
     if (emask & 16) {
       // Create a platform
-      shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
+#if(PLATFORM == 0)
+        shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
+#elif(PLATFORM == 1)
+        shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
+#elif(PLATFORM == 2)
+        shared_ptr<fletcher::SNAPPlatform> platform(new fletcher::SNAPPlatform());
+#else
+        #error "PLATFORM must be 0, 1 or 2"
+#endif
 
       // Prepare the colummn buffers
       start = omp_get_wtime();
