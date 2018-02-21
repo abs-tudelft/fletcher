@@ -570,8 +570,6 @@ begin
   
   cmdIn_ready                   <= d.input.ready;
   
-  intCmd_s_ready                <= intCmd_ready;
-  
   -- Output slice inputs
   intCmd_s_implicit             <= d.command.implicit;
   intCmd_s_shift                <= std_logic_vector(d.command.shift);
@@ -590,23 +588,23 @@ begin
   intCmd_s(ICI(2)-1 downto ICI(1)) <= intCmd_s_ctrl    ;
   intCmd_s(ICI(1)-1 downto ICI(0)) <= intCmd_s_tag     ;
   --
-  ---- Output slice
-  --out_slice : StreamSlice generic map (
-  --    DATA_WIDTH                => ICI(ICI'high)
-  --  ) port map (
-  --    clk                       => clk,
-  --    reset                     => reset,
-  --    in_valid                  => intCmd_s_valid,
-  --    in_ready                  => intCmd_s_ready,
-  --    in_data                   => intCmd_s,
-  --    out_valid                 => intCmd_valid,
-  --    out_ready                 => intCmd_ready,
-  --    out_data                  => intCmd
-  --  );
+  -- Output slice
+  out_slice : StreamSlice generic map (
+      DATA_WIDTH                => ICI(ICI'high)
+    ) port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_valid                  => intCmd_s_valid,
+      in_ready                  => intCmd_s_ready,
+      in_data                   => intCmd_s,
+      out_valid                 => intCmd_valid,
+      out_ready                 => intCmd_ready,
+      out_data                  => intCmd
+    );
   
-  intCmd_valid <= intCmd_s_valid;
-  intCmd_s_ready <= intCmd_ready;
-  intCmd <= intCmd_s;
+  --intCmd_valid <= intCmd_s_valid;
+  --intCmd_s_ready <= intCmd_ready;
+  --intCmd <= intCmd_s;
   
   -- Output
   intCmd_implicit               <= intCmd(                ICI(6));
