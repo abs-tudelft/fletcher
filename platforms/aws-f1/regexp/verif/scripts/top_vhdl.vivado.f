@@ -1,6 +1,7 @@
 # Fletcher files
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/utils/Utils.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/utils/SimUtils.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/utils/Ram1R1W.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/Streams.vhd

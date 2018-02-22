@@ -20,6 +20,8 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
+use work.SimUtils.all;
+
 use work.arrow_regexp_pkg.all;
 
 -- A component performing RegExp matching on an Apache Arrow Column
@@ -441,10 +443,10 @@ begin
 
         -- Wait for command accepted
         if v.command.ready = '1' then
-          report "RegExp unit requested strings: " & 
+          dumpStdOut("RegExp unit requested strings: " & 
             integer'image(int(v.command.firstIdx)) & 
             " ... " 
-            & integer'image(int(v.command.lastIdx));
+            & integer'image(int(v.command.lastIdx)));
           v.state               := STATE_BUSY;
         end if;
 
@@ -463,12 +465,12 @@ begin
         if (v.str_elem_in.len.last = '1') and
            (v.processed(0) = u(v.command.lastIdx) - u(v.command.firstIdx))
         then
-          report "RegEx unit is done";
+          dumpStdOut("RegEx unit is done");
           for P in 0 to NUM_REGEX-1 loop
-            report "PROCESSED: " & integer'image(P) & " " & 
-              integer'image(int(v.processed(P)));
-            report "MATCHED: " & integer'image(P) & " " & 
-              integer'image(int(v.matches(P)));
+            dumpStdOut("PROCESSED: " & integer'image(P) & " " & 
+              integer'image(int(v.processed(P))));
+            dumpStdOut("MATCHED: " & integer'image(P) & " " & 
+              integer'image(int(v.matches(P))));
           end loop;
           
           v.state               := STATE_DONE;

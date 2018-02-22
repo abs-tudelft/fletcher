@@ -130,12 +130,9 @@ initial begin
   $srandom(0);
 
   buf_data.i = 0;
-  
+    
   // Fill the buffer with random strings, but randomly place a "kitten" in the string
   for (int i = 0; i < num_rows+1; i++) begin
-    // Print the string so we can verify
-    $write("%6d, 0x%016X, 0x%08X, %6d,", i, off_buffer_address + 4 * i, buf_data.i, buf_data.i);
-
     temp = buf_data.i;
 
     tb.hm_put_byte(.addr(off_buffer_address + 4 * i    ), .d(buf_data.bytes[0]));
@@ -143,30 +140,37 @@ initial begin
     tb.hm_put_byte(.addr(off_buffer_address + 4 * i + 2), .d(buf_data.bytes[2]));
     tb.hm_put_byte(.addr(off_buffer_address + 4 * i + 3), .d(buf_data.bytes[3]));
 
-    // Let's suppose the strings are tweets with a max of `MAX_STR_LEN characters.
-    // If the strings are between `MIN_STR_LEN and `MAX_STR_LEN characters, they will
-    // always be able to fit a "kitten", although the way we fill the string is not
-    // guaranteed that the string will start at a string boundary.
-    buf_data.i += $urandom_range(`MIN_STR_LEN, `MAX_STR_LEN);
+    // Skip the last iteration.
+    if (i < num_rows) begin
+      // Print the string so we can verify
+      $write("%6d, 0x%016X, 0x%08X, %6d,", i, off_buffer_address + 4 * i, buf_data.i, buf_data.i);
+      // Let's suppose the strings are tweets with a max of `MAX_STR_LEN characters.
+      // If the strings are between `MIN_STR_LEN and `MAX_STR_LEN characters, they will
+      // always be able to fit a "kitten", although the way we fill the string is not
+      // guaranteed that the string will start at a string boundary.
+      buf_data.i += $urandom_range(`MIN_STR_LEN, `MAX_STR_LEN);
 
-    // Put random utf8 a-z characters
-    for (int j = temp; j < buf_data.i; j++) begin
-      // Put some random 'kitten' in the buffer
-      // TODO: make this less hardcoded
-      ba = utf8_buffer_address + j;
-      if (($urandom_range(0,`MAX_STR_LEN) == 1) && (j + `MIN_STR_LEN < buf_data.i)) begin
-        tb.hm_put_byte(.addr(ba    ), .d(8'h6B)); $write("%c", 8'h6B);  //'k'
-        tb.hm_put_byte(.addr(ba + 1), .d(8'h69)); $write("%c", 8'h69);  //'i'
-        tb.hm_put_byte(.addr(ba + 2), .d(8'h74)); $write("%c", 8'h74);  //'t'
-        tb.hm_put_byte(.addr(ba + 3), .d(8'h74)); $write("%c", 8'h74);  //'t'
-        tb.hm_put_byte(.addr(ba + 4), .d(8'h65)); $write("%c", 8'h65);  //'e'
-        tb.hm_put_byte(.addr(ba + 5), .d(8'h6e)); $write("%c", 8'h6e);  //'n'
-        j += `MIN_STR_LEN;
+      // Put random utf8 a-z characters
+      for (int j = temp; j < buf_data.i;) begin
+        // Put some random 'kitten' in the buffer
+        // TODO: make this less hardcoded
+        ba = utf8_buffer_address + j;
+        if (($urandom_range(0,`MAX_STR_LEN) == 1) && (j + `MIN_STR_LEN < buf_data.i)) begin
+          tb.hm_put_byte(.addr(ba    ), .d(8'h6B)); $write("%c", 8'h6B);  //'k'
+          tb.hm_put_byte(.addr(ba + 1), .d(8'h69)); $write("%c", 8'h69);  //'i'
+          tb.hm_put_byte(.addr(ba + 2), .d(8'h74)); $write("%c", 8'h74);  //'t'
+          tb.hm_put_byte(.addr(ba + 3), .d(8'h74)); $write("%c", 8'h74);  //'t'
+          tb.hm_put_byte(.addr(ba + 4), .d(8'h65)); $write("%c", 8'h65);  //'e'
+          tb.hm_put_byte(.addr(ba + 5), .d(8'h6e)); $write("%c", 8'h6e);  //'n'
+          j += `MIN_STR_LEN;
+        end else begin
+          utf8 = $urandom_range(97, 122);
+          tb.hm_put_byte(.addr(ba), .d(utf8)); $write("%c", utf8);
+          j++;  
+        end 
       end
-      utf8 = $urandom_range(97, 122);
-      tb.hm_put_byte(.addr(ba), .d(utf8)); $write("%c", utf8);
+      $write("\n");
     end
-    $write("\n");
   end
 
   $display("[%t] : Last byte address : %d", $realtime, ba);
@@ -246,7 +250,7 @@ initial begin
   // Get the result for each RegExp
   for (int i = 0; i < `NUM_REGEX; i++) begin
     tb.peek_bar1(.addr(4*(`REG_RESULT+i)), .data(read_data));
-    $display("[t%] : Result unit %d: %6d", i, read_data);
+    $display("[t%] : Result regexp %d: %d", i, read_data);
   end
 
   // Power down

@@ -94,11 +94,14 @@ This sets up the simulation only. For normal CL designs this also starts and run
 #### Expected output
 Eventually you should see the status register go from 0x0000FFFF (units are busy) to 0xFFFF0000 (units are done).
 The simulation will poll for this status value on the slave interface.
-The result (number of matches to the regular expression) will appear on the return registers:
+The result (number of matches to each regular expression) will appear on the result registers.
 <pre>
-  Return register HI:           0
-  Return register LO:          13
+Read request from MMIO: 51 value 11
+[t] : Result regexp 9: 11
 </pre>
+
+Currently only unit 9 (which matches "(?i)kitten") will give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
+Inserting strings that the other units match for, randomly, is desired for verification but not implemented yet.
 
 # Build
     $ cd $FLETCHER_PLATFORM_DIR/aws-f1/regexp

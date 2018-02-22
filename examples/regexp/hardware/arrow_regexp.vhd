@@ -21,6 +21,9 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
+
+use work.SimUtils.all;
+
 use work.arrow_regexp_pkg.all;
 
 -- This UserCore matches regular expressions stored in a string column
@@ -266,7 +269,7 @@ begin
         read_valid              <= '0';
       else
         if s_axi_arvalid = '1' and read_valid = '0' then
-          report "Read request from MMIO: " & integer'image(address) & " value " & integer'image(int(mm_regs(address)));
+          dumpStdOut("Read request from MMIO: " & integer'image(address) & " value " & integer'image(int(mm_regs(address))));
           read_address          <= address;
           read_valid            <= '1';
         elsif s_axi_rready = '1' then
@@ -295,7 +298,7 @@ begin
         mm_regs(REG_CONTROL_HI)    <= (others => '0');
       else
         if write_valid = '1' then
-          report "Write to MMIO: " & integer'image(address);
+          dumpStdOut("Write to MMIO: " & integer'image(address));
   
           case address is
             -- Read only addresses do nothing

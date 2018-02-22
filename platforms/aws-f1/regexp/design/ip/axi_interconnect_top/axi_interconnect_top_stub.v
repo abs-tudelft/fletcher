@@ -1,7 +1,7 @@
 // Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2017.1_sdx_AR70350 (lin64) Build 1933108 Fri Jul 14 11:54:19 MDT 2017
-// Date        : Wed Feb 21 19:02:16 2018
+// Date        : Thu Feb 22 16:50:48 2018
 // Host        : johan-ws running 64-bit Linux Mint 18.2 Sonya
 // Command     : write_verilog -force -mode synth_stub
 //               /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top_stub.v

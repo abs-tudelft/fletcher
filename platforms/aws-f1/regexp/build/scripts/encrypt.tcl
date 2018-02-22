@@ -36,7 +36,7 @@ exec rm -f $TARGET_DIR/*
 ## Change file names and paths below to reflect your CL area.  DO NOT include AWS RTL files.
 
 # Fletcher files:
-
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/SimUtils.vhd                    $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Utils.vhd                       $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Ram1R1W.vhd                     $TARGET_DIR
 
