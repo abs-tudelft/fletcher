@@ -193,7 +193,7 @@ assign ddr_c.rresp              = sh_cl_ddr_rresp       ;
 assign ddr_c.rlast              = sh_cl_ddr_rlast       ;
 assign ddr_c.rvalid             = sh_cl_ddr_rvalid      ;
 assign cl_sh_ddr_rready         = ddr_c.rready          ;
-                                                        
+
 //assign sh_cl_ddr_is_ready
 
 
@@ -384,7 +384,7 @@ axi_register_slice DDRC_SLICE (
 axi_interconnect_top AXI_INTERCONNECT (
   .INTERCONNECT_ACLK    (clk    ),
   .INTERCONNECT_ARESETN (sync_rst_n),
-  
+
   //.s00_axi_areset_out_n(        ),
   .S00_AXI_ACLK   (clk         ),
   .S00_AXI_AWBURST(2'b1        ),
@@ -464,7 +464,7 @@ axi_interconnect_top AXI_INTERCONNECT (
   .S01_AXI_RLAST  (arrow_mst.rlast  ),
   .S01_AXI_RVALID (arrow_mst.rvalid ),
   .S01_AXI_RREADY (arrow_mst.rready ),
-  
+
   //.m00_axi_areset_out_n(      ),
   .M00_AXI_ACLK   (clk        ),
   //.M00_AXI_AWBURST(ddr.awburst),
@@ -506,32 +506,34 @@ axi_interconnect_top AXI_INTERCONNECT (
   .M00_AXI_RREADY (ddr.rready )
 );
 
+// Write channel tie off
+assign arrow_mst.awvalid        = 1'b0;
+assign arrow_mst.wvalid         = 1'b0;
+assign arrow_mst.bready         = 1'b0;
+
+// Read channel defaults:
+assign arrow_mst.arsize         = 3'b110; // 512 bit beats
+//assign arrow_mst.arburst        = 2'b01; // incremental
+
+// Not using any of these:
+assign arrow_mst.arid           = 0;
+//assign arrow_mst.arlock         = 0;
+//assign arrow_mst.arcache        = 4'b0010;
+//assign arrow_mst.arprot         = 3'b000;
+//assign arrow_mst.arqos          = 4'b0000;
+//assign arrow_mst.aruser         = (others => '0');
+
 `ARROW_TOP #() ARROW_TOP_INST (
    .clk(clk),
    .reset_n(sync_rst_n),
 
    // Master interface
-   .m_axi_awid   (arrow_mst.awid   ),
-   .m_axi_awaddr (arrow_mst.awaddr ),
-   .m_axi_awlen  (arrow_mst.awlen  ),
-   .m_axi_awsize (arrow_mst.awsize ),
-   .m_axi_awvalid(arrow_mst.awvalid),
-
-   .m_axi_wdata  (arrow_mst.wdata  ),
-   .m_axi_wstrb  (arrow_mst.wstrb  ),
-   .m_axi_wlast  (arrow_mst.wlast  ),
-   .m_axi_wvalid (arrow_mst.wvalid ),
-
-   .m_axi_bready (arrow_mst.bready ),
-
    .m_axi_arvalid(arrow_mst.arvalid),
    .m_axi_arready(arrow_mst.arready),
    .m_axi_araddr (arrow_mst.araddr ),
-   .m_axi_arid   (arrow_mst.arid   ),
    .m_axi_arlen  (arrow_mst.arlen  ),
    .m_axi_arsize (arrow_mst.arsize ),
 
-   .m_axi_rid    (arrow_mst.rid    ),
    .m_axi_rvalid (arrow_mst.rvalid ),
    .m_axi_rready (arrow_mst.rready ),
    .m_axi_rdata  (arrow_mst.rdata  ),

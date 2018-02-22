@@ -49,16 +49,12 @@ read_verilog [ list \
 
 puts "AWS FPGA: Reading IP blocks";
 
-# Read Arrow RegExp example IP
+# Read Fletcher RegExp example IP
 read_ip [ list \
-  $CL_DIR/design/ip/axi_interconnect_utf8/axi_interconnect_utf8.xci \
   $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci
 ]
 
-# Generate the IP used in cl_arrow and arrow_regexp
-generate_target all [get_files $CL_DIR/design/ip/axi_interconnect_utf8/axi_interconnect_utf8.xci]
-synth_ip [get_files $CL_DIR/design/ip/axi_interconnect_utf8/axi_interconnect_utf8.xci] -force
-
+# Generate the IP used in cl_arrow 
 generate_target all [get_files $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci]
 synth_ip [get_files $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci] -force
 

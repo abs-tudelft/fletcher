@@ -39,9 +39,6 @@ ${SH_LIB_DIR}/../ip/axi_register_slice_light/sim/axi_register_slice_light.v
 # Top level interconnect between PCI Slave and DDR C
 ${CL_ROOT}/design/ip/axi_interconnect_top/sim/axi_interconnect_top.v
 
-# Interconnect between DDR C and all RegExp units
-${CL_ROOT}/design/ip/axi_interconnect_utf8/sim/axi_interconnect_utf8.v
-
 --define DISABLE_VJTAG_DEBUG
 ${CL_ROOT}/design/cl_arrow_defines.vh
 ${CL_ROOT}/design/cl_arrow_pkg.sv

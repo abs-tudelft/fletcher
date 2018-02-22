@@ -22,6 +22,7 @@ set HDK_SHELL_DIR $::env(HDK_SHELL_DIR)
 set HDK_SHELL_DESIGN_DIR $::env(HDK_SHELL_DESIGN_DIR)
 set CL_DIR $::env(CL_DIR)
 set FLETCHER_HARDWARE_DIR $::env(FLETCHER_HARDWARE_DIR)
+set FLETCHER_EXAMPLES_DIR $::env(FLETCHER_EXAMPLES_DIR)
 
 set TARGET_DIR $CL_DIR/build/src_post_encryption
 set UNUSED_TEMPLATES_DIR $HDK_SHELL_DESIGN_DIR/interfaces
@@ -34,8 +35,8 @@ exec rm -f $TARGET_DIR/*
 
 ## Change file names and paths below to reflect your CL area.  DO NOT include AWS RTL files.
 
-# Files specific to Fletcher:
-
+# Fletcher files:
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/SimUtils.vhd                    $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Utils.vhd                       $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Ram1R1W.vhd                     $TARGET_DIR
 
@@ -76,43 +77,46 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderStruct.vhd       
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderUnlockCombine.vhd   $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReader.vhd                $TARGET_DIR
 
-# Files specific to this project:
+# Regexp example files:
+
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/axi_read_converter.vhd  $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp_unit.vhd   $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp_pkg.vhd    $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp.vhd        $TARGET_DIR
+
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/bird.vhd        $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/bunny.vhd       $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/cat.vhd         $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/dog.vhd         $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/ferret.vhd      $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/fish.vhd        $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/gerbil.vhd      $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/hamster.vhd     $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/horse.vhd       $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/kitten.vhd      $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/lizard.vhd      $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/mouse.vhd       $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/puppy.vhd       $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/rabbit.vhd      $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/rat.vhd         $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/animals/turtle.vhd      $TARGET_DIR
+
+# AWS EC2 F1 files:
 
 file copy -force $CL_DIR/design/cl_arrow_defines.vh                   $TARGET_DIR
 file copy -force $CL_DIR/design/cl_id_defines.vh                      $TARGET_DIR
 file copy -force $CL_DIR/design/cl_arrow_pkg.sv                       $TARGET_DIR
 file copy -force $CL_DIR/design/cl_arrow.sv                           $TARGET_DIR
 
-file copy -force $CL_DIR/design/axi_read_converter.vhd                $TARGET_DIR
-
-file copy -force $CL_DIR/design/bird.vhd                              $TARGET_DIR
-file copy -force $CL_DIR/design/bunny.vhd                             $TARGET_DIR
-file copy -force $CL_DIR/design/cat.vhd                               $TARGET_DIR
-file copy -force $CL_DIR/design/dog.vhd                               $TARGET_DIR
-file copy -force $CL_DIR/design/ferret.vhd                            $TARGET_DIR
-file copy -force $CL_DIR/design/fish.vhd                              $TARGET_DIR
-file copy -force $CL_DIR/design/gerbil.vhd                            $TARGET_DIR
-file copy -force $CL_DIR/design/hamster.vhd                           $TARGET_DIR
-file copy -force $CL_DIR/design/horse.vhd                             $TARGET_DIR
-file copy -force $CL_DIR/design/kitten.vhd                            $TARGET_DIR
-file copy -force $CL_DIR/design/lizard.vhd                            $TARGET_DIR
-file copy -force $CL_DIR/design/mouse.vhd                             $TARGET_DIR
-file copy -force $CL_DIR/design/puppy.vhd                             $TARGET_DIR
-file copy -force $CL_DIR/design/rabbit.vhd                            $TARGET_DIR
-file copy -force $CL_DIR/design/rat.vhd                               $TARGET_DIR
-file copy -force $CL_DIR/design/turtle.vhd                            $TARGET_DIR
-
-file copy -force $CL_DIR/design/arrow_regexp_unit.vhd                 $TARGET_DIR
-file copy -force $CL_DIR/design/arrow_regexp_pkg.vhd                  $TARGET_DIR
-file copy -force $CL_DIR/design/arrow_regexp.vhd                      $TARGET_DIR
 #---- End of section replaced by Developr ---
 
 # Make sure files have write permissions for the encryption
 
 exec chmod +w {*}[glob $TARGET_DIR/*]
 
-# As we open-source everything, we skip the encryption step. Re-enable 
-# if you want your sources to become encrypted in the checkpoints.
+# As we open-source everything, we don't care about encrypting the sources and
+# skip the encryption step. Re-enable if you want your sources to become
+# encrypted in the checkpoints.
 
 # encrypt .v/.sv/.vh/inc as verilog files
 # encrypt -k $HDK_SHELL_DIR/build/scripts/vivado_keyfile.txt -lang verilog  [glob -nocomplain -- $TARGET_DIR/*.{v,sv}] [glob -nocomplain -- $TARGET_DIR/*.vh] [glob -nocomplain -- $TARGET_DIR/*.inc]

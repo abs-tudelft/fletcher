@@ -1,0 +1,15 @@
+#-----------------------------------------------------------
+# xsim v2017.1_sdx_AR70350 (64-bit)
+# SW Build 1933108 on Fri Jul 14 11:54:19 MDT 2017
+# IP Build 1908669 on Fri Jul 14 13:31:24 MDT 2017
+# Start of session at: Wed Feb 21 19:41:41 2018
+# Process ID: 2599
+# Current directory: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts
+# Command line: xsim -source {xsim.dir/../sim/test_regexp/tb.wdb/xsim_script.tcl}
+# Log file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts/xsim.log
+# Journal file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts/xsim.jou
+#-----------------------------------------------------------
+start_gui
+source xsim.dir/../sim/test_regexp/tb.wdb/xsim_script.tcl
+add_wave {{/tb/card/fpga/CL/ARROW_TOP_INST}} 
+close_sim

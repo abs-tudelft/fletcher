@@ -1,0 +1,27 @@
+#-----------------------------------------------------------
+# xsim v2017.1_sdx_AR70350 (64-bit)
+# SW Build 1933108 on Fri Jul 14 11:54:19 MDT 2017
+# IP Build 1908669 on Fri Jul 14 13:31:24 MDT 2017
+# Start of session at: Wed Feb 21 19:41:41 2018
+# Process ID: 2599
+# Current directory: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts
+# Command line: xsim -source {xsim.dir/../sim/test_regexp/tb.wdb/xsim_script.tcl}
+# Log file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts/xsim.log
+# Journal file: /home/jhpeltenburg/workspace/fletcher/platforms/aws-f1/regexp/verif/scripts/xsim.jou
+#-----------------------------------------------------------
+INFO: [Common 17-1460] Use of init.tcl in /opt/Xilinx/SDx/2017.1.op/Vivado/scripts/init.tcl is deprecated. Please use xsim_init.tcl 
+Sourcing tcl script '/opt/Xilinx/SDx/2017.1.op/Vivado/scripts/init.tcl'
+Loaded SDSoC Platform Tcl Library
+start_gui
+source xsim.dir/../sim/test_regexp/tb.wdb/xsim_script.tcl
+# load_feature core
+# current_fileset
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/SDx/2017.1.op/Vivado/data/ip'.
+# xsim {../sim/test_regexp/tb.wdb} -autoloadwcfg
+add_wave {{/tb/card/fpga/CL/ARROW_TOP_INST}} 
+close_sim
+INFO: [Simtcl 6-16] Simulation closed
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Feb 21 19:42:29 2018...

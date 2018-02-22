@@ -1,6 +1,7 @@
 # Fletcher files
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/utils/Utils.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/utils/SimUtils.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/utils/Ram1R1W.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/Streams.vhd
@@ -41,12 +42,24 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/ColumnReaderUnlockCombine.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/ColumnReader.vhd
 
 # Files belonging to the RegExp example:
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/axi_read_converter.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp_pkg.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp_unit.vhd
 
-${CL_ROOT}/design/arrow_regexp_pkg.vhd
-${CL_ROOT}/design/axi_read_converter.vhd
-${CL_ROOT}/design/kitten.vhd
-${CL_ROOT}/design/puppy.vhd
-${CL_ROOT}/design/bunny.vhd
-${CL_ROOT}/design/fish.vhd
-${CL_ROOT}/design/arrow_regexp_unit.vhd
-${CL_ROOT}/design/arrow_regexp.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/bird.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/bunny.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/cat.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/dog.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/ferret.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/fish.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/gerbil.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/hamster.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/horse.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/kitten.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/lizard.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/mouse.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/puppy.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/rabbit.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/rat.vhd
+${FLETCHER_EXAMPLES_DIR}/regexp/hardware/animals/turtle.vhd
