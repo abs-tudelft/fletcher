@@ -77,14 +77,14 @@ int main()//int argc, char *argv[])
   
   uint32_t * off_buf;
   uint32_t num_rows = 128;
-  rc = posix_memalign((void**)&off_buf, 131072, sizeof(uint32_t)*(num_rows+1));
+  rc = posix_memalign((void**)&off_buf, BURST_LENGTH, sizeof(uint32_t)*(num_rows+1));
   
   for (uint32_t i=0;i<num_rows+1;i++) {
     off_buf[i] = 256 * i;
   }
   
   char * val_buf;
-  rc = posix_memalign((void**)&val_buf,131072, sizeof(char)*off_buf[num_rows]);
+  rc = posix_memalign((void**)&val_buf,BURST_LENGTH, sizeof(char)*off_buf[num_rows]);
   
   const char * alphabet = "abcdefghijklmnopqrstuvwxyz";
   int nchars = strlen(alphabet);
