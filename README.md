@@ -78,4 +78,4 @@ If you would like to contribute, open issues, make pull requests, or drop us an 
     * For the current state of the project, this would be your starting
       point in hardware design.
   * [How to use the host-side run-time library](runtime).
-  * [Regular Expression matching example on Amazon EC2 F1](platforms/aws-f1/cl_arrow)
+  * [Regular Expression matching example on Amazon EC2 F1](platforms/aws-f1/regexp)
