@@ -45,7 +45,7 @@ entity BusBuffer is
     FIFO_DEPTH                  : natural := 16;
 
     -- RAM configuration string for the response FIFO.
-    RAM_CONFIG                  : string := "";
+    RAM_CONFIG                  : string  := "";
 
     -- Whether a register slice should be inserted into the bus request input
     -- stream.
@@ -97,7 +97,7 @@ end BusBuffer;
 architecture Behavioral of BusBuffer is
 
   -- Log2 of the FIFO depth.
-  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH);
+  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH); --log2ceil(128 + 1) = 8
 
   -- Bus request serialization indices.
   constant BQI : nat_array := cumulative((
@@ -142,8 +142,8 @@ architecture Behavioral of BusBuffer is
   signal resp_last              : std_logic;
 
   -- Counters storing how much space we currently have reserved in the FIFO.
-  signal reserved               : std_logic_vector(DEPTH_LOG2 downto 0);
-  signal reserved_if_accepted   : std_logic_vector(DEPTH_LOG2+1 downto 0);
+  signal reserved               : signed(DEPTH_LOG2+1 downto 0);
+  signal reserved_if_accepted   : signed(DEPTH_LOG2+1 downto 0);
   signal fifo_ready             : std_logic;
 
 begin
@@ -179,40 +179,52 @@ begin
   ss_req_addr  <= ms_req_addr;
   ss_req_len   <= ms_req_len;
 
-  -- Determine how many words will be reserved in the FIFO if we accept the
-  -- currently incoming length.
-  reserved_if_accepted <= std_logic_vector(
-                            resize(signed(reserved),   DEPTH_LOG2+2)
-                          + resize(signed(ss_req_len), DEPTH_LOG2+2)
-                          );
+  -- Determine how many words will be reserved in the FIFO if we accept the currently incoming length.
+  reserved_if_accepted <= reserved + resize(signed("0" & ss_req_len), DEPTH_LOG2+2);
 
-  -- If reserved_if_accepted is greater than the FIFO depth (or equal, for
-  -- efficiency), do not accept the transfer.
-  fifo_ready <= '0' when signed(reserved_if_accepted) >= 2**DEPTH_LOG2 else '1';
+  -- If reserved_if_accepted is greater than the FIFO depth (or equal, for efficiency), do not accept the transfer.
+  fifo_ready <= '0' when reserved_if_accepted >= 2**DEPTH_LOG2 else '1';
 
   -- Maintain the FIFO reserved counter.
   reserved_ptr_proc: process (clk) is
-    variable reserved_v : signed(DEPTH_LOG2 downto 0);
+    variable reserved_v : signed(DEPTH_LOG2+1 downto 0);
   begin
     if rising_edge(clk) then
-      reserved_v := signed(reserved);
-
-      if ss_req_valid = '1' and ss_req_ready = '1' then
-        assert unsigned(ss_req_len) < 2**DEPTH_LOG2 report "Request burst length too long, deadlock!" severity FAILURE;
-        reserved_v := resize(signed(reserved_if_accepted), DEPTH_LOG2+1);
-        assert reserved_v > 0 or fifo_ready = '1' report "Bus buffer deadlock!" severity FAILURE;
-        assert reserved_v >= 0 report "This should never happen... Check if BUS_DATA_WIDTH is wide enough to contain log2(mst_req_len)+2 bits." severity FAILURE;
-      end if;
-
-      if resp_valid = '1' and resp_ready = '1' then
-        reserved_v := reserved_v - 1;
-      end if;
-
+      -- Reset
       if reset = '1' then
         reserved_v := (others => '0');
-      end if;
+      else
+        reserved_v := reserved;
 
-      reserved <= std_logic_vector(reserved_v);
+        -- A request is made and accepted
+        if ss_req_valid = '1' and ss_req_ready = '1' then
+        
+          -- Check if the request burst length is not larger than the FIFO depth
+          assert unsigned(ss_req_len) < 2**DEPTH_LOG2 
+            report "Violated burst length requirement. ss_req_len(=" & integer'image(int(ss_req_len)) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!" 
+            severity FAILURE;
+          
+          -- Increase amount of space reserved in the FIFO
+          reserved_v := reserved_if_accepted;
+          
+          -- Check if either the amount of space reserved is larger than 0 or the fifo is ready
+          assert reserved_v > 0 or fifo_ready = '1' 
+            report "Bus buffer deadlock!"
+            severity FAILURE;
+          
+          -- Check if the amount of space reserved is equal or larger than 0 after the reservation
+          assert reserved_v >= 0
+            report "This should never happen... Check if BUS_LEN_WIDTH is wide enough to contain log2(mst_req_len)+2 bits. reserved_v=" & integer'image(int(reserved_v)) & ">= 0. Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
+            severity FAILURE;
+            
+        end if;
+
+        -- Decrease counter if response channel transfer takes place
+        if resp_valid = '1' and resp_ready = '1' then
+          reserved_v := reserved_v - 1;
+        end if;
+      end if;
+      reserved <= reserved_v;
     end if;
   end process;
 

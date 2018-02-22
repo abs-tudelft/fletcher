@@ -53,6 +53,7 @@ package Utils is
   function is_empty(a : in unsigned; b : in unsigned) return std_logic;
   function int(a : in std_logic_vector) return integer;
   function int(a : in unsigned) return integer;
+  function int(a : in signed) return integer;
   function slv(a : in integer; b : in natural) return std_logic_vector;
   function slv(a : in unsigned) return std_logic_vector;
   function sext(a : in unsigned; b : in natural) return unsigned;
@@ -61,8 +62,15 @@ package Utils is
   function u(a : in std_logic) return unsigned;
   function l(a : in boolean) return std_logic;
   function ones(a : in std_logic_vector) return natural;
+  
+  -- Shifts a right b by and cuts off lost bits
   function shift_right_cut(a : in unsigned; b : in natural) return unsigned;
+  
+  -- Shifts a left by b if b is positive, shifts a right by |b| if b is negative
   function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned;
+  
+  -- Returns ceil(a / (2^b))
+  function shift_right_round_up (a: in unsigned; b : in natural) return unsigned;
 
   -- 1-read 1-write RAM.
   component Ram1R1W is
@@ -213,6 +221,11 @@ package body Utils is
   begin
     return                  to_integer(a);
   end function int;
+  
+  function int (a : in signed) return integer is
+  begin
+    return                  to_integer(a);
+  end function int;
 
   function slv (a : in integer; b : in natural) return std_logic_vector is
   begin
@@ -290,5 +303,22 @@ package body Utils is
       return shift_right(a, -b);
     end if;
   end function shift_left_with_neg;
+  
+  function shift_right_round_up(a : in unsigned; b : in natural) return unsigned is
+    variable arg_v : unsigned(a'length-1 downto 0);
+    variable lsb_v : unsigned(a'length-1 downto 0);
+  begin
+    if b /= 0 then -- prevent null ranges on lsb_v
+      arg_v := shift_right(a, b);
+      lsb_v(b-1 downto 0) := a(b-1 downto 0);
+      if (lsb_v /= 0) then
+        arg_v := arg_v + 1;
+      end if;
+    else
+     arg_v := a;
+    end if;
+    return arg_v;
+    
+  end shift_right_round_up;
 
 end Utils;
