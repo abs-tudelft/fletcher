@@ -53,6 +53,7 @@ if (PLATFORM_AWS)
   endif()
   
   set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/aws/aws.cpp)
+
   set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SDK_DIR}/userspace/include)
   
   find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
@@ -60,10 +61,27 @@ if (PLATFORM_AWS)
   set(PLATFORM_LIBS ${PLATFORM_LIBS} ${LIB_AWS_FPGA_MGMT})
 endif()
 
+# SNAP:
+option(PLATFORM_SNAP "Use the CAPI SNAP FPGA platform." OFF)
+
+if (PLATFORM_SNAP)
+
+  if(NOT EXISTS "$ENV{SNAP_ROOT}")
+    message(FATAL_ERROR "Attempting to CMake with SNAP support, but SNAP_ROOT is not set. Please do something to fix that.")
+  endif()
+
+  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/snap/snap.cpp)
+
+  set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SNAP_ROOT}/software/include)
+
+  find_library(LIB_SNAP snap HINTS $ENV{SNAP_ROOT}/software/lib)
+  message(STATUS "SNAP libsnap.so at: " ${LIB_SNAP})
+  set(PLATFORM_LIBS ${PLATFORM_LIBS} ${LIB_SNAP})
+endif()
+
 ##################
 # Final settings
 ##################
-
 
 set(SOURCES ${SOURCES} ${PLATFORM_SOURCES})
 
@@ -71,6 +89,12 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${PLATFORM_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
+
+option(ENABLE_DEBUG "Enable debugging info" OFF)
+
+if (ENABLE_DEBUG)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 

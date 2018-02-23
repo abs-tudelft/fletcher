@@ -106,21 +106,33 @@ vector<uint32_t> generate_strings(vector<string>& strings,
                                   uint32_t max_str_len,
                                   uint32_t rows,
                                   int period,
+                                  int threads = 8,
                                   bool save_to_file = true)
 {
-
   vector<uint32_t> insertions(strings.size(), 0);
-
-  // Create some strings
-  for (uint32_t i = 0; i < rows; i++) {
-    int which = -1;
-    strings[i] = generate_random_string_with(insert_strings,
-                                             alphabet,
-                                             max_str_len,
-                                             period,
-                                             which);
-    if (which != -1) {
-      insertions[which]++;
+  
+  omp_set_num_threads(threads);
+#pragma omp parallel 
+  {   
+    vector<uint32_t> thread_insertions(strings.size(), 0);
+    
+    // Create some strings
+#pragma omp for
+    for (uint32_t i = 0; i < rows; i++) {
+      int which = -1;
+      strings[i] = generate_random_string_with(insert_strings,
+                                               alphabet,
+                                               max_str_len,
+                                               period,
+                                               which);
+      if (which != -1) {
+        thread_insertions[which]++;
+      }
+    }
+    
+    for (int i=0;i<strings.size();i++) {
+#pragma omp atomic
+      insertions[i] += thread_insertions[i];
     }
   }
 
@@ -423,10 +435,11 @@ int main(int argc, char ** argv)
   // Characters to use
   string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890          ";
 
-  uint32_t num_rows = 512;
+  uint32_t num_rows = 32;
   uint32_t max_str_len = 256;
   uint32_t emask = 31;
   int period = 50;  // 1/50 chance to insert an insert_strings string in each row
+  int num_threads = omp_get_max_threads();
 
   flush(cout);
   if (argc >= 2) {
@@ -435,8 +448,11 @@ int main(int argc, char ** argv)
   if (argc >= 3) {
     sscanf(argv[2], "%u", &ne);
   }
-  if (argc == 4) {
+  if (argc >= 4) {
     sscanf(argv[3], "%u", &emask);
+  }
+  if (argc >= 5) {
+    sscanf(argv[3], "%u", &num_threads);
   }
 
   // Aggregators
@@ -473,7 +489,8 @@ int main(int argc, char ** argv)
                                      alphabet,
                                      max_str_len,
                                      num_rows,
-                                     period);
+                                     period,
+                                     num_threads);
   stop = omp_get_wtime();
   t_create = (stop - start);
 
@@ -547,7 +564,7 @@ int main(int argc, char ** argv)
       start = omp_get_wtime();
       uc.set_arguments(first_index, last_index);
       uc.start();
-      uc.wait_for_finish(10);
+      uc.wait_for_finish(1000000);
 
       // Get the number of matches from the UserCore
       uc.get_matches(m_fpga[e]);
@@ -559,6 +576,7 @@ int main(int argc, char ** argv)
   // Report the outcomes:
   printf("%10u,", num_rows);
   printf("%10lu,", bytes_copied);
+  printf("%3d,", num_threads);
   printf("%13.10f,", t_create);
   printf("%13.10f,", t_ser);
 
@@ -608,4 +626,5 @@ int main(int argc, char ** argv)
 
   return 0;
 }
+
 

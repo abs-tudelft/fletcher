@@ -35,17 +35,30 @@ if (${RUNTIME_PLATFORM} EQUAL 1)
     message(FATAL_ERROR "Attempting to CMake with AWS EC2 F1 support, but SDK_DIR is not set. Please source the sdk_setup.sh script first.")
   endif()
   
-  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/aws/aws.cpp)
-  set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SDK_DIR}/userspace/include)
-  
   find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
   message(STATUS "AWS EC2 F1 libfpga_mgmt.so at: " ${LIB_AWS_FPGA_MGMT})
   set(LIB_PLATFORM ${LIB_AWS_FPGA_MGMT})
 endif()
 
-# CAPI
+# SNAP
 if (${RUNTIME_PLATFORM} EQUAL 2)
   message("Chose CAPI SNAP as run-time platform.")
+
+  if(NOT EXISTS "$ENV{SNAP_ROOT}")
+    message(FATAL_ERROR "Attempting to CMake with SNAP support, but SNAP_ROOT is not set. Please do something to fix that.")
+  endif()
+
+  set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SNAP_ROOT}/software/include)
+
+  find_library(LIB_SNAP snap HINTS $ENV{SNAP_ROOT}/software/lib)
+  message(STATUS "SNAP libsnap.so at: " ${LIB_SNAP})
+  set(LIB_PLATFORM ${LIB_SNAP})
+endif()
+
+option(ENABLE_DEBUG "Enable debugging" OFF)
+
+if (ENABLE_DEBUG)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM=${RUNTIME_PLATFORM})

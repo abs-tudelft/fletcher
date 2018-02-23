@@ -23,6 +23,8 @@
 #include "../FPGAPlatform.h"
 #include "../UserCore.h"
 
+#define SNAP_ACTION_REG_OFFSET 64 // starts at 0x200
+
 struct snap_card;
 struct snap_action;
 struct snap_queue;
@@ -39,7 +41,7 @@ class SNAPPlatform : public FPGAPlatform
    * \brief SNAPPlatform constructor
    *
    */
-  SNAPPlatform(int card_no=0, uint32_t action_type=0x00000001);
+  SNAPPlatform(int card_no=0, uint32_t action_type=0x00000001, bool sim = false);
 
   int write_mmio(uint64_t offset, fr_t value);
   int read_mmio(uint64_t offset, fr_t* dest);

@@ -29,17 +29,19 @@ extern "C" {
 
 namespace fletcher {
 
-SNAPPlatform::SNAPPlatform(int card_no, uint32_t action_type)
+SNAPPlatform::SNAPPlatform(int card_no, uint32_t action_type, bool sim)
 {
   LOGD("Setting up SNAP platform.");
 
   // Check psl_server.dat is present
 
-  std::ifstream f("pslse_server.dat");
-  if (!f.good()) {
-    LOGE("No pslse_server.dat file present in working directory. Entering error state.");
-    error = true;
-    return;
+  if (sim) {
+    std::ifstream f("pslse_server.dat");
+    if (!f.good()) {
+      LOGE("No pslse_server.dat file present in working directory. Entering error state.");
+      error = true;
+      return;
+    }
   }
 
   sprintf(device, "/dev/cxl/afu%d.0s", card_no);
@@ -80,7 +82,8 @@ SNAPPlatform::SNAPPlatform(int card_no, uint32_t action_type)
 
 SNAPPlatform::~SNAPPlatform()
 {
-
+  snap_detach_action(action_handle);
+  snap_card_free(card_handle);
 }
 
 uint64_t SNAPPlatform::organize_buffers(const std::vector<BufConfig> &source_buffers,
@@ -88,12 +91,38 @@ uint64_t SNAPPlatform::organize_buffers(const std::vector<BufConfig> &source_buf
 {
   uint64_t bytes = 0;
 
+  int buf = 0;
+
   // Simply copy the source to the destination BufConfigs
   // as in SNAP the FPGA can access the host memory
   // using an address translation service.
   for (auto const &src : source_buffers) {
+    BufConfig dest_buf;
+
     bytes += src.size;
-    dest_buffers.push_back(src);
+    //dest_buffers.push_back(src);
+    
+    // temporary workaround until max burst length is not always burst length
+    // ---
+    dest_buf.name = src.name;
+    dest_buf.size = src.size;
+    dest_buf.capacity = src.capacity;  
+
+    LOGD("[SNAP] Reserving aligned memory of size " << std::dec << (int)src.capacity);
+    void* da = NULL;
+    posix_memalign(&da, 4096, 4096*(src.capacity/4096+1));
+    
+    LOGD("[SNAP] Copying memory from " << STRHEX64 << src.address << " to " << STRHEX64 << (uint64_t)da);
+    memcpy(da, (const void*)src.address, src.size);
+    dest_buf.address = (fr_t)da;
+
+    LOGD("[SNAP] pushing back buffer.");
+    dest_buffers.push_back(dest_buf);
+    // ---
+ 
+    // Write the buffer config to the user core
+    write_mmio(UC_REG_BUFFERS + buf, dest_buf.address);
+    buf++;
   }
 
   return bytes;
@@ -102,7 +131,15 @@ uint64_t SNAPPlatform::organize_buffers(const std::vector<BufConfig> &source_buf
 inline int SNAPPlatform::write_mmio(uint64_t offset, fr_t value)
 {
   if (!error) {
-    snap_mmio_write64(card_handle, offset, value);
+    reg_conv_t conv_value;
+    conv_value.full = value;
+
+    LOGD("Writing to MMIO reg HI " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset)) << " value: " << STRHEX32 << conv_value.half.hi);
+    snap_mmio_write32(card_handle, 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset)), conv_value.half.hi);
+
+    LOGD("Writing to MMIO reg LO " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1) << " value: " << STRHEX32 << conv_value.half.lo);
+    snap_mmio_write32(card_handle, 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1), conv_value.half.lo);
+    
     return FLETCHER_OK;
   } else {
     LOGE("Write unsuccessful. SNAP platform is in error state. Write " << STRHEX64 << value << " to " << STRHEX64 << offset);
@@ -112,9 +149,20 @@ inline int SNAPPlatform::write_mmio(uint64_t offset, fr_t value)
 
 inline int SNAPPlatform::read_mmio(uint64_t offset, fr_t* dest)
 {
-  fr_t ret = 0xDEADBEEFDEADBEEF;
+  reg_conv_t conv_value;
+  uint32_t ret = 0xDEADBEEF;
+    
   if (!error) {
-    snap_mmio_read64(card_handle, offset, &ret);
+    snap_mmio_read32(card_handle, 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset)), &ret);
+    conv_value.half.hi = ret;
+
+    LOGD("Read from MMIO reg HI " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset)) << " value " << STRHEX32 << ret);
+    
+    snap_mmio_read32(card_handle, 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1), &ret);
+    conv_value.half.lo = ret;
+
+    LOGD("Read from MMIO reg LO " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1) << " value " << STRHEX32 << ret);
+    
     return FLETCHER_OK;
   } else {
     LOGE("Read unsuccessful. SNAP platform is in error state. Read from " << STRHEX64 << offset);
@@ -130,3 +178,4 @@ bool SNAPPlatform::good()
 }
 
 }
+
