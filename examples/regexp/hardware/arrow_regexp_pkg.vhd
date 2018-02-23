@@ -20,6 +20,28 @@ library work;
 use work.Utils.all;
 
 package arrow_regexp_pkg is
+  -----------------------------------------------------------------------------
+  -- Bus interfaces
+  -----------------------------------------------------------------------------
+  constant BOTTOM_ADDR_WIDTH    : natural :=   64;
+  constant BOTTOM_DATA_WIDTH    : natural :=   32;
+  constant BOTTOM_ID_WIDTH      : natural :=    1;
+  constant BOTTOM_BURST_LEN     : natural :=  128;
+  constant BOTTOM_LEN_WIDTH     : natural := log2ceil(BOTTOM_BURST_LEN) + 1;
+
+  constant MID_ADDR_WIDTH       : natural :=   64;
+  constant MID_DATA_WIDTH       : natural :=  512;
+  constant MID_WSTRB_WIDTH      : natural :=   64;
+  constant MID_ID_WIDTH         : natural :=    1;
+  
+  constant TOP_ADDR_WIDTH       : natural :=   64;
+  constant TOP_DATA_WIDTH       : natural :=  512;
+  constant TOP_WSTRB_WIDTH      : natural :=   64;
+  constant TOP_ID_WIDTH         : natural :=    8;
+  
+  -----------------------------------------------------------------------------
+  -- Regular Expression Matching example top-level
+  -----------------------------------------------------------------------------
   component arrow_regexp is
     generic (
       CORES                     : natural :=  16;
@@ -27,7 +49,7 @@ package arrow_regexp_pkg is
       BUS_DATA_WIDTH            : natural := 512;
       SLV_BUS_ADDR_WIDTH        : natural :=  32;
       SLV_BUS_DATA_WIDTH        : natural :=  32
-    );                          
+    );
     port (                      
       clk                       : in  std_logic;
       reset_n                   : in  std_logic;
@@ -60,25 +82,10 @@ package arrow_regexp_pkg is
       s_axi_rresp               : out std_logic_vector(1 downto 0)
     );
   end component;
-
-  -----------------------------------------------------------------------------
-  -- Bus interfaces
-  -----------------------------------------------------------------------------
-  constant BOTTOM_ADDR_WIDTH    : natural :=   64;
-  constant BOTTOM_DATA_WIDTH    : natural :=   32;
-  constant BOTTOM_ID_WIDTH      : natural :=    1;
-  constant BOTTOM_BURST_LEN     : natural :=  128;
-  constant BOTTOM_LEN_WIDTH     : natural := log2ceil(BOTTOM_BURST_LEN) + 1;
-
-  constant MID_ADDR_WIDTH       : natural :=   64;
-  constant MID_DATA_WIDTH       : natural :=  512;
-  constant MID_WSTRB_WIDTH      : natural :=   64;
-  constant MID_ID_WIDTH         : natural :=    1;
   
-  constant TOP_ADDR_WIDTH       : natural :=   64;
-  constant TOP_DATA_WIDTH       : natural :=  512;
-  constant TOP_WSTRB_WIDTH      : natural :=   64;
-  constant TOP_ID_WIDTH         : natural :=    8;
+  -----------------------------------------------------------------------------
+  -- Internal buses
+  -----------------------------------------------------------------------------
   
   -- Bottom (regex matchers to read converters)
   -- All signals have the same definition as in AXI4, except len which is axi_len + 1
