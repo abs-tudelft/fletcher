@@ -438,7 +438,8 @@ begin
       MASTER_LEN_WIDTH          => 8,
       SLAVE_DATA_WIDTH          => BOTTOM_DATA_WIDTH,
       SLAVE_LEN_WIDTH           => BOTTOM_LEN_WIDTH,
-      SLAVE_MAX_BURST           => BOTTOM_BURST_LEN
+      SLAVE_MAX_BURST           => BOTTOM_BURST_LEN,
+      ENABLE_FIFO               => BOTTOM_ENABLE_FIFO
     )
     port map (                  
       clk                       => clk,
