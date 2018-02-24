@@ -437,31 +437,26 @@ begin
       MASTER_DATA_WIDTH         => BUS_DATA_WIDTH,
       MASTER_LEN_WIDTH          => 8,
       SLAVE_DATA_WIDTH          => BOTTOM_DATA_WIDTH,
-      SLAVE_LEN_WIDTH           => BOTTOM_LEN_WIDTH
+      SLAVE_LEN_WIDTH           => BOTTOM_LEN_WIDTH,
+      SLAVE_MAX_BURST           => BOTTOM_BURST_LEN
     )
     port map (                  
       clk                       => clk,
       reset_n                   => reset_n,
       s_bus_req_addr            => bus_bottom_array(I).req_addr,
-      s_bus_req_id              => bus_bottom_array(I).req_id,
       s_bus_req_len             => bus_bottom_array(I).req_len,
       s_bus_req_valid           => bus_bottom_array(I).req_valid,
       s_bus_req_ready           => bus_bottom_array(I).req_ready,
-      s_bus_rsp_id              => bus_bottom_array(I).rsp_id, 
       s_bus_rsp_data            => bus_bottom_array(I).rsp_data,
-      s_bus_rsp_resp            => bus_bottom_array(I).rsp_resp,
       s_bus_rsp_last            => bus_bottom_array(I).rsp_last,
       s_bus_rsp_valid           => bus_bottom_array(I).rsp_valid,
       s_bus_rsp_ready           => bus_bottom_array(I).rsp_ready,
       m_axi_araddr              => axi_mid_array(I).araddr,
-      m_axi_arid                => axi_mid_array(I).arid,
       m_axi_arlen               => axi_mid_array(I).arlen,
       m_axi_arvalid             => axi_mid_array(I).arvalid,
       m_axi_arready             => axi_mid_array(I).arready,
       m_axi_arsize              => axi_mid_array(I).arsize,
-      m_axi_rid                 => axi_mid_array(I).rid,
       m_axi_rdata               => axi_mid_array(I).rdata,
-      m_axi_rresp               => axi_mid_array(I).rresp,
       m_axi_rlast               => axi_mid_array(I).rlast,
       m_axi_rvalid              => axi_mid_array(I).rvalid,
       m_axi_rready              => axi_mid_array(I).rready
