@@ -31,7 +31,7 @@
 
 // Number of rows, currently must be a multiple of the no. active units
 // because of the naive way in which the work is distributed amongst the units.
-`define NUM_ROWS            2*`ACTIVE_UNITS
+`define NUM_ROWS            4 *`ACTIVE_UNITS
 
 // Register offsets & some default values:
 `define REG_STATUS_HI       0

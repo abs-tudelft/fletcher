@@ -24,10 +24,11 @@ package arrow_regexp_pkg is
   -- Bus interfaces
   -----------------------------------------------------------------------------
   constant BOTTOM_ADDR_WIDTH    : natural :=   64;
-  constant BOTTOM_DATA_WIDTH    : natural :=   32;
+  constant BOTTOM_DATA_WIDTH    : natural :=  512;
   constant BOTTOM_ID_WIDTH      : natural :=    1;
-  constant BOTTOM_BURST_LEN     : natural :=  128;
+  constant BOTTOM_BURST_LEN     : natural :=   16;
   constant BOTTOM_LEN_WIDTH     : natural := log2ceil(BOTTOM_BURST_LEN) + 1;
+  constant BOTTOM_ENABLE_FIFO   : boolean := false;
 
   constant MID_ADDR_WIDTH       : natural :=   64;
   constant MID_DATA_WIDTH       : natural :=  512;
@@ -238,32 +239,30 @@ package arrow_regexp_pkg is
 
       MASTER_DATA_WIDTH         : natural;
       MASTER_LEN_WIDTH          : natural := 8;
+      
       SLAVE_DATA_WIDTH          : natural;
-      SLAVE_LEN_WIDTH           : natural
+      SLAVE_LEN_WIDTH           : natural;
+      SLAVE_MAX_BURST           : natural;
+      
+      ENABLE_FIFO               : boolean := true
     );
     port (
       clk                       :  in std_logic;
       reset_n                   :  in std_logic;
       s_bus_req_addr            :  in std_logic_vector(ADDR_WIDTH-1 downto 0);
-      s_bus_req_id              :  in std_logic_vector(ID_WIDTH-1 downto 0);
       s_bus_req_len             :  in std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
       s_bus_req_valid           :  in std_logic;
       s_bus_req_ready           : out std_logic;
-      s_bus_rsp_id              : out std_logic_vector(ID_WIDTH-1 downto 0);
       s_bus_rsp_data            : out std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
-      s_bus_rsp_resp            : out std_logic_vector(1 downto 0);
       s_bus_rsp_last            : out std_logic;
       s_bus_rsp_valid           : out std_logic;
       s_bus_rsp_ready           :  in std_logic;
       m_axi_araddr              : out std_logic_vector(ADDR_WIDTH-1 downto 0);
-      m_axi_arid                : out std_logic_vector(ID_WIDTH-1 downto 0);
       m_axi_arlen               : out std_logic_vector(7 downto 0);
       m_axi_arvalid             : out std_logic;
       m_axi_arready             : in  std_logic;
       m_axi_arsize              : out std_logic_vector(2 downto 0);
-      m_axi_rid                 : in  std_logic_vector(ID_WIDTH-1 downto 0);
       m_axi_rdata               : in  std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
-      m_axi_rresp               : in  std_logic_vector(1 downto 0);
       m_axi_rlast               : in  std_logic;
       m_axi_rvalid              : in  std_logic;
       m_axi_rready              : out std_logic
