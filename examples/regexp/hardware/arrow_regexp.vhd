@@ -229,7 +229,10 @@ architecture rtl of arrow_regexp is
   type regex_result_array_t is array (0 to NUM_REGEX-1) of result_array_t;
   signal result_array           : regex_result_array_t;
   
-  type result_add_t is array (0 to CORES-1) of unsigned(31 downto 0);
+  -- The width of the innermost array is 2^log2ceil(cores) instead of cores-1
+  -- such that even no. cores is possible vs. only powers of 2 no. cores.
+  type result_add_t is array (0 to 2**log2ceil(CORES)) of unsigned(31 downto 0);
+  
   type result_add_tree_t is array (0 to log2ceil(CORES)) of result_add_t;
   type regex_result_add_tree_t is array(0 to NUM_REGEX-1) of result_add_tree_t;
   
@@ -403,8 +406,8 @@ begin
     -----------------------------------------------------------------------------
     -- Adder tree assuming CORES is even
     -----------------------------------------------------------------------------
-    -- TODO: somehow make sure when the return reg is read that there is nothing 
-    -- left in the adder tree pipeline.
+    -- TODO: somehow make sure that when the result regs are read that there is 
+    -- nothing left in the adder tree pipeline.
     process(clk) is
     begin
       if rising_edge(clk) then

@@ -24,11 +24,11 @@ package arrow_regexp_pkg is
   -- Bus interfaces
   -----------------------------------------------------------------------------
   constant BOTTOM_ADDR_WIDTH    : natural :=   64;
-  constant BOTTOM_DATA_WIDTH    : natural :=  512;
+  constant BOTTOM_DATA_WIDTH    : natural :=   32;
   constant BOTTOM_ID_WIDTH      : natural :=    1;
-  constant BOTTOM_BURST_LEN     : natural :=   16;
+  constant BOTTOM_BURST_LEN     : natural :=  128;
   constant BOTTOM_LEN_WIDTH     : natural := log2ceil(BOTTOM_BURST_LEN) + 1;
-  constant BOTTOM_ENABLE_FIFO   : boolean := false;
+  constant BOTTOM_ENABLE_FIFO   : boolean := true;
 
   constant MID_ADDR_WIDTH       : natural :=   64;
   constant MID_DATA_WIDTH       : natural :=  512;

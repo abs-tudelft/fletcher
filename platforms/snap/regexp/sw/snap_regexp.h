@@ -47,21 +47,21 @@
 
 /* No units */
 #define TOTAL_UNITS     16 // fix me
-#define ACTIVE_UNITS    8
+#define ACTIVE_UNITS    6
 
 #define SNAP_OFFSET     0x200
 
 /* Registers */
 #define STATUS_REG_HI   SNAP_OFFSET + 0
 #define STATUS_REG_LO   SNAP_OFFSET + 4
-#define   STATUS_MASK   0x0000FFFF
-#define   STATUS_BUSY   0x000000FF
-#define   STATUS_DONE   0x0000FF00
+#define   STATUS_MASK   0x00000FFF
+#define   STATUS_BUSY   0x0000003F
+#define   STATUS_DONE   0x00000FC0
 
 #define CONTROL_REG_HI  SNAP_OFFSET + 8
 #define CONTROL_REG_LO  SNAP_OFFSET + 12
-#define   CONTROL_START 0x000000FF
-#define   CONTROL_RESET 0x0000FF00
+#define   CONTROL_START 0x0000003F
+#define   CONTROL_RESET 0x00000FC0
 
 #define RETURN_HI       SNAP_OFFSET + 16
 #define RETURN_LO       SNAP_OFFSET + 20
