@@ -15,8 +15,8 @@
 #include <sstream>
 #include <iomanip>
 
-#include "../../include/fletcher/FPGAPlatform.h"
-#include "../../include/fletcher/logging.h"
+#include "fletcher/FPGAPlatform.h"
+#include "fletcher/logging.h"
 
 namespace fletcher {
 

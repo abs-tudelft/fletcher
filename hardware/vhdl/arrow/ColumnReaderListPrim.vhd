@@ -325,18 +325,18 @@ begin
       ELEMENT_COUNT_WIDTH       => 1,
       CMD_CTRL_WIDTH            => BUS_ADDR_WIDTH,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH,
-      CMD_IN_SLICE              => parse_param(CFG, "idx_cmd_in_slice", false),
+      CMD_IN_SLICE              => parse_param(CFG, "idx_cmd_in_slice", true),
       BUS_REQ_SLICE             => parse_param(CFG, "idx_bus_req_slice", true),
       BUS_FIFO_DEPTH            => parse_param(CFG, "idx_bus_fifo_depth", 16),
       BUS_FIFO_RAM_CONFIG       => parse_param(CFG, "idx_bus_fifo_ram_config", ""),
       CMD_OUT_SLICE             => parse_param(CFG, "idx_cmd_out_slice", true),
       UNLOCK_SLICE              => parse_param(CFG, "idx_unlock_slice", true),
-      SHR2GB_SLICE              => parse_param(CFG, "idx_shr2gb_slice", false),
-      GB2FIFO_SLICE             => parse_param(CFG, "idx_gb2fifo_slice", false),
+      SHR2GB_SLICE              => parse_param(CFG, "idx_shr2gb_slice", true),
+      GB2FIFO_SLICE             => parse_param(CFG, "idx_gb2fifo_slice", true),
       ELEMENT_FIFO_SIZE         => parse_param(CFG, "idx_fifo_size", 64),
       ELEMENT_FIFO_RAM_CONFIG   => parse_param(CFG, "idx_fifo_ram_config", ""),
       ELEMENT_FIFO_XCLK_STAGES  => parse_param(CFG, "idx_fifo_xclk_stages", 0),
-      FIFO2POST_SLICE           => parse_param(CFG, "idx_fifo2post_slice", false),
+      FIFO2POST_SLICE           => parse_param(CFG, "idx_fifo2post_slice", true),
       OUT_SLICE                 => false
     )
     port map (
@@ -394,19 +394,19 @@ begin
       ELEMENT_COUNT_WIDTH       => COUNT_WIDTH,
       CMD_CTRL_WIDTH            => 1,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH,
-      CMD_IN_SLICE              => parse_param(CFG, "cmd_in_slice", false),
+      CMD_IN_SLICE              => parse_param(CFG, "cmd_in_slice", true),
       BUS_REQ_SLICE             => parse_param(CFG, "bus_req_slice", true),
       BUS_FIFO_DEPTH            => parse_param(CFG, "bus_fifo_depth", 16),
       BUS_FIFO_RAM_CONFIG       => parse_param(CFG, "bus_fifo_ram_config", ""),
-      CMD_OUT_SLICE             => false,
+      CMD_OUT_SLICE             => false, -- not required for non-index buffer
       UNLOCK_SLICE              => parse_param(CFG, "unlock_slice", true),
-      SHR2GB_SLICE              => parse_param(CFG, "shr2gb_slice", false),
-      GB2FIFO_SLICE             => parse_param(CFG, "gb2fifo_slice", false),
+      SHR2GB_SLICE              => parse_param(CFG, "shr2gb_slice", true),
+      GB2FIFO_SLICE             => parse_param(CFG, "gb2fifo_slice", true),
       ELEMENT_FIFO_SIZE         => parse_param(CFG, "fifo_size", 64),
       ELEMENT_FIFO_RAM_CONFIG   => parse_param(CFG, "fifo_ram_config", ""),
       ELEMENT_FIFO_XCLK_STAGES  => parse_param(CFG, "fifo_xclk_stages", 0),
-      FIFO2POST_SLICE           => parse_param(CFG, "fifo2post_slice", false),
-      OUT_SLICE                 => parse_param(CFG, "out_slice", false)
+      FIFO2POST_SLICE           => parse_param(CFG, "fifo2post_slice", true),
+      OUT_SLICE                 => parse_param(CFG, "out_slice", true)
     )
     port map (
       bus_clk                   => bus_clk,

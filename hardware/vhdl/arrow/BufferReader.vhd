@@ -82,10 +82,10 @@ entity BufferReader is
     ---------------------------------------------------------------------------
     -- Whether a register slice should be inserted into the command stream
     -- input.
-    CMD_IN_SLICE                : boolean := false;
+    CMD_IN_SLICE                : boolean := true;
 
     -- Whether a register slice should be inserted into the bus request output.
-    BUS_REQ_SLICE               : boolean := false;
+    BUS_REQ_SLICE               : boolean := true;
 
     -- Bus response and internal command stream FIFO depth. The maximum number
     -- of outstanding requests is approximately this number divided by the
@@ -105,11 +105,11 @@ entity BufferReader is
 
     -- Whether a register slice should be inserted between the LSB-alignment
     -- right-shift unit and the bus to FIFO gearbox.
-    SHR2GB_SLICE                : boolean := false;
+    SHR2GB_SLICE                : boolean := true;
 
     -- Whether a register slice should be inserted between the bus to FIFO
     -- gearbox and the FIFO input.
-    GB2FIFO_SLICE               : boolean := false;
+    GB2FIFO_SLICE               : boolean := true;
 
     -- Element FIFO size in number of elements.
     ELEMENT_FIFO_SIZE           : natural := 64;
@@ -125,7 +125,7 @@ entity BufferReader is
     -- Whether a register slice should be inserted between the FIFO and the
     -- post-processing logic (differential encoder for index buffers and
     -- optional serialization).
-    FIFO2POST_SLICE             : boolean := false;
+    FIFO2POST_SLICE             : boolean := true;
 
     -- Whether a register slice should be inserted into the output stream.
     OUT_SLICE                   : boolean := true
