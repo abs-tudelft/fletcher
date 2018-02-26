@@ -21,18 +21,18 @@
 #ifdef USE_BOOST_LOG
 #define BOOST_LOG_DYN_LINK 1
 #include <boost/log/trivial.hpp>
-
 #define LOGD(X) BOOST_LOG_TRIVIAL(debug) << X
 #define LOGI(X) BOOST_LOG_TRIVIAL(info) << X
+#define LOGE(X) BOOST_LOG_TRIVIAL(error) << X
 #else
 #include <iostream>
 #ifdef DEBUG
-#define LOGD(X) std::cout << "DEBUG : " << X << std::endl
-#define LOGI(X) std::cout << "INFO  : " << X << std::endl
+#define LOGD(X) std::cout << "DEBUG: " << X << std::endl
 #else
 #define LOGD(X) do {} while (false)
-#define LOGI(X) std::cout << "INFO  : " << X << std::endl
 #endif
+#define LOGI(X) std::cout << "INFO : " << X << std::endl
+#define LOGE(X) std::cerr << "ERROR: " << X << std::endl
 #endif
 
 #define STRHEX64 "0x" << std::hex << std::setfill('0') << std::setw(16)
