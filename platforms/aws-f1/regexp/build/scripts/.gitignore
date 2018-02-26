@@ -2,3 +2,4 @@
 *.log
 last_log
 fsm_encoding.os
+*.nohup.out

@@ -23,6 +23,16 @@
  * number of matches for each units, and in total.
  */
 
+// Number of active units
+`define ACTIVE_UNITS        16
+
+// Number of regexes
+`define NUM_REGEX           16
+
+// Number of rows, currently must be a multiple of the no. active units
+// because of the naive way in which the work is distributed amongst the units.
+`define NUM_ROWS            4 *`ACTIVE_UNITS
+
 // Register offsets & some default values:
 `define REG_STATUS_HI       0
 `define REG_STATUS_LO       1
@@ -69,16 +79,6 @@
 // Placeholder for potential result writeback
 `define DEST_ADDR_HI        32'h00000000
 `define DEST_ADDR_LO        `UTF8_ADDR_LO + ((`NUM_ROWS * `MAX_STR_LEN) / `ALIGNMENT + 1) * `ALIGNMENT
-
-// Number of active units
-`define ACTIVE_UNITS        16
-
-// Number of regexes
-`define NUM_REGEX           16
-
-// Number of rows, currently must be a multiple of the no. active units
-// because of the naive way in which the work is distributed amongst the units.
-`define NUM_ROWS            2*`ACTIVE_UNITS
 
 module test_regexp();
 

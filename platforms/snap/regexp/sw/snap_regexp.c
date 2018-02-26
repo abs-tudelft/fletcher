@@ -76,7 +76,7 @@ int main()//int argc, char *argv[])
   */
   
   uint32_t * off_buf;
-  uint32_t num_rows = 128;
+  uint32_t num_rows = 4*ACTIVE_UNITS;
   rc = posix_memalign((void**)&off_buf, BURST_LENGTH, sizeof(uint32_t)*(num_rows+1));
   
   for (uint32_t i=0;i<num_rows+1;i++) {

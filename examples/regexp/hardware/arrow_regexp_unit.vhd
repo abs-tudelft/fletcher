@@ -521,7 +521,7 @@ begin
         v.cs.done               := '1';
         v.cs.busy               := '0';
         v.cs.reset_start        := '0';
-        v.reset_units           := '1';
+        v.reset_units           := '0'; -- See issue #4, otherwise this could be '1'
 
         if r_control_reset = '1' or r_control_start = '1' then
           v.state               := STATE_IDLE;
