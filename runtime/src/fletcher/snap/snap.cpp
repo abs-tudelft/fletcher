@@ -162,13 +162,11 @@ inline int SNAPPlatform::read_mmio(uint64_t offset, fr_t* dest)
     conv_value.half.lo = ret;
 
     LOGD("Read from MMIO reg LO " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1) << " value " << STRHEX32 << ret);
-    
-    return FLETCHER_OK;
   } else {
     LOGE("Read unsuccessful. SNAP platform is in error state. Read from " << STRHEX64 << offset);
     return FLETCHER_ERROR;
   }
-  *dest = ret;
+  *dest = conv_value.full;
   return FLETCHER_OK;
 }
 

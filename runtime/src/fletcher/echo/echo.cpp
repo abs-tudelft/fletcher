@@ -59,14 +59,13 @@ inline int EchoPlatform::read_mmio(uint64_t offset, fr_t* dest)
 {
   *dest = 0xDEADBEEF;
 
-  // Pretend to be done using the default done bit
-  // If a UserCore overrides the default done, wait_for_finish
-  // may still go into an infinite loop
-  if (offset == UC_REG_STATUS)
-    *dest = 1<<UC_REG_STATUS_DONE;
+  LOGI("[ECHO] Read from " << STRHEX64 << offset << " value: ? ");
 
-  LOGI("[ECHO] Read from " << STRHEX64 << offset << " value: " << STRHEX64 << *dest);
+  fr_t x;
+  std::cin >> std::hex >> x;
 
+  *dest = x;
+  
   return FLETCHER_OK;
 }
 

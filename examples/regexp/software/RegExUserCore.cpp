@@ -23,10 +23,10 @@ RegExUserCore::RegExUserCore(std::shared_ptr<fletcher::FPGAPlatform> platform)
 {
   // Some settings that are different from standard implementation
   // concerning start, reset and status register.
-  ctrl_start = 0x00000000000000FF;
-  ctrl_reset = 0x000000000000FF00;
-  done_status = 0x00000000000FF00;
-  done_status_mask = 0x000000000000FF00;
+  ctrl_start       = 0x00000000000000FF;
+  ctrl_reset       = 0x000000000000FF00;
+  done_status      = 0x000000000000FF00;
+  done_status_mask = 0x000000000000FFFF;
 }
 
 std::vector<fr_t> RegExUserCore::generate_unit_arguments(uint32_t first_index,

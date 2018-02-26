@@ -20,8 +20,6 @@
 #include "fletcher/UserCore.h"
 
 #define REUC_TOTAL_UNITS   16
-#define REUC_ACTIVE_UNITS  16
-
 #define REUC_RESULT_OFFSET 21
 
 /**

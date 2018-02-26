@@ -41,6 +41,7 @@
 #include <string>
 #include <numeric>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <omp.h>
 
@@ -59,6 +60,9 @@
 #ifndef PLATFORM
   #define PLATFORM 0
 #endif
+
+#define PRINT_TIME(X) cout << setprecision(10) << X << ", " << flush
+#define PRINT_INT(X) cout << dec << X << ", " << flush
 
 using namespace std;
 
@@ -100,40 +104,22 @@ inline string generate_random_string_with(const vector<vector<string>>& insert_s
   return ret;
 }
 
-vector<uint32_t> generate_strings(vector<string>& strings,
-                                  const vector<vector<string>>& insert_strings,
-                                  const string& alphabet,
-                                  uint32_t max_str_len,
-                                  uint32_t rows,
-                                  int period,
-                                  int threads = 8,
-                                  bool save_to_file = true)
+void generate_strings(vector<string>& strings,
+                      const vector<vector<string>>& insert_strings,
+                      const string& alphabet,
+                      uint32_t max_str_len,
+                      uint32_t rows,
+                      int period,
+                      bool save_to_file = true)
 {
-  vector<uint32_t> insertions(strings.size(), 0);
-  
-  omp_set_num_threads(threads);
-#pragma omp parallel 
-  {   
-    vector<uint32_t> thread_insertions(strings.size(), 0);
-    
-    // Create some strings
-#pragma omp for
-    for (uint32_t i = 0; i < rows; i++) {
-      int which = -1;
-      strings[i] = generate_random_string_with(insert_strings,
-                                               alphabet,
-                                               max_str_len,
-                                               period,
-                                               which);
-      if (which != -1) {
-        thread_insertions[which]++;
-      }
-    }
-    
-    for (int i=0;i<strings.size();i++) {
-#pragma omp atomic
-      insertions[i] += thread_insertions[i];
-    }
+#pragma omp parallel for
+  for (uint32_t i = 0; i < rows; i++) {
+    int which = -1;
+    strings[i] = generate_random_string_with(insert_strings,
+                                             alphabet,
+                                             max_str_len,
+                                             period,
+                                             which);
   }
 
   // Used to compare performance with other programs
@@ -148,8 +134,6 @@ vector<uint32_t> generate_strings(vector<string>& strings,
       }
     }
   }
-
-  return insertions;
 }
 
 /**
@@ -435,7 +419,7 @@ int main(int argc, char ** argv)
   // Characters to use
   string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890          ";
 
-  uint32_t num_rows = 32;
+  uint32_t num_rows = 1024;
   uint32_t max_str_len = 256;
   uint32_t emask = 31;
   int period = 50;  // 1/50 chance to insert an insert_strings string in each row
@@ -452,7 +436,7 @@ int main(int argc, char ** argv)
     sscanf(argv[3], "%u", &emask);
   }
   if (argc >= 5) {
-    sscanf(argv[3], "%u", &num_threads);
+    sscanf(argv[4], "%u", &num_threads);
   }
 
   // Aggregators
@@ -470,7 +454,7 @@ int main(int argc, char ** argv)
 
   int np = regexes.size();
 
-  // Matches for each experiment
+  // Matches for each experimenthttps://webdata.tudelft.nl/
   vector<vector<uint32_t>> m_vcpu(ne, vector<uint32_t>(np, 0));
   vector<vector<uint32_t>> m_vomp(ne, vector<uint32_t>(np, 0));
   vector<vector<uint32_t>> m_acpu(ne, vector<uint32_t>(np, 0));
@@ -480,25 +464,32 @@ int main(int argc, char ** argv)
   uint32_t first_index = 0;
   uint32_t last_index = num_rows;
 
+  PRINT_INT(num_rows);
+
   start = omp_get_wtime();
   // Generate some strings
   vector<string> strings(num_rows);
 
-  auto insertions = generate_strings(strings,
-                                     insert_strings,
-                                     alphabet,
-                                     max_str_len,
-                                     num_rows,
-                                     period,
-                                     num_threads);
+  generate_strings(strings,
+                   insert_strings,
+                   alphabet,
+                   max_str_len,
+                   num_rows,
+                   period,
+                   num_threads);
+  
   stop = omp_get_wtime();
   t_create = (stop - start);
+
+  PRINT_TIME(t_create);
 
   // Make a table with random strings containing some other string effectively serializing the data
   start = omp_get_wtime();
   shared_ptr<arrow::Table> table = create_table(strings);
   stop = omp_get_wtime();
   t_ser = (stop - start);
+
+  PRINT_TIME(t_ser);
 
   // Repeat the experiment
   for (int e = 0; e < ne; e++) {
@@ -564,28 +555,34 @@ int main(int argc, char ** argv)
       start = omp_get_wtime();
       uc.set_arguments(first_index, last_index);
       uc.start();
+#ifdef DEBUG
       uc.wait_for_finish(1000000);
+#else
+      uc.wait_for_finish(10);
+#endif
 
       // Get the number of matches from the UserCore
       uc.get_matches(m_fpga[e]);
+
       stop = omp_get_wtime();
       t_fpga[e] = (stop - start);
     }
   }
 
-  // Report the outcomes:
-  printf("%10u,", num_rows);
-  printf("%10lu,", bytes_copied);
-  printf("%3d,", num_threads);
-  printf("%13.10f,", t_create);
-  printf("%13.10f,", t_ser);
+  PRINT_INT(bytes_copied);
 
-  printf("%13.10f,", calc_sum(t_vcpu));
-  printf("%13.10f,", calc_sum(t_vomp));
-  printf("%13.10f,", calc_sum(t_acpu));
-  printf("%13.10f,", calc_sum(t_aomp));
-  printf("%13.10f,", calc_sum(t_copy));
-  printf("%13.10f,", calc_sum(t_fpga));
+  // Report the run times:
+  PRINT_TIME(calc_sum(t_vcpu));
+  PRINT_TIME(calc_sum(t_vomp));
+  PRINT_TIME(calc_sum(t_acpu));
+  PRINT_TIME(calc_sum(t_aomp));
+  PRINT_TIME(calc_sum(t_copy));
+  PRINT_TIME(calc_sum(t_fpga));
+  
+  // Report other settings
+  PRINT_INT(ne);
+  PRINT_INT(num_threads);
+  PRINT_INT(emask);
 
   // Print insertions
   //for (int p = 0; p < np; p++) {
@@ -617,12 +614,12 @@ int main(int argc, char ** argv)
   // Check if matches are equal
   if ((a_vcpu == a_vomp) && (a_vomp == a_acpu) && (a_acpu == a_aomp)
       && (a_aomp == a_fpga)) {
-    printf("PASS");
+    cout << "PASS";
   } else {
-    printf("ERROR");
+    cout << "ERROR";
   }
 
-  printf("\n");
+  cout << endl;
 
   return 0;
 }
