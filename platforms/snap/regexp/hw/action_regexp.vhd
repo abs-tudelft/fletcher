@@ -357,7 +357,7 @@ begin
   ----------------------------------------------------------------------
   arrow_regexp_inst : arrow_regexp 
   generic map (
-    CORES                       => 6,
+    CORES                       => 8,
     BUS_ADDR_WIDTH              => C_AXI_HOST_MEM_ADDR_WIDTH,
     BUS_DATA_WIDTH              => C_AXI_HOST_MEM_DATA_WIDTH,
     SLV_BUS_ADDR_WIDTH          => 9,
