@@ -1,22 +1,17 @@
 # Regular Expression Matching example on AWS F1
 
-This is an example in which some [ColumnReaders](../../../hardware) are
-used to read a column with UTF8 strings. The config string for the 
-columns is therefore "listprim(8)", to generate an interface to a 
-non-nullable list of non-nullable 8-bit wide elements.
+This implementation uses the hardware description 
+[you can read about here](../../../example/regexp).
 
-The design instantiates sixteen of these ColumnReader, attached to 
-sixteen regular expression matching units, that can all work in parallel.
+This subfolder follows the structure of projects on the 
+[AWS EC2 FPGA Hardware and Software Development Kits](https://github.com/aws/aws-fpga).
 
-The ColumnReaders are attached to our internal bus arbiter/interconnect,
-but we inserted an `axi_read_converter` to convert the `bsize` 
-(Burst Size) signal properly to match the AWS Shell requirement of 
-setting this to 2^6=64 bytes fixed burst beat size. This is because 
-the ColumnReaders bus data width is 32-bits. `axi_read_converter` also 
-converts our internal bus burst lengths to AXI specification.
+If you are totally unfamiliar with the examples there, it is highly
+recommended to follow some of the guides on that repository first. At 
+least try to build and run the "Hello World" example.
 
 On the master side, the bus arbiter/interconnect is connected to an 
-AXI interconnect that allow s the PCI master interface of the Shell to 
+AXI interconnect that allows the PCI master interface of the Shell to 
 write to the DDR controllers (DMA), and allows the ColumnReaders
 to read from them.
 
@@ -26,13 +21,6 @@ on-board DDR, because it would be infeasible to resolve physical
 addresses of the host memory everytime we cross a page boundary. 
 Furthermore, the copy throughput offered by the shell is a bit low 
 (just over 2 GiB/s). Amazon appears to be working on increasing this.
-
-This subfolder follows the structure of projects on the 
-[AWS EC2 FPGA Hardware and Software Development Kits](https://github.com/aws/aws-fpga).
-
-If you are totally unfamiliar with the examples there, it is highly
-recommended to follow some of the guides on that repository. At least 
-try to build and run the "Hello World" example.
 
 ### Design files description
 
@@ -100,7 +88,8 @@ Read request from MMIO: 51 value 11
 [t] : Result regexp 9: 11
 </pre>
 
-Currently only unit 9 (which matches "(?i)kitten") will give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
+Currently only unit 9 (which matches "(?i)kitten") will$ source ~/src/project_data/aws-fpga/sdk_setup.sh
+ give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
 Inserting strings that the other units match for, randomly, is desired for verification but not implemented yet.
 
 # Build
@@ -175,5 +164,5 @@ Recreate the link (optionally):
 
 #### Run the example:
 
-    $ sudo ./regexp <no. strings>
+    $ sudo ./regexp
 

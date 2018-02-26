@@ -62,9 +62,9 @@ following features:
 
 ### Platform support:
 * Our hardware descriptions are vendor independent; we don't use any vendor IP.
-* There is an example project for Amazon EC2 F1 instances
+* There is an example project for the Amazon EC2 F1 and CAPI SNAP FPGA platforms.
 * Our bus interface speaks AXI, so it should be easy to integrate in many existing 
-  platforms
+  platforms.
 * Upcoming: OpenCAPI support
 
 ## Credits
@@ -79,3 +79,4 @@ If you would like to contribute, open issues, make pull requests, or drop us an 
       point in hardware design.
   * [How to use the host-side run-time library](runtime).
   * [Regular Expression matching example on Amazon EC2 F1](platforms/aws-f1/regexp)
+  * [Regular Expression matching example on CAPI SNAP](platforms/snap/regexp)
