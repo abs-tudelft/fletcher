@@ -30,7 +30,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -75,7 +76,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -120,7 +122,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -165,7 +168,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -210,7 +214,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -255,7 +260,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -300,7 +306,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
@@ -427,7 +434,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_LENGTH          : natural := 4;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       ELEMENT_WIDTH             : natural := 8;
       IS_INDEX_BUFFER           : boolean := false;
@@ -499,7 +507,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_BURST_LENGTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
       IS_INDEX_BUFFER           : boolean;
@@ -541,7 +550,8 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_BURST_LENGTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
       IS_INDEX_BUFFER           : boolean;
@@ -568,7 +578,7 @@ package Arrow is
   component BufferReaderResp is
     generic (
       BUS_DATA_WIDTH            : natural;
-      BUS_BURST_LENGTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
       IS_INDEX_BUFFER           : boolean;
@@ -626,7 +636,7 @@ package Arrow is
       ICS_SHIFT_WIDTH           : natural;
       ICS_COUNT_WIDTH           : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_BURST_LENGTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
       ELEMENT_WIDTH             : natural;
       CMD_CTRL_WIDTH            : natural;
       CMD_TAG_WIDTH             : natural;

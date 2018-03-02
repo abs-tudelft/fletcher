@@ -46,31 +46,64 @@ package Utils is
   -- Returns floor(log2(i)).
   function log2floor(i: natural) return natural;
 
+  -- Returns a with its byte endianness swapped.
   function endian_swap(a : in std_logic_vector) return std_logic_vector;
+
   function is_full(a : in std_logic_vector; b : in std_logic_vector) return std_logic;
   function is_full(a : in unsigned; b : in unsigned) return std_logic;
+
   function is_empty(a : in std_logic_vector; b : in std_logic_vector) return std_logic;
   function is_empty(a : in unsigned; b : in unsigned) return std_logic;
+
+  -- Returns a as integer
   function int(a : in std_logic_vector) return integer;
   function int(a : in unsigned) return integer;
   function int(a : in signed) return integer;
+
+  -- Returns a as std_logic_vector
   function slv(a : in integer; b : in natural) return std_logic_vector;
   function slv(a : in unsigned) return std_logic_vector;
+
+  -- Returns the sign-extended version of a with length b
   function sext(a : in unsigned; b : in natural) return unsigned;
+
+  -- Returns a as unsigned
   function u(a : in integer; b : in natural) return unsigned;
   function u(a : in std_logic_vector) return unsigned;
   function u(a : in std_logic) return unsigned;
+
+  -- Returns a as std_logic
   function l(a : in boolean) return std_logic;
+
+  -- Returns the number of '1''s in a
   function ones(a : in std_logic_vector) return natural;
-  
+
   -- Shifts a right b by and cuts off lost bits
   function shift_right_cut(a : in unsigned; b : in natural) return unsigned;
-  
+
   -- Shifts a left by b if b is positive, shifts a right by |b| if b is negative
   function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned;
   
+  -- Shifts a left by b if b is positive, shifts a right by |b| if b is negative and rounds up if non-zero bits are shifted out.
+  function shift_left_with_neg_round_up (a: in unsigned; b : in integer) return unsigned;
+
   -- Returns ceil(a / (2^b))
   function shift_right_round_up (a: in unsigned; b : in natural) return unsigned;
+
+  -- Returns floor(a / b) where b is a power of 2
+  function div_floor(a : in unsigned; b : in natural) return unsigned;
+
+  -- Return ceil(a / b) where b is a power of 2
+  function div_ceil(a : in unsigned; b : in natural) return unsigned;
+
+  -- Returns a*b where b is a power of 2
+  function mul(a : in unsigned; b : in natural) return unsigned;
+
+  -- Returns the first integer multiple of b below or equal to a
+  function align_beq(a : in unsigned; b : in natural) return unsigned;
+  
+  -- Returns the first integer multiple of b above or equal to a
+  function align_aeq(a : in unsigned; b : in natural) return unsigned;
 
   -- 1-read 1-write RAM.
   component Ram1R1W is
@@ -221,7 +254,7 @@ package body Utils is
   begin
     return                  to_integer(a);
   end function int;
-  
+
   function int (a : in signed) return integer is
   begin
     return                  to_integer(a);
@@ -295,15 +328,6 @@ package body Utils is
     return shifted(a'high-b downto 0);
   end function shift_right_cut;
 
-  function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned is
-  begin
-    if b >= 0 then
-      return shift_left(a, b);
-    else
-      return shift_right(a, -b);
-    end if;
-  end function shift_left_with_neg;
-  
   function shift_right_round_up(a : in unsigned; b : in natural) return unsigned is
     variable arg_v : unsigned(a'length-1 downto 0);
     variable lsb_v : unsigned(a'length-1 downto 0);
@@ -315,10 +339,69 @@ package body Utils is
         arg_v := arg_v + 1;
       end if;
     else
-     arg_v := a;
+      arg_v := a;
     end if;
     return arg_v;
-    
   end shift_right_round_up;
+  
+  function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned is
+  begin
+    if b >= 0 then
+      return shift_left(a, b);
+    else
+      return shift_right(a, -b);
+    end if;
+  end function shift_left_with_neg;
+  
+  function shift_left_with_neg_round_up (a: in unsigned; b : in integer) return unsigned is
+  begin
+    if b >= 0 then
+      return shift_left(a, b);
+    else
+      return shift_right_round_up(a, -b);
+    end if;
+  end function shift_left_with_neg_round_up;
+
+  function div_floor(a: in unsigned; b : in natural) return unsigned is
+    variable log2b : natural := log2floor(b);
+  begin
+    assert log2ceil(b) = log2floor(b) report "div_p2_floor() second argument is not a power of 2." severity failure;
+    return shift_right(a, log2b);
+  end div_floor;
+
+  function div_ceil(a: in unsigned; b : in natural) return unsigned is
+    variable log2b : natural := log2floor(b);
+  begin
+    assert log2ceil(b) = log2floor(b) report "div_p2_ceil() second argument is not a power of 2." severity failure;
+    return shift_right_round_up(a, log2b);
+  end div_ceil;
+
+  function mul(a: in unsigned; b : in natural) return unsigned is
+    variable log2b : natural := log2floor(b);
+  begin
+    assert log2ceil(b) = log2floor(b) report "mul() second argument is not a power of 2." severity failure;
+    return shift_left(a, log2b);
+  end mul;
+
+  function align_beq(a : in unsigned; b : in natural) return unsigned is
+    variable log2b  : natural := log2floor(b);
+    variable ret    : unsigned(a'length-1 downto 0) := (others => '0');
+  begin
+    assert log2ceil(b) = log2floor(b) report "align_beq() second argument is not a power of 2." severity failure;
+    -- First shift right to get rid of the LSB's
+    -- Then shift left to get the bits on their original position.
+    return shift_left(shift_right(a, log2b), log2b);
+    return ret;
+  end align_beq;
+  
+  function align_aeq(a : in unsigned; b : in natural) return unsigned is
+    variable log2b  : natural := log2floor(b);
+    variable x      : unsigned(a'length-1 downto 0) := (others => '0');
+  begin
+    assert log2ceil(b) = log2floor(b) report "align_aeq() second argument is not a power of 2." severity failure;
+    -- Shift right and round up to get rid of the LSBs.
+    -- Then shift left to get the bits on their original position.
+    return shift_left(shift_right_round_up(a, log2b), log2b);
+  end align_aeq;
 
 end Utils;

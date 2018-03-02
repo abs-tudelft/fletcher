@@ -16,3 +16,9 @@ platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.csv
 platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top\.xml
 
 platforms/snap/regexp/sw/snap_regexp
+
+hardware/test/bufferreader/transcript
+
+hardware/test/bufferreader/vsim\.wlf
+
+hardware/test/bufferreader/work/

@@ -49,7 +49,8 @@ entity BufferReader_tb is
     BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 8;
-    BUS_BURST_LENGTH            : natural := 16;
+    BUS_BURST_MAX_LEN           : natural := 16;
+    BUS_BURST_STEP_LEN          : natural := 4;
 
     -- Random timing for bus slave mock
     BUS_SLAVE_RND_REQ           : boolean := false;
@@ -73,12 +74,12 @@ entity BufferReader_tb is
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
-    BUS_FIFO_DEPTH              : natural := 2*BUS_BURST_LENGTH;
+    BUS_FIFO_DEPTH              : natural := 2*BUS_BURST_MAX_LEN;
     BUS_FIFO_RAM_CONFIG         : string  := "";
     CMD_OUT_SLICE               : boolean := false;
     SHR2GB_SLICE                : boolean := true;
     GB2FIFO_SLICE               : boolean := true;
-    ELEMENT_FIFO_SIZE           : natural := 2*BUS_BURST_LENGTH*ELEMENT_COUNT_MAX;
+    ELEMENT_FIFO_SIZE           : natural := 2*BUS_BURST_MAX_LEN*ELEMENT_COUNT_MAX;
     ELEMENT_FIFO_RAM_CONFIG     : string  := "";
     ELEMENT_FIFO_XCLK_STAGES    : natural := 0;
     FIFO2POST_SLICE             : boolean := false;
@@ -147,7 +148,8 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH          => BUS_BURST_LENGTH,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,

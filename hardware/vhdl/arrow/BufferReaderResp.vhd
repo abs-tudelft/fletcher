@@ -31,8 +31,8 @@ entity BufferReaderResp is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural;
     
-    -- Bus burst length.
-    BUS_BURST_LENGTH            : natural;
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural;
 
     -- Index field width.
     INDEX_WIDTH                 : natural;
@@ -281,7 +281,7 @@ begin
       ICS_SHIFT_WIDTH                   => ICS_SHIFT_WIDTH,
       ICS_COUNT_WIDTH                   => ICS_COUNT_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH * BUS_BPE,
-      BUS_BURST_LENGTH                  => BUS_BURST_LENGTH / BUS_BPE,
+      BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN / BUS_BPE,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       CMD_CTRL_WIDTH                    => CMD_CTRL_WIDTH,
       CMD_TAG_WIDTH                     => CMD_TAG_WIDTH,
