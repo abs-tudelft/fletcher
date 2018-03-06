@@ -115,7 +115,7 @@ set StdArithNoWarnings 1
 recompile
 
 if {[batch_mode] == 1} {
-  batch_sim 100 10
+  batch_sim 10000 1
   quit
 } else {
   echo "Commands:"

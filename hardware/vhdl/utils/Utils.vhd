@@ -15,6 +15,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_misc.all;
 
 package Utils is
 
@@ -385,23 +386,18 @@ package body Utils is
 
   function align_beq(a : in unsigned; b : in natural) return unsigned is
     variable log2b  : natural := log2floor(b);
-    variable ret    : unsigned(a'length-1 downto 0) := (others => '0');
+    variable zeros  : unsigned(log2floor(b)-1 downto 0) := (others => '0');
   begin
     assert log2ceil(b) = log2floor(b) report "align_beq() second argument is not a power of 2." severity failure;
-    -- First shift right to get rid of the LSB's
-    -- Then shift left to get the bits on their original position.
-    return shift_left(shift_right(a, log2b), log2b);
-    return ret;
+    return a(a'length-1 downto log2b) & zeros;
   end align_beq;
   
   function align_aeq(a : in unsigned; b : in natural) return unsigned is
     variable log2b  : natural := log2floor(b);
-    variable x      : unsigned(a'length-1 downto 0) := (others => '0');
+    variable zeros  : unsigned(log2floor(b)-1 downto 0) := (others => '0');
   begin
     assert log2ceil(b) = log2floor(b) report "align_aeq() second argument is not a power of 2." severity failure;
-    -- Shift right and round up to get rid of the LSBs.
-    -- Then shift left to get the bits on their original position.
-    return shift_left(shift_right_round_up(a, log2b), log2b);
+    return (a(a'length-1 downto log2b) + u(or_reduce(slv(a(log2b-1 downto 0))))) & zeros;
   end align_aeq;
 
 end Utils;

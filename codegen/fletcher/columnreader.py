@@ -929,8 +929,11 @@ entity {camelprefix}ColumnReader is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
-    -- Maximum number of beats in a burst read request.
-    BUS_BURST_LENGTH            : natural := 4;
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural := 4;
+    
+    -- Maximum number of beats in a burst.
+    BUS_BURST_MAX_LEN           : natural := 16;
 
     ---------------------------------------------------------------------------
     -- Arrow metrics and configuration
@@ -1018,7 +1021,8 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH          => BUS_BURST_LENGTH,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       CFG                       => "{cfg}",
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
@@ -1066,7 +1070,8 @@ component {camelprefix}ColumnReader is
     BUS_ADDR_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 8;
     BUS_DATA_WIDTH              : natural := 32;
-    BUS_BURST_LENGTH            : natural := 4;
+    BUS_BURST_STEP_LEN          : natural := 4;
+    BUS_BURST_MAX_LEN           : natural := 16;
     INDEX_WIDTH                 : natural := 32;
     CMD_TAG_ENABLE              : boolean := false;
     CMD_TAG_WIDTH               : natural := 1
@@ -1103,7 +1108,8 @@ uut_template_with_unlock = """
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH          => BUS_BURST_LENGTH,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       CFG                       => "{cfg}",
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
@@ -1149,7 +1155,8 @@ uut_template_without_unlock = """
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH          => BUS_BURST_LENGTH,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       CFG                       => "{cfg}",
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
@@ -1300,16 +1307,17 @@ class ColumnReader(object):
             params.append((name, value))
             return value
         
-        seed       = get_param("seed", random.randrange(1<<32))
+        seed           = get_param("seed", random.randrange(1<<32))
         random.seed(seed)
-        row_count  = get_param("row_count", 100)
-        cmd_count  = get_param("cmd_count", 100)
-        addr_width = get_param("addr_width", random.randint(32, 64))
-        len_width  = get_param("len_width",  random.randint(6, 10))
-        data_width = get_param("data_width", 1 << random.randint(5, 9))
-        burst_len  = get_param("burst_len",  max(1, (1 << random.randint(7, 9)) // data_width))
-        tag_width  = get_param("tag_width", random.choice([0, 1, 4]))
-        multi_clk  = get_param("multi_clk", True)
+        row_count      = get_param("row_count", 100)
+        cmd_count      = get_param("cmd_count", 100)
+        addr_width     = get_param("addr_width", random.randint(32, 64))
+        data_width     = get_param("data_width", 1 << random.randint(5, 9))
+        burst_step_len = get_param("burst_step_len", max(self.field.widest() // data_width, 1 << random.randint(0, 5)))
+        burst_max_len  = get_param("burst_max_len", burst_step_len * (1 << random.randint(0, 4)))
+        len_width      = get_param("len_width",  random.randint(1, 4) * int.bit_length(burst_max_len))
+        tag_width      = get_param("tag_width", random.choice([0, 1, 4]))
+        multi_clk      = get_param("multi_clk", True)
         random_busreq_timing  = get_param("random_busreq_timing", random.choice([True, False]))
         random_busresp_timing = get_param("random_busresp_timing", random.choice([True, False]))
         
@@ -1318,13 +1326,14 @@ class ColumnReader(object):
         tb = Testbench(self._camel_prefix + "ColumnReader_tb", {"bus", acc})
         
         # Set constants.
-        tb.set_const("BUS_ADDR_WIDTH",   addr_width)
-        tb.set_const("BUS_LEN_WIDTH",    len_width)
-        tb.set_const("BUS_DATA_WIDTH",   data_width)
-        tb.set_const("BUS_BURST_LENGTH", burst_len)
-        tb.set_const("INDEX_WIDTH",      32)
-        tb.set_const("CMD_TAG_ENABLE",   tag_width > 0)
-        tb.set_const("CMD_TAG_WIDTH",    max(1, tag_width))
+        tb.set_const("BUS_ADDR_WIDTH",      addr_width)
+        tb.set_const("BUS_LEN_WIDTH",       len_width)
+        tb.set_const("BUS_DATA_WIDTH",      data_width)
+        tb.set_const("BUS_BURST_STEP_LEN",  burst_step_len)
+        tb.set_const("BUS_BURST_MAX_LEN",   burst_max_len)
+        tb.set_const("INDEX_WIDTH",         32)
+        tb.set_const("CMD_TAG_ENABLE",      tag_width > 0)
+        tb.set_const("CMD_TAG_WIDTH",       max(1, tag_width))
         
         # Add the streams.
         tb.append_input_stream(self.cmd_stream, "bus")

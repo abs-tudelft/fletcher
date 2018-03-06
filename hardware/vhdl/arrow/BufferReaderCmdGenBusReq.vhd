@@ -34,9 +34,12 @@ entity BufferReaderCmdGenBusReq is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural;
-    
-    -- Number of beats in a burst.
-    BUS_BURST_LENGTH            : natural;
+
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural;
+
+    -- Maximum number of beats in a burst.
+    BUS_BURST_MAX_LEN           : natural;
 
     ---------------------------------------------------------------------------
     -- Arrow metrics and configuration
@@ -89,8 +92,8 @@ entity BufferReaderCmdGenBusReq is
     ---------------------------------------------------------------------------
     -- Bus read request (bus clock domain). addr represents the start address
     -- for the transfer, len is the amount of requested words requested in the
-    -- burst. The maximum for len is set by BUS_BURST_LEN. Bursts never cross
-    -- BUS_BURST_LEN-sized alignment boundaries.
+    -- burst. The maximum for len is set by BUS_BURST_STEP_LEN. Bursts never cross
+    -- BUS_BURST_STEP_LEN-sized alignment boundaries.
     busReq_valid                : out std_logic;
     busReq_ready                : in  std_logic;
     busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -101,7 +104,7 @@ end BufferReaderCmdGenBusReq;
 
 architecture rtl of BufferReaderCmdGenBusReq is
 
-  type state_type is (IDLE, INDEX, ALIGN, REST);
+  type state_type is (IDLE, INDEX, PRE_STEP, MAX, POST_STEP);
 
   type input_record is record
     ready                       : std_logic;
@@ -148,11 +151,12 @@ architecture rtl of BufferReaderCmdGenBusReq is
   signal r                      : regs_record;
   signal d                      : regs_record;
 
-  -----------------------------------------------------------------------------
-  -- Address calculation helper constants & signals
-  -----------------------------------------------------------------------------
+  -- Helper functions and constants
 
-  -- Index shift required to calculate the byte address of an element,
+  constant ELEMS_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / ELEMENT_WIDTH;
+  constant ELEMS_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / ELEMENT_WIDTH;
+
+  -- Index shift required to calculate the byte offset of an element,
   -- It depends on the number of bits of the element type as follows:
   -- Elem bits| log2(bits)  | shift left amount
   --        1 |           0 |                -3
@@ -163,73 +167,40 @@ architecture rtl of BufferReaderCmdGenBusReq is
   --       32 |           5 |                 2
   --       64 |           6 |                 3
   --      128 |           7 |                 4
-  --      ... |         ... |               ...  
+  --      ... |         ... |               ...
   --  Thus, we must shift left with -3 + log2(ELEMENT_WIDTH)
-  constant B_LSHIFT             : integer                               := -3 + log2ceil(ELEMENT_WIDTH);
-    
-  -- Amount of byes in a burst
-  constant BA_BYTES             : natural                               := BUS_BURST_LENGTH * BUS_DATA_WIDTH / 8;
-  
-  -- The number of bits we can drop from the byte address of an element to align it to a burst
-  constant BA_BYTE_BITS         : natural                               := log2ceil(BA_BYTES);
-  constant BA_BYTE_ZEROS        : unsigned(BA_BYTE_BITS-1 downto 0)     := (others => '0');
-  
-  -- Amount of elements in a burst
-  constant BA_ELEMENTS          : natural                               := BA_BYTES * 8 / ELEMENT_WIDTH;
-  
-  -- The number of bits we can drop from an index to align it to a burst
-  constant BA_IDX_BITS          : natural                               := log2ceil(BA_ELEMENTS);
-  constant BA_IDX_ZEROS         : unsigned(BA_IDX_BITS-1 downto 0)      := (others => '0');
-  
-  -- Maximum burst length
-  constant MAX_BURST            : unsigned(BUS_LEN_WIDTH-1 downto 0)    := u(BUS_BURST_LENGTH, BUS_LEN_WIDTH);
-  
-  -- Byte addresses
-  signal b_address              : unsigned(BUS_ADDR_WIDTH-1 downto 0)   := (others => '0');
-  signal b_last_idx_address     : unsigned(BUS_ADDR_WIDTH-1 downto 0)   := (others => '0');
+  constant ITOBA_LSHIFT         : integer := -3 + log2ceil(ELEMENT_WIDTH);
 
-  -- Burst aligned address
-  signal ba_address             : unsigned(BUS_ADDR_WIDTH-1 downto 0)   := (others => '0');
-  signal ba_last_idx_address    : unsigned(BUS_ADDR_WIDTH-1 downto 0)   := (others => '0');
+  constant STEP_LEN             : unsigned(BUS_LEN_WIDTH-1 downto 0) := u(BUS_BURST_STEP_LEN, BUS_LEN_WIDTH);
+  constant MAX_LEN              : unsigned(BUS_LEN_WIDTH-1 downto 0) := u(BUS_BURST_MAX_LEN, BUS_LEN_WIDTH);
 
-  -----------------------------------------------------------------------------
-  -- Other signals
-  -----------------------------------------------------------------------------
+  constant BYTES_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / 8;
+  constant BYTES_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / 8;
 
-  -- Last burst signaling to state machine
-  signal last                   : std_logic := '0';
+  signal first_index            : unsigned(INDEX_WIDTH-1 downto 0);
+  signal first_max_index        : unsigned(INDEX_WIDTH-1 downto 0);
+  signal last_index             : unsigned(INDEX_WIDTH-1 downto 0);
 
-  -- Next index adder
-  signal next_index             : unsigned(INDEX_WIDTH-1 downto 0)        := (others => '0');
+  signal byte_address           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
 
 begin
   -----------------------------------------------------------------------------
-  -- Address calculation
+  -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
-  -- The byte address of the item and for index buffers
-  b_address                     <= unsigned(r.base_address) + shift_left_with_neg(r.index.current , B_LSHIFT);
-  b_last_idx_address            <= unsigned(r.base_address) + shift_left_with_neg(r.index.last    , B_LSHIFT);
-  
-  -- The burst address of the item and index buffers
-  ba_address                    <= b_address(BUS_ADDR_WIDTH-1 downto BA_BYTE_BITS) & BA_BYTE_ZEROS;
-  ba_last_idx_address           <= b_last_idx_address(BUS_ADDR_WIDTH-1 downto BA_BYTE_BITS) & BA_BYTE_ZEROS;
+  -- Floor align the first index to the no. elements per step.
+  first_index                   <= align_beq(r.index.first, ELEMS_PER_STEP);
+  -- Ceil align the last index to the no. elements per step.
+  last_index                    <= align_aeq(r.index.last, ELEMS_PER_STEP);
 
-  -- Check for last burst, this must be a greather than or equal comparison, in
-  -- case the first and last indices are in the same burst
-  -- TODO: could probably be optimized
-  check_last: process (next_index, r) is
-  begin
-    if next_index >= r.index.last then
-      last                      <= '1';
-    else
-      last                      <= '0';
-    end if;
-  end process;
-  
-  -- Next index adder, it adds 1 to the MSBs above the next burst address,
-  -- and pads them with zeros. This causes the next index to always be aligned to a burst.
-  next_index                    <= (r.index.current(INDEX_WIDTH-1 downto BA_IDX_BITS) + 1) & BA_IDX_ZEROS;
-  
+  -- Ceil align the first index to the no. elements per max brst.
+  first_max_index               <= align_aeq(first_index, ELEMS_PER_MAX);
+
+  -- Get the number of elements to the maximum burst
+  --elems_to_first_max            <= first_max_index - first_index;
+
+  -- Get the byte address of this index
+  byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
+
   -----------------------------------------------------------------------------
   -- State machine sequential part
   -----------------------------------------------------------------------------
@@ -248,10 +219,10 @@ begin
   -- State machine combinatorial part
   -----------------------------------------------------------------------------
   sm_comb : process (
-    r, 
-    cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_baseAddr, cmdIn_implicit, 
+    r,
+    cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
-    ba_address, ba_last_idx_address, last, next_index
+    byte_address, first_index, last_index, first_max_index
   ) is
     variable v                  : regs_record;
   begin
@@ -259,22 +230,29 @@ begin
 
     -- Default values:
     v.input.ready               := '0';
-    v.master.addr               := ba_address;
-    v.master.len                := MAX_BURST;
+    v.master.addr               := byte_address;
+    v.master.len                := STEP_LEN;
     v.master.valid              := '0';
 
     case v.state is
       when IDLE =>
         -- We are ready to receive some new input
         v.input.ready           := '1';
-        
+
         if cmdIn_valid = '1' then
           -- Accept command & clock in data, if the first and last index are not the same
           if cmdIn_firstIdx /= cmdIn_lastIdx or not CHECK_INDEX then
+
             v.index.first       := unsigned(cmdIn_firstIdx);
             v.index.last        := unsigned(cmdIn_lastIdx);
-            v.index.current     := unsigned(cmdIn_firstIdx);
             v.base_address      := unsigned(cmdIn_baseAddr);
+
+            -- Determine what is to be loaded first
+            if (IS_INDEX_BUFFER) then
+              v.index.current   := align_beq(unsigned(cmdIn_lastIdx), ELEMS_PER_STEP);
+            else
+              v.index.current   := align_beq(unsigned(cmdIn_firstIdx), ELEMS_PER_STEP);
+            end if;
           end if;
         end if;
 
@@ -287,55 +265,99 @@ begin
               if IS_INDEX_BUFFER then
                 v.state         := INDEX;
               else
-                v.state         := ALIGN;
+                v.state         := PRE_STEP;
               end if;
             end if;
           end if;
         end if;
 
-      -- State to fetch the last index, this is used for variable length lists, where the user core needs to know
-      -- the length of the whole variable length List<Type> element that it will receive
+      -- State to fetch the last index, this is used for variable length lists,
+      -- where the user core needs to know the length of the whole variable
+      -- length List<Type> element that it will receive
       when INDEX =>
-        v.master.addr           := ba_last_idx_address;
-        -- Assuming an index element fits in a word, the burst length is always one word for the index state
-        v.master.len            := MAX_BURST;
+        v.master.addr           := byte_address;
+        -- Assuming an index element fits in a burst step, the burst length is
+        -- always one step for the index state
+        v.master.len            := STEP_LEN;
         v.master.valid          := '1';
 
         -- Back-pressure
         if busReq_ready = '1' then
+          -- Increase last index by 1 for index buffers
           v.index.last          := v.index.last + 1;
-          v.state               := ALIGN;
+          v.index.current       := first_index;
+          v.state               := PRE_STEP;
         end if;
 
-      -- State to align to max burst length
-      when ALIGN =>
-        v.master.addr           := ba_address;
-        v.master.len            := MAX_BURST;
+      -- State to step to first max burst aligned index or last index
+      when PRE_STEP =>
+        v.master.addr           := byte_address;
+        v.master.len            := STEP_LEN;
+
+        -- Make bus request valid
         v.master.valid          := '1';
 
-        -- Back-pressure
-        if busReq_ready = '1' then
-          v.state               := REST;
-          v.index.current       := next_index;
-          if last = '1' then
-            v.state             := IDLE;
-          end if;
+        -- Invalidate if we've reached the first max index
+        if (v.index.current = first_max_index) then
+          v.master.valid        := '0';
+          v.state               := MAX;
         end if;
 
-      -- State to request bursts for which the start address is aligned
-      when REST =>
-        v.master.addr           := ba_address;
-        v.master.len            := MAX_BURST;
+        -- Invalidate if we've reached the last index
+        if (v.index.current = last_index) then
+          v.master.valid        := '0';
+          v.state               := IDLE;
+        end if;
+
+        -- Back-pressure
+        if busReq_ready = '1' and v.master.valid = '1' then
+          v.index.current       := v.index.current + ELEMS_PER_STEP;
+        end if;
+
+      -- State to burst maximum lengths
+      when MAX =>
+        v.master.addr           := byte_address;
+        v.master.len            := MAX_LEN;
+
+        -- Make bus request valid
         v.master.valid          := '1';
 
-        -- Back-pressure
-        if busReq_ready = '1' then
-          if last = '1' then
-            v.state             := IDLE;
-          else
-            v.index.current     := next_index;
-          end if;
+        -- Invalidate if this burst would go over the last index
+        if v.index.current + ELEMS_PER_MAX >= last_index then
+          v.master.valid        := '0';
+          v.state               := POST_STEP;
         end if;
+
+        -- Invalidate if we've reached the last index
+        if (v.index.current = last_index) then
+          v.master.valid        := '0';
+          v.state               := IDLE;
+        end if;
+
+        -- Back-pressure
+        if busReq_ready = '1' and v.master.valid = '1' then
+          v.index.current       := v.index.current + ELEMS_PER_MAX;
+        end if;
+
+      -- State to step to last index
+      when POST_STEP =>
+        v.master.addr           := byte_address;
+        v.master.len            := STEP_LEN;
+
+        -- Make bus request valid
+        v.master.valid          := '1';
+
+        -- Invalidate if we've reached the last index
+        if (v.index.current = last_index) then
+          v.master.valid        := '0';
+          v.state               := IDLE;
+        end if;
+
+        -- Back-pressure
+        if busReq_ready = '1' and v.master.valid = '1' then
+          v.index.current       := v.index.current + ELEMS_PER_STEP;
+        end if;
+
     end case;
 
     d                           <= v;

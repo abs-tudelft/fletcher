@@ -84,10 +84,15 @@ class Field(Configurable):
         rls.append(header)
         rls.reverse()
         return '\n'.join(rls)
-    
+                    
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
+        raise NotImplemented()
+    
+    def widest(self):
+        """Returns the widest type of all the fields children. Useful for
+        constraining interface requirements such as burst step length."""
         raise NotImplemented()
     
     @classmethod
@@ -122,6 +127,9 @@ class NullField(Field):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return True
+        
+    def widest(self):
+        return 1
 
     @classmethod
     def randomized(cls, name="el", listdepth=0):
@@ -184,6 +192,9 @@ class ScalarField(Field):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return False
+        
+    def widest(self):
+        return self.bit_width
     
     @classmethod
     def randomized(cls, name="el", listdepth=0):
@@ -294,6 +305,9 @@ class BytesField(Field):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return False
+        
+    def widest(self):
+        return self.bit_width
 
     @classmethod
     def randomized(cls, name="el", listdepth=0):
@@ -404,6 +418,9 @@ class ListField(Field):
         buffers. Such fields are ignored by the VHDL generator."""
         return self.child.is_null()
     
+    def widest(self):
+        return max(32, self.child.widest())
+    
     @classmethod
     def randomized(cls, name="el", listdepth=0):
         """Generates a random Field."""
@@ -484,6 +501,13 @@ class StructField(Field):
             if not child.is_null():
                 return False
         return True
+        
+    def widest(self):
+        widest = 1;
+        for child in self.children:
+            if not child.is_null():
+                widest = max(widest, child.widest())
+        return widest
     
     def iter_children(self):
         """Iterates over all non-null children."""

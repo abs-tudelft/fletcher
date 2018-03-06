@@ -159,7 +159,7 @@ architecture Behavioral of BufferReaderResp is
 
   -- Amount of bus beats per element.
   constant BUS_BPE              : natural := max(1, ELEMENT_WIDTH / BUS_DATA_WIDTH);
-
+  
   -- Amount of elements per bus beat (= the amount of elements we handle at a
   -- time in most of this unit).
   constant BUS_EPB              : natural := max(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
@@ -272,6 +272,13 @@ begin
     busResp_ready   <= busRespP_ready;
     stageA_data     <= busResp_data;
   end generate;
+
+  -- Check requirement on BUS_BURST_STEP_LEN
+  assert BUS_BURST_STEP_LEN / BUS_BPE > 0 
+    report "Elements are wider than the bus data width. To accomodate this, " &
+           "BUS_BURST_STEP_LEN must be a multiple of " & 
+           "ELEMENT_WIDTH / BUS_DATA_WIDTH."
+    severity failure;
 
   -- Instantiate control signal generator.
   ctrl_inst: BufferReaderRespCtrl

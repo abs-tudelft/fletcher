@@ -21,6 +21,14 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 
+-- This testbench is used to check the functionality of the BufferReader.
+-- TODO: it does not always return TEST_SUCCESSFUL even though it may be 
+-- successful. But currently, it's used to generally mess around with
+-- internal command stream and the bus request generator
+-- So normally if it ends, it should be somewhat okay in terms of how many
+-- elements it returns. Wether they are the right elements can be tested using
+-- the columnreader test bench, or by setting the element size equal to the 
+-- word size, but that is not a guarantee of proper functioning.
 entity BufferReader_tb is
   generic (
     ---------------------------------------------------------------------------
@@ -31,7 +39,7 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- USER CORE
     ---------------------------------------------------------------------------
-    NUM_REQUESTS                : natural := 4096;
+    NUM_REQUESTS                : natural := 1;
     NUM_ELEMENTS                : natural := 256;
 
     RANDOMIZE_OFFSET            : boolean := true;
@@ -45,12 +53,11 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- BUS SLAVE MOCK
     ---------------------------------------------------------------------------
-
-    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_ADDR_WIDTH              : natural := 58;
     BUS_DATA_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 8;
-    BUS_BURST_MAX_LEN           : natural := 16;
-    BUS_BURST_STEP_LEN          : natural := 4;
+    BUS_BURST_STEP_LEN          : natural := 2;
+    BUS_BURST_MAX_LEN           : natural := 4;
 
     -- Random timing for bus slave mock
     BUS_SLAVE_RND_REQ           : boolean := false;
@@ -61,7 +68,7 @@ entity BufferReader_tb is
     INDEX_WIDTH                 : natural := 32;
 
     ROWS                        : natural := 1024;
-    ELEMENT_WIDTH               : natural := 16;
+    ELEMENT_WIDTH               : natural := 32;
 
     ELEMENT_COUNT_MAX           : natural := 1; --BUS_DATA_WIDTH / ELEMENT_WIDTH;
     ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX+1));
@@ -69,8 +76,7 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- MISC
     ---------------------------------------------------------------------------
-
-    IS_INDEX_BUFFER             : boolean := false;
+    IS_INDEX_BUFFER             : boolean := true;
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
