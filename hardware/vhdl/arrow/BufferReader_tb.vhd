@@ -21,6 +21,14 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 
+-- This testbench is used to check the functionality of the BufferReader.
+-- TODO: it does not always return TEST_SUCCESSFUL even though it may be 
+-- successful. But currently, it's used to generally mess around with
+-- internal command stream and the bus request generator
+-- So normally if it ends, it should be somewhat okay in terms of how many
+-- elements it returns. Wether they are the right elements can be tested using
+-- the columnreader test bench, or by setting the element size equal to the 
+-- word size, but that is not a guarantee of proper functioning.
 entity BufferReader_tb is
   generic (
     ---------------------------------------------------------------------------
@@ -31,12 +39,12 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- USER CORE
     ---------------------------------------------------------------------------
-    NUM_REQUESTS                : natural := 4096;
-    NUM_ELEMENTS                : natural := 256;
+    NUM_REQUESTS                : natural := 1;
+    NUM_ELEMENTS                : natural := 4;
 
-    RANDOMIZE_OFFSET            : boolean := true;
-    RANDOMIZE_NUM_ELEMENTS	    : boolean := true;
-    RANDOMIZE_RESP_LATENCY      : boolean := true;
+    RANDOMIZE_OFFSET            : boolean := false;
+    RANDOMIZE_NUM_ELEMENTS	    : boolean := false;
+    RANDOMIZE_RESP_LATENCY      : boolean := false;
     MAX_LATENCY                 : natural := 8;
     DEFAULT_LATENCY             : natural := 0;
     RESP_TIMEOUT                : natural := 1024;
@@ -45,11 +53,11 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- BUS SLAVE MOCK
     ---------------------------------------------------------------------------
-
     BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 32;
-    BUS_LEN_WIDTH               : natural := 8;
-    BUS_BURST_LENGTH            : natural := 16;
+    BUS_LEN_WIDTH               : natural := 9;
+    BUS_BURST_STEP_LEN          : natural := 16;
+    BUS_BURST_MAX_LEN           : natural := 128;
 
     -- Random timing for bus slave mock
     BUS_SLAVE_RND_REQ           : boolean := false;
@@ -60,7 +68,7 @@ entity BufferReader_tb is
     INDEX_WIDTH                 : natural := 32;
 
     ROWS                        : natural := 1024;
-    ELEMENT_WIDTH               : natural := 16;
+    ELEMENT_WIDTH               : natural := 32;
 
     ELEMENT_COUNT_MAX           : natural := 1; --BUS_DATA_WIDTH / ELEMENT_WIDTH;
     ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX+1));
@@ -68,17 +76,16 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- MISC
     ---------------------------------------------------------------------------
-
-    IS_INDEX_BUFFER             : boolean := false;
+    IS_INDEX_BUFFER             : boolean := true;
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
-    BUS_FIFO_DEPTH              : natural := 2*BUS_BURST_LENGTH;
+    BUS_FIFO_DEPTH              : natural := 2*BUS_BURST_MAX_LEN;
     BUS_FIFO_RAM_CONFIG         : string  := "";
     CMD_OUT_SLICE               : boolean := false;
     SHR2GB_SLICE                : boolean := true;
     GB2FIFO_SLICE               : boolean := true;
-    ELEMENT_FIFO_SIZE           : natural := 2*BUS_BURST_LENGTH*ELEMENT_COUNT_MAX;
+    ELEMENT_FIFO_SIZE           : natural := 2*BUS_BURST_MAX_LEN*ELEMENT_COUNT_MAX;
     ELEMENT_FIFO_RAM_CONFIG     : string  := "";
     ELEMENT_FIFO_XCLK_STAGES    : natural := 0;
     FIFO2POST_SLICE             : boolean := false;
@@ -147,7 +154,8 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH          => BUS_BURST_LENGTH,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,

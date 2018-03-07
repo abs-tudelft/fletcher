@@ -14,11 +14,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
 use work.Streams.all;
+use work.Utils.all;
+use work.Arrow.all;
 
 entity BufferReaderRespCtrl is
   generic (
@@ -32,6 +34,12 @@ entity BufferReaderRespCtrl is
     ---------------------------------------------------------------------------
     -- Buffer metrics and configuration
     ---------------------------------------------------------------------------
+    -- Bus data width.
+    BUS_DATA_WIDTH              : natural;
+    
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural;
+    
     -- Whether this is a normal buffer or an index buffer.
     IS_INDEX_BUFFER             : boolean;
 
@@ -42,13 +50,7 @@ entity BufferReaderRespCtrl is
     -- Width of the internal command stream count vector. Should equal
     -- max(1, log2(BUS_WIDTH / ELEMENT_WIDTH) + 1)
     ICS_COUNT_WIDTH             : natural;
-    
-    -- Bus data width.
-    BUS_DATA_WIDTH              : natural;
-    
-    -- Number of beats in a burst.
-    BUS_BURST_LENGTH            : natural;
-    
+       
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
@@ -152,7 +154,7 @@ architecture rtl of BufferReaderRespCtrl is
   -- Burst alignment helper constants:
     
   -- Number of elements in a burst
-  constant BA_ELEMENTS          : natural := BUS_BURST_LENGTH * WA_ELEMENTS;
+  constant BA_ELEMENTS          : natural := BUS_BURST_STEP_LEN * WA_ELEMENTS;
   
   -- Number of bits to drop from an index to get the burst aligned index
   constant BA_IDX_BITS          : natural := max(1, log2ceil(BA_ELEMENTS));

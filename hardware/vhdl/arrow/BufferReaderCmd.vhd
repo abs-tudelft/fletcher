@@ -37,8 +37,11 @@ entity BufferReaderCmd is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural;
 
-    -- Maximum number of beats in a burst read request.
-    BUS_BURST_LENGTH            : natural;
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural;
+    
+    -- Maximum number of beats in a burst.
+    BUS_BURST_MAX_LEN           : natural;
 
     ---------------------------------------------------------------------------
     -- Arrow metrics and configuration
@@ -253,7 +256,8 @@ begin
       BUS_ADDR_WIDTH                    => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                     => BUS_LEN_WIDTH - BUS_BPE_LOG2,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH * BUS_BPE,
-      BUS_BURST_LENGTH                  => BUS_BURST_LENGTH / BUS_BPE,
+      BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN / BUS_BPE,
+      BUS_BURST_MAX_LEN                 => BUS_BURST_MAX_LEN / BUS_BPE,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,

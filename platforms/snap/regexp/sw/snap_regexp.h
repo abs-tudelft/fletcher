@@ -47,21 +47,21 @@
 
 /* No units */
 #define TOTAL_UNITS     16 // fix me
-#define ACTIVE_UNITS    6
+#define ACTIVE_UNITS    8
 
 #define SNAP_OFFSET     0x200
 
 /* Registers */
 #define STATUS_REG_HI   SNAP_OFFSET + 0
 #define STATUS_REG_LO   SNAP_OFFSET + 4
-#define   STATUS_MASK   0x00000FFF
-#define   STATUS_BUSY   0x0000003F
-#define   STATUS_DONE   0x00000FC0
+#define   STATUS_MASK   0x0000FFFF
+#define   STATUS_BUSY   0x000000FF
+#define   STATUS_DONE   0x0000FF00
 
 #define CONTROL_REG_HI  SNAP_OFFSET + 8
 #define CONTROL_REG_LO  SNAP_OFFSET + 12
-#define   CONTROL_START 0x0000003F
-#define   CONTROL_RESET 0x00000FC0
+#define   CONTROL_START 0x000000FF
+#define   CONTROL_RESET 0x0000FF00
 
 #define RETURN_HI       SNAP_OFFSET + 16
 #define RETURN_LO       SNAP_OFFSET + 20
@@ -77,11 +77,11 @@
 #define RESULT_OFF      LAST_IDX_OFF + 4*TOTAL_UNITS
 
 /* Data sizes */
-#define MIN_STR_LEN     6           // Must be at least len("kitten")
-#define MAX_STR_LEN     256         // Must be larger than len("kitten")
-#define DEFAULT_ROWS    8*1024*1024 // About 1 gigabyte of characters
+#define MIN_STR_LEN     6
+#define MAX_STR_LEN     256
+#define DEFAULT_ROWS    8*1024*1024
 
-#define BURST_LENGTH    4096
+#define BURST_LENGTH    64
 
 
 #endif	/* __SNAP_FW_EXA__ */

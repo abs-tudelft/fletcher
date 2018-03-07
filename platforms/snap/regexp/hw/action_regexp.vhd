@@ -137,7 +137,7 @@ end action_regexp;
 
 
 
-architecture action_regexp of action_regexp is 
+architecture action_regexp of action_regexp is
   -----------------------------------
   -- SNAP registers
   -----------------------------------
@@ -147,11 +147,11 @@ architecture action_regexp of action_regexp is
   --   1 version                =  1
   --   1 context id             =  1
   -----------------------------------
-  -- SNAP Total:                   5 regs  
+  -- SNAP Total:                   5 regs
 
   constant SNAP_NUM_REGS        : natural := 9;
   constant SNAP_ADDR_WIDTH      : natural := 2 + log2floor(SNAP_NUM_REGS);
-    
+
   -- SNAP register offsets
   constant SNAP_REG_CONTROL          : natural := 0;
   constant SNAP_REG_INTERRUPT_ENABLE : natural := 1;
@@ -199,55 +199,55 @@ architecture action_regexp of action_regexp is
   signal snap_s_axi_rresp       : std_logic_vector(1 downto 0);
 
   signal snap_read_address      : natural range 0 to SNAP_NUM_REGS-1;
-  
+
   signal read_valid             : std_logic;
   signal write_processed        : std_logic;
   signal write_valid            : std_logic;
-  
+
   signal regexp_space_r         : std_logic;
   signal regexp_space_w         : std_logic;
 begin
 
-  ----------------------------------------------------------------------  
+  ----------------------------------------------------------------------
   -- AXI Lite Slave inputs
   ----------------------------------------------------------------------
   regexp_space_r                <= axi_ctrl_reg_araddr(9);
   regexp_space_w                <= axi_ctrl_reg_araddr(9);
-  
-  -- RegExp inputs  
+
+  -- RegExp inputs
   regexp_s_axi_awaddr           <= axi_ctrl_reg_awaddr(8 downto 0);
   regexp_s_axi_awvalid          <= axi_ctrl_reg_awvalid and regexp_space_w;
   regexp_s_axi_wdata            <= axi_ctrl_reg_wdata;
-  regexp_s_axi_wstrb            <= axi_ctrl_reg_wstrb;  
-  regexp_s_axi_wvalid           <= axi_ctrl_reg_wvalid; 
+  regexp_s_axi_wstrb            <= axi_ctrl_reg_wstrb;
+  regexp_s_axi_wvalid           <= axi_ctrl_reg_wvalid;
   regexp_s_axi_bready           <= axi_ctrl_reg_bready;
 
   regexp_s_axi_arvalid          <= axi_ctrl_reg_arvalid and regexp_space_r;
   regexp_s_axi_araddr           <= axi_ctrl_reg_araddr(8 downto 0);
   regexp_s_axi_rready           <= axi_ctrl_reg_rready;
-  
+
   -- SNAP inputs
   snap_s_axi_awaddr             <= axi_ctrl_reg_awaddr(SNAP_ADDR_WIDTH-1 downto 0);
   snap_s_axi_awvalid            <= axi_ctrl_reg_awvalid and not(regexp_space_w);
   snap_s_axi_wdata              <= axi_ctrl_reg_wdata;
-  snap_s_axi_wstrb              <= axi_ctrl_reg_wstrb;  
-  snap_s_axi_wvalid             <= axi_ctrl_reg_wvalid; 
+  snap_s_axi_wstrb              <= axi_ctrl_reg_wstrb;
+  snap_s_axi_wvalid             <= axi_ctrl_reg_wvalid;
   snap_s_axi_bready             <= axi_ctrl_reg_bready;
 
   snap_s_axi_arvalid            <= axi_ctrl_reg_arvalid and not(regexp_space_r);
   snap_s_axi_araddr             <= axi_ctrl_reg_araddr(SNAP_ADDR_WIDTH-1 downto 0);
   snap_s_axi_rready             <= axi_ctrl_reg_rready;
 
-  ----------------------------------------------------------------------  
+  ----------------------------------------------------------------------
   -- AXI Lite Slave outputs
   ----------------------------------------------------------------------
   -- Write channels
-  axi_ctrl_reg_awready          <= regexp_s_axi_awready when regexp_space_w = '1' else snap_s_axi_awready;  
+  axi_ctrl_reg_awready          <= regexp_s_axi_awready when regexp_space_w = '1' else snap_s_axi_awready;
   axi_ctrl_reg_wready           <= regexp_s_axi_wready  when regexp_space_w = '1' else snap_s_axi_wready; -- Blatantly assuming awready is given with wready
-  
+
   axi_ctrl_reg_bresp            <= regexp_s_axi_bresp  when regexp_s_axi_bvalid = '1' else snap_s_axi_bresp;
   axi_ctrl_reg_bvalid           <= regexp_s_axi_bvalid when regexp_s_axi_bvalid = '1' else snap_s_axi_bvalid;
-  
+
   -- Read channels
   axi_ctrl_reg_arready          <= regexp_s_axi_arready when regexp_space_r = '1' else snap_s_axi_arready;
 
@@ -255,13 +255,13 @@ begin
   axi_ctrl_reg_rresp            <= regexp_s_axi_rresp  when regexp_s_axi_rvalid = '1' else snap_s_axi_rresp;
   axi_ctrl_reg_rvalid           <= regexp_s_axi_rvalid when regexp_s_axi_rvalid = '1' else snap_s_axi_rvalid;
 
-  ----------------------------------------------------------------------  
+  ----------------------------------------------------------------------
   -- SNAP AXI Lite slave
   ----------------------------------------------------------------------
   -- We just need to implement reads from REG_SNAP_TYPE and REG_SNAP_VERSION
   snap_regs(SNAP_REG_TYPE)      <= X"00000001";
   snap_regs(SNAP_REG_VERSION)   <= X"00000000";
-  
+
   -- Ready
   snap_s_axi_arready            <= not read_valid;
 
@@ -269,7 +269,7 @@ begin
   snap_s_axi_rdata              <= snap_regs(snap_read_address);
   snap_s_axi_rvalid             <= read_valid;
   snap_s_axi_rresp              <= "00"; -- Always OK
-  
+
   -- Writing
   write_valid                   <= snap_s_axi_awvalid and snap_s_axi_wvalid and not write_processed;
 
@@ -277,7 +277,7 @@ begin
   snap_s_axi_wready             <= write_valid;
   snap_s_axi_bresp              <= "00"; -- Always OK
   snap_s_axi_bvalid             <= write_processed;
-  
+
   -- Read
   read_proc: process(action_clk) is
   begin
@@ -294,7 +294,7 @@ begin
       end if;
     end if;
   end process;
-  
+
   -- Writes
   write_proc: process(action_clk) is
     variable address            : natural range 0 to SNAP_NUM_REGS-1;
@@ -311,7 +311,7 @@ begin
             when SNAP_REG_INTERRUPT_ENABLE => snap_regs(SNAP_REG_INTERRUPT_ENABLE) <= snap_s_axi_wdata;
             when others                    => -- do nothing to read only regs
           end case;
-        end if;        
+        end if;
       end if;
     end if;
   end process;
@@ -339,11 +339,11 @@ begin
   axi_host_mem_awvalid          <= '0';
   axi_host_mem_wvalid           <= '0';
   axi_host_mem_bready           <= '0';
-  
+
   -- Read channel defaults:
   axi_host_mem_arsize           <= "110"; -- 512 bit beats
   axi_host_mem_arburst          <= "01"; -- incremental
-  
+
   -- Not using any of these:
   axi_host_mem_arid             <= (others => '0');
   axi_host_mem_arlock           <= (others => '0');
@@ -351,18 +351,18 @@ begin
   axi_host_mem_arprot           <= "000";
   axi_host_mem_arqos            <= x"0";
   axi_host_mem_aruser           <= (others => '0');
-  
+
   ----------------------------------------------------------------------
   -- RegExp instance
   ----------------------------------------------------------------------
-  arrow_regexp_inst : arrow_regexp 
+  arrow_regexp_inst : arrow_regexp
   generic map (
     CORES                       => 8,
     BUS_ADDR_WIDTH              => C_AXI_HOST_MEM_ADDR_WIDTH,
     BUS_DATA_WIDTH              => C_AXI_HOST_MEM_DATA_WIDTH,
     SLV_BUS_ADDR_WIDTH          => 9,
     SLV_BUS_DATA_WIDTH          => C_AXI_CTRL_REG_DATA_WIDTH
-  ) 
+  )
   port map (
     clk                         => action_clk,
     reset_n                     => action_rst_n,
@@ -392,7 +392,7 @@ begin
     s_axi_rvalid                => regexp_s_axi_rvalid,
     s_axi_rready                => regexp_s_axi_rready,
     s_axi_rdata                 => regexp_s_axi_rdata,
-    s_axi_rresp                 => regexp_s_axi_rresp  
+    s_axi_rresp                 => regexp_s_axi_rresp
   );
 
 end action_regexp;

@@ -14,6 +14,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
@@ -36,8 +37,11 @@ entity BufferReader is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
-    -- Maximum number of beats in a burst read request.
-    BUS_BURST_LENGTH            : natural := 4;
+    -- Number of beats in a burst step.
+    BUS_BURST_STEP_LEN          : natural := 4;
+    
+    -- Maximum number of beats in a burst.
+    BUS_BURST_MAX_LEN           : natural := 16;
 
     ---------------------------------------------------------------------------
     -- Arrow metrics and configuration
@@ -298,7 +302,8 @@ begin
       BUS_ADDR_WIDTH                    => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                     => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH                  => BUS_BURST_LENGTH,
+      BUS_BURST_MAX_LEN                 => BUS_BURST_MAX_LEN,
+      BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
@@ -342,7 +347,7 @@ begin
       BUS_ADDR_WIDTH                    => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                     => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH,
-      FIFO_DEPTH                        => max(BUS_FIFO_DEPTH, BUS_BURST_LENGTH+1),
+      FIFO_DEPTH                        => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       RAM_CONFIG                        => BUS_FIFO_RAM_CONFIG,
       REQ_IN_SLICE                      => false,
       REQ_OUT_SLICE                     => BUS_REQ_SLICE,
@@ -376,7 +381,7 @@ begin
   resp_inst: BufferReaderResp
     generic map (
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH,
-      BUS_BURST_LENGTH                  => BUS_BURST_LENGTH,
+      BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
