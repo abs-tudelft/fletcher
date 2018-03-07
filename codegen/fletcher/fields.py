@@ -38,27 +38,27 @@ def weighted_choice(choices):
 
 class Field(Configurable):
     """Represents an Arrow field."""
-    
+
     def __init__(self, name="el", nullable=True, **config):
         super().__init__(**config)
         self.name = name
         self.nullable = nullable
-    
+
     def _params(self):
         """Returns a list of parameters that get added to the __str__
         representation of this field."""
         return ["name=%s" % self.name, "nullable=%s" % self.nullable] + super()._params()
-    
+
     def _pprint_params(self):
         """Returns a list of parameters that get added to the pprint
         representation of this field."""
         return ["nullable=%s" % self.nullable] + super()._params()
-    
+
     def _pprint_children(self):
         """Returns a list of children that get added to the pprint
         representation of this field."""
         return []
-    
+
     def pprint(self):
         """Pretty-prints this field as a multi-line string."""
         header = "%s: %s" % (self.name, self.__class__.__name__)
@@ -84,26 +84,26 @@ class Field(Configurable):
         rls.append(header)
         rls.reverse()
         return '\n'.join(rls)
-                    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         raise NotImplemented()
-    
+
     def widest(self):
         """Returns the widest type of all the fields children. Useful for
         constraining interface requirements such as burst step length."""
         raise NotImplemented()
-    
+
     @classmethod
     def randomized(cls, name="el", listdepth=0):
         """Generates a random Field."""
-        
+
         # Prevent infinite recursion in case a child Field decides to not
         # override this method.
         if cls != Field:
             raise NotImplemented()
-        
+
         choices = [
             (NullField,   0.1),
             (ScalarField, 1.0),
@@ -112,7 +112,7 @@ class Field(Configurable):
             (StructField, 2.0 / 4**listdepth)
         ]
         return weighted_choice(choices).randomized(name, listdepth)
-    
+
     @classmethod
     def from_arrow(cls, *args, **kwargs):
         """Returns a Field based on the given Arrow column, or something. Stub
@@ -122,12 +122,12 @@ class Field(Configurable):
 
 class NullField(Field):
     """Represents an Arrow Null field."""
-    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return True
-        
+
     def widest(self):
         return 1
 
@@ -140,25 +140,25 @@ class NullField(Field):
 class ScalarField(Field):
     """Represents an Arrow scalar field (i.e., one of type Int, FloatingPoint,
     Bool, Decimal, Date, Time, Timestamp, or Interval)."""
-    
+
     def __init__(self, bit_width, **kwargs):
         super().__init__(**kwargs)
         self.bit_width = bit_width
-    
+
     def _params(self):
         """Returns a list of parameters that get added to the __str__
         representation of this field."""
         return ["%d" % self.bit_width] + super()._params()
-    
+
     def _pprint_params(self):
         """Returns a list of parameters that get added to the pprint
         representation of this field."""
         return ["bit_width=%s" % self.bit_width] + super()._pprint_params()
-    
+
     @property
     def _config_defaults(self):
         return {
-            
+
             # Default value buffer reader configuration.
             "cmd_in_slice":             False,
             "bus_req_slice":            True,
@@ -172,7 +172,7 @@ class ScalarField(Field):
             "fifo_xclk_stages":         0,
             "fifo2post_slice":          False,
             "out_slice":                True,
-            
+
             # Default null buffer reader configuration.
             "null_cmd_in_slice":        False,
             "null_bus_req_slice":       True,
@@ -187,15 +187,15 @@ class ScalarField(Field):
             "null_fifo2post_slice":     False,
             "null_out_slice":           True
         }
-    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return False
-        
+
     def widest(self):
         return self.bit_width
-    
+
     @classmethod
     def randomized(cls, name="el", listdepth=0):
         """Generates a random Field."""
@@ -203,7 +203,7 @@ class ScalarField(Field):
             bit_width = random.choice([1, 8, 16, 32, 64, 128]),
             name = name,
             nullable = random.choice([True, True, False]),
-            
+
             cmd_in_slice =             random.choice([True, False]),
             bus_req_slice =            random.choice([True, False]),
             bus_fifo_depth =           1 << random.randint(1, 8),
@@ -214,7 +214,7 @@ class ScalarField(Field):
             fifo_xclk_stages =         random.choice([0, 2, 3]),
             fifo2post_slice =          random.choice([True, False]),
             out_slice =                random.choice([True, False]),
-            
+
             null_cmd_in_slice =        random.choice([True, False]),
             null_bus_req_slice =       random.choice([True, False]),
             null_bus_fifo_depth =      1 << random.randint(1, 8),
@@ -230,28 +230,28 @@ class ScalarField(Field):
 
 class BytesField(Field):
     """Represents an Arrow Binary or Utf8 field."""
-    
+
     def __init__(self, bit_width=8, **kwargs):
         super().__init__(**kwargs)
         self.bit_width = bit_width
-    
+
     def _params(self):
         """Returns a list of parameters that get added to the __str__
         representation of this field."""
         return ["%s" % self.bit_width] + super()._params()
-    
+
     def _pprint_params(self):
         """Returns a list of parameters that get added to the pprint
         representation of this field."""
         return (["bit_width=%s" % self.bit_width] if self.bit_width != 8 else []) + super()._pprint_params()
-    
+
     @property
     def _config_defaults(self):
         return {
-            
+
             # Default number of bytes returned per cycle.
             "bytes_per_cycle":          1,
-            
+
             # Default value buffer reader configuration.
             "cmd_in_slice":             False,
             "bus_req_slice":            True,
@@ -265,7 +265,7 @@ class BytesField(Field):
             "fifo_xclk_stages":         0,
             "fifo2post_slice":          False,
             "out_slice":                False,
-            
+
             # Default index buffer reader configuration.
             "idx_cmd_in_slice":         False,
             "idx_bus_req_slice":        True,
@@ -279,13 +279,13 @@ class BytesField(Field):
             "idx_fifo_ram_config":      "",
             "idx_fifo_xclk_stages":     0,
             "idx_fifo2post_slice":      False,
-            
+
             # Default list synchronization unit configuration.
             "len_out_slice":            True,
             "data_in_slice":            False,
             "len_sync_slice":           True,
             "data_out_slice":           True,
-            
+
             # Default null buffer reader configuration.
             "null_cmd_in_slice":        False,
             "null_bus_req_slice":       True,
@@ -300,12 +300,12 @@ class BytesField(Field):
             "null_fifo2post_slice":     False,
             "null_out_slice":           True
         }
-    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return False
-        
+
     def widest(self):
         return self.bit_width
 
@@ -316,7 +316,7 @@ class BytesField(Field):
             name = name,
             nullable = random.choice([True, True, False]),
             bytes_per_cycle = random.randint(1, 8),
-            
+
             cmd_in_slice =             random.choice([True, False]),
             bus_req_slice =            random.choice([True, False]),
             bus_fifo_depth =           1 << random.randint(1, 8),
@@ -327,7 +327,7 @@ class BytesField(Field):
             fifo_xclk_stages =         random.choice([0, 2, 3]),
             fifo2post_slice =          random.choice([True, False]),
             out_slice =                random.choice([True, False]),
-            
+
             idx_cmd_in_slice =         random.choice([True, False]),
             idx_bus_req_slice =        random.choice([True, False]),
             idx_bus_fifo_depth =       1 << random.randint(1, 8),
@@ -338,12 +338,12 @@ class BytesField(Field):
             idx_fifo_size =            1 << random.randint(1, 8),
             idx_fifo_xclk_stages =     random.choice([0, 2, 3]),
             idx_fifo2post_slice =      random.choice([True, False]),
-            
+
             len_out_slice =            random.choice([True, False]),
             data_in_slice =            random.choice([True, False]),
             len_sync_slice =           random.choice([True, False]),
             data_out_slice =           random.choice([True, False]),
-            
+
             null_cmd_in_slice =        random.choice([True, False]),
             null_bus_req_slice =       random.choice([True, False]),
             null_bus_fifo_depth =      1 << random.randrange(1, 8),
@@ -359,25 +359,25 @@ class BytesField(Field):
 
 class ListField(Field):
     """Represents an Arrow List field."""
-    
+
     def __init__(self, child, **kwargs):
         super().__init__(**kwargs)
         self.child = child
-    
+
     def _params(self):
         """Returns a list of parameters that get added to the __str__
         representation of this field."""
         return ["%s" % self.child] + super()._params()
-    
+
     def _pprint_children(self):
         """Returns a list of children that get added to the pprint
         representation of this field."""
         return [self.child]
-    
+
     @property
     def _config_defaults(self):
         return {
-            
+
             # Default index buffer reader configuration.
             "cmd_in_slice":             False,
             "bus_req_slice":            True,
@@ -391,13 +391,13 @@ class ListField(Field):
             "fifo_ram_config":          "",
             "fifo_xclk_stages":         0,
             "fifo2post_slice":          False,
-            
+
             # Default list synchronization unit configuration.
             "len_out_slice":            True,
             "len_sync_slice":           True,
             "data_in_slice":            False,
             "data_out_slice":           True,
-            
+
             # Default null buffer reader configuration.
             "null_cmd_in_slice":        False,
             "null_bus_req_slice":       True,
@@ -412,15 +412,15 @@ class ListField(Field):
             "null_fifo2post_slice":     False,
             "null_out_slice":           True
         }
-    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
         return self.child.is_null()
-    
+
     def widest(self):
         return max(32, self.child.widest())
-    
+
     @classmethod
     def randomized(cls, name="el", listdepth=0):
         """Generates a random Field."""
@@ -428,7 +428,7 @@ class ListField(Field):
             Field.randomized(listdepth=listdepth+1),
             name = name,
             nullable = random.choice([True, True, False]),
-            
+
             cmd_in_slice =             random.choice([True, False]),
             bus_req_slice =            random.choice([True, False]),
             bus_fifo_depth =           1 << random.randint(1, 8),
@@ -439,12 +439,12 @@ class ListField(Field):
             fifo_size =                1 << random.randint(1, 8),
             fifo_xclk_stages =         random.choice([0, 2, 3]),
             fifo2post_slice =          random.choice([True, False]),
-            
+
             len_out_slice =            random.choice([True, False]),
             len_sync_slice =           random.choice([True, False]),
             data_in_slice =            random.choice([True, False]),
             data_out_slice =           random.choice([True, False]),
-            
+
             null_cmd_in_slice =        random.choice([True, False]),
             null_bus_req_slice =       random.choice([True, False]),
             null_bus_fifo_depth =      1 << random.randint(1, 8),
@@ -460,25 +460,25 @@ class ListField(Field):
 
 class StructField(Field):
     """Represents an Arrow Struct field."""
-    
+
     def __init__(self, *children, **kwargs):
         super().__init__(**kwargs)
         self.children = children
-    
+
     def _params(self):
         """Returns a list of parameters that get added to the __str__
         representation of this field."""
         return ["children=%s" % self.children] + super()._params()
-    
+
     def _pprint_children(self):
         """Returns a list of children that get added to the pprint
         representation of this field."""
         return self.children
-    
+
     @property
     def _config_defaults(self):
         return {
-            
+
             # Default null buffer reader configuration.
             "null_cmd_in_slice":        False,
             "null_bus_req_slice":       True,
@@ -493,7 +493,7 @@ class StructField(Field):
             "null_fifo2post_slice":     False,
             "null_out_slice":           True
         }
-    
+
     def is_null(self):
         """Returns True if this field has a null type, i.e. has no value
         buffers. Such fields are ignored by the VHDL generator."""
@@ -501,20 +501,20 @@ class StructField(Field):
             if not child.is_null():
                 return False
         return True
-        
+
     def widest(self):
         widest = 1;
         for child in self.children:
             if not child.is_null():
                 widest = max(widest, child.widest())
         return widest
-    
+
     def iter_children(self):
         """Iterates over all non-null children."""
         for child in self.children:
             if not child.is_null():
                 yield child
-    
+
     @classmethod
     def randomized(cls, name="el", listdepth=0):
         """Generates a random Field."""
@@ -525,7 +525,7 @@ class StructField(Field):
             *children,
             name = name,
             nullable = random.choice([True, True, False]),
-            
+
             null_cmd_in_slice =        random.choice([True, False]),
             null_bus_req_slice =       random.choice([True, False]),
             null_bus_fifo_depth =      1 << random.randint(1, 8),
@@ -541,17 +541,17 @@ class StructField(Field):
 
 class UnionField(Field):
     """Represents an Arrow Union field."""
-    
+
     def __init__(self, *args, **kwargs):
         raise NotImplemented("Arrow unions are not yet supported")
 
     def _params(self):
         raise NotImplemented("Arrow unions are not yet supported")
-    
+
     @property
     def _config_defaults(self):
         raise NotImplemented("Arrow unions are not yet supported")
-    
+
     def is_null(self):
         raise NotImplemented("Arrow unions are not yet supported")
 

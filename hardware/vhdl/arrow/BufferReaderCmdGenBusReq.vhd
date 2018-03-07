@@ -188,15 +188,12 @@ begin
   -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
   -- Floor align the first index to the no. elements per step.
-  first_index                   <= align_beq(r.index.first, ELEMS_PER_STEP);
+  first_index                   <= align_beq(r.index.first, log2floor(ELEMS_PER_STEP));
   -- Ceil align the last index to the no. elements per step.
-  last_index                    <= align_aeq(r.index.last, ELEMS_PER_STEP);
+  last_index                    <= align_aeq(r.index.last, log2floor(ELEMS_PER_STEP));
 
   -- Ceil align the first index to the no. elements per max brst.
-  first_max_index               <= align_aeq(first_index, ELEMS_PER_MAX);
-
-  -- Get the number of elements to the maximum burst
-  --elems_to_first_max            <= first_max_index - first_index;
+  first_max_index               <= align_aeq(r.index.first, log2floor(ELEMS_PER_MAX));
 
   -- Get the byte address of this index
   byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
@@ -249,9 +246,9 @@ begin
 
             -- Determine what is to be loaded first
             if (IS_INDEX_BUFFER) then
-              v.index.current   := align_beq(unsigned(cmdIn_lastIdx), ELEMS_PER_STEP);
+              v.index.current   := align_beq(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
             else
-              v.index.current   := align_beq(unsigned(cmdIn_firstIdx), ELEMS_PER_STEP);
+              v.index.current   := align_beq(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
             end if;
           end if;
         end if;

@@ -40,11 +40,11 @@ entity BufferReader_tb is
     -- USER CORE
     ---------------------------------------------------------------------------
     NUM_REQUESTS                : natural := 1;
-    NUM_ELEMENTS                : natural := 256;
+    NUM_ELEMENTS                : natural := 4;
 
-    RANDOMIZE_OFFSET            : boolean := true;
-    RANDOMIZE_NUM_ELEMENTS	    : boolean := true;
-    RANDOMIZE_RESP_LATENCY      : boolean := true;
+    RANDOMIZE_OFFSET            : boolean := false;
+    RANDOMIZE_NUM_ELEMENTS	    : boolean := false;
+    RANDOMIZE_RESP_LATENCY      : boolean := false;
     MAX_LATENCY                 : natural := 8;
     DEFAULT_LATENCY             : natural := 0;
     RESP_TIMEOUT                : natural := 1024;
@@ -53,11 +53,11 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- BUS SLAVE MOCK
     ---------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural := 58;
+    BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 32;
-    BUS_LEN_WIDTH               : natural := 8;
-    BUS_BURST_STEP_LEN          : natural := 2;
-    BUS_BURST_MAX_LEN           : natural := 4;
+    BUS_LEN_WIDTH               : natural := 9;
+    BUS_BURST_STEP_LEN          : natural := 16;
+    BUS_BURST_MAX_LEN           : natural := 128;
 
     -- Random timing for bus slave mock
     BUS_SLAVE_RND_REQ           : boolean := false;

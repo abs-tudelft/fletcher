@@ -84,7 +84,7 @@ package Utils is
 
   -- Shifts a left by b if b is positive, shifts a right by |b| if b is negative
   function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned;
-  
+
   -- Shifts a left by b if b is positive, shifts a right by |b| if b is negative and rounds up if non-zero bits are shifted out.
   function shift_left_with_neg_round_up (a: in unsigned; b : in integer) return unsigned;
 
@@ -102,7 +102,7 @@ package Utils is
 
   -- Returns the first integer multiple of b below or equal to a
   function align_beq(a : in unsigned; b : in natural) return unsigned;
-  
+
   -- Returns the first integer multiple of b above or equal to a
   function align_aeq(a : in unsigned; b : in natural) return unsigned;
 
@@ -322,20 +322,20 @@ package body Utils is
     return                  result;
   end function ones;
 
-  function shift_right_cut (a : in unsigned; b : in natural) return unsigned is
+  function shift_right_cut (a : in unsigned; b : natural) return unsigned is
     variable shifted : unsigned(a'range);
   begin
     shifted := shift_right(a, b);
     return shifted(a'high-b downto 0);
   end function shift_right_cut;
 
-  function shift_right_round_up(a : in unsigned; b : in natural) return unsigned is
+  function shift_right_round_up(a : in unsigned; b : natural) return unsigned is
     variable arg_v : unsigned(a'length-1 downto 0);
-    variable lsb_v : unsigned(a'length-1 downto 0);
+    variable lsb_v : unsigned(b-1 downto 0);
   begin
     if b /= 0 then -- prevent null ranges on lsb_v
       arg_v := shift_right(a, b);
-      lsb_v(b-1 downto 0) := a(b-1 downto 0);
+      lsb_v := a(b-1 downto 0);
       if (lsb_v /= 0) then
         arg_v := arg_v + 1;
       end if;
@@ -344,8 +344,8 @@ package body Utils is
     end if;
     return arg_v;
   end shift_right_round_up;
-  
-  function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned is
+
+  function shift_left_with_neg (a: in unsigned; b : integer) return unsigned is
   begin
     if b >= 0 then
       return shift_left(a, b);
@@ -353,8 +353,8 @@ package body Utils is
       return shift_right(a, -b);
     end if;
   end function shift_left_with_neg;
-  
-  function shift_left_with_neg_round_up (a: in unsigned; b : in integer) return unsigned is
+
+  function shift_left_with_neg_round_up (a: in unsigned; b : integer) return unsigned is
   begin
     if b >= 0 then
       return shift_left(a, b);
@@ -363,41 +363,52 @@ package body Utils is
     end if;
   end function shift_left_with_neg_round_up;
 
-  function div_floor(a: in unsigned; b : in natural) return unsigned is
-    variable log2b : natural := log2floor(b);
+  function div_floor(a: in unsigned; b : natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "div_p2_floor() second argument is not a power of 2." severity failure;
-    return shift_right(a, log2b);
+    return shift_right(a, log2floor(b));
   end div_floor;
 
-  function div_ceil(a: in unsigned; b : in natural) return unsigned is
-    variable log2b : natural := log2floor(b);
+  function div_ceil(a: in unsigned; b : natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "div_p2_ceil() second argument is not a power of 2." severity failure;
-    return shift_right_round_up(a, log2b);
+    return shift_right_round_up(a, log2floor(b));
   end div_ceil;
 
-  function mul(a: in unsigned; b : in natural) return unsigned is
-    variable log2b : natural := log2floor(b);
+  function mul(a: in unsigned; b : natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "mul() second argument is not a power of 2." severity failure;
-    return shift_left(a, log2b);
+    return shift_left(a, log2floor(b));
   end mul;
 
-  function align_beq(a : in unsigned; b : in natural) return unsigned is
-    variable log2b  : natural := log2floor(b);
-    variable zeros  : unsigned(log2floor(b)-1 downto 0) := (others => '0');
+  function align_beq(a : in unsigned; b : natural) return unsigned is
+    variable arg_v : unsigned(a'length-1 downto 0);
   begin
-    assert log2ceil(b) = log2floor(b) report "align_beq() second argument is not a power of 2." severity failure;
-    return a(a'length-1 downto log2b) & zeros;
+    if b /= 0 then
+      arg_v := shift_right(a,b);
+    else
+      arg_v := a;
+    end if;
+    return shift_left(arg_v, b);
   end align_beq;
-  
-  function align_aeq(a : in unsigned; b : in natural) return unsigned is
-    variable log2b  : natural := log2floor(b);
-    variable zeros  : unsigned(log2floor(b)-1 downto 0) := (others => '0');
+
+  function align_aeq(a : in unsigned; b : natural) return unsigned is
+    variable arg_v : unsigned(a'length-1 downto 0);
+    variable lsb_v : unsigned(b-1 downto 0);
   begin
-    assert log2ceil(b) = log2floor(b) report "align_aeq() second argument is not a power of 2." severity failure;
-    return (a(a'length-1 downto log2b) + u(or_reduce(slv(a(log2b-1 downto 0))))) & zeros;
+    -- Do this all over again because xsim seems to have trouble
+    -- with specific functions in functions so we cant use
+    -- shift_right_round_up
+    if b /= 0 then -- prevent null ranges on lsb_v
+      arg_v := shift_right(a, b);
+      lsb_v := a(b-1 downto 0);
+      if (lsb_v /= 0) then
+        arg_v := arg_v + 1;
+      end if;
+    else
+      arg_v := a;
+    end if;
+    return shift_left(arg_v, b);
   end align_aeq;
 
 end Utils;

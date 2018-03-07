@@ -22,9 +22,9 @@ proc gen_cr {{seed -1}} {
   hline
   echo "Generating new ColumnReader"
   hline
-  
+
   exec rm -f ColumnReader_tb.vhd
-  
+
   if {$seed == -1} {
     exec python3 gen_tb.py > ColumnReader_tb.vhd
   } else {
@@ -35,12 +35,18 @@ proc gen_cr {{seed -1}} {
 }
 
 proc sim_cr {} {
-  
+
   vcom -quiet -work work -93 ColumnReader_tb.vhd
-  
+
   # GUI Simulation:
   simulate ColumnReader_tb {{"TestBench" sim:/columnreader_tb/*}}
-  
+
+}
+
+proc surpress_warnings {} {
+  # TODO: figure out why the heck this doesn't work
+  set NumericStdNoWarnings 1
+  set StdArithNoWarnings 1
 }
 
 proc batch_sim_cr {} {
@@ -50,7 +56,8 @@ proc batch_sim_cr {} {
   onbreak {resume}
   if {[catch {
     vcom -quiet -work work -93 ColumnReader_tb.vhd
-    vsim -quiet -novopt work.columnreader_tb  
+    vsim -quiet -novopt work.columnreader_tb
+    surpress_warnings
     run -all
     set ok [examine sim_complete]
     set config_string [examine columnreader_tb/uut/CFG]
@@ -69,16 +76,16 @@ proc batch_sim_cr {} {
     echo "Simulation failure!"
     hline
     set chksum [lindex [regexp -all -inline {\S+} [exec sha1sum ColumnReader_tb.vhd]] 0]
-    
+
     echo "Test bench file saved in failures/$chksum\.vhd"
-    
+
     exec mkdir -p failures
-    
+
     exec cp ColumnReader_tb.vhd failures/$chksum\.vhd
     hline
     return 0
   }
-  
+
 }
 
 proc batch_sim {{count 10} {max_fail 1}} {
@@ -107,10 +114,6 @@ proc batch_sim {{count 10} {max_fail 1}} {
   hline
   return $failures == 0
 }
-
-
-set NumericStdNoWarnings 1
-set StdArithNoWarnings 1
 
 recompile
 

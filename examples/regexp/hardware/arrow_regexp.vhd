@@ -327,6 +327,11 @@ begin
         
         -- Status registers
         mm_regs(REG_STATUS_HI) <= (others => '0');
+        
+        if CORES /= 16 then
+          mm_regs(REG_STATUS_LO)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
+        end if;
+        
         mm_regs(REG_STATUS_LO)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
         mm_regs(REG_STATUS_LO)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
         
@@ -441,7 +446,7 @@ begin
       MASTER_LEN_WIDTH          => 8,
       SLAVE_DATA_WIDTH          => BOTTOM_DATA_WIDTH,
       SLAVE_LEN_WIDTH           => BOTTOM_LEN_WIDTH,
-      SLAVE_MAX_BURST           => BOTTOM_BURST_LEN,
+      SLAVE_MAX_BURST           => BOTTOM_BURST_MAX_LEN,
       ENABLE_FIFO               => BOTTOM_ENABLE_FIFO
     )
     port map (                  
@@ -472,7 +477,8 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_DATA_WIDTH            => BOTTOM_DATA_WIDTH,
       BUS_LEN_WIDTH             => BOTTOM_LEN_WIDTH,
-      BUS_BURST_LENGTH          => BOTTOM_BURST_LEN,
+      BUS_BURST_STEP_LEN        => BOTTOM_BURST_STEP_LEN,
+      BUS_BURST_MAX_LEN         => BOTTOM_BURST_MAX_LEN,
       REG_WIDTH                 => 32
     ) port map (
       clk                       => clk,

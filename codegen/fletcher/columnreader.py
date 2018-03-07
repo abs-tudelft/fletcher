@@ -37,24 +37,24 @@ CMD_TAG_WIDTH  = Generic("CMD_TAG_WIDTH")
 
 class ReaderLevel(Configurable):
     """Represents an abstract ColumnReaderLevel(Level)."""
-    
+
     def __init__(self, **config):
         super().__init__(**config)
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "?"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return []
-    
+
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         raise NotImplemented()
-    
+
     @classmethod
     def _write_buffer(cls, memory, bits, data):
         """Writes an arrow buffer to the given Memory given a list of integers
@@ -64,7 +64,7 @@ class ReaderLevel(Configurable):
         for entry in data:
             memory.write(entry, bits)
         return addr
-    
+
     def test_vectors(self, memory, row_count, commands):
         """Returns a set of test vectors for all the signals defined by this
         ReaderLevel (both command and response), given a row count and a list
@@ -74,12 +74,12 @@ class ReaderLevel(Configurable):
         accordingly, with new data sets generated at the current memory
         pointer."""
         raise NotImplemented()
-    
+
     def __str__(self):
         """Returns the cfg string for this ReaderLevel."""
         children = ",".join(map(str, self._children))
         attrs = ",".join(map(lambda x: "%s=%s" % x, self._config.items()))
-        
+
         attrs = []
         for key, value in self._config.items():
             if isinstance(value, int) or isinstance(value, bool):
@@ -93,7 +93,7 @@ class ReaderLevel(Configurable):
 
 class PrimReaderLevel(ReaderLevel):
     """A reader for a primitive data type."""
-    
+
     def __init__(
         self,
         bit_width,
@@ -104,27 +104,27 @@ class PrimReaderLevel(ReaderLevel):
         **kwargs
     ):
         super().__init__(**kwargs)
-        
+
         # Check and save the bit width.
         if not bit_width or bit_width & (bit_width-1):
             raise ValueError("bit width must be a power of two")
         self.bit_width = bit_width
-        
+
         self.cmd_stream = cmd_stream
         self.cmd_val_base = cmd_val_base
         self.out_stream = out_stream
         self.out_val = out_val
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "prim"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.bit_width]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -145,7 +145,7 @@ class PrimReaderLevel(ReaderLevel):
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return 2
-    
+
     def test_vectors(self, memory, row_count, commands):
         """Returns a set of test vectors for all the signals defined by this
         ReaderLevel (both command and response), given a row count and a list
@@ -154,7 +154,7 @@ class PrimReaderLevel(ReaderLevel):
         index). The Memory object that should be passed to memory is updated
         accordingly, with new data sets generated at the current memory
         pointer."""
-        
+
         # Generate memory for 4 buffers of the given row count. We randomly
         # select which buffer to use for each command.
         buffers = []
@@ -162,7 +162,7 @@ class PrimReaderLevel(ReaderLevel):
             data = [random.randrange(1 << self.bit_width) for _ in range(row_count)]
             addr = self._write_buffer(memory, self.bit_width, data)
             buffers.append((addr, data))
-        
+
         # Generate test vectors for our signals.
         base_tv = TestVectors(self.cmd_val_base)
         val_tv = TestVectors(self.out_val, self.out_stream.name + "dvalid = '1'")
@@ -171,28 +171,28 @@ class PrimReaderLevel(ReaderLevel):
             addr, data = buffers[buf_idx]
             base_tv.append(addr)
             val_tv.extend(data[start:stop])
-        
+
         return [base_tv, val_tv]
 
 
 class ArbReaderLevel(ReaderLevel):
     """A wrapper for readers that instantiates a bus arbiter and optionally
     slices for all the other streams."""
-    
+
     def __init__(self, child, **kwargs):
         super().__init__(**kwargs)
         self.child = child
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "arb"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.child]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -207,7 +207,7 @@ class ArbReaderLevel(ReaderLevel):
             "unlock_stream_slice":      True,
             "out_stream_slice":         True
         }
-    
+
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return 1
@@ -225,7 +225,7 @@ class ArbReaderLevel(ReaderLevel):
 
 class NullReaderLevel(ReaderLevel):
     """A reader for a null bitmap."""
-    
+
     def __init__(
         self,
         child,
@@ -243,17 +243,17 @@ class NullReaderLevel(ReaderLevel):
         self.cmd_null_base = cmd_null_base
         self.out_stream = out_stream
         self.out_not_null = out_not_null
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "null"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.child]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -270,7 +270,7 @@ class NullReaderLevel(ReaderLevel):
             "fifo2post_slice":          False,
             "out_slice":                True
         }
-    
+
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return self.child.bus_count() + 1
@@ -283,7 +283,7 @@ class NullReaderLevel(ReaderLevel):
         index). The Memory object that should be passed to memory is updated
         accordingly, with new data sets generated at the current memory
         pointer."""
-        
+
         # Generate memory for 3 buffers of the given row count. We randomly
         # select between one of the buffers and an implicit null bitmap for
         # each command.
@@ -292,7 +292,7 @@ class NullReaderLevel(ReaderLevel):
             data = [min(1, random.randrange(10)) for _ in range(row_count)]
             addr = self._write_buffer(memory, 1, data)
             buffers.append((addr, data))
-        
+
         # Generate test vectors for our signals.
         impl_tv = TestVectors(self.cmd_no_nulls)
         base_tv = TestVectors(self.cmd_null_base)
@@ -308,19 +308,19 @@ class NullReaderLevel(ReaderLevel):
                 impl_tv.append(1)
                 base_tv.append(None)
                 val_tv.extend([1 for _ in range(start, stop)])
-        
+
         return [impl_tv, base_tv, val_tv] + self.child.test_vectors(memory, row_count, commands)
 
 
 def _list_test_vectors(reader, memory, row_count, commands):
     """Test vector generation function shared by ListReaderLevel and
     ListPrimReaderLevel."""
-    
+
     # Generate on average 4 items per list.
     child_length = row_count * 4
     child_commands = []
     child_idxs = []
-    
+
     # Generate memory for 4 buffers of the given row count. We randomly
     # select one of the buffers for each command.
     buffers = []
@@ -329,7 +329,7 @@ def _list_test_vectors(reader, memory, row_count, commands):
         data = [0] + sorted(data) + [child_length]
         addr = reader._write_buffer(memory, 32, data) # FIXME: this width is actually a generic!
         buffers.append((addr, data))
-    
+
     # Generate test vectors for our signals and figure out the command
     # stream for the child.
     base_tv = TestVectors(reader.cmd_idx_base)
@@ -341,16 +341,16 @@ def _list_test_vectors(reader, memory, row_count, commands):
         child_idxs.append(list(zip(data[start:stop], data[start+1:stop+1])))
         base_tv.append(addr)
         len_tv.extend([data[i+1] - data[i] for i in range(start, stop)])
-    
+
     return child_length, child_commands, child_idxs, [base_tv, len_tv]
-    
+
 
 class ListReaderLevel(ReaderLevel):
     """A reader for a list index buffer."""
-    
+
     def __init__(
         self,
-        child, 
+        child,
         cmd_stream,
         cmd_idx_base,
         out_stream,
@@ -365,17 +365,17 @@ class ListReaderLevel(ReaderLevel):
         self.out_stream = out_stream
         self.out_length = out_length
         self.out_el_stream = out_el_stream
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "list"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.child]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -396,11 +396,11 @@ class ListReaderLevel(ReaderLevel):
             "data_in_slice":        False,
             "data_out_slice":       True
         }
-    
+
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return self.child.bus_count() + 1
-    
+
     def test_vectors(self, memory, row_count, commands):
         """Returns a set of test vectors for all the signals defined by this
         ReaderLevel (both command and response), given a row count and a list
@@ -409,14 +409,14 @@ class ListReaderLevel(ReaderLevel):
         index). The Memory object that should be passed to memory is updated
         accordingly, with new data sets generated at the current memory
         pointer."""
-        
+
         # Figure out the test vectors for the list.
         child_length, child_commands, child_idxs, tvs = _list_test_vectors(
             self, memory, row_count, commands)
-        
+
         # Figure out the test vectors for the child.
         tvs.extend(self.child.test_vectors(memory, child_length, child_commands))
-        
+
         # Figure out the last/dvalid signals for the element stream.
         last_tv   = TestVectors(self.out_el_stream.signals[0])
         dvalid_tv = TestVectors(self.out_el_stream.signals[1])
@@ -430,13 +430,13 @@ class ListReaderLevel(ReaderLevel):
                     for i in range(l):
                         last_tv.append(int(i == l - 1))
                         dvalid_tv.append(1)
-        
+
         return tvs + [last_tv, dvalid_tv]
 
 
 class ListPrimReaderLevel(ReaderLevel):
     """A reader for a list of non-nullable primitive data types."""
-    
+
     def __init__(
         self,
         bit_width,
@@ -451,7 +451,7 @@ class ListPrimReaderLevel(ReaderLevel):
         **kwargs
     ):
         super().__init__(**kwargs)
-        
+
         # Check and save the bit width.
         if not bit_width or bit_width & (bit_width-1):
             raise ValueError("bit width must be a power of two")
@@ -465,17 +465,17 @@ class ListPrimReaderLevel(ReaderLevel):
         self.out_el_stream = out_el_stream
         self.out_el_values = out_el_values
         self.out_el_count = out_el_count
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "listprim"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.bit_width]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -513,7 +513,7 @@ class ListPrimReaderLevel(ReaderLevel):
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return 2
-    
+
     def test_vectors(self, memory, row_count, commands):
         """Returns a set of test vectors for all the signals defined by this
         ReaderLevel (both command and response), given a row count and a list
@@ -522,11 +522,11 @@ class ListPrimReaderLevel(ReaderLevel):
         index). The Memory object that should be passed to memory is updated
         accordingly, with new data sets generated at the current memory
         pointer."""
-        
+
         # Figure out the test vectors for the list.
         child_length, child_commands, child_idxs, tvs = _list_test_vectors(
             self, memory, row_count, commands)
-        
+
         # Generate memory for 4 buffers of the given child length. We randomly
         # select which buffer to use for each command.
         buffers = []
@@ -534,7 +534,7 @@ class ListPrimReaderLevel(ReaderLevel):
             data = [random.randrange(1 << self.bit_width) for _ in range(child_length)]
             addr = self._write_buffer(memory, self.bit_width, data)
             buffers.append((addr, data))
-        
+
         # Generate test vectors for our signals.
         base_tv   = TestVectors(self.cmd_val_base)
         val_tvs   = [TestVectors(sig) for sig in self.out_el_values]
@@ -562,28 +562,28 @@ class ListPrimReaderLevel(ReaderLevel):
                         break
                     else:
                         last_tv.append(0)
-        
+
         return tvs + val_tvs + [base_tv, cnt_tv, last_tv, dvalid_tv]
 
 
 class StructReaderLevel(ReaderLevel):
     """A reader for a struct of TWO child readers."""
-    
+
     def __init__(self, a, b, **kwargs):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
-    
+
     @property
     def _cmdname(self):
         """Returns the cfg string command name for this ReaderLevel."""
         return "struct"
-    
+
     @property
     def _children(self):
         """Returns a list of child ReaderLevels or parameters."""
         return [self.a, self.b]
-    
+
     @property
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
@@ -592,7 +592,7 @@ class StructReaderLevel(ReaderLevel):
     def bus_count(self):
         """Returns the number of busses used by this ReaderLevel."""
         return self.a.bus_count() + self.b.bus_count()
-    
+
     def test_vectors(self, memory, row_count, commands):
         """Returns a set of test vectors for all the signals defined by this
         ReaderLevel (both command and response), given a row count and a list
@@ -640,11 +640,11 @@ def _maybe_wrap_in_arbiter(reader, **opts):
 
 def _scalar_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, out_data, **opts):
     """Internal function which converts a scalar field into a ReaderLevel."""
-    
+
     # Add the signals to the streams.
     cmd_val_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "valBase", BUS_ADDR_WIDTH))
     out_val      = out_data.append(Signal(prefix + "out_" + field_prefix + "val", field.bit_width))
-    
+
     # Construct the primitive reader.
     reader = PrimReaderLevel(
         field.bit_width,
@@ -667,21 +667,21 @@ def _scalar_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream
             "out_slice":           "out_slice"
         })
     )
-    
+
     return reader, []
 
 
 def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, out_data, **opts):
     """Internal function which converts a UTF8/bytes field into a ReaderLevel."""
-    
+
     # Add the signals to the existing streams.
     cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
     cmd_val_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "valBase", BUS_ADDR_WIDTH))
     out_length   = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
-    
+
     # Create a secondary output stream for the list elements.
     out_el_stream, out_el_data = _new_out_stream(prefix, field_prefix + "el_")
-    
+
     # Populate the secondary output stream.
     epc = field.bytes_per_cycle
     out_el_count = out_el_data.append(Signal(prefix + "out_" + field_prefix + "el_cnt", int.bit_length(epc)))
@@ -692,7 +692,7 @@ def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
     # The elements are serialized MSB first!
     for sig in reversed(out_el_values):
         out_el_data.append(sig)
-    
+
     # Construct the primitive reader.
     reader = ListPrimReaderLevel(
         field.bit_width,
@@ -736,20 +736,20 @@ def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
             "data_out_slice":           "data_out_slice"
         })
     )
-    
+
     return reader, [out_el_stream]
 
 
 def _list_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, out_data, **opts):
     """Internal function which converts a list field into a ReaderLevel."""
-    
+
     # Add the signals to the existing streams.
     cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
     out_length   = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
-    
+
     # Create a secondary output stream for the list elements.
     out_el_stream, out_el_data = _new_out_stream(prefix, field_prefix + field.child.name + "_")
-    
+
     # Populate the secondary output stream with the child reader.
     reader, secondary_out_streams = _field_reader(
         field.child,
@@ -757,7 +757,7 @@ def _list_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, 
         cmd_stream, cmd_ctrl,
         out_el_stream, out_el_data,
         **opts)
-    
+
     # Construct the primitive reader.
     reader = ListReaderLevel(
         reader,
@@ -785,13 +785,13 @@ def _list_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, 
             "data_out_slice":       "data_out_slice"
         })
     )
-    
+
     return reader, [out_el_stream] + secondary_out_streams
 
 
 def _struct_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, out_data, **opts):
     """Internal function which converts a struct field into a ReaderLevel."""
-    
+
     # Construct the child Reader objects.
     child_readers = []
     secondary_out_streams = []
@@ -804,15 +804,15 @@ def _struct_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream
             **opts)
         child_readers.append(child_reader)
         secondary_out_streams.extend(child_secondary_out_stream)
-    
+
     # Create a binary tree of readers.
     while True:
-        
+
         # Stop if there's only one reader left.
         if len(child_readers) == 1:
             reader = child_readers[0]
             break
-        
+
         # Add a level of structs.
         it = iter(child_readers)
         child_readers = []
@@ -825,7 +825,7 @@ def _struct_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream
                 struct = StructReaderLevel(a, b)
                 struct = _maybe_wrap_in_arbiter(struct, **opts)
                 child_readers.append(struct)
-    
+
     return reader, secondary_out_streams
 
 
@@ -836,20 +836,20 @@ def _field_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
         raise TypeError("field must be of type %s" % Field)
     if field.is_null():
         raise ValueError("cannot make a reader for a null field")
-    
+
     # Update the field prefix.
     if field_prefix is None:
         field_prefix = ""
     else:
         field_prefix += field.name + "_"
-    
+
     # Add the signals for the null reader if this field is nullable. This must
     # be done before going down the hierarchy.
     if field.nullable:
         cmd_no_nulls  = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "noNulls"))
         cmd_null_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "nullBase", BUS_ADDR_WIDTH))
         out_not_null  = out_data.append(Signal(prefix + "out_" + field_prefix + "notNull"))
-    
+
     # Defer to the field-specific generators.
     for typ, gen in [
         (ScalarField, _scalar_reader),
@@ -867,7 +867,7 @@ def _field_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
             break
     else:
         raise NotImplemented("No code generator is implemented for Field type %s" % type(field))
-    
+
     # Generate the null() level if this field is nullable.
     if field.nullable:
         reader = NullReaderLevel(
@@ -892,10 +892,10 @@ def _field_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
                 "null_out_slice":           "out_slice"
             })
         )
-    
+
     # Wrap the field in an arbiter based on the arbiter policy.
     reader = _maybe_wrap_in_arbiter(reader, **opts)
-    
+
     return reader, secondary_out_streams
 
 
@@ -931,7 +931,7 @@ entity {camelprefix}ColumnReader is
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
-    
+
     -- Maximum number of beats in a burst.
     BUS_BURST_MAX_LEN           : natural := 16;
 
@@ -1083,7 +1083,7 @@ component {camelprefix}ColumnReader is
     acc_reset                   : in  std_logic;
 
     @cmd_ports
-    
+
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -1193,58 +1193,58 @@ uut_template_without_unlock = """
 
 class ColumnReader(object):
     """Represents a ColumnReader."""
-    
+
     def __init__(self, field, instance_prefix=None, signal_prefix="", bus_clk_prefix="", main_clk_prefix="", **opts):
         """Generates a ColumnReader for the given Arrow field. prefix
         optionally specifies a name for the ColumnReader, which will be
         prefixed to all signals and instance names in the generated code."""
         super().__init__()
-        
+
         # Basic error checking.
         if not isinstance(field, Field):
             raise TypeError("field must be of type %s" % Field)
         self.field = field
-        
+
         # Figure out the prefixes.
         if instance_prefix is None:
             instance_prefix = field.name
         if instance_prefix and not instance_prefix[-1] == "_":
             instance_prefix += "_"
         self.instance_prefix = instance_prefix
-        
+
         if signal_prefix is None:
             signal_prefix = field.name
         if signal_prefix and not signal_prefix[-1] == "_":
             signal_prefix += "_"
         self.signal_prefix = signal_prefix
-        
+
         if bus_clk_prefix and not bus_clk_prefix[-1] == "_":
             bus_clk_prefix += "_"
         self.bus_clk_prefix = bus_clk_prefix
-        
+
         if main_clk_prefix and not main_clk_prefix[-1] == "_":
             main_clk_prefix += "_"
         self.main_clk_prefix = main_clk_prefix
-        
+
         # Construct the streams.
         self.cmd_stream, cmd_ctrl = _new_cmd_stream(self.signal_prefix)
-        
+
         p = self.signal_prefix + "unlock_"
         self.unlock_stream = Stream(p)
         self.unlock_stream.append(Signal(p + "tag", CMD_TAG_WIDTH))
-        
+
         p = self.signal_prefix + "busReq_"
         self.busreq_stream = Stream(p)
         self.busreq_stream.append(Signal(p + "addr", BUS_ADDR_WIDTH))
         self.busreq_stream.append(Signal(p + "len", BUS_LEN_WIDTH))
-        
+
         p = self.signal_prefix + "busResp_"
         self.busresp_stream = Stream(p)
         self.busresp_stream.append(Signal(p + "data", BUS_DATA_WIDTH))
         self.busresp_stream.append(Signal(p + "last"))
-        
+
         main_out_stream, out_data = _new_out_stream(self.signal_prefix)
-        
+
         # Construct the field reader.
         reader, secondary_out_streams = _field_reader(
             self.field,
@@ -1252,29 +1252,29 @@ class ColumnReader(object):
             self.cmd_stream, cmd_ctrl,
             main_out_stream, out_data,
             **opts)
-        
+
         # If the reader has more than one bus, wrap in an arbiter.
         if reader.bus_count() > 1:
             reader = ArbReaderLevel(reader)
         self.reader = reader
-        
+
         # Construct the output stream group.
         self.out_stream = StreamGroup(main_out_stream, *secondary_out_streams)
-    
+
     @property
     def _camel_prefix(self):
         """Returns the instance prefix in CamelCase."""
         return "".join([w[:1].upper() + w[1:] for w in self.instance_prefix.split("_")])
-        
+
     @property
     def _lower_prefix(self):
         """Returns the instance prefix in lower_case."""
         return self.instance_prefix.lower()
-    
+
     def cfg(self):
         """Returns the cfg string representation of this ColumnReader."""
         return str(self.reader)
-    
+
     def wrapper_body(self):
         """Returns the VHDL entity and body for this ColumnReader's wrapper."""
         return gen_template(
@@ -1287,7 +1287,7 @@ class ColumnReader(object):
             defs = self.cmd_stream.def_signals(False) + self.out_stream.def_signals(False),
             arch = self.cmd_stream.arch_serialize() + self.out_stream.arch_deserialize()
         )
-    
+
     def wrapper_component(self):
         """Returns the VHDL entity and body for this ColumnReader's wrapper."""
         return gen_template(
@@ -1296,17 +1296,17 @@ class ColumnReader(object):
             cmd_ports = self.cmd_stream.def_ports(PortDir.IN, False),
             out_ports = self.out_stream.def_ports(PortDir.OUT, False).trimsep()
         )
-    
+
     def testbench(self, **kwargs):
         """Generates a randomized testbench for this ColumnReader."""
-        
+
         # Randomize any parameters not explicitly given.
         params = []
         def get_param(name, default):
             value = kwargs.get(name, default)
             params.append((name, value))
             return value
-        
+
         seed           = get_param("seed", random.randrange(1<<32))
         random.seed(seed)
         row_count      = get_param("row_count", 100)
@@ -1320,11 +1320,11 @@ class ColumnReader(object):
         multi_clk      = get_param("multi_clk", True)
         random_busreq_timing  = get_param("random_busreq_timing", random.choice([True, False]))
         random_busresp_timing = get_param("random_busresp_timing", random.choice([True, False]))
-        
+
         # Generate the testbench wrapper object.
         acc = "acc" if multi_clk else "bus"
         tb = Testbench(self._camel_prefix + "ColumnReader_tb", {"bus", acc})
-        
+
         # Set constants.
         tb.set_const("BUS_ADDR_WIDTH",      addr_width)
         tb.set_const("BUS_LEN_WIDTH",       len_width)
@@ -1334,7 +1334,7 @@ class ColumnReader(object):
         tb.set_const("INDEX_WIDTH",         32)
         tb.set_const("CMD_TAG_ENABLE",      tag_width > 0)
         tb.set_const("CMD_TAG_WIDTH",       max(1, tag_width))
-        
+
         # Add the streams.
         tb.append_input_stream(self.cmd_stream, "bus")
         if tag_width > 0:
@@ -1342,27 +1342,27 @@ class ColumnReader(object):
         tb.append_output_stream(self.busreq_stream, "bus")
         tb.append_input_stream(self.busresp_stream, "bus")
         tb.append_output_stream(self.out_stream, acc)
-        
+
         # Generate a random set of commands.
         commands = []
         for _ in range(cmd_count):
             a = random.randrange(row_count)
             b = random.randrange(row_count)
             commands.append((min(a, b), max(a, b) + 1))
-        
+
         # Generate toplevel command stream signal test vectors.
         cmd_first_tv  = tb.append_test_vector(TestVectors(self.cmd_stream.signals[0]))
         cmd_last_tv   = tb.append_test_vector(TestVectors(self.cmd_stream.signals[1]))
         for start, stop in commands:
             cmd_first_tv.append(start)
             cmd_last_tv.append(stop)
-        
+
         # Generate tag stream signal test vectors.
         if tag_width > 0:
             tags = [random.randrange(1 << tag_width) for _ in commands]
             tb.append_test_vector(TestVectors(self.cmd_stream.signals[-1])).extend(tags)
             tb.append_test_vector(TestVectors(self.unlock_stream.signals[0])).extend(tags)
-        
+
         # Generate output stream master last/dvalid test vectors.
         out_last_tv   = tb.append_test_vector(TestVectors(self.out_stream.streams[0].signals[0]))
         out_dvalid_tv = tb.append_test_vector(TestVectors(self.out_stream.streams[0].signals[1]))
@@ -1370,21 +1370,21 @@ class ColumnReader(object):
             for i in range(start, stop):
                 out_last_tv.append(int(i == stop - 1))
                 out_dvalid_tv.append(1)
-        
+
         # Generate a memory model.
         memory = Memory()
         tb.append_memory(memory, self.busreq_stream, self.busresp_stream, "bus",
                          random_busreq_timing, random_busresp_timing)
-        
+
         # Generate the test vectors for the readers.
         tvs = self.reader.test_vectors(memory, row_count, commands)
         for tv in tvs:
             tb.append_test_vector(tv)
-        
+
         # Append unit under test.
         template = uut_template_with_unlock if tag_width > 0 else uut_template_without_unlock
         tb.append_uut(template.format(cfg=self.cfg(), acc=acc))
-        
+
         # Add documentation.
         doc = []
         doc.append("Memory dump:")
@@ -1402,8 +1402,8 @@ class ColumnReader(object):
         doc.append("")
         doc.append("Schema:")
         doc.extend(["  " + x for x in self.field.pprint().split("\n")])
-        
-        
+
+
         tb.append_uut("\n".join(["  -- " + x for x in doc]))
-        
+
         return str(tb)
