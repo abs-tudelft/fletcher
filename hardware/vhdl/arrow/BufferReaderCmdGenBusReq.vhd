@@ -169,12 +169,9 @@ architecture rtl of BufferReaderCmdGenBusReq is
   constant BYTES_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / 8;
 
   signal first_index            : unsigned(INDEX_WIDTH-1 downto 0);
-  signal first_align_index      : unsigned(INDEX_WIDTH-1 downto 0);
   signal last_index             : unsigned(INDEX_WIDTH-1 downto 0);
 
   signal byte_address           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
-  
-  signal first_max_ba           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
 
 begin
   -----------------------------------------------------------------------------
@@ -210,7 +207,7 @@ begin
     r,
     cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
-    byte_address, first_index, last_index, first_align_index
+    byte_address, first_index, last_index
   ) is
     variable v                  : regs_record;
   begin

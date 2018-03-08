@@ -39,12 +39,12 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- USER CORE
     ---------------------------------------------------------------------------
-    NUM_REQUESTS                : natural := 1;
-    NUM_ELEMENTS                : natural := 4;
+    NUM_REQUESTS                : natural := 128;
+    NUM_ELEMENTS                : natural := 256;
 
-    RANDOMIZE_OFFSET            : boolean := false;
-    RANDOMIZE_NUM_ELEMENTS	    : boolean := false;
-    RANDOMIZE_RESP_LATENCY      : boolean := false;
+    RANDOMIZE_OFFSET            : boolean := true;
+    RANDOMIZE_NUM_ELEMENTS	    : boolean := true;
+    RANDOMIZE_RESP_LATENCY      : boolean := true;
     MAX_LATENCY                 : natural := 8;
     DEFAULT_LATENCY             : natural := 0;
     RESP_TIMEOUT                : natural := 1024;
