@@ -232,14 +232,6 @@ architecture rtl of BufferReaderRespCtrl is
     command                     : command_record;
   end record;
 
-  constant r_reset : regs_record := (
-    state                       => IDLE,
-    element                     => element_reset,
-    tags                        => tags_reset,
-    input                       => input_reset,
-    command                     => command_reset
-  );
-
   signal r                      : regs_record;
   signal d                      : regs_record;
     
@@ -251,10 +243,14 @@ begin
   sm_seq: process (clk) is
   begin
     if rising_edge(clk) then
+    
+      r                         <= d;
+      
       if reset = '1' then
-        r                       <= r_reset;
-      else
-        r                       <= d;
+        r.state                 <= IDLE;
+        r.tags                  <= tags_reset;
+        r.input                 <= input_reset;
+        r.command               <= command_reset;
       end if;
     end if;
   end process;

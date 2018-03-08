@@ -22,3 +22,5 @@ hardware/test/bufferreader/transcript
 hardware/test/bufferreader/vsim\.wlf
 
 hardware/test/bufferreader/work/
+
+platforms/aws-f1/regexp/build/scripts/hd_visual/

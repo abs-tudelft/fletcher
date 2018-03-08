@@ -81,6 +81,7 @@
 #define MAX_STR_LEN     256
 #define DEFAULT_ROWS    8*1024*1024
 
+/* Burst step length in bytes */
 #define BURST_LENGTH    64
 
 

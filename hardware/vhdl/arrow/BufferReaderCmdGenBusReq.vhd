@@ -19,6 +19,7 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Utils.all;
+use work.Arrow.all;
 
 entity BufferReaderCmdGenBusReq is
   generic (
@@ -118,19 +119,11 @@ architecture rtl of BufferReaderCmdGenBusReq is
     valid                       : std_logic;
   end record;
 
-  constant master_reset : master_record := (
-    addr                        => (others => '0'),
-    len                         => (others => '0'),
-    valid                       => '0'
-  );
-
   type index_record is record
     first                       : unsigned(INDEX_WIDTH-1 downto 0);
     last                        : unsigned(INDEX_WIDTH-1 downto 0);
     current                     : unsigned(INDEX_WIDTH-1 downto 0);
   end record;
-
-  constant index_reset : index_record := (others => (others => '0'));
 
   type regs_record is record
     state                       : state_type;
@@ -140,18 +133,15 @@ architecture rtl of BufferReaderCmdGenBusReq is
     base_address                : unsigned(BUS_ADDR_WIDTH-1 downto 0);
   end record;
 
-  constant r_reset : regs_record := (
-    state                       => IDLE,
-    input                       => input_reset,
-    index                       => index_reset,
-    master                      => master_reset,
-    base_address                => (others => '0')
-  );
-
   signal r                      : regs_record;
   signal d                      : regs_record;
 
   -- Helper functions and constants
+  
+  -- The pre-alignment state will end when we've reached either the global
+  -- maximum for the bus_burst_boundary or a maximum burst boundary.
+  -- However, this operates on the byte level.
+  constant BYTE_ALIGN           : natural := work.Utils.min(BUS_BURST_BOUNDARY, BUS_BURST_MAX_LEN * BUS_DATA_WIDTH / 8);
 
   constant ELEMS_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / ELEMENT_WIDTH;
   constant ELEMS_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / ELEMENT_WIDTH;
@@ -169,6 +159,7 @@ architecture rtl of BufferReaderCmdGenBusReq is
   --      128 |           7 |                 4
   --      ... |         ... |               ...
   --  Thus, we must shift left with -3 + log2(ELEMENT_WIDTH)
+  -- Index to Byte Address Left Shift Amount
   constant ITOBA_LSHIFT         : integer := -3 + log2ceil(ELEMENT_WIDTH);
 
   constant STEP_LEN             : unsigned(BUS_LEN_WIDTH-1 downto 0) := u(BUS_BURST_STEP_LEN, BUS_LEN_WIDTH);
@@ -178,10 +169,12 @@ architecture rtl of BufferReaderCmdGenBusReq is
   constant BYTES_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / 8;
 
   signal first_index            : unsigned(INDEX_WIDTH-1 downto 0);
-  signal first_max_index        : unsigned(INDEX_WIDTH-1 downto 0);
+  signal first_align_index      : unsigned(INDEX_WIDTH-1 downto 0);
   signal last_index             : unsigned(INDEX_WIDTH-1 downto 0);
 
   signal byte_address           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
+  
+  signal first_max_ba           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
 
 begin
   -----------------------------------------------------------------------------
@@ -192,9 +185,6 @@ begin
   -- Ceil align the last index to the no. elements per step.
   last_index                    <= align_aeq(r.index.last, log2floor(ELEMS_PER_STEP));
 
-  -- Ceil align the first index to the no. elements per max brst.
-  first_max_index               <= align_aeq(r.index.first, log2floor(ELEMS_PER_MAX));
-
   -- Get the byte address of this index
   byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
 
@@ -204,10 +194,11 @@ begin
   sm_seq: process (clk) is
   begin
     if rising_edge(clk) then
+      r                         <= d;    
       if reset = '1' then
-        r                       <= r_reset;
-      else
-        r                       <= d;
+        r.state                 <= IDLE;
+        r.master.valid          <= '0';
+        r.input.ready           <= '0';
       end if;
     end if;
   end process;
@@ -219,7 +210,7 @@ begin
     r,
     cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
-    byte_address, first_index, last_index, first_max_index
+    byte_address, first_index, last_index, first_align_index
   ) is
     variable v                  : regs_record;
   begin
@@ -294,8 +285,8 @@ begin
         -- Make bus request valid
         v.master.valid          := '1';
 
-        -- Invalidate if we've reached the first max index
-        if (v.index.current = first_max_index) then
+        -- Invalidate if we've reached the alignment boundary
+        if is_aligned(byte_address, log2floor(BYTE_ALIGN)) then
           v.master.valid        := '0';
           v.state               := MAX;
         end if;
