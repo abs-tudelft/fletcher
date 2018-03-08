@@ -69,9 +69,9 @@ begin
       -- Reset overrides everything.
       if reset = '1' then
         in_ready_s  <= '0';
-        saved_data  <= (others => '0');
+        --saved_data  <= (others => '0');
         saved_valid <= '0';
-        out_data    <= (others => '0');
+        --out_data    <= (others => '0');
         out_valid_s <= '0';
       else
         -- We're ready for new data on the input unless otherwise specified.
