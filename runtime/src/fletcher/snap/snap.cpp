@@ -97,31 +97,11 @@ uint64_t SNAPPlatform::organize_buffers(const std::vector<BufConfig> &source_buf
   // as in SNAP the FPGA can access the host memory
   // using an address translation service.
   for (auto const &src : source_buffers) {
-    BufConfig dest_buf;
-
     bytes += src.size;
-    //dest_buffers.push_back(src);
-    
-    // temporary workaround until max burst length is not always burst length
-    // ---
-    dest_buf.name = src.name;
-    dest_buf.size = src.size;
-    dest_buf.capacity = src.capacity;  
+    dest_buffers.push_back(src);
 
-    LOGD("[SNAP] Reserving aligned memory of size " << std::dec << (int)src.capacity);
-    void* da = NULL;
-    posix_memalign(&da, 4096, 4096*(src.capacity/4096+1));
-    
-    LOGD("[SNAP] Copying memory from " << STRHEX64 << src.address << " to " << STRHEX64 << (uint64_t)da);
-    memcpy(da, (const void*)src.address, src.size);
-    dest_buf.address = (fr_t)da;
-
-    LOGD("[SNAP] pushing back buffer.");
-    dest_buffers.push_back(dest_buf);
-    // ---
- 
     // Write the buffer config to the user core
-    write_mmio(UC_REG_BUFFERS + buf, dest_buf.address);
+    write_mmio(UC_REG_BUFFERS + buf, src.address);
     buf++;
   }
 
