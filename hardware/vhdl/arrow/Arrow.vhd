@@ -21,7 +21,20 @@ use work.ColumnReaderConfig.all;
 use work.ColumnReaderConfigParse.all;
 
 package Arrow is
-
+  -----------------------------------------------------------------------------
+  -- General address alignment requirements
+  -----------------------------------------------------------------------------
+  -- The burst boundary in bytes. Bursts will not cross this boundary unless 
+  -- burst lengths are set to something higher than this.
+  -- This is currently set to the AXI4 specification of 4096 byte boundaries:
+  constant BUS_BURST_BOUNDARY     : natural := 4096;
+  
+  -- The Arrow format specification on buffer address alignment in bytes:
+  constant REQ_ARROW_BUFFER_ALIGN : natural := 8;
+  
+  -- The Arrow format recommendation on buffer address alignment in bytes:
+  constant REC_ARROW_BUFFER_ALIGN : natural := 512;
+  
   -----------------------------------------------------------------------------
   -- Column reader
   -----------------------------------------------------------------------------

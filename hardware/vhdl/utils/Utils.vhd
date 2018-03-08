@@ -100,11 +100,14 @@ package Utils is
   -- Returns a*b where b is a power of 2
   function mul(a : in unsigned; b : in natural) return unsigned;
 
-  -- Returns the first integer multiple of b below or equal to a
+  -- Returns the first integer multiple of 2^b below or equal to a
   function align_beq(a : in unsigned; b : in natural) return unsigned;
 
-  -- Returns the first integer multiple of b above or equal to a
+  -- Returns the first integer multiple of 2^b above or equal to a
   function align_aeq(a : in unsigned; b : in natural) return unsigned;
+  
+  -- Returns true if a is an integer multiple of 2^b, false otherwise
+  function is_aligned(a : in unsigned; b : natural) return boolean;
 
   -- 1-read 1-write RAM.
   component Ram1R1W is
@@ -410,5 +413,20 @@ package body Utils is
     end if;
     return shift_left(arg_v, b);
   end align_aeq;
+  
+  function is_aligned(a : in unsigned; b : natural) return boolean is
+    variable lsb_v : unsigned(b-1 downto 0);
+  begin
+    if b > 1 then
+      lsb_v := a(b-1 downto 0);
+      if (lsb_v /= 0) then
+        return true;
+      else
+        return false;
+      end if;
+    else
+      return true;
+    end if;
+  end is_aligned;
 
 end Utils;
