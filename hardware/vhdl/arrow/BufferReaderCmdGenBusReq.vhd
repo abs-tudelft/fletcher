@@ -119,19 +119,11 @@ architecture rtl of BufferReaderCmdGenBusReq is
     valid                       : std_logic;
   end record;
 
-  constant master_reset : master_record := (
-    addr                        => (others => '0'),
-    len                         => (others => '0'),
-    valid                       => '0'
-  );
-
   type index_record is record
     first                       : unsigned(INDEX_WIDTH-1 downto 0);
     last                        : unsigned(INDEX_WIDTH-1 downto 0);
     current                     : unsigned(INDEX_WIDTH-1 downto 0);
   end record;
-
-  constant index_reset : index_record := (others => (others => '0'));
 
   type regs_record is record
     state                       : state_type;
@@ -140,14 +132,6 @@ architecture rtl of BufferReaderCmdGenBusReq is
     master                      : master_record;
     base_address                : unsigned(BUS_ADDR_WIDTH-1 downto 0);
   end record;
-
-  constant r_reset : regs_record := (
-    state                       => IDLE,
-    input                       => input_reset,
-    index                       => index_reset,
-    master                      => master_reset,
-    base_address                => (others => '0')
-  );
 
   signal r                      : regs_record;
   signal d                      : regs_record;
@@ -210,10 +194,11 @@ begin
   sm_seq: process (clk) is
   begin
     if rising_edge(clk) then
+      r                         <= d;    
       if reset = '1' then
-        r                       <= r_reset;
-      else
-        r                       <= d;
+        r.state                 <= IDLE;
+        r.master.valid          <= '0';
+        r.input.ready           <= '0';
       end if;
     end if;
   end process;

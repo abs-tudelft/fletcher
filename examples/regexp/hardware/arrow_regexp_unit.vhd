@@ -340,28 +340,28 @@ begin
   sm_seq: process(clk) is
   begin
     if rising_edge(clk) then
+      r                         <= d;
+
+      r_control_reset           <= control_reset;
+      r_control_start           <= control_start;
+      reset_start               <= r_reset_start;
+
+      busy                      <= r_busy;
+      done                      <= r_done;
+
+      r_firstidx                <= firstidx;
+      r_lastidx                 <= lastidx;
+
+      r_off_hi                  <= off_hi;
+      r_off_lo                  <= off_lo;
+
+      r_utf8_hi                 <= utf8_hi;
+      r_utf8_lo                 <= utf8_lo;
+      matches                   <= r_matches;
+      
       if control_reset = '1' then
         r.state                 <= STATE_IDLE;
         r.reset_units           <= '1';
-      else
-        r                       <= d;
-
-        r_control_reset         <= control_reset;
-        r_control_start         <= control_start;
-        reset_start             <= r_reset_start;
-
-        busy                    <= r_busy;
-        done                    <= r_done;
-
-        r_firstidx              <= firstidx;
-        r_lastidx               <= lastidx;
-
-        r_off_hi                <= off_hi;
-        r_off_lo                <= off_lo;
-
-        r_utf8_hi               <= utf8_hi;
-        r_utf8_lo               <= utf8_lo;
-        matches                 <= r_matches;
       end if;
     end if;
   end process;

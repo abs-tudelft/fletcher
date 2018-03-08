@@ -282,15 +282,16 @@ begin
   read_proc: process(action_clk) is
   begin
     if rising_edge(action_clk) then
+      snap_read_address       <= int(snap_s_axi_araddr(SNAP_ADDR_WIDTH-1 downto 2));
+      if snap_s_axi_arvalid = '1' and read_valid = '0' then
+        read_valid            <= '1';
+      elsif snap_s_axi_rready = '1' then
+        read_valid            <= '0';
+      end if;
+      
+      -- Reset
       if action_rst_n = '0' then
         read_valid              <= '0';
-      else
-        snap_read_address       <= int(snap_s_axi_araddr(SNAP_ADDR_WIDTH-1 downto 2));
-        if snap_s_axi_arvalid = '1' and read_valid = '0' then
-          read_valid            <= '1';
-        elsif snap_s_axi_rready = '1' then
-          read_valid            <= '0';
-        end if;
       end if;
     end if;
   end process;
@@ -301,17 +302,18 @@ begin
   begin
     address                     := int(snap_s_axi_araddr(SNAP_ADDR_WIDTH-1 downto 2));
     if rising_edge(action_clk) then
+      if write_valid = '1' then
+        case address is
+          when SNAP_REG_CONTEXT_ID       => snap_regs(SNAP_REG_CONTEXT_ID)       <= snap_s_axi_wdata;
+          when SNAP_REG_CONTROL          => snap_regs(SNAP_REG_CONTROL)          <= snap_s_axi_wdata;
+          when SNAP_REG_INTERRUPT_ENABLE => snap_regs(SNAP_REG_INTERRUPT_ENABLE) <= snap_s_axi_wdata;
+          when others                    => -- do nothing to read only regs
+        end case;
+      end if;
+      
+      -- Reset
       if action_rst_n = '0' then
         snap_regs(SNAP_REG_CONTROL) <= (others => '0');
-      else
-        if write_valid = '1' then
-          case address is
-            when SNAP_REG_CONTEXT_ID       => snap_regs(SNAP_REG_CONTEXT_ID)       <= snap_s_axi_wdata;
-            when SNAP_REG_CONTROL          => snap_regs(SNAP_REG_CONTROL)          <= snap_s_axi_wdata;
-            when SNAP_REG_INTERRUPT_ENABLE => snap_regs(SNAP_REG_INTERRUPT_ENABLE) <= snap_s_axi_wdata;
-            when others                    => -- do nothing to read only regs
-          end case;
-        end if;
       end if;
     end if;
   end process;
@@ -320,14 +322,15 @@ begin
   write_resp_proc: process(action_clk) is
   begin
     if rising_edge(action_clk) then
+      if write_valid = '1' then
+        write_processed <= '1';
+      elsif snap_s_axi_bready = '1' then
+        write_processed <= '0';
+      end if;
+      
+      -- Reset
       if action_rst_n = '0' then
         write_processed <= '0';
-      else
-        if write_valid = '1' then
-          write_processed <= '1';
-        elsif snap_s_axi_bready = '1' then
-          write_processed <= '0';
-        end if;
       end if;
     end if;
   end process;

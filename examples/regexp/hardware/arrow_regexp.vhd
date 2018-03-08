@@ -296,54 +296,53 @@ begin
     address                     := int(s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
 
     if rising_edge(clk) then
+      if write_valid = '1' then
+        dumpStdOut("Write to MMIO: " & integer'image(address));
+     
+        case address is
+          -- Read only addresses do nothing
+          when REG_STATUS_HI  =>
+          when REG_STATUS_LO  =>
+          when REG_RETURN_HI  =>
+          when REG_RETURN_LO  =>
+          when REG_RESULT to REG_RESULT + NUM_REGEX - 1 =>
+          -- All others are writeable:
+          when others         =>
+            mm_regs(address)  <= s_axi_wdata;
+        end case;
+      else
+        -- Control register is also resettable by individual units
+        for I in 0 to CORES-1 loop
+          if bit_array_reset_start(I) = '1' then
+            mm_regs(REG_CONTROL_LO)(CONTROL_START_OFFSET + I) <= '0';
+          end if;
+        end loop;
+      end if;
+     
+      -- Read only register values:
+      
+      -- Status registers
+      mm_regs(REG_STATUS_HI) <= (others => '0');
+      
+      if CORES /= 16 then
+        mm_regs(REG_STATUS_LO)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
+      end if;
+      
+      mm_regs(REG_STATUS_LO)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
+      mm_regs(REG_STATUS_LO)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
+      
+      -- Return registers
+      mm_regs(REG_RETURN_HI) <= (others => '0');
+      mm_regs(REG_RETURN_LO) <= slv(result_add(0)(0)(0));
+      
+      -- Result registers
+      for R in 0 to NUM_REGEX-1 loop
+        mm_regs(REG_RESULT + R) <= slv(result_add(R)(0)(0));
+      end loop;
+      
       if reset_n = '0' then
         mm_regs(REG_CONTROL_LO)    <= (others => '0');
         mm_regs(REG_CONTROL_HI)    <= (others => '0');
-      else
-        if write_valid = '1' then
-          dumpStdOut("Write to MMIO: " & integer'image(address));
-  
-          case address is
-            -- Read only addresses do nothing
-            when REG_STATUS_HI  =>
-            when REG_STATUS_LO  =>
-            when REG_RETURN_HI  =>
-            when REG_RETURN_LO  =>
-            when REG_RESULT to REG_RESULT + NUM_REGEX - 1 =>
-            -- All others are writeable:
-            when others         =>
-              mm_regs(address)  <= s_axi_wdata;
-          end case;
-        else
-          -- Control register is also resettable by individual units
-          for I in 0 to CORES-1 loop
-            if bit_array_reset_start(I) = '1' then
-              mm_regs(REG_CONTROL_LO)(CONTROL_START_OFFSET + I) <= '0';
-            end if;
-          end loop;
-        end if;
-
-        -- Read only register values:
-        
-        -- Status registers
-        mm_regs(REG_STATUS_HI) <= (others => '0');
-        
-        if CORES /= 16 then
-          mm_regs(REG_STATUS_LO)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
-        end if;
-        
-        mm_regs(REG_STATUS_LO)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
-        mm_regs(REG_STATUS_LO)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
-        
-        -- Return registers
-        mm_regs(REG_RETURN_HI) <= (others => '0');
-        mm_regs(REG_RETURN_LO) <= slv(result_add(0)(0)(0));
-        
-        -- Result registers
-        for R in 0 to NUM_REGEX-1 loop
-          mm_regs(REG_RESULT + R) <= slv(result_add(R)(0)(0));
-        end loop;
-        
       end if;
     end if;
   end process;
