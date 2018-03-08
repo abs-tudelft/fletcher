@@ -419,7 +419,7 @@ package body Utils is
   begin
     if b > 1 then
       lsb_v := a(b-1 downto 0);
-      if (lsb_v /= 0) then
+      if (lsb_v = 0) then
         return true;
       else
         return false;
