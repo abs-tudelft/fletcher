@@ -14,7 +14,7 @@ proc colorize {l c} {
 }
 
 proc add_colored_unit_signals_to_group {group unit in_color out_color internal_color} {
-  add wave -noupdate -expand -group $group -divider -height 32 $group
+  # add wave -noupdate -expand -group $group -divider -height 32 $group
   add wave -noupdate -expand -group $group $unit
 
   set input_list    [lsort [find signals -in        $unit]]
