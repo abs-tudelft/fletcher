@@ -51,7 +51,7 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusBuffer.vhd
-
+  
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderArb.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderLevel.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderList.vhd
@@ -62,6 +62,8 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderStruct.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderUnlockCombine.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReader.vhd
+  
+  vcom -quiet -work work -93 $source_dir/arrow/BufferWriter.vhd
 
   ###############################################################################
   # Testbenches
