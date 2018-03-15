@@ -97,7 +97,7 @@ end BusBuffer;
 architecture Behavioral of BusBuffer is
 
   -- Log2 of the FIFO depth.
-  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH); --log2ceil(128 + 1) = 8
+  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH);
 
   -- Bus request serialization indices.
   constant BQI : nat_array := cumulative((

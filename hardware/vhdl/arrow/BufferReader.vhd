@@ -156,7 +156,7 @@ entity BufferReader is
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elementss to be fetched from memory. firstIdx is inclusive,
     -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
-    -- in all cases resulting in lastIdx - firstIdx elementss. baseAddr is the
+    -- in all cases resulting in lastIdx - firstIdx elements. baseAddr is the
     -- pointer to the first element in the buffer. implicit may be set for null
     -- bitmap readers if null count is zero; if it is set, no bus requests will
     -- be made, and the unit will behave as if it receives all-one bus
