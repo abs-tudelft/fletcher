@@ -987,11 +987,24 @@ package Arrow is
       cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
       in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-      in_last                   : in  std_logic
+      in_last                   : in  std_logic;
+      bus_req_valid             : out std_logic;
+      bus_req_ready             : in  std_logic;
+      bus_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_req_len               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_wrd_valid             : out std_logic;
+      bus_wrd_ready             : in  std_logic;
+      bus_wrd_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_wrd_strobe            : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      bus_wrd_last              : out std_logic
     );
   end component;
 
@@ -1101,6 +1114,8 @@ package Arrow is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
+      full                      : out std_logic;
+      empty                     : out std_logic;
       mst_req_valid             : out std_logic;
       mst_req_ready             : in  std_logic;
       mst_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -1109,6 +1124,8 @@ package Arrow is
       mst_wrd_ready             : in  std_logic;
       mst_wrd_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       mst_wrd_strobe            : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      mst_wrd_last              : out std_logic;
+      mst_wrd_last_in_cmd       : out std_logic;
       slv_req_valid             : in  std_logic;
       slv_req_ready             : out std_logic;
       slv_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -1116,7 +1133,8 @@ package Arrow is
       slv_wrd_valid             : in  std_logic;
       slv_wrd_ready             : out std_logic;
       slv_wrd_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_wrd_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0)
+      slv_wrd_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      slv_wrd_last              : in  std_logic
     );
   end component;
 

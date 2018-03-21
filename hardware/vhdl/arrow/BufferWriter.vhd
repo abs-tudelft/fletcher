@@ -117,19 +117,40 @@ entity BufferWriter is
     cmdIn_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_baseAddr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
+    cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
+    -- Unlock stream output (accelerator clock domain). The tags received on 
+    -- the incoming command stream are returned by this stream in order when 
+    -- all bus requests assocated with the command have finished processing.
+    unlock_valid                : out std_logic;
+    unlock_ready                : in  std_logic := '1';
+    unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+    
     ---------------------------------------------------------------------------
     -- Input from accelerator
     ---------------------------------------------------------------------------
-    -- Buffer element stream output (acc clock domain). element contains the
-    -- data element for normal buffers and the length for index buffers. last
-    -- is asserted when this is the last element for the current command.
     in_valid                    : in  std_logic;
     in_ready                    : out std_logic;
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-    in_last                     : in  std_logic
+    in_last                     : in  std_logic;
   
+    ---------------------------------------------------------------------------
+    -- Bus write channels
+    ---------------------------------------------------------------------------
+    -- Request channel
+    bus_req_valid               : out std_logic;
+    bus_req_ready               : in  std_logic;
+    bus_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    
+    -- Data channel
+    bus_wrd_valid               : out std_logic;
+    bus_wrd_ready               : in  std_logic;
+    bus_wrd_data                : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_wrd_strobe              : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+    bus_wrd_last                : out std_logic
+    
     -- TODO in entity:
     --  - status/error flags
 
@@ -143,28 +164,39 @@ architecture Behavioral of BufferWriter is
   signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal pre_last               : std_logic;
   
-  signal int_busReq_ready       : std_logic;
-  signal int_busReq_valid       : std_logic;
-  signal int_busReq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal int_busReq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal req_ready       : std_logic;
+  signal req_valid       : std_logic;
+  signal req_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal req_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   
-  signal bus_req_ready          : std_logic;
-  signal bus_req_valid          : std_logic;
-  signal bus_req_addr           : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal bus_req_len            : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  
-  signal bus_wrd_ready          : std_logic;
-  signal bus_wrd_valid          : std_logic;
-  signal bus_wrd_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-
   signal cmdIn_ready_pre        : std_logic;
   signal cmdIn_ready_cmd        : std_logic;
+  signal cmdIn_ready_unl        : std_logic;
   signal cmdIn_valid_pre        : std_logic;
   signal cmdIn_valid_cmd        : std_logic;
+  signal cmdIn_valid_unl        : std_logic;
   
   signal word_loaded            : std_logic;
   signal word_last              : std_logic;
+  
+  signal buffer_full            : std_logic;
+  signal buffer_empty           : std_logic;
+  
+  signal int_bus_req_valid      : std_logic;
+  signal int_bus_req_ready      : std_logic;
+  signal int_bus_req_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal int_bus_req_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal int_bus_wrd_valid      : std_logic;
+  signal int_bus_wrd_ready      : std_logic;
+  signal int_bus_wrd_data       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal int_bus_wrd_strobe     : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal int_bus_wrd_last       : std_logic;
+    
+  signal last_in_cmd            : std_logic;
+  
+  signal unl_valid              : std_logic;
+  signal unl_ready              : std_logic := '1';
+  signal unl_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 begin
   -----------------------------------------------------------------------------
   -- Input stream pre-processing
@@ -207,11 +239,6 @@ begin
       out_last                  => pre_last
     );
 
-  cmdIn_ready                   <= cmdIn_ready_pre and cmdIn_ready_cmd;
-
-  cmdIn_valid_pre               <= cmdIn_valid and cmdIn_ready_cmd;
-  cmdIn_valid_cmd               <= cmdIn_valid and cmdIn_ready_pre;
-
   cmdgen_inst: BufferWriterCmdGenBusReq
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -234,10 +261,10 @@ begin
       cmdIn_implicit            => cmdIn_implicit,
       word_loaded               => word_loaded,
       word_last                 => word_last,
-      busReq_valid              => int_busReq_valid,
-      busReq_ready              => int_busReq_ready,
-      busReq_addr               => int_busReq_addr,
-      busReq_len                => int_busReq_len
+      busReq_valid              => req_valid,
+      busReq_ready              => req_ready,
+      busReq_addr               => req_addr,
+      busReq_len                => req_len
     );
   
   word_loaded                   <= pre_valid and pre_ready;
@@ -254,26 +281,95 @@ begin
     port map (
       clk                       => acc_clk,
       reset                     => acc_reset,
-      mst_req_valid             => bus_req_valid,
-      mst_req_ready             => bus_req_ready,
-      mst_req_addr              => bus_req_addr,
-      mst_req_len               => bus_req_len,
-      mst_wrd_valid             => bus_wrd_valid,
-      mst_wrd_ready             => bus_wrd_ready,
-      mst_wrd_data              => bus_wrd_data,
-      mst_wrd_strobe            => bus_wrd_strobe,
-      slv_req_valid             => int_busReq_valid,
-      slv_req_ready             => int_busReq_ready,
-      slv_req_addr              => int_busReq_addr,
-      slv_req_len               => int_busReq_len,
+      full                      => buffer_full,
+      empty                     => buffer_empty,
+      mst_req_valid             => int_bus_req_valid,
+      mst_req_ready             => int_bus_req_ready,
+      mst_req_addr              => int_bus_req_addr,
+      mst_req_len               => int_bus_req_len,
+      mst_wrd_valid             => int_bus_wrd_valid,
+      mst_wrd_ready             => int_bus_wrd_ready,
+      mst_wrd_data              => int_bus_wrd_data,
+      mst_wrd_strobe            => int_bus_wrd_strobe,
+      mst_wrd_last              => int_bus_wrd_last,
+      mst_wrd_last_in_cmd       => last_in_cmd,
+      slv_req_valid             => req_valid,
+      slv_req_ready             => req_ready,
+      slv_req_addr              => req_addr,
+      slv_req_len               => req_len,
       slv_wrd_valid             => pre_valid,
       slv_wrd_ready             => pre_ready,
       slv_wrd_data              => pre_data,
-      slv_wrd_strobe            => pre_strobe
+      slv_wrd_strobe            => pre_strobe,
+      slv_wrd_last              => pre_last
+    );
+    
+  unlock_buffer_inst: StreamBuffer
+    generic map (
+      MIN_DEPTH                 => 2,
+      DATA_WIDTH                => CMD_TAG_WIDTH
+    )
+    port map (
+      clk                       => acc_clk,
+      reset                     => acc_reset,
+
+      in_valid                  => cmdIn_valid_unl,
+      in_ready                  => cmdIn_ready_unl,
+      in_data                   => cmdIn_tag,
+
+      out_valid                 => unl_valid,
+      out_ready                 => unl_ready,
+      out_data                  => unl_tag
     );
   
-  bus_req_ready <= '1';
-  bus_wrd_ready <= '1';
+  unlock_tag                    <= unl_tag;
+  
+  cmdIn_ready                   <= cmdIn_ready_pre and cmdIn_ready_cmd and cmdIn_ready_unl;
+
+  cmdIn_valid_pre               <= cmdIn_valid and cmdIn_ready_cmd and cmdIn_ready_unl;
+  cmdIn_valid_cmd               <= cmdIn_valid and cmdIn_ready_pre and cmdIn_ready_unl;
+  cmdIn_valid_unl               <= cmdIn_valid and cmdIn_ready_pre and cmdIn_ready_cmd;
+  
+  int_bus_req_ready             <= bus_req_ready;
+  bus_req_valid                 <= int_bus_req_valid;
+  bus_req_addr                  <= int_bus_req_addr;
+  bus_req_len                   <= int_bus_req_len;
+  
+  bus_wrd_data                  <= int_bus_wrd_data;
+  bus_wrd_strobe                <= int_bus_wrd_strobe;
+  bus_wrd_last                  <= int_bus_wrd_last;
+  
+  unlock_proc: process(unlock_ready, unl_valid, bus_wrd_ready, int_bus_wrd_valid, unl_ready, last_in_cmd)
+  begin
+    -- If a bus word write is valid
+    if int_bus_wrd_valid = '1' then
+      if last_in_cmd = '1' then
+        -- Let the unlock stream do its thing only when this is the last word in the command
+        unl_ready               <= unlock_ready;
+        unlock_valid            <= unl_valid;
+  
+        -- Let the data stream do its thing only when the unlock stream handshaked
+        if unl_valid = '1' and unl_ready = '1' then
+          int_bus_wrd_ready     <= bus_wrd_ready;
+          bus_wrd_valid         <= int_bus_wrd_valid;
+        else
+          int_bus_wrd_ready     <= '0';
+          bus_wrd_valid         <= '0';
+        end if;
+      -- This is not the last word in the command, let the stream do its thing
+      else
+        unl_ready               <= '0';
+        unlock_valid            <= '0';
+        int_bus_wrd_ready       <= bus_wrd_ready;
+        bus_wrd_valid           <= int_bus_wrd_valid;
+      end if;
+    else
+      int_bus_wrd_ready         <= '0';
+      bus_wrd_valid             <= '0';
+      unl_ready                 <= '0';
+      unlock_valid              <= '0';
+    end if;
+  end process;
 
 end Behavioral;
 

@@ -2,6 +2,9 @@
 proc t {} {
   set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
   
+  # Put all files being worked on here:
+  
+  vcom -work work -2008 $vhdl_dir/arrow/Arrow.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BusWriteBuffer.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BufferWriterPrePadder.vhd

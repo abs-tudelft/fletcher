@@ -407,7 +407,7 @@ begin
         vo.master.len           := STEP_LEN;
 
         -- Make bus request valid
-        vo.master.valid          := '1';
+        vo.master.valid         := '1';
 
         -- Invalidate if we've come to the end of the stream
         if counter.step = 0 then
