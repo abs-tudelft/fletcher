@@ -173,6 +173,9 @@ package SimUtils is
   -- Dumps the given string to stdout. Works like a report statement, but
   -- doesn't have all the simulator fluff around it.
   procedure dumpStdOut(s: string);
+  
+  -- Short-hand for integer'image()
+  function ii(i : integer) return string;
 
 end SimUtils;
 
@@ -716,5 +719,10 @@ package body SimUtils is
     end if;
     -- pragma translate_on
   end procedure;
+  
+  function ii(i : integer) return string is
+  begin
+    return integer'image(i);
+  end function;
 
 end SimUtils;

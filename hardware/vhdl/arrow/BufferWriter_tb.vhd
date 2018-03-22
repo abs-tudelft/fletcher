@@ -24,14 +24,9 @@ use work.Utils.all;
 use work.Arrow.all;
 use work.SimUtils.all;
 
--- This testbench is used to check the functionality of the BufferWriter.
--- TODO: it does not always return TEST_SUCCESSFUL even though it may be 
--- successful. But currently, it's used to generally mess around with
--- internal command stream and the bus request generator
--- So normally if it ends, it should be somewhat okay in terms of how many
--- elements it returns. Wether they are the right elements can be tested using
--- the columnreader test bench, or by setting the element size equal to the 
--- word size, but that is not a guarantee of proper functioning.
+-------------------------------------------------------------------------------
+-- This testbench is used to partially check the functionality of the 
+-- BufferWriter. Testbench is only suitable for ELEMENT_WIDTH >= 8.
 entity BufferWriter_tb is
   generic (   
     BUS_ADDR_WIDTH              : natural := 32;
@@ -58,6 +53,9 @@ entity BufferWriter_tb is
 end BufferWriter_tb;
 
 architecture tb of BufferWriter_tb is
+  constant ELEMENTS_PER_WORD    : natural := BUS_DATA_WIDTH / ELEMENT_WIDTH;
+  constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH/8);
+  
   signal command_done           : std_logic := '0';
   signal input_done             : std_logic := '0';
   signal write_done             : std_logic := '0';
@@ -92,6 +90,11 @@ architecture tb of BufferWriter_tb is
   signal bus_wrd_ready          : std_logic;
   signal bus_wrd_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  
+  function gen_elem_val(rand: real) return std_logic_vector is
+  begin
+    return slv(to_unsigned(natural(rand * real(2.0 ** ELEMENT_WIDTH)), ELEMENT_WIDTH));
+  end function;
 
 begin
 
@@ -157,30 +160,47 @@ begin
     variable last_seed1         : positive := SEED;
     variable last_seed2         : positive := 1;
     variable last_rand          : real;
+    
+    variable true_count         : integer  := 0;
+    
+    variable total_elements     : integer  := 0;
+    variable first_index        : integer  := 0;
   begin
-    in_valid                  <= '0';
-    in_last                   <= '0';
+    in_valid                    <= '0';
+    in_last                     <= '0';
     loop     
       -- Wait until command gets accepted:
       wait until rising_edge(acc_clk) and (cmdIn_ready = '1' and cmdIn_valid = '1');
+      first_index               := int(cmdIn_firstIdx);
+      total_elements            := 0;
       loop
+        in_last                 <= '0';
         -- Randomize count
         uniform(count_seed1, count_seed2, count_rand);
-        if count_rand > 0.8 then
-          in_count                <= slv(to_unsigned(natural(count_rand * real(ELEMENT_COUNT_MAX-1)),ELEMENT_COUNT_WIDTH));
+        if count_rand > 0.95 then
+          true_count            := natural(count_rand * real(ELEMENT_COUNT_MAX-1));
+          in_count              <= slv(to_unsigned(true_count,ELEMENT_COUNT_WIDTH));
         else
-          in_count                <= (others => '0');
+          true_count            := ELEMENT_COUNT_MAX;
+          in_count              <= (others => '0');
         end if;
         
+        -- Make data unkown
+        in_data                 <= (others => 'X');
+        
         -- Randomize data
-        for I in 0 to ELEMENT_COUNT_MAX-1  loop
-          uniform(seed1, seed2, rand);
-          in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= slv(to_unsigned(natural(rand * real(2.0 ** ELEMENT_WIDTH)), ELEMENT_WIDTH));
+        for I in 0 to true_count-1  loop
+            uniform(seed1, seed2, rand);
+            in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= gen_elem_val(rand);
+            
+            dumpStdOut("E[" & ii(first_index + total_elements) & "] = " & ii(int(gen_elem_val(rand))));
+            
+            total_elements      := total_elements + 1;
         end loop;
         
         -- Randomize last
         uniform(last_seed1, last_seed2, last_rand);
-        if last_rand < (1.0/128.0) then
+        if last_rand < (1.0/1024.0) then
           in_last               <= '1';
         end if;
         
@@ -218,6 +238,7 @@ begin
         exit;
       end if;
     end loop;
+    report "Test successful.";
     wait;
   end process;
    
@@ -225,6 +246,13 @@ begin
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
+    
+    variable address            : unsigned(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+    variable transfer           : unsigned(INDEX_WIDTH-1 downto 0)    := (others => '0');
+    variable elem_strobe        : std_logic := '1';
+    
+    variable total_elements     : natural := 0;
+    variable index              : integer := 0;
   begin
     bus_req_ready               <= '1';
     bus_wrd_ready               <= '0';
@@ -236,9 +264,32 @@ begin
       bus_req_ready             <= '0';
       bus_wrd_ready             <= '1';
       
+      -- Work back the element index from the address, assuming the base address is zero
+      index                     := int(bus_req_addr) / BYTES_PER_ELEM;
+      
       -- Accept the number of words requested by the burst length
       for I in 0 to to_integer(unsigned(bus_req_len))-1 loop
+        -- Wait until master writes a burst beat
         wait until rising_edge(acc_clk) and (bus_wrd_valid = '1');
+        -- Check each element value
+        for I in 0 to ELEMENTS_PER_WORD-1 loop
+          elem_strobe           := or_reduce(bus_wrd_strobe((I+1)*BYTES_PER_ELEM-1 downto I*BYTES_PER_ELEM));
+          if elem_strobe = '1' then
+            uniform(seed1, seed2, rand);
+            dumpStdOut("W[" & ii(index + I) & "]: " 
+                        & ii(int(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH))) 
+                        & " Expected: " & ii(int(gen_elem_val(rand))));
+                        
+            if int(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH)) /= int(gen_elem_val(rand)) then
+              report "BufferWriter test failure. Unexpected element on bus." severity failure;
+            end if;
+            
+            total_elements      := total_elements + 1;   
+          end if;
+        end loop;
+        
+        -- Increase current index
+        index                   := index + BUS_DATA_WIDTH / ELEMENT_WIDTH;
       end loop;
             
       -- Stop accepting data, start accepting requests
