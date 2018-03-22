@@ -187,13 +187,13 @@ begin
       -------------------------------------------------------------------------
       when IDLE =>
       -------------------------------------------------------------------------
+        -- Ready to receive a command
+        vo.cmdIn_ready          := '1';
+          
         if cmdIn_valid = '1' then
           -- Clock in the first index
           vr.index.first        := u(cmdIn_firstIdx);
           vr.index.current      := align_beq(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
-
-          -- Acknowledge the command
-          vo.cmdIn_ready        := '1';
 
           -- Advance state without backpressure
           if IS_INDEX_BUFFER then

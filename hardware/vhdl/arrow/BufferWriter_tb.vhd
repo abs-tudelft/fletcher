@@ -38,11 +38,11 @@ entity BufferWriter_tb is
     BUS_FIFO_DEPTH              : natural := 16;
     
     ELEMENT_WIDTH               : natural := 32;
-    ELEMENT_COUNT_MAX           : natural := 1;
+    ELEMENT_COUNT_MAX           : natural := 4;
     ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
     INDEX_WIDTH                 : natural := 32;
-    IS_INDEX_BUFFER             : boolean := true;
+    IS_INDEX_BUFFER             : boolean := false;
     
     NUM_COMMANDS                : natural := 100;
     
@@ -229,7 +229,7 @@ begin
         -- Randomize count
         if ELEMENT_COUNT_MAX > 1 then
           uniform(count_seed1, count_seed2, count_rand);
-          if count_rand > 0.95 then
+          if count_rand > 0.9 then
             true_count          := natural(count_rand * real(ELEMENT_COUNT_MAX-1));
             in_count            <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
           else
