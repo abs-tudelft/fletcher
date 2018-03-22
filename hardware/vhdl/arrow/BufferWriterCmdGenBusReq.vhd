@@ -74,13 +74,7 @@ entity BufferWriterCmdGenBusReq is
     ---------------------------------------------------------------------------
     -- Command stream input
     ---------------------------------------------------------------------------
-    -- Command stream input. firstIdx and lastIdx represent a range of elements
-    -- to be fetched from memory. firstIdx is inclusive, lastIdx is exclusive
-    -- for normal buffers and inclusive for index buffers, in all cases
-    -- resulting in lastIdx - firstIdx elements. baseAddr is the pointer to the
-    -- first element in the buffer. implicit may be set for null bitmap readers
-    -- if null count is zero; if it is set, no bus requests will be made, and
-    -- the unit will behave as if it receives all-one bus responses.
+    -- Command stream input.
     cmdIn_valid                 : in  std_logic;
     cmdIn_ready                 : out std_logic;
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -90,18 +84,19 @@ entity BufferWriterCmdGenBusReq is
     ---------------------------------------------------------------------------
     -- Data stream tracking signals
     ---------------------------------------------------------------------------
-    -- This unit keeps track of howmany words are loaded into the FIFO through
+    -- This unit keeps track of how many words are loaded into the FIFO through
     -- the word_loaded signal which should be asserted whenever a transfer into
-    -- the FIFO is handshaked.
+    -- the FIFO is handshaked. When word_last is asserted, a final burst step 
+    -- will be made
     word_loaded                 : in  std_logic;
     word_last                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Output streams
     ---------------------------------------------------------------------------
-    -- Bus read request (bus clock domain). addr represents the start address
-    -- for the transfer, len is the amount of requested words requested in the
-    -- burst. The maximum for len is set by BUS_BURST_STEP_LEN. Bursts never cross
+    -- Bus write request (bus clock domain). addr represents the start address
+    -- for the transfer, len is the amount of words to be written in the burst.
+    -- The maximum for len is set by BUS_BURST_STEP_LEN. Bursts never cross
     -- BUS_BURST_STEP_LEN-sized alignment boundaries.
     busReq_valid                : out std_logic;
     busReq_ready                : in  std_logic;

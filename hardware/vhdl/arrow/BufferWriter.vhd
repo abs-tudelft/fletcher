@@ -52,10 +52,10 @@ entity BufferWriter is
     ---------------------------------------------------------------------------
     -- Datapath timing configuration
     ---------------------------------------------------------------------------
-    -- Bus response and internal command stream FIFO depth. The maximum number
-    -- of outstanding requests is approximately this number divided by the
-    -- burst length. If set to 2, a register slice is inserted instead of a
-    -- FIFO. If set to 0, the buffers are omitted.
+    -- Bus write buffer FIFO depth. The maximum number of outstanding requests 
+    -- is approximately this number divided by the burst length. If set to 2, 
+    -- a register slice is inserted instead of a FIFO. If set to 0, the buffers
+    -- are omitted.
     BUS_FIFO_DEPTH              : natural := 16;
     
     ---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ entity BufferWriter is
 
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
-    -- control flags and base addresses for BufferReaders reading buffers that
+    -- control flags and base addresses for BufferWriters reading buffers that
     -- are indexed by this index buffer.
     CMD_CTRL_WIDTH              : natural := 1;
 
@@ -97,7 +97,7 @@ entity BufferWriter is
     -- Clock domains
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
-    -- bus and control logic side of the BufferReader.
+    -- bus and control logic side of the BufferWriter.
     bus_clk                     : in  std_logic;
     bus_reset                   : in  std_logic;
 

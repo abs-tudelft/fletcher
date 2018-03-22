@@ -21,13 +21,15 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 
+-------------------------------------------------------------------------------
 -- This unit prevents blocking the bus while waiting for input on the write
--- data stream. It buffers until whatever burst length has been requested
--- in a FIFO and only requests the write burst once the FIFO holds enough
--- words, such that the whole burst may be unloaded onto the bus at once.
--- It also provides last signaling for each burst, and provides a 
--- last_in_cmd signal for the last word that accepted by the bus for the 
--- unlock stream to synchronize to.
+-- data stream. It buffers until whatever burst length has been requested in a 
+-- FIFO and only requests the write burst once the FIFO holds enough words, 
+-- such that the whole burst may be unloaded onto the bus at once. It also 
+-- provides last signaling for each burst, and provides a last_in_cmd signal 
+-- for the last word that accepted by the bus for the unlock stream to 
+-- synchronize to.
+-------------------------------------------------------------------------------
 entity BusWriteBuffer is
   generic (
 
@@ -51,7 +53,7 @@ entity BusWriteBuffer is
   port (
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
-    -- bus and control logic side of the BufferReader.
+    -- bus and control logic side of the BufferWriter.
     clk                         : in  std_logic;
     reset                       : in  std_logic;
     
@@ -59,7 +61,9 @@ entity BusWriteBuffer is
     full                        : out std_logic;
     empty                       : out std_logic;
 
+    ---------------------------------------------------------------------------
     -- Master port.
+    ---------------------------------------------------------------------------
     mst_req_valid               : out std_logic;
     mst_req_ready               : in  std_logic;
     mst_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -71,7 +75,9 @@ entity BusWriteBuffer is
     mst_wrd_last                : out std_logic;
     mst_wrd_last_in_cmd         : out std_logic;
 
+    ---------------------------------------------------------------------------
     -- Slave port.
+    ---------------------------------------------------------------------------
     slv_req_valid               : in  std_logic;
     slv_req_ready               : out std_logic;
     slv_req_addr                : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -201,7 +207,7 @@ begin
     -- Note that this is implemented to not lose generality of this 
     -- BusWriteBuffer. It is not required by the BufferWriter implementation
     -- as it will not generate requests unless the buffer is sufficiently
-    -- filled. This is somewhat orthogonal to the BusReadBuffer, because
+    -- filled. This is somewhat the inverse of the BusReadBuffer, because
     -- there, it is known beforehand how much is going to be read. For the 
     -- BusWriteBuffer it is not known until the last signal has appeared.
     -- Thus we must buffer and then request, not request and then buffer.

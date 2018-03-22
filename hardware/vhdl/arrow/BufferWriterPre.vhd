@@ -54,10 +54,7 @@ entity BufferWriterPre is
     -- least 1 to prevent null ranges.
     ELEMENT_COUNT_WIDTH         : natural := 1;
 
-    -- Command stream control vector width. This vector is propagated to the
-    -- outgoing command stream, but isn't used otherwise. It is intended for
-    -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- Command stream control vector width.
     CMD_CTRL_WIDTH              : natural;
 
     -- Command stream tag width. This tag is propagated to the outgoing command

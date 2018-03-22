@@ -26,25 +26,25 @@ use work.SimUtils.all;
 
 -------------------------------------------------------------------------------
 -- This testbench is used to partially check the functionality of the 
--- BufferWriter. Testbench is only suitable for ELEMENT_WIDTH >= 8.
+-- BufferWriter.
 entity BufferWriter_tb is
   generic (   
-    BUS_ADDR_WIDTH              : natural  := 64;
-    BUS_DATA_WIDTH              : natural  := 512;
+    BUS_ADDR_WIDTH              : natural  := 32;
+    BUS_DATA_WIDTH              : natural  := 32;
     BUS_LEN_WIDTH               : natural  := 9;
-    BUS_BURST_STEP_LEN          : natural  := 1;
-    BUS_BURST_MAX_LEN           : natural  := 16;
+    BUS_BURST_STEP_LEN          : natural  := 8;
+    BUS_BURST_MAX_LEN           : natural  := 64;
                                            
-    BUS_FIFO_DEPTH              : natural  := 16;
+    BUS_FIFO_DEPTH              : natural  := 1;
                                            
-    ELEMENT_WIDTH               : natural  := 8;
-    ELEMENT_COUNT_MAX           : natural  := 64;
+    ELEMENT_WIDTH               : natural  := 16;
+    ELEMENT_COUNT_MAX           : natural  := 16;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
                                            
     INDEX_WIDTH                 : natural  := 32;
     IS_INDEX_BUFFER             : boolean  := false;
                                            
-    NUM_COMMANDS                : natural  := 100;
+    NUM_COMMANDS                : natural  := 64;
                                            
     CMD_CTRL_WIDTH              : natural  := 1;
                                            
