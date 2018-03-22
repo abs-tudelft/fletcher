@@ -194,6 +194,8 @@ begin
 
           -- Advance state without backpressure
           if IS_INDEX_BUFFER then
+            assert vr.index.first = 0 
+              report "CRITICAL WARNING: Index BufferWriter command first index is not 0. You are on your own.";
             vr.state            := INDEX;
           else
             vr.state            := PRE;
@@ -204,7 +206,6 @@ begin
       when INDEX =>
       -------------------------------------------------------------------------
         -- For index buffers, the first element to be inserted is zero
-        -- TODO: here it is still assumed first index is zero.
         vo.out_data             := INDEX_ZERO;
         vo.out_count            := COUNT_ONE;
         vo.out_strobe           := STROBE_FIRST;

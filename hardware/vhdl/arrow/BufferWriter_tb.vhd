@@ -37,12 +37,12 @@ entity BufferWriter_tb is
     
     BUS_FIFO_DEPTH              : natural := 16;
     
-    ELEMENT_WIDTH               : natural := 8;
-    ELEMENT_COUNT_MAX           : natural := 4;
+    ELEMENT_WIDTH               : natural := 32;
+    ELEMENT_COUNT_MAX           : natural := 1;
     ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
     INDEX_WIDTH                 : natural := 32;
-    IS_INDEX_BUFFER             : boolean := false;
+    IS_INDEX_BUFFER             : boolean := true;
     
     NUM_COMMANDS                : natural := 100;
     
@@ -53,8 +53,10 @@ entity BufferWriter_tb is
 end BufferWriter_tb;
 
 architecture tb of BufferWriter_tb is
-  constant ELEMENTS_PER_WORD    : natural := BUS_DATA_WIDTH / ELEMENT_WIDTH;
+  constant ELEMS_PER_WORD       : natural := BUS_DATA_WIDTH / ELEMENT_WIDTH;
   constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH/8);
+  constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
+  constant MAX_ELEM_VAL         : real    := 2.0 ** (ELEMENT_WIDTH - 1);
   
   signal command_done           : std_logic := '0';
   signal input_done             : std_logic := '0';
@@ -91,11 +93,21 @@ architecture tb of BufferWriter_tb is
   signal bus_wrd_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   
-  function gen_elem_val(rand: real) return std_logic_vector is
+  function gen_elem_val(rand: real) return unsigned is
   begin
-    return slv(to_unsigned(natural(rand * real(2.0 ** ELEMENT_WIDTH)), ELEMENT_WIDTH));
+    return to_unsigned(natural(rand * MAX_ELEM_VAL), ELEMENT_WIDTH);
   end function;
-
+  
+  procedure print_elem(name: in string; index: in integer; a: in unsigned) is 
+  begin
+    dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)));
+  end print_elem;
+  
+  procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is 
+  begin
+    dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
+  end print_elem_check;
+  
 begin
 
   clk_proc: process is
@@ -127,6 +139,8 @@ begin
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
+    
+    variable first_index        : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
   begin
     cmdIn_implicit              <= '0';
     cmdIn_baseAddr              <= (others => '0');
@@ -134,17 +148,39 @@ begin
     cmdIn_valid                 <= '0';
     cmdIn_tag                   <= (others => '0');
     
-    for I in 0 to NUM_COMMANDS-1 loop
-      wait until rising_edge(acc_clk) and (acc_reset /= '1');
+    -- Wait for reset
+    wait until rising_edge(acc_clk) and (acc_reset /= '1');
       
+    for I in 0 to NUM_COMMANDS-1 loop      
+      -- Determine the first index
       uniform(seed1, seed2, rand);
-      cmdIn_firstIdx            <= slv(to_unsigned(natural(rand * 4096.0), INDEX_WIDTH));     
       
+      -- For index buffers, first_index should start at zero
+      if IS_INDEX_BUFFER then
+        first_index             := (others => '0');
+      else
+        first_index             := to_unsigned(natural(rand * 4096.0), INDEX_WIDTH);
+      end if;
+      
+      if ELEMS_PER_BYTE = 0 then 
+        -- Elements start on byte boundaries
+        cmdIn_firstIdx          <= slv(first_index);
+      else
+        -- Elements don't always start on a byte boundary, align the first index to a byte boundary
+        cmdIn_firstIdx          <= slv(align_beq(first_index, log2ceil(ELEMS_PER_BYTE)));
+      end if;
+      
+      -- Validate the command
       cmdIn_valid               <= '1';
+      
+      -- Wait until it's accepted and invalidate
       wait until rising_edge(acc_clk) and (cmdIn_ready = '1');
       cmdIn_valid               <= '0';
     end loop;
+    
+    -- All commands have been accepted
     command_done                <= '1';
+    
     wait;
   end process;
   
@@ -165,21 +201,35 @@ begin
     
     variable total_elements     : integer  := 0;
     variable first_index        : integer  := 0;
+    
+    variable elem_val           : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
+    
     in_valid                    <= '0';
     in_last                     <= '0';
+    
     loop     
-      -- Wait until command gets accepted:
+      -- Wait until a command gets accepted:
       wait until rising_edge(acc_clk) and (cmdIn_ready = '1' and cmdIn_valid = '1');
       first_index               := int(cmdIn_firstIdx);
       total_elements            := 0;
+      
+      if IS_INDEX_BUFFER then
+        total_elements          := total_elements + 1;
+      end if;
+      
       loop
         in_last                 <= '0';
         -- Randomize count
-        uniform(count_seed1, count_seed2, count_rand);
-        if count_rand > 0.95 then
-          true_count            := natural(count_rand * real(ELEMENT_COUNT_MAX-1));
-          in_count              <= slv(to_unsigned(true_count,ELEMENT_COUNT_WIDTH));
+        if ELEMENT_COUNT_MAX > 1 then
+          uniform(count_seed1, count_seed2, count_rand);
+          if count_rand > 0.95 then
+            true_count          := natural(count_rand * real(ELEMENT_COUNT_MAX-1));
+            in_count            <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
+          else
+            true_count          := ELEMENT_COUNT_MAX;
+            in_count            <= (others => '0');
+          end if;
         else
           true_count            := ELEMENT_COUNT_MAX;
           in_count              <= (others => '0');
@@ -191,23 +241,31 @@ begin
         -- Randomize data
         for I in 0 to true_count-1  loop
             uniform(seed1, seed2, rand);
-            in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= gen_elem_val(rand);
+
+            elem_val            := gen_elem_val(rand);
+            in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= slv(elem_val);
             
-            dumpStdOut("E[" & ii(first_index + total_elements) & "] = " & ii(int(gen_elem_val(rand))));
+            print_elem("Stream", first_index + total_elements, elem_val);
             
             total_elements      := total_elements + 1;
         end loop;
         
-        -- Randomize last
+        -- Randomize last, but only assert it if the "last index" is on a byte boundary
         uniform(last_seed1, last_seed2, last_rand);
-        if last_rand < (1.0/1024.0) then
-          in_last               <= '1';
+        if last_rand < (1.0/256.0) then
+          if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
+            if total_elements mod ELEMS_PER_BYTE = 0 then
+              in_last           <= '1';
+            end if;
+          else
+            in_last             <= '1';
+          end if;
         end if;
         
         -- Wait until handshake
         in_valid                <= '1';
         wait until rising_edge(acc_clk) and (in_ready = '1');
-        
+                
         -- Exit when last
         if in_last = '1' then
           exit;
@@ -230,36 +288,49 @@ begin
     variable unlocked           : integer := 0;
   begin
     loop
-        -- Check if unlock is done
+      -- Wait for unlock handshake
       wait until rising_edge(acc_clk) and (unlock_valid = '1' and unlock_ready = '1');
+      
+      -- Increase number of unlocks
       unlocked := unlocked + 1;
+      
+      -- TODO: check unlock tag
+      
+      -- Check if we are done
       if unlocked = NUM_COMMANDS then
         write_done <= '1';
         exit;
       end if;
     end loop;
+    
+    -- If the test finishes, it is successful.
     report "Test successful.";
+    
     wait;
   end process;
-   
+  
+  -- This process can only accept a single bus burst request at a time
   bus_write_proc: process is
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
     
-    variable address            : unsigned(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-    variable transfer           : unsigned(INDEX_WIDTH-1 downto 0)    := (others => '0');
+    variable address            : unsigned(BUS_ADDR_WIDTH-1 downto 0);
     variable elem_strobe        : std_logic := '1';
     
-    variable total_elements     : natural := 0;
     variable index              : integer := 0;
+    
+    variable elem_written       : unsigned(ELEMENT_WIDTH-1 downto 0);
+    variable elem_expected      : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
     bus_req_ready               <= '1';
     bus_wrd_ready               <= '0';
     loop
+      -- Exit when all writes are done
       if write_done = '1' then
         exit;
       end if;
+      -- Wait for a bus request
       wait until rising_edge(acc_clk) and (bus_req_ready = '1' and bus_req_valid = '1');
       bus_req_ready             <= '0';
       bus_wrd_ready             <= '1';
@@ -272,19 +343,35 @@ begin
         -- Wait until master writes a burst beat
         wait until rising_edge(acc_clk) and (bus_wrd_valid = '1');
         -- Check each element value
-        for I in 0 to ELEMENTS_PER_WORD-1 loop
-          elem_strobe           := or_reduce(bus_wrd_strobe((I+1)*BYTES_PER_ELEM-1 downto I*BYTES_PER_ELEM));
+        for I in 0 to ELEMS_PER_WORD-1 loop
+          -- Determine the element strobe. For elements smaller than a byte, duplicate the strobe.
+          if ELEMS_PER_BYTE = 0 then
+            -- The elements are always byte aligned.
+            elem_strobe         := or_reduce(bus_wrd_strobe((I+1)*BYTES_PER_ELEM-1 downto I*BYTES_PER_ELEM));
+          else
+            -- The elements are not always byte aligned
+            elem_strobe         := bus_wrd_strobe(I/ELEMS_PER_BYTE);
+          end if;
+          
+          -- Grab what is written
+          elem_written          := u(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
+          
+          -- Check if the element strobe is asserted
           if elem_strobe = '1' then
-            uniform(seed1, seed2, rand);
-            dumpStdOut("W[" & ii(index + I) & "]: " 
-                        & ii(int(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH))) 
-                        & " Expected: " & ii(int(gen_elem_val(rand))));
-                        
-            if int(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH)) /= int(gen_elem_val(rand)) then
-              report "BufferWriter test failure. Unexpected element on bus." severity failure;
+          
+            -- If this is an index buffer and its the first element, we expect it to be 0
+            if IS_INDEX_BUFFER and index+I = 0 then
+              elem_expected     := (others => '0');
+            else
+              uniform(seed1, seed2, rand);
+              elem_expected     := gen_elem_val(rand);
             end if;
             
-            total_elements      := total_elements + 1;   
+            print_elem_check("Bus", index+I, elem_written, elem_expected);
+            if elem_written /= elem_expected then
+              report "Unexpected element on bus. TEST FAILURE." severity failure;
+            end if;
+              
           end if;
         end loop;
         
