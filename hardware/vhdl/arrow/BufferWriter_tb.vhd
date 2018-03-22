@@ -46,7 +46,9 @@ entity BufferWriter_tb is
     
     NUM_COMMANDS                : natural := 100;
     
-    CMD_TAG_WIDTH               : natural := 1;
+    CMD_CTRL_WIDTH              : natural := 1;
+    
+    CMD_TAG_WIDTH               : natural := log2ceil(NUM_COMMANDS);
     
     SEED                        : positive := 16#BEE5#
   );
@@ -77,6 +79,7 @@ architecture tb of BufferWriter_tb is
   
   signal unlock_valid           : std_logic;
   signal unlock_ready           : std_logic := '1';
+  signal unlock_tag             : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
   signal in_valid               : std_logic := '0';
   signal in_ready               : std_logic;
@@ -170,6 +173,9 @@ begin
         cmdIn_firstIdx          <= slv(align_beq(first_index, log2ceil(ELEMS_PER_BYTE)));
       end if;
       
+      -- Set tag:
+      cmdIn_tag                 <= slv(to_unsigned(I, CMD_TAG_WIDTH));
+      
       -- Validate the command
       cmdIn_valid               <= '1';
       
@@ -232,7 +238,7 @@ begin
           end if;
         else
           true_count            := ELEMENT_COUNT_MAX;
-          in_count              <= (others => '0');
+          in_count              <= (others => '1');
         end if;
         
         -- Make data unkown
@@ -286,19 +292,25 @@ begin
    
   unlock_proc: process is
     variable unlocked           : integer := 0;
+    
+    variable expected_tag       : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   begin
     loop
       -- Wait for unlock handshake
       wait until rising_edge(acc_clk) and (unlock_valid = '1' and unlock_ready = '1');
+
+      expected_tag              := slv(to_unsigned(unlocked,CMD_TAG_WIDTH));
+      
+      if unlock_tag /= expected_tag then
+        report "Unexpected tag on unlock stream." severity failure;
+      end if;
       
       -- Increase number of unlocks
-      unlocked := unlocked + 1;
-      
-      -- TODO: check unlock tag
+      unlocked                  := unlocked + 1;
       
       -- Check if we are done
       if unlocked = NUM_COMMANDS then
-        write_done <= '1';
+        write_done              <= '1';
         exit;
       end if;
     end loop;
@@ -400,8 +412,8 @@ begin
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
       ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
-      CMD_CTRL_WIDTH            => 1,
-      CMD_TAG_WIDTH             => 1
+      CMD_CTRL_WIDTH            => CMD_CTRL_WIDTH,
+      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
       bus_clk                   => bus_clk,
@@ -419,7 +431,7 @@ begin
       
       unlock_valid              => unlock_valid,
       unlock_ready              => unlock_ready,
-      unlock_tag                => open,
+      unlock_tag                => unlock_tag,
       
       in_valid                  => in_valid,
       in_ready                  => in_ready,

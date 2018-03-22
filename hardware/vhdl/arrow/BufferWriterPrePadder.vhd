@@ -117,6 +117,9 @@ architecture rtl of BufferWriterPrePadder is
   constant STROBE_ALL           : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (others => '1');
 
   constant COUNT_ONE            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (0 => '1', others => '0');
+  
+  -- A count of all zeros is equal to the max count
+  constant COUNT_ALL            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (others => '0');
 
   type index_record is record
     first                       : unsigned(INDEX_WIDTH-1 downto 0);
@@ -195,7 +198,8 @@ begin
           -- Advance state without backpressure
           if IS_INDEX_BUFFER then
             assert vr.index.first = 0 
-              report "CRITICAL WARNING: Index BufferWriter command first index is not 0. You are on your own.";
+              report "ERROR: Index BufferWriter command first index is not 0."
+              severity failure;
             vr.state            := INDEX;
           else
             vr.state            := PRE;
@@ -205,7 +209,7 @@ begin
       -------------------------------------------------------------------------
       when INDEX =>
       -------------------------------------------------------------------------
-        -- For index buffers, the first element to be inserted is zero
+        -- For index buffers, we insert one element
         vo.out_data             := INDEX_ZERO;
         vo.out_count            := COUNT_ONE;
         vo.out_strobe           := STROBE_FIRST;
@@ -213,7 +217,9 @@ begin
 
         -- Advance state if no backpressure
         if out_ready = '1' then
-          vr.state              := PRE;
+          vr.index.current    := vr.index.current + 1;
+          -- Index buffer should never have to prepend, so skip to pass
+          vr.state              := PASS;
         end if;
 
       -------------------------------------------------------------------------
@@ -260,11 +266,12 @@ begin
           vr.index.last         := align_aeq(vr.index.current, log2ceil(ELEM_PER_BURST_STEP));
           
           if in_last = '1' then
+            vr.state            := POST;
+            
             -- Only assert last if the current index is aligned
             if is_aligned(vr.index.current, log2ceil(ELEM_PER_BURST_STEP)) then
               vo.out_last       := '1';
             end if;
-            vr.state            := POST;
           end if;
         end if;
 

@@ -339,17 +339,18 @@ begin
   bus_wrd_strobe                <= int_bus_wrd_strobe;
   bus_wrd_last                  <= int_bus_wrd_last;
   
-  unlock_proc: process(unlock_ready, unl_valid, bus_wrd_ready, int_bus_wrd_valid, unl_ready, last_in_cmd)
+  unlock_proc: process(unlock_ready, unl_valid, bus_wrd_ready, int_bus_wrd_valid, last_in_cmd)
   begin
     -- If a bus word write is valid
     if int_bus_wrd_valid = '1' then
-      if last_in_cmd = '1' then
-        -- Let the unlock stream do its thing only when this is the last word in the command
+      -- If this is the last word in the command and it was written
+      if last_in_cmd = '1' and bus_wrd_ready = '1' then
+        -- Let the unlock stream handshake
         unl_ready               <= unlock_ready;
         unlock_valid            <= unl_valid;
   
-        -- Let the data stream do its thing only when the unlock stream handshaked
-        if unl_valid = '1' and unl_ready = '1' then
+        -- Let the data stream handshake only when the unlock stream handshaked
+        if unl_valid = '1' and unlock_ready = '1' then
           int_bus_wrd_ready     <= bus_wrd_ready;
           bus_wrd_valid         <= int_bus_wrd_valid;
         else

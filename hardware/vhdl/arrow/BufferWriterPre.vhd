@@ -64,10 +64,10 @@ entity BufferWriterPre is
     -- stream and to the unlock stream. It is intended for chunk reference
     -- counting.
     CMD_TAG_WIDTH               : natural
-    
+
     -- Optional synchronizer for the data and write strobe streams
     --SYNC_OUTPUT                 : boolean
-    
+
   );
   port (
     clk                         : in  std_logic;
@@ -122,7 +122,7 @@ architecture Behavioral of BufferWriterPre is
   signal norm_data              : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal norm_count             : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal norm_last              : std_logic;
-  
+
   -- Normalized write strobe stream
   signal strobe_norm_valid      : std_logic;
   signal strobe_norm_ready      : std_logic;
@@ -137,7 +137,7 @@ architecture Behavioral of BufferWriterPre is
   signal shaped_data            : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal shaped_count           : std_logic_vector(BE_COUNT_WIDTH-1 downto 0);
   signal shaped_last            : std_logic;
-  
+
   -- Reshaped write strobe stream
   signal strobe_shaped_valid    : std_logic;
   signal strobe_shaped_ready    : std_logic := '1';
@@ -151,7 +151,7 @@ begin
   -----------------------------------------------------------------------------
   -- We pad the incoming stream with elements such that they align to a burst
   -- step. Also, element-based write strobes are generated
-  
+
   padder_inst: BufferWriterPrePadder
     generic map (
       INDEX_WIDTH               => INDEX_WIDTH,
@@ -167,7 +167,7 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      
+
       cmdIn_valid               => cmdIn_valid,
       cmdIn_ready               => cmdIn_ready,
       cmdIn_firstIdx            => cmdIn_firstIdx,
@@ -186,74 +186,95 @@ begin
       out_count                 => pad_count,
       out_last                  => pad_last
     );
-    
+
   -----------------------------------------------------------------------------
   -- Normalizers
   -----------------------------------------------------------------------------
-  -- The padded stream is split into a data and a write strobe stream and 
+  -- The padded stream is split into a data and a write strobe stream and
   -- normalized. That is, the output of the normalizers always contains
   -- the maximum number of elements per cycle
+  -- TODO: Use a StreamSync to do the splitting
+
+  -- Only generate normalizers if there can be more than one element per cycle
+  norm_gen: if ELEMENT_COUNT_MAX > 1 generate
+    data_normalizer_inst: StreamNormalizer
+      generic map (
+        ELEMENT_WIDTH           => ELEMENT_WIDTH,
+        COUNT_MAX               => ELEMENT_COUNT_MAX,
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
+        REQ_COUNT_WIDTH         => ELEMENT_COUNT_WIDTH+1
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => pad_data_valid,
+        in_ready                => pad_data_ready,
+        in_dvalid               => '1',
+        in_data                 => pad_data,
+        in_count                => pad_count,
+        in_last                 => pad_last,
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
+        out_valid               => norm_valid,
+        out_ready               => norm_ready,
+        out_dvalid              => norm_dvalid,
+        out_data                => norm_data,
+        out_count               => norm_count,
+        out_last                => norm_last
+      );
+
+    strobe_normalizer_inst: StreamNormalizer
+      generic map (
+        ELEMENT_WIDTH           => 1,
+        COUNT_MAX               => ELEMENT_COUNT_MAX,
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
+        REQ_COUNT_WIDTH         => ELEMENT_COUNT_WIDTH+1
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => pad_strobe_valid,
+        in_ready                => pad_strobe_ready,
+        in_dvalid               => '1',
+        in_data                 => pad_strobe,
+        in_count                => pad_count,
+        in_last                 => pad_last,
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
+        out_valid               => strobe_norm_valid,
+        out_ready               => strobe_norm_ready,
+        out_dvalid              => strobe_norm_dvalid,
+        out_data                => strobe_norm_data,
+        out_count               => strobe_norm_count,
+        out_last                => strobe_norm_last
+      );
+  end generate;
   
-  data_normalizer_inst: StreamNormalizer
-    generic map (
-      ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      COUNT_MAX                 => ELEMENT_COUNT_MAX,
-      COUNT_WIDTH               => ELEMENT_COUNT_WIDTH,
-      REQ_COUNT_WIDTH           => ELEMENT_COUNT_WIDTH+1
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid                  => pad_data_valid,
-      in_ready                  => pad_data_ready,
-      in_dvalid                 => '1',
-      in_data                   => pad_data,
-      in_count                  => pad_count,
-      in_last                   => pad_last,
-      req_count                 => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
-      out_valid                 => norm_valid,
-      out_ready                 => norm_ready,
-      out_dvalid                => norm_dvalid,
-      out_data                  => norm_data,
-      out_count                 => norm_count,
-      out_last                  => norm_last
-    );
-  
-  strobe_normalizer_inst: StreamNormalizer
-    generic map (
-      ELEMENT_WIDTH             => 1,
-      COUNT_MAX                 => ELEMENT_COUNT_MAX,
-      COUNT_WIDTH               => ELEMENT_COUNT_WIDTH,
-      REQ_COUNT_WIDTH           => ELEMENT_COUNT_WIDTH+1
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid                  => pad_strobe_valid,
-      in_ready                  => pad_strobe_ready,
-      in_dvalid                 => '1',
-      in_data                   => pad_strobe,
-      in_count                  => pad_count,
-      in_last                   => pad_last,
-      req_count                 => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
-      out_valid                 => strobe_norm_valid,
-      out_ready                 => strobe_norm_ready,
-      out_dvalid                => strobe_norm_dvalid,
-      out_data                  => strobe_norm_data,
-      out_count                 => strobe_norm_count,
-      out_last                  => strobe_norm_last
-    );
+  -- No normalizer is required
+  no_norm_gen: if ELEMENT_COUNT_MAX = 1 generate
+    pad_data_ready              <= norm_ready;
+    norm_valid                  <= pad_data_valid;
+    norm_dvalid                 <= '1';
+    norm_data                   <= pad_data;
+    norm_count                  <= pad_count;
+    norm_last                   <= pad_last;
     
+    pad_strobe_ready            <= strobe_norm_ready;
+    strobe_norm_valid           <= pad_strobe_valid;
+    strobe_norm_dvalid          <= '1';
+    strobe_norm_data            <= pad_strobe;
+    strobe_norm_count           <= pad_count;
+    strobe_norm_last            <= pad_last;
+  end generate;
+
   -- Only validate when the other normalizer is ready
-  pad_data_valid              <= pad_valid and pad_strobe_ready;
-  pad_strobe_valid            <= pad_valid and pad_data_ready;
-  
+  pad_data_valid                <= pad_valid and pad_strobe_ready;
+  pad_strobe_valid              <= pad_valid and pad_data_ready;
+
   -- Only ready when both normalizers are ready
-  pad_ready                   <= pad_data_ready and pad_strobe_ready;
-  
-  -----------------------------------------------------------------------------    
+  pad_ready                     <= pad_data_ready and pad_strobe_ready;
+
+  -----------------------------------------------------------------------------
   -- Gearboxes
-  -----------------------------------------------------------------------------  
+  -----------------------------------------------------------------------------
   -- Here the streams are reshaped (parallelized or serialized) such that they
   -- fit in a single bus word
 
@@ -280,7 +301,7 @@ begin
       out_count                 => shaped_count,
       out_last                  => shaped_last
     );
-  
+
   strobe_gearbox_inst: StreamGearbox
     generic map (
       DATA_WIDTH                => 1,
@@ -304,20 +325,20 @@ begin
       out_count                 => strobe_shaped_count,
       out_last                  => strobe_shaped_last
     );
+
+    -- It -shouldn't- be required to synchronize the streams as the control 
+    -- characteristics and backpressure of the gearboxes are exactly the same.
     
-    -- It -shouldn't- be required to synchronize the streams
-    -- as the control characteristics of the gearboxes are the
-    -- same.
     --sync_gen: if SYNC_OUTPUT generate
     --end generate;
-    
+
     strobe_shaped_ready         <= out_ready;
     shaped_ready                <= out_ready;
-    
+
     out_valid                   <= shaped_valid and strobe_shaped_valid;
     out_data                    <= shaped_data;
     out_last                    <= shaped_last and strobe_shaped_last;
-    
+
     -- Convert the element strobe into a byte strobe
     byte_strobe_proc: process(strobe_shaped_data)
     begin
@@ -338,7 +359,7 @@ begin
         end loop;
       end if;
     end process;
-      
+
 
 end Behavioral;
 
