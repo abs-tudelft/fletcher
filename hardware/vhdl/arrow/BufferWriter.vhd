@@ -344,7 +344,7 @@ begin
     -- If a bus word write is valid
     if int_bus_wrd_valid = '1' then
       -- If this is the last word in the command and it was written
-      if last_in_cmd = '1' then
+      if last_in_cmd = '1' and bus_wrd_ready = '1' then
         -- Let the unlock stream handshake
         unl_ready               <= unlock_ready;
         unlock_valid            <= unl_valid;

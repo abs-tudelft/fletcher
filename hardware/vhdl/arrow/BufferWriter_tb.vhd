@@ -29,27 +29,28 @@ use work.SimUtils.all;
 -- BufferWriter. Testbench is only suitable for ELEMENT_WIDTH >= 8.
 entity BufferWriter_tb is
   generic (   
-    BUS_ADDR_WIDTH              : natural := 32;
-    BUS_DATA_WIDTH              : natural := 64;
-    BUS_LEN_WIDTH               : natural := 9;
-    BUS_BURST_STEP_LEN          : natural := 4;
-    BUS_BURST_MAX_LEN           : natural := 16;
+    BUS_ADDR_WIDTH              : natural  := 64;
+    BUS_DATA_WIDTH              : natural  := 512;
+    BUS_LEN_WIDTH               : natural  := 9;
+    BUS_BURST_STEP_LEN          : natural  := 1;
+    BUS_BURST_MAX_LEN           : natural  := 16;
+                                           
+    BUS_FIFO_DEPTH              : natural  := 16;
+                                           
+    ELEMENT_WIDTH               : natural  := 8;
+    ELEMENT_COUNT_MAX           : natural  := 64;
+    ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
+                                           
+    INDEX_WIDTH                 : natural  := 32;
+    IS_INDEX_BUFFER             : boolean  := false;
+                                           
+    NUM_COMMANDS                : natural  := 100;
+                                           
+    CMD_CTRL_WIDTH              : natural  := 1;
+                                           
+    CMD_TAG_WIDTH               : natural  := log2ceil(NUM_COMMANDS);
     
-    BUS_FIFO_DEPTH              : natural := 16;
-    
-    ELEMENT_WIDTH               : natural := 32;
-    ELEMENT_COUNT_MAX           : natural := 4;
-    ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX));
-
-    INDEX_WIDTH                 : natural := 32;
-    IS_INDEX_BUFFER             : boolean := false;
-    
-    NUM_COMMANDS                : natural := 100;
-    
-    CMD_CTRL_WIDTH              : natural := 1;
-    
-    CMD_TAG_WIDTH               : natural := log2ceil(NUM_COMMANDS);
-    
+    VERBOSE                     : boolean  := false;
     SEED                        : positive := 16#BEE5#
   );
 end BufferWriter_tb;
@@ -95,6 +96,7 @@ architecture tb of BufferWriter_tb is
   signal bus_wrd_ready          : std_logic;
   signal bus_wrd_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal bus_wrd_last           : std_logic;
   
   function gen_elem_val(rand: real) return unsigned is
   begin
@@ -113,6 +115,7 @@ architecture tb of BufferWriter_tb is
   
 begin
 
+  -- Clock
   clk_proc: process is
   begin
     if command_done = '0' or input_done = '0' or write_done = '0' then
@@ -127,6 +130,7 @@ begin
     end if;
   end process;
 
+  -- Reset
   reset_proc: process is
   begin
     bus_reset <= '1';
@@ -138,6 +142,7 @@ begin
     wait;
   end process;
   
+  -- Command generation
   command_proc: process is 
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
@@ -190,6 +195,7 @@ begin
     wait;
   end process;
   
+  -- Input stream generation
   input_stream_proc: process is
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
@@ -251,7 +257,9 @@ begin
             elem_val            := gen_elem_val(rand);
             in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= slv(elem_val);
             
-            print_elem("Stream", first_index + total_elements, elem_val);
+            if VERBOSE then
+              print_elem("Stream", first_index + total_elements, elem_val);
+            end if;
             
             total_elements      := total_elements + 1;
         end loop;
@@ -290,6 +298,7 @@ begin
     wait;
   end process;
    
+  -- Unlock stream check
   unlock_proc: process is
     variable unlocked           : integer := 0;
     
@@ -302,7 +311,7 @@ begin
       expected_tag              := slv(to_unsigned(unlocked,CMD_TAG_WIDTH));
       
       if unlock_tag /= expected_tag then
-        report "Unexpected tag on unlock stream." severity failure;
+        report "TEST FAILURE. Unexpected tag on unlock stream." severity failure;
       end if;
       
       -- Increase number of unlocks
@@ -315,12 +324,16 @@ begin
       end if;
     end loop;
     
+    -- Dirty trick to allow stdout to empty write buffer since textio doesn't have a flush function
+    wait for 100 ns;
+    
     -- If the test finishes, it is successful.
-    report "Test successful.";
+    report "TEST SUCCESSFUL.";
     
     wait;
   end process;
-  
+
+  -- Bus write check
   -- This process can only accept a single bus burst request at a time
   bus_write_proc: process is
     variable seed1              : positive := SEED;
@@ -328,10 +341,12 @@ begin
     variable rand               : real;
     
     variable address            : unsigned(BUS_ADDR_WIDTH-1 downto 0);
-    variable elem_strobe        : std_logic := '1';
     
+    variable len                : unsigned(BUS_LEN_WIDTH-1 downto 0);
+    variable transfers          : unsigned(BUS_LEN_WIDTH-1 downto 0);
+        
     variable index              : integer := 0;
-    
+    variable elem_strobe        : std_logic := '1';    
     variable elem_written       : unsigned(ELEMENT_WIDTH-1 downto 0);
     variable elem_expected      : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
@@ -347,13 +362,20 @@ begin
       bus_req_ready             <= '0';
       bus_wrd_ready             <= '1';
       
+      -- Remember the burst length
+      len                       := unsigned(bus_req_len);
+      transfers                 := (others => '0');
+      
       -- Work back the element index from the address, assuming the base address is zero
       index                     := int(bus_req_addr) / BYTES_PER_ELEM;
       
       -- Accept the number of words requested by the burst length
-      for I in 0 to to_integer(unsigned(bus_req_len))-1 loop
+      for I in 0 to int(len)-1 loop
         -- Wait until master writes a burst beat
         wait until rising_edge(acc_clk) and (bus_wrd_valid = '1');
+        
+        transfers               := transfers + 1;
+        
         -- Check each element value
         for I in 0 to ELEMS_PER_WORD-1 loop
           -- Determine the element strobe. For elements smaller than a byte, duplicate the strobe.
@@ -379,26 +401,45 @@ begin
               elem_expected     := gen_elem_val(rand);
             end if;
             
-            print_elem_check("Bus", index+I, elem_written, elem_expected);
+            if VERBOSE then
+              print_elem_check("Bus", index+I, elem_written, elem_expected);
+            end if;
+            
             if elem_written /= elem_expected then
-              report "Unexpected element on bus. TEST FAILURE." severity failure;
+              if not(VERBOSE) then
+                print_elem_check("Bus", index+I, elem_written, elem_expected);
+              end if;
+              report "TEST FAILURE. Unexpected element on bus." severity failure;
             end if;
               
           end if;
+          
+          -- Make sure last is not too early
+          if bus_wrd_last = '1' then
+            assert transfers = len
+              report "TEST FAILURE. Bus write channel last asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len)) 
+              severity failure;
+          end if;
+          
+          -- Or too late
+          if transfers = len and bus_wrd_last = '0' then
+            report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len)) 
+              severity failure;
+          end if;
+          
         end loop;
         
         -- Increase current index
         index                   := index + BUS_DATA_WIDTH / ELEMENT_WIDTH;
       end loop;
-            
-      -- Stop accepting data, start accepting requests
+      -- Start accepting new requests
       bus_req_ready             <= '1';
       bus_wrd_ready             <= '0';
     end loop;
     wait;
   end process;
 
-
+  -- BufferWriter instantiation
   uut : BufferWriter
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -446,7 +487,8 @@ begin
       bus_wrd_valid             => bus_wrd_valid,
       bus_wrd_ready             => bus_wrd_ready,
       bus_wrd_data              => bus_wrd_data,
-      bus_wrd_strobe            => bus_wrd_strobe
+      bus_wrd_strobe            => bus_wrd_strobe,
+      bus_wrd_last              => bus_wrd_last
     );
 
 end architecture;
