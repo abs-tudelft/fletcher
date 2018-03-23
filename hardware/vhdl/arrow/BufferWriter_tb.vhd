@@ -25,33 +25,35 @@ use work.Arrow.all;
 use work.SimUtils.all;
 
 -------------------------------------------------------------------------------
--- This testbench is used to partially check the functionality of the 
--- BufferWriter.
+-- This testbench is used to check the functionality of the BufferWriter.
 entity BufferWriter_tb is
   generic (   
-    BUS_ADDR_WIDTH              : natural  := 32;
-    BUS_DATA_WIDTH              : natural  := 32;
+    BUS_ADDR_WIDTH              : natural  := 64;
+    BUS_DATA_WIDTH              : natural  := 64;
     BUS_LEN_WIDTH               : natural  := 9;
-    BUS_BURST_STEP_LEN          : natural  := 8;
-    BUS_BURST_MAX_LEN           : natural  := 64;
+    BUS_BURST_STEP_LEN          : natural  := 4;
+    BUS_BURST_MAX_LEN           : natural  := 16;
                                            
     BUS_FIFO_DEPTH              : natural  := 1;
+    BUS_FIFO_THRESHOLD_SHIFT    : natural  := 0;
                                            
-    ELEMENT_WIDTH               : natural  := 16;
-    ELEMENT_COUNT_MAX           : natural  := 16;
+    ELEMENT_WIDTH               : natural  := 8;
+    ELEMENT_COUNT_MAX           : natural  := 4;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
                                            
     INDEX_WIDTH                 : natural  := 32;
     IS_INDEX_BUFFER             : boolean  := false;
                                            
-    NUM_COMMANDS                : natural  := 64;
+    NUM_COMMANDS                : natural  := 32;
+    WAIT_FOR_UNLOCK             : boolean  := true;
+    KNOWN_LAST_INDEX            : boolean  := false;
                                            
     CMD_CTRL_WIDTH              : natural  := 1;
                                            
     CMD_TAG_WIDTH               : natural  := log2ceil(NUM_COMMANDS);
     
-    VERBOSE                     : boolean  := false;
-    SEED                        : positive := 16#BEE5#
+    VERBOSE                     : boolean  := true;
+    SEED                        : positive := 16#0123#
   );
 end BufferWriter_tb;
 
@@ -147,8 +149,13 @@ begin
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
+
+    variable seed1_last         : positive := SEED;
+    variable seed2_last         : positive := 1;
+    variable rand_last          : real;
     
     variable first_index        : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+    variable last_index         : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
   begin
     cmdIn_implicit              <= '0';
     cmdIn_baseAddr              <= (others => '0');
@@ -160,22 +167,29 @@ begin
     wait until rising_edge(acc_clk) and (acc_reset /= '1');
       
     for I in 0 to NUM_COMMANDS-1 loop      
-      -- Determine the first index
+      -- Determine the first index and last index
       uniform(seed1, seed2, rand);
+      uniform(seed1_last, seed2_last, rand_last);
       
       -- For index buffers, first_index should start at zero
       if IS_INDEX_BUFFER then
         first_index             := (others => '0');
+        last_index              := (others => '0');
       else
-        first_index             := to_unsigned(natural(rand * 4096.0), INDEX_WIDTH);
+        first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
+        if KNOWN_LAST_INDEX then
+          last_index            := first_index + to_unsigned(natural(rand_last * 256.0), INDEX_WIDTH);
+        end if;
       end if;
       
       if ELEMS_PER_BYTE = 0 then 
         -- Elements start on byte boundaries
         cmdIn_firstIdx          <= slv(first_index);
+        cmdIn_lastIdx           <= slv(last_index);
       else
         -- Elements don't always start on a byte boundary, align the first index to a byte boundary
         cmdIn_firstIdx          <= slv(align_beq(first_index, log2ceil(ELEMS_PER_BYTE)));
+        cmdIn_lastIdx           <= slv(align_aeq(last_index, log2ceil(ELEMS_PER_BYTE)));
       end if;
       
       -- Set tag:
@@ -213,6 +227,7 @@ begin
     
     variable total_elements     : integer  := 0;
     variable first_index        : integer  := 0;
+    variable last_index         : integer  := 0;
     
     variable elem_val           : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
@@ -221,9 +236,12 @@ begin
     in_last                     <= '0';
     
     loop     
+      in_valid                  <= '0';
+      in_last                   <= '0';
       -- Wait until a command gets accepted:
       wait until rising_edge(acc_clk) and (cmdIn_ready = '1' and cmdIn_valid = '1');
       first_index               := int(cmdIn_firstIdx);
+      last_index                := int(cmdIn_lastIdx);
       total_elements            := 0;
       
       if IS_INDEX_BUFFER then
@@ -247,6 +265,14 @@ begin
           in_count              <= (others => '1');
         end if;
         
+        -- Reduce count to not exceed lastidx
+        if (first_index + total_elements + true_count > last_index) and last_index /= 0 then
+          dumpStdOut("Count would exceed last index, modifying..." & ii(first_index + total_elements) & " + " & ii(true_count) & " > " & ii(last_index));
+          true_count            := last_index - (first_index + total_elements);
+          dumpStdOut("New count:" & ii(true_count));
+          in_count              <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
+        end if;
+        
         -- Make data unkown
         in_data                 <= (others => 'X');
         
@@ -265,19 +291,29 @@ begin
         end loop;
         
         -- Randomize last, but only assert it if the "last index" is on a byte boundary
-        uniform(last_seed1, last_seed2, last_rand);
-        if last_rand < (1.0/256.0) then
-          if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
-            if total_elements mod ELEMS_PER_BYTE = 0 then
-              in_last           <= '1';
+        -- and we didn't give a last index
+        if last_index = 0 then
+          uniform(last_seed1, last_seed2, last_rand);
+          if last_rand < (1.0/32.0) then
+            if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
+              if total_elements mod ELEMS_PER_BYTE = 0 then
+                in_last           <= '1';
+              end if;
+            else
+              in_last             <= '1';
             end if;
-          else
-            in_last             <= '1';
+          end if;
+        else
+          -- If we've created enough elements to full the range, last must be '1'
+          if first_index + total_elements >= last_index - 1 then
+            in_last               <= '1';
           end if;
         end if;
         
+        -- Validate input stream
+        in_valid                  <= '1';
+        
         -- Wait until handshake
-        in_valid                <= '1';
         wait until rising_edge(acc_clk) and (in_ready = '1');
                 
         -- Exit when last
@@ -448,6 +484,7 @@ begin
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_FIFO_DEPTH            => BUS_FIFO_DEPTH,
+      BUS_FIFO_THRESHOLD_SHIFT  => BUS_FIFO_THRESHOLD_SHIFT,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,

@@ -52,12 +52,14 @@ entity BufferWriter is
     ---------------------------------------------------------------------------
     -- Datapath timing configuration
     ---------------------------------------------------------------------------
-    -- Bus write buffer FIFO depth. The maximum number of outstanding requests 
-    -- is approximately this number divided by the burst length. If set to 2, 
+    -- Bus write buffer FIFO depth. The maximum number of outstanding requests
+    -- is approximately this number divided by the burst length. If set to 2,
     -- a register slice is inserted instead of a FIFO. If set to 0, the buffers
     -- are omitted.
     BUS_FIFO_DEPTH              : natural := 16;
-    
+
+    BUS_FIFO_THRESHOLD_SHIFT    : natural := 0;
+
     ---------------------------------------------------------------------------
     -- Buffer metrics and configuration
     ---------------------------------------------------------------------------
@@ -119,13 +121,13 @@ entity BufferWriter is
     cmdIn_implicit              : in  std_logic;
     cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-    -- Unlock stream output (accelerator clock domain). The tags received on 
-    -- the incoming command stream are returned by this stream in order when 
+    -- Unlock stream output (accelerator clock domain). The tags received on
+    -- the incoming command stream are returned by this stream in order when
     -- all bus requests assocated with the command have finished processing.
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-    
+
     ---------------------------------------------------------------------------
     -- Input from accelerator
     ---------------------------------------------------------------------------
@@ -134,7 +136,7 @@ entity BufferWriter is
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     in_last                     : in  std_logic;
-  
+
     ---------------------------------------------------------------------------
     -- Bus write channels
     ---------------------------------------------------------------------------
@@ -143,14 +145,14 @@ entity BufferWriter is
     bus_req_ready               : in  std_logic;
     bus_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     bus_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    
+
     -- Data channel
     bus_wrd_valid               : out std_logic;
     bus_wrd_ready               : in  std_logic;
     bus_wrd_data                : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_wrd_strobe              : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     bus_wrd_last                : out std_logic
-    
+
     -- TODO in entity:
     --  - status/error flags
 
@@ -163,25 +165,25 @@ architecture Behavioral of BufferWriter is
   signal pre_data               : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal pre_last               : std_logic;
-  
-  signal req_ready       : std_logic;
-  signal req_valid       : std_logic;
-  signal req_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal req_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  
+
+  signal req_ready              : std_logic;
+  signal req_valid              : std_logic;
+  signal req_addr               : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal req_len                : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+
   signal cmdIn_ready_pre        : std_logic;
-  signal cmdIn_ready_cmd        : std_logic;
+  signal cmdIn_ready_bus        : std_logic;
   signal cmdIn_ready_unl        : std_logic;
   signal cmdIn_valid_pre        : std_logic;
-  signal cmdIn_valid_cmd        : std_logic;
+  signal cmdIn_valid_bus        : std_logic;
   signal cmdIn_valid_unl        : std_logic;
-  
+
   signal word_loaded            : std_logic;
   signal word_last              : std_logic;
-  
+
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
-  
+
   signal int_bus_req_valid      : std_logic;
   signal int_bus_req_ready      : std_logic;
   signal int_bus_req_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -191,13 +193,43 @@ architecture Behavioral of BufferWriter is
   signal int_bus_wrd_data       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal int_bus_wrd_strobe     : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal int_bus_wrd_last       : std_logic;
-    
+
   signal last_in_cmd            : std_logic;
-  
-  signal unl_valid              : std_logic;
-  signal unl_ready              : std_logic := '1';
-  signal unl_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+
+  signal unl_i_valid            : std_logic;
+  signal unl_i_ready            : std_logic := '1';
+  signal unl_i_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+
+  signal unl_o_valid            : std_logic;
+  signal unl_o_ready            : std_logic := '1';
+  signal unl_o_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 begin
+
+  -----------------------------------------------------------------------------
+  -- Command stream input
+  -----------------------------------------------------------------------------
+  -- The command stream is split into three. The output streams go to:
+  -- * Input stream pre-processing
+  -- * Bus request generation
+  -- * Unlock buffer
+  cmd_in_split_inst: StreamSync
+    generic map (
+      NUM_INPUTS => 1,
+      NUM_OUTPUTS => 3
+    )
+    port map (
+      clk                       => acc_clk,
+      reset                     => acc_reset,
+      in_valid(0)               => cmdIn_valid,
+      in_ready(0)               => cmdIn_ready,
+      out_valid(0)              => cmdIn_valid_pre,
+      out_valid(1)              => cmdIn_valid_bus,
+      out_valid(2)              => cmdIn_valid_unl,
+      out_ready(0)              => cmdIn_ready_pre,
+      out_ready(1)              => cmdIn_ready_bus,
+      out_ready(2)              => cmdIn_ready_unl
+    );
+
   -----------------------------------------------------------------------------
   -- Input stream pre-processing
   -----------------------------------------------------------------------------
@@ -223,6 +255,7 @@ begin
       cmdIn_valid               => cmdIn_valid_pre,
       cmdIn_ready               => cmdIn_ready_pre,
       cmdIn_firstIdx            => cmdIn_firstIdx,
+      cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_implicit            => cmdIn_implicit,
 
       in_valid                  => in_valid,
@@ -239,6 +272,9 @@ begin
       out_last                  => pre_last
     );
 
+  -----------------------------------------------------------------------------
+  -- Bus Request Generation
+  -----------------------------------------------------------------------------
   cmdgen_inst: BufferWriterCmdGenBusReq
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -254,9 +290,10 @@ begin
     port map (
       clk                       => acc_clk,
       reset                     => acc_reset,
-      cmdIn_valid               => cmdIn_valid_cmd,
-      cmdIn_ready               => cmdIn_ready_cmd,
+      cmdIn_valid               => cmdIn_valid_bus,
+      cmdIn_ready               => cmdIn_ready_bus,
       cmdIn_firstIdx            => cmdIn_firstIdx,
+      cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_baseAddr            => cmdIn_baseAddr,
       cmdIn_implicit            => cmdIn_implicit,
       word_loaded               => word_loaded,
@@ -266,45 +303,61 @@ begin
       busReq_addr               => req_addr,
       busReq_len                => req_len
     );
-  
+
   word_loaded                   <= pre_valid and pre_ready;
   word_last                     <= pre_last and pre_valid and pre_ready;
-  
+
+  -----------------------------------------------------------------------------
+  -- Bus Write Buffer
+  -----------------------------------------------------------------------------
+  -- The bus write buffer serves as a FIFO
   buffer_inst: BusWriteBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
-      BUS_LEN_WIDTH             => BUS_LEN_WIDTH, 
+      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
+      LEN_SHIFT                 => BUS_FIFO_THRESHOLD_SHIFT,
       RAM_CONFIG                => ""
     )
     port map (
       clk                       => acc_clk,
       reset                     => acc_reset,
+      
       full                      => buffer_full,
       empty                     => buffer_empty,
+      
       mst_req_valid             => int_bus_req_valid,
       mst_req_ready             => int_bus_req_ready,
       mst_req_addr              => int_bus_req_addr,
       mst_req_len               => int_bus_req_len,
+      
       mst_wrd_valid             => int_bus_wrd_valid,
       mst_wrd_ready             => int_bus_wrd_ready,
       mst_wrd_data              => int_bus_wrd_data,
       mst_wrd_strobe            => int_bus_wrd_strobe,
       mst_wrd_last              => int_bus_wrd_last,
       mst_wrd_last_in_cmd       => last_in_cmd,
+      
       slv_req_valid             => req_valid,
       slv_req_ready             => req_ready,
       slv_req_addr              => req_addr,
       slv_req_len               => req_len,
+      
       slv_wrd_valid             => pre_valid,
       slv_wrd_ready             => pre_ready,
       slv_wrd_data              => pre_data,
       slv_wrd_strobe            => pre_strobe,
       slv_wrd_last              => pre_last
     );
-    
-  unlock_buffer_inst: StreamBuffer
+
+  int_bus_req_ready             <= bus_req_ready;
+  bus_req_valid                 <= int_bus_req_valid;
+  bus_req_addr                  <= int_bus_req_addr;
+  bus_req_len                   <= int_bus_req_len;
+
+  -- Input buffer for the unlock stream to prevent blocking the command stream
+  unlock_input_buffer_inst: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2,
       DATA_WIDTH                => CMD_TAG_WIDTH
@@ -317,60 +370,68 @@ begin
       in_ready                  => cmdIn_ready_unl,
       in_data                   => cmdIn_tag,
 
-      out_valid                 => unl_valid,
-      out_ready                 => unl_ready,
-      out_data                  => unl_tag
+      out_valid                 => unl_i_valid,
+      out_ready                 => unl_i_ready,
+      out_data                  => unl_i_tag
     );
-  
-  unlock_tag                    <= unl_tag;
-  
-  cmdIn_ready                   <= cmdIn_ready_pre and cmdIn_ready_cmd and cmdIn_ready_unl;
 
-  cmdIn_valid_pre               <= cmdIn_valid and cmdIn_ready_cmd and cmdIn_ready_unl;
-  cmdIn_valid_cmd               <= cmdIn_valid and cmdIn_ready_pre and cmdIn_ready_unl;
-  cmdIn_valid_unl               <= cmdIn_valid and cmdIn_ready_pre and cmdIn_ready_cmd;
-  
-  int_bus_req_ready             <= bus_req_ready;
-  bus_req_valid                 <= int_bus_req_valid;
-  bus_req_addr                  <= int_bus_req_addr;
-  bus_req_len                   <= int_bus_req_len;
+  -- Let the unlock output buffer and the bus last_in_cmd signal backpressure
+  -- both the data and command stream.
+  unlock_bus_sync_inst: StreamSync
+    generic map (
+      NUM_INPUTS => 2,
+      NUM_OUTPUTS => 2
+    )
+    port map (
+      clk                       => acc_clk,
+      reset                     => acc_reset,
+
+      in_valid(0)               => int_bus_wrd_valid,
+      in_valid(1)               => unl_i_valid,
+      
+      in_advance(0)             => '1',
+      in_advance(1)             => last_in_cmd,
+
+      in_ready(0)               => int_bus_wrd_ready,
+      in_ready(1)               => unl_i_ready,
+
+      out_valid(0)              => bus_wrd_valid,
+      out_valid(1)              => unl_o_valid,
+
+      out_ready(0)              => bus_wrd_ready,
+      out_ready(1)              => unl_o_ready,
+      
+      out_enable(0)             => '1',
+      out_enable(1)             => last_in_cmd
+
+    );
   
   bus_wrd_data                  <= int_bus_wrd_data;
   bus_wrd_strobe                <= int_bus_wrd_strobe;
   bus_wrd_last                  <= int_bus_wrd_last;
-  
-  unlock_proc: process(unlock_ready, unl_valid, bus_wrd_ready, int_bus_wrd_valid, last_in_cmd)
-  begin
-    -- If a bus word write is valid
-    if int_bus_wrd_valid = '1' then
-      -- If this is the last word in the command and it was written
-      if last_in_cmd = '1' and bus_wrd_ready = '1' then
-        -- Let the unlock stream handshake
-        unl_ready               <= unlock_ready;
-        unlock_valid            <= unl_valid;
-  
-        -- Let the data stream handshake only when the unlock stream handshaked
-        if unl_valid = '1' and unlock_ready = '1' then
-          int_bus_wrd_ready     <= bus_wrd_ready;
-          bus_wrd_valid         <= int_bus_wrd_valid;
-        else
-          int_bus_wrd_ready     <= '0';
-          bus_wrd_valid         <= '0';
-        end if;
-      -- This is not the last word in the command, let the stream do its thing
-      else
-        unl_ready               <= '0';
-        unlock_valid            <= '0';
-        int_bus_wrd_ready       <= bus_wrd_ready;
-        bus_wrd_valid           <= int_bus_wrd_valid;
-      end if;
-    else
-      int_bus_wrd_ready         <= '0';
-      bus_wrd_valid             <= '0';
-      unl_ready                 <= '0';
-      unlock_valid              <= '0';
-    end if;
-  end process;
+
+  -- Connect the input buffer to the output buffer.
+  unl_o_tag                     <= unl_i_tag;
+
+  -- Output buffer for the unlock stream to prevent blocking the bus
+  unlock_output_buffer_inst: StreamBuffer
+    generic map (
+      MIN_DEPTH                 => 2,
+      DATA_WIDTH                => CMD_TAG_WIDTH
+    )
+    port map (
+      clk                       => acc_clk,
+      reset                     => acc_reset,
+
+      -- Only valid when last_in_cmd is high
+      in_valid                  => unl_o_valid,
+      in_ready                  => unl_o_ready,
+      in_data                   => unl_o_tag,
+
+      out_valid                 => unlock_valid,
+      out_ready                 => unlock_ready,
+      out_data                  => unlock_tag
+    );
 
 end Behavioral;
 

@@ -968,6 +968,7 @@ package Arrow is
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       BUS_FIFO_DEPTH            : natural;
+      BUS_FIFO_THRESHOLD_SHIFT  : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
       IS_INDEX_BUFFER           : boolean;
@@ -1026,6 +1027,7 @@ package Arrow is
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
@@ -1059,6 +1061,7 @@ package Arrow is
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
@@ -1092,6 +1095,7 @@ package Arrow is
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
       word_loaded               : in  std_logic;
@@ -1109,6 +1113,7 @@ package Arrow is
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
       FIFO_DEPTH                : natural;
+      LEN_SHIFT                 : natural;
       RAM_CONFIG                : string
     );
     port (

@@ -73,6 +73,7 @@ entity BufferWriterPre is
     cmdIn_valid                 : in  std_logic;
     cmdIn_ready                 : out std_logic;
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+    cmdIn_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
 
     in_valid                    : in  std_logic;
@@ -168,6 +169,7 @@ begin
       cmdIn_valid               => cmdIn_valid,
       cmdIn_ready               => cmdIn_ready,
       cmdIn_firstIdx            => cmdIn_firstIdx,
+      cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_implicit            => cmdIn_implicit,
 
       in_valid                  => in_valid,

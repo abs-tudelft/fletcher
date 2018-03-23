@@ -78,6 +78,7 @@ entity BufferWriterCmdGenBusReq is
     cmdIn_valid                 : in  std_logic;
     cmdIn_ready                 : out std_logic;
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+    cmdIn_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_baseAddr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
 
@@ -142,6 +143,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
   type index_record is record
     first                       : unsigned(INDEX_WIDTH-1 downto 0);
     current                     : unsigned(INDEX_WIDTH-1 downto 0);
+    last                        : unsigned(INDEX_WIDTH-1 downto 0);
   end record;
 
   type regs_record is record
@@ -209,7 +211,7 @@ begin
     if rising_edge(clk) then
       counter                   <= counter_d;
 
-      if cnt_ctrl.reset = '1' then
+      if reset = '1' then
         counter.word            <= (others => '0');
         counter.step            <= (others => '0');
       end if;
@@ -254,9 +256,6 @@ begin
   -----------------------------------------------------------------------------
   -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
-  -- Floor align the first index to the no. elements per step.
-  first_index                   <= align_beq(r.index.first, log2floor(ELEMS_PER_STEP));
-
   -- Get the byte address of this index
   byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
 
@@ -280,7 +279,7 @@ begin
     r,
     cmdIn_valid, cmdIn_firstIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
-    byte_address, first_index,
+    byte_address,
     word_last, word_loaded,
     counter
   ) is
@@ -305,10 +304,7 @@ begin
       -------------------------------------------------------------------------
         -- We are ready to receive some new input
         vo.cmdIn_ready          := '1';
-        
-        -- Counter is reset
-        vo.cnt_ctrl.reset       := '1';
-        
+                
         -- Last value was not asserted
         vr.last                 := '0';
 
@@ -316,6 +312,7 @@ begin
           vr.index.first        := unsigned(cmdIn_firstIdx);
           vr.base_address       := unsigned(cmdIn_baseAddr);
           vr.index.current      := align_beq(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
+          vr.index.last         := align_aeq(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
         end if;
 
         -- Getting out of idle requires no backpressure
@@ -355,6 +352,8 @@ begin
           vo.master.valid       := '0';
           vr.last               := '1';
           vr.state              := POST_STEP;
+          -- Redetermine last index
+          vr.index.last         := align_aeq(vr.index.current, log2floor(ELEMS_PER_STEP));
         end if;
 
         -- Back-pressure
@@ -385,6 +384,8 @@ begin
           vo.master.valid       := '0';
           vr.last               := '1';
           vr.state              := POST_STEP;
+          
+          vr.index.last         := align_aeq(vr.index.current, log2floor(ELEMS_PER_STEP));
         end if;
 
         -- Back-pressure
@@ -404,8 +405,8 @@ begin
         -- Make bus request valid
         vo.master.valid         := '1';
 
-        -- Invalidate if we've come to the end of the stream
-        if counter.step = 0 then
+        -- Stop when all steps have been requested.
+        if vr.index.current /= vr.index.last then
           vo.master.valid       := '0';
           vr.state              := IDLE;
         end if;

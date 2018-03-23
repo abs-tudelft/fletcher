@@ -46,6 +46,11 @@ entity BusWriteBuffer is
     -- to a power of two. This is also the maximum burst length supported.
     FIFO_DEPTH                  : natural := 16;
 
+    -- The buffer will accept a request if the FIFO contents is bus_req_len /
+    -- 2^LEN_SHIFT. Only use this if your input stream can deliver about as 
+    -- fast as the output stream.
+    LEN_SHIFT                   : natural := 0;
+
     -- RAM configuration string for the response FIFO.
     RAM_CONFIG                  : string  := ""
     
@@ -177,7 +182,7 @@ begin
     end if;
     
     -- Determine full
-    if vr.count = to_unsigned(2**DEPTH_LOG2,DEPTH_LOG2+1) then
+    if vr.count = to_unsigned(2**DEPTH_LOG2, DEPTH_LOG2+1) then
       vo.full                   := '1';
     else
       vo.full                   := '0';
@@ -186,9 +191,10 @@ begin
     -- If the burst count is now zero, signal last burst beat to the bus
     if vr.burst = 0 and vr.command = '1' then
       vo.mst_wrd_last           := '1';
+      vr.command                := '0';
     end if;
-        
-    -- If the previous burst was handled, handshake a new request
+    
+    -- If any previous burst was handled, a new request may be handshaked
     if vr.burst = 0 then
       vo.slv_req_ready          := mst_req_ready;
       vo.mst_req_valid          := slv_req_valid;
@@ -211,7 +217,8 @@ begin
     -- there, it is known beforehand how much is going to be read. For the 
     -- BusWriteBuffer it is not known until the last signal has appeared.
     -- Thus we must buffer and then request, not request and then buffer.
-    if vr.count < u(slv_req_len) then
+    -- LEN_SHIFT can be set to higher than 0 to burst at length / 2^LEN_SHIFT
+    if vr.count < shift_right(u(slv_req_len), LEN_SHIFT) then
       vo.slv_req_ready          := '0';
       vo.mst_req_valid          := '0';
     end if;
@@ -256,6 +263,7 @@ begin
   mst_wrd_last_in_cmd           <= fifo_out_data(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8);
   mst_wrd_data                  <= fifo_out_data(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8-1 downto BUS_DATA_WIDTH/8);
   mst_wrd_strobe                <= fifo_out_data(BUS_DATA_WIDTH/8-1 downto 0);
-  mst_wrd_valid                 <= fifo_out_valid;
+  -- Only validate the write stream when a command was accepted.
+  mst_wrd_valid                 <= fifo_out_valid and fifo.command;
 
 end Behavioral;
