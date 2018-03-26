@@ -29,9 +29,9 @@ use work.SimUtils.all;
 entity BufferWriter_tb is
   generic (
     BUS_ADDR_WIDTH              : natural  := 64;
-    BUS_DATA_WIDTH              : natural  := 64;
+    BUS_DATA_WIDTH              : natural  := 512;
     BUS_LEN_WIDTH               : natural  := 9;
-    BUS_BURST_STEP_LEN          : natural  := 4;
+    BUS_BURST_STEP_LEN          : natural  := 1;
     BUS_BURST_MAX_LEN           : natural  := 16;
 
     BUS_FIFO_DEPTH              : natural  := 1;
@@ -41,10 +41,12 @@ entity BufferWriter_tb is
     IS_INDEX_BUFFER             : boolean  := false;
     
     ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, 32, 16);
-    ELEMENT_COUNT_MAX           : natural  := 2;
+    ELEMENT_COUNT_MAX           : natural  := 32;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
-    NUM_COMMANDS                : natural  := 1024;
+    AVG_RANGE_LEN               : real     := 2.0 ** 16;
+
+    NUM_COMMANDS                : natural  := 128;
     WAIT_FOR_UNLOCK             : boolean  := false;
     KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
 
@@ -63,9 +65,10 @@ architecture tb of BufferWriter_tb is
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
   constant MAX_ELEM_VAL         : real    := 2.0 ** (ELEMENT_WIDTH - 1);
 
-  signal command_done           : std_logic := '0';
-  signal input_done             : std_logic := '0';
-  signal write_done             : std_logic := '0';
+  signal command_done           : boolean := false;
+  signal input_done             : boolean := false;
+  signal write_done             : boolean := false;
+  signal sim_done               : boolean := false;
 
   signal bus_clk                : std_logic := '1';
   signal bus_reset              : std_logic := '1';
@@ -132,7 +135,7 @@ architecture tb of BufferWriter_tb is
     if not IS_INDEX_BUFFER then
       first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
       if KNOWN_LAST_INDEX then
-        last_index            := first_index + to_unsigned(max(1, natural(rand_last * 256.0)), INDEX_WIDTH);
+        last_index            := first_index + to_unsigned(max(1, natural(rand_last * AVG_RANGE_LEN)), INDEX_WIDTH);
       end if;
     end if;
 
@@ -147,15 +150,17 @@ architecture tb of BufferWriter_tb is
 
 begin
 
+  sim_done                      <= command_done and input_done and write_done;
+
   -- Clock
   clk_proc: process is
   begin
-    if command_done = '0' or input_done = '0' or write_done = '0' then
-      bus_clk <= '1';
-      acc_clk <= '1';
+    if not sim_done then
+      bus_clk                   <= '1';
+      acc_clk                   <= '1';
       wait for 2 ns;
-      bus_clk <= '0';
-      acc_clk <= '0';
+      bus_clk                   <= '0';
+      acc_clk                   <= '0';
       wait for 2 ns;
       -- Count number of cycles.
       if acc_reset = '0' then
@@ -169,12 +174,12 @@ begin
   -- Reset
   reset_proc: process is
   begin
-    bus_reset <= '1';
-    acc_reset <= '1';
+    bus_reset                   <= '1';
+    acc_reset                   <= '1';
     wait for 8 ns;
     wait until rising_edge(acc_clk);
-    bus_reset <= '0';
-    acc_reset <= '0';
+    bus_reset                   <= '0';
+    acc_reset                   <= '0';
     wait;
   end process;
 
@@ -222,7 +227,7 @@ begin
 
       -- All commands have been accepted
       if commands_accepted = NUM_COMMANDS then
-        command_done                <= '1';
+        command_done                <= true;
       end if;
 
       if WAIT_FOR_UNLOCK then
@@ -232,7 +237,7 @@ begin
         wait until rising_edge(acc_clk) and (unlock_ready = '1' and unlock_valid = '1');
       end if;
 
-      if command_done = '1' then
+      if command_done then
         exit;
       end if;
     end loop;
@@ -374,8 +379,8 @@ begin
       end loop;
 
       -- Exit when command is done
-      if command_done = '1' then
-        input_done              <= '1';
+      if command_done then
+        input_done              <= true;
         in_valid                <= '0';
         in_last                 <= '0';
         exit;
@@ -406,7 +411,7 @@ begin
 
       -- Check if we are done
       if unlocked = NUM_COMMANDS then
-        write_done              <= '1';
+        write_done              <= true;
         exit;
       end if;
     end loop;
@@ -441,7 +446,7 @@ begin
     bus_wrd_ready               <= '0';
     loop
       -- Exit when all writes are done
-      if write_done = '1' then
+      if write_done then
         exit;
       end if;
       -- Wait for a bus request
@@ -523,6 +528,34 @@ begin
       bus_req_ready             <= '1';
       bus_wrd_ready             <= '0';
     end loop;
+    wait;
+  end process;
+    
+  avg_bandwidth_proc: process is
+    variable transfers : unsigned(63 downto 0) := (others => '0');
+  begin
+    -- Wait for reset
+    wait until rising_edge(acc_clk) and acc_reset = '0';
+    
+    -- Start counting
+    loop
+      wait until rising_edge(acc_clk) or sim_done;
+      
+      if bus_wrd_valid = '1' and bus_wrd_ready = '1' then
+        transfers               := transfers + 1;
+      end if;
+      
+      -- Exit when all done
+      if sim_done then
+        exit;
+      end if;
+      
+    end loop;
+    
+    dumpStdOut("Transfers: " & ii(transfers));
+    dumpStdOut("Cycles: " & ii(cycle));
+    dumpStdOut("Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
+            
     wait;
   end process;
   
