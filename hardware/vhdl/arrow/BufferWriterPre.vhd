@@ -192,7 +192,22 @@ begin
   -- The padded stream is split into a data and a write strobe stream and
   -- normalized. That is, the output of the normalizers always contains
   -- the maximum number of elements per cycle
-  -- TODO: Use a StreamSync to do the splitting
+  
+  pad_split_inst: StreamSync
+    generic map (
+      NUM_INPUTS => 1,
+      NUM_OUTPUTS => 2
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_valid(0)               => pad_valid,
+      in_ready(0)               => pad_ready,
+      out_valid(0)              => pad_data_valid,
+      out_valid(1)              => pad_strobe_valid,
+      out_ready(0)              => pad_data_ready,
+      out_ready(1)              => pad_strobe_ready
+    );
 
   -- Only generate normalizers if there can be more than one element per cycle
   norm_gen: if ELEMENT_COUNT_MAX > 1 generate
@@ -263,13 +278,6 @@ begin
     strobe_norm_count           <= pad_count;
     strobe_norm_last            <= pad_last;
   end generate;
-
-  -- Only validate when the other normalizer is ready
-  pad_data_valid                <= pad_valid and pad_strobe_ready;
-  pad_strobe_valid              <= pad_valid and pad_data_ready;
-
-  -- Only ready when both normalizers are ready
-  pad_ready                     <= pad_data_ready and pad_strobe_ready;
 
   -----------------------------------------------------------------------------
   -- Gearboxes

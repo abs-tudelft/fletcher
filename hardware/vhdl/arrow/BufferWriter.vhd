@@ -166,11 +166,11 @@ architecture Behavioral of BufferWriter is
   signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal pre_last               : std_logic;
   
-  signal pre_writebuf_valid     : std_logic;
-  signal pre_writebuf_ready     : std_logic;
-  signal pre_writebuf_data      : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal pre_writebuf_strobe    : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-  signal pre_writebuf_last      : std_logic;
+  signal writebuf_valid         : std_logic;
+  signal writebuf_ready         : std_logic;
+  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal writebuf_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal writebuf_last          : std_logic;
 
   signal req_ready              : std_logic;
   signal req_valid              : std_logic;
@@ -186,13 +186,11 @@ architecture Behavioral of BufferWriter is
 
   signal word_valid             : std_logic;
   signal word_ready             : std_logic;
-  signal word_loaded            : std_logic;
   signal word_last              : std_logic;
   
-  signal word_buf_valid         : std_logic;
-  signal word_buf_ready         : std_logic;
-  signal word_buf_loaded        : std_logic;
-  signal word_buf_last          : std_logic;
+  signal wordbuf_valid         : std_logic;
+  signal wordbuf_ready         : std_logic;
+  signal wordbuf_last          : std_logic;
 
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
@@ -285,12 +283,12 @@ begin
       out_last                  => pre_last
     );
     
-  pre_writebuf_data             <= pre_data;
-  pre_writebuf_strobe           <= pre_strobe;
-  pre_writebuf_last             <= pre_last;
+  writebuf_data                 <= pre_data;
+  writebuf_strobe               <= pre_strobe;
+  writebuf_last                 <= pre_last;
   
-  -- Generate signals for word_last and word_loaded to Write Buffer
-  word_buf_last                 <= pre_last;
+  -- Generate signals for word_last to Write Buffer
+  wordbuf_last                  <= pre_last;
   
   -- Split the preprocessed output stream into a data and word signaling stream
   pre_split_inst: StreamSync
@@ -303,15 +301,15 @@ begin
       reset                     => acc_reset,
       in_valid(0)               => pre_valid,
       in_ready(0)               => pre_ready,
-      out_valid(0)              => pre_writebuf_valid,
-      out_valid(1)              => word_buf_valid,
-      out_ready(0)              => pre_writebuf_ready,
-      out_ready(1)              => word_buf_ready
+      out_valid(0)              => writebuf_valid,
+      out_valid(1)              => wordbuf_valid,
+      out_ready(0)              => writebuf_ready,
+      out_ready(1)              => wordbuf_ready
     );
   
   -- Buffer the word signaling stream so the data stream can continue to the
   -- write buffer even if the bus request generator is busy for a few cycles.
-  word_buf_inst: StreamBuffer
+  wordbuf_inst: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2,
       DATA_WIDTH                => 1
@@ -320,9 +318,9 @@ begin
       clk                       => acc_clk,
       reset                     => acc_reset,
 
-      in_valid                  => word_buf_valid,
-      in_ready                  => word_buf_ready,
-      in_data(0)                => word_buf_last,
+      in_valid                  => wordbuf_valid,
+      in_ready                  => wordbuf_ready,
+      in_data(0)                => wordbuf_last,
 
       out_valid                 => word_valid,
       out_ready                 => word_ready,
@@ -399,11 +397,11 @@ begin
       slv_req_addr              => req_addr,
       slv_req_len               => req_len,
       
-      slv_wrd_valid             => pre_writebuf_valid,
-      slv_wrd_ready             => pre_writebuf_ready,
-      slv_wrd_data              => pre_writebuf_data,
-      slv_wrd_strobe            => pre_writebuf_strobe,
-      slv_wrd_last              => pre_writebuf_last
+      slv_wrd_valid             => writebuf_valid,
+      slv_wrd_ready             => writebuf_ready,
+      slv_wrd_data              => writebuf_data,
+      slv_wrd_strobe            => writebuf_strobe,
+      slv_wrd_last              => writebuf_last
     );
 
   int_bus_req_ready             <= bus_req_ready;

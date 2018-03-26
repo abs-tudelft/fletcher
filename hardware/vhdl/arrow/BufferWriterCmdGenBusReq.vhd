@@ -111,7 +111,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
 
   -- Burst step counter
   type counter_record is record
-    word                        : unsigned(log2ceil(BUS_BURST_STEP_LEN)-1 downto 0);
+    word                        : unsigned(max(0,log2ceil(BUS_BURST_STEP_LEN)-1) downto 0);
     -- This counter must be able to hold the number of steps in a maximum burst
     step                        : unsigned(log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN+1) downto 0);
   end record;
