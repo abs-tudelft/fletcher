@@ -1098,7 +1098,8 @@ package Arrow is
       cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
-      word_loaded               : in  std_logic;
+      word_ready                : out std_logic;
+      word_valid                : in  std_logic;
       word_last                 : in  std_logic;
       busReq_valid              : out std_logic;
       busReq_ready              : in  std_logic;

@@ -199,13 +199,7 @@ begin
       vo.slv_req_ready          := mst_req_ready;
       vo.mst_req_valid          := slv_req_valid;
     end if;
-    
-    -- When a request is handshaked, set the burst counter to len
-    if mst_req_ready = '1' and vo.mst_req_valid = '1' then
-      vr.burst                  := u(mst_req_len);
-      vr.command                := '1';
-    end if;
-        
+            
     -- Back-pressure the bus write request when the FIFO doesn't hold enough
     -- words. This means the FIFO must fill up first. In this way, we can
     -- prevent blocking the bus with a burst that is not yet fully made
@@ -221,6 +215,12 @@ begin
     if vr.count < shift_right(u(slv_req_len), LEN_SHIFT) then
       vo.slv_req_ready          := '0';
       vo.mst_req_valid          := '0';
+    end if;
+    
+    -- When a request is handshaked, set the burst counter to len
+    if mst_req_ready = '1' and vo.mst_req_valid = '1' then
+      vr.burst                  := u(mst_req_len);
+      vr.command                := '1';
     end if;
     
     fifo_d                      <= vr;

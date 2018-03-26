@@ -83,13 +83,13 @@ entity BufferWriterCmdGenBusReq is
     cmdIn_implicit              : in  std_logic;
 
     ---------------------------------------------------------------------------
-    -- Data stream tracking signals
+    -- Data stream tracking stream
     ---------------------------------------------------------------------------
-    -- This unit keeps track of how many words are loaded into the FIFO through
-    -- the word_loaded signal which should be asserted whenever a transfer into
-    -- the FIFO is handshaked. When word_last is asserted, a final burst step 
-    -- will be made
-    word_loaded                 : in  std_logic;
+    -- This unit keeps track of how many words are loaded into the FIFO. When 
+    -- word_last is asserted, final burst steps will be made until the nearest
+    -- burst step aligned last index.
+    word_ready                  : out std_logic;
+    word_valid                  : in  std_logic;
     word_last                   : in  std_logic;
 
     ---------------------------------------------------------------------------
@@ -151,12 +151,14 @@ architecture rtl of BufferWriterCmdGenBusReq is
     index                       : index_record;
     base_address                : unsigned(BUS_ADDR_WIDTH-1 downto 0);
     last                        : std_logic;
+    unkown_last_index           : std_logic;
   end record;
 
   type output_record is record
     master                      : master_record;
     cmdIn_ready                 : std_logic;
     cnt_ctrl                    : counter_control_record;
+    word_ready                  : std_logic;
   end record;
 
   signal r                      : regs_record;
@@ -193,8 +195,8 @@ architecture rtl of BufferWriterCmdGenBusReq is
 
   constant BYTES_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / 8;
   constant BYTES_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / 8;
-
-  signal first_index            : unsigned(INDEX_WIDTH-1 downto 0);
+  
+  constant INDEX_ZERO           : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
 
   signal byte_address           : unsigned(BUS_ADDR_WIDTH-1 downto 0);
 
@@ -218,12 +220,15 @@ begin
     end if;
   end process;
 
-  counter_comb_proc: process(counter, word_loaded, word_last, cnt_ctrl) is
+  counter_comb_proc: process(
+    counter, 
+    word_valid, word_ready,
+    cnt_ctrl) is
     variable v                  : counter_record;
   begin
     v                           := counter;
 
-    if word_loaded = '1' then
+    if word_valid = '1' and word_ready = '1' then
       if BUS_BURST_STEP_LEN /= 1 then
         v.word                  := v.word + 1;
         -- If word wraps around we've loaded a step.
@@ -244,10 +249,9 @@ begin
     end if;
 
     -- pragma translate off
-    if cnt_ctrl.step_sub = '1' and cnt_ctrl.max_sub = '1' then
+    assert not(cnt_ctrl.step_sub = '1' and cnt_ctrl.max_sub = '1')
       report "Step counter subtraction request for both one burst step and maximum burst step."
-        severity failure;
-    end if;
+      severity failure;
     -- pragma translate on
 
     counter_d                   <= v;
@@ -280,7 +284,7 @@ begin
     cmdIn_valid, cmdIn_firstIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
     byte_address,
-    word_last, word_loaded,
+    word_last, word_valid,
     counter
   ) is
     variable vr                 : regs_record;
@@ -297,6 +301,7 @@ begin
     vo.cnt_ctrl.step_sub        := '0';
     vo.cnt_ctrl.max_sub         := '0';
     vo.cnt_ctrl.reset           := '0';
+    vo.word_ready               := '0';
 
     case vr.state is
       -------------------------------------------------------------------------
@@ -307,12 +312,20 @@ begin
                 
         -- Last value was not asserted
         vr.last                 := '0';
+        vr.unkown_last_index    := '0';
 
         if cmdIn_valid = '1' then
-          vr.index.first        := unsigned(cmdIn_firstIdx);
-          vr.base_address       := unsigned(cmdIn_baseAddr);
-          vr.index.current      := align_beq(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
-          vr.index.last         := align_aeq(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
+          vr.index.first        := u(cmdIn_firstIdx);
+          vr.base_address       := u(cmdIn_baseAddr);
+          vr.index.current      := align_beq(u(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
+          vr.index.last         := align_aeq(u(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
+        end if;
+        
+        -- A lastIdx of zero is impossible since the index range is exclusive
+        -- the lastIdx. We use a last index of zero to signify that the size of
+        -- the input stream is unknown a priori.
+        if u(cmdIn_lastIdx) = INDEX_ZERO then
+          vr.unkown_last_index  := '1';
         end if;
 
         -- Getting out of idle requires no backpressure
@@ -328,6 +341,9 @@ begin
       when PRE_STEP =>
       -------------------------------------------------------------------------
         -- State to step to first max burst aligned index or last index
+        
+        -- We can capture word signals as long as we haven't seen last yet
+        vo.word_ready           := not(vr.last);
         
         -- We write one step
         vo.master.len           := STEP_LEN;
@@ -348,15 +364,13 @@ begin
         
         -- Invalidate if this is the last word; the POST_STEP state should
         -- handle this
-        if word_last = '1' then
+        if word_last = '1' and word_valid = '1' then
           vo.master.valid       := '0';
           vr.last               := '1';
           vr.state              := POST_STEP;
-          -- Redetermine last index
-          vr.index.last         := align_aeq(vr.index.current, log2floor(ELEMS_PER_STEP));
         end if;
 
-        -- Back-pressure
+        -- Back-pressure from bus
         if busReq_ready = '1' and vo.master.valid = '1' then
           vo.cnt_ctrl.step_sub  := '1';
           vr.index.current      := vr.index.current + ELEMS_PER_STEP;
@@ -366,6 +380,9 @@ begin
       when MAX =>
       -------------------------------------------------------------------------
         -- State to burst maximum lengths
+        
+        -- We can capture word signals as long as we haven't seen last yet
+        vo.word_ready           := not(vr.last);
 
         -- We write a maximum burst
         vo.master.len           := MAX_LEN;
@@ -377,39 +394,59 @@ begin
         if counter.step < MAX_STEPS then
           vo.master.valid       := '0';
         end if;
-       
-        -- Invalidate if this is the last word; the POST_STEP state should
-        -- handle this
-        if word_last = '1' then
-          vo.master.valid       := '0';
+        
+        if word_last = '1' and word_valid = '1' then
           vr.last               := '1';
-          vr.state              := POST_STEP;
-          
-          vr.index.last         := align_aeq(vr.index.current, log2floor(ELEMS_PER_STEP));
         end if;
-
-        -- Back-pressure
+        
+        -- Go to the POST_STEP state if this is the last word of this command
+        -- and there is no outstanding bus request
+        if vo.master.valid = '0' and vr.last = '1' then
+          vr.state              := POST_STEP;
+        end if;
+        
+        -- Back-pressure from bus
         if busReq_ready = '1' and vo.master.valid = '1' then
           vo.cnt_ctrl.max_sub   := '1';
           vr.index.current      := vr.index.current + ELEMS_PER_MAX;
+          
+          if vr.last = '1' then
+            vr.state            := POST_STEP;
+          end if;
         end if;
 
       -------------------------------------------------------------------------
       when POST_STEP =>
       -------------------------------------------------------------------------
-        -- State to step until steps counter is zero.
+        -- State to step until last index has been reached
 
+        -- We can capture word signals as long as we haven't seen last yet
+        -- which in this state we must have seen, but still:
+        vo.word_ready           := not(vr.last);
+        
+        -- In this state, we must backpressure the word stream if there is a
+        -- last word in it. This is meant for the next command.
+        --if word_valid = '1' and word_last = '1' then
+        --  vo.word_ready         := '0';
+        --end if;
+        
         -- We write one step
         vo.master.len           := STEP_LEN;
 
         -- Make bus request valid
         vo.master.valid         := '1';
-
+        
         -- Stop when all steps have been requested.
-        if vr.index.current /= vr.index.last then
+        if counter.step = 0 then
           vo.master.valid       := '0';
           vr.state              := IDLE;
         end if;
+        
+        -- pragma translate off
+        --assert not(vr.last) = '1' and (word_valid = '0' or (word_valid = '1' and word_last = '0'))
+        --  report "Missed a word_last..."
+        --  severity failure;
+        -- pragma translate on
 
         -- Back-pressure
         if busReq_ready = '1' and vo.master.valid = '1' then
@@ -427,6 +464,7 @@ begin
     busReq_len                  <= slv(vo.master.len);
     busReq_valid                <= vo.master.valid;
     cnt_ctrl                    <= vo.cnt_ctrl;
+    word_ready                  <= vo.word_ready;
 
   end process;
 

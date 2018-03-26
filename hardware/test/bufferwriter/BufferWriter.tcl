@@ -24,4 +24,5 @@ do ../compile.tcl
 do ../utils.tcl
 
 compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
-t
+
+echo "Testbench loaded, use \"t\" to start."

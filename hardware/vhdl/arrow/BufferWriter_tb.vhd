@@ -27,32 +27,32 @@ use work.SimUtils.all;
 -------------------------------------------------------------------------------
 -- This testbench is used to check the functionality of the BufferWriter.
 entity BufferWriter_tb is
-  generic (   
+  generic (
     BUS_ADDR_WIDTH              : natural  := 64;
     BUS_DATA_WIDTH              : natural  := 64;
     BUS_LEN_WIDTH               : natural  := 9;
     BUS_BURST_STEP_LEN          : natural  := 4;
     BUS_BURST_MAX_LEN           : natural  := 16;
-                                           
+
     BUS_FIFO_DEPTH              : natural  := 1;
     BUS_FIFO_THRESHOLD_SHIFT    : natural  := 0;
-                                           
-    ELEMENT_WIDTH               : natural  := 8;
-    ELEMENT_COUNT_MAX           : natural  := 4;
-    ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
-                                           
+
     INDEX_WIDTH                 : natural  := 32;
     IS_INDEX_BUFFER             : boolean  := false;
-                                           
-    NUM_COMMANDS                : natural  := 32;
-    WAIT_FOR_UNLOCK             : boolean  := true;
-    KNOWN_LAST_INDEX            : boolean  := false;
-                                           
-    CMD_CTRL_WIDTH              : natural  := 1;
-                                           
-    CMD_TAG_WIDTH               : natural  := log2ceil(NUM_COMMANDS);
     
-    VERBOSE                     : boolean  := true;
+    ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, 32, 16);
+    ELEMENT_COUNT_MAX           : natural  := 2;
+    ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
+
+    NUM_COMMANDS                : natural  := 1024;
+    WAIT_FOR_UNLOCK             : boolean  := false;
+    KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
+
+    CMD_CTRL_WIDTH              : natural  := 1;
+
+    CMD_TAG_WIDTH               : natural  := log2ceil(NUM_COMMANDS);
+
+    VERBOSE                     : boolean  := false;
     SEED                        : positive := 16#0123#
   );
 end BufferWriter_tb;
@@ -62,7 +62,7 @@ architecture tb of BufferWriter_tb is
   constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH/8);
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
   constant MAX_ELEM_VAL         : real    := 2.0 ** (ELEMENT_WIDTH - 1);
-  
+
   signal command_done           : std_logic := '0';
   signal input_done             : std_logic := '0';
   signal write_done             : std_logic := '0';
@@ -71,7 +71,7 @@ architecture tb of BufferWriter_tb is
   signal bus_reset              : std_logic := '1';
   signal acc_clk                : std_logic := '1';
   signal acc_reset              : std_logic := '1';
-  
+
   signal cmdIn_valid            : std_logic;
   signal cmdIn_ready            : std_logic;
   signal cmdIn_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -79,7 +79,7 @@ architecture tb of BufferWriter_tb is
   signal cmdIn_baseAddr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal cmdIn_implicit         : std_logic;
   signal cmdIn_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  
+
   signal unlock_valid           : std_logic;
   signal unlock_ready           : std_logic := '1';
   signal unlock_tag             : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -89,7 +89,7 @@ architecture tb of BufferWriter_tb is
   signal in_data                : std_logic_vector(ELEMENT_COUNT_MAX * ELEMENT_WIDTH -1 downto 0);
   signal in_count               : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal in_last                : std_logic := '0';
-  
+
   signal bus_req_valid          : std_logic;
   signal bus_req_ready          : std_logic;
   signal bus_req_addr           : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -100,21 +100,51 @@ architecture tb of BufferWriter_tb is
   signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wrd_last           : std_logic;
   
+  signal cycle                  : unsigned(63 downto 0) := (others => '0');
+
   function gen_elem_val(rand: real) return unsigned is
   begin
     return to_unsigned(natural(rand * MAX_ELEM_VAL), ELEMENT_WIDTH);
   end function;
-  
-  procedure print_elem(name: in string; index: in integer; a: in unsigned) is 
+
+  procedure print_elem(name: in string; index: in unsigned; a: in unsigned) is
   begin
     dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)));
   end print_elem;
-  
-  procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is 
+
+  procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is
   begin
     dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
   end print_elem_check;
   
+  procedure generate_command(
+    first_index     : out unsigned(INDEX_WIDTH-1 downto 0);
+    last_index      : out unsigned(INDEX_WIDTH-1 downto 0);
+    rand            : in real;
+    rand_last       : in real
+  ) is
+  begin
+    -- For index buffers, first_index should start at zero
+    first_index             := (others => '0');
+    last_index              := (others => '0');
+    
+    -- Otherwise  
+    if not IS_INDEX_BUFFER then
+      first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
+      if KNOWN_LAST_INDEX then
+        last_index            := first_index + to_unsigned(max(1, natural(rand_last * 256.0)), INDEX_WIDTH);
+      end if;
+    end if;
+
+    -- If ELEMS_PER_BYTE = 0 then all elements start on byte boundaries.
+    -- Otherwise align:
+    if ELEMS_PER_BYTE /= 0 then
+      -- Elements don't always start on a byte boundary, align the first index to a byte boundary
+      first_index             := align_beq(first_index, log2ceil(ELEMS_PER_BYTE));
+      last_index              := align_aeq(last_index, log2ceil(ELEMS_PER_BYTE));
+    end if;
+  end generate_command;
+
 begin
 
   -- Clock
@@ -123,10 +153,14 @@ begin
     if command_done = '0' or input_done = '0' or write_done = '0' then
       bus_clk <= '1';
       acc_clk <= '1';
-      wait for 5 ns;
+      wait for 2 ns;
       bus_clk <= '0';
       acc_clk <= '0';
-      wait for 5 ns;
+      wait for 2 ns;
+      -- Count number of cycles.
+      if acc_reset = '0' then
+        cycle                   <= cycle + 1;
+      end if;
     else
       wait;
     end if;
@@ -137,15 +171,15 @@ begin
   begin
     bus_reset <= '1';
     acc_reset <= '1';
-    wait for 50 ns;
+    wait for 8 ns;
     wait until rising_edge(acc_clk);
     bus_reset <= '0';
     acc_reset <= '0';
     wait;
   end process;
-  
+
   -- Command generation
-  command_proc: process is 
+  command_proc: process is
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
@@ -153,101 +187,108 @@ begin
     variable seed1_last         : positive := SEED;
     variable seed2_last         : positive := 1;
     variable rand_last          : real;
-    
+
     variable first_index        : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
     variable last_index         : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+    variable commands_accepted  : natural := 0;
   begin
     cmdIn_implicit              <= '0';
     cmdIn_baseAddr              <= (others => '0');
     cmdIn_lastIdx               <= (others => '0');
     cmdIn_valid                 <= '0';
     cmdIn_tag                   <= (others => '0');
-    
+
     -- Wait for reset
     wait until rising_edge(acc_clk) and (acc_reset /= '1');
-      
-    for I in 0 to NUM_COMMANDS-1 loop      
+
+    for I in 0 to NUM_COMMANDS-1 loop
       -- Determine the first index and last index
       uniform(seed1, seed2, rand);
       uniform(seed1_last, seed2_last, rand_last);
+      generate_command(first_index, last_index, rand, rand_last);      
       
-      -- For index buffers, first_index should start at zero
-      if IS_INDEX_BUFFER then
-        first_index             := (others => '0');
-        last_index              := (others => '0');
-      else
-        first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
-        if KNOWN_LAST_INDEX then
-          last_index            := first_index + to_unsigned(natural(rand_last * 256.0), INDEX_WIDTH);
-        end if;
-      end if;
-      
-      if ELEMS_PER_BYTE = 0 then 
-        -- Elements start on byte boundaries
-        cmdIn_firstIdx          <= slv(first_index);
-        cmdIn_lastIdx           <= slv(last_index);
-      else
-        -- Elements don't always start on a byte boundary, align the first index to a byte boundary
-        cmdIn_firstIdx          <= slv(align_beq(first_index, log2ceil(ELEMS_PER_BYTE)));
-        cmdIn_lastIdx           <= slv(align_aeq(last_index, log2ceil(ELEMS_PER_BYTE)));
-      end if;
-      
-      -- Set tag:
+      -- Set first and last index
+      cmdIn_firstIdx            <= slv(first_index);
+      cmdIn_lastIdx             <= slv(last_index);
+      -- Set tag
       cmdIn_tag                 <= slv(to_unsigned(I, CMD_TAG_WIDTH));
-      
       -- Validate the command
       cmdIn_valid               <= '1';
-      
+
       -- Wait until it's accepted and invalidate
       wait until rising_edge(acc_clk) and (cmdIn_ready = '1');
       cmdIn_valid               <= '0';
+      commands_accepted         := commands_accepted + 1;
+
+      -- All commands have been accepted
+      if commands_accepted = NUM_COMMANDS then
+        command_done                <= '1';
+      end if;
+
+      if WAIT_FOR_UNLOCK then
+        if VERBOSE then
+          dumpStdOut("Waiting for unlock.");
+        end if;
+        wait until rising_edge(acc_clk) and (unlock_ready = '1' and unlock_valid = '1');
+      end if;
+
+      if command_done = '1' then
+        exit;
+      end if;
     end loop;
-    
-    -- All commands have been accepted
-    command_done                <= '1';
-    
+
     wait;
   end process;
-  
+
   -- Input stream generation
-  input_stream_proc: process is
+  input_proc: process is
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
-    
+
     variable count_seed1        : positive := SEED;
     variable count_seed2        : positive := 1;
     variable count_rand         : real;
-    
+
     variable last_seed1         : positive := SEED;
     variable last_seed2         : positive := 1;
     variable last_rand          : real;
     
+    variable cmd_seed1          : positive := SEED;
+    variable cmd_seed2          : positive := 1;
+    variable cmd_rand           : real;
+
+    variable cmd_seed1_last     : positive := SEED;
+    variable cmd_seed2_last     : positive := 1;
+    variable cmd_rand_last      : real;
+
     variable true_count         : integer  := 0;
-    
-    variable total_elements     : integer  := 0;
-    variable first_index        : integer  := 0;
-    variable last_index         : integer  := 0;
-    
+
+    variable current_index      : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+    variable first_index        : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+    variable last_index         : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+
     variable elem_val           : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
-    
+
     in_valid                    <= '0';
     in_last                     <= '0';
-    
-    loop     
+
+    loop
       in_valid                  <= '0';
       in_last                   <= '0';
-      -- Wait until a command gets accepted:
-      wait until rising_edge(acc_clk) and (cmdIn_ready = '1' and cmdIn_valid = '1');
-      first_index               := int(cmdIn_firstIdx);
-      last_index                := int(cmdIn_lastIdx);
-      total_elements            := 0;
+
+      uniform(cmd_seed1, cmd_seed2, cmd_rand);
+      uniform(cmd_seed1_last, cmd_seed2_last, cmd_rand_last);
+      generate_command(first_index, last_index, cmd_rand, cmd_rand_last);   
       
+      current_index             := first_index;
+
+      -- Index buffers automatically get a zero padded
       if IS_INDEX_BUFFER then
-        total_elements          := total_elements + 1;
+        current_index           := current_index + 1;
       end if;
-      
+
       loop
         in_last                 <= '0';
         -- Randomize count
@@ -264,39 +305,46 @@ begin
           true_count            := ELEMENT_COUNT_MAX;
           in_count              <= (others => '1');
         end if;
-        
+
         -- Reduce count to not exceed lastidx
-        if (first_index + total_elements + true_count > last_index) and last_index /= 0 then
-          dumpStdOut("Count would exceed last index, modifying..." & ii(first_index + total_elements) & " + " & ii(true_count) & " > " & ii(last_index));
-          true_count            := last_index - (first_index + total_elements);
-          dumpStdOut("New count:" & ii(true_count));
+        if (last_index /= 0) and (current_index + true_count > last_index) then
+          if VERBOSE then
+            dumpStdOut("Count would exceed last index, modifying..." & ii(current_index) & " + " & ii(true_count) & " > " & ii(last_index));
+          end if;
+
+          true_count            := int(last_index - current_index);
+
+          if VERBOSE then
+            dumpStdOut("New count:" & ii(true_count));
+          end if;
+
           in_count              <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
         end if;
-        
+
         -- Make data unkown
         in_data                 <= (others => 'X');
-        
+
         -- Randomize data
         for I in 0 to true_count-1  loop
             uniform(seed1, seed2, rand);
 
             elem_val            := gen_elem_val(rand);
             in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= slv(elem_val);
-            
+
             if VERBOSE then
-              print_elem("Stream", first_index + total_elements, elem_val);
+              print_elem("Stream", current_index, elem_val);
             end if;
-            
-            total_elements      := total_elements + 1;
+
+            current_index       := current_index + 1;
         end loop;
-        
+
         -- Randomize last, but only assert it if the "last index" is on a byte boundary
         -- and we didn't give a last index
         if last_index = 0 then
           uniform(last_seed1, last_seed2, last_rand);
           if last_rand < (1.0/32.0) then
             if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
-              if total_elements mod ELEMS_PER_BYTE = 0 then
+              if current_index mod ELEMS_PER_BYTE = 0 then
                 in_last           <= '1';
               end if;
             else
@@ -305,23 +353,26 @@ begin
           end if;
         else
           -- If we've created enough elements to full the range, last must be '1'
-          if first_index + total_elements >= last_index - 1 then
+          if current_index = last_index then
             in_last               <= '1';
           end if;
         end if;
-        
+
         -- Validate input stream
         in_valid                  <= '1';
-        
+
         -- Wait until handshake
         wait until rising_edge(acc_clk) and (in_ready = '1');
-                
+
         -- Exit when last
         if in_last = '1' then
+          if VERBOSE then
+            dumpStdOut("Input stream done.");
+          end if;
           exit;
         end if;
       end loop;
-      
+
       -- Exit when command is done
       if command_done = '1' then
         input_done              <= '1';
@@ -330,14 +381,14 @@ begin
         exit;
       end if;
     end loop;
-    
+
     wait;
   end process;
-   
+
   -- Unlock stream check
   unlock_proc: process is
     variable unlocked           : integer := 0;
-    
+
     variable expected_tag       : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   begin
     loop
@@ -345,44 +396,44 @@ begin
       wait until rising_edge(acc_clk) and (unlock_valid = '1' and unlock_ready = '1');
 
       expected_tag              := slv(to_unsigned(unlocked,CMD_TAG_WIDTH));
-      
+
       if unlock_tag /= expected_tag then
         report "TEST FAILURE. Unexpected tag on unlock stream." severity failure;
       end if;
-      
+
       -- Increase number of unlocks
       unlocked                  := unlocked + 1;
-      
+
       -- Check if we are done
       if unlocked = NUM_COMMANDS then
         write_done              <= '1';
         exit;
       end if;
     end loop;
-    
+
     -- Dirty trick to allow stdout to empty write buffer since textio doesn't have a flush function
     wait for 100 ns;
-    
+
     -- If the test finishes, it is successful.
     report "TEST SUCCESSFUL.";
-    
+
     wait;
   end process;
 
   -- Bus write check
   -- This process can only accept a single bus burst request at a time
-  bus_write_proc: process is
+  bus_proc: process is
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
-    
+
     variable address            : unsigned(BUS_ADDR_WIDTH-1 downto 0);
-    
+
     variable len                : unsigned(BUS_LEN_WIDTH-1 downto 0);
     variable transfers          : unsigned(BUS_LEN_WIDTH-1 downto 0);
-        
+
     variable index              : integer := 0;
-    variable elem_strobe        : std_logic := '1';    
+    variable elem_strobe        : std_logic := '1';
     variable elem_written       : unsigned(ELEMENT_WIDTH-1 downto 0);
     variable elem_expected      : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
@@ -397,21 +448,21 @@ begin
       wait until rising_edge(acc_clk) and (bus_req_ready = '1' and bus_req_valid = '1');
       bus_req_ready             <= '0';
       bus_wrd_ready             <= '1';
-      
+
       -- Remember the burst length
       len                       := unsigned(bus_req_len);
       transfers                 := (others => '0');
-      
+
       -- Work back the element index from the address, assuming the base address is zero
       index                     := int(bus_req_addr) / BYTES_PER_ELEM;
-      
+
       -- Accept the number of words requested by the burst length
       for I in 0 to int(len)-1 loop
         -- Wait until master writes a burst beat
         wait until rising_edge(acc_clk) and (bus_wrd_valid = '1');
-        
+
         transfers               := transfers + 1;
-        
+
         -- Check each element value
         for I in 0 to ELEMS_PER_WORD-1 loop
           -- Determine the element strobe. For elements smaller than a byte, duplicate the strobe.
@@ -422,13 +473,13 @@ begin
             -- The elements are not always byte aligned
             elem_strobe         := bus_wrd_strobe(I/ELEMS_PER_BYTE);
           end if;
-          
-          -- Grab what is written
-          elem_written          := u(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
-          
+
           -- Check if the element strobe is asserted
           if elem_strobe = '1' then
-          
+
+            -- Grab what is written
+            elem_written          := u(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
+
             -- If this is an index buffer and its the first element, we expect it to be 0
             if IS_INDEX_BUFFER and index+I = 0 then
               elem_expected     := (others => '0');
@@ -436,35 +487,35 @@ begin
               uniform(seed1, seed2, rand);
               elem_expected     := gen_elem_val(rand);
             end if;
-            
+
             if VERBOSE then
               print_elem_check("Bus", index+I, elem_written, elem_expected);
             end if;
-            
+
+            -- Check if the correct element was written
             if elem_written /= elem_expected then
               if not(VERBOSE) then
                 print_elem_check("Bus", index+I, elem_written, elem_expected);
               end if;
               report "TEST FAILURE. Unexpected element on bus." severity failure;
             end if;
-              
           end if;
-          
+
           -- Make sure last is not too early
           if bus_wrd_last = '1' then
             assert transfers = len
-              report "TEST FAILURE. Bus write channel last asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len)) 
+              report "TEST FAILURE. Bus write channel last asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
               severity failure;
           end if;
-          
+
           -- Or too late
           if transfers = len and bus_wrd_last = '0' then
-            report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len)) 
+            report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
               severity failure;
           end if;
-          
+
         end loop;
-        
+
         -- Increase current index
         index                   := index + BUS_DATA_WIDTH / ELEMENT_WIDTH;
       end loop;
@@ -474,7 +525,7 @@ begin
     end loop;
     wait;
   end process;
-
+  
   -- BufferWriter instantiation
   uut : BufferWriter
     generic map (
@@ -498,25 +549,25 @@ begin
       bus_reset                 => bus_reset,
       acc_clk                   => acc_clk,
       acc_reset                 => acc_reset,
-      
-      cmdIn_valid               => cmdIn_valid, 
-      cmdIn_ready               => cmdIn_ready,   
+
+      cmdIn_valid               => cmdIn_valid,
+      cmdIn_ready               => cmdIn_ready,
       cmdIn_firstIdx            => cmdIn_firstIdx,
-      cmdIn_lastIdx             => cmdIn_lastIdx, 
+      cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_baseAddr            => cmdIn_baseAddr,
       cmdIn_implicit            => cmdIn_implicit,
       cmdIn_tag                 => cmdIn_tag,
-      
+
       unlock_valid              => unlock_valid,
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
-      
+
       in_valid                  => in_valid,
       in_ready                  => in_ready,
       in_data                   => in_data,
       in_count                  => in_count,
       in_last                   => in_last,
-      
+
       bus_req_valid             => bus_req_valid,
       bus_req_ready             => bus_req_ready,
       bus_req_addr              => bus_req_addr,

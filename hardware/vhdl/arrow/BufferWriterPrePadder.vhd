@@ -113,7 +113,7 @@ architecture rtl of BufferWriterPrePadder is
 
   constant ELEM_PER_BURST_STEP  : natural := (BUS_BURST_STEP_LEN * BUS_DATA_WIDTH) / ELEMENT_WIDTH;
 
-  constant INDEX_ZERO           : unsigned(INDEX_WIDTH-1 downto 0) := (others => '0');
+  constant INDEX_ZERO           : unsigned(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0) := (others => '0');
 
   constant STROBE_NONE          : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (others => '0');
   constant STROBE_FIRST         : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (0 => '1', others => '0');

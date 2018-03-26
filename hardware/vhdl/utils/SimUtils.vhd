@@ -174,8 +174,11 @@ package SimUtils is
   -- doesn't have all the simulator fluff around it.
   procedure dumpStdOut(s: string);
   
-  -- Short-hand for integer'image()
+  -- Short-hand for integer'image(i)
   function ii(i : integer) return string;
+  
+  -- Short-hand for integer'image(to_integer(u))
+  function ii(u : unsigned) return string;
 
 end SimUtils;
 
@@ -723,6 +726,11 @@ package body SimUtils is
   function ii(i : integer) return string is
   begin
     return integer'image(i);
+  end function;
+  
+    function ii(u : unsigned) return string is
+  begin
+    return integer'image(to_integer(u));
   end function;
 
 end SimUtils;
