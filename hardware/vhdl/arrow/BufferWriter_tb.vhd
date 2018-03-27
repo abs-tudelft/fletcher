@@ -28,8 +28,9 @@ use work.SimUtils.all;
 -- This testbench is used to check the functionality of the BufferWriter.
 entity BufferWriter_tb is
   generic (
-    BUS_ADDR_WIDTH              : natural  := 64;
-    BUS_DATA_WIDTH              : natural  := 512;
+    TEST_NAME                   : string   := "";
+    BUS_ADDR_WIDTH              : natural  := 32;
+    BUS_DATA_WIDTH              : natural  := 32;
     BUS_LEN_WIDTH               : natural  := 9;
     BUS_BURST_STEP_LEN          : natural  := 1;
     BUS_BURST_MAX_LEN           : natural  := 16;
@@ -38,15 +39,15 @@ entity BufferWriter_tb is
     BUS_FIFO_THRESHOLD_SHIFT    : natural  := 0;
 
     INDEX_WIDTH                 : natural  := 32;
-    IS_INDEX_BUFFER             : boolean  := false;
+    IS_INDEX_BUFFER             : boolean  := true;
     
-    ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, 32, 16);
-    ELEMENT_COUNT_MAX           : natural  := 32;
+    ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, INDEX_WIDTH, 32);
+    ELEMENT_COUNT_MAX           : natural  := 1;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
     AVG_RANGE_LEN               : real     := 2.0 ** 16;
 
-    NUM_COMMANDS                : natural  := 128;
+    NUM_COMMANDS                : natural  := 4096;
     WAIT_FOR_UNLOCK             : boolean  := false;
     KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
 
@@ -107,17 +108,21 @@ architecture tb of BufferWriter_tb is
 
   function gen_elem_val(rand: real) return unsigned is
   begin
-    return to_unsigned(natural(rand * MAX_ELEM_VAL), ELEMENT_WIDTH);
+    if ELEMENT_WIDTH < 32 then
+      return to_unsigned(natural(rand * MAX_ELEM_VAL), ELEMENT_WIDTH);
+    else
+      return to_unsigned(natural(rand * 2.0**31), ELEMENT_WIDTH);
+    end if;
   end function;
 
   procedure print_elem(name: in string; index: in unsigned; a: in unsigned) is
   begin
-    dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)));
+    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)));
   end print_elem;
 
   procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is
   begin
-    dumpStdOut(name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
+    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
   end print_elem_check;
   
   procedure generate_command(
@@ -232,7 +237,7 @@ begin
 
       if WAIT_FOR_UNLOCK then
         if VERBOSE then
-          dumpStdOut("Waiting for unlock.");
+          dumpStdOut(TEST_NAME & " :" & "Waiting for unlock.");
         end if;
         wait until rising_edge(acc_clk) and (unlock_ready = '1' and unlock_valid = '1');
       end if;
@@ -266,6 +271,8 @@ begin
     variable cmd_seed1_last     : positive := SEED;
     variable cmd_seed2_last     : positive := 1;
     variable cmd_rand_last      : real;
+    
+    variable command            : integer  := 0;
 
     variable true_count         : integer  := 0;
 
@@ -285,8 +292,9 @@ begin
 
       uniform(cmd_seed1, cmd_seed2, cmd_rand);
       uniform(cmd_seed1_last, cmd_seed2_last, cmd_rand_last);
-      generate_command(first_index, last_index, cmd_rand, cmd_rand_last);   
-      
+      generate_command(first_index, last_index, cmd_rand, cmd_rand_last);
+      command                   := command + 1;
+            
       current_index             := first_index;
 
       -- Index buffers automatically get a zero padded
@@ -314,13 +322,13 @@ begin
         -- Reduce count to not exceed lastidx
         if (last_index /= 0) and (current_index + true_count > last_index) then
           if VERBOSE then
-            dumpStdOut("Count would exceed last index, modifying..." & ii(current_index) & " + " & ii(true_count) & " > " & ii(last_index));
+            dumpStdOut(TEST_NAME & " :" & "Count would exceed last index, modifying..." & ii(current_index) & " + " & ii(true_count) & " > " & ii(last_index));
           end if;
 
           true_count            := int(last_index - current_index);
 
           if VERBOSE then
-            dumpStdOut("New count:" & ii(true_count));
+            dumpStdOut(TEST_NAME & " :" & "New count:" & ii(true_count));
           end if;
 
           in_count              <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
@@ -350,41 +358,40 @@ begin
           if last_rand < (1.0/32.0) then
             if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
               if current_index mod ELEMS_PER_BYTE = 0 then
-                in_last           <= '1';
+                in_last         <= '1';
               end if;
             else
-              in_last             <= '1';
+              in_last           <= '1';
             end if;
           end if;
         else
           -- If we've created enough elements to full the range, last must be '1'
           if current_index = last_index then
-            in_last               <= '1';
+            in_last             <= '1';
           end if;
         end if;
 
         -- Validate input stream
-        in_valid                  <= '1';
-
+        in_valid                <= '1';
+        
         -- Wait until handshake
         wait until rising_edge(acc_clk) and (in_ready = '1');
 
-        -- Exit when last
+        -- Exit when last element streamed in
         if in_last = '1' then
           if VERBOSE then
-            dumpStdOut("Input stream done.");
+            dumpStdOut(TEST_NAME & " :" & "Input stream done.");
           end if;
           exit;
         end if;
       end loop;
-
-      -- Exit when command is done
-      if command_done then
+      
+      -- Exit when this was the last command
+      if command = NUM_COMMANDS then
         input_done              <= true;
-        in_valid                <= '0';
-        in_last                 <= '0';
         exit;
       end if;
+      
     end loop;
 
     wait;
@@ -552,9 +559,9 @@ begin
       
     end loop;
     
-    dumpStdOut("Transfers: " & ii(transfers));
-    dumpStdOut("Cycles: " & ii(cycle));
-    dumpStdOut("Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
+    dumpStdOut(TEST_NAME & " :" & "Transfers: " & ii(transfers));
+    dumpStdOut(TEST_NAME & " :" & "Cycles: " & ii(cycle));
+    dumpStdOut(TEST_NAME & " :" & "Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
             
     wait;
   end process;

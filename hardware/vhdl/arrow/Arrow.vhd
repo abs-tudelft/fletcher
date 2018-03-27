@@ -1148,7 +1148,7 @@ package Arrow is
   -- Component declarations for simulation-only helper units
   -----------------------------------------------------------------------------
   -- pragma translate_off
-
+  
   component BusMasterMock is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;

@@ -290,18 +290,18 @@ begin
         -- This last transfer might already be aligned; assert last if so
         if in_last = '1' then
           if is_aligned(new_index, log2ceil(ELEM_PER_BURST_STEP)) then
-            vo.out_last       := '1';
+            vo.out_last         := '1';
           end if;
         end if;
+        
+        -- Determine the final index based on the current index, so it will
+          -- be ready for the next state
+        vr.index.final          := align_aeq(new_index, 
+                                             log2ceil(ELEM_PER_BURST_STEP));
 
         -- Advance state if no backpressure and a valid input was passed
         if out_ready = '1' and vo.out_valid = '1' then
           vr.index.current      := new_index;
-          
-          -- Determine the final index based on the current index, so it will
-          -- be ready for the next state
-          vr.index.final        := align_aeq(vr.index.current, 
-                                             log2ceil(ELEM_PER_BURST_STEP));
           
           -- If the last input has arrived, let the POST state handle the rest
           if in_last = '1' then

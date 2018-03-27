@@ -216,6 +216,13 @@ architecture Behavioral of BufferWriter is
   signal unl_o_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 begin
 
+  -- Constant checks
+  -- pragma translate off
+  assert ELEMENT_COUNT_MAX <= 2 ** ELEMENT_COUNT_WIDTH 
+    report "ELEMENT_COUNT_MAX and ELEMENT_COUNT_WIDTH mismatch." 
+    severity failure;
+  -- pragma translate on
+
   -----------------------------------------------------------------------------
   -- Command stream input
   -----------------------------------------------------------------------------

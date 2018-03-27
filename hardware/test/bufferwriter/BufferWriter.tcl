@@ -20,9 +20,40 @@ proc t {} {
                                  {"Bus Write Buffer"  sim:/bufferwriter_tb/uut/buffer_inst/*          }}
 }
 
+# BufferWriters testbench setup
+proc a {} {
+  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
+  
+  # Put all files being worked on here:
+  
+  vcom -work work -2008 $vhdl_dir/arrow/Arrow.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BusWriteBuffer.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriterPrePadder.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriterPre.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriter.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriter_tb.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BufferWriters_tb.vhd
+
+  simulate work.bufferwriters_tb 
+    # {{"Inst 0" sim:/bufferwriters_tb/inst0/* }
+    # {"Inst 1" sim:/bufferwriters_tb/inst1/* }
+    # {"Inst 2" sim:/bufferwriters_tb/inst2/* }
+    # {"Inst 3" sim:/bufferwriters_tb/inst3/* }
+    # {"Inst 4" sim:/bufferwriters_tb/inst4/* }
+    # {"Inst 5" sim:/bufferwriters_tb/inst5/* }
+    # {"Testbench"         sim:/bufferwriters_tb/inst5/*                          }
+    # {"Buffer Writer"     sim:/bufferwriters_tb/inst5/uut/*                      }
+    # {"Preprocessor"      sim:/bufferwriters_tb/inst5/uut/pre_inst/*             }
+    # {"Padder"            sim:/bufferwriters_tb/inst5/uut/pre_inst/padder_inst/* }
+    # {"CmdGenBusReq"      sim:/bufferwriters_tb/inst5/uut/cmdgen_inst/*          }
+    # {"Bus Write Buffer"  sim:/bufferwriters_tb/inst5/uut/buffer_inst/*          }}
+                                  
+}
+
 do ../compile.tcl
 do ../utils.tcl
 
 compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
 
-echo "Testbench loaded, use \"t\" to start."
+echo "Testbench loaded, use \"t\" to start one, or a to start all."

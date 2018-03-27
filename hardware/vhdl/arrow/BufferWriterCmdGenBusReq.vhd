@@ -261,7 +261,7 @@ begin
   -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
   -- Get the byte address of this index
-  byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
+  byte_address                  <= resize(r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT), BUS_ADDR_WIDTH);
 
   -----------------------------------------------------------------------------
   -- State machine sequential part

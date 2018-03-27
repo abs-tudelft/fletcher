@@ -332,41 +332,49 @@ begin
       out_count                 => strobe_shaped_count,
       out_last                  => strobe_shaped_last
     );
-
-    -- It -shouldn't- be required to synchronize the streams as the control 
-    -- characteristics and backpressure of the gearboxes are exactly the same.
     
-    --sync_gen: if SYNC_OUTPUT generate
-    --end generate;
+  -- Synchronize the output streams
+  strobe_join_inst: StreamSync
+    generic map (
+      NUM_INPUTS => 2,
+      NUM_OUTPUTS => 1
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_valid(0)               => shaped_valid,
+      in_valid(1)               => strobe_shaped_valid,
+      in_ready(0)               => shaped_ready,
+      in_ready(1)               => strobe_shaped_ready,
+      out_valid(0)              => out_valid,
+      out_ready(0)              => out_ready
+    );
+   
+  out_data                      <= shaped_data;
+  out_last                      <= shaped_last and strobe_shaped_last;
 
-    strobe_shaped_ready         <= out_ready;
-    shaped_ready                <= out_ready;
-
-    out_valid                   <= shaped_valid and strobe_shaped_valid;
-    out_data                    <= shaped_data;
-    out_last                    <= shaped_last and strobe_shaped_last;
-
-    -- Convert the element strobe into a byte strobe
-    byte_strobe_proc: process(strobe_shaped_data)
-    begin
-      -- If elements are smaller than bytes, or-reduce the element strobes
-      if ELEMENT_WIDTH < 8 then
-        for I in 0 to BYTE_COUNT-1 loop
-          out_strobe(I)         <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
-        end loop;
-      end if;
-      -- If elements are the same size as bytes, just pass through the element strobes
-      if ELEMENT_WIDTH = 8 then
-        out_strobe              <= strobe_shaped_data;
-      end if;
-      -- If elements are larger than bytes, duplicate the element strobes
-      if ELEMENT_WIDTH > 8 then
-        for I in 0 to BYTE_COUNT-1 loop
-          out_strobe(I)         <= strobe_shaped_data(I / BYTES_PER_ELEM);
-        end loop;
-      end if;
-    end process;
-
-
+  -- Convert the element strobe into a byte strobe
+  byte_strobe_proc: process(strobe_shaped_data)
+  begin
+    -- If elements are smaller than bytes, or-reduce the element strobes
+    if ELEMENT_WIDTH < 8 then
+      for I in 0 to BYTE_COUNT-1 loop
+        out_strobe(I)         <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
+      end loop;
+    end if;
+    -- If elements are the same size as bytes, just pass through the element strobes
+    if ELEMENT_WIDTH = 8 then
+      out_strobe              <= strobe_shaped_data;
+    end if;
+    -- If elements are larger than bytes, duplicate the element strobes
+    if ELEMENT_WIDTH > 8 then
+      for I in 0 to BYTE_COUNT-1 loop
+        out_strobe(I)         <= strobe_shaped_data(I / BYTES_PER_ELEM);
+      end loop;
+    end if;
+  end process;
+  
+  -- TODO: insert some slices
+    
 end Behavioral;
 

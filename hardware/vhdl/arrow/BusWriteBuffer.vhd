@@ -23,11 +23,11 @@ use work.Arrow.all;
 
 -------------------------------------------------------------------------------
 -- This unit prevents blocking the bus while waiting for input on the write
--- data stream. It buffers until whatever burst length has been requested in a 
--- FIFO and only requests the write burst once the FIFO holds enough words, 
--- such that the whole burst may be unloaded onto the bus at once. It also 
--- provides last signaling for each burst, and provides a last_in_cmd signal 
--- for the last word that accepted by the bus for the unlock stream to 
+-- data stream. It buffers until whatever burst length has been requested in a
+-- FIFO and only requests the write burst once the FIFO holds enough words,
+-- such that the whole burst may be unloaded onto the bus at once. It also
+-- provides last signaling for each burst, and provides a last_in_cmd signal
+-- for the last word that accepted by the bus for the unlock stream to
 -- synchronize to.
 -------------------------------------------------------------------------------
 entity BusWriteBuffer is
@@ -47,13 +47,13 @@ entity BusWriteBuffer is
     FIFO_DEPTH                  : natural := 16;
 
     -- The buffer will accept a request if the FIFO contents is bus_req_len /
-    -- 2^LEN_SHIFT. Only use this if your input stream can deliver about as 
+    -- 2^LEN_SHIFT. Only use this if your input stream can deliver about as
     -- fast as the output stream.
     LEN_SHIFT                   : natural := 0;
 
     -- RAM configuration string for the response FIFO.
     RAM_CONFIG                  : string  := ""
-    
+
   );
   port (
 
@@ -61,7 +61,7 @@ entity BusWriteBuffer is
     -- bus and control logic side of the BufferWriter.
     clk                         : in  std_logic;
     reset                       : in  std_logic;
-    
+
     -- Wether the buffer is full or empty
     full                        : out std_logic;
     empty                       : out std_logic;
@@ -92,7 +92,7 @@ entity BusWriteBuffer is
     slv_wrd_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     slv_wrd_strobe              : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     slv_wrd_last                : in  std_logic
-    
+
   );
 end BusWriteBuffer;
 
@@ -104,7 +104,7 @@ architecture Behavioral of BusWriteBuffer is
   signal fifo_in_valid          : std_logic;
   signal fifo_in_ready          : std_logic;
   signal fifo_in_data           : std_logic_vector(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8 downto 0);
-  
+
   signal fifo_out_valid         : std_logic;
   signal fifo_out_ready         : std_logic;
   signal fifo_out_data          : std_logic_vector(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8 downto 0);
@@ -120,7 +120,7 @@ architecture Behavioral of BusWriteBuffer is
 
   signal fifo : fifo_record;
   signal fifo_d : fifo_record;
-    
+
   type output_record is record
     slv_req_ready               : std_logic;
     mst_req_valid               : std_logic;
@@ -130,13 +130,13 @@ architecture Behavioral of BusWriteBuffer is
   end record;
 
 begin
-  
+
   reg_proc: process(clk)
   begin
     if rising_edge(clk) then
       -- Register
       fifo <= fifo_d;
-      
+
       -- Reset
       if reset = '1' then
         fifo.count <= (others => '0');
@@ -145,7 +145,7 @@ begin
       end if;
     end if;
   end process;
-  
+
   comb_proc: process(
     fifo,
     fifo_in_valid, fifo_in_ready,
@@ -157,58 +157,58 @@ begin
     variable vo : output_record;
   begin
     vr                          := fifo;
-    
+
     -- Default outputs
     vo.slv_req_ready            := '0';
     vo.mst_req_valid            := '0';
     vo.mst_wrd_last             := '0';
-    
+
     -- Increase FIFO count when something got inserted
     if fifo_in_valid = '1' and fifo_in_ready = '1' then
       vr.count                  := vr.count + 1;
     end if;
-    
+
     -- Decrease FIFO count and burst count if something got written on the bus
     if fifo_out_valid = '1' and fifo_out_ready = '1' then
       vr.count                  := vr.count - 1;
       vr.burst                  := vr.burst - 1;
     end if;
-    
+
     -- Determine empty
     if vr.count = to_unsigned(0, DEPTH_LOG2+1) then
       vo.empty                  := '1';
     else
       vo.empty                  := '0';
     end if;
-    
+
     -- Determine full
     if vr.count = to_unsigned(2**DEPTH_LOG2, DEPTH_LOG2+1) then
       vo.full                   := '1';
     else
       vo.full                   := '0';
     end if;
-    
+
     -- If the burst count is now zero, signal last burst beat to the bus
     if vr.burst = 0 and vr.command = '1' then
       vo.mst_wrd_last           := '1';
       vr.command                := '0';
     end if;
-    
+
     -- If any previous burst was handled, a new request may be handshaked
     if vr.burst = 0 then
       vo.slv_req_ready          := mst_req_ready;
       vo.mst_req_valid          := slv_req_valid;
     end if;
-            
+
     -- Back-pressure the bus write request when the FIFO doesn't hold enough
     -- words. This means the FIFO must fill up first. In this way, we can
     -- prevent blocking the bus with a burst that is not yet fully made
     -- available on the input side.
-    -- Note that this is implemented to not lose generality of this 
+    -- Note that this is implemented to not lose generality of this
     -- BusWriteBuffer. It is not required by the BufferWriter implementation
     -- as it will not generate requests unless the buffer is sufficiently
     -- filled. This is somewhat the inverse of the BusReadBuffer, because
-    -- there, it is known beforehand how much is going to be read. For the 
+    -- there, it is known beforehand how much is going to be read. For the
     -- BusWriteBuffer it is not known until the last signal has appeared.
     -- Thus we must buffer and then request, not request and then buffer.
     -- LEN_SHIFT can be set to higher than 0 to burst at length / 2^LEN_SHIFT
@@ -216,31 +216,31 @@ begin
       vo.slv_req_ready          := '0';
       vo.mst_req_valid          := '0';
     end if;
-    
+
     -- When a request is handshaked, set the burst counter to len
     if mst_req_ready = '1' and vo.mst_req_valid = '1' then
       vr.burst                  := u(mst_req_len);
       vr.command                := '1';
     end if;
-    
+
     fifo_d                      <= vr;
-    
+
     mst_wrd_last                <= vo.mst_wrd_last;
     mst_req_valid               <= vo.mst_req_valid;
     slv_req_ready               <= vo.slv_req_ready;
-    
+
     full                        <= vo.full;
     empty                       <= vo.empty;
   end process;
-  
+
   mst_req_addr <= slv_req_addr;
   mst_req_len <= slv_req_len;
-  
+
   -- Connect FIFO inputs
   fifo_in_valid                 <= slv_wrd_valid;
   slv_wrd_ready                 <= fifo_in_ready;
   fifo_in_data                  <= slv_wrd_last & slv_wrd_data & slv_wrd_strobe;
-  
+
   slv_write_buffer: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2**DEPTH_LOG2,
