@@ -427,7 +427,7 @@ package body Utils is
   function is_aligned(a : in unsigned; b : natural) return boolean is
     variable lsb_v : unsigned(b-1 downto 0);
   begin
-    if b > 1 then
+    if b > 0 then
       lsb_v := a(b-1 downto 0);
       if (lsb_v = 0) then
         return true;
