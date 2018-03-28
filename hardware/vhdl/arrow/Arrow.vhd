@@ -997,6 +997,9 @@ package Arrow is
       in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
       in_last                   : in  std_logic;
+      offset_valid              : out std_logic;
+      offset_ready              : in  std_logic := '1';
+      offset_data               : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       bus_req_valid             : out std_logic;
       bus_req_ready             : in  std_logic;
       bus_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -1035,6 +1038,9 @@ package Arrow is
       in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
       in_last                   : in  std_logic;
+      offset_valid              : out std_logic;
+      offset_ready              : in  std_logic;
+      offset_data               : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
       out_data                  : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -1073,7 +1079,8 @@ package Arrow is
       out_data                  : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       out_count                 : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
       out_strobe                : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-      out_last                  : out std_logic
+      out_last                  : out std_logic;
+      out_clear                 : out std_logic
     );
   end component;
 

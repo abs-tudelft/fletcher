@@ -37,6 +37,7 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/streams/StreamSerializer.vhd
   vcom -quiet -work work -93 $source_dir/streams/StreamSlice.vhd
   vcom -quiet -work work -93 $source_dir/streams/StreamSync.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamAccumulator.vhd
 
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfigParse.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfig.vhd

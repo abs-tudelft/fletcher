@@ -82,6 +82,10 @@ entity BufferWriterPre is
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     in_last                     : in  std_logic;
+    
+    offset_valid                : out std_logic;
+    offset_ready                : in  std_logic := '1';
+    offset_data                 : out std_logic_vector(INDEX_WIDTH-1 downto 0);
 
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
@@ -98,12 +102,7 @@ architecture Behavioral of BufferWriterPre is
   constant BYTE_COUNT           : natural := BUS_DATA_WIDTH / 8;
   constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH / 8);
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
-
-  signal pad_data_ready         : std_logic;
-  signal pad_strobe_ready       : std_logic;
-  signal pad_data_valid         : std_logic;
-  signal pad_strobe_valid       : std_logic;
-
+ 
   -- Padded stream
   signal pad_valid              : std_logic;
   signal pad_ready              : std_logic;
@@ -112,6 +111,24 @@ architecture Behavioral of BufferWriterPre is
   signal pad_strobe             : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal pad_count              : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal pad_last               : std_logic;
+  signal pad_clear              : std_logic;
+  
+  -- Optional Index buffer length value Accumulation stream
+  signal oia_valid              : std_logic;
+  signal oia_ready              : std_logic;
+  signal oia_dvalid             : std_logic;
+  signal oia_data               : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+  signal oia_strobe             : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
+  signal oia_count              : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal oia_last               : std_logic;
+  
+  signal oia_conv               : std_logic_vector(ELEMENT_WIDTH + 2 downto 0);
+  
+  -- Signals to split the OIA stream
+  signal oia_data_ready         : std_logic;
+  signal oia_strobe_ready       : std_logic;
+  signal oia_data_valid         : std_logic;
+  signal oia_strobe_valid       : std_logic;
 
   -- Normalized stream
   signal norm_valid             : std_logic;
@@ -183,8 +200,56 @@ begin
       out_data                  => pad_data,
       out_strobe                => pad_strobe,
       out_count                 => pad_count,
-      out_last                  => pad_last
+      out_last                  => pad_last,
+      out_clear                 => pad_clear
     );
+    
+  -----------------------------------------------------------------------------
+  -- Length accumulator for index buffers
+  -----------------------------------------------------------------------------
+  -- For index buffers, the input is a length, which should be accumulated into
+  -- an offset. It should be reset when a new command is accepted.
+  
+  -- 
+  idx_accumulate_gen: if IS_INDEX_BUFFER generate
+    accumulator_inst: StreamAccumulator
+      generic map (
+        DATA_WIDTH              => ELEMENT_WIDTH,
+        -- If this is an index buffer, ELEMENT_COUNT_MAX should be 1, the strobe 
+        -- should be one bit and we have one last bit
+        CTRL_WIDTH              => 1 + 1 + 1,
+        IS_SIGNED               => false
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => pad_valid,
+        in_ready                => pad_ready,
+        in_data                 => pad_strobe & pad_count & pad_last & pad_data,
+        in_skip                 => not(pad_strobe(0)), -- Skip if the strobe is low
+        in_clear                => pad_clear,
+        out_valid               => oia_valid,
+        out_ready               => oia_ready,
+        out_data                => oia_conv
+      );
+      
+      oia_strobe                <= oia_conv(ELEMENT_WIDTH+2 downto ELEMENT_WIDTH+2);
+      oia_count                 <= oia_conv(ELEMENT_WIDTH+1 downto ELEMENT_WIDTH+1);
+      oia_last                  <= oia_conv(ELEMENT_WIDTH);
+      oia_data                  <= oia_conv(ELEMENT_WIDTH-1 downto 0);
+  end generate;
+  
+  
+  -- Not an index buffer, just forward all signals
+  not_idx_gen: if not(IS_INDEX_BUFFER) generate
+    pad_ready                   <= oia_ready; 
+    oia_valid                   <= pad_valid; 
+    oia_dvalid                  <= pad_dvalid;
+    oia_data                    <= pad_data;
+    oia_strobe                  <= pad_strobe;
+    oia_count                   <= pad_count;
+    oia_last                    <= pad_last;   
+  end generate;
 
   -----------------------------------------------------------------------------
   -- Normalizers
@@ -193,7 +258,7 @@ begin
   -- normalized. That is, the output of the normalizers always contains
   -- the maximum number of elements per cycle
   
-  pad_split_inst: StreamSync
+  oia_split_inst: StreamSync
     generic map (
       NUM_INPUTS => 1,
       NUM_OUTPUTS => 2
@@ -201,12 +266,12 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      in_valid(0)               => pad_valid,
-      in_ready(0)               => pad_ready,
-      out_valid(0)              => pad_data_valid,
-      out_valid(1)              => pad_strobe_valid,
-      out_ready(0)              => pad_data_ready,
-      out_ready(1)              => pad_strobe_ready
+      in_valid(0)               => oia_valid,
+      in_ready(0)               => oia_ready,
+      out_valid(0)              => oia_data_valid,
+      out_valid(1)              => oia_strobe_valid,
+      out_ready(0)              => oia_data_ready,
+      out_ready(1)              => oia_strobe_ready
     );
 
   -- Only generate normalizers if there can be more than one element per cycle
@@ -221,12 +286,12 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid                => pad_data_valid,
-        in_ready                => pad_data_ready,
+        in_valid                => oia_data_valid,
+        in_ready                => oia_data_ready,
         in_dvalid               => '1',
-        in_data                 => pad_data,
-        in_count                => pad_count,
-        in_last                 => pad_last,
+        in_data                 => oia_data,
+        in_count                => oia_count,
+        in_last                 => oia_last,
         req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
         out_valid               => norm_valid,
         out_ready               => norm_ready,
@@ -246,12 +311,12 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid                => pad_strobe_valid,
-        in_ready                => pad_strobe_ready,
+        in_valid                => oia_strobe_valid,
+        in_ready                => oia_strobe_ready,
         in_dvalid               => '1',
-        in_data                 => pad_strobe,
-        in_count                => pad_count,
-        in_last                 => pad_last,
+        in_data                 => oia_strobe,
+        in_count                => oia_count,
+        in_last                 => oia_last,
         req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
         out_valid               => strobe_norm_valid,
         out_ready               => strobe_norm_ready,
@@ -264,19 +329,19 @@ begin
   
   -- No normalizer is required
   no_norm_gen: if ELEMENT_COUNT_MAX = 1 generate
-    pad_data_ready              <= norm_ready;
-    norm_valid                  <= pad_data_valid;
+    oia_data_ready              <= norm_ready;
+    norm_valid                  <= oia_data_valid;
     norm_dvalid                 <= '1';
-    norm_data                   <= pad_data;
-    norm_count                  <= pad_count;
-    norm_last                   <= pad_last;
+    norm_data                   <= oia_data;
+    norm_count                  <= oia_count;
+    norm_last                   <= oia_last;
     
-    pad_strobe_ready            <= strobe_norm_ready;
-    strobe_norm_valid           <= pad_strobe_valid;
+    oia_strobe_ready            <= strobe_norm_ready;
+    strobe_norm_valid           <= oia_strobe_valid;
     strobe_norm_dvalid          <= '1';
-    strobe_norm_data            <= pad_strobe;
-    strobe_norm_count           <= pad_count;
-    strobe_norm_last            <= pad_last;
+    strobe_norm_data            <= oia_strobe;
+    strobe_norm_count           <= oia_count;
+    strobe_norm_last            <= oia_last;
   end generate;
 
   -----------------------------------------------------------------------------

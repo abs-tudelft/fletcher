@@ -100,12 +100,15 @@ entity BufferWriterPrePadder is
     ---------------------------------------------------------------------------
     -- Output stream
     ---------------------------------------------------------------------------
+    -- out_clear is used to clear the accumulator ahead in the stream when this
+    -- is an index buffer.
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
     out_data                    : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     out_count                   : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     out_strobe                  : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-    out_last                    : out std_logic
+    out_last                    : out std_logic;
+    out_clear                   : out std_logic
   );
 end BufferWriterPrePadder;
 
@@ -151,6 +154,7 @@ architecture rtl of BufferWriterPrePadder is
     out_count                   : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     out_strobe                  : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
     out_last                    : std_logic;
+    out_clear                   : std_logic;
   end record;
 
 begin
@@ -182,6 +186,7 @@ begin
     vo.in_ready                 := '0';
     vo.out_valid                := '0';
     vo.out_last                 := '0';
+    vo.out_clear                := '0';
 
     -- In simulation, make data, count and strobe unkown by default
     --pragma translate off
@@ -203,33 +208,8 @@ begin
           vr.index.current      := align_beq(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
           vr.index.last         := u(cmdIn_lastIdx);
 
-          -- Advance state without backpressure
-          if IS_INDEX_BUFFER then
-            assert vr.index.first = 0 
-              report "ERROR: Index BufferWriter command first index is not 0."
-              severity failure;
-            vr.state            := INDEX;
-          else
-            vr.state            := PRE;
-          end if;
+          vr.state            := PRE;
         end if;
-
-      -------------------------------------------------------------------------
-      when INDEX =>
-      -------------------------------------------------------------------------
-        -- For index buffers, we insert one element
-        vo.out_data             := slv(INDEX_ZERO);
-        vo.out_count            := COUNT_ONE;
-        vo.out_strobe           := STROBE_FIRST;
-        vo.out_valid            := '1';
-
-        -- Advance state if no backpressure
-        if out_ready = '1' then
-          vr.index.current    := vr.index.current + 1;
-          -- Index buffer should never have to prepend, so skip to pass
-          vr.state              := PASS;
-        end if;
-
       -------------------------------------------------------------------------
       when PRE =>
       -------------------------------------------------------------------------
@@ -251,8 +231,36 @@ begin
         end if;
         
         if vr.index.current = vr.index.first then
+          -- Advance state depending if this is an index buffer or not
+          if IS_INDEX_BUFFER then
+            -- If the first index is zero, then we are streaming in at the
+            -- start of the index buffer. If a user for whatever reason wants
+            -- to write to some other index in the buffer, we don't prepepend
+            -- a "zero", so the INDEX state can be skipped.
+            if vr.index.first = 0 then
+              vr.state            := INDEX;
+            end if;
+          else
+            vr.state              := PASS;
+          end if;
+        end if;
+        
+      -------------------------------------------------------------------------
+      when INDEX =>
+      -------------------------------------------------------------------------
+        -- For index buffers, we insert one element
+        vo.out_data             := slv(INDEX_ZERO);
+        vo.out_count            := COUNT_ONE;
+        vo.out_strobe           := STROBE_FIRST;
+        vo.out_valid            := '1';
+        vo.out_clear            := '1';
+
+        -- Advance state if no backpressure
+        if out_ready = '1' then
+          vr.index.current    := vr.index.current + 1;
           vr.state              := PASS;
         end if;
+        
       -------------------------------------------------------------------------
       when PASS =>
       -------------------------------------------------------------------------
@@ -350,6 +358,7 @@ begin
     out_count                   <= vo.out_count;
     out_strobe                  <= vo.out_strobe;
     out_last                    <= vo.out_last;
+    out_clear                   <= vo.out_clear;
 
   end process;
 

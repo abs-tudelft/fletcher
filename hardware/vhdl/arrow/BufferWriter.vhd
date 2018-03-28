@@ -66,7 +66,11 @@ entity BufferWriter is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural := 8;
 
-    -- Whether this is a normal buffer or an index buffer.
+    -- Whether this is a normal buffer or an index buffer. If this is an index
+    -- buffer, it is assumed that the input elements are lengths which will be
+    -- accumulated. The accumulated value provides the index to the list 
+    -- element in the corresponding values buffer. If the first index is zero
+    -- the index buffer will insert the initial zero itself.
     IS_INDEX_BUFFER             : boolean := false;
 
     -- Maximum number of elements returned per cycle. When more than 1,
@@ -136,7 +140,14 @@ entity BufferWriter is
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     in_last                     : in  std_logic;
-
+    
+    ---------------------------------------------------------------------------
+    -- Offset stream for index buffers
+    ---------------------------------------------------------------------------
+    offset_valid                : out std_logic;
+    offset_ready                : in  std_logic := '1';
+    offset_data                 : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    
     ---------------------------------------------------------------------------
     -- Bus write channels
     ---------------------------------------------------------------------------
@@ -152,7 +163,8 @@ entity BufferWriter is
     bus_wrd_data                : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_wrd_strobe              : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     bus_wrd_last                : out std_logic
-
+    
+    
     -- TODO in entity:
     --  - status/error flags
 
@@ -188,9 +200,9 @@ architecture Behavioral of BufferWriter is
   signal word_ready             : std_logic;
   signal word_last              : std_logic;
   
-  signal wordbuf_valid         : std_logic;
-  signal wordbuf_ready         : std_logic;
-  signal wordbuf_last          : std_logic;
+  signal wordbuf_valid          : std_logic;
+  signal wordbuf_ready          : std_logic;
+  signal wordbuf_last           : std_logic;
 
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
@@ -216,13 +228,25 @@ architecture Behavioral of BufferWriter is
   signal unl_o_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 begin
 
+  -----------------------------------------------------------------------------
   -- Constant checks
+  -----------------------------------------------------------------------------
   -- pragma translate off
+  
+  -- Check maximum element count and signal width
   assert ELEMENT_COUNT_MAX <= 2 ** ELEMENT_COUNT_WIDTH 
     report "ELEMENT_COUNT_MAX and ELEMENT_COUNT_WIDTH mismatch." 
     severity failure;
-  -- pragma translate on
 
+  -- Check index buffer element counts
+  assert (IS_INDEX_BUFFER and ELEMENT_COUNT_MAX = 1 and ELEMENT_COUNT_WIDTH = 1)
+         or not(IS_INDEX_BUFFER)
+    report "Index buffers can only handle one element at a time at the input. "
+         & "ELEMENT_COUNT_MAX and ELEMENT_COUNT_WIDTH must both be 1"
+    severity failure;
+  
+  -- pragma translate on
+  
   -----------------------------------------------------------------------------
   -- Command stream input
   -----------------------------------------------------------------------------
@@ -282,6 +306,10 @@ begin
       in_data                   => in_data,
       in_count                  => in_count,
       in_last                   => in_last,
+      
+      offset_valid              => offset_valid,
+      offset_ready              => offset_ready,
+      offset_data               => offset_data,
 
       out_valid                 => pre_valid,
       out_ready                 => pre_ready,

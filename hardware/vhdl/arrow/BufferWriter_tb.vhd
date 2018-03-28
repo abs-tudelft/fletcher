@@ -45,9 +45,9 @@ entity BufferWriter_tb is
     ELEMENT_COUNT_MAX           : natural  := 1;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
-    AVG_RANGE_LEN               : real     := 2.0 ** 16;
+    AVG_RANGE_LEN               : real     := 2.0 ** 8;
 
-    NUM_COMMANDS                : natural  := 4096;
+    NUM_COMMANDS                : natural  := 16;
     WAIT_FOR_UNLOCK             : boolean  := false;
     KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
 
@@ -339,9 +339,12 @@ begin
 
         -- Randomize data
         for I in 0 to true_count-1  loop
-            uniform(seed1, seed2, rand);
-
-            elem_val            := gen_elem_val(rand);
+            if IS_INDEX_BUFFER then
+              elem_val          := to_unsigned(1, ELEMENT_WIDTH);
+            else
+              uniform(seed1, seed2, rand);
+              elem_val          := gen_elem_val(rand);
+            end if;
             in_data((I+1)*ELEMENT_WIDTH-1 downto I*ELEMENT_WIDTH) <= slv(elem_val);
 
             if VERBOSE then
@@ -493,8 +496,8 @@ begin
             elem_written          := u(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
 
             -- If this is an index buffer and its the first element, we expect it to be 0
-            if IS_INDEX_BUFFER and index+I = 0 then
-              elem_expected     := (others => '0');
+            if IS_INDEX_BUFFER then
+              elem_expected     := to_unsigned(index + I, ELEMENT_WIDTH);
             else
               uniform(seed1, seed2, rand);
               elem_expected     := gen_elem_val(rand);

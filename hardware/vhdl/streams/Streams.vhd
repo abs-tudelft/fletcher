@@ -222,6 +222,27 @@ package Streams is
     );
   end component;
   
+  component StreamAccumulator is
+    generic (
+      DATA_WIDTH                : positive;
+      CTRL_WIDTH                : natural;
+      IS_SIGNED                 : boolean
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(CTRL_WIDTH + DATA_WIDTH-1 downto 0);
+      in_skip                   : in  std_logic;
+      in_clear                  : in  std_logic;
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(CTRL_WIDTH + DATA_WIDTH-1 downto 0)
+
+    );
+  end component;
+  
   component StreamBarrelShifter is
     generic (
       CTRL_WIDTH                : natural;
