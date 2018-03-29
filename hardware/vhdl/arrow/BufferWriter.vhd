@@ -200,10 +200,16 @@ architecture Behavioral of BufferWriter is
   signal word_ready             : std_logic;
   signal word_last              : std_logic;
   
-  signal wordbuf_valid          : std_logic;
-  signal wordbuf_ready          : std_logic;
-  signal wordbuf_last           : std_logic;
-
+  signal step_valid             : std_logic;
+  signal step_ready             : std_logic;
+  signal step_count             : std_logic_vector(0 downto 0);
+  signal step_last              : std_logic;
+  
+  signal steps_valid            : std_logic;
+  signal steps_ready            : std_logic;
+  signal steps_count            : std_logic_vector(max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN))-1 downto 0);
+  signal steps_last             : std_logic;
+  
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
 
@@ -276,7 +282,8 @@ begin
   -- Input stream pre-processing
   -----------------------------------------------------------------------------
   -- Pre-processes the stream to align to burst steps and generates write
-  -- strobes.
+  -- strobes. For index buffers, this unit also generates offsets for the child
+  -- buffer (if required).
 
   pre_inst: BufferWriterPre
     generic map (
@@ -323,7 +330,7 @@ begin
   writebuf_last                 <= pre_last;
   
   -- Generate signals for word_last to Write Buffer
-  wordbuf_last                  <= pre_last;
+  word_last                     <= pre_last;
   
   -- Split the preprocessed output stream into a data and word signaling stream
   pre_split_inst: StreamSync
@@ -337,31 +344,94 @@ begin
       in_valid(0)               => pre_valid,
       in_ready(0)               => pre_ready,
       out_valid(0)              => writebuf_valid,
-      out_valid(1)              => wordbuf_valid,
+      out_valid(1)              => word_valid,
       out_ready(0)              => writebuf_ready,
-      out_ready(1)              => wordbuf_ready
+      out_ready(1)              => word_ready
     );
+    
+  -----------------------------------------------------------------------------
+  -- Burst step / maximum burst counting
+  -----------------------------------------------------------------------------
+  -- Words that have been accepted by the bus write buffer are counted, and
+  -- converted into a stream for the bus request generator that is only valid
+  -- when a whole bust step has been written in the bus write buffer. Thus,
+  -- the PrePadder must make sure to always output an integer multiple of
+  -- a burst step length number of words, otherwise the system will deadlock.
+  -- A second counter outputs the number of steps loaded when a maximum burst
+  -- length has been reached or when the last signal is asserted.
+  -- These counters prevent stalling the bus and indirectly the input stream,
+  -- because if word handshakes are buffered while the request generator
+  -- was not accepting them, it can only accept one each cycle after it's not
+  -- busy anymore, while many words might already be present in the write 
+  -- buffer.
   
-  -- Buffer the word signaling stream so the data stream can continue to the
-  -- write buffer even if the bus request generator is busy for a few cycles.
-  wordbuf_inst: StreamBuffer
-    generic map (
-      MIN_DEPTH                 => 2,
-      DATA_WIDTH                => 1
-    )
-    port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
-
-      in_valid                  => wordbuf_valid,
-      in_ready                  => wordbuf_ready,
-      in_data(0)                => wordbuf_last,
-
-      out_valid                 => word_valid,
-      out_ready                 => word_ready,
-      out_data(0)               => word_last
-    );
-
+  -- Burst steps span multiple words, insert a burst step counter
+  word_count_gen: if BUS_BURST_STEP_LEN /= 1 generate
+    word_count_inst : StreamElementCounter
+      generic map (
+        IN_COUNT_WIDTH              => 1,
+        IN_COUNT_MAX                => 1,
+        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_STEP_LEN),
+        OUT_COUNT_MAX               => BUS_BURST_STEP_LEN
+      )
+      port map (
+        clk                         => acc_clk,
+        reset                       => acc_reset,
+        in_valid                    => word_valid,
+        in_ready                    => word_ready,
+        in_last                     => word_last,
+        in_count                    => "1",
+        out_valid                   => step_valid,
+        out_ready                   => step_ready,
+        out_count                   => open,
+        out_last                    => step_last
+      );
+      
+      -- We can make step_count 1, since the word stream should always
+      -- contain some multiple of BUS_BURST_STEP_LEN elements. The next
+      -- counter wants to count steps, not words.
+      step_count                    <= "1";
+  end generate;
+  
+  -- Burst steps are equal to one word. Pass through to the step stream.
+  no_word_count_gen: if BUS_BURST_STEP_LEN = 1 generate
+    word_ready                      <= step_ready;
+    step_valid                      <= word_valid;
+    step_last                       <= word_last;
+    step_count                      <= "1";
+  end generate;
+  
+  -- Count burst steps only if the maximum burst length is not equal to the step length
+  steps_count_gen: if BUS_BURST_MAX_LEN /= BUS_BURST_STEP_LEN generate
+    steps_count_inst : StreamElementCounter
+      generic map (
+        IN_COUNT_WIDTH              => 1,
+        IN_COUNT_MAX                => 1,
+        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN),
+        OUT_COUNT_MAX               => BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN
+      )
+      port map (
+        clk                         => acc_clk,
+        reset                       => acc_reset,
+        in_valid                    => step_valid,
+        in_ready                    => step_ready,
+        in_last                     => step_last,
+        in_count                    => step_count,
+        out_valid                   => steps_valid,
+        out_ready                   => steps_ready,
+        out_count                   => steps_count,
+        out_last                    => steps_last
+      );
+  end generate;
+  
+  -- Burst steps are equal to one word. Pass through to the step stream.
+  no_steps_count_gen: if BUS_BURST_MAX_LEN = BUS_BURST_STEP_LEN generate
+    step_ready                      <= steps_ready;
+    steps_valid                     <= step_valid;
+    steps_last                      <= step_last;
+    steps_count                     <= (0 => '1', others => '0');
+  end generate;  
+  
   -----------------------------------------------------------------------------
   -- Bus Request Generation
   -----------------------------------------------------------------------------
@@ -372,6 +442,8 @@ begin
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
+      STEPS_COUNT_WIDTH         => max(1, log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN)),
+      STEPS_COUNT_MAX           => BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
@@ -386,9 +458,10 @@ begin
       cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_baseAddr            => cmdIn_baseAddr,
       cmdIn_implicit            => cmdIn_implicit,
-      word_ready                => word_ready,
-      word_valid                => word_valid,
-      word_last                 => word_last,
+      steps_ready               => steps_ready,
+      steps_valid               => steps_valid,
+      steps_count               => steps_count,
+      steps_last                => steps_last,
       busReq_valid              => req_valid,
       busReq_ready              => req_ready,
       busReq_addr               => req_addr,

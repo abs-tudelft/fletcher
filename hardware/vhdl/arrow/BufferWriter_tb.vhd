@@ -45,11 +45,12 @@ entity BufferWriter_tb is
     ELEMENT_COUNT_MAX           : natural  := 1;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
-    AVG_RANGE_LEN               : real     := 2.0 ** 8;
+    AVG_RANGE_LEN               : real     := 2.0 ** 10;
 
     NUM_COMMANDS                : natural  := 16;
     WAIT_FOR_UNLOCK             : boolean  := false;
     KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
+    LAST_PROBABILITY            : real     := 1.0/512.0;
 
     CMD_CTRL_WIDTH              : natural  := 1;
 
@@ -83,6 +84,10 @@ architecture tb of BufferWriter_tb is
   signal cmdIn_baseAddr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal cmdIn_implicit         : std_logic;
   signal cmdIn_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  
+  signal offset_valid           : std_logic;
+  signal offset_ready           : std_logic := '1';
+  signal offset_data            : std_logic_vector(INDEX_WIDTH-1 downto 0);
 
   signal unlock_valid           : std_logic;
   signal unlock_ready           : std_logic := '1';
@@ -358,7 +363,7 @@ begin
         -- and we didn't give a last index
         if last_index = 0 then
           uniform(last_seed1, last_seed2, last_rand);
-          if last_rand < (1.0/32.0) then
+          if last_rand < LAST_PROBABILITY then
             if ELEMS_PER_BYTE /= 0 then -- prevent mod 0 error
               if current_index mod ELEMS_PER_BYTE = 0 then
                 in_last         <= '1';
@@ -383,7 +388,7 @@ begin
         -- Exit when last element streamed in
         if in_last = '1' then
           if VERBOSE then
-            dumpStdOut(TEST_NAME & " :" & "Input stream done.");
+            dumpStdOut(TEST_NAME & " : " & "Last element.");
           end if;
           exit;
         end if;
@@ -604,6 +609,10 @@ begin
       unlock_valid              => unlock_valid,
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
+      
+      offset_valid              => offset_valid,
+      offset_ready              => offset_ready,
+      offset_data               => offset_data,
 
       in_valid                  => in_valid,
       in_ready                  => in_ready,

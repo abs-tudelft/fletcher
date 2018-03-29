@@ -35,19 +35,20 @@ proc a {} {
   vcom -work work -2008 $vhdl_dir/arrow/BufferWriter_tb.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BufferWriters_tb.vhd
 
-  simulate work.bufferwriters_tb 
-    # {{"Inst 0" sim:/bufferwriters_tb/inst0/* }
-    # {"Inst 1" sim:/bufferwriters_tb/inst1/* }
-    # {"Inst 2" sim:/bufferwriters_tb/inst2/* }
-    # {"Inst 3" sim:/bufferwriters_tb/inst3/* }
-    # {"Inst 4" sim:/bufferwriters_tb/inst4/* }
-    # {"Inst 5" sim:/bufferwriters_tb/inst5/* }
-    # {"Testbench"         sim:/bufferwriters_tb/inst5/*                          }
-    # {"Buffer Writer"     sim:/bufferwriters_tb/inst5/uut/*                      }
-    # {"Preprocessor"      sim:/bufferwriters_tb/inst5/uut/pre_inst/*             }
-    # {"Padder"            sim:/bufferwriters_tb/inst5/uut/pre_inst/padder_inst/* }
-    # {"CmdGenBusReq"      sim:/bufferwriters_tb/inst5/uut/cmdgen_inst/*          }
-    # {"Bus Write Buffer"  sim:/bufferwriters_tb/inst5/uut/buffer_inst/*          }}
+  simulate work.bufferwriters_tb  {
+    {"Inst 0" sim:/bufferwriters_tb/inst0/* }
+    {"Inst 1" sim:/bufferwriters_tb/inst1/* }
+    {"Inst 2" sim:/bufferwriters_tb/inst2/* }
+    {"Inst 3" sim:/bufferwriters_tb/inst3/* }
+    {"Inst 4" sim:/bufferwriters_tb/inst4/* }
+    {"Inst 5" sim:/bufferwriters_tb/inst5/* }
+    {"Testbench"         sim:/bufferwriters_tb/inst1/*                          }
+    {"Buffer Writer"     sim:/bufferwriters_tb/inst1/uut/*                      }
+    {"Preprocessor"      sim:/bufferwriters_tb/inst1/uut/pre_inst/*             }
+    {"Padder"            sim:/bufferwriters_tb/inst1/uut/pre_inst/padder_inst/* }
+    {"CmdGenBusReq"      sim:/bufferwriters_tb/inst1/uut/cmdgen_inst/*          }
+    {"Bus Write Buffer"  sim:/bufferwriters_tb/inst1/uut/buffer_inst/*          }
+  }
                                   
 }
 

@@ -22,8 +22,8 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 
--- This unit converts a stream of elements to a stream of bus words and write strobes.
--- Depending
+-- This unit converts a stream of elements to a stream of bus words and 
+-- write strobes.
 entity BufferWriterPre is
   generic (
     ---------------------------------------------------------------------------
@@ -194,7 +194,7 @@ begin
       in_data                   => in_data,
       in_count                  => in_count,
       in_last                   => in_last,
-
+      
       out_valid                 => pad_valid,
       out_ready                 => pad_ready,
       out_data                  => pad_data,
@@ -207,40 +207,65 @@ begin
   -----------------------------------------------------------------------------
   -- Length accumulator for index buffers
   -----------------------------------------------------------------------------
+  
   -- For index buffers, the input is a length, which should be accumulated into
   -- an offset. It should be reset when a new command is accepted.
-  
-  -- 
   idx_accumulate_gen: if IS_INDEX_BUFFER generate
-    accumulator_inst: StreamAccumulator
-      generic map (
-        DATA_WIDTH              => ELEMENT_WIDTH,
-        -- If this is an index buffer, ELEMENT_COUNT_MAX should be 1, the strobe 
-        -- should be one bit and we have one last bit
-        CTRL_WIDTH              => 1 + 1 + 1,
-        IS_SIGNED               => false
-      )
-      port map (
-        clk                     => clk,
-        reset                   => reset,
-        in_valid                => pad_valid,
-        in_ready                => pad_ready,
-        in_data                 => pad_strobe & pad_count & pad_last & pad_data,
-        in_skip                 => not(pad_strobe(0)), -- Skip if the strobe is low
-        in_clear                => pad_clear,
-        out_valid               => oia_valid,
-        out_ready               => oia_ready,
-        out_data                => oia_conv
-      );
+    accumulate_block: block
+      signal oia_acc_valid      : std_logic;
+      signal oia_acc_ready      : std_logic;
+    begin
+      -- Instantiate a stream accumulator. If this is an index buffer, 
+      -- ELEMENT_COUNT_MAX should be 1, the strobe should be one bit and we 
+      -- have one last bit. Skip accumulating if the strobe is low.
+      accumulator_inst: StreamAccumulator
+        generic map (
+          DATA_WIDTH            => ELEMENT_WIDTH,
+          CTRL_WIDTH            => 1 + 1 + 1,
+          IS_SIGNED             => false
+        )
+        port map (
+          clk                   => clk,
+          reset                 => reset,
+          in_valid              => pad_valid,
+          in_ready              => pad_ready,
+          in_data               => pad_strobe & pad_count & pad_last & pad_data,
+          in_skip               => not(pad_strobe(0)),
+          in_clear              => pad_clear,
+          out_valid             => oia_acc_valid,
+          out_ready             => oia_acc_ready,
+          out_data              => oia_conv
+        );
+
+        oia_strobe              <= oia_conv(ELEMENT_WIDTH+2 downto ELEMENT_WIDTH+2);
+        oia_count               <= oia_conv(ELEMENT_WIDTH+1 downto ELEMENT_WIDTH+1);
+        oia_last                <= oia_conv(ELEMENT_WIDTH);
+        oia_data                <= oia_conv(ELEMENT_WIDTH-1 downto 0);
+
+      -- Split the offset to the offset output stream.
+      length_split: StreamSync
+        generic map (
+          NUM_INPUTS => 1,
+          NUM_OUTPUTS => 2
+        )
+        port map (
+          clk                   => clk,
+          reset                 => reset,
+          in_valid(0)           => oia_acc_valid,
+          in_ready(0)           => oia_acc_ready,
+          out_valid(0)          => offset_valid,
+          out_valid(1)          => oia_valid,
+          out_ready(0)          => offset_ready,
+          out_ready(1)          => oia_ready
+        );
+      end block;
       
-      oia_strobe                <= oia_conv(ELEMENT_WIDTH+2 downto ELEMENT_WIDTH+2);
-      oia_count                 <= oia_conv(ELEMENT_WIDTH+1 downto ELEMENT_WIDTH+1);
-      oia_last                  <= oia_conv(ELEMENT_WIDTH);
-      oia_data                  <= oia_conv(ELEMENT_WIDTH-1 downto 0);
+      offset_data               <= oia_data;
   end generate;
   
   
-  -- Not an index buffer, just forward all signals
+  -- For non-index buffers, we don't have to do anything, just forward the
+  -- stream and invalidate the offset output forever.
   not_idx_gen: if not(IS_INDEX_BUFFER) generate
     pad_ready                   <= oia_ready; 
     oia_valid                   <= pad_valid; 
@@ -249,6 +274,8 @@ begin
     oia_strobe                  <= pad_strobe;
     oia_count                   <= pad_count;
     oia_last                    <= pad_last;   
+    
+    offset_valid                <= '0';
   end generate;
 
   -----------------------------------------------------------------------------
@@ -292,7 +319,8 @@ begin
         in_data                 => oia_data,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, 
+                                                   ELEMENT_COUNT_WIDTH+1)),
         out_valid               => norm_valid,
         out_ready               => norm_ready,
         out_dvalid              => norm_dvalid,
@@ -317,7 +345,8 @@ begin
         in_data                 => oia_strobe,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, ELEMENT_COUNT_WIDTH+1)),
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, 
+                                                   ELEMENT_COUNT_WIDTH+1)),
         out_valid               => strobe_norm_valid,
         out_ready               => strobe_norm_ready,
         out_dvalid              => strobe_norm_dvalid,
@@ -347,8 +376,8 @@ begin
   -----------------------------------------------------------------------------
   -- Gearboxes
   -----------------------------------------------------------------------------
-  -- Here the streams are reshaped (parallelized or serialized) such that they
-  -- fit in a single bus word
+  -- Reshape (parallelize or serialize) the stream such that it fits in a 
+  -- single bus word.
 
   data_gearbox_inst: StreamGearbox
     generic map (
@@ -398,7 +427,8 @@ begin
       out_last                  => strobe_shaped_last
     );
     
-  -- Synchronize the output streams
+  -- Synchronize the output streams. (It -shouldn't- be necessary, but is good
+  -- practise.)
   strobe_join_inst: StreamSync
     generic map (
       NUM_INPUTS => 2,
@@ -424,17 +454,17 @@ begin
     -- If elements are smaller than bytes, or-reduce the element strobes
     if ELEMENT_WIDTH < 8 then
       for I in 0 to BYTE_COUNT-1 loop
-        out_strobe(I)         <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
+        out_strobe(I)           <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
       end loop;
     end if;
     -- If elements are the same size as bytes, just pass through the element strobes
     if ELEMENT_WIDTH = 8 then
-      out_strobe              <= strobe_shaped_data;
+      out_strobe                <= strobe_shaped_data;
     end if;
     -- If elements are larger than bytes, duplicate the element strobes
     if ELEMENT_WIDTH > 8 then
       for I in 0 to BYTE_COUNT-1 loop
-        out_strobe(I)         <= strobe_shaped_data(I / BYTES_PER_ELEM);
+        out_strobe(I)           <= strobe_shaped_data(I / BYTES_PER_ELEM);
       end loop;
     end if;
   end process;

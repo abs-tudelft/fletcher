@@ -30,7 +30,7 @@ end BufferWriters_tb;
 architecture tb of BufferWriters_tb is
 begin
   inst0: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "32 in, 32 out",
+    TEST_NAME                   => "32IN_32OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        32,
     BUS_LEN_WIDTH               =>         9,
@@ -44,6 +44,7 @@ begin
     ELEMENT_COUNT_MAX           =>         1,
     ELEMENT_COUNT_WIDTH         =>         1,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      4096,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -54,7 +55,7 @@ begin
   );
 
   inst1: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "32 in, 32 out, burst step 4",
+    TEST_NAME                   => "INDEX_BS4",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        32,
     BUS_LEN_WIDTH               =>         9,
@@ -68,6 +69,7 @@ begin
     ELEMENT_COUNT_MAX           =>         1,
     ELEMENT_COUNT_WIDTH         =>         1,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      4096,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -78,7 +80,7 @@ begin
   );
 
   inst2: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "32 in, 64 out",
+    TEST_NAME                   => "32IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
     BUS_LEN_WIDTH               =>         9,
@@ -92,6 +94,7 @@ begin
     ELEMENT_COUNT_MAX           =>         1,
     ELEMENT_COUNT_WIDTH         =>         1,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      4096,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -102,7 +105,7 @@ begin
   );
 
   inst3: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "4x16 in, 64 out",
+    TEST_NAME                   => "4x16IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
     BUS_LEN_WIDTH               =>         9,
@@ -116,6 +119,7 @@ begin
     ELEMENT_COUNT_MAX           =>         4,
     ELEMENT_COUNT_WIDTH         =>         2,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      4096,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -126,7 +130,7 @@ begin
   );
 
   inst4: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "8x1 in, 64 out",
+    TEST_NAME                   => "8x1IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
     BUS_LEN_WIDTH               =>         9,
@@ -140,6 +144,7 @@ begin
     ELEMENT_COUNT_MAX           =>         8,
     ELEMENT_COUNT_WIDTH         =>         3,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      1024,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -150,7 +155,7 @@ begin
   );
 
   inst5: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "32x2 in, 64 out, burst max 1",
+    TEST_NAME                   => "2x32IN_64OUT_MB1",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
     BUS_LEN_WIDTH               =>         9,
@@ -164,6 +169,7 @@ begin
     ELEMENT_COUNT_MAX           =>        32,
     ELEMENT_COUNT_WIDTH         =>         5,
     AVG_RANGE_LEN               => 2.0 ** 12,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>       256,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -174,7 +180,7 @@ begin
   );
   
   inst6: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "index buffer",
+    TEST_NAME                   => "INDEX_BUF",
     BUS_ADDR_WIDTH              =>        64,
     BUS_DATA_WIDTH              =>       128,
     BUS_LEN_WIDTH               =>         9,
@@ -188,6 +194,7 @@ begin
     ELEMENT_COUNT_MAX           =>         1,
     ELEMENT_COUNT_WIDTH         =>         1,
     AVG_RANGE_LEN               => 2.0 ** 11,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>      1024,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>     false,
@@ -198,7 +205,7 @@ begin
   );
   
   inst7: entity work.BufferWriter_tb generic map (
-    TEST_NAME                   => "known last index 8x64 in 512 out",
+    TEST_NAME                   => "8x64IN_512OUT",
     BUS_ADDR_WIDTH              =>        64,
     BUS_DATA_WIDTH              =>       512,
     BUS_LEN_WIDTH               =>         9,
@@ -212,6 +219,7 @@ begin
     ELEMENT_COUNT_MAX           =>         8,
     ELEMENT_COUNT_WIDTH         =>         3,
     AVG_RANGE_LEN               => 2.0 ** 14,
+    LAST_PROBABILITY            => 1.0/128.0,
     NUM_COMMANDS                =>       256,
     WAIT_FOR_UNLOCK             =>     false,
     KNOWN_LAST_INDEX            =>      true,

@@ -20,6 +20,7 @@ use ieee.std_logic_misc.all;
 library work;
 use work.Utils.all;
 use work.Arrow.all;
+use work.Streams.all;
 
 entity BufferWriterCmdGenBusReq is
   generic (
@@ -41,6 +42,12 @@ entity BufferWriterCmdGenBusReq is
 
     -- Maximum number of beats in a burst.
     BUS_BURST_MAX_LEN           : natural;
+    
+    ---------------------------------------------------------------------------
+    -- Steps loaded stream
+    ---------------------------------------------------------------------------
+    STEPS_COUNT_WIDTH           : natural;
+    STEPS_COUNT_MAX             : natural;
 
     ---------------------------------------------------------------------------
     -- Arrow metrics and configuration
@@ -88,9 +95,10 @@ entity BufferWriterCmdGenBusReq is
     -- This unit keeps track of how many words are loaded into the FIFO. When 
     -- word_last is asserted, final burst steps will be made until the nearest
     -- burst step aligned last index.
-    word_ready                  : out std_logic;
-    word_valid                  : in  std_logic;
-    word_last                   : in  std_logic;
+    steps_ready                  : out std_logic;
+    steps_valid                  : in  std_logic;
+    steps_count                  : in  std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
+    steps_last                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Output streams
@@ -158,7 +166,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
     master                      : master_record;
     cmdIn_ready                 : std_logic;
     cnt_ctrl                    : counter_control_record;
-    word_ready                  : std_logic;
+    steps_ready                  : std_logic;
   end record;
 
   signal r                      : regs_record;
@@ -214,31 +222,22 @@ begin
       counter                   <= counter_d;
 
       if reset = '1' then
-        counter.word            <= (others => '0');
         counter.step            <= (others => '0');
       end if;
     end if;
   end process;
 
+  -- Keep track of how many burst steps have been loaded into the write buffer.
   counter_comb_proc: process(
     counter, 
-    word_valid, word_ready,
+    steps_valid, steps_ready, steps_count,
     cnt_ctrl) is
     variable v                  : counter_record;
   begin
     v                           := counter;
 
-    if word_valid = '1' and word_ready = '1' then
-      if BUS_BURST_STEP_LEN /= 1 then
-        v.word                  := v.word + 1;
-        -- If word wraps around we've loaded a step.
-        if v.word = WORD_ZERO then
-          v.step                := v.step + 1;
-        end if;
-      else
-        -- If burst step len is 1, then every word is a step
-        v.step                  := v.step + 1;
-      end if;
+    if steps_valid = '1' and steps_ready = '1' then
+      v.step                    := v.step + u(resize_count(steps_count, STEPS_COUNT_WIDTH+1));
     end if;
     
     -- Check if there is a step subtraction request
@@ -284,7 +283,7 @@ begin
     cmdIn_valid, cmdIn_firstIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
     byte_address,
-    word_last, word_valid,
+    steps_last, steps_valid,
     counter
   ) is
     variable vr                 : regs_record;
@@ -301,7 +300,7 @@ begin
     vo.cnt_ctrl.step_sub        := '0';
     vo.cnt_ctrl.max_sub         := '0';
     vo.cnt_ctrl.reset           := '0';
-    vo.word_ready               := '0';
+    vo.steps_ready              := '0';
 
     case vr.state is
       -------------------------------------------------------------------------
@@ -343,7 +342,7 @@ begin
         -- State to step to first max burst aligned index or last index
         
         -- We can capture word signals as long as we haven't seen last yet
-        vo.word_ready           := not(vr.last);
+        vo.steps_ready          := not(vr.last);
         
         -- We write one step
         vo.master.len           := STEP_LEN;
@@ -364,7 +363,7 @@ begin
         
         -- Invalidate if this is the last word; the POST_STEP state should
         -- handle this
-        if word_last = '1' and word_valid = '1' then
+        if steps_last = '1' and steps_valid = '1' then
           vo.master.valid       := '0';
           vr.last               := '1';
           vr.state              := POST_STEP;
@@ -382,23 +381,24 @@ begin
         -- State to burst maximum lengths
         
         -- We can capture word signals as long as we haven't seen last yet
-        vo.word_ready           := not(vr.last);
+        vo.steps_ready          := not(vr.last);
 
         -- We write a maximum burst
         vo.master.len           := MAX_LEN;
 
         -- Make bus request valid
         vo.master.valid         := '1';
+        
+        -- Check if a last step is at the input of the steps counter stream
+        if steps_last = '1' and steps_valid = '1' then
+          vr.last               := '1';
+        end if;
        
        -- Invalidate if there is no max burst step in the FIFO
         if counter.step < MAX_STEPS then
           vo.master.valid       := '0';
         end if;
-        
-        if word_last = '1' and word_valid = '1' then
-          vr.last               := '1';
-        end if;
-        
+                
         -- Go to the POST_STEP state if this is the last word of this command
         -- and there is no outstanding bus request
         if vo.master.valid = '0' and vr.last = '1' then
@@ -418,21 +418,19 @@ begin
       -------------------------------------------------------------------------
       when POST_STEP =>
       -------------------------------------------------------------------------
-        -- State to step until last index has been reached
+        -- State to step until step counter is zero
 
         -- We can capture word signals as long as we haven't seen last yet
         -- which in this state we must have seen, but still:
-        vo.word_ready           := not(vr.last);
-        
-        -- In this state, we must backpressure the word stream if there is a
-        -- last word in it. This is meant for the next command.
-        --if word_valid = '1' and word_last = '1' then
-        --  vo.word_ready         := '0';
-        --end if;
-        
+        vo.steps_ready          := not(vr.last);
+                
         -- We write one step
-        vo.master.len           := STEP_LEN;
-
+        if counter.step < MAX_STEPS then
+          vo.master.len         := STEP_LEN;
+        else
+          vo.master.len         := MAX_LEN;
+        end if;        
+        
         -- Make bus request valid
         vo.master.valid         := '1';
         
@@ -442,16 +440,15 @@ begin
           vr.state              := IDLE;
         end if;
         
-        -- pragma translate off
-        --assert not(vr.last) = '1' and (word_valid = '0' or (word_valid = '1' and word_last = '0'))
-        --  report "Missed a word_last..."
-        --  severity failure;
-        -- pragma translate on
-
         -- Back-pressure
         if busReq_ready = '1' and vo.master.valid = '1' then
-          vo.cnt_ctrl.step_sub  := '1';
-          vr.index.current      := vr.index.current + ELEMS_PER_STEP;
+          if counter.step < MAX_STEPS then
+            vo.cnt_ctrl.step_sub  := '1';
+            vr.index.current      := vr.index.current + ELEMS_PER_STEP;
+          else
+            vo.cnt_ctrl.max_sub   := '1';
+            vr.index.current      := vr.index.current + ELEMS_PER_MAX;
+          end if;          
         end if;
 
     end case;
@@ -464,7 +461,7 @@ begin
     busReq_len                  <= slv(vo.master.len);
     busReq_valid                <= vo.master.valid;
     cnt_ctrl                    <= vo.cnt_ctrl;
-    word_ready                  <= vo.word_ready;
+    steps_ready                 <= vo.steps_ready;
 
   end process;
 

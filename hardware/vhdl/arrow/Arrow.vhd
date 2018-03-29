@@ -1091,6 +1091,8 @@ package Arrow is
       BUS_DATA_WIDTH            : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
+      STEPS_COUNT_WIDTH         : natural;
+      STEPS_COUNT_MAX           : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
       IS_INDEX_BUFFER           : boolean;
@@ -1105,9 +1107,10 @@ package Arrow is
       cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       cmdIn_implicit            : in  std_logic;
-      word_ready                : out std_logic;
-      word_valid                : in  std_logic;
-      word_last                 : in  std_logic;
+      steps_ready               : out std_logic;
+      steps_valid               : in  std_logic;
+      steps_last                : in  std_logic;
+      steps_count               : in  std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
       busReq_valid              : out std_logic;
       busReq_ready              : in  std_logic;
       busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
