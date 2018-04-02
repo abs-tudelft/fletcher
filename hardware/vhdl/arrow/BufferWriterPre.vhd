@@ -214,7 +214,13 @@ begin
     accumulate_block: block
       signal oia_acc_valid      : std_logic;
       signal oia_acc_ready      : std_logic;
+      signal pad_conv_data      : std_logic_vector(ELEMENT_WIDTH + 2 downto 0);
+      signal pad_acc_skip       : std_logic;
     begin
+    
+      pad_conv_data             <= pad_strobe & pad_count & pad_last & pad_data;
+      pad_acc_skip              <= not(pad_strobe(0));
+      
       -- Instantiate a stream accumulator. If this is an index buffer, 
       -- ELEMENT_COUNT_MAX should be 1, the strobe should be one bit and we 
       -- have one last bit. Skip accumulating if the strobe is low.
@@ -229,8 +235,8 @@ begin
           reset                 => reset,
           in_valid              => pad_valid,
           in_ready              => pad_ready,
-          in_data               => pad_strobe & pad_count & pad_last & pad_data,
-          in_skip               => not(pad_strobe(0)),
+          in_data               => pad_conv_data,
+          in_skip               => pad_acc_skip,
           in_clear              => pad_clear,
           out_valid             => oia_acc_valid,
           out_ready             => oia_acc_ready,

@@ -24,11 +24,12 @@ use work.Arrow.all;
 -------------------------------------------------------------------------------
 -- This unit prevents blocking the bus while waiting for input on the write
 -- data stream. It buffers until whatever burst length has been requested in a
--- FIFO and only requests the write burst once the FIFO holds enough words,
--- such that the whole burst may be unloaded onto the bus at once. It also
--- provides last signaling for each burst, and provides a last_in_cmd signal
--- for the last word that accepted by the bus for the unlock stream to
--- synchronize to.
+-- FIFO and only requests the write burst on the master port once the FIFO
+-- holds the number of requested words or some fraction of that. In this way,
+-- the whole burst may be unloaded onto the bus at once. It also provides last
+-- signaling for each burst, and optionally provides a last_in_cmd signal for
+-- the last word that was accepted by the bus for the unlock stream to
+-- synchronize to, if set to streaming mode.
 -------------------------------------------------------------------------------
 entity BusWriteBuffer is
   generic (
@@ -52,7 +53,14 @@ entity BusWriteBuffer is
     LEN_SHIFT                   : natural := 0;
 
     -- RAM configuration string for the response FIFO.
-    RAM_CONFIG                  : string  := ""
+    RAM_CONFIG                  : string  := "";
+
+    -- The last signal on the slave port is a "last in stream" signal and not
+    -- a "last in burst" signal. The output last signal is always generated
+    -- based on the requests. However, if this is set to "burst", an error
+    -- is generated if the last signal is not asserted when expected from
+    -- the requested burst length.
+    SLV_LAST_MODE               : string := "burst"
 
   );
   port (
@@ -65,33 +73,34 @@ entity BusWriteBuffer is
     -- Wether the buffer is full or empty
     full                        : out std_logic;
     empty                       : out std_logic;
+    error                       : out std_logic;
 
     ---------------------------------------------------------------------------
-    -- Master port.
+    -- Slave ports.
     ---------------------------------------------------------------------------
-    mst_req_valid               : out std_logic;
-    mst_req_ready               : in  std_logic;
-    mst_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    mst_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    mst_wrd_valid               : out std_logic;
-    mst_wrd_ready               : in  std_logic;
-    mst_wrd_data                : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wrd_strobe              : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    mst_wrd_last                : out std_logic;
-    mst_wrd_last_in_cmd         : out std_logic;
+    slv_wreq_valid              : in  std_logic;
+    slv_wreq_ready              : out std_logic;
+    slv_wreq_addr               : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    slv_wreq_len                : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
+    slv_wdat_valid              : in  std_logic;
+    slv_wdat_ready              : out std_logic;
+    slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    slv_wdat_last               : in  std_logic;
+    
     ---------------------------------------------------------------------------
-    -- Slave port.
+    -- Master ports.
     ---------------------------------------------------------------------------
-    slv_req_valid               : in  std_logic;
-    slv_req_ready               : out std_logic;
-    slv_req_addr                : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    slv_req_len                 : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    slv_wrd_valid               : in  std_logic;
-    slv_wrd_ready               : out std_logic;
-    slv_wrd_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    slv_wrd_strobe              : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    slv_wrd_last                : in  std_logic
+    mst_wreq_valid              : out std_logic;
+    mst_wreq_ready              : in  std_logic;
+    mst_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+
+    mst_wdat_valid              : out std_logic;
+    mst_wdat_ready              : in  std_logic;
+    mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_last               : out std_logic;
+    mst_wdat_last_in_cmd        : out std_logic
 
   );
 end BusWriteBuffer;
@@ -99,79 +108,171 @@ end BusWriteBuffer;
 architecture Behavioral of BusWriteBuffer is
 
   -- Log2 of the FIFO depth.
-  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH);
+  constant DEPTH_LOG2            : natural := log2ceil(FIFO_DEPTH);
+  constant COUNT_FIFO_FULL       : unsigned(DEPTH_LOG2-1 downto 0) := (others => '1');
 
-  signal fifo_in_valid          : std_logic;
-  signal fifo_in_ready          : std_logic;
-  signal fifo_in_data           : std_logic_vector(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8 downto 0);
+  signal fifo_in_valid           : std_logic;
+  signal fifo_in_ready           : std_logic;
+  signal fifo_in_data            : std_logic_vector(BUS_DATA_WIDTH downto 0);
 
-  signal fifo_out_valid         : std_logic;
-  signal fifo_out_ready         : std_logic;
-  signal fifo_out_data          : std_logic_vector(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8 downto 0);
-
-  type fifo_record is record
-    -- Number of words in FIFO
-    count                       : unsigned(DEPTH_LOG2 downto 0);
-    -- Number of words in current burst
-    burst                       : unsigned(BUS_LEN_WIDTH-1 downto 0);
-    -- Remember there had been a command accepted
-    command                     : std_logic;
+  signal fifo_out_valid          : std_logic;
+  signal fifo_out_ready          : std_logic;
+  signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH downto 0);
+    
+  type state_type is (IDLE, REQ, BURST);
+  
+  type reg_record is record
+    state                        : state_type;
+    count                        : unsigned(DEPTH_LOG2 downto 0);
+    error                        : std_logic;
+    
+    wreq_addr                    : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    wreq_len                     : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   end record;
 
-  signal fifo : fifo_record;
-  signal fifo_d : fifo_record;
+  signal r : reg_record;
+  signal d : reg_record;
 
   type output_record is record
-    slv_req_ready               : std_logic;
-    mst_req_valid               : std_logic;
-    mst_wrd_last                : std_logic;
-    full                        : std_logic;
-    empty                       : std_logic;
+    slv_wreq_ready               : std_logic;
+    
+    mst_wreq_valid               : std_logic;
+    mst_wreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_wreq_len                 : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    
+    fifo_out_ready               : std_logic;
+    
+    mst_wdat_valid               : std_logic;
+    mst_wdat_last                : std_logic;
+    mst_wdat_last_in_cmd         : std_logic;
+    
+    full                         : std_logic;
+    empty                        : std_logic;
   end record;
 
 begin
 
-  reg_proc: process(clk)
+  seq_proc: process(clk) is
   begin
     if rising_edge(clk) then
       -- Register
-      fifo <= fifo_d;
+      r                         <= d;
 
       -- Reset
       if reset = '1' then
-        fifo.count <= (others => '0');
-        fifo.burst <= (others => '0');
-        fifo.command <= '0';
+        r.state                 <= IDLE;
+        r.count                 <= (others => '0');
+        r.error                 <= '0';
       end if;
     end if;
   end process;
 
   comb_proc: process(
-    fifo,
+    r,
     fifo_in_valid, fifo_in_ready,
-    fifo_out_valid, fifo_out_ready,
-    slv_req_len, slv_req_addr, slv_req_valid,
-    mst_req_ready, mst_req_len
-  )
-    variable vr : fifo_record;
-    variable vo : output_record;
+    fifo_out_valid, fifo_out_ready, fifo_out_data(BUS_DATA_WIDTH),
+    slv_wreq_len, slv_wreq_addr, slv_wreq_valid,
+    mst_wreq_ready,
+    mst_wdat_ready
+  ) is
+    variable vr                 : reg_record;
+    variable vo                 : output_record;
   begin
-    vr                          := fifo;
-
-    -- Default outputs
-    vo.slv_req_ready            := '0';
-    vo.mst_req_valid            := '0';
-    vo.mst_wrd_last             := '0';
+    vr                          := r;
 
     -- Increase FIFO count when something got inserted
     if fifo_in_valid = '1' and fifo_in_ready = '1' then
       vr.count                  := vr.count + 1;
     end if;
-
-    -- Decrease FIFO count and burst count if something got written on the bus
-    if fifo_out_valid = '1' and fifo_out_ready = '1' then
+        
+    -- Default outputs
+    vo.slv_wreq_ready           := '0';
+    vo.mst_wreq_valid           := '0';
+    vo.mst_wdat_valid           := '0';
+    vo.mst_wdat_last            := '0';
+    vo.mst_wdat_last_in_cmd     := '0';
+    vo.fifo_out_ready           := '0';
+    
+    case vr.state is
+      when IDLE =>
+        vo.slv_wreq_ready       := '1';
+        
+        -- A request is made, register it.
+        if slv_wreq_valid = '1' then
+          vr.wreq_len           := slv_wreq_len;
+          vr.wreq_addr          := slv_wreq_addr;
+          vr.state              := REQ;
+        end if;
+        
+      when REQ =>
+        -- Make the request valid on the master port
+        vo.mst_wreq_addr        := vr.wreq_addr;
+        vo.mst_wreq_len         := vr.wreq_len;
+        
+        -- Validate only when enough words have been loaded into the FIFO
+        if vr.count >= unsigned(vr.wreq_len) then
+          vo.mst_wreq_valid       := '1';
+        else
+          vo.mst_wreq_valid       := '0';
+        end if;
+        
+        -- Wait for handshake
+        if mst_wreq_ready = '1' and vo.mst_wreq_valid = '1' then
+          vr.state              := BURST;
+        end if;
+        
+      when BURST =>
+        -- Allow the FIFO to unload
+        vo.mst_wdat_valid       := fifo_out_valid;
+        vo.fifo_out_ready       := mst_wdat_ready;
+        
+        -- Wait for acceptance
+        if vo.mst_wdat_valid = '1' and vo.fifo_out_ready = '1' then
+          -- Decrease the burst amount
+          vr.wreq_len           := std_logic_vector(unsigned(vr.wreq_len) - 1);
+        end if;
+        
+        -- This is the last transfer
+        if unsigned(vr.wreq_len) = 0 then
+          -- Determine where last should come from
+          if SLV_LAST_MODE = "burst" then
+            -- Last signal comes from FIFO
+            vo.mst_wdat_last        := fifo_out_data(BUS_DATA_WIDTH);
+            
+            -- Check if the last signal was properly asserted.
+            if fifo_out_data(BUS_DATA_WIDTH) /= '1' then
+              -- pragma translate off
+                report "Bus write buffer with SLV_LAST_MODE set to burst "
+                     & "expected last signal to be high."
+                severity failure;
+              -- pragma translate on
+              vr.error          := '1';
+            end if;
+            
+          else
+            -- The BusWriteBuffer slave last signal signifies the end of a 
+            -- stream. Assert the last signal based on the request length and
+            -- grab the last_in_cmd signal from the FIFO.
+            vo.mst_wdat_last        := '1';
+            vo.mst_wdat_last_in_cmd := fifo_out_data(BUS_DATA_WIDTH);
+          end if;
+          
+          -- A request is made, register it.
+          if slv_wreq_valid = '1' then
+            vo.slv_wreq_ready   := '1';
+            vr.wreq_len         := slv_wreq_len;
+            vr.wreq_addr        := slv_wreq_addr;
+            vr.state            := REQ;
+          else
+            vr.state            := IDLE;
+          end if;
+        end if;
+        
+    end case;
+    
+    -- Decrease FIFO count when something got written on the bus
+    if mst_wdat_ready = '1' and vo.mst_wdat_valid = '1' then
       vr.count                  := vr.count - 1;
-      vr.burst                  := vr.burst - 1;
     end if;
 
     -- Determine empty
@@ -182,69 +283,44 @@ begin
     end if;
 
     -- Determine full
-    if vr.count = to_unsigned(2**DEPTH_LOG2, DEPTH_LOG2+1) then
+    if vr.count = COUNT_FIFO_FULL then
       vo.full                   := '1';
     else
       vo.full                   := '0';
     end if;
+    
+        
+    d                           <= vr;
 
-    -- If the burst count is now zero, signal last burst beat to the bus
-    if vr.burst = 0 and vr.command = '1' then
-      vo.mst_wrd_last           := '1';
-      vr.command                := '0';
-    end if;
-
-    -- If any previous burst was handled, a new request may be handshaked
-    if vr.burst = 0 then
-      vo.slv_req_ready          := mst_req_ready;
-      vo.mst_req_valid          := slv_req_valid;
-    end if;
-
-    -- Back-pressure the bus write request when the FIFO doesn't hold enough
-    -- words. This means the FIFO must fill up first. In this way, we can
-    -- prevent blocking the bus with a burst that is not yet fully made
-    -- available on the input side.
-    -- Note that this is implemented to not lose generality of this
-    -- BusWriteBuffer. It is not required by the BufferWriter implementation
-    -- as it will not generate requests unless the buffer is sufficiently
-    -- filled. This is somewhat the inverse of the BusReadBuffer, because
-    -- there, it is known beforehand how much is going to be read. For the
-    -- BusWriteBuffer it is not known until the last signal has appeared.
-    -- Thus we must buffer and then request, not request and then buffer.
-    -- LEN_SHIFT can be set to higher than 0 to burst at length / 2^LEN_SHIFT
-    if vr.count < shift_right(u(slv_req_len), LEN_SHIFT) then
-      vo.slv_req_ready          := '0';
-      vo.mst_req_valid          := '0';
-    end if;
-
-    -- When a request is handshaked, set the burst counter to len
-    if mst_req_ready = '1' and vo.mst_req_valid = '1' then
-      vr.burst                  := u(mst_req_len);
-      vr.command                := '1';
-    end if;
-
-    fifo_d                      <= vr;
-
-    mst_wrd_last                <= vo.mst_wrd_last;
-    mst_req_valid               <= vo.mst_req_valid;
-    slv_req_ready               <= vo.slv_req_ready;
-
+    slv_wreq_ready              <= vo.slv_wreq_ready;
+    
+    mst_wreq_valid              <= vo.mst_wreq_valid;
+    mst_wreq_addr               <= vo.mst_wreq_addr;
+    mst_wreq_len                <= vo.mst_wreq_len;
+    
+    mst_wdat_valid              <= vo.mst_wdat_valid;
+    mst_wdat_last               <= vo.mst_wdat_last;
+    mst_wdat_last_in_cmd        <= vo.mst_wdat_last_in_cmd;
+    mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH-1 downto 0);
+    
+    fifo_out_ready              <= vo.fifo_out_ready;
+    
     full                        <= vo.full;
     empty                       <= vo.empty;
+    error                       <= vr.error;
+
   end process;
 
-  mst_req_addr <= slv_req_addr;
-  mst_req_len <= slv_req_len;
-
   -- Connect FIFO inputs
-  fifo_in_valid                 <= slv_wrd_valid;
-  slv_wrd_ready                 <= fifo_in_ready;
-  fifo_in_data                  <= slv_wrd_last & slv_wrd_data & slv_wrd_strobe;
+  fifo_in_valid                 <= slv_wdat_valid;
+  slv_wdat_ready                <= fifo_in_ready;
+  
+  fifo_in_data                  <= slv_wdat_last & slv_wdat_data;
 
   slv_write_buffer: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2**DEPTH_LOG2,
-      DATA_WIDTH                => BUS_DATA_WIDTH + BUS_DATA_WIDTH/8 + 1
+      DATA_WIDTH                => BUS_DATA_WIDTH + 1
     )
     port map (
       clk                       => clk,
@@ -258,12 +334,5 @@ begin
       out_ready                 => fifo_out_ready,
       out_data                  => fifo_out_data
     );
-
-  fifo_out_ready                <= mst_wrd_ready;
-  mst_wrd_last_in_cmd           <= fifo_out_data(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8);
-  mst_wrd_data                  <= fifo_out_data(BUS_DATA_WIDTH + BUS_DATA_WIDTH/8-1 downto BUS_DATA_WIDTH/8);
-  mst_wrd_strobe                <= fifo_out_data(BUS_DATA_WIDTH/8-1 downto 0);
-  -- Only validate the write stream when a command was accepted.
-  mst_wrd_valid                 <= fifo_out_valid and fifo.command;
 
 end Behavioral;

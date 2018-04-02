@@ -152,17 +152,17 @@ entity BufferWriter is
     -- Bus write channels
     ---------------------------------------------------------------------------
     -- Request channel
-    bus_req_valid               : out std_logic;
-    bus_req_ready               : in  std_logic;
-    bus_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    bus_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_valid              : out std_logic;
+    bus_wreq_ready              : in  std_logic;
+    bus_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
-    -- Data channel
-    bus_wrd_valid               : out std_logic;
-    bus_wrd_ready               : in  std_logic;
-    bus_wrd_data                : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    bus_wrd_strobe              : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    bus_wrd_last                : out std_logic
+    -- Data channel             
+    bus_wdat_valid              : out std_logic;
+    bus_wdat_ready              : in  std_logic;
+    bus_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+    bus_wdat_last               : out std_logic
     
     
     -- TODO in entity:
@@ -180,8 +180,7 @@ architecture Behavioral of BufferWriter is
   
   signal writebuf_valid         : std_logic;
   signal writebuf_ready         : std_logic;
-  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal writebuf_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto 0);
   signal writebuf_last          : std_logic;
 
   signal req_ready              : std_logic;
@@ -213,15 +212,14 @@ architecture Behavioral of BufferWriter is
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
 
-  signal int_bus_req_valid      : std_logic;
-  signal int_bus_req_ready      : std_logic;
-  signal int_bus_req_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal int_bus_req_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal int_bus_wrd_valid      : std_logic;
-  signal int_bus_wrd_ready      : std_logic;
-  signal int_bus_wrd_data       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal int_bus_wrd_strobe     : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-  signal int_bus_wrd_last       : std_logic;
+  signal int_bus_wreq_valid      : std_logic;
+  signal int_bus_wreq_ready      : std_logic;
+  signal int_bus_wreq_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal int_bus_wreq_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal int_bus_wdat_valid      : std_logic;
+  signal int_bus_wdat_ready      : std_logic;
+  signal int_bus_wdat_data       : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto 0);
+  signal int_bus_wdat_last       : std_logic;
 
   signal last_in_cmd            : std_logic;
 
@@ -325,8 +323,7 @@ begin
       out_last                  => pre_last
     );
     
-  writebuf_data                 <= pre_data;
-  writebuf_strobe               <= pre_strobe;
+  writebuf_data                 <= pre_strobe & pre_data;
   writebuf_last                 <= pre_last;
   
   -- Generate signals for word_last to Write Buffer
@@ -471,15 +468,16 @@ begin
   -----------------------------------------------------------------------------
   -- Bus Write Buffer
   -----------------------------------------------------------------------------
-  -- The bus write buffer serves as a FIFO
+  -- The data input contains the write strobe as well.
   buffer_inst: BusWriteBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
-      BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_DATA_WIDTH            => BUS_DATA_WIDTH + BUS_DATA_WIDTH/8,
       FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       LEN_SHIFT                 => BUS_FIFO_THRESHOLD_SHIFT,
-      RAM_CONFIG                => ""
+      RAM_CONFIG                => "",
+      SLV_LAST_MODE             => "stream"
     )
     port map (
       clk                       => acc_clk,
@@ -488,34 +486,32 @@ begin
       full                      => buffer_full,
       empty                     => buffer_empty,
       
-      mst_req_valid             => int_bus_req_valid,
-      mst_req_ready             => int_bus_req_ready,
-      mst_req_addr              => int_bus_req_addr,
-      mst_req_len               => int_bus_req_len,
+      mst_wreq_valid            => int_bus_wreq_valid,
+      mst_wreq_ready            => int_bus_wreq_ready,
+      mst_wreq_addr             => int_bus_wreq_addr,
+      mst_wreq_len              => int_bus_wreq_len,
       
-      mst_wrd_valid             => int_bus_wrd_valid,
-      mst_wrd_ready             => int_bus_wrd_ready,
-      mst_wrd_data              => int_bus_wrd_data,
-      mst_wrd_strobe            => int_bus_wrd_strobe,
-      mst_wrd_last              => int_bus_wrd_last,
-      mst_wrd_last_in_cmd       => last_in_cmd,
+      mst_wdat_valid            => int_bus_wdat_valid,
+      mst_wdat_ready            => int_bus_wdat_ready,
+      mst_wdat_data             => int_bus_wdat_data,
+      mst_wdat_last             => int_bus_wdat_last,
+      mst_wdat_last_in_cmd      => last_in_cmd,
       
-      slv_req_valid             => req_valid,
-      slv_req_ready             => req_ready,
-      slv_req_addr              => req_addr,
-      slv_req_len               => req_len,
-      
-      slv_wrd_valid             => writebuf_valid,
-      slv_wrd_ready             => writebuf_ready,
-      slv_wrd_data              => writebuf_data,
-      slv_wrd_strobe            => writebuf_strobe,
-      slv_wrd_last              => writebuf_last
+      slv_wreq_valid            => req_valid,
+      slv_wreq_ready            => req_ready,
+      slv_wreq_addr             => req_addr,
+      slv_wreq_len              => req_len,
+
+      slv_wdat_valid            => writebuf_valid,
+      slv_wdat_ready            => writebuf_ready,
+      slv_wdat_data             => writebuf_data,
+      slv_wdat_last             => writebuf_last
     );
 
-  int_bus_req_ready             <= bus_req_ready;
-  bus_req_valid                 <= int_bus_req_valid;
-  bus_req_addr                  <= int_bus_req_addr;
-  bus_req_len                   <= int_bus_req_len;
+  int_bus_wreq_ready             <= bus_wreq_ready;
+  bus_wreq_valid                 <= int_bus_wreq_valid;
+  bus_wreq_addr                  <= int_bus_wreq_addr;
+  bus_wreq_len                   <= int_bus_wreq_len;
 
   -- Input buffer for the unlock stream to prevent blocking the command stream
   unlock_input_buffer_inst: StreamBuffer
@@ -547,19 +543,19 @@ begin
       clk                       => acc_clk,
       reset                     => acc_reset,
 
-      in_valid(0)               => int_bus_wrd_valid,
+      in_valid(0)               => int_bus_wdat_valid,
       in_valid(1)               => unl_i_valid,
       
       in_advance(0)             => '1',
       in_advance(1)             => last_in_cmd,
 
-      in_ready(0)               => int_bus_wrd_ready,
+      in_ready(0)               => int_bus_wdat_ready,
       in_ready(1)               => unl_i_ready,
 
-      out_valid(0)              => bus_wrd_valid,
+      out_valid(0)              => bus_wdat_valid,
       out_valid(1)              => unl_o_valid,
 
-      out_ready(0)              => bus_wrd_ready,
+      out_ready(0)              => bus_wdat_ready,
       out_ready(1)              => unl_o_ready,
       
       out_enable(0)             => '1',
@@ -567,9 +563,10 @@ begin
 
     );
   
-  bus_wrd_data                  <= int_bus_wrd_data;
-  bus_wrd_strobe                <= int_bus_wrd_strobe;
-  bus_wrd_last                  <= int_bus_wrd_last;
+  -- Connect to output
+  bus_wdat_data                 <= int_bus_wdat_data(BUS_DATA_WIDTH-1 downto 0);
+  bus_wdat_strobe               <= int_bus_wdat_data(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto BUS_DATA_WIDTH);
+  bus_wdat_last                 <= int_bus_wdat_last;
 
   -- Connect the input buffer to the output buffer.
   unl_o_tag                     <= unl_i_tag;
