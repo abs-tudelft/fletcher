@@ -50,9 +50,14 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderRespCtrl.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderResp.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReader.vhd
+  
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusBuffer.vhd
+  
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteBuffer.vhd
   
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderArb.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderLevel.vhd
@@ -78,8 +83,8 @@ proc compile_fletcher {source_dir} {
   # vcom -work work -2008 streams/StreamFIFO_tb.vhd
   # vcom -work work -2008 streams/StreamParallelizer_tb.vhd < TODO: Fix gen. maps
   # vcom -work work -2008 streams/StreamSerializer_tb.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamTbCons.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamTbProd.vhd
+  vcom -quiet -work work -2008 $source_dir/streams/StreamTbCons.vhd
+  vcom -quiet -work work -2008 $source_dir/streams/StreamTbProd.vhd
 
   # vcom -work work -2008 arrow/BusArbiter_tb.vhd
 
@@ -89,6 +94,11 @@ proc compile_fletcher {source_dir} {
 
   # vcom -work work -2008 arrow/BufferReader_tb.vhd
 
-  # vcom -work work -93 arrow/ColumnReaderListSyncDecoder_tb.vhd
-  # vcom -work work -93 arrow/ColumnReaderListSync_tb.vhd
+  # vcom -work work -2008 arrow/ColumnReaderListSyncDecoder_tb.vhd
+  # vcom -work work -2008 arrow/ColumnReaderListSync_tb.vhd
+  
+  vcom -quiet -work work -2008 $source_dir/arrow/BusWriteMasterMock.vhd
+  vcom -quiet -work work -2008 $source_dir/arrow/BusWriteSlaveMock.vhd
+  vcom -quiet -work work -2008 $source_dir/arrow/BusWriteArbiter_tb.vhd
+  
 }

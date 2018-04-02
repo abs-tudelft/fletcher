@@ -87,7 +87,7 @@ entity BusWriteBuffer is
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     slv_wdat_last               : in  std_logic;
-    
+
     ---------------------------------------------------------------------------
     -- Master ports.
     ---------------------------------------------------------------------------
@@ -118,14 +118,14 @@ architecture Behavioral of BusWriteBuffer is
   signal fifo_out_valid          : std_logic;
   signal fifo_out_ready          : std_logic;
   signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH downto 0);
-    
+
   type state_type is (IDLE, REQ, BURST);
-  
+
   type reg_record is record
     state                        : state_type;
     count                        : unsigned(DEPTH_LOG2 downto 0);
     error                        : std_logic;
-    
+
     wreq_addr                    : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     wreq_len                     : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   end record;
@@ -135,17 +135,17 @@ architecture Behavioral of BusWriteBuffer is
 
   type output_record is record
     slv_wreq_ready               : std_logic;
-    
+
     mst_wreq_valid               : std_logic;
     mst_wreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     mst_wreq_len                 : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    
+
     fifo_out_ready               : std_logic;
-    
+
     mst_wdat_valid               : std_logic;
     mst_wdat_last                : std_logic;
     mst_wdat_last_in_cmd         : std_logic;
-    
+
     full                         : std_logic;
     empty                        : std_logic;
   end record;
@@ -184,7 +184,7 @@ begin
     if fifo_in_valid = '1' and fifo_in_ready = '1' then
       vr.count                  := vr.count + 1;
     end if;
-        
+
     -- Default outputs
     vo.slv_wreq_ready           := '0';
     vo.mst_wreq_valid           := '0';
@@ -192,53 +192,53 @@ begin
     vo.mst_wdat_last            := '0';
     vo.mst_wdat_last_in_cmd     := '0';
     vo.fifo_out_ready           := '0';
-    
+
     case vr.state is
       when IDLE =>
         vo.slv_wreq_ready       := '1';
-        
+
         -- A request is made, register it.
         if slv_wreq_valid = '1' then
           vr.wreq_len           := slv_wreq_len;
           vr.wreq_addr          := slv_wreq_addr;
           vr.state              := REQ;
         end if;
-        
+
       when REQ =>
         -- Make the request valid on the master port
         vo.mst_wreq_addr        := vr.wreq_addr;
         vo.mst_wreq_len         := vr.wreq_len;
-        
+
         -- Validate only when enough words have been loaded into the FIFO
         if vr.count >= unsigned(vr.wreq_len) then
           vo.mst_wreq_valid       := '1';
         else
           vo.mst_wreq_valid       := '0';
         end if;
-        
+
         -- Wait for handshake
         if mst_wreq_ready = '1' and vo.mst_wreq_valid = '1' then
           vr.state              := BURST;
         end if;
-        
+
       when BURST =>
         -- Allow the FIFO to unload
         vo.mst_wdat_valid       := fifo_out_valid;
         vo.fifo_out_ready       := mst_wdat_ready;
-        
+
         -- Wait for acceptance
         if vo.mst_wdat_valid = '1' and vo.fifo_out_ready = '1' then
           -- Decrease the burst amount
           vr.wreq_len           := std_logic_vector(unsigned(vr.wreq_len) - 1);
         end if;
-        
+
         -- This is the last transfer
         if unsigned(vr.wreq_len) = 0 then
           -- Determine where last should come from
           if SLV_LAST_MODE = "burst" then
             -- Last signal comes from FIFO
             vo.mst_wdat_last        := fifo_out_data(BUS_DATA_WIDTH);
-            
+
             -- Check if the last signal was properly asserted.
             if fifo_out_data(BUS_DATA_WIDTH) /= '1' then
               -- pragma translate off
@@ -248,15 +248,15 @@ begin
               -- pragma translate on
               vr.error          := '1';
             end if;
-            
+
           else
-            -- The BusWriteBuffer slave last signal signifies the end of a 
+            -- The BusWriteBuffer slave last signal signifies the end of a
             -- stream. Assert the last signal based on the request length and
             -- grab the last_in_cmd signal from the FIFO.
             vo.mst_wdat_last        := '1';
             vo.mst_wdat_last_in_cmd := fifo_out_data(BUS_DATA_WIDTH);
           end if;
-          
+
           -- A request is made, register it.
           if slv_wreq_valid = '1' then
             vo.slv_wreq_ready   := '1';
@@ -267,9 +267,9 @@ begin
             vr.state            := IDLE;
           end if;
         end if;
-        
+
     end case;
-    
+
     -- Decrease FIFO count when something got written on the bus
     if mst_wdat_ready = '1' and vo.mst_wdat_valid = '1' then
       vr.count                  := vr.count - 1;
@@ -288,23 +288,23 @@ begin
     else
       vo.full                   := '0';
     end if;
-    
-        
+
+
     d                           <= vr;
 
     slv_wreq_ready              <= vo.slv_wreq_ready;
-    
+
     mst_wreq_valid              <= vo.mst_wreq_valid;
     mst_wreq_addr               <= vo.mst_wreq_addr;
     mst_wreq_len                <= vo.mst_wreq_len;
-    
+
     mst_wdat_valid              <= vo.mst_wdat_valid;
     mst_wdat_last               <= vo.mst_wdat_last;
     mst_wdat_last_in_cmd        <= vo.mst_wdat_last_in_cmd;
     mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH-1 downto 0);
-    
+
     fifo_out_ready              <= vo.fifo_out_ready;
-    
+
     full                        <= vo.full;
     empty                       <= vo.empty;
     error                       <= vr.error;
@@ -314,7 +314,7 @@ begin
   -- Connect FIFO inputs
   fifo_in_valid                 <= slv_wdat_valid;
   slv_wdat_ready                <= fifo_in_ready;
-  
+
   fifo_in_data                  <= slv_wdat_last & slv_wdat_data;
 
   slv_write_buffer: StreamBuffer

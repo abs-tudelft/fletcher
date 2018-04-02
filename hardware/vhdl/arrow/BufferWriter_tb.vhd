@@ -48,7 +48,7 @@ entity BufferWriter_tb is
     AVG_RANGE_LEN               : real     := 2.0 ** 10;
 
     NUM_COMMANDS                : natural  := 16;
-    WAIT_FOR_UNLOCK             : boolean  := false;
+    WAIT_FOR_UNLOCK             : boolean  := true;
     KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
     LAST_PROBABILITY            : real     := 1.0/512.0;
 
@@ -99,15 +99,15 @@ architecture tb of BufferWriter_tb is
   signal in_count               : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal in_last                : std_logic := '0';
 
-  signal bus_req_valid          : std_logic;
-  signal bus_req_ready          : std_logic;
-  signal bus_req_addr           : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal bus_req_len            : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal bus_wrd_valid          : std_logic;
-  signal bus_wrd_ready          : std_logic;
-  signal bus_wrd_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bus_wrd_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-  signal bus_wrd_last           : std_logic;
+  signal bus_wreq_valid         : std_logic;
+  signal bus_wreq_ready         : std_logic;
+  signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_wdat_valid         : std_logic;
+  signal bus_wdat_ready         : std_logic;
+  signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal bus_wdat_last          : std_logic;
   
   signal cycle                  : unsigned(63 downto 0) := (others => '0');
 
@@ -457,29 +457,29 @@ begin
     variable elem_written       : unsigned(ELEMENT_WIDTH-1 downto 0);
     variable elem_expected      : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
-    bus_req_ready               <= '1';
-    bus_wrd_ready               <= '0';
+    bus_wreq_ready               <= '1';
+    bus_wdat_ready               <= '0';
     loop
       -- Exit when all writes are done
       if write_done then
         exit;
       end if;
       -- Wait for a bus request
-      wait until rising_edge(acc_clk) and (bus_req_ready = '1' and bus_req_valid = '1');
-      bus_req_ready             <= '0';
-      bus_wrd_ready             <= '1';
+      wait until rising_edge(acc_clk) and (bus_wreq_ready = '1' and bus_wreq_valid = '1');
+      bus_wreq_ready             <= '0';
+      bus_wdat_ready             <= '1';
 
       -- Remember the burst length
-      len                       := unsigned(bus_req_len);
+      len                       := unsigned(bus_wreq_len);
       transfers                 := (others => '0');
 
       -- Work back the element index from the address, assuming the base address is zero
-      index                     := int(bus_req_addr) / BYTES_PER_ELEM;
+      index                     := int(bus_wreq_addr) / BYTES_PER_ELEM;
 
       -- Accept the number of words requested by the burst length
       for I in 0 to int(len)-1 loop
         -- Wait until master writes a burst beat
-        wait until rising_edge(acc_clk) and (bus_wrd_valid = '1');
+        wait until rising_edge(acc_clk) and (bus_wdat_valid = '1');
 
         transfers               := transfers + 1;
 
@@ -488,17 +488,17 @@ begin
           -- Determine the element strobe. For elements smaller than a byte, duplicate the strobe.
           if ELEMS_PER_BYTE = 0 then
             -- The elements are always byte aligned.
-            elem_strobe         := or_reduce(bus_wrd_strobe((I+1)*BYTES_PER_ELEM-1 downto I*BYTES_PER_ELEM));
+            elem_strobe         := or_reduce(bus_wdat_strobe((I+1)*BYTES_PER_ELEM-1 downto I*BYTES_PER_ELEM));
           else
             -- The elements are not always byte aligned
-            elem_strobe         := bus_wrd_strobe(I/ELEMS_PER_BYTE);
+            elem_strobe         := bus_wdat_strobe(I/ELEMS_PER_BYTE);
           end if;
 
           -- Check if the element strobe is asserted
           if elem_strobe = '1' then
 
             -- Grab what is written
-            elem_written          := u(bus_wrd_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
+            elem_written          := u(bus_wdat_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
 
             -- If this is an index buffer and its the first element, we expect it to be 0
             if IS_INDEX_BUFFER then
@@ -522,14 +522,14 @@ begin
           end if;
 
           -- Make sure last is not too early
-          if bus_wrd_last = '1' then
+          if bus_wdat_last = '1' then
             assert transfers = len
               report "TEST FAILURE. Bus write channel last asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
               severity failure;
           end if;
 
           -- Or too late
-          if transfers = len and bus_wrd_last = '0' then
+          if transfers = len and bus_wdat_last = '0' then
             report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
               severity failure;
           end if;
@@ -540,8 +540,8 @@ begin
         index                   := index + BUS_DATA_WIDTH / ELEMENT_WIDTH;
       end loop;
       -- Start accepting new requests
-      bus_req_ready             <= '1';
-      bus_wrd_ready             <= '0';
+      bus_wreq_ready             <= '1';
+      bus_wdat_ready             <= '0';
     end loop;
     wait;
   end process;
@@ -556,7 +556,7 @@ begin
     loop
       wait until rising_edge(acc_clk) or sim_done;
       
-      if bus_wrd_valid = '1' and bus_wrd_ready = '1' then
+      if bus_wdat_valid = '1' and bus_wdat_ready = '1' then
         transfers               := transfers + 1;
       end if;
       
@@ -620,15 +620,15 @@ begin
       in_count                  => in_count,
       in_last                   => in_last,
 
-      bus_req_valid             => bus_req_valid,
-      bus_req_ready             => bus_req_ready,
-      bus_req_addr              => bus_req_addr,
-      bus_req_len               => bus_req_len,
-      bus_wrd_valid             => bus_wrd_valid,
-      bus_wrd_ready             => bus_wrd_ready,
-      bus_wrd_data              => bus_wrd_data,
-      bus_wrd_strobe            => bus_wrd_strobe,
-      bus_wrd_last              => bus_wrd_last
+      bus_wreq_valid            => bus_wreq_valid,
+      bus_wreq_ready            => bus_wreq_ready,
+      bus_wreq_addr             => bus_wreq_addr,
+      bus_wreq_len              => bus_wreq_len,
+      bus_wdat_valid            => bus_wdat_valid,
+      bus_wdat_ready            => bus_wdat_ready,
+      bus_wdat_data             => bus_wdat_data,
+      bus_wdat_strobe           => bus_wdat_strobe,
+      bus_wdat_last             => bus_wdat_last
     );
 
 end architecture;
