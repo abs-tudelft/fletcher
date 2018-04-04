@@ -52,6 +52,7 @@ entity StreamElementCounter is
     in_ready                    : out std_logic;
     in_last                     : in  std_logic;
     in_count                    : in  std_logic_vector(IN_COUNT_WIDTH-1 downto 0);
+    in_dvalid                   : in  std_logic;
 
     -- Output stream.
     out_valid                   : out std_logic;
@@ -123,8 +124,10 @@ begin
     -- If the input is valid, and the output has no data or was handshaked
     -- we may advance the stream.
     if in_valid = '1' and v.valid = '0' then      
-      -- Increase the output count
-      v.count                   := v.count + unsigned(resize_count(in_count, IN_COUNT_MAX));
+      -- Increase the output count if the data is valid
+      if in_dvalid = '1' then
+        v.count                 := v.count + unsigned(resize_count(in_count, IN_COUNT_MAX));
+      end if;
       
       -- If the frontmost bit flipped, we reached OUT_COUNT_MAX. Validate the
       -- output.
@@ -134,7 +137,8 @@ begin
         v.count(OUT_COUNT_WIDTH):= '0';
       end if;
       
-      -- If the last signal is asserted, validate the output.
+      -- If the last signal is asserted, validate the output. Only in this case,
+      -- the output last signal is asserted as well.
       if in_last = '1' then
         v.valid                 := '1';
         v.last                  := '1';
