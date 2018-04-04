@@ -34,6 +34,7 @@ package Utils is
 
   -- Returns (s ? t : f).
   function sel(s: boolean; t: integer; f: integer) return integer;
+  function sel(s: boolean; t: boolean; f: boolean) return boolean;
 
   -- Returns min(a, b).
   function min(a: integer; b: integer) return integer;
@@ -153,6 +154,15 @@ package body Utils is
   end function;
 
   function sel(s: boolean; t: integer; f: integer) return integer is
+  begin
+    if s then
+      return t;
+    else
+      return f;
+    end if;
+  end sel;
+  
+  function sel(s: boolean; t: boolean; f: boolean) return boolean is
   begin
     if s then
       return t;
@@ -417,7 +427,7 @@ package body Utils is
   function is_aligned(a : in unsigned; b : natural) return boolean is
     variable lsb_v : unsigned(b-1 downto 0);
   begin
-    if b > 1 then
+    if b > 0 then
       lsb_v := a(b-1 downto 0);
       if (lsb_v = 0) then
         return true;
