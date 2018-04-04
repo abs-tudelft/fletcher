@@ -70,6 +70,9 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderUnlockCombine.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReader.vhd
   
+  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListSync.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListPrim.vhd
+  
   vcom -quiet -work work -93 $source_dir/arrow/BufferWriter.vhd
 
   ###############################################################################

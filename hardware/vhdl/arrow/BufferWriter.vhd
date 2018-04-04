@@ -161,7 +161,7 @@ entity BufferWriter is
     bus_wdat_valid              : out std_logic;
     bus_wdat_ready              : in  std_logic;
     bus_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    bus_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+    bus_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
     bus_wdat_last               : out std_logic
     
     
@@ -175,12 +175,12 @@ architecture Behavioral of BufferWriter is
   signal pre_valid              : std_logic;
   signal pre_ready              : std_logic;
   signal pre_data               : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+  signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
   signal pre_last               : std_logic;
   
   signal writebuf_valid         : std_logic;
   signal writebuf_ready         : std_logic;
-  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto 0);
+  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
   signal writebuf_last          : std_logic;
 
   signal req_ready              : std_logic;
@@ -198,11 +198,14 @@ architecture Behavioral of BufferWriter is
   signal word_valid             : std_logic;
   signal word_ready             : std_logic;
   signal word_last              : std_logic;
+  signal word_count             : std_logic_vector(0 downto 0) := "1";
+  signal word_dvalid            : std_logic := '1';
   
   signal step_valid             : std_logic;
   signal step_ready             : std_logic;
   signal step_count             : std_logic_vector(0 downto 0);
   signal step_last              : std_logic;
+  signal step_dvalid            : std_logic := '1';
   
   signal steps_valid            : std_logic;
   signal steps_ready            : std_logic;
@@ -212,14 +215,14 @@ architecture Behavioral of BufferWriter is
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
 
-  signal int_bus_wreq_valid      : std_logic;
-  signal int_bus_wreq_ready      : std_logic;
-  signal int_bus_wreq_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal int_bus_wreq_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal int_bus_wdat_valid      : std_logic;
-  signal int_bus_wdat_ready      : std_logic;
-  signal int_bus_wdat_data       : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto 0);
-  signal int_bus_wdat_last       : std_logic;
+  signal int_bus_wreq_valid     : std_logic;
+  signal int_bus_wreq_ready     : std_logic;
+  signal int_bus_wreq_addr      : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal int_bus_wreq_len       : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal int_bus_wdat_valid     : std_logic;
+  signal int_bus_wdat_ready     : std_logic;
+  signal int_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
+  signal int_bus_wdat_last      : std_logic;
 
   signal last_in_cmd            : std_logic;
 
@@ -377,7 +380,8 @@ begin
         in_valid                    => word_valid,
         in_ready                    => word_ready,
         in_last                     => word_last,
-        in_count                    => "1",
+        in_count                    => word_count,
+        in_dvalid                   => word_dvalid,
         out_valid                   => step_valid,
         out_ready                   => step_ready,
         out_count                   => open,
@@ -414,6 +418,7 @@ begin
         in_ready                    => step_ready,
         in_last                     => step_last,
         in_count                    => step_count,
+        in_dvalid                   => step_dvalid,
         out_valid                   => steps_valid,
         out_ready                   => steps_ready,
         out_count                   => steps_count,
@@ -473,7 +478,7 @@ begin
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
-      BUS_DATA_WIDTH            => BUS_DATA_WIDTH + BUS_DATA_WIDTH/8,
+      BUS_DATA_WIDTH            => BUS_DATA_WIDTH + BUS_DATA_WIDTH/BUS_WSB,
       FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       LEN_SHIFT                 => BUS_FIFO_THRESHOLD_SHIFT,
       RAM_CONFIG                => "",
@@ -565,7 +570,7 @@ begin
   
   -- Connect to output
   bus_wdat_data                 <= int_bus_wdat_data(BUS_DATA_WIDTH-1 downto 0);
-  bus_wdat_strobe               <= int_bus_wdat_data(BUS_DATA_WIDTH+BUS_DATA_WIDTH/8-1 downto BUS_DATA_WIDTH);
+  bus_wdat_strobe               <= int_bus_wdat_data(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto BUS_DATA_WIDTH);
   bus_wdat_last                 <= int_bus_wdat_last;
 
   -- Connect the input buffer to the output buffer.
