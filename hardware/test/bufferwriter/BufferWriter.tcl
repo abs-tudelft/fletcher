@@ -69,8 +69,8 @@ proc b {} {
   vcom -work work -2008 $vhdl_dir/arrow/BusWriteSlaveMock.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BusWriteArbiter_tb.vhd
 
-  simulate work.buswritearbiter_tb {{"Testbench" sim:/buswritearbiter_tb/*              }
-                                    {"Arbiter"   sim:/buswritearbiter_tb/uut/arb_inst/* }
+  simulate work.buswritearbiter_tb {{"Testbench" sim:/buswritearbiter_tb/*                  }
+                                    {"Arbiter"   sim:/buswritearbiter_tb/uut/arb_inst/*     }
                                     {"Buffer A"  sim:/buswritearbiter_tb/mst_a_buffer_inst/*}
                                     {"Buffer B"  sim:/buswritearbiter_tb/mst_b_buffer_inst/*}}
                                     

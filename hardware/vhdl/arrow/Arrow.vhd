@@ -28,15 +28,62 @@ package Arrow is
   -- burst lengths are set to something higher than this.
   -- This is currently set to the AXI4 specification of 4096 byte boundaries:
   constant BUS_BURST_BOUNDARY     : natural := 4096;
+  
+  -- Bus write data bits covered by single write strobe bit.
+  -- This is currently set to the AXI4 specification of 1 byte / strobe bit.
+  constant BUS_WSB                : natural := 8;
 
   -- The Arrow format specification on buffer address alignment in bytes:
   constant REQ_ARROW_BUFFER_ALIGN : natural := 8;
 
   -- The Arrow format recommendation on buffer address alignment in bytes:
   constant REC_ARROW_BUFFER_ALIGN : natural := 64;
+  
+  -----------------------------------------------------------------------------
+  -- ColumnWriter
+  -----------------------------------------------------------------------------
+  component ColumnWriterListSync is
+    generic (
+      ELEMENT_WIDTH             : positive;
+      LENGTH_WIDTH              : positive;
+      COUNT_MAX                 : positive;
+      COUNT_WIDTH               : positive;
+      GENERATE_LENGTH           : boolean;
+      NORMALIZE                 : boolean;
+      ELEM_LAST_FROM_LENGTH     : boolean;
+      DATA_IN_SLICE             : boolean;
+      LEN_IN_SLICE              : boolean;
+      OUT_SLICE                 : boolean
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      inl_valid                 : in  std_logic;
+      inl_ready                 : out std_logic;
+      inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
+      inl_last                  : in  std_logic;
+      ine_valid                 : in  std_logic;
+      ine_ready                 : out std_logic;
+      ine_dvalid                : in  std_logic;
+      ine_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      ine_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
+      ine_last                  : in  std_logic;
+      outl_valid                : out std_logic;
+      outl_ready                : in  std_logic;
+      outl_length               : out std_logic_vector(LENGTH_WIDTH-1 downto 0);
+      outl_last                 : out std_logic;
+      oute_valid                : out std_logic;
+      oute_ready                : in  std_logic;
+      oute_last                 : out std_logic;
+      oute_dvalid               : out std_logic;
+      oute_data                 : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      oute_count                : out std_logic_vector(COUNT_WIDTH-1 downto 0)
+
+    );
+  end component;
 
   -----------------------------------------------------------------------------
-  -- Column reader
+  -- ColumnReader
   -----------------------------------------------------------------------------
   component ColumnReader is
     generic (
@@ -1215,7 +1262,7 @@ package Arrow is
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
+      cmdIn_implicit            : in  std_logic := '0';
       cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
