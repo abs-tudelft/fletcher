@@ -33,6 +33,7 @@ begin
     TEST_NAME                   => "32IN_32OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        32,
+    BUS_STROBE_WIDTH            =>      32/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>        16,
@@ -58,6 +59,7 @@ begin
     TEST_NAME                   => "INDEX_BS4",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        32,
+    BUS_STROBE_WIDTH            =>      32/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         4,
     BUS_BURST_MAX_LEN           =>        16,
@@ -83,6 +85,7 @@ begin
     TEST_NAME                   => "32IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
+    BUS_STROBE_WIDTH            =>      64/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>        16,
@@ -108,6 +111,7 @@ begin
     TEST_NAME                   => "4x16IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
+    BUS_STROBE_WIDTH            =>      64/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>        16,
@@ -133,6 +137,7 @@ begin
     TEST_NAME                   => "8x1IN_64OUT",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
+    BUS_STROBE_WIDTH            =>      64/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>        16,
@@ -158,6 +163,7 @@ begin
     TEST_NAME                   => "2x32IN_64OUT_MB1",
     BUS_ADDR_WIDTH              =>        32,
     BUS_DATA_WIDTH              =>        64,
+    BUS_STROBE_WIDTH            =>      64/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>         1,
@@ -183,6 +189,7 @@ begin
     TEST_NAME                   => "INDEX_BUF",
     BUS_ADDR_WIDTH              =>        64,
     BUS_DATA_WIDTH              =>       128,
+    BUS_STROBE_WIDTH            =>     128/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         1,
     BUS_BURST_MAX_LEN           =>         1,
@@ -208,6 +215,7 @@ begin
     TEST_NAME                   => "8x64IN_512OUT",
     BUS_ADDR_WIDTH              =>        64,
     BUS_DATA_WIDTH              =>       512,
+    BUS_STROBE_WIDTH            =>     512/8,
     BUS_LEN_WIDTH               =>         9,
     BUS_BURST_STEP_LEN          =>         4,
     BUS_BURST_MAX_LEN           =>        16,
@@ -228,38 +236,5 @@ begin
     VERBOSE                     =>     false,
     SEED                        =>  16#0123#
   );
-
-
-  --baw_gen: for BAW in 3 to 6 generate
-  --  bdw_gen: for BDW in 3 to 10 generate
-  --    ew_gen: for EW in 0 to BDW generate
-  --      ecm_gen: for ECM in 0 to 7 generate
-  --        test: BufferWriter_tb generic map (
-  --          TEST_NAME                   => "BAW: " & ii(BAW) & "BDW: " & ii(BDW) & "EW: " & ii(EW),
-  --          BUS_ADDR_WIDTH              =>    2**BAW,
-  --          BUS_DATA_WIDTH              =>    2**BDW,
-  --          BUS_LEN_WIDTH               =>         9,
-  --          BUS_BURST_STEP_LEN          =>         1,
-  --          BUS_BURST_MAX_LEN           =>         1,
-  --          BUS_FIFO_DEPTH              =>         1,
-  --          BUS_FIFO_THRESHOLD_SHIFT    =>         0,
-  --          INDEX_WIDTH                 =>        32,
-  --          IS_INDEX_BUFFER             =>     false,
-  --          ELEMENT_WIDTH               =>     2**EW,
-  --          ELEMENT_COUNT_MAX           =>    2**ECM,
-  --          ELEMENT_COUNT_WIDTH         => max(1,ECM),
-  --          AVG_RANGE_LEN               => 2.0 ** 12,
-  --          NUM_COMMANDS                =>       256,
-  --          WAIT_FOR_UNLOCK             =>     false,
-  --          KNOWN_LAST_INDEX            =>     false,
-  --          CMD_CTRL_WIDTH              =>         1,
-  --          CMD_TAG_WIDTH               =>        16,
-  --          VERBOSE                     =>     false,
-  --          SEED                        =>  16#0123#
-  --        );
-  --      end generate;
-  --    end generate;
-  --  end generate;
-  --end generate;
 
 end tb;

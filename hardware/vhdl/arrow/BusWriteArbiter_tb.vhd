@@ -29,6 +29,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   constant BUS_ADDR_WIDTH       : natural := 32;
   constant BUS_LEN_WIDTH        : natural := 8;
   constant BUS_DATA_WIDTH       : natural := 32;
+  constant BUS_STROBE_WIDTH     : natural := 32/8;
 
   signal clk                    : std_logic := '1';
   signal reset                  : std_logic;
@@ -41,6 +42,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal ma2b_wdat_valid        : std_logic := '0';
   signal ma2b_wdat_ready        : std_logic;
   signal ma2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal ma2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal ma2b_wdat_last         : std_logic;
 
   signal ma2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -54,6 +56,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal mb2b_wdat_valid        : std_logic := '0';
   signal mb2b_wdat_ready        : std_logic;
   signal mb2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal mb2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal mb2b_wdat_last         : std_logic;
 
   signal mb2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -67,12 +70,23 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal mc2b_wdat_valid        : std_logic := '0';
   signal mc2b_wdat_ready        : std_logic;
   signal mc2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal mc2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal mc2b_wdat_last         : std_logic;
 
   signal mc2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal mc2b_wdat_last_m       : std_logic;
 
   -- Buffers to arbiters
+
+  signal ba2a_wreq_valid        : std_logic := '0';
+  signal ba2a_wreq_ready        : std_logic;
+  signal ba2a_wreq_addr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal ba2a_wreq_len          : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal ba2a_wdat_valid        : std_logic := '0';
+  signal ba2a_wdat_ready        : std_logic;
+  signal ba2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal ba2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal ba2a_wdat_last         : std_logic;
 
   signal bb2a_wreq_valid        : std_logic := '0';
   signal bb2a_wreq_ready        : std_logic;
@@ -81,16 +95,8 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal bb2a_wdat_valid        : std_logic := '0';
   signal bb2a_wdat_ready        : std_logic;
   signal bb2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bb2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal bb2a_wdat_last         : std_logic;
-  
-  signal ba2a_wreq_valid        : std_logic := '0';
-  signal ba2a_wreq_ready        : std_logic;
-  signal ba2a_wreq_addr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal ba2a_wreq_len          : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal ba2a_wdat_valid        : std_logic := '0';
-  signal ba2a_wdat_ready        : std_logic;
-  signal ba2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal ba2a_wdat_last         : std_logic;
 
   signal bc2a_wreq_valid        : std_logic := '0';
   signal bc2a_wreq_ready        : std_logic;
@@ -99,6 +105,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal bc2a_wdat_valid        : std_logic := '0';
   signal bc2a_wdat_ready        : std_logic;
   signal bc2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bc2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal bc2a_wdat_last         : std_logic;
 
   -- Arbiter to slave.
@@ -106,10 +113,11 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal a2s_wreq_ready          : std_logic;
   signal a2s_wreq_addr           : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal a2s_wreq_len            : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal a2s_wdat_valid         : std_logic := '0';
-  signal a2s_wdat_ready         : std_logic;
-  signal a2s_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal a2s_wdat_last          : std_logic;
+  signal a2s_wdat_valid          : std_logic := '0';
+  signal a2s_wdat_ready          : std_logic;
+  signal a2s_wdat_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal a2s_wdat_strobe         : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal a2s_wdat_last           : std_logic;
 
 begin
 
@@ -145,6 +153,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 1
     )
     port map (
@@ -157,6 +166,7 @@ begin
       wdat_valid                => ma2b_wdat_valid,
       wdat_ready                => ma2b_wdat_ready,
       wdat_data                 => ma2b_wdat_data,
+      wdat_strobe               => ma2b_wdat_strobe,
       wdat_last                 => ma2b_wdat_last
     );
 
@@ -165,6 +175,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -181,6 +192,7 @@ begin
       slv_wdat_valid            => ma2b_wdat_valid,
       slv_wdat_ready            => ma2b_wdat_ready,
       slv_wdat_data             => ma2b_wdat_data,
+      slv_wdat_strobe           => ma2b_wdat_strobe,
       slv_wdat_last             => ma2b_wdat_last,
 
       mst_wreq_valid            => ba2a_wreq_valid,
@@ -190,6 +202,7 @@ begin
       mst_wdat_valid            => ba2a_wdat_valid,
       mst_wdat_ready            => ba2a_wdat_ready,
       mst_wdat_data             => ba2a_wdat_data,
+      mst_wdat_strobe           => ba2a_wdat_strobe,
       mst_wdat_last             => ba2a_wdat_last
     );
 
@@ -198,6 +211,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 2
     )
     port map (
@@ -210,6 +224,7 @@ begin
       wdat_valid                => mb2b_wdat_valid,
       wdat_ready                => mb2b_wdat_ready,
       wdat_data                 => mb2b_wdat_data,
+      wdat_strobe               => mb2b_wdat_strobe,
       wdat_last                 => mb2b_wdat_last
     );
 
@@ -218,6 +233,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -234,6 +250,7 @@ begin
       slv_wdat_valid            => mb2b_wdat_valid,
       slv_wdat_ready            => mb2b_wdat_ready,
       slv_wdat_data             => mb2b_wdat_data,
+      slv_wdat_strobe           => mb2b_wdat_strobe,
       slv_wdat_last             => mb2b_wdat_last,
 
       mst_wreq_valid            => bb2a_wreq_valid,
@@ -243,6 +260,7 @@ begin
       mst_wdat_valid            => bb2a_wdat_valid,
       mst_wdat_ready            => bb2a_wdat_ready,
       mst_wdat_data             => bb2a_wdat_data,
+      mst_wdat_strobe           => bb2a_wdat_strobe,
       mst_wdat_last             => bb2a_wdat_last
     );
 
@@ -251,6 +269,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 3
     )
     port map (
@@ -263,6 +282,7 @@ begin
       wdat_valid                => mc2b_wdat_valid,
       wdat_ready                => mc2b_wdat_ready,
       wdat_data                 => mc2b_wdat_data,
+      wdat_strobe               => mc2b_wdat_strobe,
       wdat_last                 => mc2b_wdat_last
     );
 
@@ -271,6 +291,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -287,6 +308,7 @@ begin
       slv_wdat_valid            => mc2b_wdat_valid,
       slv_wdat_ready            => mc2b_wdat_ready,
       slv_wdat_data             => mc2b_wdat_data,
+      slv_wdat_strobe           => mc2b_wdat_strobe,
       slv_wdat_last             => mc2b_wdat_last,
 
       mst_wreq_valid            => bc2a_wreq_valid,
@@ -296,6 +318,7 @@ begin
       mst_wdat_valid            => bc2a_wdat_valid,
       mst_wdat_ready            => bc2a_wdat_ready,
       mst_wdat_data             => bc2a_wdat_data,
+      mst_wdat_strobe           => bc2a_wdat_strobe,
       mst_wdat_last             => bc2a_wdat_last
     );
 
@@ -304,14 +327,15 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       NUM_SLAVES                => 3,
       ARB_METHOD                => "ROUND-ROBIN",
       MAX_OUTSTANDING           => 4,
       RAM_CONFIG                => "",
       REQ_IN_SLICES             => true,
       REQ_OUT_SLICE             => true,
-      RESP_IN_SLICE             => true,
-      RESP_OUT_SLICES           => true
+      DAT_IN_SLICE              => true,
+      DAT_OUT_SLICE             => true
     )
     port map (
       clk                       => clk,
@@ -324,34 +348,38 @@ begin
       mst_wdat_valid            => a2s_wdat_valid,
       mst_wdat_ready            => a2s_wdat_ready,
       mst_wdat_data             => a2s_wdat_data,
+      mst_wdat_strobe           => a2s_wdat_strobe,
       mst_wdat_last             => a2s_wdat_last,
 
-      bs0_wreq_valid            => ba2a_wreq_valid,
-      bs0_wreq_ready            => ba2a_wreq_ready,
-      bs0_wreq_addr             => ba2a_wreq_addr,
-      bs0_wreq_len              => ba2a_wreq_len,
-      bs0_wdat_valid            => ba2a_wdat_valid,
-      bs0_wdat_ready            => ba2a_wdat_ready,
-      bs0_wdat_data             => ba2a_wdat_data,
-      bs0_wdat_last             => ba2a_wdat_last,
+      bs00_wreq_valid           => ba2a_wreq_valid,
+      bs00_wreq_ready           => ba2a_wreq_ready,
+      bs00_wreq_addr            => ba2a_wreq_addr,
+      bs00_wreq_len             => ba2a_wreq_len,
+      bs00_wdat_valid           => ba2a_wdat_valid,
+      bs00_wdat_ready           => ba2a_wdat_ready,
+      bs00_wdat_data            => ba2a_wdat_data,
+      bs00_wdat_strobe          => ba2a_wdat_strobe,
+      bs00_wdat_last            => ba2a_wdat_last,
 
-      bs1_wreq_valid            => bb2a_wreq_valid,
-      bs1_wreq_ready            => bb2a_wreq_ready,
-      bs1_wreq_addr             => bb2a_wreq_addr,
-      bs1_wreq_len              => bb2a_wreq_len,
-      bs1_wdat_valid            => bb2a_wdat_valid,
-      bs1_wdat_ready            => bb2a_wdat_ready,
-      bs1_wdat_data             => bb2a_wdat_data,
-      bs1_wdat_last             => bb2a_wdat_last,
+      bs01_wreq_valid           => bb2a_wreq_valid,
+      bs01_wreq_ready           => bb2a_wreq_ready,
+      bs01_wreq_addr            => bb2a_wreq_addr,
+      bs01_wreq_len             => bb2a_wreq_len,
+      bs01_wdat_valid           => bb2a_wdat_valid,
+      bs01_wdat_ready           => bb2a_wdat_ready,
+      bs01_wdat_data            => bb2a_wdat_data,
+      bs01_wdat_strobe          => bb2a_wdat_strobe,
+      bs01_wdat_last            => bb2a_wdat_last,
 
-      bs2_wreq_valid            => bc2a_wreq_valid,
-      bs2_wreq_ready            => bc2a_wreq_ready,
-      bs2_wreq_addr             => bc2a_wreq_addr,
-      bs2_wreq_len              => bc2a_wreq_len,
-      bs2_wdat_valid            => bc2a_wdat_valid,
-      bs2_wdat_ready            => bc2a_wdat_ready,
-      bs2_wdat_data             => bc2a_wdat_data,
-      bs2_wdat_last             => bc2a_wdat_last
+      bs02_wreq_valid           => bc2a_wreq_valid,
+      bs02_wreq_ready           => bc2a_wreq_ready,
+      bs02_wreq_addr            => bc2a_wreq_addr,
+      bs02_wreq_len             => bc2a_wreq_len,
+      bs02_wdat_valid           => bc2a_wdat_valid,
+      bs02_wdat_ready           => bc2a_wdat_ready,
+      bs02_wdat_data            => bc2a_wdat_data,
+      bs02_wdat_strobe          => bc2a_wdat_strobe,
+      bs02_wdat_last            => bc2a_wdat_last
     );
 
   slave_inst: BusWriteSlaveMock
@@ -359,6 +387,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 4
     )
     port map (
@@ -371,6 +400,7 @@ begin
       wdat_valid                => a2s_wdat_valid,
       wdat_ready                => a2s_wdat_ready,
       wdat_data                 => a2s_wdat_data,
+      wdat_strobe               => a2s_wdat_strobe,
       wdat_last                 => a2s_wdat_last
     );
 

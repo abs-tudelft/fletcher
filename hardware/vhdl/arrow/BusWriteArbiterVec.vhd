@@ -35,6 +35,9 @@ entity BusWriteArbiterVec is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
+    
+    -- Bus strobe width.
+    BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Number of slaves ports to arbitrate between.
     NUM_SLAVES                 : natural := 2;
@@ -60,11 +63,11 @@ entity BusWriteArbiterVec is
 
     -- Whether a register slice should be inserted into the bus response input
     -- stream.
-    RESP_IN_SLICE               : boolean := false;
+    DAT_IN_SLICE                : boolean := false;
 
     -- Whether a register slice should be inserted into the bus response output
     -- streams.
-    RESP_OUT_SLICES             : boolean := true
+    DAT_OUT_SLICE               : boolean := true
 
   );
   port (
@@ -74,16 +77,6 @@ entity BusWriteArbiterVec is
     clk                         : in  std_logic;
     reset                       : in  std_logic;
 
-    -- Master port.
-    mst_wreq_valid              : out std_logic;
-    mst_wreq_ready              : in  std_logic;
-    mst_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    mst_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    mst_wdat_valid              : out std_logic;
-    mst_wdat_ready              : in  std_logic;
-    mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wdat_last               : out  std_logic;
-
     -- Concatenated master ports.
     bsv_wreq_valid              : in  std_logic_vector(NUM_SLAVES-1 downto 0);
     bsv_wreq_ready              : out std_logic_vector(NUM_SLAVES-1 downto 0);
@@ -92,7 +85,19 @@ entity BusWriteArbiterVec is
     bsv_wdat_valid              : in  std_logic_vector(NUM_SLAVES-1 downto 0);
     bsv_wdat_ready              : out std_logic_vector(NUM_SLAVES-1 downto 0);
     bsv_wdat_data               : in  std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH-1 downto 0);
-    bsv_wdat_last               : in  std_logic_vector(NUM_SLAVES-1 downto 0)
+    bsv_wdat_strobe             : in  std_logic_vector(NUM_SLAVES*BUS_STROBE_WIDTH-1 downto 0);
+    bsv_wdat_last               : in  std_logic_vector(NUM_SLAVES-1 downto 0);
+    
+    -- Master port.
+    mst_wreq_valid              : out std_logic;
+    mst_wreq_ready              : in  std_logic;
+    mst_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_wdat_valid              : out std_logic;
+    mst_wdat_ready              : in  std_logic;
+    mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    mst_wdat_last               : out  std_logic
 
   );
 end BusWriteArbiterVec;
@@ -103,15 +108,17 @@ architecture Behavioral of BusWriteArbiterVec is
   constant INDEX_WIDTH          : natural := max(1, log2ceil(NUM_SLAVES));
 
   -- Type declarations for busses.
-  subtype bus_addr_type is std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  subtype bus_len_type  is std_logic_vector(BUS_LEN_WIDTH-1  downto 0);
-  subtype bus_data_type is std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  subtype bus_addr_type   is std_logic_vector(BUS_ADDR_WIDTH-1   downto 0);
+  subtype bus_len_type    is std_logic_vector(BUS_LEN_WIDTH-1    downto 0);
+  subtype bus_data_type   is std_logic_vector(BUS_DATA_WIDTH-1   downto 0);
+  subtype bus_strobe_type is std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
 
-  type bus_addr_array is array (natural range <>) of bus_addr_type;
-  type bus_len_array  is array (natural range <>) of bus_len_type;
-  type bus_data_array is array (natural range <>) of bus_data_type;
+  type bus_addr_array   is array (natural range <>) of bus_addr_type;
+  type bus_len_array    is array (natural range <>) of bus_len_type;
+  type bus_data_array   is array (natural range <>) of bus_data_type;
+  type bus_strobe_array is array (natural range <>) of bus_strobe_type;
 
-  -- Bus request serialization indices.
+  -- Bus request channel serialization indices.
   constant BQI : nat_array := cumulative((
     1 => BUS_ADDR_WIDTH,
     0 => BUS_LEN_WIDTH
@@ -123,8 +130,9 @@ architecture Behavioral of BusWriteArbiterVec is
   signal arbi_sData             : std_logic_vector(BQI(BQI'high)-1 downto 0);
   signal arbo_sData             : std_logic_vector(BQI(BQI'high)-1 downto 0);
 
-  -- Bus response serialization indices.
+  -- Bus data channel serialization indices.
   constant BPI : nat_array := cumulative((
+    2 => BUS_STROBE_WIDTH,
     1 => BUS_DATA_WIDTH,
     0 => 1
   ));
@@ -140,6 +148,7 @@ architecture Behavioral of BusWriteArbiterVec is
   signal bs_wdat_valid          : std_logic_vector(0 to NUM_SLAVES-1);
   signal bs_wdat_ready          : std_logic_vector(0 to NUM_SLAVES-1);
   signal bs_wdat_data           : bus_data_array(0 to NUM_SLAVES-1);
+  signal bs_wdat_strobe         : bus_strobe_array(0 to NUM_SLAVES-1);
   signal bs_wdat_last           : std_logic_vector(0 to NUM_SLAVES-1);
 
   -- Register-sliced bus slave signals.
@@ -150,6 +159,7 @@ architecture Behavioral of BusWriteArbiterVec is
   signal bss_wdat_valid         : std_logic_vector(0 to NUM_SLAVES-1);
   signal bss_wdat_ready         : std_logic_vector(0 to NUM_SLAVES-1);
   signal bss_wdat_data          : bus_data_array(0 to NUM_SLAVES-1);
+  signal bss_wdat_strobe        : bus_strobe_array(0 to NUM_SLAVES-1);
   signal bss_wdat_last          : std_logic_vector(0 to NUM_SLAVES-1);
 
   -- Register-sliced bus master signals.
@@ -160,6 +170,7 @@ architecture Behavioral of BusWriteArbiterVec is
   signal bms_wdat_valid         : std_logic;
   signal bms_wdat_ready         : std_logic;
   signal bms_wdat_data          : bus_data_type;
+  signal bms_wdat_strobe        : bus_strobe_type;
   signal bms_wdat_last          : std_logic;
 
   -- Serialized arbiter input signals.
@@ -186,6 +197,7 @@ architecture Behavioral of BusWriteArbiterVec is
   signal mux_wdat_valid         : std_logic;
   signal mux_wdat_ready         : std_logic;
   signal mux_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal mux_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal mux_wdat_last          : std_logic;
 
 begin
@@ -200,6 +212,7 @@ begin
     bs_wdat_valid (i) <= bsv_wdat_valid(i);
     bsv_wdat_ready(i) <= bs_wdat_ready (i);
     bs_wdat_data  (i) <= bsv_wdat_data((i+1)*BUS_DATA_WIDTH-1 downto i*BUS_DATA_WIDTH);
+    bs_wdat_strobe(i) <= bsv_wdat_strobe((i+1)*BUS_STROBE_WIDTH-1 downto i*BUS_STROBE_WIDTH);
     bs_wdat_last  (i) <= bsv_wdat_last (i);
   end generate;
 
@@ -230,8 +243,8 @@ begin
         out_data                        => wreqo_sData
       );
 
-    wreqi_sData(BQI(2)-1 downto BQI(1))  <= bs_wreq_addr(i);
-    wreqi_sData(BQI(1)-1 downto BQI(0))  <= bs_wreq_len(i);
+    wreqi_sData(BQI(2)-1 downto BQI(1)) <= bs_wreq_addr(i);
+    wreqi_sData(BQI(1)-1 downto BQI(0)) <= bs_wreq_len(i);
 
     bss_wreq_addr(i)                    <= wreqo_sData(BQI(2)-1 downto BQI(1));
     bss_wreq_len(i)                     <= wreqo_sData(BQI(1)-1 downto BQI(0));
@@ -239,7 +252,7 @@ begin
     -- Write data register slice.
     dat_buffer_inst: StreamBuffer
       generic map (
-        MIN_DEPTH                       => sel(RESP_OUT_SLICES, 2, 0),
+        MIN_DEPTH                       => sel(DAT_OUT_SLICE, 2, 0),
         DATA_WIDTH                      => BPI(BPI'high)
       )
       port map (
@@ -255,9 +268,11 @@ begin
         out_data                        => wdato_sData
       );
 
+    wdati_sData(BPI(3)-1 downto BPI(2)) <= bs_wdat_strobe(i);
     wdati_sData(BPI(2)-1 downto BPI(1)) <= bs_wdat_data(i);
     wdati_sData(BPI(0))                 <= bs_wdat_last(i);
 
+    bss_wdat_strobe(i)                  <= wdato_sData(BPI(3)-1 downto BPI(2));
     bss_wdat_data(i)                    <= wdato_sData(BPI(2)-1 downto BPI(1));
     bss_wdat_last(i)                    <= wdato_sData(BPI(0));
 
@@ -285,13 +300,13 @@ begin
   mreqi_sData(BQI(2)-1 downto BQI(1))   <= bms_wreq_addr;
   mreqi_sData(BQI(1)-1 downto BQI(0))   <= bms_wreq_len;
 
-  mst_wreq_addr                          <= mreqo_sData(BQI(2)-1 downto BQI(1));
-  mst_wreq_len                           <= mreqo_sData(BQI(1)-1 downto BQI(0));
+  mst_wreq_addr                         <= mreqo_sData(BQI(2)-1 downto BQI(1));
+  mst_wreq_len                          <= mreqo_sData(BQI(1)-1 downto BQI(0));
 
   -- Instantiate master write data register slice.
   mst_wdat_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(RESP_IN_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(DAT_IN_SLICE, 2, 0),
       DATA_WIDTH                        => BPI(BPI'high)
     )
     port map (
@@ -307,9 +322,11 @@ begin
       out_data                          => mwdato_sData
     );
 
+  mwdati_sData(BPI(3)-1 downto BPI(2))  <= bms_wdat_strobe;
   mwdati_sData(BPI(2)-1 downto BPI(1))  <= bms_wdat_data;
   mwdati_sData(BPI(0))                  <= bms_wdat_last;
 
+  mst_wdat_strobe                       <= mwdato_sData(BPI(3)-1 downto BPI(2));
   mst_wdat_data                         <= mwdato_sData(BPI(2)-1 downto BPI(1));
   mst_wdat_last                         <= mwdato_sData(BPI(0));
 
@@ -416,6 +433,7 @@ begin
         mux_wdat_valid    <= bss_wdat_valid(i);
         bss_wdat_ready(i) <= mux_wdat_ready;
         mux_wdat_data     <= bss_wdat_data(i);
+        mux_wdat_strobe   <= bss_wdat_strobe(i);
         mux_wdat_last     <= bss_wdat_last(i);        
       else
         -- Backpressure the other streams
@@ -446,7 +464,8 @@ begin
       out_valid(0)                      => bms_wdat_valid,
       out_ready(0)                      => bms_wdat_ready
     );
-    
+  
+  bms_wdat_strobe                       <= mux_wdat_strobe;  
   bms_wdat_data                         <= mux_wdat_data;
   bms_wdat_last                         <= mux_wdat_last;
 

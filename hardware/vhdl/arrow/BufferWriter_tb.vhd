@@ -31,6 +31,7 @@ entity BufferWriter_tb is
     TEST_NAME                   : string   := "";
     BUS_ADDR_WIDTH              : natural  := 32;
     BUS_DATA_WIDTH              : natural  := 32;
+    BUS_STROBE_WIDTH            : natural  := 32/8;
     BUS_LEN_WIDTH               : natural  := 9;
     BUS_BURST_STEP_LEN          : natural  := 1;
     BUS_BURST_MAX_LEN           : natural  := 16;
@@ -580,6 +581,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_FIFO_DEPTH            => BUS_FIFO_DEPTH,

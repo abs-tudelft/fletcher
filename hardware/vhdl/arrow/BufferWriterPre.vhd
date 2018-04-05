@@ -37,6 +37,9 @@ entity BufferWriterPre is
     ---------------------------------------------------------------------------
     -- Bus data width.
     BUS_DATA_WIDTH              : natural;
+    
+    -- Bus strobe width
+    BUS_STROBE_WIDTH            : natural;
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural;
@@ -90,7 +93,7 @@ entity BufferWriterPre is
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
     out_data                    : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    out_strobe                  : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+    out_strobe                  : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
     out_last                    : out std_logic
   );
 end BufferWriterPre;
@@ -102,6 +105,9 @@ architecture Behavioral of BufferWriterPre is
   constant BYTE_COUNT           : natural := BUS_DATA_WIDTH / 8;
   constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH / 8);
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
+  
+  -- Number of bits covered by a single strobe bit:
+  constant STROBE_COVER         : natural := BUS_DATA_WIDTH / BUS_STROBE_WIDTH;  
  
   -- Padded stream
   signal pad_valid              : std_logic;
@@ -458,17 +464,17 @@ begin
   byte_strobe_proc: process(strobe_shaped_data)
   begin
     -- If elements are smaller than bytes, or-reduce the element strobes
-    if ELEMENT_WIDTH < 8 then
+    if ELEMENT_WIDTH < STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
         out_strobe(I)           <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
       end loop;
     end if;
     -- If elements are the same size as bytes, just pass through the element strobes
-    if ELEMENT_WIDTH = 8 then
+    if ELEMENT_WIDTH = STROBE_COVER then
       out_strobe                <= strobe_shaped_data;
     end if;
     -- If elements are larger than bytes, duplicate the element strobes
-    if ELEMENT_WIDTH > 8 then
+    if ELEMENT_WIDTH > STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
         out_strobe(I)           <= strobe_shaped_data(I / BYTES_PER_ELEM);
       end loop;

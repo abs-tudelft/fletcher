@@ -43,6 +43,9 @@ entity BusWriteBuffer is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
+    -- Bus strobe width.
+    BUS_STROBE_WIDTH            : natural := 32/8;
+
     -- Minimum number of burst beats that can be stored in the FIFO. Rounded up
     -- to a power of two. This is also the maximum burst length supported.
     FIFO_DEPTH                  : natural := 16;
@@ -86,6 +89,7 @@ entity BusWriteBuffer is
     slv_wdat_valid              : in  std_logic;
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    slv_wdat_strobe             : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
     slv_wdat_last               : in  std_logic;
 
     ---------------------------------------------------------------------------
@@ -99,6 +103,7 @@ entity BusWriteBuffer is
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
     mst_wdat_last               : out std_logic;
     mst_wdat_last_in_cmd        : out std_logic
 
@@ -113,11 +118,11 @@ architecture Behavioral of BusWriteBuffer is
 
   signal fifo_in_valid           : std_logic;
   signal fifo_in_ready           : std_logic;
-  signal fifo_in_data            : std_logic_vector(BUS_DATA_WIDTH downto 0);
+  signal fifo_in_data            : std_logic_vector(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto 0);
 
   signal fifo_out_valid          : std_logic;
   signal fifo_out_ready          : std_logic;
-  signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH downto 0);
+  signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto 0);
 
   type state_type is (IDLE, REQ, BURST);
 
@@ -170,7 +175,7 @@ begin
   comb_proc: process(
     r,
     fifo_in_valid, fifo_in_ready,
-    fifo_out_valid, fifo_out_ready, fifo_out_data(BUS_DATA_WIDTH),
+    fifo_out_valid, fifo_out_ready, fifo_out_data(0),
     slv_wreq_len, slv_wreq_addr, slv_wreq_valid,
     mst_wreq_ready,
     mst_wdat_ready
@@ -237,10 +242,10 @@ begin
           -- Determine where last should come from
           if SLV_LAST_MODE = "burst" then
             -- Last signal comes from FIFO
-            vo.mst_wdat_last        := fifo_out_data(BUS_DATA_WIDTH);
+            vo.mst_wdat_last        := fifo_out_data(0);
 
             -- Check if the last signal was properly asserted.
-            if fifo_out_data(BUS_DATA_WIDTH) /= '1' then
+            if fifo_out_data(0) /= '1' then
               -- pragma translate off
                 report "Bus write buffer with SLV_LAST_MODE set to burst "
                      & "expected last signal to be high."
@@ -254,7 +259,7 @@ begin
             -- stream. Assert the last signal based on the request length and
             -- grab the last_in_cmd signal from the FIFO.
             vo.mst_wdat_last        := '1';
-            vo.mst_wdat_last_in_cmd := fifo_out_data(BUS_DATA_WIDTH);
+            vo.mst_wdat_last_in_cmd := fifo_out_data(0);
           end if;
 
           -- A request is made, register it.
@@ -301,7 +306,8 @@ begin
     mst_wdat_valid              <= vo.mst_wdat_valid;
     mst_wdat_last               <= vo.mst_wdat_last;
     mst_wdat_last_in_cmd        <= vo.mst_wdat_last_in_cmd;
-    mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH downto 1);
+    mst_wdat_strobe             <= fifo_out_data(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto BUS_DATA_WIDTH+1);
 
     fifo_out_ready              <= vo.fifo_out_ready;
 
@@ -315,12 +321,12 @@ begin
   fifo_in_valid                 <= slv_wdat_valid;
   slv_wdat_ready                <= fifo_in_ready;
 
-  fifo_in_data                  <= slv_wdat_last & slv_wdat_data;
+  fifo_in_data                  <= slv_wdat_strobe & slv_wdat_data & slv_wdat_last;
 
   slv_write_buffer: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2**DEPTH_LOG2,
-      DATA_WIDTH                => BUS_DATA_WIDTH + 1
+      DATA_WIDTH                => BUS_DATA_WIDTH + BUS_STROBE_WIDTH + 1
     )
     port map (
       clk                       => clk,

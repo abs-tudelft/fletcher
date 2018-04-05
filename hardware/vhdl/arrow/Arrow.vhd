@@ -28,7 +28,7 @@ package Arrow is
   -- burst lengths are set to something higher than this.
   -- This is currently set to the AXI4 specification of 4096 byte boundaries:
   constant BUS_BURST_BOUNDARY     : natural := 4096;
-  
+
   -- Bus write data bits covered by single write strobe bit.
   -- This is currently set to the AXI4 specification of 1 byte / strobe bit.
   constant BUS_WSB                : natural := 8;
@@ -38,7 +38,7 @@ package Arrow is
 
   -- The Arrow format recommendation on buffer address alignment in bytes:
   constant REC_ARROW_BUFFER_ALIGN : natural := 64;
-  
+
   -----------------------------------------------------------------------------
   -- ColumnWriter
   -----------------------------------------------------------------------------
@@ -1006,20 +1006,21 @@ package Arrow is
       slv_resp_last             : in  std_logic
     );
   end component;
-  
+
   component BusWriteArbiter is
     generic (
       BUS_ADDR_WIDTH              : natural;
       BUS_LEN_WIDTH               : natural;
       BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
       NUM_SLAVES                  : natural;
       ARB_METHOD                  : string;
       MAX_OUTSTANDING             : natural;
       RAM_CONFIG                  : string;
       REQ_IN_SLICES               : boolean;
       REQ_OUT_SLICE               : boolean;
-      RESP_IN_SLICE               : boolean;
-      RESP_OUT_SLICES             : boolean
+      DAT_IN_SLICE                : boolean;
+      DAT_OUT_SLICE               : boolean
     );
     port (
       clk                       : in  std_logic;
@@ -1032,109 +1033,120 @@ package Arrow is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
       mst_wdat_last             : out std_logic;
 
       -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
 
       -- Slave port 0.
-      bs0_wreq_valid            : in  std_logic := '0';
-      bs0_wreq_ready            : out std_logic;
-      bs0_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs0_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs0_wdat_valid            : in  std_logic := '0';
-      bs0_wdat_ready            : out std_logic := '1';
-      bs0_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs0_wdat_last             : in  std_logic := 'U';
+      bs00_wreq_valid           : in  std_logic := '0';
+      bs00_wreq_ready           : out std_logic;
+      bs00_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs00_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs00_wdat_valid           : in  std_logic := '0';
+      bs00_wdat_ready           : out std_logic := '1';
+      bs00_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs00_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs00_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 1.
-      bs1_wreq_valid            : in  std_logic := '0';
-      bs1_wreq_ready            : out std_logic;
-      bs1_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs1_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs1_wdat_valid            : in  std_logic := '0';
-      bs1_wdat_ready            : out std_logic := '1';
-      bs1_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs1_wdat_last             : in  std_logic := 'U';
+      bs01_wreq_valid           : in  std_logic := '0';
+      bs01_wreq_ready           : out std_logic;
+      bs01_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs01_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs01_wdat_valid           : in  std_logic := '0';
+      bs01_wdat_ready           : out std_logic := '1';
+      bs01_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs01_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs01_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 2.
-      bs2_wreq_valid            : in  std_logic := '0';
-      bs2_wreq_ready            : out std_logic;
-      bs2_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs2_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs2_wdat_valid            : in  std_logic := '0';
-      bs2_wdat_ready            : out std_logic := '1';
-      bs2_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs2_wdat_last             : in  std_logic := 'U';
+      bs02_wreq_valid           : in  std_logic := '0';
+      bs02_wreq_ready           : out std_logic;
+      bs02_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs02_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs02_wdat_valid           : in  std_logic := '0';
+      bs02_wdat_ready           : out std_logic := '1';
+      bs02_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs02_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs02_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 3.
-      bs3_wreq_valid            : in  std_logic := '0';
-      bs3_wreq_ready            : out std_logic;
-      bs3_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs3_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs3_wdat_valid            : in  std_logic := '0';
-      bs3_wdat_ready            : out std_logic := '1';
-      bs3_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs3_wdat_last             : in  std_logic := 'U';
+      bs03_wreq_valid           : in  std_logic := '0';
+      bs03_wreq_ready           : out std_logic;
+      bs03_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs03_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs03_wdat_valid           : in  std_logic := '0';
+      bs03_wdat_ready           : out std_logic := '1';
+      bs03_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs03_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs03_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 4.
-      bs4_wreq_valid            : in  std_logic := '0';
-      bs4_wreq_ready            : out std_logic;
-      bs4_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs4_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs4_wdat_valid            : in  std_logic := '0';
-      bs4_wdat_ready            : out std_logic := '1';
-      bs4_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs4_wdat_last             : in  std_logic := 'U';
+      bs04_wreq_valid           : in  std_logic := '0';
+      bs04_wreq_ready           : out std_logic;
+      bs04_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs04_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs04_wdat_valid           : in  std_logic := '0';
+      bs04_wdat_ready           : out std_logic := '1';
+      bs04_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs04_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs04_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 5.
-      bs5_wreq_valid            : in  std_logic := '0';
-      bs5_wreq_ready            : out std_logic;
-      bs5_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs5_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs5_wdat_valid            : in  std_logic := '0';
-      bs5_wdat_ready            : out std_logic := '1';
-      bs5_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs5_wdat_last             : in  std_logic := 'U';
+      bs05_wreq_valid           : in  std_logic := '0';
+      bs05_wreq_ready           : out std_logic;
+      bs05_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs05_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs05_wdat_valid           : in  std_logic := '0';
+      bs05_wdat_ready           : out std_logic := '1';
+      bs05_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs05_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs05_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 6.
-      bs6_wreq_valid            : in  std_logic := '0';
-      bs6_wreq_ready            : out std_logic;
-      bs6_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs6_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs6_wdat_valid            : in  std_logic := '0';
-      bs6_wdat_ready            : out std_logic := '1';
-      bs6_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs6_wdat_last             : in  std_logic := 'U';
+      bs06_wreq_valid           : in  std_logic := '0';
+      bs06_wreq_ready           : out std_logic;
+      bs06_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs06_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs06_wdat_valid           : in  std_logic := '0';
+      bs06_wdat_ready           : out std_logic := '1';
+      bs06_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs06_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs06_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 7.
-      bs7_wreq_valid            : in  std_logic := '0';
-      bs7_wreq_ready            : out std_logic;
-      bs7_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs7_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs7_wdat_valid            : in  std_logic := '0';
-      bs7_wdat_ready            : out std_logic := '1';
-      bs7_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs7_wdat_last             : in  std_logic := 'U';
+      bs07_wreq_valid           : in  std_logic := '0';
+      bs07_wreq_ready           : out std_logic;
+      bs07_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs07_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs07_wdat_valid           : in  std_logic := '0';
+      bs07_wdat_ready           : out std_logic := '1';
+      bs07_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs07_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs07_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 8.
-      bs8_wreq_valid            : in  std_logic := '0';
-      bs8_wreq_ready            : out std_logic;
-      bs8_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs8_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs8_wdat_valid            : in  std_logic := '0';
-      bs8_wdat_ready            : out std_logic := '1';
-      bs8_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs8_wdat_last             : in  std_logic := 'U';
+      bs08_wreq_valid           : in  std_logic := '0';
+      bs08_wreq_ready           : out std_logic;
+      bs08_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs08_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs08_wdat_valid           : in  std_logic := '0';
+      bs08_wdat_ready           : out std_logic := '1';
+      bs08_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs08_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs08_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 9.
-      bs9_wreq_valid            : in  std_logic := '0';
-      bs9_wreq_ready            : out std_logic;
-      bs9_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bs9_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bs9_wdat_valid            : in  std_logic := '0';
-      bs9_wdat_ready            : out std_logic := '1';
-      bs9_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs9_wdat_last             : in  std_logic := 'U';
+      bs09_wreq_valid           : in  std_logic := '0';
+      bs09_wreq_ready           : out std_logic;
+      bs09_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs09_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs09_wdat_valid           : in  std_logic := '0';
+      bs09_wdat_ready           : out std_logic := '1';
+      bs09_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs09_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+      bs09_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 10.
       bs10_wreq_valid           : in  std_logic := '0';
@@ -1144,6 +1156,7 @@ package Arrow is
       bs10_wdat_valid           : in  std_logic := '0';
       bs10_wdat_ready           : out std_logic := '1';
       bs10_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs10_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs10_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 11.
@@ -1154,6 +1167,7 @@ package Arrow is
       bs11_wdat_valid           : in  std_logic := '0';
       bs11_wdat_ready           : out std_logic := '1';
       bs11_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs11_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs11_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 12.
@@ -1164,6 +1178,7 @@ package Arrow is
       bs12_wdat_valid           : in  std_logic := '0';
       bs12_wdat_ready           : out std_logic := '1';
       bs12_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs12_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs12_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 13.
@@ -1174,6 +1189,7 @@ package Arrow is
       bs13_wdat_valid           : in  std_logic := '0';
       bs13_wdat_ready           : out std_logic := '1';
       bs13_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs13_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs13_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 14.
@@ -1184,6 +1200,7 @@ package Arrow is
       bs14_wdat_valid           : in  std_logic := '0';
       bs14_wdat_ready           : out std_logic := '1';
       bs14_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs14_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs14_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 15.
@@ -1194,24 +1211,25 @@ package Arrow is
       bs15_wdat_valid           : in  std_logic := '0';
       bs15_wdat_ready           : out std_logic := '1';
       bs15_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs15_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
       bs15_wdat_last            : in  std_logic := 'U'
-
     );
   end component;
-  
+
   component BusWriteArbiterVec is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
+      BUS_STROBE_WIDTH          : natural := 32/8;
       NUM_SLAVES                : natural := 2;
       ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
       RAM_CONFIG                : string  := "";
       REQ_IN_SLICES             : boolean := false;
       REQ_OUT_SLICE             : boolean := true;
-      RESP_IN_SLICE             : boolean := false;
-      RESP_OUT_SLICES           : boolean := true
+      DAT_IN_SLICE              : boolean := false;
+      DAT_OUT_SLICE             : boolean := true
     );
     port (
       clk                       : in  std_logic;
@@ -1223,6 +1241,7 @@ package Arrow is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
       mst_wdat_last             : out  std_logic;
       bsv_wreq_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
       bsv_wreq_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
@@ -1231,15 +1250,17 @@ package Arrow is
       bsv_wdat_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
       bsv_wdat_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
       bsv_wdat_data             : in  std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH-1 downto 0);
+      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
       bsv_wdat_last             : in  std_logic_vector(NUM_SLAVES-1 downto 0)
     );
   end component;
-  
+
   component BufferWriter is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       BUS_FIFO_DEPTH            : natural;
@@ -1282,7 +1303,7 @@ package Arrow is
       bus_wdat_valid            : out std_logic;
       bus_wdat_ready            : in  std_logic;
       bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bus_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
       bus_wdat_last             : out std_logic
     );
   end component;
@@ -1292,6 +1313,7 @@ package Arrow is
       INDEX_WIDTH               : natural;
       BUS_DATA_WIDTH            : natural;
       BUS_BURST_STEP_LEN        : natural;
+      BUS_STROBE_WIDTH          : natural;
       IS_INDEX_BUFFER           : boolean;
       ELEMENT_WIDTH             : natural;
       ELEMENT_COUNT_MAX         : natural := 1;
@@ -1398,6 +1420,7 @@ package Arrow is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
       FIFO_DEPTH                : natural;
       LEN_SHIFT                 : natural;
       RAM_CONFIG                : string;
@@ -1415,6 +1438,7 @@ package Arrow is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
       mst_wdat_last             : out std_logic;
       mst_wdat_last_in_cmd      : out std_logic;
       slv_wreq_valid            : in  std_logic;
@@ -1424,6 +1448,7 @@ package Arrow is
       slv_wdat_valid            : in  std_logic;
       slv_wdat_ready            : out std_logic;
       slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      slv_wdat_strobe           : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
       slv_wdat_last             : in  std_logic
     );
   end component;
@@ -1432,7 +1457,7 @@ package Arrow is
   -- Component declarations for simulation-only helper units
   -----------------------------------------------------------------------------
   -- pragma translate_off
-  
+
   component BusMasterMock is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
@@ -1479,12 +1504,13 @@ package Arrow is
       resp_last                 : out std_logic
     );
   end component;
-  
+
   component BusWriteMasterMock is
     generic (
       BUS_ADDR_WIDTH              : natural;
       BUS_LEN_WIDTH               : natural;
       BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
       SEED                        : positive
 
     );
@@ -1498,15 +1524,17 @@ package Arrow is
       wdat_valid                  : out std_logic;
       wdat_ready                  : in  std_logic;
       wdat_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe                 : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
       wdat_last                   : out std_logic
     );
   end component;
-  
+
   component BusWriteSlaveMock is
     generic (
       BUS_ADDR_WIDTH              : natural;
       BUS_LEN_WIDTH               : natural;
       BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
       SEED                        : positive;
       RANDOM_REQUEST_TIMING       : boolean := false;
       RANDOM_RESPONSE_TIMING      : boolean := false;
@@ -1522,6 +1550,7 @@ package Arrow is
       wdat_valid                  : in  std_logic;
       wdat_ready                  : out std_logic;
       wdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe                 : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
       wdat_last                   : in  std_logic
     );
   end component;

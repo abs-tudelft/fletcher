@@ -36,6 +36,9 @@ entity BufferWriter is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
+    
+    -- Bus strobe width.
+    BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
@@ -175,12 +178,13 @@ architecture Behavioral of BufferWriter is
   signal pre_valid              : std_logic;
   signal pre_ready              : std_logic;
   signal pre_data               : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal pre_strobe             : std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
+  signal pre_strobe             : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal pre_last               : std_logic;
   
   signal writebuf_valid         : std_logic;
   signal writebuf_ready         : std_logic;
-  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
+  signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal writebuf_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal writebuf_last          : std_logic;
 
   signal req_ready              : std_logic;
@@ -221,7 +225,8 @@ architecture Behavioral of BufferWriter is
   signal int_bus_wreq_len       : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal int_bus_wdat_valid     : std_logic;
   signal int_bus_wdat_ready     : std_logic;
-  signal int_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto 0);
+  signal int_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal int_bus_wdat_strobe    : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal int_bus_wdat_last      : std_logic;
 
   signal last_in_cmd            : std_logic;
@@ -290,6 +295,7 @@ begin
     generic map (
       INDEX_WIDTH               => INDEX_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
@@ -326,7 +332,8 @@ begin
       out_last                  => pre_last
     );
     
-  writebuf_data                 <= pre_strobe & pre_data;
+  writebuf_strobe               <= pre_strobe;
+  writebuf_data                 <= pre_data;
   writebuf_last                 <= pre_last;
   
   -- Generate signals for word_last to Write Buffer
@@ -473,12 +480,12 @@ begin
   -----------------------------------------------------------------------------
   -- Bus Write Buffer
   -----------------------------------------------------------------------------
-  -- The data input contains the write strobe as well.
   buffer_inst: BusWriteBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
-      BUS_DATA_WIDTH            => BUS_DATA_WIDTH + BUS_DATA_WIDTH/BUS_WSB,
+      BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       LEN_SHIFT                 => BUS_FIFO_THRESHOLD_SHIFT,
       RAM_CONFIG                => "",
@@ -491,32 +498,32 @@ begin
       full                      => buffer_full,
       empty                     => buffer_empty,
       
-      mst_wreq_valid            => int_bus_wreq_valid,
-      mst_wreq_ready            => int_bus_wreq_ready,
-      mst_wreq_addr             => int_bus_wreq_addr,
-      mst_wreq_len              => int_bus_wreq_len,
-      
-      mst_wdat_valid            => int_bus_wdat_valid,
-      mst_wdat_ready            => int_bus_wdat_ready,
-      mst_wdat_data             => int_bus_wdat_data,
-      mst_wdat_last             => int_bus_wdat_last,
-      mst_wdat_last_in_cmd      => last_in_cmd,
-      
       slv_wreq_valid            => req_valid,
       slv_wreq_ready            => req_ready,
       slv_wreq_addr             => req_addr,
       slv_wreq_len              => req_len,
-
       slv_wdat_valid            => writebuf_valid,
       slv_wdat_ready            => writebuf_ready,
       slv_wdat_data             => writebuf_data,
-      slv_wdat_last             => writebuf_last
+      slv_wdat_strobe           => writebuf_strobe,
+      slv_wdat_last             => writebuf_last,
+      
+      mst_wreq_valid            => int_bus_wreq_valid,
+      mst_wreq_ready            => int_bus_wreq_ready,
+      mst_wreq_addr             => int_bus_wreq_addr,
+      mst_wreq_len              => int_bus_wreq_len,
+      mst_wdat_valid            => int_bus_wdat_valid,
+      mst_wdat_ready            => int_bus_wdat_ready,
+      mst_wdat_data             => int_bus_wdat_data,
+      mst_wdat_strobe           => int_bus_wdat_strobe,
+      mst_wdat_last             => int_bus_wdat_last,
+      mst_wdat_last_in_cmd      => last_in_cmd
     );
 
-  int_bus_wreq_ready             <= bus_wreq_ready;
-  bus_wreq_valid                 <= int_bus_wreq_valid;
-  bus_wreq_addr                  <= int_bus_wreq_addr;
-  bus_wreq_len                   <= int_bus_wreq_len;
+  int_bus_wreq_ready            <= bus_wreq_ready;
+  bus_wreq_valid                <= int_bus_wreq_valid;
+  bus_wreq_addr                 <= int_bus_wreq_addr;
+  bus_wreq_len                  <= int_bus_wreq_len;
 
   -- Input buffer for the unlock stream to prevent blocking the command stream
   unlock_input_buffer_inst: StreamBuffer
@@ -569,8 +576,8 @@ begin
     );
   
   -- Connect to output
-  bus_wdat_data                 <= int_bus_wdat_data(BUS_DATA_WIDTH-1 downto 0);
-  bus_wdat_strobe               <= int_bus_wdat_data(BUS_DATA_WIDTH+BUS_DATA_WIDTH/BUS_WSB-1 downto BUS_DATA_WIDTH);
+  bus_wdat_data                 <= int_bus_wdat_data;
+  bus_wdat_strobe               <= int_bus_wdat_strobe;
   bus_wdat_last                 <= int_bus_wdat_last;
 
   -- Connect the input buffer to the output buffer.
