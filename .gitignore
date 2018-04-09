@@ -30,3 +30,11 @@ hardware/test/bufferwriter/transcript
 hardware/test/bufferwriter/vsim\.wlf
 
 hardware/test/bufferwriter/work/
+
+hardware/test/columnwriter/work/
+
+hardware/test/columnwriter/transcript
+
+hardware/test/columnwriter/vsim\.wlf
+
+*.vstf

@@ -67,6 +67,7 @@ entity BufferWriterPrePadder is
     -- counting.
     CMD_TAG_WIDTH               : natural;
     
+    -- Whether to check if the last index is exceeded by the user input stream.
     CHECK_LAST_EXCEED           : boolean := true
 
   );
@@ -87,6 +88,8 @@ entity BufferWriterPrePadder is
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
+    cmdIn_ctrl                  : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+    cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- Data stream
@@ -108,12 +111,43 @@ entity BufferWriterPrePadder is
     out_count                   : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     out_strobe                  : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
     out_last                    : out std_logic;
-    out_clear                   : out std_logic
+    out_clear                   : out std_logic;
+    out_implicit                : out std_logic;
+    out_ctrl                    : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+    out_tag                     : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
   );
 end BufferWriterPrePadder;
 
 architecture rtl of BufferWriterPrePadder is
 
+  -- Pre-sliced output stream
+  signal int_out_valid          : std_logic;
+  signal int_out_ready          : std_logic;
+  signal int_out_data           : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+  signal int_out_count          : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal int_out_strobe         : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
+  signal int_out_clear          : std_logic;
+  signal int_out_last           : std_logic;
+  signal int_out_implicit       : std_logic;
+  signal int_out_ctrl           : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+  signal int_out_tag            : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  
+  -- Output stream serialization indices.
+  constant OSI : nat_array := cumulative((
+    7 => ELEMENT_COUNT_MAX*ELEMENT_WIDTH,
+    6 => ELEMENT_COUNT_WIDTH,
+    5 => ELEMENT_COUNT_MAX,
+    4 => 1,
+    3 => 1,
+    2 => 1,
+    1 => CMD_CTRL_WIDTH,
+    0 => CMD_TAG_WIDTH
+  ));
+  
+  signal out_all                : std_logic_vector(OSI(8)-1 downto 0);
+  signal int_out_all            : std_logic_vector(OSI(8)-1 downto 0);
+  
+  -- Helper constants
   constant ELEM_PER_BURST_STEP  : natural := (BUS_BURST_STEP_LEN * BUS_DATA_WIDTH) / ELEMENT_WIDTH;
 
   constant INDEX_ZERO           : unsigned(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0) := (others => '0');
@@ -124,8 +158,10 @@ architecture rtl of BufferWriterPrePadder is
 
   constant COUNT_ONE            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (0 => '1', others => '0');
   
-  -- A count of all zeros is equal to the max count
+  -- A count of all zeros is equal to the max count, because of the implicit '1' bit in front
   constant COUNT_ALL            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (others => '0');
+
+  type state_type is (IDLE, INDEX, PRE, PASS, POST);
 
   type index_record is record
     first                       : unsigned(INDEX_WIDTH-1 downto 0);
@@ -134,11 +170,16 @@ architecture rtl of BufferWriterPrePadder is
     final                       : unsigned(INDEX_WIDTH-1 downto 0);
   end record;
 
-  type state_type is (IDLE, INDEX, PRE, PASS, POST);
+  type tags_record is record
+    implicit                    : std_logic;
+    ctrl                        : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+    tag                         : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  end record;
 
   type regs_record is record
     state                       : state_type;
     index                       : index_record;
+    tags                        : tags_record;
   end record;
 
   signal r                      : regs_record;
@@ -172,7 +213,7 @@ begin
     end if;
   end process;
 
-  comb: process(r, cmdIn_valid, cmdIn_firstIdx, out_ready, in_data, in_count, in_valid, in_last) is
+  comb: process(r, cmdIn_valid, cmdIn_firstIdx, int_out_ready, in_data, in_count, in_valid, in_last) is
     variable vr                 : regs_record;
     variable vo                 : outputs_record;
     
@@ -203,11 +244,20 @@ begin
         vo.cmdIn_ready          := '1';
           
         if cmdIn_valid = '1' then
-          -- Clock in the first index
+          -- Register the first index and last index.
           vr.index.first        := u(cmdIn_firstIdx);
-          vr.index.current      := align_beq(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
           vr.index.last         := u(cmdIn_lastIdx);
+          
+          -- The first index to work on is the aligned below or equal of the 
+          -- first index.
+          vr.index.current      := align_beq(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
+          
+          -- Register the tags
+          vr.tags.implicit      := cmdIn_implicit;
+          vr.tags.ctrl          := cmdIn_ctrl;
+          vr.tags.tag           := cmdIn_tag;
 
+          -- Go to the next state
           vr.state            := PRE;
         end if;
       -------------------------------------------------------------------------
@@ -223,7 +273,7 @@ begin
         if vr.index.current /= vr.index.first then
           vo.out_valid          := '1';
           -- Advance state if no backpressure
-          if out_ready = '1' then
+          if int_out_ready = '1' then
             vr.index.current    := vr.index.current + 1;
           end if;
         else
@@ -256,7 +306,7 @@ begin
         vo.out_clear            := '1';
 
         -- Advance state if no backpressure
-        if out_ready = '1' then
+        if int_out_ready = '1' then
           vr.index.current    := vr.index.current + 1;
           vr.state              := PASS;
         end if;
@@ -265,7 +315,7 @@ begin
       when PASS =>
       -------------------------------------------------------------------------
         -- Pass through input
-        vo.in_ready             := out_ready;
+        vo.in_ready             := int_out_ready;
         vo.out_valid            := in_valid;
         vo.out_data             := in_data;
         vo.out_last             := '0';
@@ -308,7 +358,7 @@ begin
                                              log2ceil(ELEM_PER_BURST_STEP));
 
         -- Advance state if no backpressure and a valid input was passed
-        if out_ready = '1' and vo.out_valid = '1' then
+        if int_out_ready = '1' and vo.out_valid = '1' then
           vr.index.current      := new_index;
           
           -- If the last input has arrived, let the POST state handle the rest
@@ -327,13 +377,18 @@ begin
         vo.out_strobe           := STROBE_NONE;
         vo.out_last             := '0';
         
+        -- Make data unkown in simulation
+        --pragma translate off
+        vo.out_data             := (others => 'U');
+        --pragma translate on
+                
         -- Only validate if we actually have to append
         if vr.index.current /= vr.index.final then
           
           vo.out_valid          := '1';
           
           -- Advance state if no backpressure
-          if out_ready = '1' then
+          if int_out_ready = '1' then
             vr.index.current    := vr.index.current + 1;
           end if;
         else
@@ -350,17 +405,60 @@ begin
     -- Outputs to be registered
     d                           <= vr;
 
-    -- Combinatorial outputs
+    -- Connect outputs to the input streams
     cmdIn_ready                 <= vo.cmdIn_ready;
     in_ready                    <= vo.in_ready;
-    out_valid                   <= vo.out_valid;
-    out_data                    <= vo.out_data;
-    out_count                   <= vo.out_count;
-    out_strobe                  <= vo.out_strobe;
-    out_last                    <= vo.out_last;
-    out_clear                   <= vo.out_clear;
+
+    -- Connect outputs to the output stream
+    int_out_valid               <= vo.out_valid;
+    int_out_data                <= vo.out_data;
+    int_out_count               <= vo.out_count;
+    int_out_strobe              <= vo.out_strobe;
+    int_out_last                <= vo.out_last;
+    int_out_clear               <= vo.out_clear;
+    
+    -- The tags can be taken from the register as they are determined only in
+    -- idle, when the output is not valid
+    int_out_implicit            <= vr.tags.implicit;
+    int_out_ctrl                <= vr.tags.ctrl;
+    int_out_tag                 <= vr.tags.tag;    
 
   end process;
+  
+  -- Insert a register slice
+  
+  int_out_all(OSI(8)-1 downto OSI(7)) <= int_out_data;
+  int_out_all(OSI(7)-1 downto OSI(6)) <= int_out_count;
+  int_out_all(OSI(6)-1 downto OSI(5)) <= int_out_strobe;
+  int_out_all(                OSI(4)) <= int_out_last;
+  int_out_all(                OSI(3)) <= int_out_clear;
+  int_out_all(                OSI(2)) <= int_out_implicit;
+  int_out_all(OSI(2)-1 downto OSI(1)) <= int_out_ctrl;
+  int_out_all(OSI(1)-1 downto OSI(0)) <= int_out_tag;
+  
+  out_slice : StreamSlice
+    generic map (
+      DATA_WIDTH                => OSI(8)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_valid                  => int_out_valid,
+      in_ready                  => int_out_ready,
+      in_data                   => int_out_all,
+      out_valid                 => out_valid,
+      out_ready                 => out_ready,
+      out_data                  => out_all
+    );
+      
+  out_data                      <= out_all(OSI(8)-1 downto OSI(7));
+  out_count                     <= out_all(OSI(7)-1 downto OSI(6));
+  out_strobe                    <= out_all(OSI(6)-1 downto OSI(5));
+  out_last                      <= out_all(                OSI(4));
+  out_clear                     <= out_all(                OSI(3));
+  out_implicit                  <= out_all(                OSI(2));
+  out_ctrl                      <= out_all(OSI(2)-1 downto OSI(1));
+  out_tag                       <= out_all(OSI(1)-1 downto OSI(0));
 
 end rtl;
 

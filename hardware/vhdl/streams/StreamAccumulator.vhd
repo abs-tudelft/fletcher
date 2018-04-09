@@ -23,10 +23,12 @@ use ieee.numeric_std.all;
 entity StreamAccumulator is
   generic (
 
-    -- Width of the stream data vector, considered to be an unsigned integer
+    -- Width of the stream data vector. The data is considered SIGNED or
+    -- UNSIGNED.
     DATA_WIDTH                  : positive := 32;
 
-    -- Any other data to travel with this stream
+    -- Width of control information present on the MSB side of the input data
+    -- vector.
     CTRL_WIDTH                  : natural  := 0;
 
     -- Wether or not the data is a signed or unsigned integer
@@ -101,7 +103,7 @@ begin
     end if;
   end process;
 
-  comb_proc: process(in_valid, in_data,
+  comb_proc: process(in_valid, in_data, in_skip, in_clear,
     out_ready,
     r
   ) is

@@ -63,7 +63,13 @@ entity BusWriteBuffer is
     -- based on the requests. However, if this is set to "burst", an error
     -- is generated if the last signal is not asserted when expected from
     -- the requested burst length.
-    SLV_LAST_MODE               : string := "burst"
+    SLV_LAST_MODE               : string := "burst";
+    
+    -- Instantiate a slice on the write data channel on the slave port
+    SLV_DATA_SLICE              : boolean := true;
+    
+    -- Instantiate a slice on the write data channel on the master port
+    MST_DATA_SLICE              : boolean := true
 
   );
   port (
@@ -115,6 +121,12 @@ architecture Behavioral of BusWriteBuffer is
   -- Log2 of the FIFO depth.
   constant DEPTH_LOG2            : natural := log2ceil(FIFO_DEPTH);
   constant COUNT_FIFO_FULL       : unsigned(DEPTH_LOG2-1 downto 0) := (others => '1');
+  
+  signal s_slv_wdat_valid        : std_logic;
+  signal s_slv_wdat_ready        : std_logic;
+  signal s_slv_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_slv_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_slv_wdat_last         : std_logic;
 
   signal fifo_in_valid           : std_logic;
   signal fifo_in_ready           : std_logic;
@@ -318,10 +330,10 @@ begin
   end process;
 
   -- Connect FIFO inputs
-  fifo_in_valid                 <= slv_wdat_valid;
-  slv_wdat_ready                <= fifo_in_ready;
+  fifo_in_valid                 <= s_slv_wdat_valid;
+  s_slv_wdat_ready              <= fifo_in_ready;
 
-  fifo_in_data                  <= slv_wdat_strobe & slv_wdat_data & slv_wdat_last;
+  fifo_in_data                  <= s_slv_wdat_strobe & s_slv_wdat_data & s_slv_wdat_last;
 
   slv_write_buffer: StreamBuffer
     generic map (
@@ -340,5 +352,51 @@ begin
       out_ready                 => fifo_out_ready,
       out_data                  => fifo_out_data
     );
+
+  slave_slice_gen: if SLV_DATA_SLICE generate
+    -- Write data stream serialization indices.
+    constant WSI : nat_array := cumulative((
+      2 => 1,
+      1 => BUS_STROBE_WIDTH,
+      0 => BUS_DATA_WIDTH
+    ));
+    
+    signal slv_wdat_all   : std_logic_vector(WSI(3)-1 downto 0);
+    signal s_slv_wdat_all : std_logic_vector(WSI(3)-1 downto 0);
+  begin
+    
+    slv_wdat_all(                WSI(2)) <= slv_wdat_last;
+    slv_wdat_all(WSI(2)-1 downto WSI(1)) <= slv_wdat_strobe;
+    slv_wdat_all(WSI(1)-1 downto      0) <= slv_wdat_data;
+    
+    wdat_in_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
+      DATA_WIDTH                => BUS_DATA_WIDTH + BUS_STROBE_WIDTH + 1
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => slv_wdat_valid,
+      in_ready                  => slv_wdat_ready,
+      in_data                   => slv_wdat_all,
+
+      out_valid                 => s_slv_wdat_valid,
+      out_ready                 => s_slv_wdat_ready,
+      out_data                  => s_slv_wdat_all
+    );
+    
+  s_slv_wdat_last   <= s_slv_wdat_all(                WSI(2));
+  s_slv_wdat_strobe <= s_slv_wdat_all(WSI(2)-1 downto WSI(1));
+  s_slv_wdat_data   <= s_slv_wdat_all(WSI(1)-1 downto      0);
+  end generate;
+  no_slave_slice_gen: if not SLV_DATA_SLICE generate
+    s_slv_wdat_valid   <= slv_wdat_valid;
+    slv_wdat_ready     <= s_slv_wdat_ready;
+    s_slv_wdat_data    <= slv_wdat_data;
+    s_slv_wdat_strobe  <= slv_wdat_strobe;
+    s_slv_wdat_last    <= slv_wdat_last;
+  end generate;
 
 end Behavioral;

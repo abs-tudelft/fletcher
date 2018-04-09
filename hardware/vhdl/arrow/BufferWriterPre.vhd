@@ -22,7 +22,7 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 
--- This unit converts a stream of elements to a stream of bus words and 
+-- This unit converts a stream of elements to a stream of bus words and
 -- write strobes.
 entity BufferWriterPre is
   generic (
@@ -37,7 +37,7 @@ entity BufferWriterPre is
     ---------------------------------------------------------------------------
     -- Bus data width.
     BUS_DATA_WIDTH              : natural;
-    
+
     -- Bus strobe width
     BUS_STROBE_WIDTH            : natural;
 
@@ -78,6 +78,8 @@ entity BufferWriterPre is
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
+    cmdIn_ctrl                  : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+    cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
     in_valid                    : in  std_logic;
     in_ready                    : out std_logic;
@@ -85,10 +87,13 @@ entity BufferWriterPre is
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     in_last                     : in  std_logic;
-    
-    offset_valid                : out std_logic;
-    offset_ready                : in  std_logic := '1';
-    offset_data                 : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+
+    cmdOut_valid                : out std_logic;
+    cmdOut_ready                : in  std_logic := '1';
+    cmdOut_firstIdx             : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    cmdOut_lastIdx              : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    cmdOut_ctrl                 : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+    cmdOut_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
@@ -105,10 +110,10 @@ architecture Behavioral of BufferWriterPre is
   constant BYTE_COUNT           : natural := BUS_DATA_WIDTH / 8;
   constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH / 8);
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
-  
+
   -- Number of bits covered by a single strobe bit:
-  constant STROBE_COVER         : natural := BUS_DATA_WIDTH / BUS_STROBE_WIDTH;  
- 
+  constant STROBE_COVER         : natural := BUS_DATA_WIDTH / BUS_STROBE_WIDTH;
+
   -- Padded stream
   signal pad_valid              : std_logic;
   signal pad_ready              : std_logic;
@@ -118,7 +123,10 @@ architecture Behavioral of BufferWriterPre is
   signal pad_count              : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal pad_last               : std_logic;
   signal pad_clear              : std_logic;
-  
+  signal pad_implicit           : std_logic;
+  signal pad_ctrl               : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+  signal pad_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+
   -- Optional Index buffer length value Accumulation stream
   signal oia_valid              : std_logic;
   signal oia_ready              : std_logic;
@@ -127,9 +135,10 @@ architecture Behavioral of BufferWriterPre is
   signal oia_strobe             : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal oia_count              : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal oia_last               : std_logic;
-  
-  signal oia_conv               : std_logic_vector(ELEMENT_WIDTH + 2 downto 0);
-  
+  signal oia_implicit           : std_logic;
+  signal oia_ctrl               : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+  signal oia_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+
   -- Signals to split the OIA stream
   signal oia_data_ready         : std_logic;
   signal oia_strobe_ready       : std_logic;
@@ -166,6 +175,12 @@ architecture Behavioral of BufferWriterPre is
   signal strobe_shaped_count    : std_logic_vector(BE_COUNT_WIDTH-1 downto 0);
   signal strobe_shaped_last     : std_logic;
 
+  signal int_out_valid          : std_logic;
+  signal int_out_ready          : std_logic;
+  signal int_out_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal int_out_strobe         : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal int_out_last           : std_logic;
+
 begin
   -----------------------------------------------------------------------------
   -- Padding and write strobe generation
@@ -194,100 +209,176 @@ begin
       cmdIn_firstIdx            => cmdIn_firstIdx,
       cmdIn_lastIdx             => cmdIn_lastIdx,
       cmdIn_implicit            => cmdIn_implicit,
+      cmdIn_ctrl                => cmdIn_ctrl,
+      cmdIn_tag                 => cmdIn_tag,
 
       in_valid                  => in_valid,
       in_ready                  => in_ready,
       in_data                   => in_data,
       in_count                  => in_count,
       in_last                   => in_last,
-      
+
       out_valid                 => pad_valid,
       out_ready                 => pad_ready,
       out_data                  => pad_data,
       out_strobe                => pad_strobe,
       out_count                 => pad_count,
       out_last                  => pad_last,
-      out_clear                 => pad_clear
+      out_clear                 => pad_clear,
+      out_implicit              => pad_implicit,
+      out_ctrl                  => pad_ctrl,
+      out_tag                   => pad_tag
     );
-    
+
   -----------------------------------------------------------------------------
   -- Length accumulator for index buffers
   -----------------------------------------------------------------------------
-  
+
   -- For index buffers, the input is a length, which should be accumulated into
   -- an offset. It should be reset when a new command is accepted.
-  idx_accumulate_gen: if IS_INDEX_BUFFER generate
-    accumulate_block: block
-      signal oia_acc_valid      : std_logic;
-      signal oia_acc_ready      : std_logic;
-      signal pad_conv_data      : std_logic_vector(ELEMENT_WIDTH + 2 downto 0);
-      signal pad_acc_skip       : std_logic;
-    begin
-    
-      pad_conv_data             <= pad_strobe & pad_count & pad_last & pad_data;
-      pad_acc_skip              <= not(pad_strobe(0));
-      
-      -- Instantiate a stream accumulator. If this is an index buffer, 
-      -- ELEMENT_COUNT_MAX should be 1, the strobe should be one bit and we 
-      -- have one last bit. Skip accumulating if the strobe is low.
-      accumulator_inst: StreamAccumulator
-        generic map (
-          DATA_WIDTH            => ELEMENT_WIDTH,
-          CTRL_WIDTH            => 1 + 1 + 1,
-          IS_SIGNED             => false
-        )
-        port map (
-          clk                   => clk,
-          reset                 => reset,
-          in_valid              => pad_valid,
-          in_ready              => pad_ready,
-          in_data               => pad_conv_data,
-          in_skip               => pad_acc_skip,
-          in_clear              => pad_clear,
-          out_valid             => oia_acc_valid,
-          out_ready             => oia_acc_ready,
-          out_data              => oia_conv
-        );
+  idx_gen: if IS_INDEX_BUFFER generate
 
-        oia_strobe              <= oia_conv(ELEMENT_WIDTH+2 downto ELEMENT_WIDTH+2);
-        oia_count               <= oia_conv(ELEMENT_WIDTH+1 downto ELEMENT_WIDTH+1);
-        oia_last                <= oia_conv(ELEMENT_WIDTH);
-        oia_data                <= oia_conv(ELEMENT_WIDTH-1 downto 0);
+    -- Length stream serialization indices
+    constant LSI : nat_array := cumulative((
+      6 => ELEMENT_COUNT_WIDTH,
+      5 => ELEMENT_COUNT_MAX,
+      4 => 1,
+      3 => 1,
+      2 => CMD_CTRL_WIDTH,
+      1 => CMD_TAG_WIDTH,
+      0 => ELEMENT_WIDTH
+    ));
 
-      -- Split the offset to the offset output stream.
-      length_split: StreamSync
-        generic map (
-          NUM_INPUTS => 1,
-          NUM_OUTPUTS => 2
-        )
-        port map (
-          clk                   => clk,
-          reset                 => reset,
-          in_valid(0)           => oia_acc_valid,
-          in_ready(0)           => oia_acc_ready,
-          out_valid(0)          => offset_valid,
-          out_valid(1)          => oia_valid,
-          out_ready(0)          => offset_ready,
-          out_ready(1)          => oia_ready
-        );
-      end block;
-      
-      offset_data               <= oia_data;
+    signal pad_acc_all          : std_logic_vector(LSI(7)-1 downto 0);
+    signal pad_acc_skip         : std_logic;
+
+    signal oia_acc_valid        : std_logic;
+    signal oia_acc_ready        : std_logic;
+    signal oia_acc_all          : std_logic_vector(LSI(7)-1 downto 0);
+
+    signal cmd_valid            : std_logic;
+    signal cmd_ready            : std_logic;
+    signal cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
+    signal cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
+    signal cmd_implicit         : std_logic;
+    signal cmd_ctrl             : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+    signal cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+
+  begin
+
+    pad_acc_skip                <= not(pad_strobe(0));
+
+    pad_acc_all(LSI(7)-1 downto LSI(6)) <= pad_count;
+    pad_acc_all(LSI(6)-1 downto LSI(5)) <= pad_strobe;
+    pad_acc_all(                LSI(4)) <= pad_last;
+    pad_acc_all(                LSI(3)) <= pad_implicit;
+    pad_acc_all(LSI(3)-1 downto LSI(2)) <= pad_ctrl;
+    pad_acc_all(LSI(2)-1 downto LSI(1)) <= pad_tag;
+    pad_acc_all(LSI(1)-1 downto LSI(0)) <= pad_data;
+
+    -- Instantiate a stream accumulator. If this is an index buffer,
+    -- ELEMENT_COUNT_MAX should be 1, the strobe should be one bit and we
+    -- have one last bit. Skip accumulating if the strobe is low; this is
+    -- padded data and not an actual length that we should use.
+    accumulator_inst: StreamAccumulator
+      generic map (
+        DATA_WIDTH              => ELEMENT_WIDTH,
+        CTRL_WIDTH              => LSI(7) - ELEMENT_WIDTH,
+        IS_SIGNED               => false
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => pad_valid,
+        in_ready                => pad_ready,
+        in_data                 => pad_acc_all,
+        in_skip                 => pad_acc_skip,
+        in_clear                => pad_clear,
+        out_valid               => oia_acc_valid,
+        out_ready               => oia_acc_ready,
+        out_data                => oia_acc_all
+      );
+
+    oia_count                   <= oia_acc_all(LSI(7)-1 downto LSI(6));
+    oia_strobe                  <= oia_acc_all(LSI(6)-1 downto LSI(5));
+    oia_last                    <= oia_acc_all(                LSI(4));
+    oia_implicit                <= oia_acc_all(                LSI(3));
+    oia_ctrl                    <= oia_acc_all(LSI(3)-1 downto LSI(2));
+    oia_tag                     <= oia_acc_all(LSI(2)-1 downto LSI(1));
+    oia_data                    <= oia_acc_all(LSI(1)-1 downto LSI(0));
+
+    oia_dvalid                  <= '1';
+
+    -- Split the offset to the output command stream
+    -- Only enable the cmdOut stream if its strobe is high
+    length_split: StreamSync
+      generic map (
+        NUM_INPUTS => 1,
+        NUM_OUTPUTS => 2
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+
+        in_valid(0)             => oia_acc_valid,
+        in_ready(0)             => oia_acc_ready,
+
+        out_valid(0)            => cmd_valid,
+        out_valid(1)            => oia_valid,
+
+        out_ready(0)            => cmd_ready,
+        out_ready(1)            => oia_ready,
+
+        out_enable(0)           => oia_strobe(0),
+        out_enable(1)           => '1'
+      );
+
+
+    cmd_firstIdx                <= oia_data;
+    cmd_lastIdx                 <= oia_data;
+    cmd_ctrl                    <= oia_ctrl;
+    cmd_tag                     <= oia_tag;
+
+    -- Generate the command output stream
+    out_cmd_gen: BufferWriterPreCmdGen
+      generic map (
+        INDEX_WIDTH             => ELEMENT_WIDTH,
+        CMD_CTRL_WIDTH          => CMD_CTRL_WIDTH,
+        CMD_TAG_WIDTH           => CMD_TAG_WIDTH
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        cmdIn_valid             => cmd_valid,
+        cmdIn_ready             => cmd_ready,
+        cmdIn_firstIdx          => cmd_firstIdx,
+        cmdIn_implicit          => cmd_implicit,
+        cmdIn_ctrl              => cmd_ctrl,
+        cmdIn_tag               => cmd_tag,
+        cmdOut_valid            => cmdOut_valid,
+        cmdOut_ready            => cmdOut_ready,
+        cmdOut_firstIdx         => cmdOut_firstIdx,
+        cmdOut_lastIdx          => cmdOut_lastIdx,
+        --cmdOut_implicit         => cmdOut_implicit,
+        cmdOut_ctrl             => cmdOut_ctrl,
+        cmdOut_tag              => cmdOut_tag
+      );
+
   end generate;
-  
-  
+
+
   -- For non-index buffers, we don't have to do anything, just forward the
   -- stream and invalidate the offset output forever.
   not_idx_gen: if not(IS_INDEX_BUFFER) generate
-    pad_ready                   <= oia_ready; 
-    oia_valid                   <= pad_valid; 
-    oia_dvalid                  <= pad_dvalid;
+    pad_ready                   <= oia_ready;
+    oia_valid                   <= pad_valid;
+    oia_dvalid                  <= '1';
     oia_data                    <= pad_data;
     oia_strobe                  <= pad_strobe;
     oia_count                   <= pad_count;
-    oia_last                    <= pad_last;   
-    
-    offset_valid                <= '0';
+    oia_last                    <= pad_last;
+
+    cmdOut_valid                <= '0';
   end generate;
 
   -----------------------------------------------------------------------------
@@ -296,7 +387,7 @@ begin
   -- The padded stream is split into a data and a write strobe stream and
   -- normalized. That is, the output of the normalizers always contains
   -- the maximum number of elements per cycle
-  
+
   oia_split_inst: StreamSync
     generic map (
       NUM_INPUTS => 1,
@@ -331,7 +422,7 @@ begin
         in_data                 => oia_data,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, 
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
                                                    ELEMENT_COUNT_WIDTH+1)),
         out_valid               => norm_valid,
         out_ready               => norm_ready,
@@ -357,7 +448,7 @@ begin
         in_data                 => oia_strobe,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX, 
+        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
                                                    ELEMENT_COUNT_WIDTH+1)),
         out_valid               => strobe_norm_valid,
         out_ready               => strobe_norm_ready,
@@ -367,7 +458,7 @@ begin
         out_last                => strobe_norm_last
       );
   end generate;
-  
+
   -- No normalizer is required
   no_norm_gen: if ELEMENT_COUNT_MAX = 1 generate
     oia_data_ready              <= norm_ready;
@@ -376,7 +467,7 @@ begin
     norm_data                   <= oia_data;
     norm_count                  <= oia_count;
     norm_last                   <= oia_last;
-    
+
     oia_strobe_ready            <= strobe_norm_ready;
     strobe_norm_valid           <= oia_strobe_valid;
     strobe_norm_dvalid          <= '1';
@@ -388,7 +479,7 @@ begin
   -----------------------------------------------------------------------------
   -- Gearboxes
   -----------------------------------------------------------------------------
-  -- Reshape (parallelize or serialize) the stream such that it fits in a 
+  -- Reshape (parallelize or serialize) the stream such that it fits in a
   -- single bus word.
 
   data_gearbox_inst: StreamGearbox
@@ -438,7 +529,7 @@ begin
       out_count                 => strobe_shaped_count,
       out_last                  => strobe_shaped_last
     );
-    
+
   -- Synchronize the output streams. (It -shouldn't- be necessary, but is good
   -- practise.)
   strobe_join_inst: StreamSync
@@ -453,35 +544,62 @@ begin
       in_valid(1)               => strobe_shaped_valid,
       in_ready(0)               => shaped_ready,
       in_ready(1)               => strobe_shaped_ready,
-      out_valid(0)              => out_valid,
-      out_ready(0)              => out_ready
+      out_valid(0)              => int_out_valid,
+      out_ready(0)              => int_out_ready
     );
-   
-  out_data                      <= shaped_data;
-  out_last                      <= shaped_last and strobe_shaped_last;
+
+  int_out_data                  <= shaped_data;
+  int_out_last                  <= shaped_last and strobe_shaped_last;
 
   -- Convert the element strobe into a byte strobe
-  byte_strobe_proc: process(strobe_shaped_data)
+  byte_strobe_proc: process(strobe_shaped_data) is
   begin
     -- If elements are smaller than bytes, or-reduce the element strobes
     if ELEMENT_WIDTH < STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
-        out_strobe(I)           <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
+        int_out_strobe(I)       <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
       end loop;
     end if;
     -- If elements are the same size as bytes, just pass through the element strobes
     if ELEMENT_WIDTH = STROBE_COVER then
-      out_strobe                <= strobe_shaped_data;
+      int_out_strobe            <= strobe_shaped_data;
     end if;
     -- If elements are larger than bytes, duplicate the element strobes
     if ELEMENT_WIDTH > STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
-        out_strobe(I)           <= strobe_shaped_data(I / BYTES_PER_ELEM);
+        int_out_strobe(I)       <= strobe_shaped_data(I / BYTES_PER_ELEM);
       end loop;
     end if;
   end process;
-  
+
+  -- In simulation, make any data unkown if the strobe is low.
+  -- This is mainly done for index buffers which accumulate unkown and still
+  -- generate a valid output.
+  process(shaped_data, int_out_strobe) is
+  begin
+    for I in 0 to BUS_STROBE_WIDTH-1 loop
+      if int_out_strobe(I) = '1' then
+        int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
+          <= shaped_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER);
+      end if;
+      if int_out_strobe(I) /= '1' then
+        int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
+          <= shaped_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER);
+        --pragma translate off
+        int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
+          <= (others => 'U');
+        --pragma translate on
+      end if;
+    end loop;
+  end process;
+
   -- TODO: insert some slices
-    
+
+  out_valid                     <= int_out_valid;
+  int_out_ready                 <= out_ready;
+  out_data                      <= int_out_data;
+  out_strobe                    <= int_out_strobe;
+  out_last                      <= int_out_last;
+
 end Behavioral;
 

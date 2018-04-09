@@ -273,12 +273,14 @@ begin
     stageA_data     <= busResp_data;
   end generate;
 
-  -- Check requirement on BUS_BURST_STEP_LEN
+  -- In simulation, check requirement on BUS_BURST_STEP_LEN
+  --pragma translate off
   assert BUS_BURST_STEP_LEN / BUS_BPE > 0 
     report "Elements are wider than the bus data width. To accomodate this, " &
            "BUS_BURST_STEP_LEN must be a multiple of " & 
            "ELEMENT_WIDTH / BUS_DATA_WIDTH."
     severity failure;
+  --pragma translate on
 
   -- Instantiate control signal generator.
   ctrl_inst: BufferReaderRespCtrl

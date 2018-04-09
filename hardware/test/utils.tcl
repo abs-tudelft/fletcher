@@ -40,18 +40,21 @@ proc add_waves {groups {in_color green} {out_color yellow} {internal_color white
 proc simulate {top {groups_and_units 0}} {
   vsim -novopt -assertdebug $top
 
-  config    wave -signalnamewidth 1
   if {$groups_and_units == 0} {
     echo "No groups and instances defined."
   } else {
+    config    wave -signalnamewidth 1
     add_waves $groups_and_units green yellow white
+    configure wave -namecolwidth    256
+    configure wave -valuecolwidth   192
   }
-
-  configure wave -namecolwidth    256
-  configure wave -valuecolwidth   192
 
   run -all
 
-  wave zoom full
+  if {$groups_and_units == 0} {
+    echo "Cannot zoom to full, no signals added."
+  } else {
+    wave zoom full
+  }
 }
 

@@ -98,7 +98,7 @@ entity BusWriteArbiter is
     bs00_wdat_valid             : in  std_logic := '0';
     bs00_wdat_ready             : out std_logic := '1';
     bs00_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs00_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs00_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs00_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 1.
@@ -109,7 +109,7 @@ entity BusWriteArbiter is
     bs01_wdat_valid             : in  std_logic := '0';
     bs01_wdat_ready             : out std_logic := '1';
     bs01_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs01_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs01_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs01_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 2.
@@ -120,7 +120,7 @@ entity BusWriteArbiter is
     bs02_wdat_valid             : in  std_logic := '0';
     bs02_wdat_ready             : out std_logic := '1';
     bs02_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs02_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs02_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs02_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 3.
@@ -131,7 +131,7 @@ entity BusWriteArbiter is
     bs03_wdat_valid             : in  std_logic := '0';
     bs03_wdat_ready             : out std_logic := '1';
     bs03_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs03_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs03_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs03_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 4.
@@ -142,7 +142,7 @@ entity BusWriteArbiter is
     bs04_wdat_valid             : in  std_logic := '0';
     bs04_wdat_ready             : out std_logic := '1';
     bs04_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs04_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs04_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs04_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 5.
@@ -153,7 +153,7 @@ entity BusWriteArbiter is
     bs05_wdat_valid             : in  std_logic := '0';
     bs05_wdat_ready             : out std_logic := '1';
     bs05_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs05_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs05_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs05_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 6.
@@ -164,7 +164,7 @@ entity BusWriteArbiter is
     bs06_wdat_valid             : in  std_logic := '0';
     bs06_wdat_ready             : out std_logic := '1';
     bs06_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs06_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs06_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs06_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 7.
@@ -175,7 +175,7 @@ entity BusWriteArbiter is
     bs07_wdat_valid             : in  std_logic := '0';
     bs07_wdat_ready             : out std_logic := '1';
     bs07_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs07_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs07_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs07_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 8.
@@ -186,7 +186,7 @@ entity BusWriteArbiter is
     bs08_wdat_valid             : in  std_logic := '0';
     bs08_wdat_ready             : out std_logic := '1';
     bs08_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs08_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs08_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs08_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 9.
@@ -197,7 +197,7 @@ entity BusWriteArbiter is
     bs09_wdat_valid             : in  std_logic := '0';
     bs09_wdat_ready             : out std_logic := '1';
     bs09_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs09_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs09_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs09_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 10.
@@ -208,7 +208,7 @@ entity BusWriteArbiter is
     bs10_wdat_valid             : in  std_logic := '0';
     bs10_wdat_ready             : out std_logic := '1';
     bs10_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs10_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs10_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs10_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 11.
@@ -219,7 +219,7 @@ entity BusWriteArbiter is
     bs11_wdat_valid             : in  std_logic := '0';
     bs11_wdat_ready             : out std_logic := '1';
     bs11_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs11_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs11_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs11_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 12.
@@ -230,7 +230,7 @@ entity BusWriteArbiter is
     bs12_wdat_valid             : in  std_logic := '0';
     bs12_wdat_ready             : out std_logic := '1';
     bs12_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs12_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs12_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs12_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 13.
@@ -241,7 +241,7 @@ entity BusWriteArbiter is
     bs13_wdat_valid             : in  std_logic := '0';
     bs13_wdat_ready             : out std_logic := '1';
     bs13_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs13_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs13_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs13_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 14.
@@ -252,7 +252,7 @@ entity BusWriteArbiter is
     bs14_wdat_valid             : in  std_logic := '0';
     bs14_wdat_ready             : out std_logic := '1';
     bs14_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs14_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs14_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs14_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 15.
@@ -263,7 +263,7 @@ entity BusWriteArbiter is
     bs15_wdat_valid             : in  std_logic := '0';
     bs15_wdat_ready             : out std_logic := '1';
     bs15_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs15_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/BUS_WSB-1 downto 0) := (others => 'U');
+    bs15_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
     bs15_wdat_last              : in  std_logic := 'U'
   );
 end BusWriteArbiter;
