@@ -95,9 +95,9 @@ begin
   end process;
 
   len_stream_proc: process is
-    variable seed1             : positive := LEN_SEED;
-    variable seed2             : positive := 1;
-    variable rand              : real;
+    variable seed1              : positive := LEN_SEED;
+    variable seed2              : positive := 1;
+    variable rand               : real;
 
     variable list               : integer;
 

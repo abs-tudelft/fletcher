@@ -252,10 +252,10 @@ begin
         out_last                => eco_last
       );
 
-    -- The last signal of the length stream is used to indicate the final list
-    -- item. The length stream can advance every time we see a last signal on
-    -- the counted element stream. The length itself is ignored but only its
-    -- last signal is AND-ed with the element stream.
+    -- The last signal of the length stream is used to indicate the final list,
+    -- so even though the lengths are generated, we still use this to know when
+    -- a user wants to finalize the command. Thus, we must merge the streams
+    -- and borrow the last signal from the externally provided length stream.
     len_split_inst: StreamSync
       generic map (
         NUM_INPUTS => 2,
@@ -459,9 +459,11 @@ begin
         in_ready(0)             => int_len_ready,
         in_ready(1)             => int_dat_ready,
 
+        -- Only use the length stream when the data last signal is asserted.
         in_use(0)               => int_dat_last,
         in_use(1)               => '1',
         
+        -- Only enable the length stream when the data last signal is asserted.
         out_enable(0)           => int_dat_last,
         out_enable(1)           => '1',
         
