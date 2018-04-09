@@ -63,10 +63,13 @@ entity BufferWriterPre is
     -- Command stream tag width. This tag is propagated to the outgoing command
     -- stream and to the unlock stream. It is intended for chunk reference
     -- counting.
-    CMD_TAG_WIDTH               : natural
+    CMD_TAG_WIDTH               : natural;
 
     -- Optional synchronizer for the data and write strobe streams
     --SYNC_OUTPUT                 : boolean
+    
+    -- Optional register slice after normalizers
+    NORM_SLICE                  : boolean := true
 
   );
   port (
@@ -153,6 +156,24 @@ architecture Behavioral of BufferWriterPre is
   signal norm_count             : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal norm_last              : std_logic;
 
+    -- Normalized data stream serialization indices & slice signals
+  constant NDSI : nat_array := cumulative((
+    3 => 1, --dvalid
+    2 => 1, --last
+    1 => ELEMENT_COUNT_WIDTH,
+    0 => ELEMENT_COUNT_MAX*ELEMENT_WIDTH
+  ));
+
+  signal s_norm_valid           : std_logic;
+  signal s_norm_ready           : std_logic;
+  signal s_norm_dvalid          : std_logic;
+  signal s_norm_data            : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+  signal s_norm_count           : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal s_norm_last            : std_logic;
+
+  signal s_norm_all             : std_logic_vector(NDSI(4)-1 downto 0);
+  signal norm_all               : std_logic_vector(NDSI(4)-1 downto 0);
+  
   -- Normalized write strobe stream
   signal strobe_norm_valid      : std_logic;
   signal strobe_norm_ready      : std_logic;
@@ -160,6 +181,25 @@ architecture Behavioral of BufferWriterPre is
   signal strobe_norm_data       : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal strobe_norm_count      : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal strobe_norm_last       : std_logic;
+
+  -- Normalized strobe stream serialization indices & slice signals
+  constant NSSI : nat_array := cumulative((
+    3 => 1, --dvalid
+    2 => 1, --last
+    1 => ELEMENT_COUNT_WIDTH,
+    0 => ELEMENT_COUNT_MAX
+  ));
+  
+  -- Normalized write strobe stream
+  signal s_strobe_norm_valid    : std_logic;
+  signal s_strobe_norm_ready    : std_logic;
+  signal s_strobe_norm_dvalid   : std_logic;
+  signal s_strobe_norm_data     : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
+  signal s_strobe_norm_count    : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal s_strobe_norm_last     : std_logic;
+  
+  signal s_strobe_norm_all      : std_logic_vector(NSSI(4)-1 downto 0);
+  signal strobe_norm_all        : std_logic_vector(NSSI(4)-1 downto 0);
 
   -- Reshaped data stream
   signal shaped_valid           : std_logic;
@@ -198,7 +238,8 @@ begin
       ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
       CMD_CTRL_WIDTH            => CMD_CTRL_WIDTH,
-      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
+      CMD_TAG_WIDTH             => CMD_TAG_WIDTH,
+      OUT_SLICE                 => true
     )
     port map (
       clk                       => clk,
@@ -366,7 +407,6 @@ begin
 
   end generate;
 
-
   -- For non-index buffers, we don't have to do anything, just forward the
   -- stream and invalidate the offset output forever.
   not_idx_gen: if not(IS_INDEX_BUFFER) generate
@@ -406,6 +446,10 @@ begin
 
   -- Only generate normalizers if there can be more than one element per cycle
   norm_gen: if ELEMENT_COUNT_MAX > 1 generate
+
+    ---------------------------------------------------------------------------
+    -- Data normalizer
+    
     data_normalizer_inst: StreamNormalizer
       generic map (
         ELEMENT_WIDTH           => ELEMENT_WIDTH,
@@ -424,14 +468,44 @@ begin
         in_last                 => oia_last,
         req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
                                                    ELEMENT_COUNT_WIDTH+1)),
-        out_valid               => norm_valid,
-        out_ready               => norm_ready,
-        out_dvalid              => norm_dvalid,
-        out_data                => norm_data,
-        out_count               => norm_count,
-        out_last                => norm_last
+        out_valid               => s_norm_valid,
+        out_ready               => s_norm_ready,
+        out_dvalid              => s_norm_dvalid,
+        out_data                => s_norm_data,
+        out_count               => s_norm_count,
+        out_last                => s_norm_last
       );
 
+    s_norm_all(                 NDSI(3)) <= s_norm_dvalid;
+    s_norm_all(                 NDSI(2)) <= s_norm_last;
+    s_norm_all(NDSI(2)-1 downto NDSI(1)) <= s_norm_count;
+    s_norm_all(NDSI(1)-1 downto NDSI(0)) <= s_norm_data;
+
+    -- Insert optional register slices after the normalizers
+    norm_slice_inst : StreamBuffer
+      generic map (
+        MIN_DEPTH               => sel(NORM_SLICE, 2, 0),
+        DATA_WIDTH              => NDSI(4)
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => s_norm_valid,
+        in_ready                => s_norm_ready,
+        in_data                 => s_norm_all,
+        out_valid               => norm_valid,
+        out_ready               => norm_ready,
+        out_data                => norm_all
+      );
+      
+    norm_dvalid <= norm_all(                 NDSI(3));
+    norm_last   <= norm_all(                 NDSI(2));
+    norm_count  <= norm_all(NDSI(2)-1 downto NDSI(1));
+    norm_data   <= norm_all(NDSI(1)-1 downto NDSI(0));
+    
+    ---------------------------------------------------------------------------
+    -- Strobe normalizer
+    
     strobe_normalizer_inst: StreamNormalizer
       generic map (
         ELEMENT_WIDTH           => 1,
@@ -457,6 +531,34 @@ begin
         out_count               => strobe_norm_count,
         out_last                => strobe_norm_last
       );
+      
+    s_strobe_norm_all(                 NSSI(3)) <= s_strobe_norm_dvalid;
+    s_strobe_norm_all(                 NSSI(2)) <= s_strobe_norm_last;
+    s_strobe_norm_all(NSSI(2)-1 downto NSSI(1)) <= s_strobe_norm_count;
+    s_strobe_norm_all(NSSI(1)-1 downto NSSI(0)) <= s_strobe_norm_data;
+
+    -- Insert optional register slices after the normalizers
+    strobe_norm_slice_inst : StreamBuffer
+      generic map (
+        MIN_DEPTH               => sel(NORM_SLICE, 2, 0),
+        DATA_WIDTH              => NSSI(4)
+      )
+      port map (
+        clk                     => clk,
+        reset                   => reset,
+        in_valid                => s_strobe_norm_valid,
+        in_ready                => s_strobe_norm_ready,
+        in_data                 => s_strobe_norm_all,
+        out_valid               => strobe_norm_valid,
+        out_ready               => strobe_norm_ready,
+        out_data                => strobe_norm_all
+      );
+      
+    strobe_norm_dvalid <= strobe_norm_all(                 NSSI(3));
+    strobe_norm_last   <= strobe_norm_all(                 NSSI(2));
+    strobe_norm_count  <= strobe_norm_all(NSSI(2)-1 downto NSSI(1));
+    strobe_norm_data   <= strobe_norm_all(NSSI(1)-1 downto NSSI(0));
+    
   end generate;
 
   -- No normalizer is required
@@ -529,6 +631,9 @@ begin
       out_count                 => strobe_shaped_count,
       out_last                  => strobe_shaped_last
     );
+
+  -- Insert optional register slices after the gearboxes
+
 
   -- Synchronize the output streams. (It -shouldn't- be necessary, but is good
   -- practise.)

@@ -1499,7 +1499,8 @@ package Arrow is
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
       CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural
+      CMD_TAG_WIDTH             : natural;
+      NORM_SLICE                : boolean := true
     );
     port (
       clk                       : in  std_logic;
@@ -1541,7 +1542,8 @@ package Arrow is
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
       CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural
+      CMD_TAG_WIDTH             : natural;
+      OUT_SLICE                 : boolean := true
     );
     port (
       clk                       : in  std_logic;

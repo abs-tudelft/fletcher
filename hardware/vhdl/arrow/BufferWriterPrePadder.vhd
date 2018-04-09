@@ -68,7 +68,10 @@ entity BufferWriterPrePadder is
     CMD_TAG_WIDTH               : natural;
     
     -- Whether to check if the last index is exceeded by the user input stream.
-    CHECK_LAST_EXCEED           : boolean := true
+    CHECK_LAST_EXCEED           : boolean := true;
+    
+    -- Whether to insert a slice at the output stream
+    OUT_SLICE                   : boolean := true
 
   );
   port (
@@ -436,8 +439,9 @@ begin
   int_out_all(OSI(2)-1 downto OSI(1)) <= int_out_ctrl;
   int_out_all(OSI(1)-1 downto OSI(0)) <= int_out_tag;
   
-  out_slice : StreamSlice
+  out_slice_inst : StreamBuffer
     generic map (
+      MIN_DEPTH                 => sel(OUT_SLICE, 2, 0),
       DATA_WIDTH                => OSI(8)
     )
     port map (
