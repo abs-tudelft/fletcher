@@ -8,6 +8,7 @@ proc t {} {
   vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterPrePadder.vhd
+  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPreCmdGen.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterPre.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriter.vhd
   
@@ -31,6 +32,7 @@ proc a {} {
   vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterPrePadder.vhd
+  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPreCmdGen.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriterPre.vhd
   vcom -work work -93 $vhdl_dir/arrow/BufferWriter.vhd
   

@@ -43,6 +43,9 @@ entity BusWriteBuffer is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
+    -- Bus strobe width.
+    BUS_STROBE_WIDTH            : natural := 32/8;
+
     -- Minimum number of burst beats that can be stored in the FIFO. Rounded up
     -- to a power of two. This is also the maximum burst length supported.
     FIFO_DEPTH                  : natural := 16;
@@ -60,7 +63,13 @@ entity BusWriteBuffer is
     -- based on the requests. However, if this is set to "burst", an error
     -- is generated if the last signal is not asserted when expected from
     -- the requested burst length.
-    SLV_LAST_MODE               : string := "burst"
+    SLV_LAST_MODE               : string := "burst";
+    
+    -- Instantiate a slice on the write data channel on the slave port
+    SLV_DATA_SLICE              : boolean := true;
+    
+    -- Instantiate a slice on the write data channel on the master port
+    MST_DATA_SLICE              : boolean := true
 
   );
   port (
@@ -86,6 +95,7 @@ entity BusWriteBuffer is
     slv_wdat_valid              : in  std_logic;
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    slv_wdat_strobe             : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
     slv_wdat_last               : in  std_logic;
 
     ---------------------------------------------------------------------------
@@ -99,6 +109,7 @@ entity BusWriteBuffer is
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
     mst_wdat_last               : out std_logic;
     mst_wdat_last_in_cmd        : out std_logic
 
@@ -110,14 +121,20 @@ architecture Behavioral of BusWriteBuffer is
   -- Log2 of the FIFO depth.
   constant DEPTH_LOG2            : natural := log2ceil(FIFO_DEPTH);
   constant COUNT_FIFO_FULL       : unsigned(DEPTH_LOG2-1 downto 0) := (others => '1');
+  
+  signal s_slv_wdat_valid        : std_logic;
+  signal s_slv_wdat_ready        : std_logic;
+  signal s_slv_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_slv_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_slv_wdat_last         : std_logic;
 
   signal fifo_in_valid           : std_logic;
   signal fifo_in_ready           : std_logic;
-  signal fifo_in_data            : std_logic_vector(BUS_DATA_WIDTH downto 0);
+  signal fifo_in_data            : std_logic_vector(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto 0);
 
   signal fifo_out_valid          : std_logic;
   signal fifo_out_ready          : std_logic;
-  signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH downto 0);
+  signal fifo_out_data           : std_logic_vector(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto 0);
 
   type state_type is (IDLE, REQ, BURST);
 
@@ -170,7 +187,7 @@ begin
   comb_proc: process(
     r,
     fifo_in_valid, fifo_in_ready,
-    fifo_out_valid, fifo_out_ready, fifo_out_data(BUS_DATA_WIDTH),
+    fifo_out_valid, fifo_out_ready, fifo_out_data(0),
     slv_wreq_len, slv_wreq_addr, slv_wreq_valid,
     mst_wreq_ready,
     mst_wdat_ready
@@ -237,10 +254,10 @@ begin
           -- Determine where last should come from
           if SLV_LAST_MODE = "burst" then
             -- Last signal comes from FIFO
-            vo.mst_wdat_last        := fifo_out_data(BUS_DATA_WIDTH);
+            vo.mst_wdat_last        := fifo_out_data(0);
 
             -- Check if the last signal was properly asserted.
-            if fifo_out_data(BUS_DATA_WIDTH) /= '1' then
+            if fifo_out_data(0) /= '1' then
               -- pragma translate off
                 report "Bus write buffer with SLV_LAST_MODE set to burst "
                      & "expected last signal to be high."
@@ -254,7 +271,7 @@ begin
             -- stream. Assert the last signal based on the request length and
             -- grab the last_in_cmd signal from the FIFO.
             vo.mst_wdat_last        := '1';
-            vo.mst_wdat_last_in_cmd := fifo_out_data(BUS_DATA_WIDTH);
+            vo.mst_wdat_last_in_cmd := fifo_out_data(0);
           end if;
 
           -- A request is made, register it.
@@ -301,7 +318,8 @@ begin
     mst_wdat_valid              <= vo.mst_wdat_valid;
     mst_wdat_last               <= vo.mst_wdat_last;
     mst_wdat_last_in_cmd        <= vo.mst_wdat_last_in_cmd;
-    mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_data               <= fifo_out_data(BUS_DATA_WIDTH downto 1);
+    mst_wdat_strobe             <= fifo_out_data(BUS_DATA_WIDTH+BUS_STROBE_WIDTH downto BUS_DATA_WIDTH+1);
 
     fifo_out_ready              <= vo.fifo_out_ready;
 
@@ -312,15 +330,15 @@ begin
   end process;
 
   -- Connect FIFO inputs
-  fifo_in_valid                 <= slv_wdat_valid;
-  slv_wdat_ready                <= fifo_in_ready;
+  fifo_in_valid                 <= s_slv_wdat_valid;
+  s_slv_wdat_ready              <= fifo_in_ready;
 
-  fifo_in_data                  <= slv_wdat_last & slv_wdat_data;
+  fifo_in_data                  <= s_slv_wdat_strobe & s_slv_wdat_data & s_slv_wdat_last;
 
   slv_write_buffer: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2**DEPTH_LOG2,
-      DATA_WIDTH                => BUS_DATA_WIDTH + 1
+      DATA_WIDTH                => BUS_DATA_WIDTH + BUS_STROBE_WIDTH + 1
     )
     port map (
       clk                       => clk,
@@ -334,5 +352,51 @@ begin
       out_ready                 => fifo_out_ready,
       out_data                  => fifo_out_data
     );
+
+  slave_slice_gen: if SLV_DATA_SLICE generate
+    -- Write data stream serialization indices.
+    constant WSI : nat_array := cumulative((
+      2 => 1,
+      1 => BUS_STROBE_WIDTH,
+      0 => BUS_DATA_WIDTH
+    ));
+    
+    signal slv_wdat_all   : std_logic_vector(WSI(3)-1 downto 0);
+    signal s_slv_wdat_all : std_logic_vector(WSI(3)-1 downto 0);
+  begin
+    
+    slv_wdat_all(                WSI(2)) <= slv_wdat_last;
+    slv_wdat_all(WSI(2)-1 downto WSI(1)) <= slv_wdat_strobe;
+    slv_wdat_all(WSI(1)-1 downto      0) <= slv_wdat_data;
+    
+    wdat_in_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
+      DATA_WIDTH                => BUS_DATA_WIDTH + BUS_STROBE_WIDTH + 1
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => slv_wdat_valid,
+      in_ready                  => slv_wdat_ready,
+      in_data                   => slv_wdat_all,
+
+      out_valid                 => s_slv_wdat_valid,
+      out_ready                 => s_slv_wdat_ready,
+      out_data                  => s_slv_wdat_all
+    );
+    
+  s_slv_wdat_last   <= s_slv_wdat_all(                WSI(2));
+  s_slv_wdat_strobe <= s_slv_wdat_all(WSI(2)-1 downto WSI(1));
+  s_slv_wdat_data   <= s_slv_wdat_all(WSI(1)-1 downto      0);
+  end generate;
+  no_slave_slice_gen: if not SLV_DATA_SLICE generate
+    s_slv_wdat_valid   <= slv_wdat_valid;
+    slv_wdat_ready     <= s_slv_wdat_ready;
+    s_slv_wdat_data    <= slv_wdat_data;
+    s_slv_wdat_strobe  <= slv_wdat_strobe;
+    s_slv_wdat_last    <= slv_wdat_last;
+  end generate;
 
 end Behavioral;

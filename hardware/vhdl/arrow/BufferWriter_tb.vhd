@@ -31,12 +31,13 @@ entity BufferWriter_tb is
     TEST_NAME                   : string   := "";
     BUS_ADDR_WIDTH              : natural  := 32;
     BUS_DATA_WIDTH              : natural  := 32;
+    BUS_STROBE_WIDTH            : natural  := 32/8;
     BUS_LEN_WIDTH               : natural  := 9;
     BUS_BURST_STEP_LEN          : natural  := 1;
     BUS_BURST_MAX_LEN           : natural  := 16;
 
     BUS_FIFO_DEPTH              : natural  := 1;
-    BUS_FIFO_THRESHOLD_SHIFT    : natural  := 0;
+    BUS_FIFO_THRES_SHIFT        : natural  := 0;
 
     INDEX_WIDTH                 : natural  := 32;
     IS_INDEX_BUFFER             : boolean  := true;
@@ -85,9 +86,12 @@ architecture tb of BufferWriter_tb is
   signal cmdIn_implicit         : std_logic;
   signal cmdIn_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   
-  signal offset_valid           : std_logic;
-  signal offset_ready           : std_logic := '1';
-  signal offset_data            : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal cmdOut_valid           : std_logic;
+  signal cmdOut_ready           : std_logic := '1';
+  signal cmdOut_firstIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal cmdOut_lastIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal cmdOut_ctrl            : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+  signal cmdOut_tag             : std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
   signal unlock_valid           : std_logic;
   signal unlock_ready           : std_logic := '1';
@@ -580,10 +584,11 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_FIFO_DEPTH            => BUS_FIFO_DEPTH,
-      BUS_FIFO_THRESHOLD_SHIFT  => BUS_FIFO_THRESHOLD_SHIFT,
+      BUS_FIFO_THRES_SHIFT      => BUS_FIFO_THRES_SHIFT,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
@@ -610,9 +615,12 @@ begin
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
       
-      offset_valid              => offset_valid,
-      offset_ready              => offset_ready,
-      offset_data               => offset_data,
+      cmdOut_valid              => cmdOut_valid,
+      cmdOut_ready              => cmdOut_ready,
+      cmdOut_firstIdx           => cmdOut_firstIdx,
+      cmdOut_lastIdx            => cmdOut_lastIdx,
+      cmdOut_ctrl               => cmdOut_ctrl,
+      cmdOut_tag                => cmdOut_tag,
 
       in_valid                  => in_valid,
       in_ready                  => in_ready,

@@ -287,6 +287,20 @@ package Streams is
     );
   end component;
   
+  component StreamPseudoRandomGenerator is
+    generic (
+      DATA_WIDTH                : positive
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      seed                      : in  std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0)
+    );
+  end component;
+  
   -----------------------------------------------------------------------------
   -- Component declarations for entities used internally by StreamFIFO
   -----------------------------------------------------------------------------

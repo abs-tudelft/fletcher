@@ -38,9 +38,12 @@ entity ColumnWriterListPrim is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
+    -- Bus strobe width.
+    BUS_STROBE_WIDTH            : natural := 32/8;
+
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
-    
+
     -- Maximum number of beats in a burst.
     BUS_BURST_MAX_LEN           : natural := 16;
 
@@ -86,11 +89,11 @@ entity ColumnWriterListPrim is
     -- Command streams
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
-    -- a range of elements to be fetched from memory. firstIdx is inclusive,
+    -- a range of elements to be written to memory. firstIdx is inclusive,
     -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
-    -- in all cases resulting in lastIdx - firstIdx elements. The ctrl vector
+    -- in all cases resulting from lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
-    -- bitmap present flags, dependent on CFG.
+    -- bitmap present flags, depending on CFG.
     cmd_valid                   : in  std_logic;
     cmd_ready                   : out std_logic;
     cmd_firstIdx                : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -109,14 +112,16 @@ entity ColumnWriterListPrim is
     ---------------------------------------------------------------------------
     -- Concatenation of all the bus masters at this level of hierarchy (bus
     -- clock domain).
-    busReq_valid                : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_ready                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_addr                 : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_ready               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_data                : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wreq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wreq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wreq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+    bus_wreq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+
+    bus_wdat_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wdat_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+    bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
+    bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -124,19 +129,19 @@ entity ColumnWriterListPrim is
     -- Concatenation of all user output streams at this level of hierarchy
     -- (accelerator clock domain). The master stream starts at the side of the
     -- least significant bit.
-    out_valid                   : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-    out_ready                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-    out_last                    : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-    out_dvalid                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-    out_data                    : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+    in_valid                    : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+    in_ready                    : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+    in_last                     : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+    in_dvalid                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+    in_data                     : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
 end ColumnWriterListPrim;
 
 architecture Behavioral of ColumnWriterListPrim is
 
-  -- Output user stream serialization indices.
-  constant OUI                  : nat_array := cumulative(arcfg_userWidths(CFG, INDEX_WIDTH));
+  -- Input user stream serialization indices.
+  constant IUI                  : nat_array := cumulative(arcfg_userWidths(CFG, INDEX_WIDTH));
 
   -- Determine the metrics of the count and data-per-transfer vectors.
   constant ELEMENT_WIDTH        : natural := strtoi(parse_arg(cfg, 0));
@@ -144,33 +149,41 @@ architecture Behavioral of ColumnWriterListPrim is
   constant COUNT_WIDTH          : natural := log2ceil(COUNT_MAX+1);
   constant DATA_WIDTH           : natural := ELEMENT_WIDTH * COUNT_MAX;
 
-  -- Signals for index buffer reader.
+  -- Signals for index buffer writer.
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  signal a_unlock_ignoreChild   : std_logic;
+  signal a_unlock_ignoreChild   : std_logic := '0'; -- TODO: fix for zero length lists
 
-  signal a_in_valid             : std_logic;
-  signal a_in_ready             : std_logic;
-  signal a_in_last              : std_logic;
-  signal a_in_length            : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal a_valid                : std_logic;
+  signal a_ready                : std_logic;
+  signal a_last                 : std_logic;
+  signal a_length               : std_logic_vector(INDEX_WIDTH-1 downto 0);
 
-  -- Metrics and signals for child.
+  -- Metrics and signals for values buffer writer.
   signal b_cmd_valid            : std_logic;
   signal b_cmd_ready            : std_logic;
   signal b_cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
-  signal b_cmd_ctrl             : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal b_cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal b_cmd_baseaddr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal b_cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
   signal b_unlock_valid         : std_logic;
   signal b_unlock_ready         : std_logic;
   signal b_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-  signal b_in_valid             : std_logic;
-  signal b_in_ready             : std_logic;
-  signal b_in_data              : std_logic_vector(DATA_WIDTH-1 downto 0);
-  signal b_in_count             : std_logic_vector(COUNT_WIDTH-1 downto 0);
-  signal b_in_last              : std_logic;
+  signal b_valid                : std_logic;
+  signal b_ready                : std_logic;
+  signal b_data                 : std_logic_vector(DATA_WIDTH-1 downto 0);
+  signal b_count                : std_logic_vector(COUNT_WIDTH-1 downto 0);
+  signal b_last                 : std_logic;
+  signal b_dvalid               : std_logic;
+
+  -- Command stream deserialization indices.
+  constant CSI : nat_array := cumulative((
+    1 => BUS_ADDR_WIDTH, -- base address for index buffer
+    0 => BUS_ADDR_WIDTH  -- base address for data buffer
+  ));
 
 begin
 
@@ -198,22 +211,61 @@ begin
       unlock_tag                => unlock_tag
     );
 
+  -- Instantiate the list synchronizer
+  sync_inst: ColumnWriterListSync
+    generic map (
+      ELEMENT_WIDTH             => ELEMENT_WIDTH,
+      LENGTH_WIDTH              => INDEX_WIDTH,
+      COUNT_MAX                 => COUNT_MAX,
+      COUNT_WIDTH               => COUNT_WIDTH,
+      GENERATE_LENGTH           => false,
+      NORMALIZE                 => false,
+      ELEM_LAST_FROM_LENGTH     => false,
+      DATA_IN_SLICE             => false,
+      LEN_IN_SLICE              => false,
+      OUT_SLICE                 => false
+    )
+    port map (
+      clk                       => acc_clk,
+      reset                     => acc_reset,
+      inl_valid                 => in_valid(0),
+      inl_ready                 => in_ready(0),
+      inl_length                => in_data(IUI(1)-1 downto IUI(0)),
+      inl_last                  => in_last(0),
+      ine_valid                 => in_valid(1),
+      ine_ready                 => in_ready(1),
+      ine_last                  => in_last(1),
+      ine_dvalid                => in_dvalid(1),
+      ine_data                  => in_data(IUI(2)-COUNT_WIDTH-1 downto IUI(1)),
+      ine_count                 => in_data(IUI(2)-1 downto IUI(2)-COUNT_WIDTH),
+      outl_valid                => a_valid,
+      outl_ready                => a_ready,
+      outl_length               => a_length,
+      outl_last                 => a_last,
+      oute_valid                => b_valid,
+      oute_ready                => b_ready,
+      oute_last                 => b_last,
+      oute_dvalid               => b_dvalid,
+      oute_data                 => b_data,
+      oute_count                => b_count
+    );
+
   -- Instantiate index buffer writer.
   a_inst: BufferWriter
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
-      BUS_FIFO_DEPTH            => BUS_FIFO_DEPTH,
-      BUS_FIFO_THRESHOLD_SHIFT  => BUS_FIFO_THRESHOLD_SHIFT,
+      BUS_FIFO_DEPTH            => parse_param(CFG, "idx_bus_fifo_depth", 16),
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => INDEX_WIDTH,
       IS_INDEX_BUFFER           => true,
-      ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
-      ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
-      CMD_CTRL_WIDTH            => CMD_CTRL_WIDTH,
+      ELEMENT_COUNT_MAX         => 1,
+      ELEMENT_COUNT_WIDTH       => 1,
+      CMD_CTRL_WIDTH            => BUS_ADDR_WIDTH,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
@@ -221,35 +273,42 @@ begin
       bus_reset                 => bus_reset,
       acc_clk                   => acc_clk,
       acc_reset                 => acc_reset,
-      
-      cmdIn_valid               => cmd_valid, 
-      cmdIn_ready               => cmd_ready,   
+
+      cmdIn_valid               => cmd_valid,
+      cmdIn_ready               => cmd_ready,
       cmdIn_firstIdx            => cmd_firstIdx,
       cmdIn_lastIdx             => cmd_lastIdx,
-      cmdIn_baseAddr            => cmd_baseAddr,
-      cmdIn_implicit            => cmd_implicit,
+      cmdIn_baseAddr            => cmd_ctrl(CSI(2)-1 downto CSI(1)),
+      cmdIn_ctrl                => cmd_ctrl(CSI(1)-1 downto CSI(0)),
       cmdIn_tag                 => cmd_tag,
+
+      cmdOut_valid              => b_cmd_valid,
+      cmdOut_ready              => b_cmd_ready,
+      cmdOut_firstIdx           => b_cmd_firstIdx,
+      cmdOut_lastIdx            => b_cmd_lastIdx,
+      cmdOut_ctrl               => b_cmd_baseaddr,
+      cmdOut_tag                => b_cmd_tag,
       
       unlock_valid              => a_unlock_valid,
       unlock_ready              => a_unlock_ready,
       unlock_tag                => a_unlock_tag,
       
-      in_valid                  => in_valid,
-      in_ready                  => in_ready,
-      in_data                   => in_data,
-      in_count                  => in_count,
-      in_last                   => in_last,
-      
-      bus_req_valid             => bus_req_valid,
-      bus_req_ready             => bus_req_ready,
-      bus_req_addr              => bus_req_addr,
-      bus_req_len               => bus_req_len,
-      
-      bus_wrd_valid             => bus_wrd_valid,
-      bus_wrd_ready             => bus_wrd_ready,
-      bus_wrd_data              => bus_wrd_data,
-      bus_wrd_strobe            => bus_wrd_strobe,
-      bus_wrd_last              => bus_wrd_last
+      in_valid                  => a_valid,
+      in_ready                  => a_ready,
+      in_data                   => a_length,
+      in_count                  => (0 => '1', others => '0'),
+      in_last                   => a_last,
+
+      bus_wreq_valid            => bus_wreq_valid(0),
+      bus_wreq_ready            => bus_wreq_ready(0),
+      bus_wreq_addr             => bus_wreq_addr(BUS_ADDR_WIDTH-1 downto 0),
+      bus_wreq_len              => bus_wreq_len(BUS_LEN_WIDTH-1 downto 0),
+
+      bus_wdat_valid            => bus_wdat_valid(0),
+      bus_wdat_ready            => bus_wdat_ready(0),
+      bus_wdat_data             => bus_wdat_data(BUS_DATA_WIDTH-1 downto 0),
+      bus_wdat_strobe           => bus_wdat_strobe(BUS_STROBE_WIDTH-1 downto 0),
+      bus_wdat_last             => bus_wdat_last(0)
     );
 
   -- Instantiate primitive element buffer reader.
@@ -258,16 +317,16 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
-      BUS_FIFO_DEPTH            => BUS_FIFO_DEPTH,
-      BUS_FIFO_THRESHOLD_SHIFT  => BUS_FIFO_THRESHOLD_SHIFT,
+      BUS_FIFO_DEPTH            => parse_param(CFG, "bus_fifo_depth", 16),
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
-      ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
-      ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
-      CMD_CTRL_WIDTH            => CMD_CTRL_WIDTH,
+      IS_INDEX_BUFFER           => false,
+      ELEMENT_COUNT_MAX         => COUNT_MAX,
+      ELEMENT_COUNT_WIDTH       => COUNT_WIDTH,
+      CMD_CTRL_WIDTH            => 1,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
@@ -275,35 +334,35 @@ begin
       bus_reset                 => bus_reset,
       acc_clk                   => acc_clk,
       acc_reset                 => acc_reset,
-      
-      cmdIn_valid               => cmdIn_valid, 
-      cmdIn_ready               => cmdIn_ready,   
-      cmdIn_firstIdx            => cmdIn_firstIdx,
-      cmdIn_lastIdx             => cmdIn_lastIdx, 
-      cmdIn_baseAddr            => cmdIn_baseAddr,
-      cmdIn_implicit            => cmdIn_implicit,
-      cmdIn_tag                 => cmdIn_tag,
-      
-      unlock_valid              => unlock_valid,
-      unlock_ready              => unlock_ready,
-      unlock_tag                => unlock_tag,
-      
-      in_valid                  => in_valid,
-      in_ready                  => in_ready,
-      in_data                   => in_data,
-      in_count                  => in_count,
-      in_last                   => in_last,
-      
-      bus_req_valid             => bus_req_valid,
-      bus_req_ready             => bus_req_ready,
-      bus_req_addr              => bus_req_addr,
-      bus_req_len               => bus_req_len,
-      
-      bus_wrd_valid             => bus_wrd_valid,
-      bus_wrd_ready             => bus_wrd_ready,
-      bus_wrd_data              => bus_wrd_data,
-      bus_wrd_strobe            => bus_wrd_strobe,
-      bus_wrd_last              => bus_wrd_last
+
+      cmdIn_valid               => b_cmd_valid,
+      cmdIn_ready               => b_cmd_ready,
+      cmdIn_firstIdx            => b_cmd_firstIdx,
+      cmdIn_lastIdx             => b_cmd_lastIdx,
+      cmdIn_baseAddr            => b_cmd_baseAddr,
+      cmdIn_ctrl                => "0",
+      cmdIn_tag                 => b_cmd_tag,
+
+      unlock_valid              => b_unlock_valid,
+      unlock_ready              => b_unlock_ready,
+      unlock_tag                => b_unlock_tag,
+
+      in_valid                  => b_valid,
+      in_ready                  => b_ready,
+      in_data                   => b_data,
+      in_count                  => b_count,
+      in_last                   => b_last,
+
+      bus_wreq_valid            => bus_wreq_valid(1),
+      bus_wreq_ready            => bus_wreq_ready(1),
+      bus_wreq_addr             => bus_wreq_addr(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
+      bus_wreq_len              => bus_wreq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH),
+
+      bus_wdat_valid            => bus_wdat_valid(1),
+      bus_wdat_ready            => bus_wdat_ready(1),
+      bus_wdat_data             => bus_wdat_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH),
+      bus_wdat_strobe           => bus_wdat_strobe(2*BUS_STROBE_WIDTH-1 downto BUS_STROBE_WIDTH),
+      bus_wdat_last             => bus_wdat_last(1)
     );
 
 end Behavioral;
