@@ -34,7 +34,7 @@ architecture tb of listprim8epc4_tb is
   constant BUS_LEN_WIDTH      : natural := 8;
   constant BUS_DATA_WIDTH     : natural := 32;
   constant BUS_STROBE_WIDTH   : natural := 32/8;
-  constant BUS_BURST_STEP_LEN : natural := 4;
+  constant BUS_BURST_STEP_LEN : natural := 1;
   constant BUS_BURST_MAX_LEN  : natural := 16;
   constant INDEX_WIDTH        : natural := 32;
   constant CFG                : string  := "listprim(8;epc=4)";
@@ -47,8 +47,8 @@ architecture tb of listprim8epc4_tb is
   constant ELEMENT_WIDTH      : natural := 8;
   constant COUNT_MAX          : natural := 4;
   constant COUNT_WIDTH        : natural := 3;
-  constant MAX_LEN            : real    := 128.0;
-  constant NUM_LISTS          : natural := 1;
+  constant MAX_LEN            : real    := 16.0;
+  constant NUM_LISTS          : natural := 8;
   constant LENGTH_WIDTH       : natural := INDEX_WIDTH;
 
   signal bus_clk              : std_logic;

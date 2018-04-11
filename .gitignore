@@ -38,3 +38,7 @@ hardware/test/columnwriter/transcript
 hardware/test/columnwriter/vsim\.wlf
 
 *.vstf
+
+examples/stringwrite/hardware/test/work/
+
+examples/stringwrite/hardware/test/
