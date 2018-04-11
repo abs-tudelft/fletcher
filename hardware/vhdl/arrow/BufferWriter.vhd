@@ -499,7 +499,7 @@ begin
       FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       LEN_SHIFT                 => BUS_FIFO_THRES_SHIFT,
       RAM_CONFIG                => "",
-      SLV_LAST_MODE             => "stream"
+      SLV_LAST_MODE             => "generate"
     )
     port map (
       clk                       => acc_clk,
@@ -516,7 +516,11 @@ begin
       slv_wdat_ready            => writebuf_ready,
       slv_wdat_data             => writebuf_data,
       slv_wdat_strobe           => writebuf_strobe,
-      slv_wdat_last             => writebuf_last,
+      -- Last is actually the last word in the data stream of this command, so
+      -- pass it through using the control signal. Actual last will be 
+      -- generated.
+      slv_wdat_ctrl(0)          => writebuf_last, 
+      slv_wdat_last             => '0',
       
       mst_wreq_valid            => int_bus_wreq_valid,
       mst_wreq_ready            => int_bus_wreq_ready,
@@ -526,8 +530,8 @@ begin
       mst_wdat_ready            => int_bus_wdat_ready,
       mst_wdat_data             => int_bus_wdat_data,
       mst_wdat_strobe           => int_bus_wdat_strobe,
-      mst_wdat_last             => int_bus_wdat_last,
-      mst_wdat_last_in_cmd      => last_in_cmd
+      mst_wdat_ctrl(0)          => last_in_cmd,
+      mst_wdat_last             => int_bus_wdat_last      
     );
 
   int_bus_wreq_ready            <= bus_wreq_ready;

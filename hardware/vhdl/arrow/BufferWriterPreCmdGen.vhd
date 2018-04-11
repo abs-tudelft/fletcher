@@ -133,9 +133,10 @@ begin
     if cmdIn_valid = '1' and
        (v.valid = '0' or (v.valid = '1' and cmdOut_ready = '1'))
     then
-      -- Register the inputs, but take the lastIdx from the previous firstIdx
-      v.lastIdx                 := v.firstIdx;
-      v.firstIdx                := cmdIn_firstIdx;
+      -- Register the inputs, but take the first index from the previous 
+      -- last index.
+      v.firstIdx                := r.lastIdx;
+      v.lastIdx                 := cmdIn_firstIdx;
       v.implicit                := cmdIn_implicit;
       v.ctrl                    := cmdIn_ctrl;
       v.tag                     := cmdIn_tag;

@@ -524,12 +524,12 @@ begin
         in_last                 => oia_last,
         req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
                                                    ELEMENT_COUNT_WIDTH+1)),
-        out_valid               => strobe_norm_valid,
-        out_ready               => strobe_norm_ready,
-        out_dvalid              => strobe_norm_dvalid,
-        out_data                => strobe_norm_data,
-        out_count               => strobe_norm_count,
-        out_last                => strobe_norm_last
+        out_valid               => s_strobe_norm_valid,
+        out_ready               => s_strobe_norm_ready,
+        out_dvalid              => s_strobe_norm_dvalid,
+        out_data                => s_strobe_norm_data,
+        out_count               => s_strobe_norm_count,
+        out_last                => s_strobe_norm_last
       );
       
     s_strobe_norm_all(                 NSSI(3)) <= s_strobe_norm_dvalid;

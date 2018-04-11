@@ -68,7 +68,7 @@ entity BufferWriterPrePadder is
     CMD_TAG_WIDTH               : natural;
     
     -- Whether to check if the last index is exceeded by the user input stream.
-    CHECK_LAST_EXCEED           : boolean := true;
+    CHECK_LAST_EXCEED           : boolean := false;
     
     -- Whether to insert a slice at the output stream
     OUT_SLICE                   : boolean := true
@@ -216,7 +216,11 @@ begin
     end if;
   end process;
 
-  comb: process(r, cmdIn_valid, cmdIn_firstIdx, int_out_ready, in_data, in_count, in_valid, in_last) is
+  comb: process(r, 
+    cmdIn_valid, cmdIn_firstIdx, 
+    int_out_ready, 
+    in_data, in_count, in_valid, in_last
+  ) is
     variable vr                 : regs_record;
     variable vo                 : outputs_record;
     
@@ -337,6 +341,7 @@ begin
         -- TODO: generate some sort of error signal to the user core and take
         --       this out of simulation-only, although it's costly
         if CHECK_LAST_EXCEED and
+           in_valid = '1' and  int_out_ready = '1' and
            vr.index.last /= INDEX_ZERO and
            new_index > vr.index.last
         then
