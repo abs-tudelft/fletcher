@@ -302,6 +302,7 @@ begin
     signal cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
     signal cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
     signal cmd_implicit         : std_logic;
+    signal cmd_last             : std_logic;
     signal cmd_ctrl             : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
     signal cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
@@ -379,6 +380,7 @@ begin
     cmd_lastIdx                 <= oia_data;
     cmd_ctrl                    <= oia_ctrl;
     cmd_tag                     <= oia_tag;
+    cmd_last                    <= oia_last;
 
     -- Generate the command output stream
     out_cmd_gen: BufferWriterPreCmdGen
@@ -396,6 +398,7 @@ begin
         cmdIn_implicit          => cmd_implicit,
         cmdIn_ctrl              => cmd_ctrl,
         cmdIn_tag               => cmd_tag,
+        cmdIn_last              => cmd_last,
         cmdOut_valid            => cmdOut_valid,
         cmdOut_ready            => cmdOut_ready,
         cmdOut_firstIdx         => cmdOut_firstIdx,
@@ -417,7 +420,7 @@ begin
     oia_strobe                  <= pad_strobe;
     oia_count                   <= pad_count;
     oia_last                    <= pad_last;
-
+    
     cmdOut_valid                <= '0';
   end generate;
 
@@ -680,6 +683,7 @@ begin
   -- In simulation, make any data unkown if the strobe is low.
   -- This is mainly done for index buffers which accumulate unkown and still
   -- generate a valid output.
+  --pragma translate off
   process(shaped_data, int_out_strobe) is
   begin
     for I in 0 to BUS_STROBE_WIDTH-1 loop
@@ -690,13 +694,14 @@ begin
       if int_out_strobe(I) /= '1' then
         int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
           <= shaped_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER);
-        --pragma translate off
+        
         int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
           <= (others => 'U');
-        --pragma translate on
+        
       end if;
     end loop;
   end process;
+  --pragma translate on
 
   -- TODO: insert some slices
 

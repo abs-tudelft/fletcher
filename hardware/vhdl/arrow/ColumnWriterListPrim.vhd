@@ -148,6 +148,26 @@ architecture Behavioral of ColumnWriterListPrim is
   constant COUNT_MAX            : natural := parse_param(CFG, "epc", 1);
   constant COUNT_WIDTH          : natural := log2ceil(COUNT_MAX+1);
   constant DATA_WIDTH           : natural := ELEMENT_WIDTH * COUNT_MAX;
+  
+  -- Determine whether to generate the child stream last signal from the length
+  -- stream last signal. If this is false, every list will generate a new 
+  -- command on the child buffer.
+  constant LAST_FROM_LENGTH     : boolean := parse_param(CFG, "last_from_length", true);
+  
+  -- Determine whether to generate the length stream based on the last signal
+  -- of the element stream. In this mode, the length stream last signal is still 
+  -- used to finalize both buffers. The length stream data is ignored but
+  -- should still be handshaked for every list.
+  constant GENERATE_LENGTH      : boolean := parse_param(CFG, "generate_lengths", false);
+  
+  -- Determine if the element stream should be normalized according to the
+  -- length stream. Can only be used if length stream is not generated. Will
+  -- split up multiple element-per-cycle element streams and their valid count
+  -- properly based on length stream. If length stream is used and normalize is
+  -- false, user must make sure boundaries are not crossed when last is
+  -- asserted on multiple element-per-cycle element stream during a single 
+  -- transfer.
+  constant NORMALIZE            : boolean := parse_param(CFG, "normalize", false);
 
   -- Signals for index buffer writer.
   signal a_unlock_valid         : std_logic;
@@ -218,9 +238,9 @@ begin
       LENGTH_WIDTH              => INDEX_WIDTH,
       COUNT_MAX                 => COUNT_MAX,
       COUNT_WIDTH               => COUNT_WIDTH,
-      GENERATE_LENGTH           => false,
-      NORMALIZE                 => false,
-      ELEM_LAST_FROM_LENGTH     => false,
+      GENERATE_LENGTH           => GENERATE_LENGTH,
+      NORMALIZE                 => NORMALIZE,
+      ELEM_LAST_FROM_LENGTH     => LAST_FROM_LENGTH,
       DATA_IN_SLICE             => false,
       LEN_IN_SLICE              => false,
       OUT_SLICE                 => false

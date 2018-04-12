@@ -31,6 +31,9 @@ entity BufferWriterPreCmdGen is
     ---------------------------------------------------------------------------
     -- Index field width.
     INDEX_WIDTH                 : natural;
+    
+    -- Command generation mode
+    MODE                        : string := "continuous";
 
     -- Command stream control vector width.
     CMD_CTRL_WIDTH              : natural;
@@ -44,12 +47,34 @@ entity BufferWriterPreCmdGen is
     clk                         : in  std_logic;
     reset                       : in  std_logic;
 
+    -- Input command stream. 
+    
+    -- If MODE is not set to "continuous", the first valid command is ignored,
+    -- and only when the second firstIdx is handshaked, the output command will
+    -- start streaming. For transfer i, the output stream is:
+    --   cmdOut_firstIdx[i] = cmdIn_firstIdx[i-1]
+    --   cmdOut_lastIdx[i]  = cmdIn_firstIdx[i]
+    
+    -- If MODE is set to "continuous", the first valid command will produce
+    -- an output command with:
+    --   cmdOut_firstIdx[0] = cmdIn_firstIdx 
+    --   cmdOut_lastIdx[0]  = 0
+    -- After that, all other input commands are ignored until cmdIn_last is
+    -- asserted.
+    --
+    -- Contiunuous mode is useful to not generate seperate commands for each
+    -- list on the child buffer of this index buffer, and is generally 
+    -- recommended.
+    -- 
+    -- The signals implicit, ctrl and tag are considered control information
+    -- and are passed through.
     cmdIn_valid                 : in  std_logic;
     cmdIn_ready                 : out std_logic;
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmdIn_implicit              : in  std_logic;
     cmdIn_ctrl                  : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
     cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+    cmdIn_last                  : in  std_logic;
 
     cmdOut_valid                : out std_logic;
     cmdOut_ready                : in  std_logic;
@@ -93,6 +118,7 @@ begin
       if reset = '1' then
         r.first <= '0';
         r.valid <= '0';
+        r.lastIdx <= (others => '0');
       end if;
       
     end if;
@@ -104,6 +130,7 @@ begin
     cmdIn_implicit,
     cmdIn_ctrl,
     cmdIn_tag,
+    cmdIn_last,
     cmdOut_ready)
   is
     variable v: reg_type;
@@ -114,18 +141,18 @@ begin
     -- Default outputs
 
     -- Input is ready by default
-    i.ready                     := '1';
+    i.ready := '1';
 
     -- If the output is valid, but not handshaked, the input must be stalled
     -- immediately
     if v.valid = '1' and cmdOut_ready = '0' then
-      i.ready                   := '0';
+      i.ready := '0';
     end if;
 
     -- If the output is handshaked, but there is no new data
     if v.valid = '1' and cmdOut_ready = '1' and cmdIn_valid = '0' then
       -- Invalidate the output
-      v.valid                   := '0';
+      v.valid := '0';
     end if;
 
     -- If the input is valid, and the output has no data or is handshaked
@@ -133,20 +160,39 @@ begin
     if cmdIn_valid = '1' and
        (v.valid = '0' or (v.valid = '1' and cmdOut_ready = '1'))
     then
-      -- Register the inputs, but take the first index from the previous 
-      -- last index.
-      v.firstIdx                := r.lastIdx;
-      v.lastIdx                 := cmdIn_firstIdx;
-      v.implicit                := cmdIn_implicit;
-      v.ctrl                    := cmdIn_ctrl;
-      v.tag                     := cmdIn_tag;
+      -- Register the inputs, but take the first index from the previous last
+      -- index.
+      v.implicit := cmdIn_implicit;
+      v.ctrl := cmdIn_ctrl;
+      v.tag := cmdIn_tag;
 
-      -- Validate the output if this is not the first element
-      if v.first = '1' then
-        v.valid                 := '1';
+      if MODE = "continuous" then
+        -- We are in continuous mode, pass through the first index and validate
+        -- a single command with lastIdx = 0. In this case, the child buffer
+        -- will finish the command based on the last signal of the input stream
+        -- and not the lastIdx.
+        if v.first = '0' then
+          v.firstIdx := cmdIn_firstIdx;
+          v.lastIdx := (others => '0');
+          v.valid := '1';
+        else
+          v.valid := '0';
+        end if;
+        
+        if cmdIn_last = '1' then
+          v.first := '0';
+        end if;
+      else
+        -- Validate the output if this is not the first element, we first need
+        -- two valid indices to determine the first range.
+        if v.first = '1' then          
+          v.firstIdx := r.lastIdx;
+          v.lastIdx := cmdIn_firstIdx;
+          v.valid := '1';
+        end if;
       end if;
       
-      v.first                   := '1';
+      v.first := '1';
     end if;
 
     -- Registered output

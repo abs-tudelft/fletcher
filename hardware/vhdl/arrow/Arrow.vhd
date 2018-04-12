@@ -1610,6 +1610,7 @@ package Arrow is
   component BufferWriterPreCmdGen is
     generic (
       INDEX_WIDTH               : natural;
+      MODE                      : string := "continuous";
       CMD_CTRL_WIDTH            : natural;
       CMD_TAG_WIDTH             : natural
     );
@@ -1623,6 +1624,7 @@ package Arrow is
       cmdIn_implicit            : in  std_logic;
       cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
       cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      cmdIn_last                : in  std_logic;
 
       cmdOut_valid              : out std_logic;
       cmdOut_ready              : in  std_logic;
