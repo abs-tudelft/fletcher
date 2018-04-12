@@ -133,4 +133,33 @@ package stringwrite_pkg is
       m_axi_wlast               : out std_logic
     );
   end component;
-end package;
+  
+  function readable_utf8 (prng_data: std_logic_vector) return unsigned;
+    
+end stringwrite_pkg;
+package body stringwrite_pkg is
+
+  -- Make "readable" UTF8 Final range will be between space and ~
+  function readable_utf8 (prng_data: std_logic_vector) 
+    return unsigned 
+  is
+    constant startc  : natural := 32;
+    variable char : unsigned(7 downto 0);
+  begin
+    char := (others => '0');
+    
+    -- We can only get 0..127
+    char(6 downto 0) := unsigned(prng_data(6 downto 0));
+    
+    -- Make a space out of the character if it's any control character
+    if char < startc then
+      char := to_unsigned(32, 8);
+    end if;
+    if char = 127 then
+      char := to_unsigned(32, 8);
+    end if;
+    
+    return char;
+  end function;
+  
+end stringwrite_pkg;

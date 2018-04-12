@@ -488,10 +488,12 @@ begin
           o.cmd.lastIdx := mm_regs(REG_LAST_IDX);
           o.cmd.tag := (0 => '1', others => '0');
           -- Set addresses:
+            -- Values buffer at LSBs
           o.cmd.ctrl(BUS_ADDR_WIDTH-1 downto 0)
-            := mm_regs(REG_OFF_ADDR_HI) & mm_regs(REG_OFF_ADDR_LO);
-          o.cmd.ctrl(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH)
             := mm_regs(REG_UTF8_ADDR_HI) & mm_regs(REG_UTF8_ADDR_LO);
+            -- Index buffer at MSBs
+          o.cmd.ctrl(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH)
+            := mm_regs(REG_OFF_ADDR_HI) & mm_regs(REG_OFF_ADDR_LO);            
           -- Validate command:
           o.cmd.valid    := '1';
 

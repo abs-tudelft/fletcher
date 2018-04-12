@@ -299,13 +299,8 @@ begin
   -- same every cycle.
   utf_prng_inst_gen: for i in 0 to ELEMENT_COUNT_MAX-1 generate
   begin
-    -- Make "readable" UTF8 
     utf8_conv: block
       signal prng_data : std_logic_vector(ELEMENT_WIDTH-1 downto 0);
-      
-      -- Final range will be between ? and ~:
-      constant start   : std_logic_vector(ELEMENT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(31, ELEMENT_WIDTH));
-      constant mask    : std_logic_vector(ELEMENT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(63, ELEMENT_WIDTH));
     begin
       utf_prng_inst: StreamPseudoRandomGenerator
         generic map (
@@ -319,9 +314,9 @@ begin
           out_ready               => utf_gen_ready,
           out_data                => prng_data
         );
-    
-    utf_gen_data((i+1)*ELEMENT_WIDTH-1 downto i*ELEMENT_WIDTH) 
-      <= std_logic_vector(unsigned(start) + unsigned(prng_data and mask));
+      
+      utf_gen_data((i+1)*ELEMENT_WIDTH-1 downto i*ELEMENT_WIDTH) 
+        <= std_logic_vector(readable_utf8(prng_data));
     
     end block;
   end generate;
