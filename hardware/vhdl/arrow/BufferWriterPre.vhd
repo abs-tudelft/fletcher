@@ -453,12 +453,11 @@ begin
     ---------------------------------------------------------------------------
     -- Data normalizer
     
-    data_normalizer_inst: StreamNormalizer
+    data_normalizer_inst: StreamMaximizer
       generic map (
         ELEMENT_WIDTH           => ELEMENT_WIDTH,
         COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
-        REQ_COUNT_WIDTH         => ELEMENT_COUNT_WIDTH+1
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH
       )
       port map (
         clk                     => clk,
@@ -469,17 +468,14 @@ begin
         in_data                 => oia_data,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
-                                                   ELEMENT_COUNT_WIDTH+1)),
         out_valid               => s_norm_valid,
         out_ready               => s_norm_ready,
-        out_dvalid              => s_norm_dvalid,
         out_data                => s_norm_data,
         out_count               => s_norm_count,
         out_last                => s_norm_last
       );
 
-    s_norm_all(                 NDSI(3)) <= s_norm_dvalid;
+    s_norm_all(                 NDSI(3)) <= '1'; --s_norm_dvalid
     s_norm_all(                 NDSI(2)) <= s_norm_last;
     s_norm_all(NDSI(2)-1 downto NDSI(1)) <= s_norm_count;
     s_norm_all(NDSI(1)-1 downto NDSI(0)) <= s_norm_data;
@@ -509,12 +505,11 @@ begin
     ---------------------------------------------------------------------------
     -- Strobe normalizer
     
-    strobe_normalizer_inst: StreamNormalizer
+    strobe_normalizer_inst: StreamMaximizer
       generic map (
         ELEMENT_WIDTH           => 1,
         COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
-        REQ_COUNT_WIDTH         => ELEMENT_COUNT_WIDTH+1
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH
       )
       port map (
         clk                     => clk,
@@ -525,17 +520,14 @@ begin
         in_data                 => oia_strobe,
         in_count                => oia_count,
         in_last                 => oia_last,
-        req_count               => slv(to_unsigned(ELEMENT_COUNT_MAX,
-                                                   ELEMENT_COUNT_WIDTH+1)),
         out_valid               => s_strobe_norm_valid,
         out_ready               => s_strobe_norm_ready,
-        out_dvalid              => s_strobe_norm_dvalid,
         out_data                => s_strobe_norm_data,
         out_count               => s_strobe_norm_count,
         out_last                => s_strobe_norm_last
       );
       
-    s_strobe_norm_all(                 NSSI(3)) <= s_strobe_norm_dvalid;
+    s_strobe_norm_all(                 NSSI(3)) <= '1'; --s_strobe_norm_dvalid;
     s_strobe_norm_all(                 NSSI(2)) <= s_strobe_norm_last;
     s_strobe_norm_all(NSSI(2)-1 downto NSSI(1)) <= s_strobe_norm_count;
     s_strobe_norm_all(NSSI(1)-1 downto NSSI(0)) <= s_strobe_norm_data;

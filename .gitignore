@@ -48,3 +48,7 @@ hardware/test/streams/transcript
 hardware/test/streams/work/
 
 platforms/snap/stringwrite/sw/snap_stringwrite
+
+*.wlf
+
+hardware/test/transcript
