@@ -134,6 +134,8 @@ begin
     -- Input is ready when valid by default
     if in_valid = '1' then
       i.ready := '1';
+    else
+      i.ready := '0';
     end if;
            
     -- If the output stage is valid, but not handshaked, the input must be 
@@ -159,7 +161,6 @@ begin
     if has_data = '1' and
        (r(STAGES-1).valid = '0' or (r(STAGES-1).valid = '1' and out_ready = '1'))
     then
-    
       -- Grab inputs
       v(0).valid := in_valid and i.ready;
       v(0).rotate := unsigned(in_rotate);

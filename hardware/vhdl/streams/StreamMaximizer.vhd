@@ -158,6 +158,8 @@ begin
     -- Input is ready when valid is asserted by default
     if in_valid = '1' then
       i.ready := '1';
+    else
+      i.ready := '0';
     end if;
 
     -- If the barrel output is valid, but not handshaked, the input must be
@@ -182,12 +184,21 @@ begin
       -- The rotation for this input is the current position.
       v.rotate(COUNT_WIDTH)               := '0';
       v.rotate(COUNT_WIDTH-1 downto 0)    := r.position;
+      
+      -- Data for barrel shifter
       v.barrel.data                       := in_data;
-      v.barrel.valid                      := '1';
+      
+      -- Control contains new position and last signal
       v.barrel.ctrl(COUNT_WIDTH downto 1) := std_logic_vector(extsum(COUNT_WIDTH-1 downto 0));
       v.barrel.ctrl(0)                    := in_last;
-      v.barrel.evalid                     := work.Utils.cnt2oh(unsigned(in_count));
-
+      
+      -- Generate element valids by one-hot encoding the input count
+      v.barrel.evalid                     := work.Utils.cnt2oh(unsigned(in_count), COUNT_MAX);
+      
+      -- We add COUNT_MAX to the rotation to make sure after we start a new
+      -- stream or we returned to starting position the elements get buffered
+      -- and not direclty sent to the output line. There might still be 
+      -- something on the output line from the previous stream.
       if v.newstream = '1' or r.position = 0 then
         v.rotate := v.rotate + COUNT_MAX;
         v.newstream := '0';
@@ -202,6 +213,9 @@ begin
         -- Calculate the position for the potentially next handshake
         v.position := extsum(COUNT_WIDTH-1 downto 0);
       end if;
+      
+      -- Validate the data for the barrel rotator and shifter
+      v.barrel.valid := '1';
 
     end if;
 

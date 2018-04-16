@@ -213,6 +213,15 @@ begin
     variable o : out_record;
   begin
     v := r;
+  
+    -- Default outputs
+    o.len.data   := std_logic_vector(
+          r.cmd.min + 
+          unsigned(len_gen_data and std_logic_vector(r.cmd.mask))
+        );
+    o.len.last   := '0';
+    o.len.dvalid := '1';
+
 
     case v.state is
       -------------------------------------------------------------------------
@@ -350,6 +359,15 @@ begin
     variable os : sout_record;
   begin
     vs := rs;
+    
+    -- Default outputs
+    os.utf.ready  := utf8_ready;
+    os.utf.data   := utf_gen_data;
+    os.utf.count  := COUNT_MAX_VAL;
+    os.utf.last   := '0';
+    os.utf.dvalid := '1';
+    os.utf.valid  := '0';
+
 
     case vs.state is
       -------------------------------------------------------------------------
@@ -378,6 +396,8 @@ begin
         os.utf.ready  := utf8_ready; -- to output
         os.utf.valid  := utf_gen_valid;
         os.utf.data   := utf_gen_data;
+        os.utf.last   := '0';
+        os.utf.dvalid := '1';
 
         -- Determine the count. It's maximum as long as we haven't reached the
         -- end yet.
@@ -386,9 +406,6 @@ begin
         else
           os.utf.count := rs.len(ELEMENT_COUNT_WIDTH-1 downto 0);
         end if;
-
-        os.utf.last   := '0';
-        os.utf.dvalid := '1';
 
         -- If the output is handshaked
         if os.utf.valid = '1' and utf8_ready = '1' then

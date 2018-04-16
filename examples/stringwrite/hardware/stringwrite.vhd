@@ -180,7 +180,7 @@ architecture rtl of stringwrite is
   constant ELEMENT_WIDTH        : natural := 8;
   constant ELEMENT_COUNT_MAX    : natural := 64;
   constant ELEMENT_COUNT_WIDTH  : natural := log2ceil(ELEMENT_COUNT_MAX+1);
-  
+
   constant BUS_BURST_STEP_LEN   : natural := 1;
   constant BUS_BURST_MAX_LEN    : natural := 16;
   -----------------------------------------------------------------------------
@@ -447,9 +447,31 @@ begin
       v := r;
 
       -- Disable command streams by default
-      o.cmd.valid := '0';
-      o.str.valid := '0';
-      o.unl.ready := '0';
+      o.cmd.valid               := '0';
+      o.str.valid               := '0';
+      o.unl.ready               := '0';
+
+      -- Default outputs
+      o.cmd.firstIdx            := mm_regs(REG_FIRST_IDX);
+      o.cmd.lastIdx             := mm_regs(REG_LAST_IDX);
+      -- Values buffer at LSBs
+      o.cmd.ctrl(BUS_ADDR_WIDTH-1 downto 0)
+        := mm_regs(REG_UTF8_ADDR_HI) & mm_regs(REG_UTF8_ADDR_LO);
+      -- Index buffer at MSBs
+      o.cmd.ctrl(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH)
+        := mm_regs(REG_OFF_ADDR_HI) & mm_regs(REG_OFF_ADDR_LO);
+
+      o.cmd.tag                 := (0 => '1', others => '0');
+
+      -- We use the last index to determine how many strings have to be
+      -- generated. This assumes firstIdx is 0.
+      o.str.len  := mm_regs(REG_LAST_IDX);
+      o.str.min  := mm_regs(REG_STRLEN_MIN)(LEN_WIDTH-1 downto 0);
+      o.str.mask := mm_regs(REG_PRNG_MASK)(LEN_WIDTH-1 downto 0);
+      -- Note: string lengths that are generated will be:
+      -- (minimum string length) + ((PRNG output) bitwise and (PRNG mask))
+      -- Set STRLEN_MIN to 0 and PRNG_MASK to all 1's (strongly not
+      -- recommended) to generate all possible string lengths.
 
       case r.state is
         when IDLE =>
@@ -461,19 +483,8 @@ begin
           end if;
 
         when STRINGGEN =>
+          -- Validate command:
           o.str.valid := '1';
-
-          -- Initialize the UTF8StringGen
-          -- We use the last index to determine how many strings have to be
-          -- generated. This assumes firstIdx is 0.
-          o.str.len  := mm_regs(REG_LAST_IDX);
-          o.str.min  := mm_regs(REG_STRLEN_MIN)(LEN_WIDTH-1 downto 0);
-          o.str.mask := mm_regs(REG_PRNG_MASK)(LEN_WIDTH-1 downto 0);
-
-          -- Note: string lengths that are generated will be:
-          -- (minimum string length) + ((PRNG output) bitwise and (PRNG mask))
-          -- Set STRLEN_MIN to 0 and PRNG_MASK to all 1's (strongly not
-          -- recommended) to generate all possible string lengths.
 
           if ssg_cmd_ready = '1' then
             -- Command is accepted, start the ColumnWriter
@@ -481,19 +492,6 @@ begin
           end if;
 
         when COLUMNWRITER =>
-          o.cmd.valid := '1';
-
-          -- Generate a command for the ColumnWriter:
-          o.cmd.firstIdx := mm_regs(REG_FIRST_IDX);
-          o.cmd.lastIdx := mm_regs(REG_LAST_IDX);
-          o.cmd.tag := (0 => '1', others => '0');
-          -- Set addresses:
-            -- Values buffer at LSBs
-          o.cmd.ctrl(BUS_ADDR_WIDTH-1 downto 0)
-            := mm_regs(REG_UTF8_ADDR_HI) & mm_regs(REG_UTF8_ADDR_LO);
-            -- Index buffer at MSBs
-          o.cmd.ctrl(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH)
-            := mm_regs(REG_OFF_ADDR_HI) & mm_regs(REG_OFF_ADDR_LO);            
           -- Validate command:
           o.cmd.valid    := '1';
 
@@ -528,9 +526,9 @@ begin
       ssg_cmd_len               <= o.str.len;
       ssg_cmd_prng_mask         <= o.str.mask;
       ssg_cmd_strlen_min        <= o.str.min;
-      
+
       unlock_ready              <= o.unl.ready;
-      
+
     end process;
 
     -- Registered output
@@ -615,7 +613,7 @@ begin
       m_axi_wstrb               => m_axi_wstrb,
       m_axi_wlast               => m_axi_wlast
     );
-  
+
   -----------------------------------------------------------------------------
   -- ColumnWriter
   -----------------------------------------------------------------------------

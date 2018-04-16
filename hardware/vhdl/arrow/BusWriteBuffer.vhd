@@ -216,6 +216,9 @@ begin
     vo.mst_wdat_valid           := '0';
     vo.mst_wdat_last            := '0';
     vo.fifo_out_ready           := '0';
+    
+    vo.mst_wreq_addr            := vr.wreq_addr;
+    vo.mst_wreq_len             := vr.wreq_len;
 
     case vr.state is
       when IDLE =>

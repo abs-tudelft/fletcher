@@ -425,7 +425,7 @@ begin
   -- of the stream arbiter (idxB_enable).
   wdat_mux: process(idxB_enable,
     mux_wdat_ready,
-    bss_wdat_data, bss_wdat_last, bss_wdat_valid
+    bss_wdat_data, bss_wdat_last, bss_wdat_valid, bss_wdat_strobe
   ) is
   begin
     for i in 0 to NUM_SLAVES-1 loop

@@ -217,7 +217,7 @@ begin
   end process;
 
   comb: process(r, 
-    cmdIn_valid, cmdIn_firstIdx, 
+    cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_implicit, cmdIn_ctrl, cmdIn_tag,
     int_out_ready, 
     in_data, in_count, in_valid, in_last
   ) is
@@ -235,6 +235,9 @@ begin
     vo.out_valid                := '0';
     vo.out_last                 := '0';
     vo.out_clear                := '0';
+    vo.out_strobe               := STROBE_ALL;
+    vo.out_count                := COUNT_ALL;
+    vo.out_data                 := in_data;
 
     -- In simulation, make data, count and strobe unkown by default
     --pragma translate off
