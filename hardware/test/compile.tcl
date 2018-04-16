@@ -1,5 +1,41 @@
 # Compile design for Questasim
 
+proc compile_utils {source_dir} {
+  vcom -quiet -work work -93 $source_dir/utils/SimUtils.vhd
+  vcom -quiet -work work -93 $source_dir/utils/Memory.vhd
+  vcom -quiet -work work -93 $source_dir/utils/Utils.vhd
+  vcom -quiet -work work -93 $source_dir/utils/Ram1R1W.vhd
+}
+
+proc compile_streams {source_dir} {
+  vcom -quiet -work work -93 $source_dir/streams/Streams.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamArb.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamBuffer.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamFIFOCounter.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamFIFO.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamGearbox.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamNormalizer.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamMaximizer.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamParallelizer.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamSerializer.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamSlice.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamSync.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamAccumulator.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamElementCounter.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamBarrel.vhd
+  vcom -quiet -work work -93 $source_dir/streams/StreamPseudoRandomGenerator.vhd
+}
+
+proc compile_bus {source_dir} {
+  vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusBuffer.vhd
+  
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusWriteBuffer.vhd
+}
+
 proc compile_fletcher {source_dir} {
   
   echo "Compiling Fletcher sources"
@@ -21,29 +57,14 @@ proc compile_fletcher {source_dir} {
   # Sources
   ###############################################################################
 
-  vcom -quiet -work work -93 $source_dir/utils/SimUtils.vhd
-  vcom -quiet -work work -93 $source_dir/utils/Memory.vhd
-  vcom -quiet -work work -93 $source_dir/utils/Utils.vhd
-  vcom -quiet -work work -93 $source_dir/utils/Ram1R1W.vhd
-
-  vcom -quiet -work work -93 $source_dir/streams/Streams.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamArb.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamBuffer.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamFIFOCounter.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamFIFO.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamGearbox.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamNormalizer.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamParallelizer.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamSerializer.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamSlice.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamSync.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamAccumulator.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamElementCounter.vhd
-  vcom -quiet -work work -93 $source_dir/streams/StreamPseudoRandomGenerator.vhd
-
+  compile_utils $source_dir
+   
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfigParse.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfig.vhd
   vcom -quiet -work work -93 $source_dir/arrow/Arrow.vhd
+
+  compile_streams $source_dir
+  compile_bus $source_dir
 
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmdGenBusReq.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmd.vhd
@@ -51,10 +72,6 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderRespCtrl.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderResp.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReader.vhd
-  
-  vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusBuffer.vhd
     
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderArb.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderLevel.vhd
@@ -73,9 +90,6 @@ proc compile_fletcher {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/BufferWriterPre.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferWriter.vhd  
   
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiter.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiterVec.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteBuffer.vhd
   
   vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterArb.vhd
   vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListSync.vhd
