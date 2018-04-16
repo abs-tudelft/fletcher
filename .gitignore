@@ -42,3 +42,9 @@ hardware/test/columnwriter/vsim\.wlf
 examples/stringwrite/hardware/test/work/
 
 examples/stringwrite/hardware/test/
+
+hardware/test/streams/transcript
+
+hardware/test/streams/work/
+
+platforms/snap/stringwrite/sw/snap_stringwrite

@@ -36,6 +36,8 @@ int main()//int argc, char *argv[])
 	struct snap_card *dn;	/* lib snap handle */
   int card_no = 0;
   unsigned long ioctl_data;
+  
+  FILE* fp=fopen("swlog.log","w");
 
   snap_action_flag_t attach_flags = 0;
   struct snap_action *act = NULL;
@@ -78,17 +80,27 @@ int main()//int argc, char *argv[])
   uint32_t * off_buf;
   uint32_t num_rows = 16;
   rc = posix_memalign((void**)&off_buf, BURST_LENGTH, sizeof(uint32_t)*(num_rows+1));
+  
+  // clear offset buffer
+  for (uint32_t i=0; i<num_rows+1; i++) {
+    off_buf[i] = 0xDEADBEEF;
+  }
 
   char * val_buf;
-  uint32_t num_chars = 256 * num_rows;
-  rc = posix_memalign((void**)&val_buf,BURST_LENGTH, sizeof(char)*num_chars);
+  uint32_t max_num_chars = 128*num_rows;
+  rc = posix_memalign((void**)&val_buf,BURST_LENGTH, sizeof(char)*max_num_chars);
+  
+  // clear values buffer
+  for (uint32_t i=0; i<max_num_chars; i++) {
+    val_buf[i] = '?';
+  }
 
   addr_lohi off, val;
   off.full = (uint64_t)off_buf;
   val.full = (uint64_t)val_buf;
 
-  printf("Offsets buffer=%016lX\n", off.full);
-  printf("Values buffer=%016lX\n", val.full);
+  fprintf(fp, "Offsets buffer @ %016lX\n", off.full);
+  fprintf(fp, "Values buffer  @ %016lX\n", val.full);
 
   snap_mmio_write32(dn, REG_CONTROL_LO, CONTROL_RESET);
 
@@ -109,11 +121,23 @@ int main()//int argc, char *argv[])
   uint32_t status = STATUS_BUSY;
   do {
     snap_mmio_read32(dn, REG_STATUS_LO, &status);
-    printf("Status: %08X\n", status & STATUS_MASK);
+    fprintf(fp, "Status: %08X\n", status & STATUS_MASK);
     sleep(1);
   }
   while((status & STATUS_MASK) != STATUS_DONE);
-
+  
+  sleep(5);
+  
+  // print offsets buffer
+  for (uint32_t i=0;i<num_rows+1;i++) {
+    fprintf(fp, "%5u: %u\n", i, off_buf[i]);
+  }
+  
+  // print values buffer
+  for (uint32_t i=0;i<max_num_chars;i++) {
+    fprintf(fp, "%5u: %8X ... %c\n", i, (int)val_buf[i], val_buf[i]);
+  }
+  
   free(off_buf);
   free(val_buf);
 
