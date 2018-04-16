@@ -264,26 +264,52 @@ package Streams is
 
     );
   end component;
-  
-  component StreamBarrelShifter is
+    
+  component StreamBarrel is
     generic (
-      CTRL_WIDTH                : natural;
-      ELEMENT_WIDTH             : natural;
-      ELEMENT_COUNT             : natural;
-      SHAMT_WIDTH               : natural;
-      STAGES                    : natural;
-      SHIFT_DIRECTION           : string
+      ELEMENT_WIDTH               : natural;
+      COUNT_MAX                   : natural;
+      AMOUNT_WIDTH                : natural;
+      AMOUNT_MAX                  : natural;
+      DIRECTION                   : string  := "left";
+      OPERATION                   : string  := "rotate";
+      CTRL_WIDTH                  : natural := 1
     );
     port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_data                   : in  std_logic_vector(ELEMENT_WIDTH * ELEMENT_COUNT-1 downto 0);
-      in_shamt                  : in  std_logic_vector(SHAMT_WIDTH-1 downto 0);
-      out_valid                 : out std_logic;
-      out_ready                 : in  std_logic;
-      out_data                  : out std_logic_vector(ELEMENT_WIDTH * ELEMENT_COUNT-1 downto 0)
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      in_valid                    : in  std_logic;
+      in_ready                    : out std_logic;
+      in_rotate                   : in  std_logic_vector(AMOUNT_WIDTH-1 downto 0);
+      in_data                     : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_ctrl                     : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => '0');
+      out_valid                   : out std_logic;
+      out_ready                   : in  std_logic;
+      out_data                    : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      out_ctrl                    : out std_logic_vector(CTRL_WIDTH-1 downto 0)
+    );
+  end component;
+  
+  component StreamMaximizer is
+    generic (
+      ELEMENT_WIDTH               : natural;
+      COUNT_MAX                   : natural;
+      COUNT_WIDTH                 : natural
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      in_valid                    : in  std_logic;
+      in_ready                    : out std_logic;
+      in_dvalid                   : in  std_logic := '1';
+      in_data                     : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                    : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
+      in_last                     : in  std_logic := '0';
+      out_valid                   : out std_logic;
+      out_ready                   : in  std_logic;
+      out_data                    : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      out_count                   : out std_logic_vector(COUNT_WIDTH-1 downto 0);
+      out_last                    : out std_logic
     );
   end component;
   
