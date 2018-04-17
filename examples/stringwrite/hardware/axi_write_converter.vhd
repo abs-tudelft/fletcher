@@ -225,7 +225,7 @@ begin
       )
       port map (
         clk                     => clk,
-        reset                   => not(reset_n),
+        reset                   => reset,
 
         in_valid                => ser_dat_i_valid,
         in_ready                => ser_dat_i_ready,
@@ -250,7 +250,7 @@ begin
       )
       port map (
         clk                     => clk,
-        reset                   => not(reset_n),
+        reset                   => reset,
 
         in_valid                => ser_stb_i_valid,
         in_ready                => ser_stb_i_ready,

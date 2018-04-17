@@ -287,7 +287,9 @@ begin
         read_valid              <= '0';
       else
         if s_axi_arvalid = '1' and read_valid = '0' then
+          --pragma translate off
           dumpStdOut("Read request from MMIO: " & integer'image(address) & " value " & integer'image(int(mm_regs(address))));
+          --pragma translate on
           read_address          <= address;
           read_valid            <= '1';
         elsif s_axi_rready = '1' then
