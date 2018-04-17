@@ -428,6 +428,23 @@ begin
     bss_wdat_data, bss_wdat_last, bss_wdat_valid, bss_wdat_strobe
   ) is
   begin
+    
+    -- Invalidate all paths
+    mux_wdat_valid    <= '0';
+    bss_wdat_ready    <= (others => '0');
+    
+    mux_wdat_data     <= (others => '0');
+    mux_wdat_strobe   <= (others => '0');
+    mux_wdat_last     <= '0';
+    
+    -- In simulation, make everything unknown if not enabled
+    --pragma translate off
+    mux_wdat_data     <= (others => 'U');
+    mux_wdat_strobe   <= (others => 'U');
+    mux_wdat_last     <= 'U';
+    --pragma translate on
+    
+    -- Except the slave that should be enabled
     for i in 0 to NUM_SLAVES-1 loop
       if idxB_enable(i) = '1' then
         mux_wdat_valid    <= bss_wdat_valid(i);
@@ -435,9 +452,6 @@ begin
         mux_wdat_data     <= bss_wdat_data(i);
         mux_wdat_strobe   <= bss_wdat_strobe(i);
         mux_wdat_last     <= bss_wdat_last(i);        
-      else
-        -- Backpressure the other streams
-        bss_wdat_ready(i) <= '0';
       end if;
     end loop;
   end process;
