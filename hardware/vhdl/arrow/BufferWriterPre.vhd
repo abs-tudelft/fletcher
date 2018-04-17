@@ -457,7 +457,9 @@ begin
       generic map (
         ELEMENT_WIDTH           => ELEMENT_WIDTH,
         COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
+        BARREL_BACKPRESSURE     => false,
+        USE_FIFO                => true
       )
       port map (
         clk                     => clk,
@@ -509,7 +511,9 @@ begin
       generic map (
         ELEMENT_WIDTH           => 1,
         COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH
+        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
+        BARREL_BACKPRESSURE     => false,
+        USE_FIFO                => true
       )
       port map (
         clk                     => clk,

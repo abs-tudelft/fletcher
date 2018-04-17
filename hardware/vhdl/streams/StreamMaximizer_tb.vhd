@@ -28,8 +28,8 @@ end StreamMaximizer_tb;
 architecture Behavioral of StreamMaximizer_tb is
 
   constant ELEMENT_WIDTH        : natural := 4;
-  constant COUNT_MAX            : natural := 4;
-  constant COUNT_WIDTH          : natural := 2;
+  constant COUNT_MAX            : natural := 8;
+  constant COUNT_WIDTH          : natural := 3;
 
   signal clk                    : std_logic := '1';
   signal reset                  : std_logic;
@@ -139,7 +139,9 @@ begin
     generic map (
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       COUNT_MAX                 => COUNT_MAX,
-      COUNT_WIDTH               => COUNT_WIDTH
+      COUNT_WIDTH               => COUNT_WIDTH,
+      USE_FIFO                  => true,
+      BARREL_BACKPRESSURE       => false
     )
     port map (
       clk                       => clk,
@@ -169,6 +171,8 @@ begin
       in_ready                  => out_ready,
       in_data                   => "0"
     );
+  
+  --out_ready <= '0';
   
   check_proc: process is
     variable data               : unsigned(ELEMENT_WIDTH-1 downto 0) := (others => '0');

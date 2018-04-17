@@ -30,16 +30,16 @@ entity StreamBarrel is
   generic (
 
     -- Width of a data element.
-    ELEMENT_WIDTH               : natural;
+    ELEMENT_WIDTH               : natural := 1;
 
     -- Maximum number of elements per clock.
-    COUNT_MAX                   : natural;
+    COUNT_MAX                   : natural := 4;
 
     -- Width of the amount input
-    AMOUNT_WIDTH                : natural;
+    AMOUNT_WIDTH                : natural := 3;
     
     -- Maximum shift/rotate
-    AMOUNT_MAX                  : natural;
+    AMOUNT_MAX                  : natural := 3;
 
     -- Direction of the rotation
     DIRECTION                   : string := "left";
@@ -48,7 +48,11 @@ entity StreamBarrel is
     OPERATION                   : string := "rotate";
 
     -- The number of pipelined stages to use to make the rotation
-    --STAGES                      : natural;
+    STAGES                      : natural := 4;
+    
+    -- Whether or not this unit uses the "out_ready" signal. Make false to
+    -- disable backpressure but to remove high fan-out on the out_ready signal.
+    BACKPRESSURE                : boolean := false;
 
     -- Width of control data. Must be 1 to avoid null ranges. Travels with the
     -- pipeline
@@ -80,18 +84,37 @@ end StreamBarrel;
 
 architecture Behavioral of StreamBarrel is
 
+  constant STAGE_EXT            : natural := STAGES + 1;
+  constant STAGE_MAX            : natural := AMOUNT_MAX / STAGES;
+  constant STAGE_ROT_BITS       : natural := log2ceil(STAGE_MAX+1);
+  
+  -- Prevent simulator spam
+  type u_array is array(natural range <>) of unsigned(STAGE_ROT_BITS-1 downto 0);
+  
+  function fill_stage_rot_array(bits : natural) return u_array is
+    variable ret : u_array(1 to 2**bits-1);
+  begin
+    for i in 1 to 2**bits-1 loop
+      ret(i) := to_unsigned(i, bits);
+    end loop;
+    return ret;
+  end function;
+  
+  constant STAGE_ROT : u_array(1 to 2**STAGE_ROT_BITS-1) := fill_stage_rot_array(STAGE_ROT_BITS);
+  
+  -- Internal rotate signal width
+  constant ROT_WIDTH : natural := work.Utils.max(STAGE_ROT_BITS, AMOUNT_WIDTH);
+  constant ROT_MAX   : unsigned(ROT_WIDTH-1 downto 0) := to_unsigned(STAGE_MAX, ROT_WIDTH);
+
   type in_type is record
     ready                       : std_logic;
   end record;
-
-  -- Current implementation only supports shifting one position per stage.
-  constant STAGES : natural := AMOUNT_MAX+1;
-
+  
   type element_array_type is array(COUNT_MAX-1 downto 0) of std_logic_vector(ELEMENT_WIDTH-1 downto 0);
 
   type pipeline_reg_type is record
     elements : element_array_type;
-    rotate   : unsigned(AMOUNT_WIDTH-1 downto 0);
+    rotate   : unsigned(ROT_WIDTH-1 downto 0);
 
     valid    : std_logic;
     ctrl     : std_logic_vector(CTRL_WIDTH-1 downto 0);
@@ -100,7 +123,7 @@ architecture Behavioral of StreamBarrel is
   -- Prevent simulator spam
   constant ROTATE_ZERO : unsigned(AMOUNT_WIDTH-1 downto 0) := (others => '0');
 
-  type pipeline_type is array(0 to STAGES-1) of pipeline_reg_type;
+  type pipeline_type is array(0 to STAGE_EXT-1) of pipeline_reg_type;
 
   signal r : pipeline_type;
   signal d : pipeline_type;
@@ -114,7 +137,7 @@ begin
       
       if reset = '1' then
         -- Invalidate all data
-        for i in 0 to STAGES-1 loop
+        for i in 0 to STAGE_EXT-1 loop
           r(i).valid <= '0';
         end loop;
       end if;
@@ -128,8 +151,10 @@ begin
     variable v : pipeline_type;
     variable i : in_type;
     variable has_data : std_logic;
+    
+    variable rot_sub : unsigned(ROT_WIDTH-1 downto 0) := (others => '0');
   begin
-    v                           := r;
+    v := r;
     
     -- Input is ready when valid by default
     if in_valid = '1' then
@@ -137,33 +162,42 @@ begin
     else
       i.ready := '0';
     end if;
-           
-    -- If the output stage is valid, but not handshaked, the input must be 
-    -- stalled immediately
-    if r(STAGES-1).valid = '1' and out_ready = '0' then
-      i.ready                   := '0';
-    end if;
-        
-    -- If the output is handshaked, lower the output valid by default.
-    if r(STAGES-1).valid = '1' and out_ready = '1' then
-      v(STAGES-1).valid := '0';
-    end if;
-    
-    -- Check if the pipeline has data anywhere
-    has_data := in_valid;
-    
-    for s in 0 to STAGES-1 loop
-      has_data := has_data or v(s).valid;
-    end loop;
 
-    -- If the pipeline still has data, and the output has no data or is 
-    -- handshaked, we may advance the stream
-    if has_data = '1' and
-       (r(STAGES-1).valid = '0' or (r(STAGES-1).valid = '1' and out_ready = '1'))
+    if BACKPRESSURE then
+      -- If the output stage is valid, but not handshaked, the input must be 
+      -- stalled immediately
+      if r(STAGE_EXT-1).valid = '1' and out_ready = '0' then
+        i.ready := '0';
+      end if;
+              
+      -- If the output is handshaked, lower the output valid by default.
+      if r(STAGE_EXT-1).valid = '1' and out_ready = '1' then
+        v(STAGE_EXT-1).valid := '0';
+      end if;
+    end if;
+    
+    if BACKPRESSURE then
+      -- Check if the pipeline has data anywhere
+      has_data := in_valid;
+      
+      for s in 0 to STAGE_EXT-1 loop
+        has_data := has_data or v(s).valid;
+      end loop;
+    end if;
+
+    -- We don't use backpressure,
+    -- or the pipeline still has data and we do use backpressure and
+    -- the output has no data, or is handshaked, we may advance the stream
+    if  (not BACKPRESSURE) or 
+        (has_data = '1' and 
+          (r(STAGE_EXT-1).valid = '0' or 
+            (r(STAGE_EXT-1).valid = '1' and out_ready = '1')
+          )
+        )
     then
       -- Grab inputs
       v(0).valid := in_valid and i.ready;
-      v(0).rotate := unsigned(in_rotate);
+      v(0).rotate := resize(unsigned(in_rotate), ROT_WIDTH);
       v(0).ctrl := in_ctrl;
       
       -- Determine inputs
@@ -182,57 +216,96 @@ begin
       --pragma translate on
     
       -- Loop over all stages
-      for s in 1 to STAGES-1 loop
-
+      for s in 1 to STAGE_EXT-1 loop
+        rot_sub := (others => '0');
         -- Only shift if we still have to shift
         if r(s-1).rotate /= ROTATE_ZERO then
-
-          -- The maximum shift amount in a stage is COUNT_MAX / STAGES, assuming
-          -- COUNT_MAX is a power of 2 and stages is a multiple of 2.
-          -- TODO: support this? do we need this?
-
+          -- Calculate how much we will rotate in this stage
+          rot_sub := ROT_MAX;
+          for a in 1 to STAGE_MAX-1 loop
+            if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+              rot_sub := resize(STAGE_ROT(a),ROT_WIDTH);
+            end if;
+          end loop;
+                    
           if DIRECTION = "left" then
-            -- Shift left
+            -- Loop over all elements
             for e in 0 to COUNT_MAX-1 loop
-              if OPERATION = "rotate" then
-                -- Rotation
-                v(s).elements(e) := r(s-1).elements((e-1) mod COUNT_MAX);
+              if OPERATION = "rotate" then                
+                -- Rotate maximum by default
+                v(s).elements(e) := r(s-1).elements((e-STAGE_MAX) mod COUNT_MAX);
+                -- Loop over all other possible rotations
+                for a in 1 to STAGE_MAX-1 loop
+                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                    v(s).elements(e) := r(s-1).elements((e-a) mod COUNT_MAX);
+                  end if;
+                end loop;
               else
-                -- Shifting
-                if e = 0 then
-                  v(s).elements(e) := (others => '0');
+                -- Shift maximum by default
+                if e >= STAGE_MAX then
+                  v(s).elements(e) := r(s-1).elements(e-STAGE_MAX);
                 else
-                  v(s).elements(e) := r(s-1).elements((e-1));
+                  v(s).elements(e) := (others => '0');
                 end if;
+                -- Loop over all other possible shifts
+                for a in 1 to STAGE_MAX-1 loop
+                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                    if e-a < 0 then
+                      v(s).elements(e) := (others => '0');
+                    else
+                      v(s).elements(e) := r(s-1).elements(e-a);
+                    end if;
+                  end if;
+                end loop;
               end if;
             end loop;
           else
-            -- Shift right
+            -- Loop over all elements
             for e in 0 to COUNT_MAX-1 loop
-              if OPERATION = "rotate" then
-                -- Rotation
-                v(s).elements(e) := r(s-1).elements((e+1) mod COUNT_MAX);
+              if OPERATION = "rotate" then                
+                -- Rotate maximum by default
+                v(s).elements(e) := r(s-1).elements((e+STAGE_MAX) mod COUNT_MAX);
+                -- Loop over all other possible rotations
+                for a in 1 to STAGE_MAX-1 loop
+                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                    v(s).elements(e) := r(s-1).elements((e+a) mod COUNT_MAX);
+                  end if;
+                end loop;
               else
-                -- Shifting
-                if e = COUNT_MAX-1 then
-                  v(s).elements(e) := (others => '0');
+                -- Shift maximum by default
+                v(s).elements(e) := r(s-1).elements(e+STAGE_MAX);
+                if e < COUNT_MAX - STAGE_MAX then
+                  v(s).elements(e) := r(s-1).elements(e+STAGE_MAX);
                 else
-                  v(s).elements(e) := r(s-1).elements((e+1));
+                  v(s).elements(e) := (others => '0');
                 end if;
+                -- Loop over all other possible shifts
+                for a in 1 to STAGE_MAX-1 loop
+                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                    if e-a < 0 then
+                      v(s).elements(e) := (others => '0');
+                    else
+                      v(s).elements(e) := r(s-1).elements(e+a);
+                    end if;
+                  end if;
+                end loop;
               end if;
             end loop;
           end if;
-
-          -- Decrease shift amount
-          v(s).rotate := r(s-1).rotate - 1;
         else
           -- We are done shifting, just pass through the elements
           v(s).elements := r(s-1).elements;
           v(s).rotate := r(s-1).rotate;
         end if;
-
-        v(s).valid := r(s-1).valid;
+        
+        -- Decrease shift amount
+        v(s).rotate := r(s-1).rotate - rot_sub;
+        
+        -- Send out ctrl from last stage
         v(s).ctrl := r(s-1).ctrl;
+        
+        -- Take valid from last stage
+        v(s).valid := r(s-1).valid;
 
       end loop;
     end if;
@@ -244,11 +317,11 @@ begin
   end process;
   
   out_gen: for e in 0 to COUNT_MAX-1 generate
-    out_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= r(STAGES-1).elements(e);
+    out_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= r(STAGE_EXT-1).elements(e);
   end generate;
   
-  out_ctrl <= r(STAGES-1).ctrl;
-  out_valid <= r(STAGES-1).valid;
+  out_ctrl <= r(STAGE_EXT-1).ctrl;
+  out_valid <= r(STAGE_EXT-1).valid;
 
 end Behavioral;
 

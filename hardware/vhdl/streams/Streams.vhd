@@ -273,6 +273,8 @@ package Streams is
       AMOUNT_MAX                  : natural;
       DIRECTION                   : string  := "left";
       OPERATION                   : string  := "rotate";
+      STAGES                      : natural;
+      BACKPRESSURE                : boolean := true;
       CTRL_WIDTH                  : natural := 1
     );
     port (
@@ -294,7 +296,9 @@ package Streams is
     generic (
       ELEMENT_WIDTH               : natural;
       COUNT_MAX                   : natural;
-      COUNT_WIDTH                 : natural
+      COUNT_WIDTH                 : natural;
+      USE_FIFO                    : boolean := false;
+      BARREL_BACKPRESSURE         : boolean := true
     );
     port (
       clk                         : in  std_logic;
@@ -307,6 +311,7 @@ package Streams is
       in_last                     : in  std_logic := '0';
       out_valid                   : out std_logic;
       out_ready                   : in  std_logic;
+      out_has_space               : in  std_logic := '0';
       out_data                    : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       out_count                   : out std_logic_vector(COUNT_WIDTH-1 downto 0);
       out_last                    : out std_logic
