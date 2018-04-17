@@ -1646,7 +1646,9 @@ package Arrow is
       FIFO_DEPTH                : natural;
       LEN_SHIFT                 : natural := 0;
       RAM_CONFIG                : string  := "";
-      SLV_LAST_MODE             : string  := "burst"
+      SLV_LAST_MODE             : string  := "burst";
+      SLV_DATA_SLICE            : boolean := true;
+      MST_DATA_SLICE            : boolean := true
     );
     port (
       clk                       : in  std_logic;

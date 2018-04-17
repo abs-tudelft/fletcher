@@ -130,6 +130,13 @@ architecture Behavioral of BusWriteBuffer is
   signal s_slv_wdat_last         : std_logic;
   signal s_slv_wdat_ctrl         : std_logic_vector(CTRL_WIDTH-1 downto 0);
   
+  signal s_mst_wdat_valid        : std_logic;
+  signal s_mst_wdat_ready        : std_logic;
+  signal s_mst_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_mst_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_mst_wdat_last         : std_logic;
+  signal s_mst_wdat_ctrl         : std_logic_vector(CTRL_WIDTH-1 downto 0);
+  
   -- Fifo data stream serialization indices.
   constant FSI : nat_array := cumulative((
     3 => CTRL_WIDTH,
@@ -198,7 +205,7 @@ begin
     fifo_out_valid, fifo_out_data(FSI(0)),
     slv_wreq_len, slv_wreq_addr, slv_wreq_valid,
     mst_wreq_ready,
-    mst_wdat_ready
+    s_mst_wdat_ready
   ) is
     variable vr                 : reg_record;
     variable vo                 : output_record;
@@ -251,7 +258,7 @@ begin
       when BURST =>
         -- Allow the FIFO to unload
         vo.mst_wdat_valid       := fifo_out_valid;
-        vo.fifo_out_ready       := mst_wdat_ready;
+        vo.fifo_out_ready       := s_mst_wdat_ready;
 
         -- Wait for acceptance
         if vo.mst_wdat_valid = '1' and vo.fifo_out_ready = '1' then
@@ -296,7 +303,7 @@ begin
     end case;
 
     -- Decrease FIFO count when something got written on the bus
-    if mst_wdat_ready = '1' and vo.mst_wdat_valid = '1' then
+    if s_mst_wdat_ready = '1' and vo.mst_wdat_valid = '1' then
       vr.count                  := vr.count - 1;
     end if;
 
@@ -323,8 +330,8 @@ begin
     mst_wreq_addr               <= vo.mst_wreq_addr;
     mst_wreq_len                <= vo.mst_wreq_len;
 
-    mst_wdat_valid              <= vo.mst_wdat_valid;
-    mst_wdat_last               <= vo.mst_wdat_last;
+    s_mst_wdat_valid            <= vo.mst_wdat_valid;
+    s_mst_wdat_last             <= vo.mst_wdat_last;
 
     fifo_out_ready              <= vo.fifo_out_ready;
 
@@ -361,9 +368,9 @@ begin
       out_data                  => fifo_out_data
     );
     
-  mst_wdat_ctrl                 <= fifo_out_data(FSI(4)-1 downto FSI(3));
-  mst_wdat_strobe               <= fifo_out_data(FSI(3)-1 downto FSI(2));
-  mst_wdat_data                 <= fifo_out_data(FSI(2)-1 downto FSI(1));
+  s_mst_wdat_ctrl               <= fifo_out_data(FSI(4)-1 downto FSI(3));
+  s_mst_wdat_strobe             <= fifo_out_data(FSI(3)-1 downto FSI(2));
+  s_mst_wdat_data               <= fifo_out_data(FSI(2)-1 downto FSI(1));
 
   slave_slice_gen: if SLV_DATA_SLICE generate    
     signal slv_wdat_all   : std_logic_vector(FSI(4)-1 downto 0);
@@ -375,7 +382,7 @@ begin
     slv_wdat_all(FSI(2)-1 downto FSI(1)) <= slv_wdat_data;
     slv_wdat_all(                FSI(0)) <= slv_wdat_last;
     
-    wdat_in_slice : StreamBuffer
+  wdat_in_slice : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
       DATA_WIDTH                => FSI(4)
@@ -406,6 +413,49 @@ begin
     s_slv_wdat_strobe  <= slv_wdat_strobe;
     s_slv_wdat_data    <= slv_wdat_data;
     s_slv_wdat_last    <= slv_wdat_last;
+  end generate;
+  
+  master_slice_gen: if MST_DATA_SLICE generate    
+    signal s_mst_wdat_all : std_logic_vector(FSI(4)-1 downto 0);
+    signal mst_wdat_all   : std_logic_vector(FSI(4)-1 downto 0);
+  begin
+    
+    s_mst_wdat_all(FSI(4)-1 downto FSI(3)) <= s_mst_wdat_ctrl;
+    s_mst_wdat_all(FSI(3)-1 downto FSI(2)) <= s_mst_wdat_strobe;
+    s_mst_wdat_all(FSI(2)-1 downto FSI(1)) <= s_mst_wdat_data;
+    s_mst_wdat_all(                FSI(0)) <= s_mst_wdat_last;
+    
+    wdat_out_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
+      DATA_WIDTH                => FSI(4)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => s_mst_wdat_valid,
+      in_ready                  => s_mst_wdat_ready,
+      in_data                   => s_mst_wdat_all,
+
+      out_valid                 => mst_wdat_valid,
+      out_ready                 => mst_wdat_ready,
+      out_data                  => mst_wdat_all
+    );
+    
+  mst_wdat_ctrl   <= mst_wdat_all(FSI(4)-1 downto FSI(3));
+  mst_wdat_strobe <= mst_wdat_all(FSI(3)-1 downto FSI(2));
+  mst_wdat_data   <= mst_wdat_all(FSI(2)-1 downto FSI(1));
+  mst_wdat_last   <= mst_wdat_all(                FSI(0));
+  
+  end generate;
+  no_mst_slice_gen: if not MST_DATA_SLICE generate
+    mst_wdat_valid   <= s_mst_wdat_valid;
+    s_mst_wdat_ready <= mst_wdat_ready;
+    mst_wdat_ctrl    <= s_mst_wdat_ctrl;
+    mst_wdat_strobe  <= s_mst_wdat_strobe;
+    mst_wdat_data    <= s_mst_wdat_data;
+    mst_wdat_last    <= s_mst_wdat_last;
   end generate;
 
 end Behavioral;
