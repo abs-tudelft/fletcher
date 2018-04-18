@@ -89,6 +89,7 @@ end StreamMaximizer;
 architecture Behavioral of StreamMaximizer is
 
   constant AMOUNT_WIDTH         : natural := log2ceil(COUNT_MAX);
+  constant ROTATE_WIDTH         : natural := AMOUNT_WIDTH+1;
 
   -- Control will contain the last bit
   constant CTRL_WIDTH           : natural := COUNT_WIDTH + 1;
@@ -103,9 +104,9 @@ architecture Behavioral of StreamMaximizer is
   -- Rotate is 1 bit longer than required for the barrel shifter of the 
   -- fall-through registers enable bits
   type reg_type is record
-    position                    : unsigned(COUNT_WIDTH-1 downto 0);
+    position                    : unsigned(AMOUNT_WIDTH-1 downto 0);
     barrel                      : barrel_type;
-    rotate                      : unsigned(COUNT_WIDTH+1-1 downto 0);
+    rotate                      : unsigned(AMOUNT_WIDTH+1-1 downto 0);
     newstream                   : std_logic;
   end record;
 
@@ -135,7 +136,7 @@ architecture Behavioral of StreamMaximizer is
   type freg_type is record
     bufl    : line_type;
     outl    : line_type;
-    count   : std_logic_vector(COUNT_WIDTH-1 downto 0);
+    count   : std_logic_vector(AMOUNT_WIDTH-1 downto 0);
     valid   : std_logic;
     last    : std_logic;
   end record;
@@ -146,11 +147,11 @@ architecture Behavioral of StreamMaximizer is
   signal buf_valid              : std_logic;
   signal buf_ready              : std_logic;
   signal buf_data               : std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-  signal buf_count              : std_logic_vector(COUNT_WIDTH-1 downto 0);
+  signal buf_count              : std_logic_vector(AMOUNT_WIDTH-1 downto 0);
   signal buf_last               : std_logic;
   
   constant SDIV                 : natural := 4;
-  constant SADD                 : natural := 3;
+  constant SADD                 : natural := 4;
   constant FIFO_DEPTH_LOG2      : natural := log2ceil(COUNT_MAX/SDIV+SADD);
   
   signal buf_wptr               : std_logic_vector(FIFO_DEPTH_LOG2 downto 0);
@@ -159,7 +160,7 @@ architecture Behavioral of StreamMaximizer is
   
   constant BSI : nat_array := cumulative((
     2 => 1, --last 
-    1 => COUNT_WIDTH,
+    1 => AMOUNT_WIDTH,
     0 => COUNT_MAX*ELEMENT_WIDTH
   ));
   
@@ -190,7 +191,7 @@ begin
     variable v: reg_type;
     variable i: in_type;
     
-    variable extsum : unsigned(COUNT_WIDTH downto 0);
+    variable extsum : unsigned(AMOUNT_WIDTH downto 0);
   begin
     v := r;
 
@@ -224,14 +225,14 @@ begin
       extsum := unsigned("0" & std_logic_vector(r.position)) + unsigned(in_count);
       
       -- The rotation for this input is the current position.
-      v.rotate(COUNT_WIDTH)               := '0';
-      v.rotate(COUNT_WIDTH-1 downto 0)    := r.position;
+      v.rotate(AMOUNT_WIDTH)              := '0';
+      v.rotate(AMOUNT_WIDTH-1 downto 0)   := r.position;
       
       -- Data for barrel shifter
       v.barrel.data                       := in_data;
       
       -- Control contains new position and last signal
-      v.barrel.ctrl(COUNT_WIDTH downto 1) := std_logic_vector(extsum(COUNT_WIDTH-1 downto 0));
+      v.barrel.ctrl(AMOUNT_WIDTH downto 1) := std_logic_vector(extsum(AMOUNT_WIDTH-1 downto 0));
       v.barrel.ctrl(0)                    := in_last;
       
       -- Generate element valids by one-hot encoding the input count when the input is ready
@@ -253,7 +254,7 @@ begin
         v.newstream := '1';
       else
         -- Calculate the position for the potentially next handshake
-        v.position := extsum(COUNT_WIDTH-1 downto 0);
+        v.position := extsum(AMOUNT_WIDTH-1 downto 0);
       end if;
       
       -- Validate the data for the barrel rotator and shifter
@@ -280,7 +281,7 @@ begin
     generic map (
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       COUNT_MAX                 => COUNT_MAX,
-      AMOUNT_WIDTH              => COUNT_WIDTH,
+      AMOUNT_WIDTH              => AMOUNT_WIDTH,
       AMOUNT_MAX                => COUNT_MAX,
       DIRECTION                 => "left",
       OPERATION                 => "rotate",
@@ -293,7 +294,7 @@ begin
       reset                     => reset,
       in_valid                  => r.barrel.valid,
       in_ready                  => barrel_ready,
-      in_rotate                 => std_logic_vector(r.rotate(COUNT_WIDTH-1 downto 0)),
+      in_rotate                 => std_logic_vector(r.rotate(AMOUNT_WIDTH-1 downto 0)),
       in_data                   => r.barrel.data,
       in_ctrl                   => r.barrel.ctrl,
       out_valid                 => rotated.valid,
@@ -310,7 +311,7 @@ begin
     generic map (
       ELEMENT_WIDTH             => 1,
       COUNT_MAX                 => 2*COUNT_MAX,
-      AMOUNT_WIDTH              => COUNT_WIDTH+1,
+      AMOUNT_WIDTH              => AMOUNT_WIDTH+1,
       AMOUNT_MAX                => COUNT_MAX,
       DIRECTION                 => "left",
       OPERATION                 => "shift",
@@ -474,9 +475,9 @@ begin
       -- Set the last signal
       fv.last   := fv.outl.ctrl(0);
       
-      -- Add the count to the count
+      -- Count is the position
       if fv.last = '1' then
-        fv.count := fv.outl.ctrl(COUNT_WIDTH downto 1);
+        fv.count := fv.outl.ctrl(AMOUNT_WIDTH downto 1);
       else
         fv.count := (others => '0');
       end if;
@@ -540,19 +541,30 @@ begin
     end process;
     
     out_last                    <= out_all(                BSI(2));
-    out_count                   <= out_all(BSI(2)-1 downto BSI(1));
+    out_count                   <= resize_count(out_all(BSI(2)-1 downto BSI(1)), COUNT_WIDTH);
     out_data                    <= out_all(BSI(1)-1 downto BSI(0));
     
   end generate;
   no_fifo_gen: if not USE_FIFO generate
-  
     out_valid <= buf_valid;
     buf_ready <= out_ready;
     out_data  <= buf_data;
     out_count <= buf_count;
-    out_last  <= buf_last;
-    
+    out_last  <= buf_last;    
   end generate;
+  
+  -- In simulation, check if no data is lost because of too little backpressure.
+  --pragma translate off
+  check_bp: process(clk) is
+  begin
+    if rising_edge(clk) then
+      if rotated.valid = '1' and rotated_ready = '0' and not BARREL_BACKPRESSURE then
+        report "Fall-through registers didn't catch non-backpressured barrel output."
+        severity failure;
+      end if;
+    end if;
+  end process;
+  --pragma translate on
 
 end Behavioral;
 

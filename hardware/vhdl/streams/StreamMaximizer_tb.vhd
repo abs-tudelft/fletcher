@@ -27,9 +27,9 @@ end StreamMaximizer_tb;
 
 architecture Behavioral of StreamMaximizer_tb is
 
-  constant ELEMENT_WIDTH        : natural := 4;
-  constant COUNT_MAX            : natural := 8;
-  constant COUNT_WIDTH          : natural := 3;
+  constant ELEMENT_WIDTH        : natural := 8;
+  constant COUNT_MAX            : natural := 64;
+  constant COUNT_WIDTH          : natural := 7;
 
   signal clk                    : std_logic := '1';
   signal reset                  : std_logic;
