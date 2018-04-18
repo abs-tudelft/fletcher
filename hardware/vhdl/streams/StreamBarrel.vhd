@@ -113,11 +113,10 @@ architecture Behavioral of StreamBarrel is
   type element_array_type is array(COUNT_MAX-1 downto 0) of std_logic_vector(ELEMENT_WIDTH-1 downto 0);
 
   type pipeline_reg_type is record
-    elements : element_array_type;
-    rotate   : unsigned(ROT_WIDTH-1 downto 0);
-
     valid    : std_logic;
+    rotate   : unsigned(ROT_WIDTH-1 downto 0);
     ctrl     : std_logic_vector(CTRL_WIDTH-1 downto 0);
+    elements : element_array_type;
   end record;
   
   -- Prevent simulator spam
@@ -214,19 +213,28 @@ begin
         end loop;
       end if;
       --pragma translate on
-    
+      
+      -- TODO: implement something that rotates only STAGE_MAX after STAGE_MAX
+      -- stages.
+      
       -- Loop over all stages
       for s in 1 to STAGE_EXT-1 loop
         rot_sub := (others => '0');
         -- Only shift if we still have to shift
         if r(s-1).rotate /= ROTATE_ZERO then
-          -- Calculate how much we will rotate in this stage
+          -- Calculate how much we will rotate in this stage.
+          
+          -- Default is maximum
           rot_sub := ROT_MAX;
-          for a in 1 to STAGE_MAX-1 loop
-            if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
-              rot_sub := resize(STAGE_ROT(a),ROT_WIDTH);
-            end if;
-          end loop;
+          
+          -- Only change maximum below 
+          if s < STAGE_MAX then
+            for a in STAGE_MAX-1 downto 1 loop
+              if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                rot_sub := resize(STAGE_ROT(a),ROT_WIDTH);
+              end if;
+            end loop;
+          end if;
                     
           if DIRECTION = "left" then
             -- Loop over all elements
@@ -235,11 +243,13 @@ begin
                 -- Rotate maximum by default
                 v(s).elements(e) := r(s-1).elements((e-STAGE_MAX) mod COUNT_MAX);
                 -- Loop over all other possible rotations
-                for a in 1 to STAGE_MAX-1 loop
-                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
-                    v(s).elements(e) := r(s-1).elements((e-a) mod COUNT_MAX);
-                  end if;
-                end loop;
+                if s < STAGE_MAX then
+                  for a in STAGE_MAX-1 downto 1 loop
+                    if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                      v(s).elements(e) := r(s-1).elements((e-a) mod COUNT_MAX);
+                    end if;
+                  end loop;
+                end if;
               else
                 -- Shift maximum by default
                 if e >= STAGE_MAX then
@@ -247,16 +257,18 @@ begin
                 else
                   v(s).elements(e) := (others => '0');
                 end if;
-                -- Loop over all other possible shifts
-                for a in 1 to STAGE_MAX-1 loop
-                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
-                    if e-a < 0 then
-                      v(s).elements(e) := (others => '0');
-                    else
-                      v(s).elements(e) := r(s-1).elements(e-a);
+                if s < STAGE_MAX then
+                  -- Loop over all other possible shifts
+                  for a in STAGE_MAX-1 downto 1 loop
+                    if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                      if e-a < 0 then
+                        v(s).elements(e) := (others => '0');
+                      else
+                        v(s).elements(e) := r(s-1).elements(e-a);
+                      end if;
                     end if;
-                  end if;
-                end loop;
+                  end loop;
+                end if;
               end if;
             end loop;
           else
@@ -266,11 +278,13 @@ begin
                 -- Rotate maximum by default
                 v(s).elements(e) := r(s-1).elements((e+STAGE_MAX) mod COUNT_MAX);
                 -- Loop over all other possible rotations
-                for a in 1 to STAGE_MAX-1 loop
-                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
-                    v(s).elements(e) := r(s-1).elements((e+a) mod COUNT_MAX);
-                  end if;
-                end loop;
+                if s < STAGE_MAX then
+                  for a in STAGE_MAX-1 downto 1 loop
+                    if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                      v(s).elements(e) := r(s-1).elements((e+a) mod COUNT_MAX);
+                    end if;
+                  end loop;
+                end if;
               else
                 -- Shift maximum by default
                 v(s).elements(e) := r(s-1).elements(e+STAGE_MAX);
@@ -280,15 +294,17 @@ begin
                   v(s).elements(e) := (others => '0');
                 end if;
                 -- Loop over all other possible shifts
-                for a in 1 to STAGE_MAX-1 loop
-                  if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
-                    if e-a < 0 then
-                      v(s).elements(e) := (others => '0');
-                    else
-                      v(s).elements(e) := r(s-1).elements(e+a);
+                if s < STAGE_MAX then
+                  for a in STAGE_MAX-1 downto 1 loop
+                    if STAGE_ROT(a) = r(s-1).rotate(STAGE_ROT_BITS-1 downto 0) then
+                      if e-a < 0 then
+                        v(s).elements(e) := (others => '0');
+                      else
+                        v(s).elements(e) := r(s-1).elements(e+a);
+                      end if;
                     end if;
-                  end if;
-                end loop;
+                  end loop;
+                end if;
               end if;
             end loop;
           end if;
