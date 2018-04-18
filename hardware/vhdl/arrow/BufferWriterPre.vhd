@@ -67,7 +67,7 @@ entity BufferWriterPre is
 
     -- Optional synchronizer for the data and write strobe streams
     --SYNC_OUTPUT                 : boolean
-    
+
     -- Optional register slice after normalizers
     NORM_SLICE                  : boolean := true
 
@@ -147,19 +147,38 @@ architecture Behavioral of BufferWriterPre is
   signal oia_strobe_ready       : std_logic;
   signal oia_data_valid         : std_logic;
   signal oia_strobe_valid       : std_logic;
+  
+  -- Signals to normalizer
+  signal norm_in_valid          : std_logic;
+  signal norm_in_ready          : std_logic;
+  signal norm_in_dvalid         : std_logic;
+  signal norm_in_data           : std_logic_vector(ELEMENT_COUNT_MAX*(ELEMENT_WIDTH+1)-1 downto 0);
+  signal norm_in_count          : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal norm_in_last           : std_logic;
+  
+  -- Signals from normalizer
+  signal norm_out_valid         : std_logic;
+  signal norm_out_ready         : std_logic;
+  signal norm_out_dvalid        : std_logic;
+  signal norm_out_data          : std_logic_vector(ELEMENT_COUNT_MAX*(ELEMENT_WIDTH+1)-1 downto 0);
+  signal norm_out_count         : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal norm_out_last          : std_logic;
+  
 
   -- Normalized stream
   signal norm_valid             : std_logic;
   signal norm_ready             : std_logic;
   signal norm_dvalid            : std_logic;
+  signal norm_strobe            : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal norm_data              : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal norm_count             : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal norm_last              : std_logic;
 
     -- Normalized data stream serialization indices & slice signals
   constant NDSI : nat_array := cumulative((
-    3 => 1, --dvalid
-    2 => 1, --last
+    4 => 1, --dvalid
+    3 => 1, --last
+    2 => ELEMENT_COUNT_MAX,
     1 => ELEMENT_COUNT_WIDTH,
     0 => ELEMENT_COUNT_MAX*ELEMENT_WIDTH
   ));
@@ -167,54 +186,37 @@ architecture Behavioral of BufferWriterPre is
   signal s_norm_valid           : std_logic;
   signal s_norm_ready           : std_logic;
   signal s_norm_dvalid          : std_logic;
+  signal s_norm_strobe          : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal s_norm_data            : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal s_norm_count           : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal s_norm_last            : std_logic;
 
-  signal s_norm_all             : std_logic_vector(NDSI(4)-1 downto 0);
-  signal norm_all               : std_logic_vector(NDSI(4)-1 downto 0);
-  
-  -- Normalized write strobe stream
-  signal strobe_norm_valid      : std_logic;
-  signal strobe_norm_ready      : std_logic;
-  signal strobe_norm_dvalid     : std_logic;
-  signal strobe_norm_data       : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-  signal strobe_norm_count      : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-  signal strobe_norm_last       : std_logic;
+  signal s_norm_all             : std_logic_vector(NDSI(5)-1 downto 0);
+  signal norm_all               : std_logic_vector(NDSI(5)-1 downto 0);
 
-  -- Normalized strobe stream serialization indices & slice signals
-  constant NSSI : nat_array := cumulative((
-    3 => 1, --dvalid
-    2 => 1, --last
-    1 => ELEMENT_COUNT_WIDTH,
-    0 => ELEMENT_COUNT_MAX
-  ));
-  
-  -- Normalized write strobe stream
-  signal s_strobe_norm_valid    : std_logic;
-  signal s_strobe_norm_ready    : std_logic;
-  signal s_strobe_norm_dvalid   : std_logic;
-  signal s_strobe_norm_data     : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-  signal s_strobe_norm_count    : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-  signal s_strobe_norm_last     : std_logic;
-  
-  signal s_strobe_norm_all      : std_logic_vector(NSSI(4)-1 downto 0);
-  signal strobe_norm_all        : std_logic_vector(NSSI(4)-1 downto 0);
+  -- Gearbox input
+  signal gb_in_valid            : std_logic;
+  signal gb_in_ready            : std_logic;
+  signal gb_in_data             : std_logic_vector(ELEMENT_COUNT_MAX*(ELEMENT_WIDTH+1)-1 downto 0);
+  signal gb_in_count            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+  signal gb_in_last             : std_logic;
 
-  -- Reshaped data stream
+  -- Gearbox output
+  signal gb_out_valid           : std_logic;
+  signal gb_out_ready           : std_logic;
+  signal gb_out_data            : std_logic_vector(BUS_DATA_WIDTH+BE_COUNT_MAX-1 downto 0);
+  signal gb_out_count           : std_logic_vector(BE_COUNT_WIDTH-1 downto 0);
+  signal gb_out_last            : std_logic;
+
+  -- Shaped output
   signal shaped_valid           : std_logic;
-  signal shaped_ready           : std_logic := '1';
+  signal shaped_ready           : std_logic;
   signal shaped_data            : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal shaped_count           : std_logic_vector(BE_COUNT_WIDTH-1 downto 0);
+  signal shaped_strobe          : std_logic_vector(BE_COUNT_MAX-1 downto 0);
   signal shaped_last            : std_logic;
 
-  -- Reshaped write strobe stream
-  signal strobe_shaped_valid    : std_logic;
-  signal strobe_shaped_ready    : std_logic := '1';
-  signal strobe_shaped_data     : std_logic_vector(BE_COUNT_MAX-1 downto 0);
-  signal strobe_shaped_count    : std_logic_vector(BE_COUNT_WIDTH-1 downto 0);
-  signal strobe_shaped_last     : std_logic;
-
+  -- Output buffer
   signal int_out_valid          : std_logic;
   signal int_out_ready          : std_logic;
   signal int_out_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -300,7 +302,6 @@ begin
     signal cmd_valid            : std_logic;
     signal cmd_ready            : std_logic;
     signal cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
-    signal cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
     signal cmd_implicit         : std_logic;
     signal cmd_last             : std_logic;
     signal cmd_ctrl             : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
@@ -377,7 +378,6 @@ begin
 
 
     cmd_firstIdx                <= oia_data;
-    cmd_lastIdx                 <= oia_data;
     cmd_ctrl                    <= oia_ctrl;
     cmd_tag                     <= oia_tag;
     cmd_last                    <= oia_last;
@@ -420,42 +420,35 @@ begin
     oia_strobe                  <= pad_strobe;
     oia_count                   <= pad_count;
     oia_last                    <= pad_last;
-    
+
     cmdOut_valid                <= '0';
   end generate;
 
   -----------------------------------------------------------------------------
   -- Normalizers
   -----------------------------------------------------------------------------
-  -- The padded stream is split into a data and a write strobe stream and
-  -- normalized. That is, the output of the normalizers always contains
-  -- the maximum number of elements per cycle
-
-  oia_split_inst: StreamSync
-    generic map (
-      NUM_INPUTS => 1,
-      NUM_OUTPUTS => 2
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid(0)               => oia_valid,
-      in_ready(0)               => oia_ready,
-      out_valid(0)              => oia_data_valid,
-      out_valid(1)              => oia_strobe_valid,
-      out_ready(0)              => oia_data_ready,
-      out_ready(1)              => oia_strobe_ready
-    );
 
   -- Only generate normalizers if there can be more than one element per cycle
   norm_gen: if ELEMENT_COUNT_MAX > 1 generate
+  
+    norm_in_valid   <= oia_valid;
+    oia_ready       <= norm_in_ready;
+    norm_in_dvalid  <= oia_dvalid;
+    norm_in_last    <= oia_last;
+    norm_in_count   <= oia_count;
+    
+    norm_in_connect: for e in 0 to ELEMENT_COUNT_MAX-1 generate
+      norm_in_data((e+1)*(ELEMENT_WIDTH+1)-1)                            <= oia_strobe(e);
+      norm_in_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1)) <= oia_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH);
+    end generate;
 
     ---------------------------------------------------------------------------
-    -- Data normalizer
-    
+    -- Data stream maximizer; maximizes the elements per cycle on the output.
+    -- count is always ELEMENT_COUNT_MAX unless last is asserted.
+
     data_normalizer_inst: StreamMaximizer
       generic map (
-        ELEMENT_WIDTH           => ELEMENT_WIDTH,
+        ELEMENT_WIDTH           => ELEMENT_WIDTH+1,
         COUNT_MAX               => ELEMENT_COUNT_MAX,
         COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
         BARREL_BACKPRESSURE     => false,
@@ -464,21 +457,32 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid                => oia_data_valid,
-        in_ready                => oia_data_ready,
+        in_valid                => norm_in_valid,
+        in_ready                => norm_in_ready,
         in_dvalid               => '1',
-        in_data                 => oia_data,
-        in_count                => oia_count,
-        in_last                 => oia_last,
-        out_valid               => s_norm_valid,
-        out_ready               => s_norm_ready,
-        out_data                => s_norm_data,
-        out_count               => s_norm_count,
-        out_last                => s_norm_last
+        in_data                 => norm_in_data,
+        in_count                => norm_in_count,
+        in_last                 => norm_in_last,
+        out_valid               => norm_out_valid,
+        out_ready               => norm_out_ready,
+        out_data                => norm_out_data,
+        out_count               => norm_out_count,
+        out_last                => norm_out_last
       );
+    
+    s_norm_valid    <= norm_out_valid;
+    norm_out_ready  <= s_norm_ready;
+    s_norm_count    <= norm_out_count;
+    s_norm_last     <= norm_out_last;
+    
+    norm_out_connect: for e in 0 to ELEMENT_COUNT_MAX-1 generate
+      s_norm_strobe(e) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-1);
+      s_norm_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1));
+    end generate;
 
-    s_norm_all(                 NDSI(3)) <= '1'; --s_norm_dvalid
-    s_norm_all(                 NDSI(2)) <= s_norm_last;
+    s_norm_all(                 NDSI(4)) <= '1'; --s_norm_dvalid
+    s_norm_all(                 NDSI(3)) <= s_norm_last;
+    s_norm_all(NDSI(3)-1 downto NDSI(2)) <= s_norm_strobe;
     s_norm_all(NDSI(2)-1 downto NDSI(1)) <= s_norm_count;
     s_norm_all(NDSI(1)-1 downto NDSI(0)) <= s_norm_data;
 
@@ -486,7 +490,7 @@ begin
     norm_slice_inst : StreamBuffer
       generic map (
         MIN_DEPTH               => sel(NORM_SLICE, 2, 0),
-        DATA_WIDTH              => NDSI(4)
+        DATA_WIDTH              => NDSI(5)
       )
       port map (
         clk                     => clk,
@@ -498,83 +502,24 @@ begin
         out_ready               => norm_ready,
         out_data                => norm_all
       );
-      
-    norm_dvalid <= norm_all(                 NDSI(3));
-    norm_last   <= norm_all(                 NDSI(2));
+
+    norm_dvalid <= norm_all(                 NDSI(4));
+    norm_last   <= norm_all(                 NDSI(3));
+    norm_strobe <= norm_all(NDSI(3)-1 downto NDSI(2));
     norm_count  <= norm_all(NDSI(2)-1 downto NDSI(1));
     norm_data   <= norm_all(NDSI(1)-1 downto NDSI(0));
-    
-    ---------------------------------------------------------------------------
-    -- Strobe normalizer
-    
-    strobe_normalizer_inst: StreamMaximizer
-      generic map (
-        ELEMENT_WIDTH           => 1,
-        COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
-        BARREL_BACKPRESSURE     => false,
-        USE_FIFO                => true
-      )
-      port map (
-        clk                     => clk,
-        reset                   => reset,
-        in_valid                => oia_strobe_valid,
-        in_ready                => oia_strobe_ready,
-        in_dvalid               => '1',
-        in_data                 => oia_strobe,
-        in_count                => oia_count,
-        in_last                 => oia_last,
-        out_valid               => s_strobe_norm_valid,
-        out_ready               => s_strobe_norm_ready,
-        out_data                => s_strobe_norm_data,
-        out_count               => s_strobe_norm_count,
-        out_last                => s_strobe_norm_last
-      );
-      
-    s_strobe_norm_all(                 NSSI(3)) <= '1'; --s_strobe_norm_dvalid;
-    s_strobe_norm_all(                 NSSI(2)) <= s_strobe_norm_last;
-    s_strobe_norm_all(NSSI(2)-1 downto NSSI(1)) <= s_strobe_norm_count;
-    s_strobe_norm_all(NSSI(1)-1 downto NSSI(0)) <= s_strobe_norm_data;
 
-    -- Insert optional register slices after the normalizers
-    strobe_norm_slice_inst : StreamBuffer
-      generic map (
-        MIN_DEPTH               => sel(NORM_SLICE, 2, 0),
-        DATA_WIDTH              => NSSI(4)
-      )
-      port map (
-        clk                     => clk,
-        reset                   => reset,
-        in_valid                => s_strobe_norm_valid,
-        in_ready                => s_strobe_norm_ready,
-        in_data                 => s_strobe_norm_all,
-        out_valid               => strobe_norm_valid,
-        out_ready               => strobe_norm_ready,
-        out_data                => strobe_norm_all
-      );
-      
-    strobe_norm_dvalid <= strobe_norm_all(                 NSSI(3));
-    strobe_norm_last   <= strobe_norm_all(                 NSSI(2));
-    strobe_norm_count  <= strobe_norm_all(NSSI(2)-1 downto NSSI(1));
-    strobe_norm_data   <= strobe_norm_all(NSSI(1)-1 downto NSSI(0));
-    
   end generate;
 
   -- No normalizer is required
   no_norm_gen: if ELEMENT_COUNT_MAX = 1 generate
-    oia_data_ready              <= norm_ready;
-    norm_valid                  <= oia_data_valid;
+    oia_ready                   <= norm_ready;
+    norm_valid                  <= oia_valid;
     norm_dvalid                 <= '1';
     norm_data                   <= oia_data;
     norm_count                  <= oia_count;
     norm_last                   <= oia_last;
-
-    oia_strobe_ready            <= strobe_norm_ready;
-    strobe_norm_valid           <= oia_strobe_valid;
-    strobe_norm_dvalid          <= '1';
-    strobe_norm_data            <= oia_strobe;
-    strobe_norm_count           <= oia_count;
-    strobe_norm_last            <= oia_last;
+    norm_strobe                 <= oia_strobe;
   end generate;
 
   -----------------------------------------------------------------------------
@@ -583,9 +528,20 @@ begin
   -- Reshape (parallelize or serialize) the stream such that it fits in a
   -- single bus word.
 
-  data_gearbox_inst: StreamGearbox
+  -- Interleave strobes with elements
+  gb_in_valid                   <= norm_valid;
+  norm_ready                    <= gb_in_ready;
+  gb_in_count                   <= norm_count;
+  gb_in_last                    <= norm_last;
+
+  gb_connect: for e in 0 to ELEMENT_COUNT_MAX-1 generate
+    gb_in_data((e+1)*(ELEMENT_WIDTH+1)-1)                            <= norm_strobe(e);
+    gb_in_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1)) <= norm_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH);
+  end generate;
+
+  gearbox_inst: StreamGearbox
     generic map (
-      DATA_WIDTH                => ELEMENT_WIDTH,
+      DATA_WIDTH                => ELEMENT_WIDTH+1,
       CTRL_WIDTH                => 0,
       IN_COUNT_MAX              => ELEMENT_COUNT_MAX,
       IN_COUNT_WIDTH            => ELEMENT_COUNT_WIDTH,
@@ -595,83 +551,52 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      in_valid                  => norm_valid,
-      in_ready                  => norm_ready,
-      in_data                   => norm_data,
-      in_count                  => norm_count,
-      in_last                   => norm_last,
-      out_valid                 => shaped_valid,
-      out_ready                 => shaped_ready,
-      out_data                  => shaped_data,
-      out_count                 => shaped_count,
-      out_last                  => shaped_last
+      in_valid                  => gb_in_valid,
+      in_ready                  => gb_in_ready,
+      in_data                   => gb_in_data,
+      in_count                  => gb_in_count,
+      in_last                   => gb_in_last,
+      out_valid                 => gb_out_valid,
+      out_ready                 => gb_out_ready,
+      out_data                  => gb_out_data,
+      out_count                 => gb_out_count,
+      out_last                  => gb_out_last
     );
 
-  strobe_gearbox_inst: StreamGearbox
-    generic map (
-      DATA_WIDTH                => 1,
-      CTRL_WIDTH                => 0,
-      IN_COUNT_MAX              => ELEMENT_COUNT_MAX,
-      IN_COUNT_WIDTH            => ELEMENT_COUNT_WIDTH,
-      OUT_COUNT_MAX             => BE_COUNT_MAX,
-      OUT_COUNT_WIDTH           => BE_COUNT_WIDTH
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid                  => strobe_norm_valid,
-      in_ready                  => strobe_norm_ready,
-      in_data                   => strobe_norm_data,
-      in_count                  => strobe_norm_count,
-      in_last                   => strobe_norm_last,
-      out_valid                 => strobe_shaped_valid,
-      out_ready                 => strobe_shaped_ready,
-      out_data                  => strobe_shaped_data,
-      out_count                 => strobe_shaped_count,
-      out_last                  => strobe_shaped_last
-    );
+  shaped_valid  <= gb_out_valid;
+  gb_out_ready  <= shaped_ready;
+  shaped_count  <= gb_out_count;
+  shaped_last   <= gb_out_last;
 
-  -- Insert optional register slices after the gearboxes
+  shaped_connect: for e in 0 to BE_COUNT_MAX-1 generate
+    shaped_strobe(e) <= gb_out_data((e+1)*(ELEMENT_WIDTH+1)-1);
+    shaped_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= gb_out_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1));
+  end generate;
 
 
-  -- Synchronize the output streams. (It -shouldn't- be necessary, but is good
-  -- practise.)
-  strobe_join_inst: StreamSync
-    generic map (
-      NUM_INPUTS => 2,
-      NUM_OUTPUTS => 1
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid(0)               => shaped_valid,
-      in_valid(1)               => strobe_shaped_valid,
-      in_ready(0)               => shaped_ready,
-      in_ready(1)               => strobe_shaped_ready,
-      out_valid(0)              => int_out_valid,
-      out_ready(0)              => int_out_ready
-    );
-
-  int_out_data                  <= shaped_data;
-  int_out_last                  <= shaped_last and strobe_shaped_last;
+  -- placeholder for a slice
+  int_out_valid <= shaped_valid;
+  shaped_ready <= int_out_ready;
+  int_out_data <= shaped_data;
+  int_out_last <= shaped_last;
 
   -- Convert the element strobe into a byte strobe
-  byte_strobe_proc: process(strobe_shaped_data) is
+  byte_strobe_proc: process(shaped_strobe) is
   begin
     -- If elements are smaller than bytes, or-reduce the element strobes
     if ELEMENT_WIDTH < STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
-        int_out_strobe(I)       <= or_reduce(strobe_shaped_data((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
+        int_out_strobe(I)       <= or_reduce(shaped_strobe((I+1)*ELEMS_PER_BYTE-1 downto I * ELEMS_PER_BYTE));
       end loop;
     end if;
     -- If elements are the same size as bytes, just pass through the element strobes
     if ELEMENT_WIDTH = STROBE_COVER then
-      int_out_strobe            <= strobe_shaped_data;
+      int_out_strobe            <= shaped_strobe;
     end if;
     -- If elements are larger than bytes, duplicate the element strobes
     if ELEMENT_WIDTH > STROBE_COVER then
       for I in 0 to BYTE_COUNT-1 loop
-        int_out_strobe(I)       <= strobe_shaped_data(I / BYTES_PER_ELEM);
+        int_out_strobe(I)       <= shaped_strobe(I / BYTES_PER_ELEM);
       end loop;
     end if;
   end process;
@@ -690,10 +615,10 @@ begin
       if int_out_strobe(I) /= '1' then
         int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
           <= shaped_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER);
-        
+
         int_out_data((I+1)*BUS_STROBE_COVER-1 downto I*BUS_STROBE_COVER)
           <= (others => 'U');
-        
+
       end if;
     end loop;
   end process;
