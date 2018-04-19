@@ -151,12 +151,12 @@ package body stringwrite_pkg is
     -- We can only get 0..127
     char(6 downto 0) := unsigned(prng_data(6 downto 0));
     
-    -- Make a space out of the character if it's any control character
+    -- Make a '.' out of the character if it's any control character
     if char < startc then
-      char := to_unsigned(32, 8);
+      char := to_unsigned(46, 8);
     end if;
     if char = 127 then
-      char := to_unsigned(32, 8);
+      char := to_unsigned(46, 8);
     end if;
     
     return char;

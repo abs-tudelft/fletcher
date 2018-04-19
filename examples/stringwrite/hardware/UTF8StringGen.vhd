@@ -205,7 +205,7 @@ begin
   end process;
 
   len_comb_proc: process(r,
-    cmd_valid, cmd_len,
+    cmd_valid, cmd_len, cmd_strlen_min, cmd_prng_mask,
     int_len_ready,
     len_gen_valid, len_gen_data
   ) is

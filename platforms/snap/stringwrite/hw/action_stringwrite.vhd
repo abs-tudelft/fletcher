@@ -15,8 +15,6 @@
 -- See the License for the specific language governing permissions AND
 -- limitations under the License.
 --
--- change log:
--- 12/20/2016 R. Rieke fixed case statement issue
 ----------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -60,9 +58,9 @@ entity action_stringwrite is
         action_clk              : in STD_LOGIC;
         action_rst_n            : in STD_LOGIC;
         int_req_ack             : in STD_LOGIC;
-        int_req                 : out std_logic;
-        int_src                 : out std_logic_vector(INT_BITS-2 DOWNTO 0);
-        int_ctx                 : out std_logic_vector(CONTEXT_BITS-1 DOWNTO 0);
+        int_req                 : out std_logic := '0';
+        int_src                 : out std_logic_vector(INT_BITS-2 DOWNTO 0) := (others => '0');
+        int_ctx                 : out std_logic_vector(CONTEXT_BITS-1 DOWNTO 0) := (others => '0');
 
         -- Ports of Axi Slave Bus Interface AXI_CTRL_REG
         axi_ctrl_reg_awaddr     : in std_logic_vector(C_AXI_CTRL_REG_ADDR_WIDTH-1 downto 0);
@@ -160,7 +158,7 @@ architecture Behavorial of action_stringwrite is
   constant SNAP_REG_CONTEXT_ID       : natural := 8;
 
   type snap_regs_t is array (0 to SNAP_NUM_REGS-1) of std_logic_vector(C_AXI_CTRL_REG_DATA_WIDTH-1 downto 0);
-  signal snap_regs              : snap_regs_t;
+  signal snap_regs                   : snap_regs_t := (others => (others => '0'));
 
   signal stringwrite_s_axi_awaddr    : std_logic_vector(8 downto 0);
   signal stringwrite_s_axi_awvalid   : std_logic;
@@ -300,8 +298,8 @@ begin
   write_proc: process(action_clk) is
     variable address            : natural range 0 to SNAP_NUM_REGS-1;
   begin
-    address                     := int(snap_s_axi_araddr(SNAP_ADDR_WIDTH-1 downto 2));
     if rising_edge(action_clk) then
+      address                   := int(snap_s_axi_araddr(SNAP_ADDR_WIDTH-1 downto 2));
       if write_valid = '1' then
         case address is
           when SNAP_REG_CONTEXT_ID       => snap_regs(SNAP_REG_CONTEXT_ID)       <= snap_s_axi_wdata;

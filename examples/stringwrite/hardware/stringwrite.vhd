@@ -280,9 +280,8 @@ begin
   read_from_regs: process(clk) is
     variable address : natural range 0 to NUM_FLETCHER_REGS-1;
   begin
-    address                     := int(s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
-
     if rising_edge(clk) then
+      address                     := int(s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
       if reset_n = '0' then
         read_valid              <= '0';
       else
@@ -309,12 +308,12 @@ begin
   write_to_regs: process(clk) is
     variable address            : natural range 0 to NUM_FLETCHER_REGS;
   begin
-
-    address                     := int(s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
-
     if rising_edge(clk) then
+      address := int(s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
       if write_valid = '1' then
+        --pragma translate off
         dumpStdOut("Write to MMIO: " & integer'image(address));
+        --pragma translate on
 
         case address is
           -- Read only addresses do nothing
@@ -475,6 +474,9 @@ begin
       -- Set STRLEN_MIN to 0 and PRNG_MASK to all 1's (strongly not
       -- recommended) to generate all possible string lengths.
 
+      -- Reset start is low by default.
+      v.reset_start := '0';
+      
       case r.state is
         when IDLE =>
           if usercore_start = '1' then
