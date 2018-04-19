@@ -221,8 +221,11 @@ architecture Behavioral of BufferWriter is
   signal steps_count            : std_logic_vector(max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN))-1 downto 0);
   signal steps_last             : std_logic;
   
+  constant WRITE_BUFFER_DEPTH   : natural := max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN)+1;
+  
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
+  signal buffer_count           : std_logic_vector(log2ceil(WRITE_BUFFER_DEPTH) downto 0);
 
   signal int_bus_wreq_valid     : std_logic;
   signal int_bus_wreq_ready     : std_logic;
@@ -249,7 +252,6 @@ begin
   -- Constant checks
   -----------------------------------------------------------------------------
   -- pragma translate off
-  
   -- Check maximum element count and signal width
   assert ELEMENT_COUNT_MAX <= 2 ** ELEMENT_COUNT_WIDTH 
     report "ELEMENT_COUNT_MAX and ELEMENT_COUNT_WIDTH mismatch." 
@@ -261,7 +263,6 @@ begin
     report "Index buffers can only handle one element at a time at the input. "
          & "ELEMENT_COUNT_MAX and ELEMENT_COUNT_WIDTH must both be 1"
     severity failure;
-  
   -- pragma translate on
   
   -----------------------------------------------------------------------------
@@ -371,7 +372,7 @@ begin
   -----------------------------------------------------------------------------
   -- Words that have been accepted by the bus write buffer are counted, and
   -- converted into a stream for the bus request generator that is only valid
-  -- when a whole bust step has been written in the bus write buffer. Thus,
+  -- when a whole burst step has been written in the bus write buffer. Thus,
   -- the PrePadder must make sure to always output an integer multiple of
   -- a burst step length number of words, otherwise the system will deadlock.
   -- A second counter outputs the number of steps loaded when a maximum burst
@@ -382,7 +383,7 @@ begin
   -- busy anymore, while many words might already be present in the write 
   -- buffer.
   
-  -- Burst steps span multiple words, insert a burst step counter
+  -- Burst steps span multiple words, insert a bus word / beat counter
   word_count_gen: if BUS_BURST_STEP_LEN /= 1 generate
     word_count_inst : StreamElementCounter
       generic map (
@@ -443,7 +444,7 @@ begin
       );
   end generate;
   
-  -- Burst steps are equal to one word. Pass through to the step stream.
+  -- Burst steps are equal to one word. Pass through to the steps stream.
   no_steps_count_gen: if BUS_BURST_MAX_LEN = BUS_BURST_STEP_LEN generate
     step_ready                      <= steps_ready;
     steps_valid                     <= step_valid;
@@ -496,7 +497,7 @@ begin
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
-      FIFO_DEPTH                => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
+      FIFO_DEPTH                => WRITE_BUFFER_DEPTH,
       LEN_SHIFT                 => BUS_FIFO_THRES_SHIFT,
       RAM_CONFIG                => "",
       SLV_LAST_MODE             => "generate"
@@ -507,6 +508,7 @@ begin
       
       full                      => buffer_full,
       empty                     => buffer_empty,
+      count                     => buffer_count,
       
       slv_wreq_valid            => req_valid,
       slv_wreq_ready            => req_ready,

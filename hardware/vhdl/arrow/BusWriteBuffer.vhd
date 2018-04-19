@@ -43,7 +43,7 @@ entity BusWriteBuffer is
 
     -- Bus strobe width.
     BUS_STROBE_WIDTH            : natural := 32/8;
-    
+
     -- Width of any other data that can be passed through along with the data
     -- stream. Must be at least 1 to prevent null ranges
     CTRL_WIDTH                  : natural := 1;
@@ -62,12 +62,18 @@ entity BusWriteBuffer is
 
     -- The output last signal is always generated based on the request length,
     -- except when this is set to "burst". Generates a simulation-only error if
-    -- last signal is not correctly provided in "burst" mode 
+    -- last signal is not correctly provided in "burst" mode
     SLV_LAST_MODE               : string := "burst";
-    
+
+    -- Instantiate a slice on the write request channel on the slave port
+    SLV_REQ_SLICE               : boolean := true;
+
+    -- Instantiate a slice on the write request channel on the master port
+    MST_REQ_SLICE               : boolean := true;
+
     -- Instantiate a slice on the write data channel on the slave port
     SLV_DATA_SLICE              : boolean := true;
-    
+
     -- Instantiate a slice on the write data channel on the master port
     MST_DATA_SLICE              : boolean := true
 
@@ -79,10 +85,13 @@ entity BusWriteBuffer is
     clk                         : in  std_logic;
     reset                       : in  std_logic;
 
-    -- Wether the buffer is full or empty
+    ---------------------------------------------------------------------------
+    -- FIFO statistics
+    ---------------------------------------------------------------------------
     full                        : out std_logic;
     empty                       : out std_logic;
     error                       : out std_logic;
+    count                       : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
 
     ---------------------------------------------------------------------------
     -- Slave ports.
@@ -120,38 +129,63 @@ end BusWriteBuffer;
 architecture Behavioral of BusWriteBuffer is
 
   -- Log2 of the FIFO depth.
-  constant DEPTH_LOG2            : natural := log2ceil(FIFO_DEPTH);
-  constant COUNT_FIFO_FULL       : unsigned(DEPTH_LOG2-1 downto 0) := (others => '1');
-  
-  signal s_slv_wdat_valid        : std_logic;
-  signal s_slv_wdat_ready        : std_logic;
-  signal s_slv_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_slv_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-  signal s_slv_wdat_last         : std_logic;
-  signal s_slv_wdat_ctrl         : std_logic_vector(CTRL_WIDTH-1 downto 0);
-  
-  signal s_mst_wdat_valid        : std_logic;
-  signal s_mst_wdat_ready        : std_logic;
-  signal s_mst_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_mst_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-  signal s_mst_wdat_last         : std_logic;
-  signal s_mst_wdat_ctrl         : std_logic_vector(CTRL_WIDTH-1 downto 0);
-  
+  constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH);
+  constant COUNT_FIFO_FULL      : unsigned(DEPTH_LOG2 downto 0) := to_unsigned(FIFO_DEPTH, DEPTH_LOG2+1);
+
+  -- Request stream serialization indices.
+  constant RSI : nat_array := cumulative((
+    1 => BUS_LEN_WIDTH,
+    0 => BUS_ADDR_WIDTH
+  ));
+
   -- Fifo data stream serialization indices.
-  constant FSI : nat_array := cumulative((
+  constant FDI : nat_array := cumulative((
     3 => CTRL_WIDTH,
     2 => BUS_STROBE_WIDTH,
     1 => BUS_DATA_WIDTH,
     0 => 1 -- last bit
   ));
+  
+  -- Sliced channels
+  signal s_mst_wreq_valid       : std_logic;
+  signal s_mst_wreq_ready       : std_logic;
+  signal s_mst_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_mst_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_mst_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
+  signal mst_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+
+  signal s_slv_wreq_valid       : std_logic;
+  signal s_slv_wreq_ready       : std_logic;
+  signal s_slv_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_slv_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_slv_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
+  signal slv_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+
+  signal s_slv_wdat_valid       : std_logic;
+  signal s_slv_wdat_ready       : std_logic;
+  signal s_slv_wdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_slv_wdat_strobe      : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_slv_wdat_last        : std_logic;
+  signal s_slv_wdat_ctrl        : std_logic_vector(CTRL_WIDTH-1 downto 0);
+  signal slv_wdat_all           : std_logic_vector(FDI(4)-1 downto 0);
+  signal s_slv_wdat_all         : std_logic_vector(FDI(4)-1 downto 0);
+
+  signal s_mst_wdat_valid       : std_logic;
+  signal s_mst_wdat_ready       : std_logic;
+  signal s_mst_wdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_mst_wdat_strobe      : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_mst_wdat_last        : std_logic;
+  signal s_mst_wdat_ctrl        : std_logic_vector(CTRL_WIDTH-1 downto 0);
+  signal s_mst_wdat_all         : std_logic_vector(FDI(4)-1 downto 0);
+  signal mst_wdat_all           : std_logic_vector(FDI(4)-1 downto 0);
 
   signal fifo_in_valid           : std_logic;
   signal fifo_in_ready           : std_logic;
-  signal fifo_in_data            : std_logic_vector(FSI(4)-1 downto 0);
+  signal fifo_in_data            : std_logic_vector(FDI(4)-1 downto 0);
 
   signal fifo_out_valid          : std_logic;
   signal fifo_out_ready          : std_logic;
-  signal fifo_out_data           : std_logic_vector(FSI(4)-1 downto 0);
+  signal fifo_out_data           : std_logic_vector(FDI(4)-1 downto 0);
 
   type state_type is (IDLE, REQ, BURST);
 
@@ -184,7 +218,9 @@ architecture Behavioral of BusWriteBuffer is
   end record;
 
 begin
-
+  -----------------------------------------------------------------------------
+  -- State machine
+  -----------------------------------------------------------------------------
   seq_proc: process(clk) is
   begin
     if rising_edge(clk) then
@@ -202,9 +238,9 @@ begin
 
   comb_proc: process(r,
     fifo_in_valid, fifo_in_ready,
-    fifo_out_valid, fifo_out_data(FSI(0)),
-    slv_wreq_len, slv_wreq_addr, slv_wreq_valid,
-    mst_wreq_ready,
+    fifo_out_valid, fifo_out_data(FDI(0)),
+    s_slv_wreq_len, s_slv_wreq_addr, s_slv_wreq_valid,
+    s_mst_wreq_ready,
     s_mst_wdat_ready
   ) is
     variable vr                 : reg_record;
@@ -223,7 +259,7 @@ begin
     vo.mst_wdat_valid           := '0';
     vo.mst_wdat_last            := '0';
     vo.fifo_out_ready           := '0';
-    
+
     vo.mst_wreq_addr            := vr.wreq_addr;
     vo.mst_wreq_len             := vr.wreq_len;
 
@@ -232,9 +268,9 @@ begin
         vo.slv_wreq_ready       := '1';
 
         -- A request is made, register it.
-        if slv_wreq_valid = '1' then
-          vr.wreq_len           := slv_wreq_len;
-          vr.wreq_addr          := slv_wreq_addr;
+        if s_slv_wreq_valid = '1' then
+          vr.wreq_len           := s_slv_wreq_len;
+          vr.wreq_addr          := s_slv_wreq_addr;
           vr.state              := REQ;
         end if;
 
@@ -251,7 +287,7 @@ begin
         end if;
 
         -- Wait for handshake
-        if mst_wreq_ready = '1' and vo.mst_wreq_valid = '1' then
+        if s_mst_wreq_ready = '1' and vo.mst_wreq_valid = '1' then
           vr.state              := BURST;
         end if;
 
@@ -271,10 +307,10 @@ begin
           -- Determine where last should come from
           if SLV_LAST_MODE = "burst" then
             -- Last signal comes from FIFO
-            vo.mst_wdat_last        := fifo_out_data(FSI(0));
+            vo.mst_wdat_last        := fifo_out_data(FDI(0));
 
             -- Check if the last signal was properly asserted.
-            if fifo_out_data(FSI(0)) /= '1' then
+            if fifo_out_data(FDI(0)) /= '1' then
               -- pragma translate off
                 report "Bus write buffer with SLV_LAST_MODE set to burst "
                      & "expected last signal to be high."
@@ -290,10 +326,10 @@ begin
           end if;
 
           -- A request is made, register it.
-          if slv_wreq_valid = '1' then
+          if s_slv_wreq_valid = '1' then
             vo.slv_wreq_ready   := '1';
-            vr.wreq_len         := slv_wreq_len;
-            vr.wreq_addr        := slv_wreq_addr;
+            vr.wreq_len         := s_slv_wreq_len;
+            vr.wreq_addr        := s_slv_wreq_addr;
             vr.state            := REQ;
           else
             vr.state            := IDLE;
@@ -324,11 +360,11 @@ begin
 
     d                           <= vr;
 
-    slv_wreq_ready              <= vo.slv_wreq_ready;
+    s_slv_wreq_ready            <= vo.slv_wreq_ready;
 
-    mst_wreq_valid              <= vo.mst_wreq_valid;
-    mst_wreq_addr               <= vo.mst_wreq_addr;
-    mst_wreq_len                <= vo.mst_wreq_len;
+    s_mst_wreq_valid            <= vo.mst_wreq_valid;
+    s_mst_wreq_addr             <= vo.mst_wreq_addr;
+    s_mst_wreq_len              <= vo.mst_wreq_len;
 
     s_mst_wdat_valid            <= vo.mst_wdat_valid;
     s_mst_wdat_last             <= vo.mst_wdat_last;
@@ -337,23 +373,26 @@ begin
 
     full                        <= vo.full;
     empty                       <= vo.empty;
-    error                       <= vr.error;
-
   end process;
 
-  -- Connect FIFO inputs
+  error                         <= r.error;
+  count                         <= std_logic_vector(r.count);
+
+  -----------------------------------------------------------------------------
+  -- FIFO
+  -----------------------------------------------------------------------------
   fifo_in_valid                 <= s_slv_wdat_valid;
   s_slv_wdat_ready              <= fifo_in_ready;
 
-  fifo_in_data(FSI(4)-1 downto FSI(3)) <= s_slv_wdat_ctrl;
-  fifo_in_data(FSI(3)-1 downto FSI(2)) <= s_slv_wdat_strobe;
-  fifo_in_data(FSI(2)-1 downto FSI(1)) <= s_slv_wdat_data;
-  fifo_in_data(                FSI(0)) <= s_slv_wdat_last;
+  fifo_in_data(FDI(4)-1 downto FDI(3)) <= s_slv_wdat_ctrl;
+  fifo_in_data(FDI(3)-1 downto FDI(2)) <= s_slv_wdat_strobe;
+  fifo_in_data(FDI(2)-1 downto FDI(1)) <= s_slv_wdat_data;
+  fifo_in_data(                FDI(0)) <= s_slv_wdat_last;
 
   fifo_inst: StreamBuffer
     generic map (
       MIN_DEPTH                 => 2**DEPTH_LOG2,
-      DATA_WIDTH                => FSI(4)
+      DATA_WIDTH                => FDI(4)
     )
     port map (
       clk                       => clk,
@@ -367,25 +406,24 @@ begin
       out_ready                 => fifo_out_ready,
       out_data                  => fifo_out_data
     );
-    
-  s_mst_wdat_ctrl               <= fifo_out_data(FSI(4)-1 downto FSI(3));
-  s_mst_wdat_strobe             <= fifo_out_data(FSI(3)-1 downto FSI(2));
-  s_mst_wdat_data               <= fifo_out_data(FSI(2)-1 downto FSI(1));
 
-  slave_slice_gen: if SLV_DATA_SLICE generate    
-    signal slv_wdat_all   : std_logic_vector(FSI(4)-1 downto 0);
-    signal s_slv_wdat_all : std_logic_vector(FSI(4)-1 downto 0);
-  begin
-    
-    slv_wdat_all(FSI(4)-1 downto FSI(3)) <= slv_wdat_ctrl;
-    slv_wdat_all(FSI(3)-1 downto FSI(2)) <= slv_wdat_strobe;
-    slv_wdat_all(FSI(2)-1 downto FSI(1)) <= slv_wdat_data;
-    slv_wdat_all(                FSI(0)) <= slv_wdat_last;
-    
-  wdat_in_slice : StreamBuffer
+  s_mst_wdat_ctrl               <= fifo_out_data(FDI(4)-1 downto FDI(3));
+  s_mst_wdat_strobe             <= fifo_out_data(FDI(3)-1 downto FDI(2));
+  s_mst_wdat_data               <= fifo_out_data(FDI(2)-1 downto FDI(1));
+
+
+  ------------------------------------------------------------------------------
+  -- Slave write data channel slice
+  ------------------------------------------------------------------------------
+  slv_wdat_all(FDI(4)-1 downto FDI(3)) <= slv_wdat_ctrl;
+  slv_wdat_all(FDI(3)-1 downto FDI(2)) <= slv_wdat_strobe;
+  slv_wdat_all(FDI(2)-1 downto FDI(1)) <= slv_wdat_data;
+  slv_wdat_all(                FDI(0)) <= slv_wdat_last;
+
+  slave_wdat_slice : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
-      DATA_WIDTH                => FSI(4)
+      DATA_WIDTH                => FDI(4)
     )
     port map (
       clk                       => clk,
@@ -399,36 +437,24 @@ begin
       out_ready                 => s_slv_wdat_ready,
       out_data                  => s_slv_wdat_all
     );
-    
-  s_slv_wdat_ctrl   <= s_slv_wdat_all(FSI(4)-1 downto FSI(3));
-  s_slv_wdat_strobe <= s_slv_wdat_all(FSI(3)-1 downto FSI(2));
-  s_slv_wdat_data   <= s_slv_wdat_all(FSI(2)-1 downto FSI(1));
-  s_slv_wdat_last   <= s_slv_wdat_all(                FSI(0));
-  
-  end generate;
-  no_slave_slice_gen: if not SLV_DATA_SLICE generate
-    s_slv_wdat_valid   <= slv_wdat_valid;
-    slv_wdat_ready     <= s_slv_wdat_ready;
-    s_slv_wdat_ctrl    <= slv_wdat_ctrl;
-    s_slv_wdat_strobe  <= slv_wdat_strobe;
-    s_slv_wdat_data    <= slv_wdat_data;
-    s_slv_wdat_last    <= slv_wdat_last;
-  end generate;
-  
-  master_slice_gen: if MST_DATA_SLICE generate    
-    signal s_mst_wdat_all : std_logic_vector(FSI(4)-1 downto 0);
-    signal mst_wdat_all   : std_logic_vector(FSI(4)-1 downto 0);
-  begin
-    
-    s_mst_wdat_all(FSI(4)-1 downto FSI(3)) <= s_mst_wdat_ctrl;
-    s_mst_wdat_all(FSI(3)-1 downto FSI(2)) <= s_mst_wdat_strobe;
-    s_mst_wdat_all(FSI(2)-1 downto FSI(1)) <= s_mst_wdat_data;
-    s_mst_wdat_all(                FSI(0)) <= s_mst_wdat_last;
-    
-    wdat_out_slice : StreamBuffer
+
+  s_slv_wdat_ctrl   <= s_slv_wdat_all(FDI(4)-1 downto FDI(3));
+  s_slv_wdat_strobe <= s_slv_wdat_all(FDI(3)-1 downto FDI(2));
+  s_slv_wdat_data   <= s_slv_wdat_all(FDI(2)-1 downto FDI(1));
+  s_slv_wdat_last   <= s_slv_wdat_all(                FDI(0));
+
+  -----------------------------------------------------------------------------
+  -- Master write data channel slice
+  -----------------------------------------------------------------------------
+  s_mst_wdat_all(FDI(4)-1 downto FDI(3)) <= s_mst_wdat_ctrl;
+  s_mst_wdat_all(FDI(3)-1 downto FDI(2)) <= s_mst_wdat_strobe;
+  s_mst_wdat_all(FDI(2)-1 downto FDI(1)) <= s_mst_wdat_data;
+  s_mst_wdat_all(                FDI(0)) <= s_mst_wdat_last;
+
+  master_wdat_slice : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
-      DATA_WIDTH                => FSI(4)
+      DATA_WIDTH                => FDI(4)
     )
     port map (
       clk                       => clk,
@@ -442,20 +468,65 @@ begin
       out_ready                 => mst_wdat_ready,
       out_data                  => mst_wdat_all
     );
-    
-  mst_wdat_ctrl   <= mst_wdat_all(FSI(4)-1 downto FSI(3));
-  mst_wdat_strobe <= mst_wdat_all(FSI(3)-1 downto FSI(2));
-  mst_wdat_data   <= mst_wdat_all(FSI(2)-1 downto FSI(1));
-  mst_wdat_last   <= mst_wdat_all(                FSI(0));
-  
-  end generate;
-  no_mst_slice_gen: if not MST_DATA_SLICE generate
-    mst_wdat_valid   <= s_mst_wdat_valid;
-    s_mst_wdat_ready <= mst_wdat_ready;
-    mst_wdat_ctrl    <= s_mst_wdat_ctrl;
-    mst_wdat_strobe  <= s_mst_wdat_strobe;
-    mst_wdat_data    <= s_mst_wdat_data;
-    mst_wdat_last    <= s_mst_wdat_last;
-  end generate;
+
+  mst_wdat_ctrl   <= mst_wdat_all(FDI(4)-1 downto FDI(3));
+  mst_wdat_strobe <= mst_wdat_all(FDI(3)-1 downto FDI(2));
+  mst_wdat_data   <= mst_wdat_all(FDI(2)-1 downto FDI(1));
+  mst_wdat_last   <= mst_wdat_all(                FDI(0));
+
+  -----------------------------------------------------------------------------
+  -- Slave write request channel slice
+  -----------------------------------------------------------------------------
+  slv_wreq_all(RSI(2)-1 downto RSI(1)) <= slv_wreq_len;
+  slv_wreq_all(RSI(1)-1 downto RSI(0)) <= slv_wreq_addr;
+
+  slave_wreq_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(SLV_REQ_SLICE, 2, 0),
+      DATA_WIDTH                => RSI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => slv_wreq_valid,
+      in_ready                  => slv_wreq_ready,
+      in_data                   => slv_wreq_all,
+
+      out_valid                 => s_slv_wreq_valid,
+      out_ready                 => s_slv_wreq_ready,
+      out_data                  => s_slv_wreq_all
+    );
+
+  s_slv_wreq_len  <= s_slv_wreq_all(RSI(2)-1 downto RSI(1));
+  s_slv_wreq_addr <= s_slv_wreq_all(RSI(1)-1 downto RSI(0));
+
+  -----------------------------------------------------------------------------
+  -- Master write request channel slice
+  -----------------------------------------------------------------------------
+  s_mst_wreq_all(RSI(2)-1 downto RSI(1)) <= s_mst_wreq_len;
+  s_mst_wreq_all(RSI(1)-1 downto RSI(0)) <= s_mst_wreq_addr;
+
+  master_wreq_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(MST_REQ_SLICE, 2, 0),
+      DATA_WIDTH                => RSI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => s_mst_wreq_valid,
+      in_ready                  => s_mst_wreq_ready,
+      in_data                   => s_mst_wreq_all,
+
+      out_valid                 => mst_wreq_valid,
+      out_ready                 => mst_wreq_ready,
+      out_data                  => mst_wreq_all
+    );
+
+  mst_wreq_len  <= mst_wreq_all(RSI(2)-1 downto RSI(1));
+  mst_wreq_addr <= mst_wreq_all(RSI(1)-1 downto RSI(0));
+
 
 end Behavioral;

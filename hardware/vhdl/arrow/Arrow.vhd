@@ -19,6 +19,7 @@ use ieee.numeric_std.all;
 library work;
 use work.ColumnReaderConfig.all;
 use work.ColumnReaderConfigParse.all;
+use work.Utils.all;
 
 package Arrow is
   -----------------------------------------------------------------------------
@@ -1647,6 +1648,8 @@ package Arrow is
       LEN_SHIFT                 : natural := 0;
       RAM_CONFIG                : string  := "";
       SLV_LAST_MODE             : string  := "burst";
+      SLV_REQ_SLICE             : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
       SLV_DATA_SLICE            : boolean := true;
       MST_DATA_SLICE            : boolean := true
     );
@@ -1655,6 +1658,7 @@ package Arrow is
       reset                     : in  std_logic;
       full                      : out std_logic;
       empty                     : out std_logic;
+      count                     : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
       slv_wreq_valid            : in  std_logic;
       slv_wreq_ready            : out std_logic;
       slv_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
