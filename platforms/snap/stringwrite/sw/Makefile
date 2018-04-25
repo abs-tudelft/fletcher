@@ -38,6 +38,9 @@ $(error Please make sure that $$SNAP_ROOT is set up correctly.)
 endif
 endif
 
+LDLIBS += -lgomp
+CFLAGS += -fopenmp
+
 projs += snap_stringwrite
 
 # If you have the host code outside of the default snap directory structure, 
