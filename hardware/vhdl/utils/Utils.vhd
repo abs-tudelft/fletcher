@@ -34,6 +34,7 @@ package Utils is
 
   -- Returns (s ? t : f).
   function sel(s: boolean; t: integer; f: integer) return integer;
+  function sel(s: boolean; t: boolean; f: boolean) return boolean;
 
   -- Returns min(a, b).
   function min(a: integer; b: integer) return integer;
@@ -108,6 +109,12 @@ package Utils is
   
   -- Returns true if a is an integer multiple of 2^b, false otherwise
   function is_aligned(a : in unsigned; b : natural) return boolean;
+  
+  -- Returns the one-hot encoded version of a count with implicit '1' MSB
+  function cnt2oh(a: in unsigned; bits : natural) return std_logic_vector;
+  
+  -- Returns the count with implicit '1' MSB of a one-hot encoded value
+  function oh2cnt(a: in std_logic_vector) return unsigned;
 
   -- 1-read 1-write RAM.
   component Ram1R1W is
@@ -153,6 +160,15 @@ package body Utils is
   end function;
 
   function sel(s: boolean; t: integer; f: integer) return integer is
+  begin
+    if s then
+      return t;
+    else
+      return f;
+    end if;
+  end sel;
+  
+  function sel(s: boolean; t: boolean; f: boolean) return boolean is
   begin
     if s then
       return t;
@@ -417,7 +433,7 @@ package body Utils is
   function is_aligned(a : in unsigned; b : natural) return boolean is
     variable lsb_v : unsigned(b-1 downto 0);
   begin
-    if b > 1 then
+    if b > 0 then
       lsb_v := a(b-1 downto 0);
       if (lsb_v = 0) then
         return true;
@@ -428,5 +444,35 @@ package body Utils is
       return true;
     end if;
   end is_aligned;
+  
+  function cnt2oh(a: in unsigned; bits: natural) return std_logic_vector is
+    type ret_array_type is array(0 to bits-1) of std_logic_vector(bits-1 downto 0);
+    variable ret_array : ret_array_type;
+  begin
+    for i in 0 to bits-1 loop
+      for j in 0 to i loop
+        ret_array(i)(j) := '1';
+      end loop;
+      for j in i to bits-1 loop
+        ret_array(i)(j) := '0';
+      end loop;
+    end loop;
+    
+    -- all zeros is max count
+    ret_array(0) := (others => '1');
+    
+    return ret_array(to_integer(a) mod bits);
+  end cnt2oh;
+  
+  function oh2cnt(a: in std_logic_vector) return unsigned is
+    variable cnt : unsigned(log2ceil(a'length)-1 downto 0) := (others => '0');
+  begin
+    for i in 0 to a'length-1 loop
+      if a(i) = '1' then
+        cnt := cnt or to_unsigned(i, log2ceil(a'length));
+      end if;
+    end loop;
+    return cnt;
+  end oh2cnt;
 
 end Utils;

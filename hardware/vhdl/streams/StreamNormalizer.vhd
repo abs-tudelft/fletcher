@@ -92,7 +92,7 @@ end StreamNormalizer;
 architecture Behavioral of StreamNormalizer is
 
   -- Determine the size of the FIFO.
-  constant FIFO_DEPTH_LOG2      : natural := log2ceil(COUNT_MAX * 2);
+  constant FIFO_DEPTH_LOG2      : natural := log2ceil(COUNT_MAX * 2 + 1);
   constant FIFO_DEPTH           : natural := 2**FIFO_DEPTH_LOG2;
 
   -- Construct the FIFO contents. Note that this will almost certainly not be

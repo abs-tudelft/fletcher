@@ -39,7 +39,7 @@ use work.arrow_regexp_pkg.all;
 
 entity arrow_regexp is
   generic (    
-    -- Number of Regexp units. Must be 1, 2, 4, 8, or 16
+    -- Number of Regexp units. Must be a natural multiple of 2
     CORES                       : natural :=  16;
     
     -- Host bus properties
@@ -538,10 +538,10 @@ begin
     ARB_METHOD                  => "ROUND-ROBIN",
     MAX_OUTSTANDING             => 32,
     RAM_CONFIG                  => "",
-    REQ_IN_SLICES               => true,
-    REQ_OUT_SLICE               => true,
-    RESP_IN_SLICE               => true,    
-    RESP_OUT_SLICES             => true
+    REQ_IN_SLICES               => false,
+    REQ_OUT_SLICE               => false,
+    RESP_IN_SLICE               => false,    
+    RESP_OUT_SLICES             => false
   )
   port map (
     clk                         => clk,

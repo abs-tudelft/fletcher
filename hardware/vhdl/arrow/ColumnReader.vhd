@@ -29,6 +29,15 @@ entity ColumnReader is
     ---------------------------------------------------------------------------
     -- Bus metrics and configuration
     ---------------------------------------------------------------------------
+    -- Configures interface for host memory bus.
+    -- This implementation requires BUS_DATA_WIDTH * BUS_BURST_STEP_LEN to be
+    -- equal to or smaller than the alignment of the buffers in memory. For
+    -- example, if all buffers are aligned to 64 byte boundaries, and 
+    -- BUS_DATA_WIDTH is 32 bits (4 bytes), then BUS_BURST_STEP_LEN cannot
+    -- exceed 16. This also means that Arrow buffers should at least be aligned
+    -- to the BUS_DATA_WIDTH in bytes, because BUS_BURST_STEP_LEN must be at 
+    -- least 1.
+    
     -- Bus address width.
     BUS_ADDR_WIDTH              : natural := 32;
 

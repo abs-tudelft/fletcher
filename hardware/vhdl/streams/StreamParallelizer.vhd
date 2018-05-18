@@ -169,12 +169,26 @@ architecture Behavioral of StreamParallelizer is
   -- Whether the counter is at the maximum value or the last flag is set in the
   -- input stream.
   signal count_max              : std_logic;
+  
+  -- Set default values as constants to prevent simulation truncate warning
+  -- overflow.
+  constant IN_COUNT_MAX_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)  
+    := std_logic_vector(to_unsigned(IN_COUNT_MAX, IN_COUNT_WIDTH));
+    
+  constant IN_COUNT_MAX_VAL_OUT : std_logic_vector(OUT_COUNT_WIDTH-1 downto 0) 
+    := std_logic_vector(to_unsigned(IN_COUNT_MAX, OUT_COUNT_WIDTH));
+    
+  constant BUN_COUNT_MAX_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0) 
+    := std_logic_vector(to_unsigned(BUN_COUNT_MAX, BUN_COUNT_WIDTH));
+    
+  constant BUN_COUNT_ONE_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0) 
+    := std_logic_vector(to_unsigned(1, BUN_COUNT_WIDTH));
 
 begin
 
   -- Determine whether all the items in the input are valid.
   in_full <= '1'
-        when in_count = std_logic_vector(to_unsigned(IN_COUNT_MAX, IN_COUNT_WIDTH))
+        when in_count = IN_COUNT_MAX_VAL
         else '0';
 
   -- Determine whether we've reached capacity, the last flag is set, or the
@@ -182,7 +196,7 @@ begin
   -- either need to wait for the output stream to be ready or are outputting
   -- the parallelized word right now.
   count_max <= '1'
-          when bun_count = std_logic_vector(to_unsigned(BUN_COUNT_MAX, BUN_COUNT_WIDTH))
+          when bun_count = BUN_COUNT_MAX_VAL
             or in_full = '0'
           else in_last;
 
@@ -190,7 +204,7 @@ begin
   -- implicitly high MSB bit into consideration.
   in_count_conv <= std_logic_vector(resize(unsigned(in_count), OUT_COUNT_WIDTH))
               when in_full = '0'
-              else std_logic_vector(to_unsigned(IN_COUNT_MAX, OUT_COUNT_WIDTH));
+              else IN_COUNT_MAX_VAL_OUT;
 
   -- We are ready when the output register contents will no longer be needed in
   -- the next cycle.
@@ -212,7 +226,7 @@ begin
         -- In simulation, reset the data registers to undefined just before we
         -- write the first subword into them.
         -- pragma translate_off
-        if bun_count = std_logic_vector(to_unsigned(1, BUN_COUNT_WIDTH)) then
+        if bun_count = BUN_COUNT_ONE_VAL then
           out_data <= (others => 'U');
         end if;
         -- pragma translate_on

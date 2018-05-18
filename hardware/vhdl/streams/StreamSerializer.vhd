@@ -110,6 +110,15 @@ architecture Behavioral of StreamSerializer is
 
   -- Whether the data holding/shift register is valid at all.
   signal reg_valid              : std_logic;
+  
+  -- Set default values as constants to prevent simulation truncate warning
+  -- overflow.
+  constant IN_COUNT_ONE_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)
+    := std_logic_vector(to_unsigned(1, IN_COUNT_WIDTH));
+  constant OU_COUNT_MAX_IN_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)
+    := std_logic_vector(to_unsigned(OUT_COUNT_MAX, IN_COUNT_WIDTH));
+  constant OUT_COUNT_MAX_VAL    : std_logic_vector(OUT_COUNT_WIDTH-1 downto 0)
+    := std_logic_vector(to_unsigned(OUT_COUNT_MAX, OUT_COUNT_WIDTH));
 
 begin
 
@@ -121,8 +130,8 @@ begin
   -- Determine whether we're about to shift out the last valid part of the
   -- shift register.
   last_subword <= '1'
-             when count_r >= std_logic_vector(to_unsigned(1, IN_COUNT_WIDTH))
-              and count_r <= std_logic_vector(to_unsigned(OUT_COUNT_MAX, IN_COUNT_WIDTH))
+             when count_r >= IN_COUNT_ONE_VAL
+              and count_r <= OU_COUNT_MAX_IN_VAL
              else '0';
 
   -- Generate the registers.
@@ -185,7 +194,7 @@ begin
   -- size.
   out_count <= resize_count(count_r, OUT_COUNT_WIDTH)
           when last_subword = '1'
-          else std_logic_vector(to_unsigned(OUT_COUNT_MAX, OUT_COUNT_WIDTH));
+          else OUT_COUNT_MAX_VAL;
 
   -- The output stream data is valid when the serialization register is valid.
   out_valid <= reg_valid;

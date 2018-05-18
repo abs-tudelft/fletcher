@@ -220,7 +220,9 @@ begin
     v.master.valid              := '0';
 
     case v.state is
+      -------------------------------------------------------------------------
       when IDLE =>
+      -------------------------------------------------------------------------
         -- We are ready to receive some new input
         v.input.ready           := '1';
 
@@ -256,10 +258,13 @@ begin
           end if;
         end if;
 
-      -- State to fetch the last index, this is used for variable length lists,
-      -- where the user core needs to know the length of the whole variable
-      -- length List<Type> element that it will receive
+      -------------------------------------------------------------------------
       when INDEX =>
+      -------------------------------------------------------------------------
+        -- State to fetch the last index, this is used for variable length lists,
+        -- where the user core needs to know the length of the whole variable
+        -- length List<Type> element that it will receive
+      
         v.master.addr           := byte_address;
         -- Assuming an index element fits in a burst step, the burst length is
         -- always one step for the index state
@@ -274,8 +279,11 @@ begin
           v.state               := PRE_STEP;
         end if;
 
-      -- State to step to first max burst aligned index or last index
+      -------------------------------------------------------------------------
       when PRE_STEP =>
+      -------------------------------------------------------------------------
+        -- State to step to first max burst aligned index or last index
+        
         v.master.addr           := byte_address;
         v.master.len            := STEP_LEN;
 
@@ -299,8 +307,11 @@ begin
           v.index.current       := v.index.current + ELEMS_PER_STEP;
         end if;
 
-      -- State to burst maximum lengths
+      -------------------------------------------------------------------------
       when MAX =>
+      -------------------------------------------------------------------------
+        -- State to burst maximum lengths
+        
         v.master.addr           := byte_address;
         v.master.len            := MAX_LEN;
 
@@ -324,8 +335,11 @@ begin
           v.index.current       := v.index.current + ELEMS_PER_MAX;
         end if;
 
-      -- State to step to last index
+      -------------------------------------------------------------------------
       when POST_STEP =>
+      -------------------------------------------------------------------------
+        -- State to step to last index
+        
         v.master.addr           := byte_address;
         v.master.len            := STEP_LEN;
 

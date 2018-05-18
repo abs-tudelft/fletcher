@@ -19,24 +19,248 @@ use ieee.numeric_std.all;
 library work;
 use work.ColumnReaderConfig.all;
 use work.ColumnReaderConfigParse.all;
+use work.Utils.all;
 
 package Arrow is
   -----------------------------------------------------------------------------
   -- General address alignment requirements
   -----------------------------------------------------------------------------
-  -- The burst boundary in bytes. Bursts will not cross this boundary unless 
+  -- The burst boundary in bytes. Bursts will not cross this boundary unless
   -- burst lengths are set to something higher than this.
   -- This is currently set to the AXI4 specification of 4096 byte boundaries:
   constant BUS_BURST_BOUNDARY     : natural := 4096;
-  
+
+  -- Bus write data bits covered by single write strobe bit.
+  -- This is currently set to the AXI4 specification of 1 byte / strobe bit.
+  constant BUS_STROBE_COVER       : natural := 8;
+
   -- The Arrow format specification on buffer address alignment in bytes:
   constant REQ_ARROW_BUFFER_ALIGN : natural := 8;
-  
+
   -- The Arrow format recommendation on buffer address alignment in bytes:
-  constant REC_ARROW_BUFFER_ALIGN : natural := 512;
-  
+  constant REC_ARROW_BUFFER_ALIGN : natural := 64;
+
   -----------------------------------------------------------------------------
-  -- Column reader
+  -- ColumnWriter
+  -----------------------------------------------------------------------------
+  component ColumnWriter is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      CFG                       : string;
+      CMD_TAG_ENABLE            : boolean;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmd_valid                 : in  std_logic;
+      cmd_ready                 : out std_logic;
+      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      bus_wreq_valid            : out std_logic;
+      bus_wreq_ready            : in  std_logic;
+      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_wdat_valid            : out std_logic;
+      bus_wdat_ready            : in  std_logic;
+      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_last             : out std_logic;
+      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+    );
+  end component;
+
+  component ColumnWriterLevel is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      CFG                       : string;
+      CMD_TAG_ENABLE            : boolean;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmd_valid                 : in  std_logic;
+      cmd_ready                 : out std_logic;
+      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      bus_wreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_wdat_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wdat_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wdat_data             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_last             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+    );
+  end component;
+
+  component ColumnWriterArb is
+    generic (
+      BUS_ADDR_WIDTH            : natural := 32;
+      BUS_LEN_WIDTH             : natural := 8;
+      BUS_DATA_WIDTH            : natural := 32;
+      BUS_STROBE_WIDTH          : natural := 32/8;
+      BUS_BURST_STEP_LEN        : natural := 4;
+      BUS_BURST_MAX_LEN         : natural := 16;
+      INDEX_WIDTH               : natural := 32;
+      CFG                       : string;
+      CMD_TAG_ENABLE            : boolean := false;
+      CMD_TAG_WIDTH             : natural := 1
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmd_valid                 : in  std_logic;
+      cmd_ready                 : out std_logic;
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
+      cmd_tag                   : in  std_logic_vector;
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector;
+      bus_wreq_valid            : out std_logic_vector;
+      bus_wreq_ready            : in  std_logic_vector;
+      bus_wreq_addr             : out std_logic_vector;
+      bus_wreq_len              : out std_logic_vector;
+      bus_wdat_valid            : out std_logic_vector;
+      bus_wdat_ready            : in  std_logic_vector;
+      bus_wdat_data             : out std_logic_vector;
+      bus_wdat_strobe           : out std_logic_vector;
+      bus_wdat_last             : out std_logic_vector;
+      in_valid                  : in  std_logic_vector;
+      in_ready                  : out std_logic_vector;
+      in_last                   : in  std_logic_vector;
+      in_dvalid                 : in  std_logic_vector;
+      in_data                   : in  std_logic_vector
+    );
+  end component;
+
+  component ColumnWriterListPrim is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      CFG                       : string;
+      CMD_TAG_ENABLE            : boolean;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmd_valid                 : in  std_logic;
+      cmd_ready                 : out std_logic;
+      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      bus_wreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_wdat_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wdat_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_wdat_data             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_last             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+    );
+  end component;
+
+  component ColumnWriterListSync is
+    generic (
+      ELEMENT_WIDTH             : positive;
+      LENGTH_WIDTH              : positive;
+      COUNT_MAX                 : positive;
+      COUNT_WIDTH               : positive;
+      GENERATE_LENGTH           : boolean;
+      NORMALIZE                 : boolean;
+      ELEM_LAST_FROM_LENGTH     : boolean;
+      DATA_IN_SLICE             : boolean;
+      LEN_IN_SLICE              : boolean;
+      OUT_SLICE                 : boolean
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      inl_valid                 : in  std_logic;
+      inl_ready                 : out std_logic;
+      inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
+      inl_last                  : in  std_logic;
+      ine_valid                 : in  std_logic;
+      ine_ready                 : out std_logic;
+      ine_dvalid                : in  std_logic;
+      ine_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      ine_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
+      ine_last                  : in  std_logic;
+      outl_valid                : out std_logic;
+      outl_ready                : in  std_logic;
+      outl_length               : out std_logic_vector(LENGTH_WIDTH-1 downto 0);
+      outl_last                 : out std_logic;
+      oute_valid                : out std_logic;
+      oute_ready                : in  std_logic;
+      oute_last                 : out std_logic;
+      oute_dvalid               : out std_logic;
+      oute_data                 : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      oute_count                : out std_logic_vector(COUNT_WIDTH-1 downto 0)
+
+    );
+  end component;
+
+  -----------------------------------------------------------------------------
+  -- ColumnReader
   -----------------------------------------------------------------------------
   component ColumnReader is
     generic (
@@ -960,6 +1184,504 @@ package Arrow is
     );
   end component;
 
+  component BusWriteArbiter is
+    generic (
+      BUS_ADDR_WIDTH              : natural;
+      BUS_LEN_WIDTH               : natural;
+      BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
+      NUM_SLAVES                  : natural;
+      ARB_METHOD                  : string;
+      MAX_OUTSTANDING             : natural;
+      RAM_CONFIG                  : string;
+      REQ_IN_SLICES               : boolean;
+      REQ_OUT_SLICE               : boolean;
+      DAT_IN_SLICE                : boolean;
+      DAT_OUT_SLICE               : boolean
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in  std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in  std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic;
+
+      -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
+
+      -- Slave port 0.
+      bs00_wreq_valid           : in  std_logic := '0';
+      bs00_wreq_ready           : out std_logic;
+      bs00_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs00_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs00_wdat_valid           : in  std_logic := '0';
+      bs00_wdat_ready           : out std_logic := '1';
+      bs00_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs00_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs00_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 1.
+      bs01_wreq_valid           : in  std_logic := '0';
+      bs01_wreq_ready           : out std_logic;
+      bs01_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs01_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs01_wdat_valid           : in  std_logic := '0';
+      bs01_wdat_ready           : out std_logic := '1';
+      bs01_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs01_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs01_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 2.
+      bs02_wreq_valid           : in  std_logic := '0';
+      bs02_wreq_ready           : out std_logic;
+      bs02_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs02_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs02_wdat_valid           : in  std_logic := '0';
+      bs02_wdat_ready           : out std_logic := '1';
+      bs02_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs02_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs02_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 3.
+      bs03_wreq_valid           : in  std_logic := '0';
+      bs03_wreq_ready           : out std_logic;
+      bs03_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs03_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs03_wdat_valid           : in  std_logic := '0';
+      bs03_wdat_ready           : out std_logic := '1';
+      bs03_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs03_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs03_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 4.
+      bs04_wreq_valid           : in  std_logic := '0';
+      bs04_wreq_ready           : out std_logic;
+      bs04_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs04_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs04_wdat_valid           : in  std_logic := '0';
+      bs04_wdat_ready           : out std_logic := '1';
+      bs04_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs04_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs04_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 5.
+      bs05_wreq_valid           : in  std_logic := '0';
+      bs05_wreq_ready           : out std_logic;
+      bs05_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs05_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs05_wdat_valid           : in  std_logic := '0';
+      bs05_wdat_ready           : out std_logic := '1';
+      bs05_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs05_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs05_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 6.
+      bs06_wreq_valid           : in  std_logic := '0';
+      bs06_wreq_ready           : out std_logic;
+      bs06_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs06_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs06_wdat_valid           : in  std_logic := '0';
+      bs06_wdat_ready           : out std_logic := '1';
+      bs06_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs06_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs06_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 7.
+      bs07_wreq_valid           : in  std_logic := '0';
+      bs07_wreq_ready           : out std_logic;
+      bs07_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs07_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs07_wdat_valid           : in  std_logic := '0';
+      bs07_wdat_ready           : out std_logic := '1';
+      bs07_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs07_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs07_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 8.
+      bs08_wreq_valid           : in  std_logic := '0';
+      bs08_wreq_ready           : out std_logic;
+      bs08_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs08_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs08_wdat_valid           : in  std_logic := '0';
+      bs08_wdat_ready           : out std_logic := '1';
+      bs08_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs08_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs08_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 9.
+      bs09_wreq_valid           : in  std_logic := '0';
+      bs09_wreq_ready           : out std_logic;
+      bs09_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs09_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs09_wdat_valid           : in  std_logic := '0';
+      bs09_wdat_ready           : out std_logic := '1';
+      bs09_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs09_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs09_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 10.
+      bs10_wreq_valid           : in  std_logic := '0';
+      bs10_wreq_ready           : out std_logic;
+      bs10_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs10_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs10_wdat_valid           : in  std_logic := '0';
+      bs10_wdat_ready           : out std_logic := '1';
+      bs10_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs10_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs10_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 11.
+      bs11_wreq_valid           : in  std_logic := '0';
+      bs11_wreq_ready           : out std_logic;
+      bs11_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs11_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs11_wdat_valid           : in  std_logic := '0';
+      bs11_wdat_ready           : out std_logic := '1';
+      bs11_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs11_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs11_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 12.
+      bs12_wreq_valid           : in  std_logic := '0';
+      bs12_wreq_ready           : out std_logic;
+      bs12_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs12_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs12_wdat_valid           : in  std_logic := '0';
+      bs12_wdat_ready           : out std_logic := '1';
+      bs12_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs12_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs12_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 13.
+      bs13_wreq_valid           : in  std_logic := '0';
+      bs13_wreq_ready           : out std_logic;
+      bs13_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs13_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs13_wdat_valid           : in  std_logic := '0';
+      bs13_wdat_ready           : out std_logic := '1';
+      bs13_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs13_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs13_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 14.
+      bs14_wreq_valid           : in  std_logic := '0';
+      bs14_wreq_ready           : out std_logic;
+      bs14_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs14_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs14_wdat_valid           : in  std_logic := '0';
+      bs14_wdat_ready           : out std_logic := '1';
+      bs14_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs14_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs14_wdat_last            : in  std_logic := 'U';
+
+      -- Slave port 15.
+      bs15_wreq_valid           : in  std_logic := '0';
+      bs15_wreq_ready           : out std_logic;
+      bs15_wreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs15_wreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs15_wdat_valid           : in  std_logic := '0';
+      bs15_wdat_ready           : out std_logic := '1';
+      bs15_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
+      bs15_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs15_wdat_last            : in  std_logic := 'U'
+    );
+  end component;
+
+  component BusWriteArbiterVec is
+    generic (
+      BUS_ADDR_WIDTH            : natural := 32;
+      BUS_LEN_WIDTH             : natural := 8;
+      BUS_DATA_WIDTH            : natural := 32;
+      BUS_STROBE_WIDTH          : natural := 32/8;
+      NUM_SLAVES                : natural := 2;
+      ARB_METHOD                : string  := "ROUND-ROBIN";
+      MAX_OUTSTANDING           : natural := 2;
+      RAM_CONFIG                : string  := "";
+      REQ_IN_SLICES             : boolean := false;
+      REQ_OUT_SLICE             : boolean := true;
+      DAT_IN_SLICE              : boolean := false;
+      DAT_OUT_SLICE             : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      bsv_wreq_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
+      bsv_wreq_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
+      bsv_wreq_addr             : in  std_logic_vector(NUM_SLAVES*BUS_ADDR_WIDTH-1 downto 0);
+      bsv_wreq_len              : in  std_logic_vector(NUM_SLAVES*BUS_LEN_WIDTH-1 downto 0);
+      bsv_wdat_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
+      bsv_wdat_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
+      bsv_wdat_data             : in  std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH-1 downto 0);
+      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVES*BUS_STROBE_WIDTH-1 downto 0);
+      bsv_wdat_last             : in  std_logic_vector(NUM_SLAVES-1 downto 0);
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in  std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in  std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out  std_logic
+    );
+  end component;
+
+  component BufferWriter is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      BUS_FIFO_DEPTH            : natural;
+      BUS_FIFO_THRES_SHIFT      : natural := 0;
+      INDEX_WIDTH               : natural;
+      ELEMENT_WIDTH             : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_COUNT_MAX         : natural;
+      ELEMENT_COUNT_WIDTH       : natural;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic := '0';
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic := '1';
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_wreq_valid            : out std_logic;
+      bus_wreq_ready            : in  std_logic;
+      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_wdat_valid            : out std_logic;
+      bus_wdat_ready            : in  std_logic;
+      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_last             : out std_logic
+    );
+  end component;
+
+  component BufferWriterPre is
+    generic (
+      INDEX_WIDTH               : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_STROBE_WIDTH          : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_WIDTH             : natural;
+      ELEMENT_COUNT_MAX         : natural := 1;
+      ELEMENT_COUNT_WIDTH       : natural := 1;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural;
+      NORM_SLICE                : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_dvalid                 : in  std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic := '1';
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      out_strobe                : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      out_last                  : out std_logic
+    );
+  end component;
+
+  component BufferWriterPrePadder is
+    generic (
+      INDEX_WIDTH               : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_WIDTH             : natural;
+      ELEMENT_COUNT_MAX         : natural := 1;
+      ELEMENT_COUNT_WIDTH       : natural := 1;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural;
+      OUT_SLICE                 : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      out_count                 : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      out_strobe                : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
+      out_last                  : out std_logic;
+      out_clear                 : out std_logic;
+      out_implicit              : out std_logic;
+      out_ctrl                  : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      out_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component BufferWriterCmdGenBusReq is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      STEPS_COUNT_WIDTH         : natural;
+      STEPS_COUNT_MAX           : natural;
+      INDEX_WIDTH               : natural;
+      ELEMENT_WIDTH             : natural;
+      IS_INDEX_BUFFER           : boolean;
+      CHECK_INDEX               : boolean := false
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      steps_ready               : out std_logic;
+      steps_valid               : in  std_logic;
+      steps_last                : in  std_logic;
+      steps_count               : in  std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
+      busReq_valid              : out std_logic;
+      busReq_ready              : in  std_logic;
+      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0)
+    );
+  end component;
+  
+  component BufferWriterPreCmdGen is
+    generic (
+      INDEX_WIDTH               : natural;
+      MODE                      : string := "continuous";
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      cmdIn_last                : in  std_logic;
+
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic;
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_implicit           : out std_logic;
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component BusWriteBuffer is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      CTRL_WIDTH                : natural := 1;
+      FIFO_DEPTH                : natural;
+      LEN_SHIFT                 : natural := 0;
+      RAM_CONFIG                : string  := "";
+      SLV_LAST_MODE             : string  := "burst";
+      SLV_REQ_SLICE             : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      SLV_DATA_SLICE            : boolean := true;
+      MST_DATA_SLICE            : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      full                      : out std_logic;
+      empty                     : out std_logic;
+      count                     : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
+      slv_wreq_valid            : in  std_logic;
+      slv_wreq_ready            : out std_logic;
+      slv_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      slv_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      slv_wdat_valid            : in  std_logic;
+      slv_wdat_ready            : out std_logic;
+      slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      slv_wdat_strobe           : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      slv_wdat_ctrl             : in  std_logic_vector(CTRL_WIDTH-1 downto 0)  := (others => 'U');
+      slv_wdat_last             : in  std_logic;
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in  std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in  std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic
+    );
+  end component;
+
   -----------------------------------------------------------------------------
   -- Component declarations for simulation-only helper units
   -----------------------------------------------------------------------------
@@ -1009,6 +1731,56 @@ package Arrow is
       resp_ready                : in  std_logic;
       resp_data                 : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       resp_last                 : out std_logic
+    );
+  end component;
+
+  component BusWriteMasterMock is
+    generic (
+      BUS_ADDR_WIDTH              : natural;
+      BUS_LEN_WIDTH               : natural;
+      BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
+      SEED                        : positive
+
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      wreq_valid                  : out std_logic;
+      wreq_ready                  : in  std_logic;
+      wreq_addr                   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      wreq_len                    : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      wdat_valid                  : out std_logic;
+      wdat_ready                  : in  std_logic;
+      wdat_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe                 : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_last                   : out std_logic
+    );
+  end component;
+
+  component BusWriteSlaveMock is
+    generic (
+      BUS_ADDR_WIDTH              : natural;
+      BUS_LEN_WIDTH               : natural;
+      BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
+      SEED                        : positive;
+      RANDOM_REQUEST_TIMING       : boolean := false;
+      RANDOM_RESPONSE_TIMING      : boolean := false;
+      SREC_FILE                   : string  := ""
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      wreq_valid                  : in  std_logic;
+      wreq_ready                  : out std_logic;
+      wreq_addr                   : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      wreq_len                    : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      wdat_valid                  : in  std_logic;
+      wdat_ready                  : out std_logic;
+      wdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe                 : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_last                   : in  std_logic
     );
   end component;
 

@@ -14,7 +14,7 @@ proc colorize {l c} {
 }
 
 proc add_colored_unit_signals_to_group {group unit in_color out_color internal_color} {
-  add wave -noupdate -expand -group $group -divider -height 32 $group
+  # add wave -noupdate -expand -group $group -divider -height 32 $group
   add wave -noupdate -expand -group $group $unit
 
   set input_list    [lsort [find signals -in        $unit]]
@@ -37,17 +37,24 @@ proc add_waves {groups {in_color green} {out_color yellow} {internal_color white
   }
 }
 
-proc simulate {top groups_and_units} {
+proc simulate {top {groups_and_units 0}} {
   vsim -novopt -assertdebug $top
 
-  config    wave -signalnamewidth 1
-  add_waves $groups_and_units green yellow white
-
-  configure wave -namecolwidth    256
-  configure wave -valuecolwidth   192
+  if {$groups_and_units == 0} {
+    echo "No groups and instances defined."
+  } else {
+    config    wave -signalnamewidth 1
+    add_waves $groups_and_units green yellow white
+    configure wave -namecolwidth    256
+    configure wave -valuecolwidth   192
+  }
 
   run -all
 
-  wave zoom full
+  if {$groups_and_units == 0} {
+    echo "Cannot zoom to full, no signals added."
+  } else {
+    wave zoom full
+  }
 }
 
