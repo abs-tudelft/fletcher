@@ -115,9 +115,8 @@ begin
         if a_reset = '1' then
           a_gray <= (others => '0');
         else
-          for i in a_gray'range loop
-            a_gray(i) <= xor_reduce(a_counter_s(DEPTH_LOG2 downto i));
-          end loop;
+          a_gray <= a_counter_s xor
+                    ("0" & a_counter_s(DEPTH_LOG2 downto 1));
         end if;
       end if;
     end process;
@@ -146,8 +145,12 @@ begin
     end process;
 
     -- Convert the gray code back to binary.
-    b_counter <= b_gray(XCLK_STAGES) xor
-                 ("0" & b_gray(XCLK_STAGES)(DEPTH_LOG2 downto 1));
+    g2b_proc: process (b_gray(XCLK_STAGES)) is
+    begin
+      for i in DEPTH_LOG2 downto 0 loop
+        b_counter(i) <= xor_reduce(b_gray(XCLK_STAGES)(DEPTH_LOG2 downto i));
+      end loop;
+    end process;
 
   end generate;
 
