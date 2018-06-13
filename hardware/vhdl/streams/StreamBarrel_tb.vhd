@@ -18,7 +18,7 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
+use work.StreamBarrel;
 use work.Utils.all;
 
 entity StreamBarrel_tb is
@@ -27,7 +27,7 @@ end StreamBarrel_tb;
 architecture tb of StreamBarrel_tb is
   constant ELEMENT_WIDTH        : natural := 8;
   constant COUNT_MAX            : natural := 4;
-  constant ROTATE_WIDTH         : natural := 3;
+  constant AMOUNT_WIDTH         : natural := 3;
   constant DIRECTION            : string  := "left";
   constant OPERATION            : string  := "shift";
   constant CTRL_WIDTH           : natural := 1;
@@ -36,7 +36,7 @@ architecture tb of StreamBarrel_tb is
   signal reset                  : std_logic;
   signal in_valid               : std_logic;
   signal in_ready               : std_logic;
-  signal in_rotate              : std_logic_vector(ROTATE_WIDTH-1 downto 0);
+  signal in_rotate              : std_logic_vector(AMOUNT_WIDTH-1 downto 0);
   signal in_data                : std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal in_ctrl                : std_logic_vector(CTRL_WIDTH-1 downto 0);
   signal out_valid              : std_logic;
@@ -44,7 +44,7 @@ architecture tb of StreamBarrel_tb is
   signal out_data               : std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal out_ctrl               : std_logic_vector(CTRL_WIDTH-1 downto 0);
 begin
-  
+
   clk_proc: process is
   begin
       clk <= '1';
@@ -61,47 +61,47 @@ begin
     reset <= '0';
     wait;
   end process;
-  
+
   out_ready <= '1';
-  
+
   input_proc: process is
     variable x : integer := 0;
   begin
-  
+
     in_valid <= '0';
-    
+
     loop
       wait until rising_edge(clk);
       exit when reset = '0';
     end loop;
-    
-    loop    
+
+    loop
       for i in 0 to COUNT_MAX-1 loop
         in_data((i+1)*ELEMENT_WIDTH-1 downto i * ELEMENT_WIDTH) <= std_logic_vector(to_unsigned(i, ELEMENT_WIDTH));
       end loop;
-      
-      in_rotate <= std_logic_vector(to_unsigned(x mod COUNT_MAX, ROTATE_WIDTH));
+
+      in_rotate <= std_logic_vector(to_unsigned(x mod COUNT_MAX, AMOUNT_WIDTH));
       in_ctrl <= "0";
-      in_valid <= '1';     
-      
+      in_valid <= '1';
+
       loop
         wait until rising_edge(clk);
         exit when in_ready = '1';
       end loop;
-      
+
       x := x + 1;
-    
+
     end loop;
   end process;
-  
-  uut: StreamBarrel
+
+  uut: entity StreamBarrel
     generic map (
       ELEMENT_WIDTH   => ELEMENT_WIDTH,
       COUNT_MAX       => COUNT_MAX,
-      ROTATE_WIDTH    => ROTATE_WIDTH,
+      AMOUNT_WIDTH    => AMOUNT_WIDTH,
       DIRECTION       => DIRECTION,
       OPERATION       => OPERATION,
-      CTRL_WIDTH      => CTRL_WIDTH   
+      CTRL_WIDTH      => CTRL_WIDTH
     )
     port map (
       clk             => clk,
@@ -114,7 +114,7 @@ begin
       out_valid       => out_valid,
       out_ready       => out_ready,
       out_data        => out_data,
-      out_ctrl        => out_ctrl 
-    );  
-  
+      out_ctrl        => out_ctrl
+    );
+
 end tb;
