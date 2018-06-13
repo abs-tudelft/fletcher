@@ -251,6 +251,7 @@ architecture rtl of arrow_regexp_unit is
 
   signal r                      : reg;
   signal d                      : reg;
+  signal d_in_data              : std_logic_vector(2 * BUS_ADDR_WIDTH + 2 * OFFSET_WIDTH - 1 downto 0);
 
   signal s_cmd_tmp              : std_logic_vector(2 * BUS_ADDR_WIDTH + 2 * OFFSET_WIDTH - 1 downto 0);
   signal s_cmd                  : command_t;
@@ -268,7 +269,7 @@ begin
       reset                     => d.reset_units,
       in_valid                  => d.command.valid,
       in_ready                  => cmd_ready,
-      in_data                   => d.command.firstIdx & d.command.lastIdx & d.command.ctrl,
+      in_data                   => d_in_data,
       out_valid                 => s_cmd.valid,
       out_ready                 => s_cmd.ready,
       out_data                  => s_cmd_tmp
@@ -358,7 +359,7 @@ begin
       r_utf8_hi                 <= utf8_hi;
       r_utf8_lo                 <= utf8_lo;
       matches                   <= r_matches;
-      
+
       if control_reset = '1' then
         r.state                 <= STATE_IDLE;
         r.reset_units           <= '1';
@@ -487,22 +488,25 @@ begin
           v.regex.input.data    := v.str_elem_in.utf8.data;
 
           -- One hot encode mask
-          case v.str_elem_in.utf8.count is
-            when "001"          => v.regex.input.mask := "0001";
-            when "010"          => v.regex.input.mask := "0011";
-            when "011"          => v.regex.input.mask := "0111";
-            when "100"          => v.regex.input.mask := "1111";
-            when others         => v.regex.input.mask := "0000";
-            --when "0001"          => v.regex.input.mask := "00000001";
-            --when "0010"          => v.regex.input.mask := "00000011";
-            --when "0011"          => v.regex.input.mask := "00000111";
-            --when "0100"          => v.regex.input.mask := "00001111";
-            --when "0101"          => v.regex.input.mask := "00011111";
-            --when "0110"          => v.regex.input.mask := "00111111";
-            --when "0111"          => v.regex.input.mask := "01111111";
-            --when "1000"          => v.regex.input.mask := "11111111";
-            --when others          => v.regex.input.mask := "00000000";
-          end case;
+          -- TODO: fix this -- arrow_regexp_unit.vhd:491:35: object subtype is not locally static
+          -- case v.str_elem_in.utf8.count is
+          --   when "001"          => v.regex.input.mask := "0001";
+          --   when "010"          => v.regex.input.mask := "0011";
+          --   when "011"          => v.regex.input.mask := "0111";
+          --   when "100"          => v.regex.input.mask := "1111";
+          --   when others         => v.regex.input.mask := "0000";
+          --   --when "0001"          => v.regex.input.mask := "00000001";
+          --   --when "0010"          => v.regex.input.mask := "00000011";
+          --   --when "0011"          => v.regex.input.mask := "00000111";
+          --   --when "0100"          => v.regex.input.mask := "00001111";
+          --   --when "0101"          => v.regex.input.mask := "00011111";
+          --   --when "0110"          => v.regex.input.mask := "00111111";
+          --   --when "0111"          => v.regex.input.mask := "01111111";
+          --   --when "1000"          => v.regex.input.mask := "11111111";
+          --   --when others          => v.regex.input.mask := "00000000";
+          -- end case;
+          -- TODO: remove this after fix
+          v.regex.input.mask := "0000";
         end if;
 
         if v.str_elem_in.utf8.last = '1' then
@@ -531,6 +535,7 @@ begin
     end case;
 
     d                           <= v;
+    d_in_data                   <= d.command.firstIdx & d.command.lastIdx & d.command.ctrl;
   end process;
 
   -- Connect matches reg to output
