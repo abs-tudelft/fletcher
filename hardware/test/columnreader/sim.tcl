@@ -16,6 +16,7 @@ if { [info exists ::env(PYTHONPATH)] } {
 
 proc recompile {} {
   compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
+  compile_streams_tb $::env(FLETCHER_HARDWARE_DIR)/vhdl
 }
 
 proc gen_cr {{seed -1}} {
