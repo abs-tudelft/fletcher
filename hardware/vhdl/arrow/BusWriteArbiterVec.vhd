@@ -53,21 +53,17 @@ entity BusWriteArbiterVec is
     -- RAM configuration string for the outstanding request FIFO.
     RAM_CONFIG                  : string := "";
 
-    -- Whether a register slice should be inserted into the bus request input
-    -- streams.
-    REQ_IN_SLICES               : boolean := false;
+    -- Whether a register slice should be inserted into the slave request ports
+    SLV_REQ_SLICES              : boolean := false;
 
-    -- Whether a register slice should be inserted into the bus request output
-    -- stream.
-    REQ_OUT_SLICE               : boolean := true;
+    -- Whether a register slice should be inserted into the master request port
+    MST_REQ_SLICE               : boolean := true;
 
-    -- Whether a register slice should be inserted into the bus response input
-    -- stream.
-    DAT_IN_SLICE                : boolean := false;
+    -- Whether a register slice should be inserted into the master data port
+    MST_DAT_SLICE               : boolean := false;
 
-    -- Whether a register slice should be inserted into the bus response output
-    -- streams.
-    DAT_OUT_SLICE               : boolean := true
+    -- Whether a register slice should be inserted into the slave data ports
+    SLV_DAT_SLICES              : boolean := true
 
   );
   port (
@@ -227,7 +223,7 @@ begin
     -- Request register slice.
     req_buffer_inst: StreamBuffer
       generic map (
-        MIN_DEPTH                       => sel(REQ_IN_SLICES, 2, 0),
+        MIN_DEPTH                       => sel(SLV_REQ_SLICES, 2, 0),
         DATA_WIDTH                      => BQI(BQI'high)
       )
       port map (
@@ -252,7 +248,7 @@ begin
     -- Write data register slice.
     dat_buffer_inst: StreamBuffer
       generic map (
-        MIN_DEPTH                       => sel(DAT_OUT_SLICE, 2, 0),
+        MIN_DEPTH                       => sel(SLV_DAT_SLICES, 2, 0),
         DATA_WIDTH                      => BPI(BPI'high)
       )
       port map (
@@ -281,7 +277,7 @@ begin
   -- Instantiate master request register slice.
   mst_wreq_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(REQ_OUT_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(MST_REQ_SLICE, 2, 0),
       DATA_WIDTH                        => BQI(BQI'high)
     )
     port map (
@@ -306,7 +302,7 @@ begin
   -- Instantiate master write data register slice.
   mst_wdat_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(DAT_IN_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(MST_DAT_SLICE, 2, 0),
       DATA_WIDTH                        => BPI(BPI'high)
     )
     port map (

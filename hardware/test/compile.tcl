@@ -27,13 +27,18 @@ proc compile_streams {source_dir} {
 }
 
 proc compile_bus {source_dir} {
-  vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusBuffer.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/arrow/BusReadBuffer.vhd
   
   vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiter.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiterVec.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusWriteBuffer.vhd
+}
+
+proc compile_bus_tb {source_dir} {
+  vcom -quiet -work work -2008 $source_dir/arrow/BusReadArbiter_tb.vhd
+  vcom -quiet -work work -2008 $source_dir/arrow/BusWriteArbiter_tb.vhd
 }
 
 proc compile_fletcher {source_dir} {

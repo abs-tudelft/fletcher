@@ -26,7 +26,7 @@ use work.Arrow.all;
 -- successful. But currently, it's used to generally mess around with
 -- internal command stream and the bus request generator
 -- So normally if it ends, it should be somewhat okay in terms of how many
--- elements it returns. Wether they are the right elements can be tested using
+-- elements it returns. Whether they are the right elements can be tested using
 -- the columnreader test bench, or by setting the element size equal to the 
 -- word size, but that is not a guarantee of proper functioning.
 entity BufferReader_tb is
@@ -42,26 +42,26 @@ entity BufferReader_tb is
     NUM_REQUESTS                : natural := 128;
     NUM_ELEMENTS                : natural := 256;
 
-    RANDOMIZE_OFFSET            : boolean := true;
-    RANDOMIZE_NUM_ELEMENTS	    : boolean := true;
+    RANDOMIZE_OFFSET            : boolean := false;
+    RANDOMIZE_NUM_ELEMENTS	    : boolean := false;
     RANDOMIZE_RESP_LATENCY      : boolean := true;
     MAX_LATENCY                 : natural := 8;
-    DEFAULT_LATENCY             : natural := 0;
+    DEFAULT_LATENCY             : natural := 4;
     RESP_TIMEOUT                : natural := 1024;
     WAIT_FOR_PREV_LAST          : boolean := true;
 
     ---------------------------------------------------------------------------
     -- BUS SLAVE MOCK
     ---------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_ADDR_WIDTH              : natural := 32;
     BUS_DATA_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 9;
     BUS_BURST_STEP_LEN          : natural := 16;
     BUS_BURST_MAX_LEN           : natural := 128;
 
     -- Random timing for bus slave mock
-    BUS_SLAVE_RND_REQ           : boolean := false;
-    BUS_SLAVE_RND_RESP          : boolean := false;
+    BUS_SLAVE_RND_REQ           : boolean := true;
+    BUS_SLAVE_RND_RESP          : boolean := true;
     ---------------------------------------------------------------------------
     -- ARROW
     ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- MISC
     ---------------------------------------------------------------------------
-    IS_INDEX_BUFFER             : boolean := true;
+    IS_INDEX_BUFFER             : boolean := false;
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
@@ -203,7 +203,7 @@ begin
       out_last                  => out_last
     );
 
-  host_mem : BusSlaveMock
+  host_mem : BusReadSlaveMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

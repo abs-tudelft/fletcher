@@ -21,10 +21,10 @@ use work.Streams.all;
 use work.Arrow.all;
 use work.Utils.all;
 
-entity BusArbiter_tb is
-end BusArbiter_tb;
+entity BusReadArbiter_tb is
+end BusReadArbiter_tb;
 
-architecture Behavioral of BusArbiter_tb is
+architecture Behavioral of BusReadArbiter_tb is
 
   constant BUS_ADDR_WIDTH       : natural := 32;
   constant BUS_LEN_WIDTH        : natural := 8;
@@ -138,7 +138,7 @@ begin
     wait until rising_edge(clk);
   end process;
 
-  mst_a_inst: BusMasterMock
+  mst_a_inst: BusReadMasterMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -158,7 +158,7 @@ begin
       resp_last                 => ma2b_resp_last
     );
 
-  mst_a_buffer_inst: BusBuffer
+  mst_a_buffer_inst: BusReadBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -193,7 +193,7 @@ begin
       slv_resp_last             => ba2a_resp_last
     );
 
-  mst_b_inst: BusMasterMock
+  mst_b_inst: BusReadMasterMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -213,7 +213,7 @@ begin
       resp_last                 => mb2b_resp_last
     );
 
-  mst_b_buffer_inst: BusBuffer
+  mst_b_buffer_inst: BusReadBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -229,26 +229,26 @@ begin
       clk                       => clk,
       reset                     => reset,
 
-      mst_req_valid             => mb2b_req_valid,
-      mst_req_ready             => mb2b_req_ready,
-      mst_req_addr              => mb2b_req_addr,
-      mst_req_len               => mb2b_req_len,
-      mst_resp_valid            => mb2b_resp_valid,
-      mst_resp_ready            => mb2b_resp_ready,
-      mst_resp_data             => mb2b_resp_data,
-      mst_resp_last             => mb2b_resp_last,
+      slv_rreq_valid             => mb2b_req_valid,
+      slv_rreq_ready             => mb2b_req_ready,
+      slv_rreq_addr              => mb2b_req_addr,
+      slv_rreq_len               => mb2b_req_len,
+      slv_rdat_valid            => mb2b_resp_valid,
+      slv_rdat_ready            => mb2b_resp_ready,
+      slv_rdat_data             => mb2b_resp_data,
+      slv_rdat_last             => mb2b_resp_last,
 
-      slv_req_valid             => bb2a_req_valid,
-      slv_req_ready             => bb2a_req_ready,
-      slv_req_addr              => bb2a_req_addr,
-      slv_req_len               => bb2a_req_len,
-      slv_resp_valid            => bb2a_resp_valid,
-      slv_resp_ready            => bb2a_resp_ready,
-      slv_resp_data             => bb2a_resp_data,
-      slv_resp_last             => bb2a_resp_last
+      mst_rreq_valid             => bb2a_req_valid,
+      mst_rreq_ready             => bb2a_req_ready,
+      mst_rreq_addr              => bb2a_req_addr,
+      mst_rreq_len               => bb2a_req_len,
+      mst_rdat_valid            => bb2a_resp_valid,
+      mst_rdat_ready            => bb2a_resp_ready,
+      mst_rdat_data             => bb2a_resp_data,
+      mst_rdat_last             => bb2a_resp_last
     );
 
-  mst_c_inst: BusMasterMock
+  mst_c_inst: BusReadMasterMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -268,7 +268,7 @@ begin
       resp_last                 => mc2b_resp_last
     );
 
-  mst_c_buffer_inst: BusBuffer
+  mst_c_buffer_inst: BusReadBuffer
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -303,12 +303,12 @@ begin
       slv_resp_last             => bc2a_resp_last
     );
 
-  uut: BusArbiter
+  uut: BusReadArbiter
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      NUM_MASTERS               => 3,
+      NUM_SLAVE_PORTS           => 3,
       ARB_METHOD                => "ROUND-ROBIN",
       MAX_OUTSTANDING           => 4,
       RAM_CONFIG                => "",
@@ -358,7 +358,7 @@ begin
       bm2_resp_last             => bc2a_resp_last
     );
 
-  slave_inst: BusSlaveMock
+  slave_inst: BusReadSlaveMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

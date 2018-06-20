@@ -2,8 +2,8 @@
 proc t {} {
   set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
 
-  vcom -work work -2008 $vhdl_dir/arrow/BusMasterMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BusSlaveMock.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BusReadMasterMock.vhd
+  vcom -work work -2008 $vhdl_dir/arrow/BusReadSlaveMock.vhd
   vcom -work work -2008 $vhdl_dir/arrow/UserCoreMock.vhd
   vcom -work work -2008 $vhdl_dir/arrow/BufferReader_tb.vhd
 

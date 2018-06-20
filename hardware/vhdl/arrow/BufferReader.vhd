@@ -342,39 +342,39 @@ begin
   -- Instantiate bus buffer. This unit prevents the BufferReader from making
   -- bus requests with a burst size longer than what is currently available in
   -- the response FIFO inside this unit.
-  buffer_inst: BusBuffer
+  buffer_inst: BusReadBuffer
     generic map (
       BUS_ADDR_WIDTH                    => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                     => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH,
       FIFO_DEPTH                        => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       RAM_CONFIG                        => BUS_FIFO_RAM_CONFIG,
-      REQ_IN_SLICE                      => false,
-      REQ_OUT_SLICE                     => BUS_REQ_SLICE,
-      RESP_IN_SLICE                     => false,
-      RESP_OUT_SLICE                    => false --?
+      SLV_REQ_SLICE                     => false,
+      MST_REQ_SLICE                     => BUS_REQ_SLICE,
+      MST_DAT_SLICE                     => false,
+      SLV_DAT_SLICE                     => false
     )
     port map (
       clk                               => bus_clk,
       reset                             => bus_reset,
 
-      mst_req_valid                     => intBusReq_valid,
-      mst_req_ready                     => intBusReq_ready,
-      mst_req_addr                      => intBusReq_addr,
-      mst_req_len                       => intBusReq_len,
-      mst_resp_valid                    => intBusResp_valid,
-      mst_resp_ready                    => intBusResp_ready,
-      mst_resp_data                     => intBusResp_data,
-      mst_resp_last                     => intBusResp_last,
+      slv_rreq_valid                    => intBusReq_valid,
+      slv_rreq_ready                    => intBusReq_ready,
+      slv_rreq_addr                     => intBusReq_addr,
+      slv_rreq_len                      => intBusReq_len,
+      slv_rdat_valid                    => intBusResp_valid,
+      slv_rdat_ready                    => intBusResp_ready,
+      slv_rdat_data                     => intBusResp_data,
+      slv_rdat_last                     => intBusResp_last,
 
-      slv_req_valid                     => busReq_valid,
-      slv_req_ready                     => busReq_ready,
-      slv_req_addr                      => busReq_addr,
-      slv_req_len                       => busReq_len,
-      slv_resp_valid                    => busResp_valid,
-      slv_resp_ready                    => busResp_ready,
-      slv_resp_data                     => busResp_data,
-      slv_resp_last                     => busResp_last
+      mst_rreq_valid                    => busReq_valid,
+      mst_rreq_ready                    => busReq_ready,
+      mst_rreq_addr                     => busReq_addr,
+      mst_rreq_len                      => busReq_len,
+      mst_rdat_valid                    => busResp_valid,
+      mst_rdat_ready                    => busResp_ready,
+      mst_rdat_data                     => busResp_data,
+      mst_rdat_last                     => busResp_last
     );
 
   -- Instantiate bus response handling logic and datapath.

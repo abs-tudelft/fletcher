@@ -28,7 +28,7 @@ use work.Arrow.all;
 -- the FIFO must be at least large enough to contain the maximum burst size of
 -- the master, or all requests will be blocked.
 
-entity BusBuffer is
+entity BusReadBuffer is
   generic (
 
     -- Bus address width.
@@ -47,21 +47,17 @@ entity BusBuffer is
     -- RAM configuration string for the response FIFO.
     RAM_CONFIG                  : string  := "";
 
-    -- Whether a register slice should be inserted into the bus request input
-    -- stream.
-    REQ_IN_SLICE                : boolean := false;
+    -- Whether a register slice should be inserted into the slave port request
+    SLV_REQ_SLICE               : boolean := false;
 
-    -- Whether a register slice should be inserted into the bus request output
-    -- stream.
-    REQ_OUT_SLICE               : boolean := true;
+    -- Whether a register slice should be inserted into the master port request
+    MST_REQ_SLICE               : boolean := true;
 
-    -- Whether a register slice should be inserted into the bus response input
-    -- stream.
-    RESP_IN_SLICE               : boolean := false;
+    -- Whether a register slice should be inserted into the master port data
+    MST_DAT_SLICE               : boolean := false;
 
-    -- Whether a register slice should be inserted into the bus response output
-    -- stream.
-    RESP_OUT_SLICE              : boolean := true
+    -- Whether a register slice should be inserted into the slave port data
+    SLV_DAT_SLICE               : boolean := true
 
   );
   port (
@@ -71,30 +67,30 @@ entity BusBuffer is
     clk                         : in  std_logic;
     reset                       : in  std_logic;
 
-    -- Master port.
-    mst_req_valid               : in  std_logic;
-    mst_req_ready               : out std_logic;
-    mst_req_addr                : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    mst_req_len                 : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    mst_resp_valid              : out std_logic;
-    mst_resp_ready              : in  std_logic;
-    mst_resp_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_resp_last               : out std_logic;
-
     -- Slave port.
-    slv_req_valid               : out std_logic;
-    slv_req_ready               : in  std_logic;
-    slv_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    slv_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    slv_resp_valid              : in  std_logic;
-    slv_resp_ready              : out std_logic;
-    slv_resp_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    slv_resp_last               : in  std_logic
+    slv_rreq_valid              : in  std_logic;
+    slv_rreq_ready              : out std_logic;
+    slv_rreq_addr               : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    slv_rreq_len                : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    slv_rdat_valid              : out std_logic;
+    slv_rdat_ready              : in  std_logic;
+    slv_rdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    slv_rdat_last               : out std_logic;
+
+    -- Master port.
+    mst_rreq_valid              : out std_logic;
+    mst_rreq_ready              : in  std_logic;
+    mst_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_rdat_valid              : in  std_logic;
+    mst_rdat_ready              : out std_logic;
+    mst_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_rdat_last               : in  std_logic
 
   );
-end BusBuffer;
+end BusReadBuffer;
 
-architecture Behavioral of BusBuffer is
+architecture Behavioral of BusReadBuffer is
 
   -- Log2 of the FIFO depth.
   constant DEPTH_LOG2           : natural := log2ceil(FIFO_DEPTH);
@@ -117,23 +113,23 @@ architecture Behavioral of BusBuffer is
     0 => 1
   ));
 
+  signal mstrespi_sData         : std_logic_vector(BPI(BPI'high)-1 downto 0);
+  signal mstrespo_sData         : std_logic_vector(BPI(BPI'high)-1 downto 0);
+
   signal slvrespi_sData         : std_logic_vector(BPI(BPI'high)-1 downto 0);
   signal slvrespo_sData         : std_logic_vector(BPI(BPI'high)-1 downto 0);
 
-  signal mrespi_sData           : std_logic_vector(BPI(BPI'high)-1 downto 0);
-  signal mrespo_sData           : std_logic_vector(BPI(BPI'high)-1 downto 0);
-
-  -- Internal register-sliced master request.
-  signal ms_req_valid           : std_logic;
-  signal ms_req_ready           : std_logic;
-  signal ms_req_addr            : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal ms_req_len             : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-
-  -- Internal register-sliced slave request.
+  -- Internal register-sliced slave port request.
   signal ss_req_valid           : std_logic;
   signal ss_req_ready           : std_logic;
   signal ss_req_addr            : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal ss_req_len             : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+
+  -- Internal register-sliced master port request.
+  signal ms_req_valid           : std_logic;
+  signal ms_req_ready           : std_logic;
+  signal ms_req_addr            : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal ms_req_len             : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
   -- Internal FIFO'd/register-sliced response.
   signal resp_valid             : std_logic;
@@ -148,39 +144,39 @@ architecture Behavioral of BusBuffer is
 
 begin
 
-  -- Instantiate master request register slice.
-  mst_req_buffer_inst: StreamBuffer
+  -- Instantiate slave port request register slice.
+  slv_rreq_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(REQ_IN_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(SLV_REQ_SLICE, 2, 0),
       DATA_WIDTH                        => BQI(BQI'high)
     )
     port map (
       clk                               => clk,
       reset                             => reset,
 
-      in_valid                          => mst_req_valid,
-      in_ready                          => mst_req_ready,
+      in_valid                          => slv_rreq_valid,
+      in_ready                          => slv_rreq_ready,
       in_data                           => mreqi_sData,
 
-      out_valid                         => ms_req_valid,
-      out_ready                         => ms_req_ready,
+      out_valid                         => ss_req_valid,
+      out_ready                         => ss_req_ready,
       out_data                          => mreqo_sData
     );
 
-  mreqi_sData(BQI(2)-1 downto BQI(1))   <= mst_req_addr;
-  mreqi_sData(BQI(1)-1 downto BQI(0))   <= mst_req_len;
+  mreqi_sData(BQI(2)-1 downto BQI(1))   <= slv_rreq_addr;
+  mreqi_sData(BQI(1)-1 downto BQI(0))   <= slv_rreq_len;
 
-  ms_req_addr                           <= mreqo_sData(BQI(2)-1 downto BQI(1));
-  ms_req_len                            <= mreqo_sData(BQI(1)-1 downto BQI(0));
+  ss_req_addr                           <= mreqo_sData(BQI(2)-1 downto BQI(1));
+  ss_req_len                            <= mreqo_sData(BQI(1)-1 downto BQI(0));
 
   -- Block the request when FIFO ready is not asserted.
-  ss_req_valid <= ms_req_valid and fifo_ready;
-  ms_req_ready <= ss_req_ready and fifo_ready;
-  ss_req_addr  <= ms_req_addr;
-  ss_req_len   <= ms_req_len;
+  ms_req_valid <= ss_req_valid and fifo_ready;
+  ss_req_ready <= ms_req_ready and fifo_ready;
+  ms_req_addr  <= ss_req_addr;
+  ms_req_len   <= ss_req_len;
 
   -- Determine how many words will be reserved in the FIFO if we accept the currently incoming length.
-  reserved_if_accepted <= reserved + resize(signed("0" & ss_req_len), DEPTH_LOG2+2);
+  reserved_if_accepted <= reserved + resize(signed("0" & ms_req_len), DEPTH_LOG2+2);
 
   -- If reserved_if_accepted is greater than the FIFO depth (or equal, for efficiency), do not accept the transfer.
   fifo_ready <= '0' when reserved_if_accepted >= 2**DEPTH_LOG2 else '1';
@@ -197,26 +193,26 @@ begin
         reserved_v := reserved;
 
         -- A request is made and accepted
-        if ss_req_valid = '1' and ss_req_ready = '1' then
-        
+        if ms_req_valid = '1' and ms_req_ready = '1' then
+
           -- Check if the request burst length is not larger than the FIFO depth
-          assert unsigned(ss_req_len) < 2**DEPTH_LOG2 
-            report "Violated burst length requirement. ss_req_len(=" & integer'image(int(ss_req_len)) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!" 
+          assert unsigned(ms_req_len) < 2**DEPTH_LOG2
+            report "Violated burst length requirement. ms_req_len(=" & integer'image(int(ms_req_len)) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
             severity FAILURE;
-          
+
           -- Increase amount of space reserved in the FIFO
           reserved_v := reserved_if_accepted;
-          
+
           -- Check if either the amount of space reserved is larger than 0 or the fifo is ready
-          assert reserved_v > 0 or fifo_ready = '1' 
+          assert reserved_v > 0 or fifo_ready = '1'
             report "Bus buffer deadlock!"
             severity FAILURE;
-          
+
           -- Check if the amount of space reserved is equal or larger than 0 after the reservation
           assert reserved_v >= 0
-            report "This should never happen... Check if BUS_LEN_WIDTH is wide enough to contain log2(mst_req_len)+2 bits. reserved_v=" & integer'image(int(reserved_v)) & ">= 0. Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
+            report "This should never happen... Check if BUS_LEN_WIDTH is wide enough to contain log2(slv_rreq_len)+2 bits. reserved_v=" & integer'image(int(reserved_v)) & ">= 0. Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
             severity FAILURE;
-            
+
         end if;
 
         -- Decrease counter if response channel transfer takes place
@@ -228,60 +224,60 @@ begin
     end if;
   end process;
 
-  -- Instantiate slave request register slice.
-  slv_req_buffer_inst: StreamBuffer
+  -- Instantiate master port request register slice.
+  mst_rreq_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(REQ_OUT_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(MST_REQ_SLICE, 2, 0),
       DATA_WIDTH                        => BQI(BQI'high)
     )
     port map (
       clk                               => clk,
       reset                             => reset,
 
-      in_valid                          => ss_req_valid,
-      in_ready                          => ss_req_ready,
+      in_valid                          => ms_req_valid,
+      in_ready                          => ms_req_ready,
       in_data                           => slvreqi_sData,
 
-      out_valid                         => slv_req_valid,
-      out_ready                         => slv_req_ready,
+      out_valid                         => mst_rreq_valid,
+      out_ready                         => mst_rreq_ready,
       out_data                          => slvreqo_sData
     );
 
-  slvreqi_sData(BQI(2)-1 downto BQI(1)) <= ss_req_addr;
-  slvreqi_sData(BQI(1)-1 downto BQI(0)) <= ss_req_len;
+  slvreqi_sData(BQI(2)-1 downto BQI(1)) <= ms_req_addr;
+  slvreqi_sData(BQI(1)-1 downto BQI(0)) <= ms_req_len;
 
-  slv_req_addr                          <= slvreqo_sData(BQI(2)-1 downto BQI(1));
-  slv_req_len                           <= slvreqo_sData(BQI(1)-1 downto BQI(0));
+  mst_rreq_addr                         <= slvreqo_sData(BQI(2)-1 downto BQI(1));
+  mst_rreq_len                          <= slvreqo_sData(BQI(1)-1 downto BQI(0));
 
-  -- Instantiate slave response register slice and FIFO.
-  slv_resp_buffer_inst: StreamBuffer
+  -- Instantiate master port response register slice and FIFO.
+  mst_rdat_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(RESP_IN_SLICE, 2, 0) + 2**DEPTH_LOG2,
+      MIN_DEPTH                         => sel(MST_DAT_SLICE, 2, 0) + 2**DEPTH_LOG2,
       DATA_WIDTH                        => BPI(BPI'high)
     )
     port map (
       clk                               => clk,
       reset                             => reset,
 
-      in_valid                          => slv_resp_valid,
-      in_ready                          => slv_resp_ready,
-      in_data                           => slvrespi_sData,
+      in_valid                          => mst_rdat_valid,
+      in_ready                          => mst_rdat_ready,
+      in_data                           => mstrespi_sData,
 
       out_valid                         => resp_valid,
       out_ready                         => resp_ready,
-      out_data                          => slvrespo_sData
+      out_data                          => mstrespo_sData
     );
 
-  slvrespi_sData(BPI(2)-1 downto BPI(1))<= slv_resp_data;
-  slvrespi_sData(BPI(0))                <= slv_resp_last;
+  mstrespi_sData(BPI(2)-1 downto BPI(1))<= mst_rdat_data;
+  mstrespi_sData(BPI(0))                <= mst_rdat_last;
 
-  resp_data                             <= slvrespo_sData(BPI(2)-1 downto BPI(1));
-  resp_last                             <= slvrespo_sData(BPI(0));
+  resp_data                             <= mstrespo_sData(BPI(2)-1 downto BPI(1));
+  resp_last                             <= mstrespo_sData(BPI(0));
 
-  -- Instantiate master response register slice.
-  mst_resp_buffer_inst: StreamBuffer
+  -- Instantiate slave port response register slice.
+  slv_rdat_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(RESP_OUT_SLICE, 2, 0),
+      MIN_DEPTH                         => sel(SLV_DAT_SLICE, 2, 0),
       DATA_WIDTH                        => BPI(BPI'high)
     )
     port map (
@@ -290,18 +286,17 @@ begin
 
       in_valid                          => resp_valid,
       in_ready                          => resp_ready,
-      in_data                           => mrespi_sData,
+      in_data                           => slvrespi_sData,
 
-      out_valid                         => mst_resp_valid,
-      out_ready                         => mst_resp_ready,
-      out_data                          => mrespo_sData
+      out_valid                         => slv_rdat_valid,
+      out_ready                         => slv_rdat_ready,
+      out_data                          => slvrespo_sData
     );
 
-  mrespi_sData(BPI(2)-1 downto BPI(1))  <= resp_data;
-  mrespi_sData(BPI(0))                  <= resp_last;
+  slvrespi_sData(BPI(2)-1 downto BPI(1))<= resp_data;
+  slvrespi_sData(BPI(0))                <= resp_last;
 
-  mst_resp_data                         <= mrespo_sData(BPI(2)-1 downto BPI(1));
-  mst_resp_last                         <= mrespo_sData(BPI(0));
+  slv_rdat_data                         <= slvrespo_sData(BPI(2)-1 downto BPI(1));
+  slv_rdat_last                         <= slvrespo_sData(BPI(0));
 
 end Behavioral;
-

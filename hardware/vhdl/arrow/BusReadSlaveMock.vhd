@@ -26,7 +26,7 @@ use work.Memory.all;
 -- respond based on an S-record file of the memory contents, or simply returns
 -- the requested address as data. The handshake signals can be randomized.
 
-entity BusSlaveMock is
+entity BusReadSlaveMock is
   generic (
 
     -- Bus address width.
@@ -71,9 +71,9 @@ entity BusSlaveMock is
     resp_last                   : out std_logic
 
   );
-end BusSlaveMock;
+end BusReadSlaveMock;
 
-architecture Behavioral of BusSlaveMock is
+architecture Behavioral of BusReadSlaveMock is
 
   signal req_cons_valid         : std_logic;
   signal req_cons_ready         : std_logic;
@@ -240,4 +240,3 @@ begin
   end generate;
 
 end Behavioral;
-
