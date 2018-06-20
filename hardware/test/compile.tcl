@@ -26,6 +26,11 @@ proc compile_streams {source_dir} {
   vcom -quiet -work work -93 $source_dir/streams/StreamPseudoRandomGenerator.vhd
 }
 
+proc compile_streams_tb {source_dir} {
+  vcom -quiet -work work -2008 $source_dir/streams/StreamTbCons.vhd
+  vcom -quiet -work work -2008 $source_dir/streams/StreamTbProd.vhd
+}
+
 proc compile_bus {source_dir} {
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiter.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusArbiterVec.vhd
