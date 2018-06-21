@@ -117,14 +117,14 @@ entity ColumnReader is
     -- Bus access ports
     ---------------------------------------------------------------------------
     -- Bus access port (bus clock domain).
-    busReq_valid                : out std_logic;
-    busReq_ready                : in  std_logic;
-    busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic;
-    busResp_ready               : out std_logic;
-    busResp_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic;
+    bus_rreq_valid              : out std_logic;
+    bus_rreq_ready              : in  std_logic;
+    bus_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_rdat_valid              : in  std_logic;
+    bus_rdat_ready              : out std_logic;
+    bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -174,14 +174,14 @@ begin
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
 
-      busReq_valid(0)           => busReq_valid,
-      busReq_ready(0)           => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid(0)          => busResp_valid,
-      busResp_ready(0)          => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last(0)           => busResp_last,
+      bus_rreq_valid(0)         => bus_rreq_valid,
+      bus_rreq_ready(0)         => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid(0)         => bus_rdat_valid,
+      bus_rdat_ready(0)         => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last(0)          => bus_rdat_last,
 
       out_valid                 => out_valid,
       out_ready                 => out_ready,

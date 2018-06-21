@@ -291,14 +291,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic;
-      busReq_ready              : in  std_logic;
-      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic;
-      busResp_ready             : out std_logic;
-      busResp_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic;
+      bus_rreq_valid            : out std_logic;
+      bus_rreq_ready            : in  std_logic;
+      bus_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic;
+      bus_rdat_ready            : out std_logic;
+      bus_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic;
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -337,14 +337,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -383,14 +383,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -429,14 +429,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -475,14 +475,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -521,14 +521,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -567,14 +567,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -721,15 +721,15 @@ package Arrow is
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       unlock_ignoreChild        : out std_logic;
 
-      busReq_valid              : out std_logic;
-      busReq_ready              : in  std_logic;
-      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rreq_valid            : out std_logic;
+      bus_rreq_ready            : in  std_logic;
+      bus_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
-      busResp_valid             : in  std_logic;
-      busResp_ready             : out std_logic;
-      busResp_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic;
+      bus_rdat_valid            : in  std_logic;
+      bus_rdat_ready            : out std_logic;
+      bus_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic;
 
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
@@ -1152,10 +1152,10 @@ package Arrow is
       ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
       RAM_CONFIG                : string  := "";
-      SLV_REQ_SLICES            : boolean;
-      MST_REQ_SLICE             : boolean;
-      MST_DAT_SLICE             : boolean;
-      SLV_DAT_SLICES            : boolean
+      SLV_REQ_SLICES            : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
+      SLV_DAT_SLICES            : boolean := true
     );
     port (
       clk                       : in  std_logic;
@@ -1191,9 +1191,9 @@ package Arrow is
       ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
       RAM_CONFIG                : string  := "";
-      SLV_REQ_SLICES            : boolean;
-      MST_REQ_SLICE             : boolean;
-      MST_DAT_SLICE             : boolean;
+      SLV_REQ_SLICES            : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
       SLV_DAT_SLICES            : boolean
     );
     port (
@@ -1229,10 +1229,10 @@ package Arrow is
       BUS_DATA_WIDTH            : natural;
       FIFO_DEPTH                : natural;
       RAM_CONFIG                : string;
-      SLV_REQ_SLICE             : boolean;
-      MST_REQ_SLICE             : boolean;
-      MST_DAT_SLICE             : boolean;
-      SLV_DAT_SLICE             : boolean
+      SLV_REQ_SLICE             : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
+      SLV_DAT_SLICE             : boolean := true
     );
     port (
       clk                       : in  std_logic;

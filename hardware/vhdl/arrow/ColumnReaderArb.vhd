@@ -109,14 +109,14 @@ entity ColumnReaderArb is
     ---------------------------------------------------------------------------
     -- Concatenation of all the bus masters at this level of hierarchy (bus
     -- clock domain).
-    busReq_valid                : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_ready                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_addr                 : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_ready               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_data                : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+    bus_rdat_valid              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rdat_ready              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rdat_data               : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -276,14 +276,14 @@ begin
         clk                     => bus_clk,
         reset                   => bus_reset,
 
-        mst_rreq_valid          => busReq_valid(0),
-        mst_rreq_ready          => busReq_ready(0),
-        mst_rreq_addr           => busReq_addr,
-        mst_rreq_len            => busReq_len,
-        mst_rdat_valid          => busResp_valid(0),
-        mst_rdat_ready          => busResp_ready(0),
-        mst_rdat_data           => busResp_data,
-        mst_rdat_last           => busResp_last(0),
+        mst_rreq_valid          => bus_rreq_valid(0),
+        mst_rreq_ready          => bus_rreq_ready(0),
+        mst_rreq_addr           => bus_rreq_addr,
+        mst_rreq_len            => bus_rreq_len,
+        mst_rdat_valid          => bus_rdat_valid(0),
+        mst_rdat_ready          => bus_rdat_ready(0),
+        mst_rdat_data           => bus_rdat_data,
+        mst_rdat_last           => bus_rdat_last(0),
 
         bsv_rreq_valid          => a_busReq_valid,
         bsv_rreq_ready          => a_busReq_ready,
@@ -301,14 +301,14 @@ begin
 
     -- Only one bus, so no arbiter needed. Connect everything directly instead.
     -- TODO: should maybe still insert slices here upon request.
-      busReq_valid  <= a_busReq_valid;
-    a_busReq_ready  <=   busReq_ready;
-      busReq_addr   <= a_busReq_addr;
-      busReq_len    <= a_busReq_len;
-    a_busResp_valid <=   busResp_valid;
-      busResp_ready <= a_busResp_ready;
-    a_busResp_data  <=   busResp_data;
-    a_busResp_last  <=   busResp_last;
+      bus_rreq_valid  <= a_busReq_valid;
+    a_busReq_ready    <=   bus_rreq_ready;
+      bus_rreq_addr   <= a_busReq_addr;
+      bus_rreq_len    <= a_busReq_len;
+    a_busResp_valid   <=   bus_rdat_valid;
+      bus_rdat_ready  <= a_busResp_ready;
+    a_busResp_data    <=   bus_rdat_data;
+    a_busResp_last    <=   bus_rdat_last;
 
   end generate;
 
@@ -383,14 +383,14 @@ begin
       unlock_ready              => a_unlock_ready,
       unlock_tag                => a_unlock_tag,
 
-      busReq_valid              => a_busReq_valid,
-      busReq_ready              => a_busReq_ready,
-      busReq_addr               => a_busReq_addr,
-      busReq_len                => a_busReq_len,
-      busResp_valid             => a_busResp_valid,
-      busResp_ready             => a_busResp_ready,
-      busResp_data              => a_busResp_data,
-      busResp_last              => a_busResp_last,
+      bus_rreq_valid            => a_busReq_valid,
+      bus_rreq_ready            => a_busReq_ready,
+      bus_rreq_addr             => a_busReq_addr,
+      bus_rreq_len              => a_busReq_len,
+      bus_rdat_valid            => a_busResp_valid,
+      bus_rdat_ready            => a_busResp_ready,
+      bus_rdat_data             => a_busResp_data,
+      bus_rdat_last             => a_busResp_last,
 
       out_valid                 => a_out_valid,
       out_ready                 => a_out_ready,

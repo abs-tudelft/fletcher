@@ -990,14 +990,14 @@ entity {camelprefix}ColumnReader is
     -- Bus access ports
     ---------------------------------------------------------------------------
     -- Bus access port (bus clock domain).
-    busReq_valid                : out std_logic;
-    busReq_ready                : in  std_logic;
-    busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic;
-    busResp_ready               : out std_logic;
-    busResp_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic;
+    bus_rreq_valid              : out std_logic;
+    bus_rreq_ready              : in  std_logic;
+    bus_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_rdat_valid              : in  std_logic;
+    bus_rdat_ready              : out std_logic;
+    bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -1045,14 +1045,14 @@ begin
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
 
-      busReq_valid(0)           => busReq_valid,
-      busReq_ready(0)           => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid(0)          => busResp_valid,
-      busResp_ready(0)          => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last(0)           => busResp_last,
+      bus_rreq_valid(0)         => bus_rreq_valid,
+      bus_rreq_ready(0)         => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid(0)         => bus_rdat_valid,
+      bus_rdat_ready(0)         => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last(0)          => bus_rdat_last,
 
       out_valid                 => out_valids,
       out_ready                 => out_readys,
@@ -1088,14 +1088,14 @@ component {camelprefix}ColumnReader is
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-    busReq_valid                : out std_logic;
-    busReq_ready                : in  std_logic;
-    busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic;
-    busResp_ready               : out std_logic;
-    busResp_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic;
+    bus_rreq_valid              : out std_logic;
+    bus_rreq_ready              : in  std_logic;
+    bus_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_rdat_valid              : in  std_logic;
+    bus_rdat_ready              : out std_logic;
+    bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic;
 
     @out_ports
   );
@@ -1132,14 +1132,14 @@ uut_template_with_unlock = """
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
 
-      busReq_valid(0)           => busReq_valid,
-      busReq_ready(0)           => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid(0)          => busResp_valid,
-      busResp_ready(0)          => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last(0)           => busResp_last,
+      bus_rreq_valid(0)         => bus_rreq_valid,
+      bus_rreq_ready(0)         => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid(0)         => bus_rdat_valid,
+      bus_rdat_ready(0)         => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last(0)          => bus_rdat_last,
 
       out_valid                 => out_valids,
       out_ready                 => out_readys,
@@ -1174,14 +1174,14 @@ uut_template_without_unlock = """
       cmd_lastIdx               => cmd_lastIdx,
       cmd_ctrl                  => cmd_ctrl,
 
-      busReq_valid(0)           => busReq_valid,
-      busReq_ready(0)           => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid(0)          => busResp_valid,
-      busResp_ready(0)          => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last(0)           => busResp_last,
+      bus_rreq_valid(0)         => bus_rreq_valid,
+      bus_rreq_ready(0)         => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid(0)         => bus_rdat_valid,
+      bus_rdat_ready(0)         => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last(0)          => bus_rdat_last,
 
       out_valid                 => out_valids,
       out_ready                 => out_readys,
@@ -1233,15 +1233,15 @@ class ColumnReader(object):
         self.unlock_stream = Stream(p)
         self.unlock_stream.append(Signal(p + "tag", CMD_TAG_WIDTH))
 
-        p = self.signal_prefix + "busReq_"
-        self.busreq_stream = Stream(p)
-        self.busreq_stream.append(Signal(p + "addr", BUS_ADDR_WIDTH))
-        self.busreq_stream.append(Signal(p + "len", BUS_LEN_WIDTH))
+        p = self.signal_prefix + "bus_rreq_"
+        self.bus_rreq_stream = Stream(p)
+        self.bus_rreq_stream.append(Signal(p + "addr", BUS_ADDR_WIDTH))
+        self.bus_rreq_stream.append(Signal(p + "len", BUS_LEN_WIDTH))
 
-        p = self.signal_prefix + "busResp_"
-        self.busresp_stream = Stream(p)
-        self.busresp_stream.append(Signal(p + "data", BUS_DATA_WIDTH))
-        self.busresp_stream.append(Signal(p + "last"))
+        p = self.signal_prefix + "bus_rdat_"
+        self.bus_rdat_stream = Stream(p)
+        self.bus_rdat_stream.append(Signal(p + "data", BUS_DATA_WIDTH))
+        self.bus_rdat_stream.append(Signal(p + "last"))
 
         main_out_stream, out_data = _new_out_stream(self.signal_prefix)
 
@@ -1318,8 +1318,8 @@ class ColumnReader(object):
         len_width      = get_param("len_width",  random.randint(1, 4) * int.bit_length(burst_max_len))
         tag_width      = get_param("tag_width", random.choice([0, 1, 4]))
         multi_clk      = get_param("multi_clk", True)
-        random_busreq_timing  = get_param("random_busreq_timing", random.choice([True, False]))
-        random_busresp_timing = get_param("random_busresp_timing", random.choice([True, False]))
+        random_bus_rreq_timing  = get_param("random_bus_rreq_timing", random.choice([True, False]))
+        random_bus_rdat_timing = get_param("random_bus_rdat_timing", random.choice([True, False]))
 
         # Generate the testbench wrapper object.
         acc = "acc" if multi_clk else "bus"
@@ -1339,8 +1339,8 @@ class ColumnReader(object):
         tb.append_input_stream(self.cmd_stream, "bus")
         if tag_width > 0:
             tb.append_output_stream(self.unlock_stream, "bus")
-        tb.append_output_stream(self.busreq_stream, "bus")
-        tb.append_input_stream(self.busresp_stream, "bus")
+        tb.append_output_stream(self.bus_rreq_stream, "bus")
+        tb.append_input_stream(self.bus_rdat_stream, "bus")
         tb.append_output_stream(self.out_stream, acc)
 
         # Generate a random set of commands.
@@ -1373,8 +1373,8 @@ class ColumnReader(object):
 
         # Generate a memory model.
         memory = Memory()
-        tb.append_memory(memory, self.busreq_stream, self.busresp_stream, "bus",
-                         random_busreq_timing, random_busresp_timing)
+        tb.append_memory(memory, self.bus_rreq_stream, self.bus_rdat_stream, "bus",
+                         random_bus_rreq_timing, random_bus_rdat_timing)
 
         # Generate the test vectors for the readers.
         tvs = self.reader.test_vectors(memory, row_count, commands)

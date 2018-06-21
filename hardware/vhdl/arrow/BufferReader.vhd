@@ -201,17 +201,17 @@ entity BufferReader is
     -- for the transfer, len is the amount of requested words requested in the
     -- burst. The maximum for len is set by BUS_BURST_LEN. Bursts never cross
     -- BUS_BURST_LEN-sized alignment boundaries.
-    busReq_valid                : out std_logic;
-    busReq_ready                : in  std_logic;
-    busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_rreq_valid              : out std_logic;
+    bus_rreq_ready              : in  std_logic;
+    bus_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
     -- Bus read response (bus clock domain). last is an active high signal that
     -- indicates the last beat in the requested burst.
-    busResp_valid               : in  std_logic;
-    busResp_ready               : out std_logic;
-    busResp_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic;
+    bus_rdat_valid              : in  std_logic;
+    bus_rdat_ready              : out std_logic;
+    bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Output to accelerator
@@ -367,14 +367,14 @@ begin
       slv_rdat_data                     => intBusResp_data,
       slv_rdat_last                     => intBusResp_last,
 
-      mst_rreq_valid                    => busReq_valid,
-      mst_rreq_ready                    => busReq_ready,
-      mst_rreq_addr                     => busReq_addr,
-      mst_rreq_len                      => busReq_len,
-      mst_rdat_valid                    => busResp_valid,
-      mst_rdat_ready                    => busResp_ready,
-      mst_rdat_data                     => busResp_data,
-      mst_rdat_last                     => busResp_last
+      mst_rreq_valid                    => bus_rreq_valid,
+      mst_rreq_ready                    => bus_rreq_ready,
+      mst_rreq_addr                     => bus_rreq_addr,
+      mst_rreq_len                      => bus_rreq_len,
+      mst_rdat_valid                    => bus_rdat_valid,
+      mst_rdat_ready                    => bus_rdat_ready,
+      mst_rdat_data                     => bus_rdat_data,
+      mst_rdat_last                     => bus_rdat_last
     );
 
   -- Instantiate bus response handling logic and datapath.

@@ -51,13 +51,13 @@ entity BusReadArbiter is
     RAM_CONFIG                  : string := "";
 
     -- Whether a register slice should be inserted into the slave request ports
-    SLV_REQ_SLICES              : boolean := false;
+    SLV_REQ_SLICES              : boolean := true;
 
     -- Whether a register slice should be inserted into the master request port
     MST_REQ_SLICE               : boolean := true;
 
     -- Whether a register slice should be inserted into the master data port
-    MST_DAT_SLICE               : boolean := false;
+    MST_DAT_SLICE               : boolean := true;
 
     -- Whether a register slice should be inserted into the slave data ports
     SLV_DAT_SLICES              : boolean := true

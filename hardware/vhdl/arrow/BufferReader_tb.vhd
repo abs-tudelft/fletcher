@@ -107,14 +107,14 @@ architecture tb of BufferReader_tb is
   signal cmdOut_ready           : std_logic                                               := '1';
   signal cmdOut_firstIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0)                := (others => '0');
   signal cmdOut_lastIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0)                := (others => '0');
-  signal busReq_valid           : std_logic                                               := '0';
-  signal busReq_ready           : std_logic                                               := '0';
-  signal busReq_addr            : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)             := (others => '0');
-  signal busReq_len             : std_logic_vector(BUS_LEN_WIDTH-1 downto 0)              := (others => '0');
-  signal busResp_valid          : std_logic                                               := '0';
-  signal busResp_ready          : std_logic                                               := '0';
-  signal busResp_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0)             := (others => '0');
-  signal busResp_last           : std_logic                                               := '0';
+  signal bus_rreq_valid         : std_logic                                               := '0';
+  signal bus_rreq_ready         : std_logic                                               := '0';
+  signal bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)             := (others => '0');
+  signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0)              := (others => '0');
+  signal bus_rdat_valid         : std_logic                                               := '0';
+  signal bus_rdat_ready         : std_logic                                               := '0';
+  signal bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0)             := (others => '0');
+  signal bus_rdat_last          : std_logic                                               := '0';
   signal out_valid              : std_logic                                               := '0';
   signal out_ready              : std_logic                                               := '0';
   signal out_data               : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0)  := (others => '0');
@@ -188,14 +188,14 @@ begin
       cmdOut_ready              => cmdOut_ready,
       cmdOut_firstIdx           => cmdOut_firstIdx,
       cmdOut_lastIdx            => cmdOut_lastIdx,
-      busReq_valid              => busReq_valid,
-      busReq_ready              => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid             => busResp_valid,
-      busResp_ready             => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last              => busResp_last,
+      bus_rreq_valid            => bus_rreq_valid,
+      bus_rreq_ready            => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid            => bus_rdat_valid,
+      bus_rdat_ready            => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last             => bus_rdat_last,
       out_valid                 => out_valid,
       out_ready                 => out_ready,
       out_data                  => out_data,
@@ -216,14 +216,14 @@ begin
     port map (
       clk                       => bus_clk,
       reset                     => bus_reset,
-      req_valid                 => busReq_valid,
-      req_ready                 => busReq_ready,
-      req_addr                  => busReq_addr,
-      req_len                   => busReq_len,
-      resp_valid                => busResp_valid,
-      resp_ready                => busResp_ready,
-      resp_data                 => busResp_data,
-      resp_last                 => busResp_last
+      req_valid                 => bus_rreq_valid,
+      req_ready                 => bus_rreq_ready,
+      req_addr                  => bus_rreq_addr,
+      req_len                   => bus_rreq_len,
+      resp_valid                => bus_rdat_valid,
+      resp_ready                => bus_rdat_ready,
+      resp_data                 => bus_rdat_data,
+      resp_last                 => bus_rdat_last
     );
 
   user_core : UserCoreMock
