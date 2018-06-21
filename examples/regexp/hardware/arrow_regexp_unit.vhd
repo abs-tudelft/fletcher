@@ -67,17 +67,16 @@ entity arrow_regexp_unit is
     -- Master bus
     ---------------------------------------------------------------------------
     -- Read request channel
-    bus_req_addr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    bus_req_len                 : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    bus_req_valid               : out std_logic;
-    bus_req_ready               : in  std_logic;
+    mst_bus_rreq_addr           : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_bus_rreq_len            : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_bus_rreq_valid          : out std_logic;
+    mst_bus_rreq_ready          : in  std_logic;
 
     -- Read response channel
-    bus_rsp_data                : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    bus_rsp_resp                : in  std_logic_vector(1 downto 0);
-    bus_rsp_last                : in  std_logic;
-    bus_rsp_valid               : in  std_logic;
-    bus_rsp_ready               : out std_logic
+    mst_bus_rdat_data           : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_bus_rdat_last           : in  std_logic;
+    mst_bus_rdat_valid          : in  std_logic;
+    mst_bus_rdat_ready          : out std_logic
   );
 end entity arrow_regexp_unit;
 
@@ -307,14 +306,14 @@ begin
       unlock_valid              => open,
       unlock_ready              => '1',
       unlock_tag                => open,
-      busReq_valid              => bus_req_valid,
-      busReq_ready              => bus_req_ready,
-      busReq_addr               => bus_req_addr,
-      busReq_len                => bus_req_len,
-      busResp_valid             => bus_rsp_valid,
-      busResp_ready             => bus_rsp_ready,
-      busResp_data              => bus_rsp_data,
-      busResp_last              => bus_rsp_last,
+      bus_rreq_valid            => mst_bus_rreq_valid,
+      bus_rreq_ready            => mst_bus_rreq_ready,
+      bus_rreq_addr             => mst_bus_rreq_addr,
+      bus_rreq_len              => mst_bus_rreq_len,
+      bus_rdat_valid            => mst_bus_rdat_valid,
+      bus_rdat_ready            => mst_bus_rdat_ready,
+      bus_rdat_data             => mst_bus_rdat_data,
+      bus_rdat_last             => mst_bus_rdat_last,
       out_valid                 => out_valid,
       out_ready                 => out_ready,
       out_last                  => out_last,
@@ -358,7 +357,7 @@ begin
       r_utf8_hi                 <= utf8_hi;
       r_utf8_lo                 <= utf8_lo;
       matches                   <= r_matches;
-      
+
       if control_reset = '1' then
         r.state                 <= STATE_IDLE;
         r.reset_units           <= '1';

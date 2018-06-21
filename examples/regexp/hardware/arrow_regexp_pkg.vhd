@@ -88,21 +88,17 @@ package arrow_regexp_pkg is
   -----------------------------------------------------------------------------
   -- Internal buses
   -----------------------------------------------------------------------------
-
   -- Bottom (regex matchers to read converters)
   -- All signals have the same definition as in AXI4, except len which is axi_len + 1
   type bus_bottom_t is record
-    req_id                      : std_logic_vector(BOTTOM_ID_WIDTH-1 downto 0);
-    req_addr                    : std_logic_vector(BOTTOM_ADDR_WIDTH-1 downto 0);
-    req_len                     : std_logic_vector(BOTTOM_LEN_WIDTH-1 downto 0);
-    req_valid                   : std_logic;
-    req_ready                   : std_logic;
-    rsp_id                      : std_logic_vector(BOTTOM_ID_WIDTH-1 downto 0);
-    rsp_data                    : std_logic_vector(BOTTOM_DATA_WIDTH-1 downto 0);
-    rsp_resp                    : std_logic_vector( 1 downto 0);
-    rsp_last                    : std_logic;
-    rsp_valid                   : std_logic;
-    rsp_ready                   : std_logic;
+    rreq_addr                   : std_logic_vector(BOTTOM_ADDR_WIDTH-1 downto 0);
+    rreq_len                    : std_logic_vector(BOTTOM_LEN_WIDTH-1 downto 0);
+    rreq_valid                  : std_logic;
+    rreq_ready                  : std_logic;
+    rdat_data                   : std_logic_vector(BOTTOM_DATA_WIDTH-1 downto 0);
+    rdat_last                   : std_logic;
+    rdat_valid                  : std_logic;
+    rdat_ready                  : std_logic;
   end record;
 
   -- Mid (read converters to interconnect)
@@ -219,15 +215,14 @@ package arrow_regexp_pkg is
       utf8_hi                   : in  std_logic_vector(REG_WIDTH-1 downto 0);
       utf8_lo                   : in  std_logic_vector(REG_WIDTH-1 downto 0);
       matches                   : out std_logic_vector(NUM_REGEX*REG_WIDTH-1 downto 0);
-      bus_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      bus_req_len               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      bus_req_valid             : out std_logic;
-      bus_req_ready             : in  std_logic;
-      bus_rsp_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bus_rsp_resp              : in  std_logic_vector(1 downto 0);
-      bus_rsp_last              : in  std_logic;
-      bus_rsp_valid             : in  std_logic;
-      bus_rsp_ready             : out std_logic
+      mst_bus_rreq_addr         : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_bus_rreq_len          : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_bus_rreq_valid        : out std_logic;
+      mst_bus_rreq_ready        : in  std_logic;
+      mst_bus_rdat_data         : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_bus_rdat_last         : in  std_logic;
+      mst_bus_rdat_valid        : in  std_logic;
+      mst_bus_rdat_ready        : out std_logic
     );
   end component;
 
@@ -251,14 +246,14 @@ package arrow_regexp_pkg is
     port (
       clk                       : in  std_logic;
       reset_n                   : in  std_logic;
-      s_bus_req_addr            : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
-      s_bus_req_len             : in  std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
-      s_bus_req_valid           : in  std_logic;
-      s_bus_req_ready           : out std_logic;
-      s_bus_rsp_data            : out std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
-      s_bus_rsp_last            : out std_logic;
-      s_bus_rsp_valid           : out std_logic;
-      s_bus_rsp_ready           : in  std_logic;
+      slv_bus_rreq_addr         : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+      slv_bus_rreq_len          : in  std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
+      slv_bus_rreq_valid        : in  std_logic;
+      slv_bus_rreq_ready        : out std_logic;
+      slv_bus_rdat_data         : out std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
+      slv_bus_rdat_last         : out std_logic;
+      slv_bus_rdat_valid        : out std_logic;
+      slv_bus_rdat_ready        : in  std_logic;
       m_axi_araddr              : out std_logic_vector(ADDR_WIDTH-1 downto 0);
       m_axi_arlen               : out std_logic_vector(7 downto 0);
       m_axi_arvalid             : out std_logic;
