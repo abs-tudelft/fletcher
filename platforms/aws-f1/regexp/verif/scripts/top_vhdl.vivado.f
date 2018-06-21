@@ -26,9 +26,9 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BufferReaderPost.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BufferReaderRespCtrl.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BufferReaderResp.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BufferReader.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusArbiter.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusArbiterVec.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusBuffer.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusReadArbiter.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusReadArbiterVec.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrow/BusReadBuffer.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/ColumnReaderArb.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/ColumnReaderLevel.vhd

@@ -112,15 +112,15 @@ package stringwrite_pkg is
     port (
       clk                       : in  std_logic;
       reset_n                   : in  std_logic;
-      s_bus_wreq_valid          : in  std_logic;
-      s_bus_wreq_ready          : out std_logic;
-      s_bus_wreq_addr           : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
-      s_bus_wreq_len            : in  std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
-      s_bus_wdat_valid          : in  std_logic;
-      s_bus_wdat_ready          : out std_logic;
-      s_bus_wdat_data           : in  std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
-      s_bus_wdat_strobe         : in  std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
-      s_bus_wdat_last           : in  std_logic;
+      slv_bus_wreq_valid        : in  std_logic;
+      slv_bus_wreq_ready        : out std_logic;
+      slv_bus_wreq_addr         : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+      slv_bus_wreq_len          : in  std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
+      slv_bus_wdat_valid        : in  std_logic;
+      slv_bus_wdat_ready        : out std_logic;
+      slv_bus_wdat_data         : in  std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
+      slv_bus_wdat_strobe       : in  std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
+      slv_bus_wdat_last         : in  std_logic;
       m_axi_awaddr              : out std_logic_vector(ADDR_WIDTH-1 downto 0);
       m_axi_awlen               : out std_logic_vector(MASTER_LEN_WIDTH-1 downto 0);
       m_axi_awvalid             : out std_logic;

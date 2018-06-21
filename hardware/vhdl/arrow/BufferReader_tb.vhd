@@ -26,7 +26,7 @@ use work.Arrow.all;
 -- successful. But currently, it's used to generally mess around with
 -- internal command stream and the bus request generator
 -- So normally if it ends, it should be somewhat okay in terms of how many
--- elements it returns. Wether they are the right elements can be tested using
+-- elements it returns. Whether they are the right elements can be tested using
 -- the columnreader test bench, or by setting the element size equal to the 
 -- word size, but that is not a guarantee of proper functioning.
 entity BufferReader_tb is
@@ -42,26 +42,26 @@ entity BufferReader_tb is
     NUM_REQUESTS                : natural := 128;
     NUM_ELEMENTS                : natural := 256;
 
-    RANDOMIZE_OFFSET            : boolean := true;
-    RANDOMIZE_NUM_ELEMENTS	    : boolean := true;
+    RANDOMIZE_OFFSET            : boolean := false;
+    RANDOMIZE_NUM_ELEMENTS	    : boolean := false;
     RANDOMIZE_RESP_LATENCY      : boolean := true;
     MAX_LATENCY                 : natural := 8;
-    DEFAULT_LATENCY             : natural := 0;
+    DEFAULT_LATENCY             : natural := 4;
     RESP_TIMEOUT                : natural := 1024;
     WAIT_FOR_PREV_LAST          : boolean := true;
 
     ---------------------------------------------------------------------------
     -- BUS SLAVE MOCK
     ---------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_ADDR_WIDTH              : natural := 32;
     BUS_DATA_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 9;
     BUS_BURST_STEP_LEN          : natural := 16;
     BUS_BURST_MAX_LEN           : natural := 128;
 
     -- Random timing for bus slave mock
-    BUS_SLAVE_RND_REQ           : boolean := false;
-    BUS_SLAVE_RND_RESP          : boolean := false;
+    BUS_SLAVE_RND_REQ           : boolean := true;
+    BUS_SLAVE_RND_RESP          : boolean := true;
     ---------------------------------------------------------------------------
     -- ARROW
     ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ entity BufferReader_tb is
     ---------------------------------------------------------------------------
     -- MISC
     ---------------------------------------------------------------------------
-    IS_INDEX_BUFFER             : boolean := true;
+    IS_INDEX_BUFFER             : boolean := false;
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
@@ -107,14 +107,14 @@ architecture tb of BufferReader_tb is
   signal cmdOut_ready           : std_logic                                               := '1';
   signal cmdOut_firstIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0)                := (others => '0');
   signal cmdOut_lastIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0)                := (others => '0');
-  signal busReq_valid           : std_logic                                               := '0';
-  signal busReq_ready           : std_logic                                               := '0';
-  signal busReq_addr            : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)             := (others => '0');
-  signal busReq_len             : std_logic_vector(BUS_LEN_WIDTH-1 downto 0)              := (others => '0');
-  signal busResp_valid          : std_logic                                               := '0';
-  signal busResp_ready          : std_logic                                               := '0';
-  signal busResp_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0)             := (others => '0');
-  signal busResp_last           : std_logic                                               := '0';
+  signal bus_rreq_valid         : std_logic                                               := '0';
+  signal bus_rreq_ready         : std_logic                                               := '0';
+  signal bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)             := (others => '0');
+  signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0)              := (others => '0');
+  signal bus_rdat_valid         : std_logic                                               := '0';
+  signal bus_rdat_ready         : std_logic                                               := '0';
+  signal bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0)             := (others => '0');
+  signal bus_rdat_last          : std_logic                                               := '0';
   signal out_valid              : std_logic                                               := '0';
   signal out_ready              : std_logic                                               := '0';
   signal out_data               : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0)  := (others => '0');
@@ -188,14 +188,14 @@ begin
       cmdOut_ready              => cmdOut_ready,
       cmdOut_firstIdx           => cmdOut_firstIdx,
       cmdOut_lastIdx            => cmdOut_lastIdx,
-      busReq_valid              => busReq_valid,
-      busReq_ready              => busReq_ready,
-      busReq_addr               => busReq_addr,
-      busReq_len                => busReq_len,
-      busResp_valid             => busResp_valid,
-      busResp_ready             => busResp_ready,
-      busResp_data              => busResp_data,
-      busResp_last              => busResp_last,
+      bus_rreq_valid            => bus_rreq_valid,
+      bus_rreq_ready            => bus_rreq_ready,
+      bus_rreq_addr             => bus_rreq_addr,
+      bus_rreq_len              => bus_rreq_len,
+      bus_rdat_valid            => bus_rdat_valid,
+      bus_rdat_ready            => bus_rdat_ready,
+      bus_rdat_data             => bus_rdat_data,
+      bus_rdat_last             => bus_rdat_last,
       out_valid                 => out_valid,
       out_ready                 => out_ready,
       out_data                  => out_data,
@@ -203,7 +203,7 @@ begin
       out_last                  => out_last
     );
 
-  host_mem : BusSlaveMock
+  host_mem : BusReadSlaveMock
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -216,14 +216,14 @@ begin
     port map (
       clk                       => bus_clk,
       reset                     => bus_reset,
-      req_valid                 => busReq_valid,
-      req_ready                 => busReq_ready,
-      req_addr                  => busReq_addr,
-      req_len                   => busReq_len,
-      resp_valid                => busResp_valid,
-      resp_ready                => busResp_ready,
-      resp_data                 => busResp_data,
-      resp_last                 => busResp_last
+      req_valid                 => bus_rreq_valid,
+      req_ready                 => bus_rreq_ready,
+      req_addr                  => bus_rreq_addr,
+      req_len                   => bus_rreq_len,
+      resp_valid                => bus_rdat_valid,
+      resp_ready                => bus_rdat_ready,
+      resp_data                 => bus_rdat_data,
+      resp_last                 => bus_rdat_last
     );
 
   user_core : UserCoreMock

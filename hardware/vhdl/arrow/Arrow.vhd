@@ -291,14 +291,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic;
-      busReq_ready              : in  std_logic;
-      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic;
-      busResp_ready             : out std_logic;
-      busResp_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic;
+      bus_rreq_valid            : out std_logic;
+      bus_rreq_ready            : in  std_logic;
+      bus_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic;
+      bus_rdat_ready            : out std_logic;
+      bus_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic;
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -337,14 +337,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -383,14 +383,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -429,14 +429,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -475,14 +475,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -521,14 +521,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -567,14 +567,14 @@ package Arrow is
       unlock_ready              : in  std_logic := '1';
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
-      busReq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busReq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      busResp_valid             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_ready             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      busResp_data              : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
       out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
       out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -664,7 +664,7 @@ package Arrow is
   end component;
 
   -----------------------------------------------------------------------------
-  -- Buffer reader
+  -- BufferReader components
   -----------------------------------------------------------------------------
   component BufferReader is
     generic (
@@ -721,15 +721,15 @@ package Arrow is
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       unlock_ignoreChild        : out std_logic;
 
-      busReq_valid              : out std_logic;
-      busReq_ready              : in  std_logic;
-      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rreq_valid            : out std_logic;
+      bus_rreq_ready            : in  std_logic;
+      bus_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
 
-      busResp_valid             : in  std_logic;
-      busResp_ready             : out std_logic;
-      busResp_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      busResp_last              : in  std_logic;
+      bus_rdat_valid            : in  std_logic;
+      bus_rdat_ready            : out std_logic;
+      bus_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last             : in  std_logic;
 
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
@@ -933,271 +933,567 @@ package Arrow is
   end component;
 
   -----------------------------------------------------------------------------
+  -- BufferWriter components
+  -----------------------------------------------------------------------------
+  component BufferWriter is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      BUS_FIFO_DEPTH            : natural;
+      BUS_FIFO_THRES_SHIFT      : natural := 0;
+      INDEX_WIDTH               : natural;
+      ELEMENT_WIDTH             : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_COUNT_MAX         : natural;
+      ELEMENT_COUNT_WIDTH       : natural;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic := '0';
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic := '1';
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_wreq_valid            : out std_logic;
+      bus_wreq_ready            : in  std_logic;
+      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_wdat_valid            : out std_logic;
+      bus_wdat_ready            : in  std_logic;
+      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_last             : out std_logic
+    );
+  end component;
+
+  component BufferWriterPre is
+    generic (
+      INDEX_WIDTH               : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_STROBE_WIDTH          : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_WIDTH             : natural;
+      ELEMENT_COUNT_MAX         : natural := 1;
+      ELEMENT_COUNT_WIDTH       : natural := 1;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural;
+      NORM_SLICE                : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_dvalid                 : in  std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic := '1';
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      out_strobe                : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      out_last                  : out std_logic
+    );
+  end component;
+
+  component BufferWriterPrePadder is
+    generic (
+      INDEX_WIDTH               : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      IS_INDEX_BUFFER           : boolean;
+      ELEMENT_WIDTH             : natural;
+      ELEMENT_COUNT_MAX         : natural := 1;
+      ELEMENT_COUNT_WIDTH       : natural := 1;
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural;
+      OUT_SLICE                 : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      out_count                 : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
+      out_strobe                : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
+      out_last                  : out std_logic;
+      out_clear                 : out std_logic;
+      out_implicit              : out std_logic;
+      out_ctrl                  : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      out_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component BufferWriterCmdGenBusReq is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      STEPS_COUNT_WIDTH         : natural;
+      STEPS_COUNT_MAX           : natural;
+      INDEX_WIDTH               : natural;
+      ELEMENT_WIDTH             : natural;
+      IS_INDEX_BUFFER           : boolean;
+      CHECK_INDEX               : boolean := false
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      steps_ready               : out std_logic;
+      steps_valid               : in  std_logic;
+      steps_last                : in  std_logic;
+      steps_count               : in  std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
+      busReq_valid              : out std_logic;
+      busReq_ready              : in  std_logic;
+      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component BufferWriterPreCmdGen is
+    generic (
+      INDEX_WIDTH               : natural;
+      MODE                      : string := "continuous";
+      CMD_CTRL_WIDTH            : natural;
+      CMD_TAG_WIDTH             : natural
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+
+      cmdIn_valid               : in  std_logic;
+      cmdIn_ready               : out std_logic;
+      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdIn_implicit            : in  std_logic;
+      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      cmdIn_last                : in  std_logic;
+
+      cmdOut_valid              : out std_logic;
+      cmdOut_ready              : in  std_logic;
+      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_implicit           : out std_logic;
+      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+    );
+  end component;
+
+-----------------------------------------------------------------------------
   -- Bus devices
   -----------------------------------------------------------------------------
-  component BusArbiter is
+  component BusReadArbiterVec is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      NUM_MASTERS               : natural := 2;
+      NUM_SLAVE_PORTS           : natural := 2;
       ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
       RAM_CONFIG                : string  := "";
-      REQ_IN_SLICES             : boolean := false;
-      REQ_OUT_SLICE             : boolean := true;
-      RESP_IN_SLICE             : boolean := false;
-      RESP_OUT_SLICES           : boolean := true
+      SLV_REQ_SLICES            : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
+      SLV_DAT_SLICES            : boolean := true
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
 
-      slv_req_valid             : out std_logic;
-      slv_req_ready             : in  std_logic;
-      slv_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      slv_req_len               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      slv_resp_valid            : in  std_logic;
-      slv_resp_ready            : out std_logic;
-      slv_resp_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_resp_last             : in  std_logic;
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in  std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in  std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in  std_logic;
 
-      -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-
-      bm0_req_valid             : in  std_logic := '0';
-      bm0_req_ready             : out std_logic;
-      bm0_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm0_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm0_resp_valid            : out std_logic;
-      bm0_resp_ready            : in  std_logic := '1';
-      bm0_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm0_resp_last             : out std_logic;
-
-      bm1_req_valid             : in  std_logic := '0';
-      bm1_req_ready             : out std_logic;
-      bm1_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm1_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm1_resp_valid            : out std_logic;
-      bm1_resp_ready            : in  std_logic := '1';
-      bm1_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm1_resp_last             : out std_logic;
-
-      bm2_req_valid             : in  std_logic := '0';
-      bm2_req_ready             : out std_logic;
-      bm2_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm2_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm2_resp_valid            : out std_logic;
-      bm2_resp_ready            : in  std_logic := '1';
-      bm2_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm2_resp_last             : out std_logic;
-
-      bm3_req_valid             : in  std_logic := '0';
-      bm3_req_ready             : out std_logic;
-      bm3_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm3_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm3_resp_valid            : out std_logic;
-      bm3_resp_ready            : in  std_logic := '1';
-      bm3_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm3_resp_last             : out std_logic;
-
-      bm4_req_valid             : in  std_logic := '0';
-      bm4_req_ready             : out std_logic;
-      bm4_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm4_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm4_resp_valid            : out std_logic;
-      bm4_resp_ready            : in  std_logic := '1';
-      bm4_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm4_resp_last             : out std_logic;
-
-      bm5_req_valid             : in  std_logic := '0';
-      bm5_req_ready             : out std_logic;
-      bm5_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm5_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm5_resp_valid            : out std_logic;
-      bm5_resp_ready            : in  std_logic := '1';
-      bm5_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm5_resp_last             : out std_logic;
-
-      bm6_req_valid             : in  std_logic := '0';
-      bm6_req_ready             : out std_logic;
-      bm6_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm6_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm6_resp_valid            : out std_logic;
-      bm6_resp_ready            : in  std_logic := '1';
-      bm6_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm6_resp_last             : out std_logic;
-
-      bm7_req_valid             : in  std_logic := '0';
-      bm7_req_ready             : out std_logic;
-      bm7_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm7_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm7_resp_valid            : out std_logic;
-      bm7_resp_ready            : in  std_logic := '1';
-      bm7_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm7_resp_last             : out std_logic;
-
-      bm8_req_valid             : in  std_logic := '0';
-      bm8_req_ready             : out std_logic;
-      bm8_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm8_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm8_resp_valid            : out std_logic;
-      bm8_resp_ready            : in  std_logic := '1';
-      bm8_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm8_resp_last             : out std_logic;
-
-      bm9_req_valid             : in  std_logic := '0';
-      bm9_req_ready             : out std_logic;
-      bm9_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm9_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm9_resp_valid            : out std_logic;
-      bm9_resp_ready            : in  std_logic := '1';
-      bm9_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm9_resp_last             : out std_logic;
-
-      bm10_req_valid            : in  std_logic := '0';
-      bm10_req_ready            : out std_logic;
-      bm10_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm10_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm10_resp_valid           : out std_logic;
-      bm10_resp_ready           : in  std_logic := '1';
-      bm10_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm10_resp_last            : out std_logic;
-
-      bm11_req_valid            : in  std_logic := '0';
-      bm11_req_ready            : out std_logic;
-      bm11_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm11_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm11_resp_valid           : out std_logic;
-      bm11_resp_ready           : in  std_logic := '1';
-      bm11_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm11_resp_last            : out std_logic;
-
-      bm12_req_valid            : in  std_logic := '0';
-      bm12_req_ready            : out std_logic;
-      bm12_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm12_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm12_resp_valid           : out std_logic;
-      bm12_resp_ready           : in  std_logic := '1';
-      bm12_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm12_resp_last            : out std_logic;
-
-      bm13_req_valid            : in  std_logic := '0';
-      bm13_req_ready            : out std_logic;
-      bm13_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm13_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm13_resp_valid           : out std_logic;
-      bm13_resp_ready           : in  std_logic := '1';
-      bm13_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm13_resp_last            : out std_logic;
-
-      bm14_req_valid            : in  std_logic := '0';
-      bm14_req_ready            : out std_logic;
-      bm14_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm14_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm14_resp_valid           : out std_logic;
-      bm14_resp_ready           : in  std_logic := '1';
-      bm14_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm14_resp_last            : out std_logic;
-
-      bm15_req_valid            : in  std_logic := '0';
-      bm15_req_ready            : out std_logic;
-      bm15_req_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
-      bm15_req_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
-      bm15_resp_valid           : out std_logic;
-      bm15_resp_ready           : in  std_logic := '1';
-      bm15_resp_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bm15_resp_last            : out std_logic
+      bsv_rreq_valid            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_rreq_ready            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_rreq_addr             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_ADDR_WIDTH-1 downto 0);
+      bsv_rreq_len              : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_LEN_WIDTH-1 downto 0);
+      bsv_rdat_valid            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_rdat_ready            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_rdat_data             : out std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
+      bsv_rdat_last             : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0)
     );
   end component;
 
-  component BusArbiterVec is
+  component BusWriteArbiterVec is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      NUM_MASTERS               : natural := 2;
-      ARB_METHOD                : string := "ROUND-ROBIN";
+      BUS_STROBE_WIDTH          : natural := 32/8;
+      NUM_SLAVE_PORTS           : natural := 2;
+      ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
-      RAM_CONFIG                : string := "";
-      REQ_IN_SLICES             : boolean := false;
-      REQ_OUT_SLICE             : boolean := true;
-      RESP_IN_SLICE             : boolean := false;
-      RESP_OUT_SLICES           : boolean := true
+      RAM_CONFIG                : string  := "";
+      SLV_REQ_SLICES            : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
+      SLV_DAT_SLICES            : boolean
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
-      slv_req_valid             : out std_logic;
-      slv_req_ready             : in  std_logic;
-      slv_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      slv_req_len               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      slv_resp_valid            : in  std_logic;
-      slv_resp_ready            : out std_logic;
-      slv_resp_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_resp_last             : in  std_logic;
-
-      bmv_req_valid             : in  std_logic_vector(NUM_MASTERS-1 downto 0);
-      bmv_req_ready             : out std_logic_vector(NUM_MASTERS-1 downto 0);
-      bmv_req_addr              : in  std_logic_vector(NUM_MASTERS*BUS_ADDR_WIDTH-1 downto 0);
-      bmv_req_len               : in  std_logic_vector(NUM_MASTERS*BUS_LEN_WIDTH-1 downto 0);
-      bmv_resp_valid            : out std_logic_vector(NUM_MASTERS-1 downto 0);
-      bmv_resp_ready            : in  std_logic_vector(NUM_MASTERS-1 downto 0);
-      bmv_resp_data             : out std_logic_vector(NUM_MASTERS*BUS_DATA_WIDTH-1 downto 0);
-      bmv_resp_last             : out std_logic_vector(NUM_MASTERS-1 downto 0)
+      
+      bsv_wreq_valid            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_wreq_ready            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_wreq_addr             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_ADDR_WIDTH-1 downto 0);
+      bsv_wreq_len              : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_LEN_WIDTH-1 downto 0);
+      bsv_wdat_valid            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_wdat_ready            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      bsv_wdat_data             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
+      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_STROBE_WIDTH-1 downto 0);
+      bsv_wdat_last             : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+      
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in  std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in  std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out  std_logic
     );
   end component;
 
-  component BusBuffer is
+  component BusReadBuffer is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
       FIFO_DEPTH                : natural;
       RAM_CONFIG                : string;
-      REQ_IN_SLICE              : boolean;
-      REQ_OUT_SLICE             : boolean;
-      RESP_IN_SLICE             : boolean;
-      RESP_OUT_SLICE            : boolean
+      SLV_REQ_SLICE             : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true;
+      SLV_DAT_SLICE             : boolean := true
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
 
-      mst_req_valid             : in  std_logic;
-      mst_req_ready             : out std_logic;
-      mst_req_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_req_len               : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_resp_valid            : out std_logic;
-      mst_resp_ready            : in  std_logic;
-      mst_resp_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_resp_last             : out std_logic;
+      slv_rreq_valid            : in  std_logic;
+      slv_rreq_ready            : out std_logic;
+      slv_rreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      slv_rreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      slv_rdat_valid            : out std_logic;
+      slv_rdat_ready            : in  std_logic;
+      slv_rdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      slv_rdat_last             : out std_logic;
 
-      slv_req_valid             : out std_logic;
-      slv_req_ready             : in  std_logic;
-      slv_req_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      slv_req_len               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      slv_resp_valid            : in  std_logic;
-      slv_resp_ready            : out std_logic;
-      slv_resp_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_resp_last             : in  std_logic
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in  std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in  std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in  std_logic
+    );
+  end component;
+
+  component BusWriteBuffer is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      CTRL_WIDTH                : natural := 1;
+      FIFO_DEPTH                : natural;
+      LEN_SHIFT                 : natural := 0;
+      RAM_CONFIG                : string  := "";
+      SLV_LAST_MODE             : string  := "burst";
+      SLV_REQ_SLICE             : boolean := true;
+      MST_REQ_SLICE             : boolean := true;
+      SLV_DAT_SLICE             : boolean := true;
+      MST_DAT_SLICE             : boolean := true
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      full                      : out std_logic;
+      empty                     : out std_logic;
+      count                     : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
+      
+      slv_wreq_valid            : in  std_logic;
+      slv_wreq_ready            : out std_logic;
+      slv_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      slv_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      slv_wdat_valid            : in  std_logic;
+      slv_wdat_ready            : out std_logic;
+      slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      slv_wdat_strobe           : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      slv_wdat_ctrl             : in  std_logic_vector(CTRL_WIDTH-1 downto 0)  := (others => 'U');
+      slv_wdat_last             : in  std_logic;
+      
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in  std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in  std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic
+    );
+  end component;
+
+  component BusReadArbiter is
+    generic (
+      BUS_ADDR_WIDTH            : natural := 32;
+      BUS_LEN_WIDTH             : natural := 8;
+      BUS_DATA_WIDTH            : natural := 32;
+      NUM_SLAVE_PORTS           : natural := 2;
+      ARB_METHOD                : string  := "ROUND-ROBIN";
+      MAX_OUTSTANDING           : natural := 2;
+      RAM_CONFIG                : string  := "";
+      SLV_REQ_SLICES            : boolean;
+      MST_REQ_SLICE             : boolean;
+      MST_DAT_SLICE             : boolean;
+      SLV_DAT_SLICES            : boolean
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in  std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in  std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in  std_logic;
+
+      -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
+
+      bs00_rreq_valid           : in  std_logic := '0';
+      bs00_rreq_ready           : out std_logic;
+      bs00_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs00_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs00_rdat_valid           : out std_logic;
+      bs00_rdat_ready           : in  std_logic := '1';
+      bs00_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs00_rdat_last            : out std_logic;
+
+      bs01_rreq_valid           : in  std_logic := '0';
+      bs01_rreq_ready           : out std_logic;
+      bs01_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs01_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs01_rdat_valid           : out std_logic;
+      bs01_rdat_ready           : in  std_logic := '1';
+      bs01_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs01_rdat_last            : out std_logic;
+
+      bs02_rreq_valid           : in  std_logic := '0';
+      bs02_rreq_ready           : out std_logic;
+      bs02_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs02_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs02_rdat_valid           : out std_logic;
+      bs02_rdat_ready           : in  std_logic := '1';
+      bs02_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs02_rdat_last            : out std_logic;
+
+      bs03_rreq_valid           : in  std_logic := '0';
+      bs03_rreq_ready           : out std_logic;
+      bs03_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs03_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs03_rdat_valid           : out std_logic;
+      bs03_rdat_ready           : in  std_logic := '1';
+      bs03_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs03_rdat_last            : out std_logic;
+
+      bs04_rreq_valid           : in  std_logic := '0';
+      bs04_rreq_ready           : out std_logic;
+      bs04_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs04_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs04_rdat_valid           : out std_logic;
+      bs04_rdat_ready           : in  std_logic := '1';
+      bs04_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs04_rdat_last            : out std_logic;
+
+      bs05_rreq_valid           : in  std_logic := '0';
+      bs05_rreq_ready           : out std_logic;
+      bs05_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs05_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs05_rdat_valid           : out std_logic;
+      bs05_rdat_ready           : in  std_logic := '1';
+      bs05_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs05_rdat_last            : out std_logic;
+
+      bs06_rreq_valid           : in  std_logic := '0';
+      bs06_rreq_ready           : out std_logic;
+      bs06_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs06_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs06_rdat_valid           : out std_logic;
+      bs06_rdat_ready           : in  std_logic := '1';
+      bs06_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs06_rdat_last            : out std_logic;
+
+      bs07_rreq_valid           : in  std_logic := '0';
+      bs07_rreq_ready           : out std_logic;
+      bs07_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs07_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs07_rdat_valid           : out std_logic;
+      bs07_rdat_ready           : in  std_logic := '1';
+      bs07_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs07_rdat_last            : out std_logic;
+
+      bs08_rreq_valid           : in  std_logic := '0';
+      bs08_rreq_ready           : out std_logic;
+      bs08_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs08_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs08_rdat_valid           : out std_logic;
+      bs08_rdat_ready           : in  std_logic := '1';
+      bs08_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs08_rdat_last            : out std_logic;
+
+      bs09_rreq_valid           : in  std_logic := '0';
+      bs09_rreq_ready           : out std_logic;
+      bs09_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs09_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs09_rdat_valid           : out std_logic;
+      bs09_rdat_ready           : in  std_logic := '1';
+      bs09_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs09_rdat_last            : out std_logic;
+
+      bs10_rreq_valid           : in  std_logic := '0';
+      bs10_rreq_ready           : out std_logic;
+      bs10_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs10_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs10_rdat_valid           : out std_logic;
+      bs10_rdat_ready           : in  std_logic := '1';
+      bs10_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs10_rdat_last            : out std_logic;
+
+      bs11_rreq_valid           : in  std_logic := '0';
+      bs11_rreq_ready           : out std_logic;
+      bs11_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs11_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs11_rdat_valid           : out std_logic;
+      bs11_rdat_ready           : in  std_logic := '1';
+      bs11_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs11_rdat_last            : out std_logic;
+
+      bs12_rreq_valid           : in  std_logic := '0';
+      bs12_rreq_ready           : out std_logic;
+      bs12_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs12_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs12_rdat_valid           : out std_logic;
+      bs12_rdat_ready           : in  std_logic := '1';
+      bs12_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs12_rdat_last            : out std_logic;
+
+      bs13_rreq_valid           : in  std_logic := '0';
+      bs13_rreq_ready           : out std_logic;
+      bs13_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs13_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs13_rdat_valid           : out std_logic;
+      bs13_rdat_ready           : in  std_logic := '1';
+      bs13_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs13_rdat_last            : out std_logic;
+
+      bs14_rreq_valid           : in  std_logic := '0';
+      bs14_rreq_ready           : out std_logic;
+      bs14_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs14_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs14_rdat_valid           : out std_logic;
+      bs14_rdat_ready           : in  std_logic := '1';
+      bs14_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs14_rdat_last            : out std_logic;
+
+      bs15_rreq_valid           : in  std_logic := '0';
+      bs15_rreq_ready           : out std_logic;
+      bs15_rreq_addr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
+      bs15_rreq_len             : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0) := (others => '0');
+      bs15_rdat_valid           : out std_logic;
+      bs15_rdat_ready           : in  std_logic := '1';
+      bs15_rdat_data            : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bs15_rdat_last            : out std_logic
     );
   end component;
 
   component BusWriteArbiter is
     generic (
-      BUS_ADDR_WIDTH              : natural;
-      BUS_LEN_WIDTH               : natural;
-      BUS_DATA_WIDTH              : natural;
-      BUS_STROBE_WIDTH            : natural;
-      NUM_SLAVES                  : natural;
-      ARB_METHOD                  : string;
-      MAX_OUTSTANDING             : natural;
-      RAM_CONFIG                  : string;
-      REQ_IN_SLICES               : boolean;
-      REQ_OUT_SLICE               : boolean;
-      DAT_IN_SLICE                : boolean;
-      DAT_OUT_SLICE               : boolean
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      NUM_SLAVE_PORTS           : natural;
+      ARB_METHOD                : string;
+      MAX_OUTSTANDING           : natural;
+      RAM_CONFIG                : string;
+      SLV_REQ_SLICES            : boolean;
+      MST_REQ_SLICE             : boolean;
+      MST_DAT_SLICE             : boolean;
+      SLV_DAT_SLICES            : boolean
     );
     port (
       clk                       : in  std_logic;
@@ -1393,295 +1689,6 @@ package Arrow is
     );
   end component;
 
-  component BusWriteArbiterVec is
-    generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_STROBE_WIDTH          : natural := 32/8;
-      NUM_SLAVES                : natural := 2;
-      ARB_METHOD                : string  := "ROUND-ROBIN";
-      MAX_OUTSTANDING           : natural := 2;
-      RAM_CONFIG                : string  := "";
-      REQ_IN_SLICES             : boolean := false;
-      REQ_OUT_SLICE             : boolean := true;
-      DAT_IN_SLICE              : boolean := false;
-      DAT_OUT_SLICE             : boolean := true
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      bsv_wreq_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
-      bsv_wreq_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
-      bsv_wreq_addr             : in  std_logic_vector(NUM_SLAVES*BUS_ADDR_WIDTH-1 downto 0);
-      bsv_wreq_len              : in  std_logic_vector(NUM_SLAVES*BUS_LEN_WIDTH-1 downto 0);
-      bsv_wdat_valid            : in  std_logic_vector(NUM_SLAVES-1 downto 0);
-      bsv_wdat_ready            : out std_logic_vector(NUM_SLAVES-1 downto 0);
-      bsv_wdat_data             : in  std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH-1 downto 0);
-      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVES*BUS_STROBE_WIDTH-1 downto 0);
-      bsv_wdat_last             : in  std_logic_vector(NUM_SLAVES-1 downto 0);
-      mst_wreq_valid            : out std_logic;
-      mst_wreq_ready            : in  std_logic;
-      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_wdat_valid            : out std_logic;
-      mst_wdat_ready            : in  std_logic;
-      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      mst_wdat_last             : out  std_logic
-    );
-  end component;
-
-  component BufferWriter is
-    generic (
-      BUS_ADDR_WIDTH            : natural;
-      BUS_LEN_WIDTH             : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
-      BUS_BURST_STEP_LEN        : natural;
-      BUS_BURST_MAX_LEN         : natural;
-      BUS_FIFO_DEPTH            : natural;
-      BUS_FIFO_THRES_SHIFT      : natural := 0;
-      INDEX_WIDTH               : natural;
-      ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
-      ELEMENT_COUNT_MAX         : natural;
-      ELEMENT_COUNT_WIDTH       : natural;
-      CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural
-    );
-    port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic := '0';
-      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-      in_last                   : in  std_logic;
-      cmdOut_valid              : out std_logic;
-      cmdOut_ready              : in  std_logic := '1';
-      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
-      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      bus_wreq_valid            : out std_logic;
-      bus_wreq_ready            : in  std_logic;
-      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      bus_wdat_valid            : out std_logic;
-      bus_wdat_ready            : in  std_logic;
-      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      bus_wdat_last             : out std_logic
-    );
-  end component;
-
-  component BufferWriterPre is
-    generic (
-      INDEX_WIDTH               : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_BURST_STEP_LEN        : natural;
-      BUS_STROBE_WIDTH          : natural;
-      IS_INDEX_BUFFER           : boolean;
-      ELEMENT_WIDTH             : natural;
-      ELEMENT_COUNT_MAX         : natural := 1;
-      ELEMENT_COUNT_WIDTH       : natural := 1;
-      CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural;
-      NORM_SLICE                : boolean := true
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
-      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_dvalid                 : in  std_logic;
-      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-      in_last                   : in  std_logic;
-      cmdOut_valid              : out std_logic;
-      cmdOut_ready              : in  std_logic := '1';
-      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0) := (others => '0');
-      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      out_valid                 : out std_logic;
-      out_ready                 : in  std_logic;
-      out_data                  : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      out_strobe                : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      out_last                  : out std_logic
-    );
-  end component;
-
-  component BufferWriterPrePadder is
-    generic (
-      INDEX_WIDTH               : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_BURST_STEP_LEN        : natural;
-      IS_INDEX_BUFFER           : boolean;
-      ELEMENT_WIDTH             : natural;
-      ELEMENT_COUNT_MAX         : natural := 1;
-      ELEMENT_COUNT_WIDTH       : natural := 1;
-      CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural;
-      OUT_SLICE                 : boolean := true
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
-      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-      in_last                   : in  std_logic;
-      out_valid                 : out std_logic;
-      out_ready                 : in  std_logic;
-      out_data                  : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      out_count                 : out std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-      out_strobe                : out std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-      out_last                  : out std_logic;
-      out_clear                 : out std_logic;
-      out_implicit              : out std_logic;
-      out_ctrl                  : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      out_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
-    );
-  end component;
-
-  component BufferWriterCmdGenBusReq is
-    generic (
-      BUS_ADDR_WIDTH            : natural;
-      BUS_LEN_WIDTH             : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_BURST_STEP_LEN        : natural;
-      BUS_BURST_MAX_LEN         : natural;
-      STEPS_COUNT_WIDTH         : natural;
-      STEPS_COUNT_MAX           : natural;
-      INDEX_WIDTH               : natural;
-      ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
-      CHECK_INDEX               : boolean := false
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_lastIdx             : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_baseAddr            : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
-      steps_ready               : out std_logic;
-      steps_valid               : in  std_logic;
-      steps_last                : in  std_logic;
-      steps_count               : in  std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
-      busReq_valid              : out std_logic;
-      busReq_ready              : in  std_logic;
-      busReq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      busReq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0)
-    );
-  end component;
-  
-  component BufferWriterPreCmdGen is
-    generic (
-      INDEX_WIDTH               : natural;
-      MODE                      : string := "continuous";
-      CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
-      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      cmdIn_last                : in  std_logic;
-
-      cmdOut_valid              : out std_logic;
-      cmdOut_ready              : in  std_logic;
-      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_implicit           : out std_logic;
-      cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
-    );
-  end component;
-
-  component BusWriteBuffer is
-    generic (
-      BUS_ADDR_WIDTH            : natural;
-      BUS_LEN_WIDTH             : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
-      CTRL_WIDTH                : natural := 1;
-      FIFO_DEPTH                : natural;
-      LEN_SHIFT                 : natural := 0;
-      RAM_CONFIG                : string  := "";
-      SLV_LAST_MODE             : string  := "burst";
-      SLV_REQ_SLICE             : boolean := true;
-      MST_REQ_SLICE             : boolean := true;
-      SLV_DATA_SLICE            : boolean := true;
-      MST_DATA_SLICE            : boolean := true
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      full                      : out std_logic;
-      empty                     : out std_logic;
-      count                     : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
-      slv_wreq_valid            : in  std_logic;
-      slv_wreq_ready            : out std_logic;
-      slv_wreq_addr             : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      slv_wreq_len              : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      slv_wdat_valid            : in  std_logic;
-      slv_wdat_ready            : out std_logic;
-      slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_wdat_strobe           : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      slv_wdat_ctrl             : in  std_logic_vector(CTRL_WIDTH-1 downto 0)  := (others => 'U');
-      slv_wdat_last             : in  std_logic;
-      mst_wreq_valid            : out std_logic;
-      mst_wreq_ready            : in  std_logic;
-      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_wdat_valid            : out std_logic;
-      mst_wdat_ready            : in  std_logic;
-      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
-      mst_wdat_last             : out std_logic
-    );
-  end component;
-
   -----------------------------------------------------------------------------
   -- Component declarations for simulation-only helper units
   -----------------------------------------------------------------------------
@@ -1709,7 +1716,7 @@ package Arrow is
     );
   end component;
 
-  component BusSlaveMock is
+  component BusReadSlaveMock is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;

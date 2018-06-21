@@ -26,7 +26,7 @@ use work.Utils.all;
 -- receives the requested addresses cast to data words (as BusSlaveMock returns
 -- them).
 
-entity BusMasterMock is
+entity BusReadMasterMock is
   generic (
 
     -- Bus address width.
@@ -60,9 +60,9 @@ entity BusMasterMock is
     resp_last                   : in  std_logic
 
   );
-end BusMasterMock;
+end BusReadMasterMock;
 
-architecture Behavioral of BusMasterMock is
+architecture Behavioral of BusReadMasterMock is
 
   signal req_prod_valid         : std_logic;
   signal req_prod_ready         : std_logic;

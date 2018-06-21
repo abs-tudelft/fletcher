@@ -40,7 +40,7 @@ entity BusWriteArbiter is
     BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Number of bus masters to arbitrate between.
-    NUM_SLAVES                  : natural := 2;
+    NUM_SLAVE_PORTS             : natural := 2;
 
     -- Arbitration method. Must be "ROUND-ROBIN" or "FIXED". If fixed,
     -- lower-indexed masters take precedence.
@@ -53,22 +53,17 @@ entity BusWriteArbiter is
     -- RAM configuration string for the outstanding request FIFO.
     RAM_CONFIG                  : string := "";
 
-    -- Whether a register slice should be inserted into the bus request input
-    -- streams.
-    REQ_IN_SLICES               : boolean := false;
+    -- Whether a register slice should be inserted into the slave request ports
+    SLV_REQ_SLICES              : boolean := true;
 
-    -- Whether a register slice should be inserted into the bus request output
-    -- stream.
-    REQ_OUT_SLICE               : boolean := true;
+    -- Whether a register slice should be inserted into the master request port
+    MST_REQ_SLICE               : boolean := true;
 
-    -- Whether a register slice should be inserted into the bus response input
-    -- stream.
-    DAT_IN_SLICE                : boolean := false;
+    -- Whether a register slice should be inserted into the master data port
+    MST_DAT_SLICE               : boolean := true;
 
-    -- Whether a register slice should be inserted into the bus response output
-    -- streams.
-    DAT_OUT_SLICE               : boolean := true
-
+    -- Whether a register slice should be inserted into the slave data ports
+    SLV_DAT_SLICES              : boolean := true
   );
   port (
 
@@ -271,19 +266,19 @@ end BusWriteArbiter;
 architecture Behavioral of BusWriteArbiter is
 
   -- Serialized slave ports.
-  signal bsv_wreq_valid          : std_logic_vector(NUM_SLAVES-1 downto 0);
-  signal bsv_wreq_ready          : std_logic_vector(NUM_SLAVES-1 downto 0);
-  signal bsv_wreq_addr           : std_logic_vector(NUM_SLAVES*BUS_ADDR_WIDTH-1 downto 0);
-  signal bsv_wreq_len            : std_logic_vector(NUM_SLAVES*BUS_LEN_WIDTH-1 downto 0);
-  signal bsv_wdat_valid          : std_logic_vector(NUM_SLAVES-1 downto 0);
-  signal bsv_wdat_ready          : std_logic_vector(NUM_SLAVES-1 downto 0);
-  signal bsv_wdat_data           : std_logic_vector(NUM_SLAVES*BUS_DATA_WIDTH-1 downto 0);
-  signal bsv_wdat_strobe         : std_logic_vector(NUM_SLAVES*BUS_STROBE_WIDTH-1 downto 0);
-  signal bsv_wdat_last           : std_logic_vector(NUM_SLAVES-1 downto 0);
+  signal bsv_wreq_valid          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+  signal bsv_wreq_ready          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+  signal bsv_wreq_addr           : std_logic_vector(NUM_SLAVE_PORTS*BUS_ADDR_WIDTH-1 downto 0);
+  signal bsv_wreq_len            : std_logic_vector(NUM_SLAVE_PORTS*BUS_LEN_WIDTH-1 downto 0);
+  signal bsv_wdat_valid          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+  signal bsv_wdat_ready          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
+  signal bsv_wdat_data           : std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
+  signal bsv_wdat_strobe         : std_logic_vector(NUM_SLAVE_PORTS*BUS_STROBE_WIDTH-1 downto 0);
+  signal bsv_wdat_last           : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
 begin
 
   -- Connect bus slave  0 to internal signal.                                                              
-  bs00_connect_gen: if NUM_SLAVES >  0 generate                                                          
+  bs00_connect_gen: if NUM_SLAVE_PORTS >  0 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 0)                                               <= bs00_wreq_valid;        
     bs00_wreq_ready                                                   <= bsv_wreq_ready( 0);     
@@ -297,7 +292,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  1 to internal signal.                                                              
-  bs01_connect_gen: if NUM_SLAVES >  1 generate                                                          
+  bs01_connect_gen: if NUM_SLAVE_PORTS >  1 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 1)                                               <= bs01_wreq_valid;        
     bs01_wreq_ready                                                   <= bsv_wreq_ready( 1);     
@@ -311,7 +306,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  2 to internal signal.                                                              
-  bs02_connect_gen: if NUM_SLAVES >  2 generate                                                          
+  bs02_connect_gen: if NUM_SLAVE_PORTS >  2 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 2)                                               <= bs02_wreq_valid;        
     bs02_wreq_ready                                                   <= bsv_wreq_ready( 2);     
@@ -325,7 +320,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  3 to internal signal.                                                              
-  bs03_connect_gen: if NUM_SLAVES >  3 generate                                                          
+  bs03_connect_gen: if NUM_SLAVE_PORTS >  3 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 3)                                               <= bs03_wreq_valid;        
     bs03_wreq_ready                                                   <= bsv_wreq_ready( 3);     
@@ -339,7 +334,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  4 to internal signal.                                                              
-  bs04_connect_gen: if NUM_SLAVES >  4 generate                                                          
+  bs04_connect_gen: if NUM_SLAVE_PORTS >  4 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 4)                                               <= bs04_wreq_valid;        
     bs04_wreq_ready                                                   <= bsv_wreq_ready( 4);     
@@ -353,7 +348,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  5 to internal signal.                                                              
-  bs05_connect_gen: if NUM_SLAVES >  5 generate                                                          
+  bs05_connect_gen: if NUM_SLAVE_PORTS >  5 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 5)                                               <= bs05_wreq_valid;        
     bs05_wreq_ready                                                   <= bsv_wreq_ready( 5);     
@@ -367,7 +362,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  6 to internal signal.                                                              
-  bs06_connect_gen: if NUM_SLAVES >  6 generate                                                          
+  bs06_connect_gen: if NUM_SLAVE_PORTS >  6 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 6)                                               <= bs06_wreq_valid;        
     bs06_wreq_ready                                                   <= bsv_wreq_ready( 6);     
@@ -381,7 +376,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  7 to internal signal.                                                              
-  bs07_connect_gen: if NUM_SLAVES >  7 generate                                                          
+  bs07_connect_gen: if NUM_SLAVE_PORTS >  7 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 7)                                               <= bs07_wreq_valid;        
     bs07_wreq_ready                                                   <= bsv_wreq_ready( 7);     
@@ -395,7 +390,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  8 to internal signal.                                                              
-  bs08_connect_gen: if NUM_SLAVES >  8 generate                                                          
+  bs08_connect_gen: if NUM_SLAVE_PORTS >  8 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 8)                                               <= bs08_wreq_valid;        
     bs08_wreq_ready                                                   <= bsv_wreq_ready( 8);     
@@ -409,7 +404,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave  9 to internal signal.                                                              
-  bs09_connect_gen: if NUM_SLAVES >  9 generate                                                          
+  bs09_connect_gen: if NUM_SLAVE_PORTS >  9 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid ( 9)                                               <= bs09_wreq_valid;        
     bs09_wreq_ready                                                   <= bsv_wreq_ready( 9);     
@@ -423,7 +418,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 10 to internal signal.                                                              
-  bs10_connect_gen: if NUM_SLAVES > 10 generate                                                          
+  bs10_connect_gen: if NUM_SLAVE_PORTS > 10 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (10)                                               <= bs10_wreq_valid;        
     bs10_wreq_ready                                                   <= bsv_wreq_ready(10);     
@@ -437,7 +432,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 11 to internal signal.                                                              
-  bs11_connect_gen: if NUM_SLAVES > 11 generate                                                          
+  bs11_connect_gen: if NUM_SLAVE_PORTS > 11 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (11)                                               <= bs11_wreq_valid;        
     bs11_wreq_ready                                                   <= bsv_wreq_ready(11);     
@@ -451,7 +446,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 12 to internal signal.                                                              
-  bs12_connect_gen: if NUM_SLAVES > 12 generate                                                          
+  bs12_connect_gen: if NUM_SLAVE_PORTS > 12 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (12)                                               <= bs12_wreq_valid;        
     bs12_wreq_ready                                                   <= bsv_wreq_ready(12);     
@@ -465,7 +460,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 13 to internal signal.                                                              
-  bs13_connect_gen: if NUM_SLAVES > 13 generate                                                          
+  bs13_connect_gen: if NUM_SLAVE_PORTS > 13 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (13)                                               <= bs13_wreq_valid;        
     bs13_wreq_ready                                                   <= bsv_wreq_ready(13);     
@@ -479,7 +474,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 14 to internal signal.                                                              
-  bs14_connect_gen: if NUM_SLAVES > 14 generate                                                          
+  bs14_connect_gen: if NUM_SLAVE_PORTS > 14 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (14)                                               <= bs14_wreq_valid;        
     bs14_wreq_ready                                                   <= bsv_wreq_ready(14);     
@@ -493,7 +488,7 @@ begin
   end generate;                                                                                             
                                                                                                             
   -- Connect bus slave 15 to internal signal.                                                              
-  bs15_connect_gen: if NUM_SLAVES > 15 generate                                                          
+  bs15_connect_gen: if NUM_SLAVE_PORTS > 15 generate                                                          
   begin                                                                                                     
     bsv_wreq_valid (15)                                               <= bs15_wreq_valid;        
     bs15_wreq_ready                                                   <= bsv_wreq_ready(15);     
@@ -513,14 +508,14 @@ begin
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
-      NUM_SLAVES                => NUM_SLAVES,
+      NUM_SLAVE_PORTS           => NUM_SLAVE_PORTS,
       ARB_METHOD                => ARB_METHOD,
       MAX_OUTSTANDING           => MAX_OUTSTANDING,
       RAM_CONFIG                => RAM_CONFIG,
-      REQ_IN_SLICES             => REQ_IN_SLICES,
-      REQ_OUT_SLICE             => REQ_OUT_SLICE,
-      DAT_IN_SLICE              => DAT_IN_SLICE,
-      DAT_OUT_SLICE             => DAT_OUT_SLICE
+      SLV_REQ_SLICES            => SLV_REQ_SLICES,
+      MST_REQ_SLICE             => MST_REQ_SLICE,
+      MST_DAT_SLICE             => MST_DAT_SLICE,
+      SLV_DAT_SLICES            => SLV_DAT_SLICES
     )
     port map (
       clk                       => clk,

@@ -266,15 +266,17 @@ begin
         BUS_LEN_WIDTH           => BUS_LEN_WIDTH,
         BUS_DATA_WIDTH          => BUS_DATA_WIDTH,
         BUS_STROBE_WIDTH        => BUS_STROBE_WIDTH,
-        NUM_SLAVES              => A_BUS_COUNT,
+        NUM_SLAVE_PORTS         => A_BUS_COUNT,
   
         ARB_METHOD              => parse_param(CFG, "method", "ROUND-ROBIN"),
         MAX_OUTSTANDING         => parse_param(CFG, "max_outstanding", 2),
         RAM_CONFIG              => parse_param(CFG, "ram_config", ""),
-        REQ_IN_SLICES           => parse_param(CFG, "req_in_slices", false),
-        REQ_OUT_SLICE           => parse_param(CFG, "req_out_slice", true),
-        DAT_IN_SLICE            => parse_param(CFG, "dat_in_slice", false),
-        DAT_OUT_SLICE           => parse_param(CFG, "dat_out_slices", true)
+        
+        -- TODO: change config parameters:
+        SLV_REQ_SLICES          => parse_param(CFG, "req_in_slices", false),
+        MST_REQ_SLICE           => parse_param(CFG, "req_out_slice", true),
+        MST_DAT_SLICE           => parse_param(CFG, "dat_in_slice", false),
+        SLV_DAT_SLICES          => parse_param(CFG, "dat_out_slices", true)
       )
       port map (
         clk                     => bus_clk,

@@ -109,14 +109,14 @@ entity ColumnReaderListPrim is
     ---------------------------------------------------------------------------
     -- Concatenation of all the bus masters at this level of hierarchy (bus
     -- clock domain).
-    busReq_valid                : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_ready                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busReq_addr                 : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-    busResp_valid               : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_ready               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    busResp_data                : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-    busResp_last                : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rreq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
+    bus_rreq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+    bus_rdat_valid              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rdat_ready              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_rdat_data               : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
+    bus_rdat_last               : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -369,14 +369,14 @@ begin
       unlock_tag                => a_unlock_tag,
       unlock_ignoreChild        => a_unlock_ignoreChild,
 
-      busReq_valid              => busReq_valid(0),
-      busReq_ready              => busReq_ready(0),
-      busReq_addr               => busReq_addr(BUS_ADDR_WIDTH-1 downto 0),
-      busReq_len                => busReq_len(BUS_LEN_WIDTH-1 downto 0),
-      busResp_valid             => busResp_valid(0),
-      busResp_ready             => busResp_ready(0),
-      busResp_data              => busResp_data(BUS_DATA_WIDTH-1 downto 0),
-      busResp_last              => busResp_last(0),
+      bus_rreq_valid            => bus_rreq_valid(0),
+      bus_rreq_ready            => bus_rreq_ready(0),
+      bus_rreq_addr             => bus_rreq_addr(BUS_ADDR_WIDTH-1 downto 0),
+      bus_rreq_len              => bus_rreq_len(BUS_LEN_WIDTH-1 downto 0),
+      bus_rdat_valid            => bus_rdat_valid(0),
+      bus_rdat_ready            => bus_rdat_ready(0),
+      bus_rdat_data             => bus_rdat_data(BUS_DATA_WIDTH-1 downto 0),
+      bus_rdat_last             => bus_rdat_last(0),
 
       out_valid                 => a_out_valid,
       out_ready                 => a_out_ready,
@@ -430,14 +430,14 @@ begin
       unlock_ready              => b_unlock_ready,
       unlock_tag                => b_unlock_tag,
 
-      busReq_valid              => busReq_valid(1),
-      busReq_ready              => busReq_ready(1),
-      busReq_addr               => busReq_addr(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
-      busReq_len                => busReq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH),
-      busResp_valid             => busResp_valid(1),
-      busResp_ready             => busResp_ready(1),
-      busResp_data              => busResp_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH),
-      busResp_last              => busResp_last(1),
+      bus_rreq_valid            => bus_rreq_valid(1),
+      bus_rreq_ready            => bus_rreq_ready(1),
+      bus_rreq_addr             => bus_rreq_addr(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
+      bus_rreq_len              => bus_rreq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH),
+      bus_rdat_valid            => bus_rdat_valid(1),
+      bus_rdat_ready            => bus_rdat_ready(1),
+      bus_rdat_data             => bus_rdat_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH),
+      bus_rdat_last             => bus_rdat_last(1),
 
       out_valid                 => b_out_valid,
       out_ready                 => b_out_ready,
