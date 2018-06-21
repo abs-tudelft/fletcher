@@ -72,10 +72,10 @@ entity BusWriteBuffer is
     MST_REQ_SLICE               : boolean := true;
 
     -- Instantiate a slice on the write data channel on the slave port
-    SLV_DATA_SLICE              : boolean := true;
+    SLV_DAT_SLICE               : boolean := true;
 
     -- Instantiate a slice on the write data channel on the master port
-    MST_DATA_SLICE              : boolean := true
+    MST_DAT_SLICE               : boolean := true
 
   );
   port (
@@ -422,7 +422,7 @@ begin
 
   slave_wdat_slice : StreamBuffer
     generic map (
-      MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
+      MIN_DEPTH                 => sel(SLV_DAT_SLICE, 2, 0),
       DATA_WIDTH                => FDI(4)
     )
     port map (
@@ -453,7 +453,7 @@ begin
 
   master_wdat_slice : StreamBuffer
     generic map (
-      MIN_DEPTH                 => sel(SLV_DATA_SLICE, 2, 0),
+      MIN_DEPTH                 => sel(MST_DAT_SLICE, 2, 0),
       DATA_WIDTH                => FDI(4)
     )
     port map (
