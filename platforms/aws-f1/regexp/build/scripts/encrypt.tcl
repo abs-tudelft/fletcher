@@ -62,9 +62,9 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderPost.vhd         
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderRespCtrl.vhd        $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderResp.vhd            $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReader.vhd                $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusArbiter.vhd                  $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusArbiterVec.vhd               $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusBuffer.vhd                   $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadArbiter.vhd              $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadArbiterVec.vhd           $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadBuffer.vhd               $TARGET_DIR
 
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderArb.vhd             $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderLevel.vhd           $TARGET_DIR
