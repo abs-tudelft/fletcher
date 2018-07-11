@@ -32,6 +32,7 @@ package Arrow is
 
   -- Bus write data bits covered by single write strobe bit.
   -- This is currently set to the AXI4 specification of 1 byte / strobe bit.
+  -- There is no practical reason why this should ever change.
   constant BUS_STROBE_COVER       : natural := 8;
 
   -- The Arrow format specification on buffer address alignment in bytes:
@@ -39,7 +40,11 @@ package Arrow is
 
   -- The Arrow format recommendation on buffer address alignment in bytes:
   constant REC_ARROW_BUFFER_ALIGN : natural := 64;
-
+  
+  -----------------------------------------------------------------------------
+  -- MMIO interface
+  -----------------------------------------------------------------------------
+  constant FLETCHER_REG_WIDTH   : natural := 32;
   -----------------------------------------------------------------------------
   -- ColumnWriter
   -----------------------------------------------------------------------------
@@ -63,27 +68,27 @@ package Arrow is
       acc_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_wreq_valid            : out std_logic;
       bus_wreq_ready            : in  std_logic;
-      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_wreq_addr             : out std_logic_vector;
+      bus_wreq_len              : out std_logic_vector;
       bus_wdat_valid            : out std_logic;
       bus_wdat_ready            : in  std_logic;
-      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      bus_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      bus_wdat_data             : out std_logic_vector;
+      bus_wdat_strobe           : out std_logic_vector;
       bus_wdat_last             : out std_logic;
-      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      in_valid                  : in  std_logic_vector;
+      in_ready                  : out std_logic_vector;
+      in_last                   : in  std_logic_vector;
+      in_dvalid                 : in  std_logic_vector;
+      in_data                   : in  std_logic_vector
     );
   end component;
 
@@ -107,39 +112,39 @@ package Arrow is
       acc_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      bus_wreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_wreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_wdat_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wdat_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wdat_data             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_wdat_strobe           : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
-      bus_wdat_last             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_wreq_valid            : out std_logic_vector;
+      bus_wreq_ready            : in  std_logic_vector;
+      bus_wreq_addr             : out std_logic_vector;
+      bus_wreq_len              : out std_logic_vector;
+      bus_wdat_valid            : out std_logic_vector;
+      bus_wdat_ready            : in  std_logic_vector;
+      bus_wdat_data             : out std_logic_vector;
+      bus_wdat_strobe           : out std_logic_vector;
+      bus_wdat_last             : out std_logic_vector;
+      in_valid                  : in  std_logic_vector;
+      in_ready                  : out std_logic_vector;
+      in_last                   : in  std_logic_vector;
+      in_dvalid                 : in  std_logic_vector;
+      in_data                   : in  std_logic_vector
     );
   end component;
 
   component ColumnWriterArb is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_STROBE_WIDTH          : natural := 32/8;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -154,10 +159,10 @@ package Arrow is
       cmd_firstIdx              : in  std_logic_vector;
       cmd_lastIdx               : in  std_logic_vector;
       cmd_ctrl                  : in  std_logic_vector;
-      cmd_tag                   : in  std_logic_vector;
+      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector;
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_wreq_valid            : out std_logic_vector;
       bus_wreq_ready            : in  std_logic_vector;
       bus_wreq_addr             : out std_logic_vector;
@@ -195,27 +200,27 @@ package Arrow is
       acc_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      bus_wreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_wreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_wdat_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wdat_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_wdat_data             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_wdat_strobe           : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
-      bus_wdat_last             : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_wreq_valid            : out std_logic_vector;
+      bus_wreq_ready            : in  std_logic_vector;
+      bus_wreq_addr             : out std_logic_vector;
+      bus_wreq_len              : out std_logic_vector;
+      bus_wdat_valid            : out std_logic_vector;
+      bus_wdat_ready            : in  std_logic_vector;
+      bus_wdat_data             : out std_logic_vector;
+      bus_wdat_strobe           : out std_logic_vector;
+      bus_wdat_last             : out std_logic_vector;
+      in_valid                  : in  std_logic_vector;
+      in_ready                  : out std_logic_vector;
+      in_last                   : in  std_logic_vector;
+      in_dvalid                 : in  std_logic_vector;
+      in_data                   : in  std_logic_vector
     );
   end component;
 
@@ -264,12 +269,12 @@ package Arrow is
   -----------------------------------------------------------------------------
   component ColumnReader is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -279,43 +284,39 @@ package Arrow is
       bus_reset                 : in  std_logic;
       acc_clk                   : in  std_logic;
       acc_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_rreq_valid            : out std_logic;
       bus_rreq_ready            : in  std_logic;
-      bus_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
       bus_rdat_valid            : in  std_logic;
       bus_rdat_ready            : out std_logic;
-      bus_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_data             : in  std_logic_vector;
       bus_rdat_last             : in  std_logic;
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderLevel is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -325,43 +326,39 @@ package Arrow is
       bus_reset                 : in  std_logic;
       acc_clk                   : in  std_logic;
       acc_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderArb is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -371,43 +368,39 @@ package Arrow is
       bus_reset                 : in  std_logic;
       acc_clk                   : in  std_logic;
       acc_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderNull is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -417,43 +410,39 @@ package Arrow is
       bus_reset                 : in  std_logic;
       acc_clk                   : in  std_logic;
       acc_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderList is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -463,43 +452,39 @@ package Arrow is
       bus_reset                 : in  std_logic;
       acc_clk                   : in  std_logic;
       acc_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderListPrim is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -512,40 +497,37 @@ package Arrow is
 
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
   component ColumnReaderStruct is
     generic (
-      BUS_ADDR_WIDTH            : natural := 32;
-      BUS_LEN_WIDTH             : natural := 8;
-      BUS_DATA_WIDTH            : natural := 32;
-      BUS_BURST_STEP_LEN        : natural := 4;
-      BUS_BURST_MAX_LEN         : natural := 16;
-      INDEX_WIDTH               : natural := 32;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
       CFG                       : string;
       CMD_TAG_ENABLE            : boolean := false;
       CMD_TAG_WIDTH             : natural := 1
@@ -558,29 +540,26 @@ package Arrow is
 
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
-      bus_rreq_valid            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_ready            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rreq_addr             : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
-      bus_rreq_len              : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
-      bus_rdat_valid            : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_ready            : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-      bus_rdat_data             : in  std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-      bus_rdat_last             : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-
-      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
-      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
     );
   end component;
 
@@ -1158,8 +1137,8 @@ package Arrow is
       SLV_DAT_SLICES            : boolean := true
     );
     port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
 
       mst_rreq_valid            : out std_logic;
       mst_rreq_ready            : in  std_logic;
@@ -1688,7 +1667,30 @@ package Arrow is
       bs15_wdat_last            : in  std_logic := 'U'
     );
   end component;
-
+  
+  -----------------------------------------------------------------------------
+  -- Wrapper components
+  -----------------------------------------------------------------------------
+  component UserCoreController is
+  generic (
+    REG_WIDTH                   : natural := 32
+  );
+  port(
+    acc_clk                     : in std_logic;
+    acc_reset                   : in std_logic;
+    bus_clk                     : in std_logic;
+    bus_reset                   : in std_logic;
+    status                      : out std_logic_vector(REG_WIDTH-1 downto 0);
+    control                     : in std_logic_vector(REG_WIDTH-1 downto 0);
+    start                       : out std_logic;
+    stop                        : out std_logic;
+    reset                       : out std_logic;
+    idle                        : in std_logic;
+    busy                        : in std_logic;
+    done                        : in std_logic
+  );
+  end component;
+  
   -----------------------------------------------------------------------------
   -- Component declarations for simulation-only helper units
   -----------------------------------------------------------------------------
@@ -1743,51 +1745,51 @@ package Arrow is
 
   component BusWriteMasterMock is
     generic (
-      BUS_ADDR_WIDTH              : natural;
-      BUS_LEN_WIDTH               : natural;
-      BUS_DATA_WIDTH              : natural;
-      BUS_STROBE_WIDTH            : natural;
-      SEED                        : positive
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      SEED                      : positive
 
     );
     port (
-      clk                         : in  std_logic;
-      reset                       : in  std_logic;
-      wreq_valid                  : out std_logic;
-      wreq_ready                  : in  std_logic;
-      wreq_addr                   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      wreq_len                    : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      wdat_valid                  : out std_logic;
-      wdat_ready                  : in  std_logic;
-      wdat_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wdat_strobe                 : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      wdat_last                   : out std_logic
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      wreq_valid                : out std_logic;
+      wreq_ready                : in  std_logic;
+      wreq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      wreq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      wdat_valid                : out std_logic;
+      wdat_ready                : in  std_logic;
+      wdat_data                 : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe               : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_last                 : out std_logic
     );
   end component;
 
   component BusWriteSlaveMock is
     generic (
-      BUS_ADDR_WIDTH              : natural;
-      BUS_LEN_WIDTH               : natural;
-      BUS_DATA_WIDTH              : natural;
-      BUS_STROBE_WIDTH            : natural;
-      SEED                        : positive;
-      RANDOM_REQUEST_TIMING       : boolean := false;
-      RANDOM_RESPONSE_TIMING      : boolean := false;
-      SREC_FILE                   : string  := ""
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      SEED                      : positive;
+      RANDOM_REQUEST_TIMING     : boolean := false;
+      RANDOM_RESPONSE_TIMING    : boolean := false;
+      SREC_FILE                 : string  := ""
     );
     port (
-      clk                         : in  std_logic;
-      reset                       : in  std_logic;
-      wreq_valid                  : in  std_logic;
-      wreq_ready                  : out std_logic;
-      wreq_addr                   : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      wreq_len                    : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      wdat_valid                  : in  std_logic;
-      wdat_ready                  : out std_logic;
-      wdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wdat_strobe                 : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      wdat_last                   : in  std_logic
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      wreq_valid                : in  std_logic;
+      wreq_ready                : out std_logic;
+      wreq_addr                 : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      wreq_len                  : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      wdat_valid                : in  std_logic;
+      wdat_ready                : out std_logic;
+      wdat_data                 : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wdat_strobe               : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_last                 : in  std_logic
     );
   end component;
 
