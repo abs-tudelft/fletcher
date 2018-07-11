@@ -273,8 +273,8 @@ begin
         SLV_DAT_SLICES          => parse_param(CFG, "resp_out_slices", true)
       )
       port map (
-        clk                     => bus_clk,
-        reset                   => bus_reset,
+        bus_clk                 => bus_clk,
+        bus_reset               => bus_reset,
 
         mst_rreq_valid          => bus_rreq_valid(0),
         mst_rreq_ready          => bus_rreq_ready(0),

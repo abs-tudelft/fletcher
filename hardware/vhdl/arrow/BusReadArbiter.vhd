@@ -67,8 +67,8 @@ entity BusReadArbiter is
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    clk                         : in  std_logic;
-    reset                       : in  std_logic;
+    bus_clk                     : in  std_logic;
+    bus_reset                   : in  std_logic;
 
     -- Slave port.
     mst_rreq_valid              : out std_logic;
@@ -482,8 +482,8 @@ begin
       SLV_DAT_SLICES            => SLV_DAT_SLICES
     )
     port map (
-      clk                       => clk,
-      reset                     => reset,
+      bus_clk                   => bus_clk,
+      bus_reset                 => bus_reset,
 
       mst_rreq_valid            => mst_rreq_valid,
       mst_rreq_ready            => mst_rreq_ready,
