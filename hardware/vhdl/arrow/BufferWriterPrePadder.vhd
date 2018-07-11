@@ -68,6 +68,7 @@ entity BufferWriterPrePadder is
     CMD_TAG_WIDTH               : natural;
     
     -- Whether to check if the last index is exceeded by the user input stream.
+    -- Currently works in simulation only.
     CHECK_LAST_EXCEED           : boolean := false;
     
     -- Whether to insert a slice at the output stream

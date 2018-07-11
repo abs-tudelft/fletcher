@@ -140,7 +140,7 @@ end ColumnWriterLevel;
 architecture Behavioral of ColumnWriterLevel is
 
   -- Determine what the command is for this level of hierarchy.
-  constant CMD                  : string  := parse_command(CFG);
+  constant CMD                  : string := parse_command(CFG);
 
 begin
 
