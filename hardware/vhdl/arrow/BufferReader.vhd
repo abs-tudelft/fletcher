@@ -501,7 +501,7 @@ begin
 
     -- Make sure the count field is assigned to the right constant when it it
     -- omitted in the FIFO.
-    fifoOut_count <= (0 => '1', others => '0');
+    fifoOut_count <= std_logic_vector(to_unsigned(1,ELEMENT_FIFO_COUNT_WIDTH));
 
   end generate;
 

@@ -157,10 +157,10 @@ architecture rtl of BufferWriterPrePadder is
   constant INDEX_ZERO           : unsigned(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0) := (others => '0');
 
   constant STROBE_NONE          : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (others => '0');
-  constant STROBE_FIRST         : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (0 => '1', others => '0');
+  constant STROBE_FIRST         : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := std_logic_vector(to_unsigned(1, ELEMENT_COUNT_MAX));
   constant STROBE_ALL           : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0) := (others => '1');
 
-  constant COUNT_ONE            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (0 => '1', others => '0');
+  constant COUNT_ONE            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(1, ELEMENT_COUNT_WIDTH));
   
   -- A count of all zeros is equal to the max count, because of the implicit '1' bit in front
   constant COUNT_ALL            : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0) := (others => '0');

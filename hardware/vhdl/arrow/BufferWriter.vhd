@@ -216,9 +216,11 @@ architecture Behavioral of BufferWriter is
   signal step_last              : std_logic;
   signal step_dvalid            : std_logic := '1';
   
+  constant STEPS_COUNT_WIDTH    : natural := max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN));
+  
   signal steps_valid            : std_logic;
   signal steps_ready            : std_logic;
-  signal steps_count            : std_logic_vector(max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN))-1 downto 0);
+  signal steps_count            : std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
   signal steps_last             : std_logic;
   
   constant WRITE_BUFFER_DEPTH   : natural := max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN)+1;
@@ -449,7 +451,7 @@ begin
     step_ready                      <= steps_ready;
     steps_valid                     <= step_valid;
     steps_last                      <= step_last;
-    steps_count                     <= (0 => '1', others => '0');
+    steps_count                     <= std_logic_vector(to_unsigned(1, STEPS_COUNT_WIDTH));
   end generate;  
   
   -----------------------------------------------------------------------------

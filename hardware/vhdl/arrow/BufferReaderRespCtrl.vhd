@@ -149,7 +149,7 @@ architecture rtl of BufferReaderRespCtrl is
   constant SHIFT_MAX            : unsigned(ICS_SHIFT_WIDTH-1 downto 0)  := (others => '1');
   constant COUNT_ALL            : unsigned(ICS_COUNT_WIDTH-1 downto 0)  := to_unsigned(WA_ELEMENTS, ICS_COUNT_WIDTH);
   constant COUNT_NONE           : unsigned(ICS_COUNT_WIDTH-1 downto 0)  := (others => '0');
-  constant COUNT_ONE            : unsigned(ICS_COUNT_WIDTH-1 downto 0)  := (0 => '1', others => '0');
+  constant COUNT_ONE            : unsigned(ICS_COUNT_WIDTH-1 downto 0)  := to_unsigned(1, ICS_COUNT_WIDTH);
   
   -- Burst alignment helper constants:
     
