@@ -365,12 +365,12 @@ package body Memory is
 
     -- Determine length byte and add to sum.
     sum := to_unsigned(5 + rec.dataCount, 8);
-    if rec.addr(31 downto 24) = X"00" then
-      sum := sum - 1;
-      if rec.addr(23 downto 16) = X"00" then
-        sum := sum - 1;
-      end if;
-    end if;
+    --if rec.addr(31 downto 24) = X"00" then
+    --  sum := sum - 1;
+    --  if rec.addr(23 downto 16) = X"00" then
+    --    sum := sum - 1;
+    --  end if;
+    --end if;
 
     -- Accumulate all address and data bytes.
     sum := sum + unsigned(rec.addr(31 downto 24));
@@ -490,7 +490,7 @@ package body Memory is
     -- Verify checksum.
     if str2srecByte(s, dataOff + 2*result.dataCount) /= srecChecksum(result) then
       report "Record " & s(1 to 2) & " on line " & integer'image(line)
-           & " in SREC file has incorrect checksum."
+           & " in SREC file has incorrect checksum. Expected: " & integer'image(to_integer(unsigned((srecChecksum(result)))))
         severity warning;
     end if;
 
