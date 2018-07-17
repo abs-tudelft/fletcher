@@ -56,3 +56,11 @@ hardware/test/transcript
 hardware/test/fletchgen/simpleread/work/
 
 hardware/test/fletchgen/simpleread/transcript
+
+codegen/fletchgen/\.idea/
+
+codegen/fletchgen/cmake-build-debug/
+
+codegen/fletchgen/debug/
+
+hardware/test/fletchgen/simpleread/test_wrapper\.vhd
