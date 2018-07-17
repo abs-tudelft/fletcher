@@ -52,3 +52,7 @@ platforms/snap/stringwrite/sw/snap_stringwrite
 *.wlf
 
 hardware/test/transcript
+
+hardware/test/fletchgen/simpleread/work/
+
+hardware/test/fletchgen/simpleread/transcript

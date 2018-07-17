@@ -50,27 +50,27 @@ entity BusReadMasterMock is
     reset                       : in  std_logic;
 
     -- Bus interface.
-    req_valid                   : out std_logic;
-    req_ready                   : in  std_logic;
-    req_addr                    : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    req_len                     : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    resp_valid                  : in  std_logic;
-    resp_ready                  : out std_logic;
-    resp_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    resp_last                   : in  std_logic
+    rreq_valid                  : out std_logic;
+    rreq_ready                  : in  std_logic;
+    rreq_addr                   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    rreq_len                    : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    rdat_valid                  : in  std_logic;
+    rdat_ready                  : out std_logic;
+    rdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    rdat_last                   : in  std_logic
 
   );
 end BusReadMasterMock;
 
 architecture Behavioral of BusReadMasterMock is
 
-  signal req_prod_valid         : std_logic;
-  signal req_prod_ready         : std_logic;
+  signal rreq_prod_valid        : std_logic;
+  signal rreq_prod_ready        : std_logic;
 
-  signal req_int_valid          : std_logic;
-  signal req_int_ready          : std_logic;
+  signal rreq_int_valid         : std_logic;
+  signal rreq_int_ready         : std_logic;
 
-  signal resp_monitor           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal rdat_monitor           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
 
 begin
 
@@ -86,9 +86,9 @@ begin
 
       -- Reset state.
       addr := (others => '0');
-      req_int_valid <= '0';
-      req_addr <= (others => '0');
-      req_len <= (others => '0');
+      rreq_int_valid <= '0';
+      rreq_addr <= (others => '0');
+      rreq_len <= (others => '0');
 
       -- Wait for a clock cycle where we are not under reset.
       wait until rising_edge(clk);
@@ -101,15 +101,15 @@ begin
         len := integer(rand * 10.0) + 1;
 
         -- Output request.
-        req_int_valid <= '1';
-        req_addr <= std_logic_vector(addr);
-        req_len <= std_logic_vector(to_unsigned(len, BUS_LEN_WIDTH));
+        rreq_int_valid <= '1';
+        rreq_addr <= std_logic_vector(addr);
+        rreq_len <= std_logic_vector(to_unsigned(len, BUS_LEN_WIDTH));
 
         -- Wait for ready.
         loop
           wait until rising_edge(clk);
           exit state when reset = '1';
-          exit when req_int_ready = '1';
+          exit when rreq_int_ready = '1';
         end loop;
 
         -- Increment address.
@@ -128,8 +128,8 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      out_valid                 => req_prod_valid,
-      out_ready                 => req_prod_ready
+      out_valid                 => rreq_prod_valid,
+      out_ready                 => rreq_prod_ready
     );
 
   producer_sync: StreamSync
@@ -140,12 +140,12 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      in_valid(1)               => req_prod_valid,
-      in_valid(0)               => req_int_valid,
-      in_ready(1)               => req_prod_ready,
-      in_ready(0)               => req_int_ready,
-      out_valid(0)              => req_valid,
-      out_ready(0)              => req_ready
+      in_valid(1)               => rreq_prod_valid,
+      in_valid(0)               => rreq_int_valid,
+      in_ready(1)               => rreq_prod_ready,
+      in_ready(0)               => rreq_int_ready,
+      out_valid(0)              => rreq_valid,
+      out_ready(0)              => rreq_ready
     );
 
   -- Response consumer. Randomizes the rate at which responses are consumed.
@@ -157,10 +157,10 @@ begin
     port map (
       clk                       => clk,
       reset                     => reset,
-      in_valid                  => resp_valid,
-      in_ready                  => resp_ready,
-      in_data                   => resp_data,
-      monitor                   => resp_monitor
+      in_valid                  => rdat_valid,
+      in_ready                  => rdat_ready,
+      in_data                   => rdat_data,
+      monitor                   => rdat_monitor
     );
 
   process is
@@ -170,9 +170,9 @@ begin
     loop
       wait until rising_edge(clk);
       exit when reset = '1';
-      next when resp_monitor(0) = 'Z';
+      next when rdat_monitor(0) = 'Z';
 
-      assert resp_monitor = std_logic_vector(data) report "Stream data integrity check failed" severity failure;
+      assert rdat_monitor = std_logic_vector(data) report "Stream data integrity check failed" severity failure;
       data := data + (BUS_DATA_WIDTH / 8);
 
     end loop;
