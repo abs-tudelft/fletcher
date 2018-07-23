@@ -250,7 +250,7 @@ begin
         -- Reset the valid counter to 1 if this is the last entry or increment
         -- it.
         if count_max = '1' then
-          bun_count <= (0 => '1', others => '0');
+          bun_count <= std_logic_vector(to_unsigned(1, BUN_COUNT_WIDTH));
           item_count <= (others => '0');
         else
           bun_count <= std_logic_vector(unsigned(bun_count) + 1);
@@ -266,7 +266,7 @@ begin
 
       -- Override the counter value to 1 and the valid flag to 0 at reset.
       if reset = '1' then
-        bun_count <= (0 => '1', others => '0');
+        bun_count <= std_logic_vector(to_unsigned(1, BUN_COUNT_WIDTH));
         item_count <= (others => '0');
         out_valid_s <= '0';
         -- pragma translate_off

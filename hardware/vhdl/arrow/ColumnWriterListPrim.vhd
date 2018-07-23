@@ -316,7 +316,7 @@ begin
       in_valid                  => a_valid,
       in_ready                  => a_ready,
       in_data                   => a_length,
-      in_count                  => (0 => '1', others => '0'),
+      in_count                  => "1",
       in_last                   => a_last,
 
       bus_wreq_valid            => bus_wreq_valid(0),

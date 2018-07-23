@@ -145,6 +145,8 @@ architecture Behavioral of ColumnReader is
 begin
 
   -- Wrap an arbiter and register slices around the requested column reader.
+  -- This is because a ColumnReaderLevel that follow can have multiple master
+  -- ports.
   arb_inst: ColumnReaderArb
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,

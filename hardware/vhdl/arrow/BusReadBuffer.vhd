@@ -210,7 +210,10 @@ begin
 
           -- Check if the amount of space reserved is equal or larger than 0 after the reservation
           assert reserved_v >= 0
-            report "This should never happen... Check if BUS_LEN_WIDTH is wide enough to contain log2(slv_rreq_len)+2 bits. reserved_v=" & integer'image(int(reserved_v)) & ">= 0. Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
+            report "This should never happen... " &
+                   "Check if BUS_LEN_WIDTH is wide enough to contain log2(slv_rreq_len)+2 bits. " &
+                   "reserved_v=" & integer'image(int(reserved_v)) & ">= 0. " &
+                   "Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
             severity FAILURE;
 
         end if;

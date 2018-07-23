@@ -61,31 +61,31 @@ entity BusReadSlaveMock is
     reset                       : in  std_logic;
 
     -- Bus interface.
-    req_valid                   : in  std_logic;
-    req_ready                   : out std_logic;
-    req_addr                    : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    req_len                     : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    resp_valid                  : out std_logic;
-    resp_ready                  : in  std_logic;
-    resp_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    resp_last                   : out std_logic
+    rreq_valid                  : in  std_logic;
+    rreq_ready                  : out std_logic := '0';
+    rreq_addr                   : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    rreq_len                    : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    rdat_valid                  : out std_logic := '0';
+    rdat_ready                  : in  std_logic;
+    rdat_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    rdat_last                   : out std_logic
 
   );
 end BusReadSlaveMock;
 
 architecture Behavioral of BusReadSlaveMock is
 
-  signal req_cons_valid         : std_logic;
-  signal req_cons_ready         : std_logic;
+  signal rreq_cons_valid        : std_logic;
+  signal rreq_cons_ready        : std_logic;
 
-  signal req_int_valid          : std_logic;
-  signal req_int_ready          : std_logic;
+  signal rreq_int_valid         : std_logic;
+  signal rreq_int_ready         : std_logic;
 
-  signal resp_prod_valid        : std_logic;
-  signal resp_prod_ready        : std_logic;
+  signal rdat_prod_valid        : std_logic;
+  signal rdat_prod_ready        : std_logic;
 
-  signal resp_int_valid         : std_logic;
-  signal resp_int_ready         : std_logic;
+  signal rdat_int_valid         : std_logic;
+  signal rdat_int_ready         : std_logic;
 
 begin
 
@@ -102,12 +102,12 @@ begin
       port map (
         clk                       => clk,
         reset                     => reset,
-        in_valid(0)               => req_valid,
-        in_ready(0)               => req_ready,
-        out_valid(1)              => req_cons_valid,
-        out_valid(0)              => req_int_valid,
-        out_ready(1)              => req_cons_ready,
-        out_ready(0)              => req_int_ready
+        in_valid(0)               => rreq_valid,
+        in_ready(0)               => rreq_ready,
+        out_valid(1)              => rreq_cons_valid,
+        out_valid(0)              => rreq_int_valid,
+        out_ready(1)              => rreq_cons_ready,
+        out_ready(0)              => rreq_int_ready
       );
 
     consumer_inst: StreamTbCons
@@ -117,8 +117,8 @@ begin
       port map (
         clk                       => clk,
         reset                     => reset,
-        in_valid                  => req_cons_valid,
-        in_ready                  => req_cons_ready,
+        in_valid                  => rreq_cons_valid,
+        in_ready                  => rreq_cons_ready,
         in_data                   => (others => '0')
       );
 
@@ -126,8 +126,8 @@ begin
 
   fast_request_timing_gen: if not RANDOM_REQUEST_TIMING generate
   begin
-    req_int_valid <= req_valid;
-    req_ready <= req_int_ready;
+    rreq_int_valid <= rreq_valid;
+    rreq_ready <= rreq_int_ready;
   end generate;
 
   -- Request handler. First accepts and ready's a command, then outputs the a
@@ -146,26 +146,26 @@ begin
     state: loop
 
       -- Reset state.
-      req_int_ready <= '0';
-      resp_int_valid <= '0';
-      resp_data <= (others => '0');
-      resp_last <= '0';
+      rreq_int_ready <= '0';
+      rdat_int_valid <= '0';
+      rdat_data <= (others => '0');
+      rdat_last <= '0';
 
       -- Wait for request valid.
       loop
         wait until rising_edge(clk);
         exit state when reset = '1';
-        exit when req_int_valid = '1';
+        exit when rreq_int_valid = '1';
       end loop;
 
-      addr := resize(unsigned(req_addr), 64);
-      len := to_integer(unsigned(req_len));
+      addr := resize(unsigned(rreq_addr), 64);
+      len := to_integer(unsigned(rreq_len));
 
       -- Accept the request.
-      req_int_ready <= '1';
+      rreq_int_ready <= '1';
       wait until rising_edge(clk);
       exit state when reset = '1';
-      req_int_ready <= '0';
+      rreq_int_ready <= '0';
 
       for i in 0 to len-1 loop
 
@@ -177,19 +177,19 @@ begin
         end if;
 
         -- Assert response.
-        resp_int_valid <= '1';
-        resp_data <= data;
+        rdat_int_valid <= '1';
+        rdat_data <= data;
         if i = len-1 then
-          resp_last <= '1';
+          rdat_last <= '1';
         else
-          resp_last <= '0';
+          rdat_last <= '0';
         end if;
 
         -- Wait for response ready.
         loop
           wait until rising_edge(clk);
           exit state when reset = '1';
-          exit when resp_int_ready = '1';
+          exit when rdat_int_ready = '1';
         end loop;
 
         addr := addr + (BUS_DATA_WIDTH / 8);
@@ -211,8 +211,8 @@ begin
       port map (
         clk                       => clk,
         reset                     => reset,
-        out_valid                 => resp_prod_valid,
-        out_ready                 => resp_prod_ready
+        out_valid                 => rdat_prod_valid,
+        out_ready                 => rdat_prod_ready
       );
 
     producer_sync: StreamSync
@@ -223,20 +223,20 @@ begin
       port map (
         clk                       => clk,
         reset                     => reset,
-        in_valid(1)               => resp_prod_valid,
-        in_valid(0)               => resp_int_valid,
-        in_ready(1)               => resp_prod_ready,
-        in_ready(0)               => resp_int_ready,
-        out_valid(0)              => resp_valid,
-        out_ready(0)              => resp_ready
+        in_valid(1)               => rdat_prod_valid,
+        in_valid(0)               => rdat_int_valid,
+        in_ready(1)               => rdat_prod_ready,
+        in_ready(0)               => rdat_int_ready,
+        out_valid(0)              => rdat_valid,
+        out_ready(0)              => rdat_ready
       );
 
   end generate;
 
   fast_response_timing_gen: if not RANDOM_RESPONSE_TIMING generate
   begin
-    resp_valid <= resp_int_valid;
-    resp_int_ready <= resp_ready;
+    rdat_valid <= rdat_int_valid;
+    rdat_int_ready <= rdat_ready;
   end generate;
 
 end Behavioral;

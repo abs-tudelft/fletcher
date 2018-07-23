@@ -1,13 +1,15 @@
 # Compile design for Questasim
 
 proc compile_utils {source_dir} {
+  echo "- Utilities."
   vcom -quiet -work work -93 $source_dir/utils/SimUtils.vhd
   vcom -quiet -work work -93 $source_dir/utils/Memory.vhd
-  vcom -quiet -work work -93 $source_dir/utils/Utils.vhd
   vcom -quiet -work work -93 $source_dir/utils/Ram1R1W.vhd
+  vcom -quiet -work work -93 $source_dir/utils/Utils.vhd
 }
 
 proc compile_streams {source_dir} {
+  echo "- Streams library."
   vcom -quiet -work work -93 $source_dir/streams/Streams.vhd
   vcom -quiet -work work -93 $source_dir/streams/StreamArb.vhd
   vcom -quiet -work work -93 $source_dir/streams/StreamBuffer.vhd
@@ -32,6 +34,7 @@ proc compile_streams_tb {source_dir} {
 }
 
 proc compile_bus {source_dir} {
+  echo "- Bus infrastructure."
   vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiter.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiterVec.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BusReadBuffer.vhd
@@ -42,13 +45,19 @@ proc compile_bus {source_dir} {
 }
 
 proc compile_bus_tb {source_dir} {
-  vcom -quiet -work work -2008 $source_dir/arrow/BusReadArbiter_tb.vhd
-  vcom -quiet -work work -2008 $source_dir/arrow/BusWriteArbiter_tb.vhd
+  vcom -quiet -work work -2008 $source_dir/arrow/BusReadSlaveMock.vhd
+  #vcom -quiet -work work -2008 $source_dir/arrow/BusReadArbiter_tb.vhd
+  #vcom -quiet -work work -2008 $source_dir/arrow/BusWriteArbiter_tb.vhd
+}
+
+proc compile_wrapper {source_dir} {
+  echo "- Wrapper components."
+  vcom -quiet -work work -93 $source_dir/arrow/UserCoreController.vhd
 }
 
 proc compile_fletcher {source_dir} {
   
-  echo "Compiling Fletcher sources"
+  echo "Compiling Fletcher sources:"
 
   vlib work
 
@@ -75,6 +84,7 @@ proc compile_fletcher {source_dir} {
 
   compile_streams $source_dir
   compile_bus $source_dir
+  compile_wrapper $source_dir
 
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmdGenBusReq.vhd
   vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmd.vhd
