@@ -59,8 +59,6 @@ entity arrow_regexp is
 
     ---------------------------------------------------------------------------
     -- AXI4 master
-    --
-    -- To be connected to the DDR controllers (through CL_DMA_PCIS_SLV)
     ---------------------------------------------------------------------------
     -- Read address channel
     m_axi_araddr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -78,8 +76,6 @@ entity arrow_regexp is
 
     ---------------------------------------------------------------------------
     -- AXI4-lite slave
-    --
-    -- To be connected to "sh_cl_sda" a.k.a. "AppPF Bar 1"
     ---------------------------------------------------------------------------
     -- Write adress
     s_axi_awvalid               : in std_logic;
