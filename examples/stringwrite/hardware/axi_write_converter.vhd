@@ -21,6 +21,7 @@ library work;
 use work.Utils.all;
 use work.Arrow.all;
 use work.Streams.all;
+use work.Interconnect.all;
 
 -- This entity converts read requests of a specific len and size on the slave port
 -- to proper len and size on the master port. It assumed the addresses and lens are

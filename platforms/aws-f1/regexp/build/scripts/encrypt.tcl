@@ -36,46 +36,50 @@ exec rm -f $TARGET_DIR/*
 ## Change file names and paths below to reflect your CL area.  DO NOT include AWS RTL files.
 
 # Fletcher files:
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/SimUtils.vhd                    $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Utils.vhd                       $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Ram1R1W.vhd                     $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/SimUtils.vhd                      $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Utils.vhd                         $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/utils/Ram1R1W.vhd                       $TARGET_DIR
 
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/Streams.vhd                   $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamArb.vhd                 $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamBuffer.vhd              $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamFIFOCounter.vhd         $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamFIFO.vhd                $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamGearbox.vhd             $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamNormalizer.vhd          $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamParallelizer.vhd        $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSerializer.vhd          $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSlice.vhd               $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSync.vhd                $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/Streams.vhd                     $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamArb.vhd                   $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamBuffer.vhd                $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamFIFOCounter.vhd           $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamFIFO.vhd                  $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamGearbox.vhd               $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamNormalizer.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamParallelizer.vhd          $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSerializer.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSlice.vhd                 $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/streams/StreamSync.vhd                  $TARGET_DIR
 
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderConfigParse.vhd     $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderConfig.vhd          $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/Arrow.vhd                       $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnConfigParse.vhd           $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnConfig.vhd                $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/Columns.vhd                     $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/Arrow.vhd                         $TARGET_DIR
 
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderCmdGenBusReq.vhd    $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderCmd.vhd             $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderPost.vhd            $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderRespCtrl.vhd        $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReaderResp.vhd            $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BufferReader.vhd                $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadArbiter.vhd              $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadArbiterVec.vhd           $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/BusReadBuffer.vhd               $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/Buffers.vhd                     $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReaderCmdGenBusReq.vhd    $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReaderCmd.vhd             $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReaderPost.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReaderRespCtrl.vhd        $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReaderResp.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/buffers/BufferReader.vhd                $TARGET_DIR
 
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderArb.vhd             $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderLevel.vhd           $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderList.vhd            $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderListPrim.vhd        $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderListSync.vhd        $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderListSyncDecoder.vhd $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderNull.vhd            $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderStruct.vhd          $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReaderUnlockCombine.vhd   $TARGET_DIR
-file copy -force $FLETCHER_HARDWARE_DIR/vhdl/arrow/ColumnReader.vhd                $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/interconnect/Interconnect.vhd           $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/interconnect/BusReadArbiter.vhd         $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/interconnect/BusReadArbiterVec.vhd      $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/interconnect/BusReadBuffer.vhd          $TARGET_DIR
+
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderArb.vhd             $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderLevel.vhd           $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderList.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderListPrim.vhd        $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderListSync.vhd        $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderListSyncDecoder.vhd $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderNull.vhd            $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderStruct.vhd          $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderUnlockCombine.vhd   $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReader.vhd                $TARGET_DIR
 
 # Regexp example files:
 

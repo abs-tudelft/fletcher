@@ -8,6 +8,11 @@ proc compile_utils {source_dir} {
   vcom -quiet -work work -93 $source_dir/utils/Utils.vhd
 }
 
+proc compile_arrow {source_dir} {
+  echo "- Arrow specifics."
+  vcom -quiet -work work -93 $source_dir/arrow/Arrow.vhd
+}
+
 proc compile_streams {source_dir} {
   echo "- Streams library."
   vcom -quiet -work work -93 $source_dir/streams/Streams.vhd
@@ -33,30 +38,72 @@ proc compile_streams_tb {source_dir} {
   vcom -quiet -work work -2008 $source_dir/streams/StreamTbProd.vhd
 }
 
-proc compile_bus {source_dir} {
+proc compile_interconnect {source_dir} {
   echo "- Bus infrastructure."
-  vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiter.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusReadArbiterVec.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusReadBuffer.vhd
-  
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiter.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteArbiterVec.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BusWriteBuffer.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/Interconnect.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/BusReadArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/BusReadArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/BusReadBuffer.vhd
+
+  vcom -quiet -work work -93 $source_dir/interconnect/BusWriteArbiter.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/BusWriteArbiterVec.vhd
+  vcom -quiet -work work -93 $source_dir/interconnect/BusWriteBuffer.vhd
 }
 
-proc compile_bus_tb {source_dir} {
-  vcom -quiet -work work -2008 $source_dir/arrow/BusReadSlaveMock.vhd
-  #vcom -quiet -work work -2008 $source_dir/arrow/BusReadArbiter_tb.vhd
-  #vcom -quiet -work work -2008 $source_dir/arrow/BusWriteArbiter_tb.vhd
+proc compile_interconnect_tb {source_dir} {
+  vcom -quiet -work work -2008 $source_dir/interconnect/BusReadSlaveMock.vhd
+  #vcom -quiet -work work -2008 $source_dir/BusReadArbiter_tb.vhd
+  #vcom -quiet -work work -2008 $source_dir/BusWriteArbiter_tb.vhd
+}
+
+proc compile_buffers {source_dir} {
+  echo "- Buffer Readers/Writers."
+  vcom -quiet -work work -93 $source_dir/buffers/Buffers.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReaderCmdGenBusReq.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReaderCmd.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReaderPost.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReaderRespCtrl.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReaderResp.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferReader.vhd
+
+  vcom -quiet -work work -93 $source_dir/buffers/BufferWriterCmdGenBusReq.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferWriterPrePadder.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferWriterPreCmdGen.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferWriterPre.vhd
+  vcom -quiet -work work -93 $source_dir/buffers/BufferWriter.vhd
+}
+
+proc compile_columns {source_dir} {
+  echo "- Column Readers/Writers."
+  vcom -quiet -work work -93 $source_dir/columns/ColumnConfigParse.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnConfig.vhd
+  vcom -quiet -work work -93 $source_dir/columns/Columns.vhd
+
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderArb.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderLevel.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderList.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderListPrim.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderListSync.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderListSyncDecoder.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderNull.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderStruct.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReaderUnlockCombine.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnReader.vhd
+
+  vcom -quiet -work work -93 $source_dir/columns/ColumnWriterArb.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnWriterListSync.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnWriterListPrim.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnWriterLevel.vhd
+  vcom -quiet -work work -93 $source_dir/columns/ColumnWriter.vhd
 }
 
 proc compile_wrapper {source_dir} {
   echo "- Wrapper components."
-  vcom -quiet -work work -93 $source_dir/arrow/UserCoreController.vhd
+  vcom -quiet -work work -93 $source_dir/wrapper/UserCoreController.vhd
 }
 
 proc compile_fletcher {source_dir} {
-  
+
   echo "Compiling Fletcher sources:"
 
   vlib work
@@ -77,44 +124,12 @@ proc compile_fletcher {source_dir} {
   ###############################################################################
 
   compile_utils $source_dir
-   
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfigParse.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderConfig.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/Arrow.vhd
-
+  compile_arrow $source_dir
   compile_streams $source_dir
-  compile_bus $source_dir
+  compile_interconnect $source_dir
+  compile_buffers $source_dir
+  compile_columns $source_dir
   compile_wrapper $source_dir
+  compile_columns $source_dir
 
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmdGenBusReq.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReaderCmd.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReaderPost.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReaderRespCtrl.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReaderResp.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferReader.vhd
-    
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderArb.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderLevel.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderList.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderListPrim.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderListSync.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderListSyncDecoder.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderNull.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderStruct.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReaderUnlockCombine.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnReader.vhd
-  
-  vcom -quiet -work work -93 $source_dir/arrow/BufferWriterCmdGenBusReq.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferWriterPrePadder.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferWriterPreCmdGen.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferWriterPre.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/BufferWriter.vhd  
-  
-  
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterArb.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListSync.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListPrim.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterLevel.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriter.vhd
-  
 }

@@ -910,9 +910,9 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.Arrow.all;
-use work.ColumnReaderConfig.all;
-use work.ColumnReaderConfigParse.all;
+use work.ColumnConfig.all;
+use work.ColumnConfigParse.all;
+use work.Columns.all;
 
 entity {camelprefix}ColumnReader is
   generic (

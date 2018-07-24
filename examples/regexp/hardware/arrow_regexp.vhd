@@ -21,6 +21,7 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
+use work.Interconnect.all;
 
 use work.SimUtils.all;
 
@@ -539,8 +540,8 @@ begin
     SLV_DAT_SLICES              => false
   )
   port map (
-    clk                         => clk,
-    reset                       => reset,
+    bus_clk                     => clk,
+    bus_reset                   => reset,
     mst_rreq_valid              => axi_top.arvalid,
     mst_rreq_ready              => axi_top.arready,
     mst_rreq_addr               => axi_top.araddr,
