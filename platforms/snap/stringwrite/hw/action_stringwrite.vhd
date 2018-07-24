@@ -136,6 +136,95 @@ end action_stringwrite;
 
 
 architecture Behavorial of action_stringwrite is
+COMPONENT axi_protocol_checker
+  PORT (
+    pc_status : OUT STD_LOGIC_VECTOR(159 DOWNTO 0);
+    pc_asserted : OUT STD_LOGIC;
+    aclk : IN STD_LOGIC;
+    aresetn : IN STD_LOGIC;
+    pc_axi_awaddr : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    pc_axi_awlen : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    pc_axi_awsize : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    pc_axi_awburst : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    pc_axi_awlock : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    pc_axi_awcache : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_awprot : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    pc_axi_awqos : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_awregion : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_awvalid : IN STD_LOGIC;
+    pc_axi_awready : IN STD_LOGIC;
+    pc_axi_wlast : IN STD_LOGIC;
+    pc_axi_wdata : IN STD_LOGIC_VECTOR(511 DOWNTO 0);
+    pc_axi_wstrb : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    pc_axi_wvalid : IN STD_LOGIC;
+    pc_axi_wready : IN STD_LOGIC;
+    pc_axi_bresp : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    pc_axi_bvalid : IN STD_LOGIC;
+    pc_axi_bready : IN STD_LOGIC;
+    pc_axi_araddr : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    pc_axi_arlen : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    pc_axi_arsize : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    pc_axi_arburst : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    pc_axi_arlock : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    pc_axi_arcache : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_arprot : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    pc_axi_arqos : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_arregion : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    pc_axi_arvalid : IN STD_LOGIC;
+    pc_axi_arready : IN STD_LOGIC;
+    pc_axi_rlast : IN STD_LOGIC;
+    pc_axi_rdata : IN STD_LOGIC_VECTOR(511 DOWNTO 0);
+    pc_axi_rresp : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    pc_axi_rvalid : IN STD_LOGIC;
+    pc_axi_rready : IN STD_LOGIC
+  );
+END COMPONENT;
+
+  signal s_axi_host_mem_awaddr   :  std_logic_vector(C_AXI_HOST_MEM_ADDR_WIDTH-1 downto 0);
+  signal s_axi_host_mem_awlen    :  std_logic_vector(7 downto 0);
+  signal s_axi_host_mem_awsize   :  std_logic_vector(2 downto 0);
+  signal s_axi_host_mem_awburst  :  std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_awlock   :  std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_awcache  :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_awprot   :  std_logic_vector(2 downto 0);
+  signal s_axi_host_mem_awregion :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_awqos    :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_awvalid  :  std_logic;
+  signal s_axi_host_mem_awready  : std_logic;
+  signal s_axi_host_mem_wdata    :  std_logic_vector(C_AXI_HOST_MEM_DATA_WIDTH-1 downto 0);
+  signal s_axi_host_mem_wstrb    :  std_logic_vector(C_AXI_HOST_MEM_DATA_WIDTH/8-1 downto 0);
+  signal s_axi_host_mem_wlast    :  std_logic;
+  signal s_axi_host_mem_wvalid   :  std_logic;
+  signal s_axi_host_mem_wready   : std_logic;
+  signal s_axi_host_mem_bresp    : std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_bvalid   : std_logic;
+  signal s_axi_host_mem_bready   :  std_logic;
+  signal s_axi_host_mem_araddr   :  std_logic_vector(C_AXI_HOST_MEM_ADDR_WIDTH-1 downto 0);
+  signal s_axi_host_mem_arlen    :  std_logic_vector(7 downto 0);
+  signal s_axi_host_mem_arsize   :  std_logic_vector(2 downto 0);
+  signal s_axi_host_mem_arburst  :  std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_arlock   :  std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_arcache  :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_arprot   :  std_logic_vector(2 downto 0);
+  signal s_axi_host_mem_arregion :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_arqos    :  std_logic_vector(3 downto 0);
+  signal s_axi_host_mem_arvalid  :  std_logic;
+  signal s_axi_host_mem_arready  : std_logic;
+  signal s_axi_host_mem_rdata    : std_logic_vector(C_AXI_HOST_MEM_DATA_WIDTH-1 downto 0);
+  signal s_axi_host_mem_rresp    : std_logic_vector(1 downto 0);
+  signal s_axi_host_mem_rlast    : std_logic;
+  signal s_axi_host_mem_rvalid   : std_logic;
+  signal s_axi_host_mem_rready   :  std_logic;
+  signal s_axi_host_mem_arid     :  std_logic_vector(C_AXI_HOST_MEM_ID_WIDTH-1 downto 0);
+  signal s_axi_host_mem_aruser   :  std_logic_vector(C_AXI_HOST_MEM_ARUSER_WIDTH-1 downto 0);
+  signal s_axi_host_mem_awid     :  std_logic_vector(C_AXI_HOST_MEM_ID_WIDTH-1 downto 0);
+  signal s_axi_host_mem_awuser   :  std_logic_vector(C_AXI_HOST_MEM_AWUSER_WIDTH-1 downto 0);
+  signal s_axi_host_mem_bid      : std_logic_vector(C_AXI_HOST_MEM_ID_WIDTH-1 downto 0);
+  signal s_axi_host_mem_buser    : std_logic_vector(C_AXI_HOST_MEM_BUSER_WIDTH-1 downto 0);
+  signal s_axi_host_mem_rid      : std_logic_vector(C_AXI_HOST_MEM_ID_WIDTH-1 downto 0);
+  signal s_axi_host_mem_ruser    : std_logic_vector(C_AXI_HOST_MEM_RUSER_WIDTH-1 downto 0);
+  signal s_axi_host_mem_wuser    :  std_logic_vector(C_AXI_HOST_MEM_WUSER_WIDTH-1 downto 0);
+
   -----------------------------------
   -- SNAP registers
   -----------------------------------
@@ -205,6 +294,56 @@ architecture Behavorial of action_stringwrite is
   signal stringwrite_space_r    : std_logic;
   signal stringwrite_space_w    : std_logic;
 begin
+
+axi_host_mem_awaddr   <= s_axi_host_mem_awaddr   ;
+axi_host_mem_awlen    <= s_axi_host_mem_awlen    ;
+axi_host_mem_awsize   <= s_axi_host_mem_awsize   ;
+axi_host_mem_awburst  <= s_axi_host_mem_awburst  ;
+axi_host_mem_awlock   <= s_axi_host_mem_awlock   ;
+axi_host_mem_awcache  <= s_axi_host_mem_awcache  ;
+axi_host_mem_awprot   <= s_axi_host_mem_awprot   ;
+axi_host_mem_awregion <= s_axi_host_mem_awregion ;
+axi_host_mem_awqos    <= s_axi_host_mem_awqos    ;
+axi_host_mem_awvalid  <= s_axi_host_mem_awvalid  ;
+axi_host_mem_wdata    <= s_axi_host_mem_wdata    ;
+axi_host_mem_wstrb    <= s_axi_host_mem_wstrb    ;
+axi_host_mem_wlast    <= s_axi_host_mem_wlast    ;
+axi_host_mem_wvalid   <= s_axi_host_mem_wvalid   ;
+axi_host_mem_bready   <= s_axi_host_mem_bready   ;
+axi_host_mem_araddr   <= s_axi_host_mem_araddr   ;
+axi_host_mem_arlen    <= s_axi_host_mem_arlen    ;
+axi_host_mem_arsize   <= s_axi_host_mem_arsize   ;
+axi_host_mem_arburst  <= s_axi_host_mem_arburst  ;
+axi_host_mem_arlock   <= s_axi_host_mem_arlock   ;
+axi_host_mem_arcache  <= s_axi_host_mem_arcache  ;
+axi_host_mem_arprot   <= s_axi_host_mem_arprot   ;
+axi_host_mem_arregion <= s_axi_host_mem_arregion ;
+axi_host_mem_arqos    <= s_axi_host_mem_arqos    ;
+axi_host_mem_arvalid  <= s_axi_host_mem_arvalid  ;
+axi_host_mem_rready   <= s_axi_host_mem_rready   ;
+axi_host_mem_arid     <= s_axi_host_mem_arid     ;
+axi_host_mem_aruser   <= s_axi_host_mem_aruser   ;
+axi_host_mem_awid     <= s_axi_host_mem_awid     ;
+axi_host_mem_awuser   <= s_axi_host_mem_awuser   ;
+axi_host_mem_wuser    <= s_axi_host_mem_wuser    ;
+s_axi_host_mem_awready  <= axi_host_mem_awready  ;
+s_axi_host_mem_wready   <= axi_host_mem_wready   ;
+s_axi_host_mem_bresp    <= axi_host_mem_bresp    ;
+s_axi_host_mem_bvalid   <= axi_host_mem_bvalid   ;
+s_axi_host_mem_arready  <= axi_host_mem_arready  ;
+s_axi_host_mem_rdata    <= axi_host_mem_rdata    ;
+s_axi_host_mem_rresp    <= axi_host_mem_rresp    ;
+s_axi_host_mem_rlast    <= axi_host_mem_rlast    ;
+s_axi_host_mem_rvalid   <= axi_host_mem_rvalid   ;
+s_axi_host_mem_bid      <= axi_host_mem_bid      ;
+s_axi_host_mem_buser    <= axi_host_mem_buser    ;
+s_axi_host_mem_rid      <= axi_host_mem_rid      ;
+s_axi_host_mem_ruser    <= axi_host_mem_ruser    ;
+
+
+
+
+
 
   ----------------------------------------------------------------------
   -- AXI Lite Slave inputs
@@ -337,23 +476,23 @@ begin
   -- AXI Host Memory
   ----------------------------------------------------------------------
   -- Read channel tie off
-  axi_host_mem_arvalid          <= '0';
-  axi_host_mem_rready           <= '0';
+  s_axi_host_mem_arvalid          <= '0';
+  s_axi_host_mem_rready           <= '0';
   
   -- Always ready for write response
-  axi_host_mem_bready           <= '1';
+  s_axi_host_mem_bready           <= '1';
 
   -- Write channel defaults:
-  axi_host_mem_awsize           <= "110"; -- 512 bit beats
-  axi_host_mem_awburst          <= "01"; -- incremental
+  s_axi_host_mem_awsize           <= "110"; -- 512 bit beats
+  s_axi_host_mem_awburst          <= "01"; -- incremental
 
   -- Not using any of these:
-  axi_host_mem_awid             <= (others => '0');
-  axi_host_mem_awlock           <= (others => '0');
-  axi_host_mem_awcache          <= "0010";
-  axi_host_mem_awprot           <= "000";
-  axi_host_mem_awqos            <= x"0";
-  axi_host_mem_awuser           <= (others => '0');
+  s_axi_host_mem_awid             <= (others => '0');
+  s_axi_host_mem_awlock           <= (others => '0');
+  s_axi_host_mem_awcache          <= "0010";
+  s_axi_host_mem_awprot           <= "000";
+  s_axi_host_mem_awqos            <= x"0";
+  s_axi_host_mem_awuser           <= (others => '0');
 
   ----------------------------------------------------------------------
   -- StringWrite instance
@@ -369,17 +508,17 @@ begin
       clk                       => action_clk,
       reset_n                   => action_rst_n,
       
-      m_axi_awvalid             => axi_host_mem_awvalid,
-      m_axi_awready             => axi_host_mem_awready,
-      m_axi_awaddr              => axi_host_mem_awaddr,
-      m_axi_awlen               => axi_host_mem_awlen,
+      m_axi_awvalid             => s_axi_host_mem_awvalid,
+      m_axi_awready             => s_axi_host_mem_awready,
+      m_axi_awaddr              => s_axi_host_mem_awaddr,
+      m_axi_awlen               => s_axi_host_mem_awlen,
       m_axi_awsize              => open,
       
-      m_axi_wvalid              => axi_host_mem_wvalid,
-      m_axi_wready              => axi_host_mem_wready,
-      m_axi_wdata               => axi_host_mem_wdata,
-      m_axi_wlast               => axi_host_mem_wlast,
-      m_axi_wstrb               => axi_host_mem_wstrb,
+      m_axi_wvalid              => s_axi_host_mem_wvalid,
+      m_axi_wready              => s_axi_host_mem_wready,
+      m_axi_wdata               => s_axi_host_mem_wdata,
+      m_axi_wlast               => s_axi_host_mem_wlast,
+      m_axi_wstrb               => s_axi_host_mem_wstrb,
       
       s_axi_awvalid             => stringwrite_s_axi_awvalid,
       s_axi_awready             => stringwrite_s_axi_awready,
@@ -399,5 +538,50 @@ begin
       s_axi_rdata               => stringwrite_s_axi_rdata,
       s_axi_rresp               => stringwrite_s_axi_rresp
     );
+    
+  -- AXI protocol checker
+  prot_check : axi_protocol_checker
+  PORT MAP (
+    --pc_status => pc_status,
+    --pc_asserted => pc_asserted,
+    aclk            => action_clk,
+    aresetn         => action_rst_n,
+    pc_axi_awaddr   => s_axi_host_mem_awaddr,
+    pc_axi_awlen    => s_axi_host_mem_awlen,
+    pc_axi_awsize   => s_axi_host_mem_awsize,
+    pc_axi_awburst  => s_axi_host_mem_awburst,
+    pc_axi_awlock   => s_axi_host_mem_awlock(0 downto 0),
+    pc_axi_awcache  => s_axi_host_mem_awcache,
+    pc_axi_awprot   => s_axi_host_mem_awprot,
+    pc_axi_awqos    => s_axi_host_mem_awqos,
+    pc_axi_awregion => s_axi_host_mem_awregion,
+    pc_axi_awvalid  => s_axi_host_mem_awvalid,
+    pc_axi_awready  => s_axi_host_mem_awready,
+    pc_axi_wlast    => s_axi_host_mem_wlast,
+    pc_axi_wdata    => s_axi_host_mem_wdata,
+    pc_axi_wstrb    => s_axi_host_mem_wstrb,
+    pc_axi_wvalid   => s_axi_host_mem_wvalid,
+    pc_axi_wready   => s_axi_host_mem_wready,
+    pc_axi_bresp    => s_axi_host_mem_bresp,
+    pc_axi_bvalid   => s_axi_host_mem_bvalid,
+    pc_axi_bready   => s_axi_host_mem_bready,
+    pc_axi_araddr   => s_axi_host_mem_araddr,
+    pc_axi_arlen    => s_axi_host_mem_arlen,
+    pc_axi_arsize   => s_axi_host_mem_arsize,
+    pc_axi_arburst  => s_axi_host_mem_arburst,
+    pc_axi_arlock   => s_axi_host_mem_arlock(0 downto 0),
+    pc_axi_arcache  => s_axi_host_mem_arcache,
+    pc_axi_arprot   => s_axi_host_mem_arprot,
+    pc_axi_arqos    => s_axi_host_mem_arqos,
+    pc_axi_arregion => s_axi_host_mem_arregion,
+    pc_axi_arvalid  => s_axi_host_mem_arvalid,
+    pc_axi_arready  => s_axi_host_mem_arready,
+    pc_axi_rlast    => s_axi_host_mem_rlast,
+    pc_axi_rdata    => s_axi_host_mem_rdata,
+    pc_axi_rresp    => s_axi_host_mem_rresp,
+    pc_axi_rvalid   => s_axi_host_mem_rvalid,
+    pc_axi_rready   => s_axi_host_mem_rready
+  );
+  
 
 end architecture;

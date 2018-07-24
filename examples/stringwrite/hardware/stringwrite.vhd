@@ -21,6 +21,7 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
+use work.Columns.all;
 
 use work.SimUtils.all;
 
@@ -597,15 +598,15 @@ begin
     port map (
       clk                       => clk,
       reset_n                   => reset_n,
-      s_bus_wreq_valid          => bus_wreq_valid,
-      s_bus_wreq_ready          => bus_wreq_ready,
-      s_bus_wreq_addr           => bus_wreq_addr,
-      s_bus_wreq_len            => bus_wreq_len,
-      s_bus_wdat_valid          => bus_wdat_valid,
-      s_bus_wdat_ready          => bus_wdat_ready,
-      s_bus_wdat_data           => bus_wdat_data,
-      s_bus_wdat_strobe         => bus_wdat_strobe,
-      s_bus_wdat_last           => bus_wdat_last,
+      slv_bus_wreq_valid        => bus_wreq_valid,
+      slv_bus_wreq_ready        => bus_wreq_ready,
+      slv_bus_wreq_addr         => bus_wreq_addr,
+      slv_bus_wreq_len          => bus_wreq_len,
+      slv_bus_wdat_valid        => bus_wdat_valid,
+      slv_bus_wdat_ready        => bus_wdat_ready,
+      slv_bus_wdat_data         => bus_wdat_data,
+      slv_bus_wdat_strobe       => bus_wdat_strobe,
+      slv_bus_wdat_last         => bus_wdat_last,
       m_axi_awaddr              => m_axi_awaddr,
       m_axi_awlen               => m_axi_awlen,
       m_axi_awvalid             => m_axi_awvalid,

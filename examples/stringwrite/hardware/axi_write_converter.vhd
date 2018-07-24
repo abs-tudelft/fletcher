@@ -21,6 +21,7 @@ library work;
 use work.Utils.all;
 use work.Arrow.all;
 use work.Streams.all;
+use work.Interconnect.all;
 
 -- This entity converts read requests of a specific len and size on the slave port
 -- to proper len and size on the master port. It assumed the addresses and lens are
@@ -56,17 +57,17 @@ entity axi_write_converter is
 
     -- Fletcher bus
     -- Write address channel
-    s_bus_wreq_valid            :  in std_logic;
-    s_bus_wreq_ready            : out std_logic;
-    s_bus_wreq_addr             :  in std_logic_vector(ADDR_WIDTH-1 downto 0);
-    s_bus_wreq_len              :  in std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
+    slv_bus_wreq_valid          :  in std_logic;
+    slv_bus_wreq_ready          : out std_logic;
+    slv_bus_wreq_addr           :  in std_logic_vector(ADDR_WIDTH-1 downto 0);
+    slv_bus_wreq_len            :  in std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
 
     -- Write data channel
-    s_bus_wdat_valid            : in  std_logic;
-    s_bus_wdat_ready            : out std_logic;
-    s_bus_wdat_data             : in  std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
-    s_bus_wdat_strobe           : in  std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
-    s_bus_wdat_last             : in  std_logic;
+    slv_bus_wdat_valid          : in  std_logic;
+    slv_bus_wdat_ready          : out std_logic;
+    slv_bus_wdat_data           : in  std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
+    slv_bus_wdat_strobe         : in  std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
+    slv_bus_wdat_last           : in  std_logic;
 
     -- AXI BUS
     -- Read address channel
@@ -148,53 +149,53 @@ architecture rtl of axi_write_converter is
 begin
   -- If the ratio is 1, simply pass through, but convert to AXI len
   pass_through_gen: if RATIO = 1 generate
-    s_bus_wreq_ready            <= m_axi_awready;
-    m_axi_awaddr                <= s_bus_wreq_addr;
-    m_axi_awlen                 <= slv(resize(u(s_bus_wreq_len) - 1, MASTER_LEN_WIDTH));
-    m_axi_awvalid               <= s_bus_wreq_valid;
+    slv_bus_wreq_ready          <= m_axi_awready;
+    m_axi_awaddr                <= slv_bus_wreq_addr;
+    m_axi_awlen                 <= slv(resize(u(slv_bus_wreq_len) - 1, MASTER_LEN_WIDTH));
+    m_axi_awvalid               <= slv_bus_wreq_valid;
     m_axi_awsize                <= MASTER_SIZE;
 
-    s_bus_wdat_ready            <= m_axi_wready;
-    m_axi_wdata                 <= s_bus_wdat_data;
-    m_axi_wstrb                 <= s_bus_wdat_strobe;
-    m_axi_wlast                 <= s_bus_wdat_last;
-    m_axi_wvalid                <= s_bus_wdat_valid;
+    slv_bus_wdat_ready          <= m_axi_wready;
+    m_axi_wdata                 <= slv_bus_wdat_data;
+    m_axi_wstrb                 <= slv_bus_wdat_strobe;
+    m_axi_wlast                 <= slv_bus_wdat_last;
+    m_axi_wvalid                <= slv_bus_wdat_valid;
   end generate;
 
   -- If the ratio is larger than 1, instantiate the serializer, etc..
   serialize_gen: if RATIO > 1 generate
 
     -- Reset
-    reset                         <= '1' when reset_n = '0' else '0';
+    reset                       <= '1' when reset_n = '0' else '0';
 
     -----------------------------------------------------------------------------
     -- Write Request channels
     -----------------------------------------------------------------------------
     -- From slave port to BusBuffer
-    s_bus_wreq_ready              <= buf_mst_wreq_ready;
-    buf_mst_wreq_valid            <= s_bus_wreq_valid;
-    buf_mst_wreq_addr             <= s_bus_wreq_addr;
+    slv_bus_wreq_ready          <= buf_mst_wreq_ready;
+    buf_mst_wreq_valid          <= slv_bus_wreq_valid;
+    buf_mst_wreq_addr           <= slv_bus_wreq_addr;
     -- Length conversion; get the number of full words on the master
     -- Thus we have to shift with the log2ceil of the ratio, but round up
     -- in case its not an integer multiple of the ratio.
-    buf_mst_wreq_len              <= slv(resize(shift_right_round_up(u(s_bus_wreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
+    buf_mst_wreq_len            <= slv(resize(shift_right_round_up(u(slv_bus_wreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
 
     -- From BusBuffer to AXI master port
-    buf_slv_wreq_ready            <= m_axi_awready;
-    m_axi_awaddr                  <= buf_slv_wreq_addr;
-    m_axi_awvalid                 <= buf_slv_wreq_valid;
+    buf_slv_wreq_ready          <= m_axi_awready;
+    m_axi_awaddr                <= buf_slv_wreq_addr;
+    m_axi_awvalid               <= buf_slv_wreq_valid;
     -- Convert to AXI spec:
-    m_axi_awlen                   <= slv(resize(u(buf_slv_wreq_len) - 1, MASTER_LEN_WIDTH));
-    m_axi_awsize                  <= MASTER_SIZE;
+    m_axi_awlen                 <= slv(resize(u(buf_slv_wreq_len) - 1, MASTER_LEN_WIDTH));
+    m_axi_awsize                <= MASTER_SIZE;
     -----------------------------------------------------------------------------
     -- Write Data channel
     -----------------------------------------------------------------------------
     -- From slave port to StreamSerializer
-    ser_dat_i_data                <= s_bus_wdat_data;
-    ser_dat_i_last                <= s_bus_wdat_last;
+    ser_dat_i_data              <= slv_bus_wdat_data;
+    ser_dat_i_last              <= slv_bus_wdat_last;
     
-    ser_stb_i_data                <= s_bus_wdat_strobe;
-    ser_stb_i_last                <= s_bus_wdat_last;
+    ser_stb_i_data              <= slv_bus_wdat_strobe;
+    ser_stb_i_last              <= slv_bus_wdat_last;
     
     -- Split the write data stream into data and strobe for serialization
     wdat_split: StreamSync
@@ -205,8 +206,8 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid(0)             => s_bus_wdat_valid,
-        in_ready(0)             => s_bus_wdat_ready,
+        in_valid(0)             => slv_bus_wdat_valid,
+        in_ready(0)             => slv_bus_wdat_ready,
         out_valid(0)            => ser_dat_i_valid,
         out_valid(1)            => ser_stb_i_valid,
         out_ready(0)            => ser_dat_i_ready,

@@ -728,7 +728,7 @@ package body SimUtils is
     return integer'image(i);
   end function;
   
-    function ii(u : unsigned) return string is
+  function ii(u : unsigned) return string is
   begin
     return integer'image(to_integer(u));
   end function;

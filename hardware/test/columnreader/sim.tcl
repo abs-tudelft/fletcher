@@ -57,7 +57,7 @@ proc batch_sim_cr {} {
   onbreak {resume}
   if {[catch {
     vcom -quiet -work work -93 ColumnReader_tb.vhd
-    vsim -quiet -novopt work.columnreader_tb
+    vsim -quiet work.columnreader_tb
     surpress_warnings
     run -all
     set ok [examine sim_complete]
