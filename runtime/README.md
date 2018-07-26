@@ -8,7 +8,7 @@ Please take a look at the examples for the platforms:
 * [AWS EC2 F1](../platforms/aws-f1/regexp)
 * [CAPI SNAP](../platforms/snap/regexp)
 
-The source code of the run-time host program can be found [here](../example/regexp).
+The source code of the run-time host program can be found [here](../examples/regexp).
 Check it out for an example on how to use this library in your source code.
 
 # Build
