@@ -13,7 +13,8 @@ platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.csv
 
 *.dat
 
-platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top\.xml
+platforms/aws-f1/regexp/design/ip/axi_interconnect_top/*
+!platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top\.xci
 
 platforms/snap/regexp/sw/snap_regexp
 
