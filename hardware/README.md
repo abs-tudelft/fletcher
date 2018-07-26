@@ -23,8 +23,8 @@ layout/structure of the Column in memory. There are some additional
 options to tweak internals (like FIFO depths), but we will ignore them 
 for now.
 
-[ColumnReaderConfig.vhd](vhdl/arrow/ColumnReaderConfig.vhd) contains an in-depth guide on which entries of 
-the config string are support.
+[ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd) contains an in-depth guide on which entries of 
+the config string are supported.
 
 **Make sure not to use any whitespace characters in the configuration 
 such as spaces or newlines.
@@ -179,4 +179,4 @@ Assuming the null() examples are clear, we omit them in further examples.
 
 # More information
 
-For more in-depth information, check out [ColumnReaderConfig.vhd](vhdl/arrow/ColumnReaderConfig.vhd)
+For more in-depth information, check out [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd)

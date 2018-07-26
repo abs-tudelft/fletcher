@@ -1,6 +1,6 @@
 # Regular Expression Matching example hardware description
 
-This is an example in which some [ColumnReaders](../../../hardware) are
+This is an example in which some [ColumnReaders](../../hardware) are
 used to read a column with UTF8 strings. The config string for the 
 columns is therefore "listprim(8)", to generate an interface to a 
 non-nullable list of non-nullable 8-bit wide elements.
@@ -43,7 +43,7 @@ dumping bursts into the ColumnReaders, which are less wide.
 
 # Build
 
-### 1. First build the [runtime library](../../../runtime).
+### 1. First build the [runtime library](../../runtime).
 
 ### 2. Build the example
 

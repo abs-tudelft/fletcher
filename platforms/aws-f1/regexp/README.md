@@ -1,7 +1,7 @@
 # Regular Expression Matching example on AWS F1
 
 This implementation uses the hardware description 
-[you can read about here](../../../example/regexp).
+[you can read about here](../../../examples/regexp).
 
 This subfolder follows the structure of projects on the 
 [AWS EC2 FPGA Hardware and Software Development Kits](https://github.com/aws/aws-fpga).
@@ -88,8 +88,7 @@ Read request from MMIO: 51 value 11
 [t] : Result regexp 9: 11
 </pre>
 
-Currently only unit 9 (which matches "(?i)kitten") will$ source ~/src/project_data/aws-fpga/sdk_setup.sh
- give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
+Currently only unit 9 (which matches "(?i)kitten") will give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
 Inserting strings that the other units match for, randomly, is desired for verification but not implemented yet.
 
 # Build
