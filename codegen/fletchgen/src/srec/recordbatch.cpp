@@ -43,8 +43,9 @@ void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow
 }
 
 void fletchgen::srec::writeRecordBatchToFile(arrow::RecordBatch &recordbatch, const std::string &filename) {
-  auto buffer =
-      std::static_pointer_cast<arrow::Buffer>(std::make_shared<arrow::PoolBuffer>(arrow::default_memory_pool()));
+  std::shared_ptr<arrow::Buffer> buffer;
+  arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0,
+                                 reinterpret_cast<std::shared_ptr<arrow::ResizableBuffer> *>(&buffer));
 
   if (!arrow::ipc::SerializeRecordBatch(recordbatch, arrow::default_memory_pool(), &buffer).ok()) {
     throw std::runtime_error("Could not serialize record batch into buffer.");

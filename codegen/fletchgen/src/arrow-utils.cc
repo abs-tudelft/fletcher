@@ -244,8 +244,9 @@ std::shared_ptr<arrow::Schema> readSchemaFromFile(const std::string &file_name) 
 }
 
 void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name) {
-  auto buffer =
-      std::static_pointer_cast<arrow::Buffer>(std::make_shared<arrow::PoolBuffer>(arrow::default_memory_pool()));
+  std::shared_ptr<arrow::Buffer> buffer;
+  arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0,
+                                 reinterpret_cast<std::shared_ptr<arrow::ResizableBuffer> *>(&buffer));
 
   if (!arrow::ipc::SerializeSchema(*schema, arrow::default_memory_pool(), &buffer).ok()) {
     throw std::runtime_error("Could not serialize schema into buffer.");
