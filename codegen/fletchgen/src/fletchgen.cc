@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
       ("input,I", po::value<std::string>(), "Flatbuffer file with Arrow schema to base wrapper on.")
       ("output,O", po::value<std::string>(), "Wrapper output file.")
       ("name,N", po::value<std::string>()->default_value("<input filename>"), "Name of the accelerator component.")
-      ("wrapper_name,W", po::value<std::string>(), "Name of the wrapper component.")
+      ("wrapper_name,W", po::value<std::string>(), "Name of the wrapper component (Default = fletcher_wrapper).")
       ("custom_registers,R", po::value<int>(), "Number 32-bit registers in accelerator component.")
       ("recordbatch_data,D", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
       ("recordbatch_schema,S", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
        "SREC output file name. If this and recordbatch_in are specified, this "
        "tool will convert an Arrow RecordBatch message stored in a file into an"
        "SREC file. The SREC file can be used in simulation.")
-      ("nostdout,N", "Prevent output on stdout.");
+      ("quiet,Q", "Prevent output on stdout.");
 
   /* Positional options: */
   po::positional_options_description p;
@@ -294,7 +294,7 @@ int main(int argc, char **argv) {
   if (vm.count("wrapper_name")) {
     wrap_name = vm["wrapper_name"].as<std::string>();
   } else {
-    wrap_name = nameFrom({acc_name, "wrapper"});
+    wrap_name = nameFrom({"fletcher", "wrapper"});
   }
 
   // UserCore registers:
