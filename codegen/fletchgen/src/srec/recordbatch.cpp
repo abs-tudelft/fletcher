@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "recordbatch.h"
 
 std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {

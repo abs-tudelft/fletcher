@@ -14,8 +14,10 @@
 
 #pragma once
 
+#include <iostream>
+
 #ifdef DEBUG
-#define LOGD(X) std::cerr << "[DEBUG] " << X << std::endl
+#define LOGD(X) std::cerr << "[DEBUG] " << (X) << std::endl
 #else
 #define LOGD(X) do {} while (false)
 #endif
