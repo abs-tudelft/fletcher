@@ -27,17 +27,17 @@ entity axi_mmio is
     ---------------------------------------------------------------------------
     -- Bus metrics and configuration
     ---------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural := 32;
-    BUS_DATA_WIDTH              : natural := 32;
+    BUS_ADDR_WIDTH              : natural;
+    BUS_DATA_WIDTH              : natural;
     
-    NUM_REGS                    : natural := 8;
+    NUM_REGS                    : natural;
     
     ENABLE_READ                 : bit_vector(NUM_REGS-1 downto 0) := (others => '1');
     ENABLE_WRITE                : bit_vector(NUM_REGS-1 downto 0) := (others => '1')
   );
   port (
     clk                         : in  std_logic;
-    reset                       : in  std_logic;
+    reset_n                     : in  std_logic;
     
     -- Write adress channel
     s_axi_awvalid               : in  std_logic;
@@ -67,9 +67,9 @@ entity axi_mmio is
     s_axi_rresp                 : out std_logic_vector(1 downto 0);
     
     -- Register access
-    regs_data                   : out std_logic_vector(BUS_DATA_WIDTH*NUM_REGS-1 downto 0);
-    write_data                  : in  std_logic_vector(BUS_DATA_WIDTH*NUM_REGS-1 downto 0);
-    write_enable                : in  std_logic_vector(NUM_REGS-1 downto 0)
+    regs_out                    : out std_logic_vector(BUS_DATA_WIDTH*NUM_REGS-1 downto 0);
+    regs_in                     : in  std_logic_vector(BUS_DATA_WIDTH*NUM_REGS-1 downto 0);
+    regs_in_en                  : in  std_logic_vector(NUM_REGS-1 downto 0)
   );
 end axi_mmio;
 
@@ -122,7 +122,7 @@ begin
       r <= d;
             
       -- Reset:
-      if reset = '1' then
+      if reset_n = '0' then
       
       end if;
     end if;
@@ -135,7 +135,7 @@ begin
     s_axi_bready,                             -- Write Response Channel
     s_axi_arvalid, s_axi_araddr,              -- Read Address Channel
     s_axi_rready,                             -- Read Data Channel
-    write_data, write_enable
+    regs_in, regs_in_en
   ) is
     variable widx : natural := 0;
     variable ridx : natural := 0;
@@ -149,8 +149,8 @@ begin
         
     -- Writes from peripheral
     for I in 0 to NUM_REGS-1 loop
-      if write_enable(I) = '1' then
-        v.regs(I) := write_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH);
+      if regs_in_en(I) = '1' then
+        v.regs(I) := regs_in((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH);
       end if;
     end loop;
 
@@ -228,7 +228,7 @@ begin
   -- Serialize the registers onto a single bus
   ser_regs: for I in 0 to NUM_REGS-1 generate
   begin
-    regs_data((I+1) * BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH) <= r.regs(I);
+    regs_out((I+1) * BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH) <= r.regs(I);
   end generate;
   
 end Behavioral;
