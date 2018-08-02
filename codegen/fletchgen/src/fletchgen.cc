@@ -28,6 +28,7 @@
 #include "column-wrapper.h"
 
 #include "srec/recordbatch.h"
+#include "vhdt/vhdt.h"
 
 #include <plasma/client.h>
 
@@ -218,12 +219,12 @@ int main(int argc, char **argv) {
       ("custom_registers,R", po::value<int>(), "Number 32-bit registers in accelerator component.")
       ("recordbatch_data,D", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
       ("recordbatch_schema,S", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
-      ("srec_output,X",
-       po::value<std::string>(),
-       "SREC output file name. If this and recordbatch_in are specified, this "
-       "tool will convert an Arrow RecordBatch message stored in a file into an"
-       "SREC file. The SREC file can be used in simulation.")
-      ("quiet,Q", "Prevent output on stdout.");
+      ("srec_output,X", po::value<std::string>(),
+         "SREC output file name. If this and recordbatch_in are specified, this "
+         "tool will convert an Arrow RecordBatch message stored in a file into an"
+         "SREC file. The SREC file can be used in simulation.")
+      ("quiet,Q", "Prevent output on stdout.")
+      ("axi,A", "Generate AXI top level.");
 
   /* Positional options: */
   po::positional_options_description p;
@@ -305,7 +306,7 @@ int main(int argc, char **argv) {
   std::vector<std::ostream *> outputs;
 
   /* Determine output streams */
-  if (vm.count("nostdout") == 0) {
+  if (vm.count("quiet") == 0) {
     outputs.push_back(&std::cout);
   }
 
@@ -316,8 +317,30 @@ int main(int argc, char **argv) {
     outputs.push_back(&ofs);
   }
 
-  fletchgen::generateColumnWrapper(outputs, fletchgen::readSchemaFromFile(schema_fname), acc_name, wrap_name, regs);
+  auto wrapper = fletchgen::generateColumnWrapper(outputs, fletchgen::readSchemaFromFile(schema_fname), acc_name, wrap_name, regs);
   LOGD("Wrapper generation finished.");
+
+  /* AXI top level */
+  if (vm.count("axi")) {
+    const char* fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
+    if (fhwd == nullptr) {
+      throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
+    }
+    fletchgen::vhdt t(std::string(fhwd) + "/vhdl/axi/axi_top.vhdt");
+
+    t.replace("NUM_ARROW_BUFFERS", wrapper->countBuffers());
+    t.replace("NUM_REGS", wrapper->countRegisters());
+    t.replace("NUM_USER_REGS", wrapper->user_regs());
+
+    // Do not change this order, TODO: fix this in replacement code
+    t.replace("FLETCHER_WRAPPER_NAME", wrapper->entity()->name());
+    t.replace("FLETCHER_WRAPPER_INST_NAME", nameFrom({wrapper->entity()->name(), "inst"}));
+
+    std::ofstream aofs("axi_top.vhd");
+    aofs << t.toString();
+    aofs.close();
+
+  }
 
   return 0;
 }

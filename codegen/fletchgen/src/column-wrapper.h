@@ -67,6 +67,16 @@ class ColumnWrapper : public StreamComponent {
 
   UserCoreController *usercore_controller() { return uctrl_.get(); }
 
+  /* Registers */
+  /// @brief Count the number of Arrow buffers used by this wrapper.
+  int countBuffers();
+
+  /// @brief Count the number of MMIO registers used by this wrapper.
+  int countRegisters();
+
+  /// @brief Return the number of user registers.
+  int user_regs() { return user_regs_; }
+
  private:
   std::shared_ptr<arrow::Schema> schema_ = nullptr; ///< The schema this wrapper implementation is derived from.
   int user_regs_ = 0; ///< Amount of registers for the UserCore
@@ -152,13 +162,6 @@ class ColumnWrapper : public StreamComponent {
 
   /// @brief Add internal signals for controller <-> user core
   void connectControllerSignals();
-
-  /* Registers */
-  /// @brief Count the number of Arrow buffers used by this wrapper.
-  int countBuffers();
-
-  /// @brief Count the number of MMIO registers used by this wrapper.
-  int countRegisters();
 
   /// @brief Add internal controller signals.
   void addControllerSignals();

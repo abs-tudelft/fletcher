@@ -20,19 +20,19 @@
 
 namespace fletchgen {
 
-void generateColumnWrapper(const std::vector<std::ostream *> &outputs,
-                           const std::shared_ptr<arrow::Schema> &schema,
-                           const std::string &acc_name,
-                           const std::string &wrap_name,
-                           int user_regs) {
+std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostream *> &outputs,
+                                                     const std::shared_ptr<arrow::Schema> &schema,
+                                                     const std::string &acc_name,
+                                                     const std::string &wrap_name,
+                                                     int user_regs) {
   LOGD("Arrow Schema:");
   LOGD(schema->ToString());
 
   LOGD("Fletcher Wrapper Generation:");
-  fletchgen::ColumnWrapper col_wrapper(schema, wrap_name, acc_name, user_regs);
+  auto col_wrapper = std::make_shared<ColumnWrapper>(schema, wrap_name, acc_name, user_regs);
 
-  auto ent = col_wrapper.entity()->toVHDL();
-  auto arch = col_wrapper.architecture()->toVHDL();
+  auto ent = col_wrapper->entity()->toVHDL();
+  auto arch = col_wrapper->architecture()->toVHDL();
 
   std::cerr.flush();
 
@@ -44,6 +44,8 @@ void generateColumnWrapper(const std::vector<std::ostream *> &outputs,
     *o << ent << std::endl;
     *o << arch << std::endl;
   }
+
+  return col_wrapper;
 }
 
 }//namespace fletchgen
