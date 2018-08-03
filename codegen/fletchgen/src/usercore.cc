@@ -85,10 +85,10 @@ UserCore::UserCore(std::string name, ColumnWrapper *parent, int num_addr_regs, i
   if (num_user_regs_ > 0) {
     entity()->addGeneric(make_shared<vhdl::Generic>(ce::NUM_USER_REGS, "natural", Value(num_user_regs)));
 
-    rin_ = make_shared<GeneralPort>("regs_in", GP::REG_ADDR, Dir::IN, Value(num_user_regs) * Value(ce::REG_WIDTH));
+    rin_ = make_shared<GeneralPort>("regs_in", GP::REG_ADDR, Dir::IN, Value(ce::NUM_USER_REGS) * Value(ce::REG_WIDTH));
     rout_ =
-        make_shared<GeneralPort>("regs_out", GP::REG_USER, Dir::OUT, Value(num_user_regs) * Value(ce::REG_WIDTH));
-    route_ = make_shared<GeneralPort>("regs_out_en", GP::REG_USER, Dir::OUT, Value(num_user_regs));
+        make_shared<GeneralPort>("regs_out", GP::REG_USER, Dir::OUT, Value(ce::NUM_USER_REGS) * Value(ce::REG_WIDTH));
+    route_ = make_shared<GeneralPort>("regs_out_en", GP::REG_USER, Dir::OUT, Value(ce::NUM_USER_REGS));
     entity()->addPort(rin_, group);
     entity()->addPort(rout_, group);
     entity()->addPort(route_, group);
