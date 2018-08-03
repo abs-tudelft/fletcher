@@ -94,6 +94,7 @@ Inserting strings that the other units match for, randomly, is desired for verif
 # Build
     $ cd $FLETCHER_PLATFORM_DIR/aws-f1/regexp
     $ export CL_DIR=$(pwd)
+    $ cd build/scripts
 
 Sometimes you have to fix the symbolic link to the build script in this directory. Remove the link if it's there (optionally):
 

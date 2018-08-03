@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
   }
 
   // UserCore name:
-  if (vm["name"].as<std::string>() != "<input filename>") {
+  if (vm["name"].as<std::string>() != "<input file name>") {
     acc_name = vm["name"].as<std::string>();
   } else {
     size_t lastindex = schema_fname.find_last_of('.');
