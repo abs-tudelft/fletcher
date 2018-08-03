@@ -39,8 +39,10 @@ set(SOURCE_FILES
         src/srec/recordbatch.cpp    src/srec/recordbatch.h
 
         src/vhdt/vhdt.cpp           src/vhdt/vhdt.h
+        src/top/axi.cpp             src/top/axi.h
+        src/schema_test.cpp         src/schema_test.h
 
-        src/fletchgen.cc)
+        src/fletchgen.cc )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

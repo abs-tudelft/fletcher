@@ -29,165 +29,12 @@
 
 #include "srec/recordbatch.h"
 #include "vhdt/vhdt.h"
+#include "top/axi.h"
+#include "schema_test.h"
 
 #include <plasma/client.h>
 
 using fletchgen::Mode;
-
-std::shared_ptr<arrow::Schema> getStringSchema() {
-  // Schema
-  auto schema = arrow::schema({arrow::field("Name", arrow::utf8(), false)});
-  return schema;
-}
-
-std::shared_ptr<arrow::RecordBatch> getStringRB() {
-  // Some names
-  std::vector<std::string> names = {"Alice", "Bob", "Carol", "David",
-                                    "Eve", "Frank", "Grace", "Harry",
-                                    "Isolde", "Jack", "Karen", "Leonard",
-                                    "Mary", "Nick", "Olivia", "Peter",
-                                    "Quinn", "Robert", "Sarah", "Travis",
-                                    "Uma", "Victor", "Wendy", "Xavier",
-                                    "Yasmine", "Zachary"
-  };
-
-  // Make a string builder
-  arrow::StringBuilder string_builder;
-
-  // Append the strings in the string builder
-  if (!string_builder.AppendValues(names).ok()) {
-    throw std::runtime_error("Could not append strings to string builder.");
-  };
-
-  // Array to hold Arrow formatted string data
-  std::shared_ptr<arrow::Array> data_array;
-
-  // Finish building and create a new data array around the data
-  if (!string_builder.Finish(&data_array).ok()) {
-    throw std::runtime_error("Could not finalize string builder.");
-  };
-
-  // Create the Record Batch
-  std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(getStringSchema(), names.size(), {data_array});
-
-  return record_batch;
-}
-
-/**
- * @return Simplest example schema.
- */
-std::shared_ptr<arrow::Schema> genSimpleReadSchema() {
-  // Create a vector of fields that will form the schema.
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Num", arrow::uint8(), false)
-  };
-
-  // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
-
-  return schema;
-}
-
-/**
- * @return Simple example schema with both read and write.
- */
-std::shared_ptr<arrow::Schema> genSimpleWriteSchema() {
-  // Create a vector of fields that will form the schema.
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Num", arrow::uint8(), false)
-  };
-
-  // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(Mode::WRITE));
-
-  return schema;
-}
-
-/**
- * @return A simple example schema.
- */
-std::shared_ptr<arrow::Schema> genStringSchema() {
-  // Create a vector of fields that will form the schema.
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Name", arrow::utf8(), false, fletchgen::metaEPC(4))
-  };
-
-  // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(Mode::READ));
-
-  return schema;
-}
-
-/**
- * @return A struct schema.
- */
-std::shared_ptr<arrow::Schema> genStructSchema() {
-  std::vector<std::shared_ptr<arrow::Field>> struct_fields = {
-      arrow::field("Prim A", arrow::uint16(), false),
-      arrow::field("Prim B", arrow::uint32(), false),
-  };
-
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Struct", arrow::struct_(struct_fields), false)
-  };
-
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(Mode::READ));
-
-  return schema;
-
-}
-
-/**
- * @return A big example schema containing all field types that Fletcher supports.
- */
-std::shared_ptr<arrow::Schema> genBigSchema() {
-  std::vector<std::shared_ptr<arrow::Field>> struct_fields = {
-      arrow::field("Prim A", arrow::uint16(), false),
-      arrow::field("Prim B", arrow::uint32(), false),
-      arrow::field("String", arrow::utf8(), false, fletchgen::metaEPC(4))
-  };
-
-  std::vector<std::shared_ptr<arrow::Field>> struct2_fields = {
-      arrow::field("Prim", arrow::uint64(), false),
-      arrow::field("Struct", arrow::struct_(struct_fields), false)
-  };
-
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Prim", arrow::uint8(), false, fletchgen::metaEPC(4)),
-      arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
-      arrow::field("Binary", arrow::binary(), false),
-      arrow::field("FixedSizeBinary", arrow::fixed_size_binary(5)),
-      arrow::field("Decimal", arrow::decimal(20, 18)),
-      arrow::field("String", arrow::utf8(), false, fletchgen::metaEPC(8)),
-      arrow::field("Struct", arrow::struct_(struct2_fields), false),
-      arrow::field("IgnoreMe", arrow::utf8(), false, fletchgen::metaIgnore())
-  };
-
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(Mode::READ));
-
-  return schema;
-}
-
-/**
- * @return An example schema from a genomics pipeline application.
- */
-std::shared_ptr<arrow::Schema> genPairHMMSchema() {
-
-  // Create the struct datatype
-  auto strct = arrow::struct_({arrow::field("Basepairs", arrow::uint8(), false),
-                               arrow::field("Probabilities", arrow::fixed_size_binary(32), false)
-                              });
-  // Create the schema fields vector
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Haplotype", arrow::binary(), false),
-      arrow::field("Read", arrow::list(arrow::field("Item", strct, false)), false)
-  };
-
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(Mode::READ));
-
-  return schema;
-}
 
 int main(int argc, char **argv) {
   // TODO: Move this stuff to tests
@@ -212,19 +59,19 @@ int main(int argc, char **argv) {
 
   desc.add_options()
       ("help,h", "Produce this help message")
-      ("input,I", po::value<std::string>(), "Flatbuffer file with Arrow schema to base wrapper on.")
-      ("output,O", po::value<std::string>(), "Wrapper output file.")
-      ("name,N", po::value<std::string>()->default_value("<input filename>"), "Name of the accelerator component.")
-      ("wrapper_name,W", po::value<std::string>(), "Name of the wrapper component (Default = fletcher_wrapper).")
-      ("custom_registers,R", po::value<int>(), "Number 32-bit registers in accelerator component.")
-      ("recordbatch_data,D", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
-      ("recordbatch_schema,S", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
-      ("srec_output,X", po::value<std::string>(),
+      ("input,i", po::value<std::string>(), "Flatbuffer file with Arrow schema to base wrapper on.")
+      ("output,o", po::value<std::string>(), "Wrapper output file.")
+      ("name,n", po::value<std::string>()->default_value("<input file name>"), "Name of the accelerator component.")
+      ("wrapper_name,w", po::value<std::string>()->default_value("fletcher_wrapper"), "Name of the wrapper component.")
+      ("custom_registers,r", po::value<int>(), "Number 32-bit registers in accelerator component.")
+      ("recordbatch_data,d", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
+      ("recordbatch_schema,s", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
+      ("srec_output,x", po::value<std::string>(),
          "SREC output file name. If this and recordbatch_in are specified, this "
-         "tool will convert an Arrow RecordBatch message stored in a file into an"
+         "tool will convert an Arrow RecordBatch message stored in a file into an "
          "SREC file. The SREC file can be used in simulation.")
-      ("quiet,Q", "Prevent output on stdout.")
-      ("axi,A", "Generate AXI top level.");
+      ("quiet,q", "Prevent output on stdout.")
+      ("axi,a", po::value<std::string>()->default_value("axi_top.vhd"), "Generate AXI top level.");
 
   /* Positional options: */
   po::positional_options_description p;
@@ -322,23 +169,13 @@ int main(int argc, char **argv) {
 
   /* AXI top level */
   if (vm.count("axi")) {
-    const char* fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
-    if (fhwd == nullptr) {
-      throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
+    auto axi_file = vm["axi"].as<std::string>();
+    std::ofstream aofs(axi_file);
+    std::vector<std::ostream *> axi_outputs = {&aofs};
+    if (vm.count("quiet") == 0) {
+      axi_outputs.push_back(&std::cout);
     }
-    fletchgen::vhdt t(std::string(fhwd) + "/vhdl/axi/axi_top.vhdt");
-
-    t.replace("NUM_ARROW_BUFFERS", wrapper->countBuffers());
-    t.replace("NUM_REGS", wrapper->countRegisters());
-    t.replace("NUM_USER_REGS", wrapper->user_regs());
-
-    // Do not change this order, TODO: fix this in replacement code
-    t.replace("FLETCHER_WRAPPER_NAME", wrapper->entity()->name());
-    t.replace("FLETCHER_WRAPPER_INST_NAME", nameFrom({wrapper->entity()->name(), "inst"}));
-
-    std::ofstream aofs("axi_top.vhd");
-    aofs << t.toString();
-    aofs.close();
+    axi::generateAXITop(wrapper, axi_outputs);
 
   }
 

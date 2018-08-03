@@ -17,6 +17,7 @@
 
 #include "common.h"
 #include "column-wrapper.h"
+#include "vhdt/vhdt.h"
 
 namespace fletchgen {
 
