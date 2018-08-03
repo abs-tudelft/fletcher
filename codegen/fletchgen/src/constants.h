@@ -46,7 +46,10 @@ constexpr char
                      "use ieee.std_logic_misc.all;\n"
                      "\n"
                      "library work;\n"
-                     "use work.Arrow.all;\n";
+                     "use work.Arrow.all;\n"
+                     "use work.Columns.all;\n"
+                     "use work.Interconnect.all;\n"
+                     "use work.Wrapper.all;\n";
 
 constexpr char REG_WIDTH[] = "REG_WIDTH";
 constexpr int REG_WIDTH_DEFAULT = 32;
