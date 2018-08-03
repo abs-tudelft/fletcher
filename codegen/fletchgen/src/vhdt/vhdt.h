@@ -19,7 +19,7 @@
 #include <fstream>
 #include <map>
 #include <regex>
-#include <list>
+#include <map>
 
 #include "../logging.h"
 
@@ -32,41 +32,20 @@ struct trloc {
   size_t start;
 };
 
-/// @brief Class to hold and modify a VHDL template file
-class vhdt {
+/// @brief Class to hold and modify a VHDL template file.
+class VHDLTemplate {
  public:
-  explicit vhdt(const std::string &filename);
-
-  void replace(const std::string &str, int with) {
-    replace(str, std::to_string(with));
-  }
-
-  void replace(const std::string &str, const std::string &with) {
-    for (const auto &item : replace_list_) {
-      if (item.first == str) {
-        auto loc = item.second;
-
-        LOGI(item.first + " in " + lines_[loc.line]);
-
-        // +3 for ${}
-        lines_[loc.line].replace(loc.start, str.length() + 3, with);
-      }
-    }
-  }
-
-  std::string toString() {
-    std::string out;
-    for (const auto &l : lines_) {
-      out.append(l);
-      out.append("\n");
-    }
-    return out;
-  }
-
+  ///@brief Construct a VHDL template file holder.
+  explicit VHDLTemplate(const std::string &filename);
+  ///@brief Replace a template replacement string with some number.
+  void replace(const std::string &str, int with);
+  ///@brief Replace a template replacement string with some other string.
+  void replace(const std::string &str, const std::string &with);
+  ///@brief Return the file as a string.
+  std::string toString();
  private:
-  // Map from a template replacement string to a vector of line numbers.
-  std::list<std::pair<std::string, trloc>> replace_list_;
-  std::vector<std::string> lines_;
+  std::map<std::string, std::vector<trloc>> replace_list_; ///< Map from a template replacement string to a vector of line numbers.
+  std::vector<std::string> lines_; ///< Lines of the file.
 };
 
 } //namespace fletchgen
