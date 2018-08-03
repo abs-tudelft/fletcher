@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(fletchgen)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 
 # Compiler
 # set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
@@ -38,8 +38,11 @@ set(SOURCE_FILES
         src/srec/srec.cpp           src/srec/srec.h
         src/srec/recordbatch.cpp    src/srec/recordbatch.h
 
-        src/fletchgen.cc
-)
+        src/vhdt/vhdt.cpp           src/vhdt/vhdt.h
+        src/top/axi.cpp             src/top/axi.h
+        src/schema_test.cpp         src/schema_test.h
+
+        src/fletchgen.cc )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
