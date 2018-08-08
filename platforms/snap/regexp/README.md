@@ -3,7 +3,7 @@
 ### NOTE: this has only been tested on a Power8 machine with an ADKU3 (Kintex Ultrascale) device.
 
 This example wraps the Regular Expression Matching example for CAPI SNAP. Please read 
-[the documentation on this example](../../../example/regexp) first.
+[the documentation on this example](../../../examples/regexp) first.
 
 Also if this is the first time using CAPI SNAP, it's recommended to go through the HDL 
 design flow first. At least try to build and run the `hdl_example` action 
@@ -68,7 +68,7 @@ You could use this project as a baseline for your own projects.
     $ $FLETCHER_PLATFORM_DIR/snap/regexp/sw/snap_regexp
     
 * To do: SNAP allows for easy hardware/software cosimulation. We can also use the normal
-  run time software in fletcher/example/regexp to simulate.
+  run time software in fletcher/examples/regexp to simulate.
 
 # Build
     

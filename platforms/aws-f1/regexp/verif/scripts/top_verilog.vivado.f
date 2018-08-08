@@ -31,10 +31,13 @@
 --include ${HDK_COMMON_DIR}/verif/include
 --include ${SH_LIB_DIR}/../ip/cl_axi_interconnect/ipshared/7e3a/hdl
 --include ${HDK_SHELL_DESIGN_DIR}/sh_ddr/sim
+--include ${HDK_SHELL_DESIGN_DIR}/ip/axi_register_slice_light/hdl
 
 ${SH_LIB_DIR}/../ip/axi_clock_converter_0/sim/axi_clock_converter_0.v
 ${SH_LIB_DIR}/../ip/axi_register_slice/sim/axi_register_slice.v
 ${SH_LIB_DIR}/../ip/axi_register_slice_light/sim/axi_register_slice_light.v
+${HDK_SHELL_DESIGN_DIR}/ip/axi_register_slice_light/hdl/axi_register_slice_v2_1_vl_rfs.v
+${HDK_SHELL_DESIGN_DIR}/ip/axi_clock_converter_0/hdl/axi_clock_converter_v2_1_vl_rfs.v
 
 # Top level interconnect between PCI Slave and DDR C
 ${CL_ROOT}/design/ip/axi_interconnect_top/sim/axi_interconnect_top.v

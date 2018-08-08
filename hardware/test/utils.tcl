@@ -37,7 +37,7 @@ proc add_waves {groups {in_color green} {out_color yellow} {internal_color white
   }
 }
 
-proc simulate {top {groups_and_units 0}} {
+proc simulate {top {groups_and_units 0} {duration -all}} {
   vsim -novopt -assertdebug $top
 
   if {$groups_and_units == 0} {
@@ -49,7 +49,7 @@ proc simulate {top {groups_and_units 0}} {
     configure wave -valuecolwidth   192
   }
 
-  run -all
+  run $duration
 
   if {$groups_and_units == 0} {
     echo "Cannot zoom to full, no signals added."
