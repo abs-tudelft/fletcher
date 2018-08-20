@@ -22,6 +22,7 @@ use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
 use work.Interconnect.all;
+use work.AXI.all;
 
 use work.SimUtils.all;
 
@@ -437,7 +438,6 @@ begin
     -- and converts the Fletcher bus "len" to AXI bus "len"
     read_converter_inst: axi_read_converter generic map (
       ADDR_WIDTH                => BUS_ADDR_WIDTH,
-      ID_WIDTH                  => 1,
       MASTER_DATA_WIDTH         => BUS_DATA_WIDTH,
       MASTER_LEN_WIDTH          => 8,
       SLAVE_DATA_WIDTH          => BOTTOM_DATA_WIDTH,
