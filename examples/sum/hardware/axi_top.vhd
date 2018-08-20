@@ -174,6 +174,10 @@ begin
   -- Active high reset
   bus_reset <= '1' when bus_reset_n = '0' else '0';
 
+  -- Tie off unused master write channel
+  m_axi_awvalid <= '0';
+  m_axi_wvalid <= '0';
+
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------

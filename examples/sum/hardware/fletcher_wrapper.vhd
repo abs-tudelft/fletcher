@@ -132,7 +132,7 @@ architecture Implementation of fletcher_wrapper is
   signal s_weight_out_valid                    : std_logic_vector(0 downto 0);
   signal s_weight_out_ready                    : std_logic_vector(0 downto 0);
   signal s_weight_out_last                     : std_logic_vector(0 downto 0);
-  signal s_weight_out_data                     : std_logic_vector(64 downto 0);
+  signal s_weight_out_data                     : std_logic_vector(63 downto 0);
   signal s_weight_out_dvalid                   : std_logic_vector(0 downto 0);
   signal s_weight_bus_rreq_valid               : std_logic;
   signal s_weight_bus_rreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -199,8 +199,8 @@ begin
       acc_reset                                => acc_reset,
       bus_clk                                  => bus_clk,
       bus_reset                                => bus_reset,
-      status                                   => regs_out(2*REG_WIDTH-1 downto REG_WIDTH),
-      control                                  => regs_in(REG_WIDTH-1 downto 0),
+      status                                   => regs_out(2*REG_WIDTH-1 downto 1*REG_WIDTH),
+      control                                  => regs_in (4*REG_WIDTH-1 downto 3*REG_WIDTH),
       start                                    => uctrl_start,
       stop                                     => uctrl_stop,
       reset                                    => uctrl_reset,
@@ -208,6 +208,8 @@ begin
       busy                                     => uctrl_busy,
       done                                     => uctrl_done
     );
+  -- Write one reg of status, not control
+  regs_out_en(3 downto 0) <= "0010";
 
   -- Hardware Accelerated Function instance.
   sum_inst: sum
@@ -238,11 +240,14 @@ begin
       weight_cmd_lastIdx                       => s_weight_cmd_lastIdx(INDEX_WIDTH-1 downto 0),
       weight_cmd_tag                           => s_weight_cmd_tag(TAG_WIDTH-1 downto 0),
       weight_cmd_weight_values_addr            => s_weight_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
-      reg_weight_values_addr                   => regs_in(5*REG_WIDTH-1 downto 4*REG_WIDTH),
+      reg_return                               => regs_out(6*REG_WIDTH-1 downto 4*REG_WIDTH),
+      reg_weight_values_addr                   => regs_in (8*REG_WIDTH-1 downto 6*REG_WIDTH),
       regs_in                                  => s_regs_in,
       regs_out                                 => s_regs_out,
       regs_out_en                              => s_regs_out_en
     );
+  -- Write to return reg
+  regs_out_en(7 downto 4) <= "0011";
 
   -- Arbiter instance generated to serve 1 column readers.
   BusReadArbiterVec_inst: BusReadArbiterVec
