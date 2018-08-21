@@ -32,7 +32,7 @@ typedef union _addr_lohi {
 } addr_lohi;
 
 
-int main()
+int main(int argc, char *argv[])
 {
   int rc = 0;
   uint64_t cir;
@@ -68,8 +68,10 @@ int main()
 	snap_mmio_read64(dn, SNAP_S_CIR, &cir);
 
   // Attach action
+  printf("Attatching action.\n");
   act = snap_attach_action(dn, ACTION_TYPE_EXAMPLE, attach_flags, 100);
 
+  printf("Allocating buffers.\n");
   // Allocate offsets buffer
   uint32_t * off_buf;
   uint32_t num_rows = 8*ACTIVE_UNITS;
@@ -79,8 +81,19 @@ int main()
   char * val_buf;
   rc = posix_memalign((void**)&val_buf,BURST_LENGTH, sizeof(char)*256*num_rows);
   
-  // Get strings from a FILE
-  FILE* fp = fopen("test.txt", "r");
+  // Get strings from the file in the first argument of this program
+  if (argc < 2) {
+    perror("Must provide input file.");
+    exit(EXIT_FAILURE);
+  }
+  
+  const char *fname  = argv[1];
+  printf("Input file %s.\n", fname);
+  fflush(stdout);
+  
+  FILE* fp = fopen(fname, "r");
+  
+  // Read the file.
   char * line;
   size_t len = 0;
   ssize_t read;
@@ -90,6 +103,7 @@ int main()
     exit(EXIT_FAILURE);
   }
 
+  printf("Preparing offset and values buffer.\n", fname);
   int offset = 0;
   off_buf[0] = offset;
   int l=0;
@@ -147,7 +161,7 @@ int main()
   for (int i = 0; i < 16; i++) {
     uint32_t result = 0xDEADBEEF;
     snap_mmio_read32(dn, RESULT_OFF + 4* i, &result);
-    printf("Result %2d: %d\n", i, result);
+    printf("Matches for RegExp %2d: %d\n", i, result);
   }
 
   printf("RC=%d\n",rc);
