@@ -59,16 +59,30 @@ You could use this project as a baseline for your own projects.
 
     $ make sim
     
-#### In the new terminal that pops up run:
+#### In the new terminal that pops up, we must first register the action with the SNAP framework.
 
-    $ snap_maint -vv
+    $ snap_maint -vvv
     
-#### Run the simulation
+#### In this new terminal, we can now run the simulation with the default test data set.
 
-    $ $FLETCHER_PLATFORM_DIR/snap/regexp/sw/snap_regexp
+    $ snap_regexp $FLETCHER_EXAMPLES_DIR/regexp/hardware/test.txt
     
 * To do: SNAP allows for easy hardware/software cosimulation. We can also use the normal
   run time software in fletcher/examples/regexp to simulate.
+  
+For the default data set, every regular expression should be matched twice.
+Thus, for the default data set, the output should look as follows:
+<pre>
+Matches for RegExp  0: 2
+Matches for RegExp  1: 2
+Matches for RegExp  2: 2
+...
+Matches for RegExp 15: 2
+</pre>
+
+Note that it is highly likely Vivado XSIM crashes with a big stack trace.
+This is common behaviour of Vivado XSIM and can usually be ignored.
+The simulation is still successful and you can view the waveforms using the XSIM GUI.
 
 # Build
     
