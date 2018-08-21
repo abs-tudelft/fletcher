@@ -1,6 +1,6 @@
 # Regular Expression Matching example on CAPI SNAP
 
-### NOTE: this has only been tested on a Power8 machine with an ADKU3 (Kintex Ultrascale) device.
+### NOTE: this has only been tested on a POWER8 machine with an ADKU3 (Kintex Ultrascale) device. SNAP commit: 7b6306a
 
 This example wraps the Regular Expression Matching example for CAPI SNAP. Please read 
 [the documentation on this example](../../../examples/regexp) first.

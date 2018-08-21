@@ -39,7 +39,7 @@ You could use this project as a baseline for your own projects that just use the
 This design was tested with:
 
 * [AWS EC2 FPGA Hardware and Software Development Kits](https://github.com/aws/aws-fpga) 
-  version 1.3.6 and its recommended Xilinx Vivado version
+  version 1.4.1RC (commit 8847d31) and its recommended Xilinx Vivado version
 
 ### Clone the repository and set up environmental variables
     $ git clone https://github.com/johanpel/fletcher.git
