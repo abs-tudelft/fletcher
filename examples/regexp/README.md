@@ -30,7 +30,6 @@ dumping bursts into the ColumnReaders, which are less wide.
 | hardware/arrow_regexp.vhd       | The top-level for this platform-independent design. |
 | hardware/arrow_regexp_unit.vhd  | One regular expression matching unit which is instantiated N times to work in parallel. |
 | hardware/arrow_regexp_pkg.vhd   | The package for this example containing some constants and definitions. |
-| hardware/axi_read_converter.vhd | A helper unit that converts internal bus signals to AXI spec and converts wide bus interfaces to smaller bus interfaces. |
 
 ### Software implementation:
 
@@ -43,11 +42,11 @@ dumping bursts into the ColumnReaders, which are less wide.
 
 # Build
 
-### 1. First build the [runtime library](../../runtime).
+### 1. First build and install the [runtime library](../../runtime) on the host machine.
 
-### 2. Build the example
+### 2. Build the example on the host machine.
 
-You have to pick a run-time platform to build the example host-side software for.
+You have to pick a run-time host platform to build the example host-side software for.
 
 Currently you can choose the CMake option RUNTIME_PLATFORM to be:
 

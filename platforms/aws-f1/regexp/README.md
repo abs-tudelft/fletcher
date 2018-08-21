@@ -83,13 +83,39 @@ This sets up the simulation only. For normal CL designs this also starts and run
 Eventually you should see the status register go from 0x0000FFFF (units are busy) to 0xFFFF0000 (units are done).
 The simulation will poll for this status value on the slave interface.
 The result (number of matches to each regular expression) will appear on the result registers.
+The default test dataset that is being used is a file with some strings; [test.txt found here](../../../examples/regexp/hardware).
+For this default test dataset, each regular expression should match twice in the file.
+Therefore, after the tiresome DDR simulation models are finally initialized, it should not take too long to produce the output of the simple test:
 <pre>
-Read request from MMIO: 51 value 11
-[t] : Result regexp 9: 11
+[            42702000] : UserCore status: ffff0000
+[            42702000] : UserCore completed 
+[            42722000] : Number of matches for RegExp  0:  2
+[            42742000] : Number of matches for RegExp  1:  2
+[            42762000] : Number of matches for RegExp  2:  2
+[            42782000] : Number of matches for RegExp  3:  2
+[            42802000] : Number of matches for RegExp  4:  2
+[            42822000] : Number of matches for RegExp  5:  2
+[            42842000] : Number of matches for RegExp  6:  2
+[            42862000] : Number of matches for RegExp  7:  2
+[            42882000] : Number of matches for RegExp  8:  2
+[            42902000] : Number of matches for RegExp  9:  2
+[            42922000] : Number of matches for RegExp 10:  2
+[            42942000] : Number of matches for RegExp 11:  2
+[            42962000] : Number of matches for RegExp 12:  2
+[            42982000] : Number of matches for RegExp 13:  2
+[            43002000] : Number of matches for RegExp 14:  2
+[            43022000] : Number of matches for RegExp 15:  2
+[            43042000] : Return register HI:           0
+[            43062000] : Return register LO:           2
+[            43662000] : Checking total error count...
+[            43662000] : Detected   0 errors during this test
+[            43662000] : Checking protocol checker error status...
+[            43662000] : *** TEST PASSED ***
 </pre>
 
-Currently only unit 9 (which matches "(?i)kitten") will give an answer greater than 0, unless pseudorandomly some string matches one of the other regexes.
-Inserting strings that the other units match for, randomly, is desired for verification but not implemented yet.
+Be aware that Vivado XSIM probably just crashes at the end, dumping a stack trace into the terminal.
+This is normal behaviour of Vivado XSIM.
+The simulation is still completed successfully and the waveforms can be viewed in the XSIM GUI if desired.
 
 # Build
     $ cd $FLETCHER_PLATFORM_DIR/aws-f1/regexp
