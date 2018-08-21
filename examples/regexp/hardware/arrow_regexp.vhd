@@ -31,7 +31,7 @@ use work.arrow_regexp_pkg.all;
 -- This UserCore matches regular expressions stored in a string column
 -- in the Apache Arrow format.
 --
--- In our programming model it is required to have an interface to a 
+-- In our programming model it is required to have an interface to a
 -- memory (host memory, wether or not copied, as long as it retains the
 -- Arrow format) and a slave interface for the memory mapped registers.
 --
@@ -40,10 +40,10 @@ use work.arrow_regexp_pkg.all;
 -- throughput, the master interface should support bursts.
 
 entity arrow_regexp is
-  generic (    
+  generic (
     -- Number of Regexp units. Must be a natural multiple of 2
     CORES                       : natural :=  16;
-    
+
     -- Host bus properties
     BUS_ADDR_WIDTH              : natural :=  64;
     BUS_DATA_WIDTH              : natural := 512;
@@ -51,7 +51,7 @@ entity arrow_regexp is
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural :=  32;
     SLV_BUS_DATA_WIDTH          : natural :=  32
-    
+
     -- (Generic defaults are set for SystemVerilog compatibility)
   );
 
@@ -114,14 +114,14 @@ architecture rtl of arrow_regexp is
 
   -- Bottom buses
   constant BB                   : natural := 16;
-   
+
   -- Number of regexes
   constant NUM_REGEX            : natural := 16;
-  
+
   -----------------------------------------------------------------------------
   -- Memory Mapped Input/Output
   -----------------------------------------------------------------------------
- 
+
   -----------------------------------
   -- Fletcher registers
   ----------------------------------- Default registers
@@ -135,38 +135,38 @@ architecture rtl of arrow_regexp is
   --  16 first & last idx       = 32
   --  16 regex results          = 16
   -----------------------------------
-  -- Total:                       58 regs  
+  -- Total:                       58 regs
   constant NUM_FLETCHER_REGS    : natural := 58;
-       
+
   -- The LSB index in the slave address
   constant SLV_ADDR_LSB        : natural := log2floor(SLV_BUS_DATA_WIDTH/4) - 1;
-  
+
   -- The MSB index in the slave address
   constant SLV_ADDR_MSB         : natural := SLV_ADDR_LSB + log2floor(NUM_FLETCHER_REGS);
-    
+
   -- Fletcher register offsets
   constant REG_STATUS_HI        : natural := 0;
   constant REG_STATUS_LO        : natural := 1;
-  
+
     -- The offsets of the bits to signal busy and done for each of the units
     constant STATUS_BUSY_OFFSET   : natural := 0;
     constant STATUS_DONE_OFFSET   : natural := CORES;
-                                
+
   constant REG_CONTROL_HI       : natural := 2;
   constant REG_CONTROL_LO       : natural := 3;
-  
+
     -- The offsets of the bits to signal start and reset to each of the units
     constant CONTROL_START_OFFSET : natural := 0;
     constant CONTROL_RESET_OFFSET : natural := CORES;
-  
+
   -- Return register
   constant REG_RETURN_HI        : natural := 4;
   constant REG_RETURN_LO        : natural := 5;
-  
+
   -- Offset buffer address
   constant REG_OFF_ADDR_HI      : natural := 6;
   constant REG_OFF_ADDR_LO      : natural := 7;
-  
+
   -- Data buffer address
   constant REG_UTF8_ADDR_HI     : natural := 8;
   constant REG_UTF8_ADDR_LO     : natural := 9;
@@ -174,7 +174,7 @@ architecture rtl of arrow_regexp is
   -- Register offsets to indices for each RegExp unit to work on
   constant REG_FIRST_IDX  		  : natural := 10;
   constant REG_LAST_IDX   		  : natural := 26;
-  
+
   -- Register offset for each RegExp unit to put its result
   constant REG_RESULT       	  : natural := 42;
 
@@ -193,7 +193,7 @@ architecture rtl of arrow_regexp is
   -----------------------------------------------------------------------------
   type bus_bottom_array_t       is array (0 to BB-1) of bus_bottom_t;
   type axi_mid_array_t          is array (0 to BB-1) of axi_mid_t;
-  
+
   signal bus_bottom_array       : bus_bottom_array_t;
   signal axi_mid_array          : axi_mid_array_t;
   signal axi_top                : axi_top_t;
@@ -215,27 +215,27 @@ architecture rtl of arrow_regexp is
   signal bit_array_reset_start  : std_logic_vector(CORES-1 downto 0);
   signal bit_array_busy         : std_logic_vector(CORES-1 downto 0);
   signal bit_array_done         : std_logic_vector(CORES-1 downto 0);
-  
+
   -----------------------------------------------------------------------------
   -- Result adder tree
   -----------------------------------------------------------------------------
-  
+
   type result_conv_t is array(0 to CORES-1) of std_logic_vector(NUM_REGEX*32-1 downto 0);
   signal result_conv            : result_conv_t;
-  
+
   type result_array_t is array (0 to CORES-1) of std_logic_vector(31 downto 0);
   type regex_result_array_t is array (0 to NUM_REGEX-1) of result_array_t;
   signal result_array           : regex_result_array_t;
-  
+
   -- The width of the innermost array is 2^log2ceil(cores) instead of cores-1
   -- such that even no. cores is possible vs. only powers of 2 no. cores.
   type result_add_t is array (0 to 2**log2ceil(CORES)) of unsigned(31 downto 0);
-  
+
   type result_add_tree_t is array (0 to log2ceil(CORES)) of result_add_t;
   type regex_result_add_tree_t is array(0 to NUM_REGEX-1) of result_add_tree_t;
-  
+
   signal result_add             : regex_result_add_tree_t;
-  
+
 begin
 
   reset                         <= '1' when reset_n = '0' else '0';
@@ -270,7 +270,7 @@ begin
         read_valid              <= '0';
       else
         if s_axi_arvalid = '1' and read_valid = '0' then
-          dumpStdOut("Read request from MMIO: " & integer'image(address) & " value " & integer'image(int(mm_regs(address))));
+          --dumpStdOut("Read request from MMIO: " & integer'image(address) & " value " & integer'image(int(mm_regs(address))));
           read_address          <= address;
           read_valid            <= '1';
         elsif s_axi_rready = '1' then
@@ -281,7 +281,7 @@ begin
   end process;
 
   -- Writes
-  
+
   -- TODO: For registers that are split up over two addresses, this is not
   -- very pretty. There should probably be some synchronization mechanism
   -- to only apply the write after both HI and LO addresses have been
@@ -290,13 +290,13 @@ begin
   write_to_regs: process(clk) is
     variable address            : natural range 0 to NUM_FLETCHER_REGS;
   begin
-   
+
     address                     := int(s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB));
 
     if rising_edge(clk) then
       if write_valid = '1' then
-        dumpStdOut("Write to MMIO: " & integer'image(address));
-     
+        --dumpStdOut("Write to MMIO: " & integer'image(address));
+
         case address is
           -- Read only addresses do nothing
           when REG_STATUS_HI  =>
@@ -316,28 +316,28 @@ begin
           end if;
         end loop;
       end if;
-     
+
       -- Read only register values:
-      
+
       -- Status registers
       mm_regs(REG_STATUS_HI) <= (others => '0');
-      
+
       if CORES /= 16 then
         mm_regs(REG_STATUS_LO)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
       end if;
-      
+
       mm_regs(REG_STATUS_LO)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
       mm_regs(REG_STATUS_LO)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
-      
+
       -- Return registers
       mm_regs(REG_RETURN_HI) <= (others => '0');
       mm_regs(REG_RETURN_LO) <= slv(result_add(0)(0)(0));
-      
+
       -- Result registers
       for R in 0 to NUM_REGEX-1 loop
         mm_regs(REG_RESULT + R) <= slv(result_add(R)(0)(0));
       end loop;
-      
+
       if reset_n = '0' then
         mm_regs(REG_CONTROL_LO)    <= (others => '0');
         mm_regs(REG_CONTROL_HI)    <= (others => '0');
@@ -388,27 +388,27 @@ begin
   -----------------------------------------------------------------------------
   -- Read address channel
   axi_top.arready               <= m_axi_arready;
-    
+
   m_axi_arvalid                 <= axi_top.arvalid;
   m_axi_araddr                  <= axi_top.araddr;
-    
+
   m_axi_arlen                   <= axi_top.arlen;
-    
+
   m_axi_arsize                  <= "110"; --6 for 2^6*8 bits = 512 bits
-    
-  -- Read data channel  
+
+  -- Read data channel
   m_axi_rready                  <= axi_top.rready ;
-    
-  axi_top.rvalid                <= m_axi_rvalid;    
+
+  axi_top.rvalid                <= m_axi_rvalid;
   axi_top.rdata                 <= m_axi_rdata;
   axi_top.rresp                 <= m_axi_rresp;
   axi_top.rlast                 <= m_axi_rlast;
-  
+
   regex_add_tree: for R in 0 to NUM_REGEX-1 generate
     -----------------------------------------------------------------------------
     -- Adder tree assuming CORES is even
     -----------------------------------------------------------------------------
-    -- TODO: somehow make sure that when the result regs are read that there is 
+    -- TODO: somehow make sure that when the result regs are read that there is
     -- nothing left in the adder tree pipeline.
     process(clk) is
     begin
@@ -417,7 +417,7 @@ begin
         for I in 0 to CORES-1 loop
           result_add(R)(log2ceil(CORES))(I) <= u(result_array(R)(I));
         end loop;
-        
+
         -- Other levels
         for L in log2ceil(CORES)-1 downto 0 loop -- 3,2,1,0
           for I in 0 to (2**L)-1 loop -- 8,4,2,1
@@ -427,12 +427,12 @@ begin
       end if;
     end process;
   end generate;
-   
+
   -----------------------------------------------------------------------------
   -- Bottom layer
   -----------------------------------------------------------------------------
   bottom_regexp_gen: for I in 0 to CORES-1 generate
-  
+
     -- Convert axi read address channel and read response channel
     -- Scales "len" and "size" according to the master data width
     -- and converts the Fletcher bus "len" to AXI bus "len"
@@ -445,7 +445,7 @@ begin
       SLAVE_MAX_BURST           => BOTTOM_BURST_MAX_LEN,
       ENABLE_FIFO               => BOTTOM_ENABLE_FIFO
     )
-    port map (                  
+    port map (
       clk                       => clk,
       reset_n                   => reset_n,
       slv_bus_rreq_addr         => bus_bottom_array(I).rreq_addr,
@@ -475,26 +475,27 @@ begin
       BUS_LEN_WIDTH             => BOTTOM_LEN_WIDTH,
       BUS_BURST_STEP_LEN        => BOTTOM_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BOTTOM_BURST_MAX_LEN,
-      REG_WIDTH                 => 32
+      REG_WIDTH                 => 32,
+      ID                        => I
     ) port map (
       clk                       => clk,
       reset_n                   => reset_n,
-      
+
       control_reset             => bit_array_control_reset(I),
       control_start             => bit_array_control_start(I),
       reset_start               => bit_array_reset_start  (I),
       busy                      => bit_array_busy         (I),
       done                      => bit_array_done         (I),
-      
+
       firstidx                  => reg_array_firstidx     (I),
       lastidx                   => reg_array_lastidx      (I),
       off_hi                    => reg_array_off_hi       (I),
       off_lo                    => reg_array_off_lo       (I),
       utf8_hi                   => reg_array_utf8_hi      (I),
       utf8_lo                   => reg_array_utf8_lo      (I),
-      
+
       matches                   => result_conv            (I),
-      
+
       mst_bus_rreq_addr          => bus_bottom_array(I).rreq_addr ,
       mst_bus_rreq_len           => bus_bottom_array(I).rreq_len  ,
       mst_bus_rreq_valid         => bus_bottom_array(I).rreq_valid,
@@ -503,16 +504,16 @@ begin
       mst_bus_rdat_last          => bus_bottom_array(I).rdat_last  ,
       mst_bus_rdat_valid         => bus_bottom_array(I).rdat_valid ,
       mst_bus_rdat_ready         => bus_bottom_array(I).rdat_ready
-    );   
-    
+    );
+
     -- Pass through result to right result_array:
     result_conv_gen: for R in 0 to NUM_REGEX-1 generate
       result_array(R)(I) <= result_conv(I)(32*(R+1)-1 downto (32*R));
     end generate;
   end generate;
-  
+
   -- Tie off unused ports, if any
-  unused_gen: for I in CORES to BB-1 generate 
+  unused_gen: for I in CORES to BB-1 generate
     axi_mid_array(I).araddr     <= (others => '0');
     axi_mid_array(I).arlen      <= (others => '0');
     axi_mid_array(I).arvalid    <= '0';
@@ -525,7 +526,7 @@ begin
   -- Mid layer interconnect generation
   -----------------------------------------------------------------------------
   -- Interconnect
-  
+
   mid_interconnect: BusReadArbiter generic map (
     BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
     BUS_LEN_WIDTH               => 8,
@@ -678,6 +679,6 @@ begin
     bs15_rdat_ready             => axi_mid_array(15).rready,
     bs15_rdat_data              => axi_mid_array(15).rdata,
     bs15_rdat_last              => axi_mid_array(15).rlast
-  );                            
+  );
 
 end architecture;

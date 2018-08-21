@@ -198,7 +198,8 @@ package arrow_regexp_pkg is
       BUS_LEN_WIDTH             : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
-      REG_WIDTH                 : natural
+      REG_WIDTH                 : natural;
+      ID                        : natural
     );
     port (
       clk                       : in  std_logic;
