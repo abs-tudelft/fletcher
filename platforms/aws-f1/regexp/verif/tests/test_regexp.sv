@@ -23,16 +23,6 @@
  * number of matches for each units, and in total.
  */
 
-// Number of active units
-`define ACTIVE_UNITS        16
-
-// Number of regexes
-`define NUM_REGEX           16
-
-// Number of rows, currently must be a multiple of the no. active units
-// because of the naive way in which the work is distributed amongst the units.
-`define NUM_ROWS            4 *`ACTIVE_UNITS
-
 // Register offsets & some default values:
 `define REG_STATUS_HI       0
 `define REG_STATUS_LO       1
@@ -60,10 +50,14 @@
 // Register offset to the results of each RegExp unit:
 `define REG_RESULT          42
 
-// Minimum string length; this must be at least the size of the string we're searching for in simulation
-`define MIN_STR_LEN         6
 // Maximum string length; must be larger than the length of the string we're inserting randomly
-`define MAX_STR_LEN         64
+`define MAX_STR_LEN         256
+
+// Number of rows, currently must be a multiple of the no. active units
+// because of the naive way in which the work is distributed amongst the units.
+// If you change the test file, you should probably also change this.
+// TODO: make this dynamic
+`define NUM_ROWS            64
 
 // Currently we require the buffers to be aligned to the burst size
 `define ALIGNMENT           4096
@@ -80,6 +74,12 @@
 `define DEST_ADDR_HI        32'h00000000
 `define DEST_ADDR_LO        `UTF8_ADDR_LO + ((`NUM_ROWS * `MAX_STR_LEN) / `ALIGNMENT + 1) * `ALIGNMENT
 
+// Number of active units
+`define ACTIVE_UNITS        16
+
+// Number of regexes performed in parallel
+`define NUM_REGEX           16
+
 module test_regexp();
 
 import tb_type_defines_pkg::*;
@@ -91,10 +91,17 @@ logic [3:0] status;
 logic       ddr_ready;
 int         read_data;
 
-int         num_rows = `NUM_ROWS;
-int         temp;
+int num_rows = `NUM_ROWS;
+int num_buf_bytes = num_rows * 4               // For indices
+                  + num_rows * `MAX_STR_LEN;   // For characters
 
-int         ba = 0;
+// Variables for file loading
+int file_descriptor = 0;
+string str;
+
+// Variables to build up the Arrow buffers
+int offset_index = 0;
+int offset_value = 0;
 
 union {
   logic[31:0] i;
@@ -123,60 +130,57 @@ initial begin
 
   $display("[%t] : Initializing buffers", $realtime);
 
+  // Determine buffer addresses
   off_buffer_address = {`OFF_ADDR_HI, `OFF_ADDR_LO};
   utf8_buffer_address = {`UTF8_ADDR_HI, `UTF8_ADDR_LO};
 
-  // Set a random seed
-  $srandom(0);
+  // Queue the data move,emt
+  tb.que_buffer_to_cl(.chan(0), .src_addr(off_buffer_address), .cl_addr(64'h0000_0000_0000), .len(num_buf_bytes) );
 
-  buf_data.i = 0;
-    
-  // Fill the buffer with random strings, but randomly place a "kitten" in the string
-  for (int i = 0; i < num_rows+1; i++) begin
-    temp = buf_data.i;
+  // Load file
+  file_descriptor=$fopen("test.txt","r");
 
-    tb.hm_put_byte(.addr(off_buffer_address + 4 * i    ), .d(buf_data.bytes[0]));
-    tb.hm_put_byte(.addr(off_buffer_address + 4 * i + 1), .d(buf_data.bytes[1]));
-    tb.hm_put_byte(.addr(off_buffer_address + 4 * i + 2), .d(buf_data.bytes[2]));
-    tb.hm_put_byte(.addr(off_buffer_address + 4 * i + 3), .d(buf_data.bytes[3]));
+  // Only proceed if the file is opened
+  if (file_descriptor) begin
 
-    // Skip the last iteration.
-    if (i < num_rows) begin
-      // Print the string so we can verify
-      $write("%6d, 0x%016X, 0x%08X, %6d,", i, off_buffer_address + 4 * i, buf_data.i, buf_data.i);
-      // Let's suppose the strings are tweets with a max of `MAX_STR_LEN characters.
-      // If the strings are between `MIN_STR_LEN and `MAX_STR_LEN characters, they will
-      // always be able to fit a "kitten", although the way we fill the string is not
-      // guaranteed that the string will start at a string boundary.
-      buf_data.i += $urandom_range(`MIN_STR_LEN, `MAX_STR_LEN);
+    offset_index = 0;
+    offset_value = 0;
 
-      // Put random utf8 a-z characters
-      for (int j = temp; j < buf_data.i;) begin
-        // Put some random 'kitten' in the buffer
-        // TODO: make this less hardcoded
-        ba = utf8_buffer_address + j;
-        if (($urandom_range(0,`MAX_STR_LEN) == 1) && (j + `MIN_STR_LEN < buf_data.i)) begin
-          tb.hm_put_byte(.addr(ba    ), .d(8'h6B)); $write("%c", 8'h6B);  //'k'
-          tb.hm_put_byte(.addr(ba + 1), .d(8'h69)); $write("%c", 8'h69);  //'i'
-          tb.hm_put_byte(.addr(ba + 2), .d(8'h74)); $write("%c", 8'h74);  //'t'
-          tb.hm_put_byte(.addr(ba + 3), .d(8'h74)); $write("%c", 8'h74);  //'t'
-          tb.hm_put_byte(.addr(ba + 4), .d(8'h65)); $write("%c", 8'h65);  //'e'
-          tb.hm_put_byte(.addr(ba + 5), .d(8'h6e)); $write("%c", 8'h6e);  //'n'
-          j += `MIN_STR_LEN;
-        end else begin
-          utf8 = $urandom_range(97, 122);
-          tb.hm_put_byte(.addr(ba), .d(utf8)); $write("%c", utf8);
-          j++;  
-        end 
+    // Write the first offset
+    buf_data.i = offset_value;
+    tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index    ), .d(buf_data.bytes[0]));
+    tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 1), .d(buf_data.bytes[1]));
+    tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 2), .d(buf_data.bytes[2]));
+    tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 3), .d(buf_data.bytes[3]));
+    offset_index++;
+
+    while (! $feof(file_descriptor)) begin
+      // Load a line
+      $fgets(str, file_descriptor);
+
+      // Write each character of the string to the values buffer, except the newline character
+      for(int c = 0; c < str.len()-1; c++) begin
+        tb.hm_put_byte(.addr(utf8_buffer_address + offset_value + c), .d(str.getc(c)));
       end
-      $write("\n");
+
+      // Throw line on terminal for debugging
+      $write("%6d, 0x%016X, 0x%08X, %6d, %s", offset_index, off_buffer_address + 4 * offset_index, offset_value, offset_value, str);
+
+      // Calculate the next offset value
+      offset_value = offset_value + str.len()-1;
+
+      // Write the next offset
+      buf_data.i = offset_value;
+      tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index    ), .d(buf_data.bytes[0]));
+      tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 1), .d(buf_data.bytes[1]));
+      tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 2), .d(buf_data.bytes[2]));
+      tb.hm_put_byte(.addr(off_buffer_address + 4 * offset_index + 3), .d(buf_data.bytes[3]));
+      offset_index++;
     end
+  end else begin
+    $display("Could not open test file.\n");
+    $finish;
   end
-
-  $display("[%t] : Last byte address : %d", $realtime, ba);
-
-  // Queue the data movement
-  tb.que_buffer_to_cl(.chan(0), .src_addr(off_buffer_address), .cl_addr(64'h0000_0000_0000), .len(ba));
 
   $display("[%t] : Starting host to CL DMA transfers ", $realtime);
 
@@ -232,26 +236,23 @@ initial begin
     begin
       tb.nsec_delay(5000);
       tb.peek_bar1(.addr(4*`REG_STATUS_LO), .data(read_data));
-      $display("[t%] : UserCore status: %H", read_data);
+      $display("[%t] : UserCore status: %H", $realtime, read_data);
     end
   while(read_data !== `STATUS_DONE);
 
   $display("[%t] : UserCore completed ", $realtime);
-  
-  // Wait a bit for the result adders
-  tb.nsec_delay(32);
-
-  // Get the return register value
-  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
-  $display("[t%] : Return register HI: %d", read_data);
-  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
-  $display("[t%] : Return register LO: %d", read_data);
 
   // Get the result for each RegExp
   for (int i = 0; i < `NUM_REGEX; i++) begin
     tb.peek_bar1(.addr(4*(`REG_RESULT+i)), .data(read_data));
-    $display("[t%] : Result regexp %d: %d", i, read_data);
+    $display("[%t] : Number of matches for RegExp %2d: %2d", $realtime, i, read_data);
   end
+
+  // Get the return register value
+  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
+  $display("[%t] : Return register HI: %d", $realtime, read_data);
+  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
+  $display("[%t] : Return register LO: %d", $realtime, read_data);
 
   // Power down
   #500ns;
@@ -274,3 +275,4 @@ initial begin
 end // initial begin
 
 endmodule // test_regexp
+

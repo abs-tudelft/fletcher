@@ -39,7 +39,8 @@ entity arrow_regexp_unit is
     BUS_LEN_WIDTH               : natural;
     BUS_BURST_STEP_LEN          : natural;
     BUS_BURST_MAX_LEN           : natural;
-    REG_WIDTH                   : natural
+    REG_WIDTH                   : natural;
+    ID                          : natural
   );
 
   port (
@@ -445,10 +446,10 @@ begin
 
         -- Wait for command accepted
         if v.command.ready = '1' then
-          dumpStdOut("RegExp unit requested strings: " &
-            integer'image(int(v.command.firstIdx)) &
-            " ... "
-            & integer'image(int(v.command.lastIdx)));
+          dumpStdOut("RegExp unit " & integer'image(ID) & " requested strings: "
+            & integer'image(int(v.command.firstIdx))
+            & " ... "
+            & integer'image(int(v.command.lastIdx)-1));
           v.state               := STATE_BUSY;
         end if;
 
@@ -467,13 +468,13 @@ begin
         if (v.str_elem_in.len.last = '1') and
            (v.processed(0) = u(v.command.lastIdx) - u(v.command.firstIdx))
         then
-          dumpStdOut("RegEx unit is done");
-          for P in 0 to NUM_REGEX-1 loop
-            dumpStdOut("PROCESSED: " & integer'image(P) & " " &
-              integer'image(int(v.processed(P))));
-            dumpStdOut("MATCHED: " & integer'image(P) & " " &
-              integer'image(int(v.matches(P))));
-          end loop;
+          dumpStdOut("RegEx unit " & integer'image(ID) & " is done.");
+          --for P in 0 to NUM_REGEX-1 loop
+          --  dumpStdOut("PROCESSED: " & integer'image(P) & " " &
+          --    integer'image(int(v.processed(P))));
+          --  dumpStdOut("MATCHED: " & integer'image(P) & " " &
+          --    integer'image(int(v.matches(P))));
+          --end loop;
 
           v.state               := STATE_DONE;
         end if;

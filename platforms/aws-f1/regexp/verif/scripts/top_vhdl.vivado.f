@@ -47,8 +47,10 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderStruct.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderUnlockCombine.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReader.vhd
 
+${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_read_converter.vhd
+
 # Files belonging to the RegExp example:
-${FLETCHER_EXAMPLES_DIR}/regexp/hardware/axi_read_converter.vhd
 ${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp_pkg.vhd
 ${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp.vhd
 ${FLETCHER_EXAMPLES_DIR}/regexp/hardware/arrow_regexp_unit.vhd

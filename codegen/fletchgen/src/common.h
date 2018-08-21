@@ -31,6 +31,9 @@
 
 namespace fletchgen {
 
+// Forward decl.
+class ColumnWrapper;
+
 /// @brief Mode for things that can either read or write.
 enum class Mode {
   READ, ///< Read mode
@@ -66,11 +69,12 @@ std::vector<T *> ptrvec(std::vector<std::shared_ptr<T>> vec) {
 /**
  * Generate a VHDL wrapper on an output stream.
  * @param schema The schema to base the wrapper on.
+ * @return The column wrapper
  */
-void generateColumnWrapper(const std::vector<std::ostream *> &outputs,
-                           const std::shared_ptr<arrow::Schema> &schema,
-                           const std::string &acc_name,
-                           const std::string &wrap_name,
-                           int user_regs);
+std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostream *> &outputs,
+                                                     const std::shared_ptr<arrow::Schema> &schema,
+                                                     const std::string &acc_name,
+                                                     const std::string &wrap_name,
+                                                     int user_regs);
 
 }//namespace fletchgen

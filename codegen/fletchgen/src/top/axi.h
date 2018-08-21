@@ -14,14 +14,14 @@
 
 #pragma once
 
-#include <iostream>
+#include <string>
+#include <vector>
+#include "../column-wrapper.h"
 
-#ifdef DEBUG
-#define LOGD(X) std::cerr << "[DEBUG] " << (X) << std::endl
-#else
-#define LOGD(X) do {} while (false)
-#endif
+namespace axi {
 
-#define LOGI(X) std::cerr << "[INFO] : " << (X) << std::endl
-#define LOGE(X) std::cerr << "[ERR ] : " << (X) << std::endl
-#define LOGW(X) std::cerr << "[WARN] : " << (X) << std::endl
+/// @brief Generate an AXI top level on supplied output streams from a ColumnWrapper
+std::string generateAXITop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
+                           const std::vector<std::ostream *> &outputs);
+
+}

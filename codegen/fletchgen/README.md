@@ -9,7 +9,7 @@ This wrapper contains the following:
 # Requirements
 It should not be a surprise that we require Apache Arrow. We use Boost.Program_options to parse command line options. You also need a C++14 compliant compiler, such as Clang.
 * [C++14 compliant compiler](https://clang.llvm.org/)
-* [Apache Arrow 0.9+](https://github.com/apache/arrow)
+* [Apache Arrow 0.10+](https://github.com/apache/arrow) with Plasma (-DARROW_PLASMA=ON)
 * [libboost 1.58+](https://www.boost.org/)
 
 # Build

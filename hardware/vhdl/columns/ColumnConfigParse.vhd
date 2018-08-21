@@ -34,9 +34,9 @@ package ColumnConfigParse is
 
   -- Returns the parameter named "param", or the given default value if it is
   -- not specified.
-  function parse_param(cfg: string; param: string; default: string) return string;
-  function parse_param(cfg: string; param: string; default: integer) return integer;
-  function parse_param(cfg: string; param: string; default: boolean) return boolean;
+  function parse_param(cfg: string; param: string; default_val: string) return string;
+  function parse_param(cfg: string; param: string; default_val: integer) return integer;
+  function parse_param(cfg: string; param: string; default_val: boolean) return boolean;
 
 end ColumnConfigParse;
 
@@ -343,7 +343,7 @@ package body ColumnConfigParse is
 
   -- Returns the parameter named "param", or the given default value if it is
   -- not specified.
-  function parse_param(cfg: string; param: string; default: string) return string is
+  function parse_param(cfg: string; param: string; default_val: string) return string is
     variable depth      : natural;
     variable in_params  : boolean;
     variable start      : natural;
@@ -412,17 +412,17 @@ package body ColumnConfigParse is
         severity FAILURE;
     end if;
 
-    return default;
+    return default_val;
   end function;
 
-  function parse_param(cfg: string; param: string; default: integer) return integer is
+  function parse_param(cfg: string; param: string; default_val: integer) return integer is
   begin
-    return strtoi(parse_param(cfg, param, integer'image(default)));
+    return strtoi(parse_param(cfg, param, integer'image(default_val)));
   end function;
 
-  function parse_param(cfg: string; param: string; default: boolean) return boolean is
+  function parse_param(cfg: string; param: string; default_val: boolean) return boolean is
   begin
-    if strtoi(parse_param(cfg, param, itostr(sel(default, 1, 0)))) = 0 then
+    if strtoi(parse_param(cfg, param, itostr(sel(default_val, 1, 0)))) = 0 then
       return false;
     else
       return true;

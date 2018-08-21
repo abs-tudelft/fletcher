@@ -19,7 +19,6 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Utils.all;
-use work.Arrow.all;
 use work.Streams.all;
 use work.Interconnect.all;
 
@@ -34,7 +33,6 @@ use work.Interconnect.all;
 entity axi_read_converter is
   generic (
     ADDR_WIDTH                  : natural;
-    ID_WIDTH                    : natural;
 
     MASTER_DATA_WIDTH           : natural;
     MASTER_LEN_WIDTH            : natural;
@@ -130,6 +128,10 @@ architecture rtl of axi_read_converter is
 
   signal reset                  : std_logic;
 begin
+
+  -- Active high reset
+  reset                         <= '1' when reset_n = '0' else '0';
+
   -- If the ratio is 1, simply pass through, but convert to AXI len
   pass_through_gen: if RATIO = 1 generate
     slv_bus_rreq_ready             <=  m_axi_arready;
@@ -146,10 +148,6 @@ begin
 
   -- If the ratio is larger than 1, instantiate the serializer, etc..
   serialize_gen: if RATIO > 1 generate
-
-    -- Reset
-    reset                       <= '1' when reset_n = '0' else '0';
-
     -----------------------------------------------------------------------------
     -- Read Request channels
     -----------------------------------------------------------------------------
@@ -250,7 +248,7 @@ begin
       )
       port map (
         clk                     => clk,
-        reset                   => not(reset_n),
+        reset                   => reset,
 
         in_valid                => ser_in_valid,
         in_ready                => ser_in_ready,
