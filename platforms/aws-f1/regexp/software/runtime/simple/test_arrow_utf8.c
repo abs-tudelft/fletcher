@@ -89,7 +89,7 @@ static uint16_t pci_device_id = 0xF001;
 
 /* Data sizes */
 #define MIN_STR_LEN     6           // Must be at least len("kitten")
-#define MAX_STR_LEN     256         // Must be larger than len("kitten")
+#define MAX_STR_LEN     32          // Must be larger than len("kitten")
 #define DEFAULT_ROWS    8*1024*1024 // About 1 gigabyte of characters
 
 #define BURST_LENGTH    4096
