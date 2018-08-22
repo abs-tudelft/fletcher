@@ -21,7 +21,7 @@
 #include "fletcher/fletcher.h"
 #include "fletcher/logging.h"
 
-#include "fletcher/aws/aws.h"
+#include "aws.h"
 
 extern "C" {
 #include <fpga_pci.h>

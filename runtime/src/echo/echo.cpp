@@ -21,7 +21,7 @@
 
 #include "fletcher/fletcher.h"
 #include "fletcher/logging.h"
-#include "fletcher/echo/echo.h"
+#include "echo.h"
 
 namespace fletcher {
 

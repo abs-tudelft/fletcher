@@ -4,28 +4,30 @@ project(fletcher)
 
 include(GNUInstallDirs)
 
-##################
+####################################
 # CPP options
-##################
+####################################
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
-##################
-# Sources
-##################
+####################################
+# Platform-independent sources
+####################################
 set(SOURCES
-	src/fletcher/FPGAPlatform.cpp
-	src/fletcher/UserCore.cpp
-  src/fletcher/echo/echo.cpp
+        src/logging.h
+        src/common.h
+        src/fletcher.h
+        src/FPGAPlatform.h      src/FPGAPlatform.cpp
+        src/UserCore.h          src/UserCore.cpp
+        src/echo/echo.h         src/echo/echo.cpp
 )
 
-##################
+####################################
 # Packages
-##################
+####################################
 find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -33,14 +35,14 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-##################
+####################################
 # Libraries
-##################
+####################################
 find_library(LIB_ARROW arrow)
 
-##################
+####################################
 # Platforms
-##################
+####################################
 
 # Empty by default
 set(PLATFORM_LIBS "")
@@ -55,7 +57,7 @@ if (PLATFORM_AWS)
     message(FATAL_ERROR "Attempting to CMake with AWS EC2 F1 support, but SDK_DIR is not set. Please source the sdk_setup.sh script first.")
   endif()
   
-  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/aws/aws.cpp)
+  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/aws/aws.cpp)
 
   set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SDK_DIR}/userspace/include)
   
@@ -73,7 +75,7 @@ if (PLATFORM_SNAP)
     message(FATAL_ERROR "Attempting to CMake with SNAP support, but SNAP_ROOT is not set. Please do something to fix that.")
   endif()
 
-  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/fletcher/snap/snap.cpp)
+  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/snap/snap.cpp)
 
   set(PLATFORM_INCLUDE_DIRS ${PLATFORM_INCLUDE_DIRS} $ENV{SNAP_ROOT}/software/include)
 

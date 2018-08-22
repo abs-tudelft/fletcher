@@ -14,8 +14,8 @@
 
 #include <unistd.h>
 
-#include "fletcher/logging.h"
-#include "fletcher/UserCore.h"
+#include "logging.h"
+#include "UserCore.h"
 
 namespace fletcher {
 
