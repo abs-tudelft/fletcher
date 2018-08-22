@@ -30,7 +30,7 @@ typedef uint64_t fr_t;
 /**
  * A Buffer configuration element
  */
-typedef struct {
+typedef struct _BufConfig {
   std::string name;
   fa_t address;
   int64_t size;     // Arrow makes this signed int

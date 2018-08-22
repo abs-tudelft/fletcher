@@ -85,7 +85,7 @@ AWSPlatform::~AWSPlatform() {
   }
 }
 
-size_t AWSPlatform::copy_to_ddr(void *source, fa_t address, size_t bytes) {
+size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
   size_t total = 0;
   if (!error) {
 
@@ -176,9 +176,17 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
                                                 << dest_buf.capacity << ", " << STRHEX64 << dest_buf.address);
       // Copy each of the buffers to the FPGA board memory
 
-      bytes += copy_to_ddr((void *) source_buf.address,
+      LOGD("[AWSPlatform] Copying buffers to DDR...");
+      bytes += copy_to_ddr(source_buf.address,
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
+
+      // Check ddr:
+      LOGD("[AWSPlatform] Checking DDR. Diff = ");
+      int diff = check_ddr(source_buf.address,
+                           (fa_t) dest_buf.address,
+                           (size_t) dest_buf.size);
+      LOGD(diff << "\n");
 
       // Set the buffer address in the MMSRs:
       write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
@@ -216,10 +224,10 @@ int AWSPlatform::write_mmio(uint64_t offset, fr_t value) {
     // We can't write MMIO
     if (rc != 0) {
       LOGE("[AWSPlatform] MMIO write failed.");
-      return FLETCHER_ERROR;
+      return fletcher::ERROR;
     }
   }
-  return FLETCHER_OK;
+  return fletcher::OK;
 }
 
 int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
@@ -242,18 +250,32 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
 
     if (rc != 0) {
       LOGD("[AWSPlatform] MMIO read failed.");
-      return FLETCHER_ERROR;
+      return fletcher::ERROR;
     }
 
     *dest = conv_value.full;
-    return FLETCHER_OK;
+    return fletcher::OK;
   } else {
-    return FLETCHER_ERROR;
+    return fletcher::ERROR;
   }
 }
 
 bool AWSPlatform::good() {
   return !error;
+}
+
+int AWSPlatform::check_ddr(uint8_t *source, fa_t offset, size_t size) {
+  ssize_t rc = 0;
+
+  auto *check_buffer = (uint8_t *) malloc(size);
+
+  rc = pread(edma_fd[0], check_buffer, size, offset);
+
+  int ret = memcmp(source, check_buffer, size);
+
+  free(check_buffer);
+
+  return ret;
 }
 
 }
