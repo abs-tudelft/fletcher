@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(regexp
-	regexp.cpp
-	RegExUserCore.cpp
+        src/regexp.cpp
+        src/RegExUserCore.cpp   src/RegExUserCore.cpp
 )
 
 find_library(LIB_FLETCHER fletcher)

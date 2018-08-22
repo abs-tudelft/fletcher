@@ -90,7 +90,7 @@ endif()
 
 set(SOURCES ${SOURCES} ${PLATFORM_SOURCES})
 
-include_directories(${CMAKE_SOURCE_DIR}/include ${PLATFORM_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/src ${PLATFORM_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
@@ -103,4 +103,4 @@ endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
-install(DIRECTORY include/fletcher DESTINATION include)
+install(DIRECTORY src DESTINATION include)
