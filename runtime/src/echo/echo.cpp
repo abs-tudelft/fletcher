@@ -19,7 +19,6 @@
 
 #include <arrow/api.h>
 
-#include "../fletcher.h"
 #include "../logging.h"
 #include "echo.h"
 
@@ -48,7 +47,7 @@ uint64_t EchoPlatform::organize_buffers(const std::vector<BufConfig> &source_buf
 
 inline int EchoPlatform::write_mmio(uint64_t offset, fr_t value) {
   LOGI("[ECHO] Write to  " << STRHEX64 << offset << " value: " << STRHEX64 << value);
-  return FLETCHER_OK;
+  return fletcher::OK;
 }
 
 inline int EchoPlatform::read_mmio(uint64_t offset, fr_t *dest) {
@@ -61,7 +60,7 @@ inline int EchoPlatform::read_mmio(uint64_t offset, fr_t *dest) {
 
   *dest = x;
 
-  return FLETCHER_OK;
+  return fletcher::OK;
 }
 
 bool EchoPlatform::good() {

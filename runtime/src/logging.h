@@ -31,8 +31,8 @@
 #else
 #define LOGD(X) do {} while (false)
 #endif
-#define LOGI(X) std::cout << "INFO : " << (X) << std::endl
-#define LOGE(X) std::cerr << "ERROR: " << (X) << std::endl
+#define LOGI(X) std::cout << "INFO : " << X << std::endl
+#define LOGE(X) std::cerr << "ERROR: " << X << std::endl
 #endif
 
 #define STRHEX64 "0x" << std::hex << std::setfill('0') << std::setw(16)

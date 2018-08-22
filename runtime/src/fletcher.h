@@ -24,6 +24,3 @@
 
 // The boilerplate code for FPGA platform implementation
 #include "echo/echo.h"
-
-#define FLETCHER_OK 0
-#define FLETCHER_ERROR (-1)
