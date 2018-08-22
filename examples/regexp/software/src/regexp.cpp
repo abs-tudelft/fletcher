@@ -151,8 +151,8 @@ shared_ptr<arrow::Table> create_table(const vector<string> &strings) {
 
   // Define the schema
   auto column_field = arrow::field("tweets", arrow::utf8(), false);
-  vector<shared_ptr < arrow::Field>>
-  fields = {column_field};
+  vector<shared_ptr<arrow::Field>>
+      fields = {column_field};
   shared_ptr<arrow::Schema> schema = std::make_shared<arrow::Schema>(fields);
 
   // Create an array and finish the builder
@@ -227,7 +227,8 @@ void add_matches_omp(const vector<string> &strings,
     // Each thread gets a range of strings to work on
 #pragma omp for
     // Iterate over strings
-    for (const auto &str : strings) {
+    for (int s = 0; s < strings.size(); s++) {
+      std::string str = strings[s];
       // Iterate over programs
       for (int p = 0; p < np; p++) {
         // Attempt to match each program
