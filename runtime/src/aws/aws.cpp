@@ -277,7 +277,6 @@ int AWSPlatform::check_ddr(uint8_t *source, fa_t offset, size_t size) {
   return ret;
 }
 
-
 int AWSPlatform::check_slot_config() {
   static uint16_t pci_vendor_id = 0x1D0F; /* Amazon PCI Vendor ID */
   static uint16_t pci_device_id = 0xF001;
@@ -304,11 +303,12 @@ int AWSPlatform::check_slot_config() {
   if (info.spec.map[FPGA_APP_PF].vendor_id != pci_vendor_id
       || info.spec.map[FPGA_APP_PF].device_id != pci_device_id) {
     rc = 1;
-    LOGE("The slot appears loaded, but the pci vendor or device ID doesn't match the expected values. You may need to rescan the fpga with\n"
+    LOGE(
+        "The slot appears loaded, but the pci vendor or device ID doesn't match the expected values. You may need to rescan the fpga with\n"
         "fpga-describe-local-image -S " << slot_id << " -R\n"
-        "Note that rescanning can change which device file in /dev/ a FPGA will map to. To remove and re-add your edma driver and reset the device file mappings, run\n"
-        "`sudo rmmod edma-drv && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/edma/edma-drv.ko`\n"
-         "The PCI vendor id and device of the loaded image are not the expected values.");
+                                                      "Note that rescanning can change which device file in /dev/ a FPGA will map to. To remove and re-add your edma driver and reset the device file mappings, run\n"
+                                                      "`sudo rmmod edma-drv && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/edma/edma-drv.ko`\n"
+                                                      "The PCI vendor id and device of the loaded image are not the expected values.");
     return fletcher::ERROR;;
   }
 

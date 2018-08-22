@@ -18,8 +18,8 @@
 
 namespace fletcher {
 
-constexpr int OK=0;
-constexpr int ERROR=-1;
+constexpr int OK = 0;
+constexpr int ERROR = -1;
 
 /// Fletcher Address Type
 typedef uint64_t fa_t;

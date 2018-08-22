@@ -20,8 +20,7 @@
 
 namespace fletcher {
 
-uint64_t FPGAPlatform::prepare_column_chunks(const std::shared_ptr<arrow::Column>& column)
-{
+uint64_t FPGAPlatform::prepare_column_chunks(const std::shared_ptr<arrow::Column> &column) {
   uint64_t bytes = 0;
 
   std::vector<BufConfig> host_bufs;
@@ -56,8 +55,7 @@ uint64_t FPGAPlatform::prepare_column_chunks(const std::shared_ptr<arrow::Column
   return bytes;
 }
 
-uint64_t FPGAPlatform::argument_offset()
-{
+uint64_t FPGAPlatform::argument_offset() {
   if (this->_argument_offset == UC_REG_BUFFERS) {
     throw std::runtime_error("Argument offset is still at buffer offset."
                              "Prepare at least one buffer before requesting "
@@ -66,8 +64,7 @@ uint64_t FPGAPlatform::argument_offset()
   return this->_argument_offset;
 }
 
-std::string FPGAPlatform::name()
-{
+std::string FPGAPlatform::name() {
   return this->_name;
 }
 
@@ -83,11 +80,10 @@ std::string FPGAPlatform::name()
  *
  * TODO: This quirky implementation should be improved.
  */
-void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::ArrayData>& array_data,
-                                              const std::shared_ptr<arrow::Field>& field,
-                                              std::vector<BufConfig>& config_vector,
-                                              uint depth)
-{
+void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::ArrayData> &array_data,
+                                              const std::shared_ptr<arrow::Field> &field,
+                                              std::vector<BufConfig> &config_vector,
+                                              uint depth) {
   LOGD(std::string(depth, '\t') << "Chunk (ArrayData):");
   LOGD(std::string(depth, '\t') << "\tType: " << array_data->type->ToString());
   LOGD(std::string(depth, '\t') << "\tBuffers: " << array_data->buffers.size());
@@ -105,57 +101,55 @@ void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::Array
     BufConfig vbm, off, dat;
     // Append each buffer to the vector of Buffer Addresses
     switch (array_data->buffers.size()) {
-      default:
-        throw std::runtime_error("ArrayData contains 0 buffers.");
+      default:throw std::runtime_error("ArrayData contains 0 buffers.");
         break;
       case 1:
         if (field->nullable()) {
           // There is one buffer and the field is nullable, it must be the
           // validity bitmap of a struct
-          vbm = {"vbmp " + field->name(), (fa_t)array_data->buffers[0]->data(),
-            array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
+          vbm = {"vbmp " + field->name(), (fa_t) array_data->buffers[0]->data(),
+                 array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
           config_vector.push_back(vbm);
         }
         break;
-        case 2:
+      case 2:
         // There are two buffers, the first one is always the validity bitmap but
         // we only add it to the list if the field is actually nullable
         if (field->nullable()) {
-          vbm = {"vbmp " + field->name(), (fa_t)array_data->buffers[0]->data(),
-            array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
+          vbm = {"vbmp " + field->name(), (fa_t) array_data->buffers[0]->data(),
+                 array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
           config_vector.push_back(vbm);
         }
         // If there are two buffers, the second one is the data buffer, unless
         // this is a list
         if (field->type()->id() == arrow::Type::LIST) {
-          off = {"offs " + field->name(), (fa_t)array_data->buffers[1]->data(),
-            array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
+          off = {"offs " + field->name(), (fa_t) array_data->buffers[1]->data(),
+                 array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
           config_vector.push_back(off);
-        }
-        else {
-          dat = {"data " + field->name(), (fa_t)array_data->buffers[1]->data(),
-            array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
+        } else {
+          dat = {"data " + field->name(), (fa_t) array_data->buffers[1]->data(),
+                 array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
           config_vector.push_back(dat);
         }
         break;
-        case 3:
+      case 3:
         // If there are three buffers, the first one is the validity bitmap, the
         // second is an offset buffer and the third one is the data buffer. This
         // happens with strings and binary data.
         if (field->nullable()) {
-          vbm = {" " + field->name(), (fa_t)array_data->buffers[0]->data(),
-            array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
+          vbm = {" " + field->name(), (fa_t) array_data->buffers[0]->data(),
+                 array_data->buffers[0]->size(), array_data->buffers[0]->capacity()};
           config_vector.push_back(vbm);
         }
-        off = {"offs " + field->name(), (fa_t)array_data->buffers[1]->data(),
-          array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
+        off = {"offs " + field->name(), (fa_t) array_data->buffers[1]->data(),
+               array_data->buffers[1]->size(), array_data->buffers[1]->capacity()};
         config_vector.push_back(off);
-        dat = {"data " + field->name(), (fa_t)array_data->buffers[2]->data(),
-          array_data->buffers[2]->size(), array_data->buffers[2]->capacity()};
+        dat = {"data " + field->name(), (fa_t) array_data->buffers[2]->data(),
+               array_data->buffers[2]->size(), array_data->buffers[2]->capacity()};
         config_vector.push_back(dat);
         break;
-      }
     }
+  }
 
   LOGD(std::string(depth, '\t') << "\tChildren: " << array_data->child_data.size());
 
@@ -169,8 +163,7 @@ void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::Array
   }
 }
 
-std::string ToString(std::vector<BufConfig> &bc)
-{
+std::string ToString(std::vector<BufConfig> &bc) {
   std::stringstream str;
   str << std::setw(8) << " Idx" << std::setw(17) << " Name" << std::setw(19) << " Address"
       << std::setw(9) << " Size" << std::setw(9) << " Cap" << std::endl;
@@ -184,11 +177,10 @@ std::string ToString(std::vector<BufConfig> &bc)
   return str.str();
 }
 
-std::string ToString(std::shared_ptr<arrow::Buffer> buf, int width)
-{
+std::string ToString(std::shared_ptr<arrow::Buffer> buf, int width) {
   std::stringstream str;
   int64_t size = buf->size();
-  const uint8_t* data = buf->data();
+  const uint8_t *data = buf->data();
 
   str << "Buffer contents:" << std::endl;
   // Print offsets

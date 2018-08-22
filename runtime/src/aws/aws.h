@@ -33,10 +33,10 @@ namespace fletcher {
 
 /// \class AWSPlatform
 /// \brief An implementation of an FPGAPlatform for Amazon EC2 F1 instances.
-class AWSPlatform : public FPGAPlatform
-{
+class AWSPlatform : public FPGAPlatform {
  public:
   ~AWSPlatform() override;
+
   /**
    * \brief AWSPlatform constructor
    * 
@@ -48,7 +48,8 @@ class AWSPlatform : public FPGAPlatform
   explicit AWSPlatform(int slot_id = 0, int pf_id = 0, int bar_id = 1);
 
   int write_mmio(uint64_t offset, fr_t value) override;
-  int read_mmio(uint64_t offset, fr_t* dest) override;
+
+  int read_mmio(uint64_t offset, fr_t *dest) override;
 
   void set_alignment(uint64_t alignment) {}
 
@@ -64,8 +65,9 @@ class AWSPlatform : public FPGAPlatform
   int edma_fd[AWS_NUM_QUEUES];
   uint64_t alignment = 4096;  // TODO: this should become 64 after Arrow spec.
 
-  size_t copy_to_ddr(uint8_t* source, fa_t offset, size_t size);
-  int check_ddr(uint8_t* source, fa_t offset, size_t size);
+  size_t copy_to_ddr(uint8_t *source, fa_t offset, size_t size);
+
+  int check_ddr(uint8_t *source, fa_t offset, size_t size);
 
   uint64_t organize_buffers(const std::vector<BufConfig> &source_buffers,
                             std::vector<BufConfig> &dest_buffers) override;

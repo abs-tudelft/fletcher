@@ -46,7 +46,7 @@ class UserCore {
   /**
    * \brief Check if the Schema of this UserCore is compatible with another Schema
    */
-  bool implements_schema(const std::shared_ptr<arrow::Schema>& schema);
+  bool implements_schema(const std::shared_ptr<arrow::Schema> &schema);
 
   /**
    * \brief Reset the UserCore
