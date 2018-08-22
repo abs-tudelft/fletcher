@@ -70,6 +70,8 @@ class AWSPlatform : public FPGAPlatform
   uint64_t organize_buffers(const std::vector<BufConfig> &source_buffers,
                             std::vector<BufConfig> &dest_buffers) override;
 
+  int check_slot_config();
+
   bool error = false;
 };
 
