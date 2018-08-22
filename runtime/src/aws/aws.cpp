@@ -205,13 +205,6 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
                            (size_t) dest_buf.size);
       LOGD(diff << "\n");
 
-      // Close the files:
-      for (int q = 0; q < AWS_NUM_QUEUES; q++) {
-        if (edma_fd[q] >= 0) {
-          close(edma_fd[q]);
-        }
-      }
-
       // Set the buffer address in the MMSRs:
       write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
 
@@ -225,6 +218,13 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
   for (int q : edma_fd) {
     LOGD("[AWSPlatform] Emptying queue " << q);
     fsync(q);
+  }
+
+  // Close the files:
+  for (int q = 0; q < AWS_NUM_QUEUES; q++) {
+    if (edma_fd[q] >= 0) {
+      close(edma_fd[q]);
+    }
   }
 
   return bytes;
