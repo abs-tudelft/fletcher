@@ -176,13 +176,13 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
       // Copy each of the buffers to the FPGA board memory
 
       LOGD("[AWSPlatform] Copying buffers to DDR...");
-      bytes += copy_to_ddr(source_buf.address,
+      bytes += copy_to_ddr(reinterpret_cast<uint8_t *>(source_buf.address),
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
 
       // Check ddr:
       LOGD("[AWSPlatform] Checking DDR. Diff = ");
-      int diff = check_ddr(source_buf.address,
+      int diff = check_ddr(reinterpret_cast<uint8_t *>(source_buf.address),
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
       LOGD(diff << "\n");
