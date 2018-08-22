@@ -19,25 +19,22 @@
 
 #include <arrow/api.h>
 
-#include "fletcher/fletcher.h"
-#include "fletcher/logging.h"
+#include "../fletcher.h"
+#include "../logging.h"
 #include "echo.h"
 
 namespace fletcher {
 
-EchoPlatform::EchoPlatform()
-{
+EchoPlatform::EchoPlatform() {
   LOGI("[ECHO] Platform created.");
 }
 
-EchoPlatform::~EchoPlatform()
-{
+EchoPlatform::~EchoPlatform() {
   LOGI("[ECHO] Platform destroyed.");
 }
 
 uint64_t EchoPlatform::organize_buffers(const std::vector<BufConfig> &source_buffers,
-                                        std::vector<BufConfig> &dest_buffers)
-{
+                                        std::vector<BufConfig> &dest_buffers) {
   uint64_t bytes = 0;
 
   // Simply copy the source to the destination BufConfigs
@@ -49,14 +46,12 @@ uint64_t EchoPlatform::organize_buffers(const std::vector<BufConfig> &source_buf
   return bytes;
 }
 
-inline int EchoPlatform::write_mmio(uint64_t offset, fr_t value)
-{
+inline int EchoPlatform::write_mmio(uint64_t offset, fr_t value) {
   LOGI("[ECHO] Write to  " << STRHEX64 << offset << " value: " << STRHEX64 << value);
   return FLETCHER_OK;
 }
 
-inline int EchoPlatform::read_mmio(uint64_t offset, fr_t* dest)
-{
+inline int EchoPlatform::read_mmio(uint64_t offset, fr_t *dest) {
   *dest = 0xDEADBEEF;
 
   LOGI("[ECHO] Read from " << STRHEX64 << offset << " value: ? ");
@@ -65,12 +60,11 @@ inline int EchoPlatform::read_mmio(uint64_t offset, fr_t* dest)
   std::cin >> std::hex >> x;
 
   *dest = x;
-  
+
   return FLETCHER_OK;
 }
 
-bool EchoPlatform::good()
-{
+bool EchoPlatform::good() {
   return true;
 }
 

@@ -25,10 +25,10 @@ namespace fletcher {
 
 /// \class EchoPlatform
 /// \brief A mockup implementation that just outputs whatever you do to FPGAPlatform in a terminal
-class EchoPlatform : public FPGAPlatform
-{
+class EchoPlatform : public FPGAPlatform {
  public:
   ~EchoPlatform() override;
+
   /**
    * \brief EchoPlatform constructor
    *
@@ -36,7 +36,8 @@ class EchoPlatform : public FPGAPlatform
   EchoPlatform();
 
   int write_mmio(uint64_t offset, fr_t value) override;
-  int read_mmio(uint64_t offset, fr_t* dest) override;
+
+  int read_mmio(uint64_t offset, fr_t *dest) override;
 
   bool good() override;
 

@@ -20,10 +20,10 @@
 #include "UserCore.h"
 
 #include "aws/aws.h"
-#include "fletcher/snap/snap.h"
+#include "snap/snap.h"
 
 // The boilerplate code for FPGA platform implementation
-#include "fletcher/echo/echo.h"
+#include "echo/echo.h"
 
 #define FLETCHER_OK 0
 #define FLETCHER_ERROR (-1)

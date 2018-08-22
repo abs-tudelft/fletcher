@@ -18,8 +18,8 @@
 
 #include <arrow/api.h>
 
-#include "fletcher/fletcher.h"
-#include "fletcher/logging.h"
+#include "../fletcher.h"
+#include "../logging.h"
 
 #include "aws.h"
 
