@@ -283,8 +283,8 @@ int AWSPlatform::check_slot_config() {
   static uint16_t pci_device_id = 0xF001;
 
   // Parts of this function from AWS sources
-  int rc;
-  struct fpga_mgmt_image_info info = { 0 };
+  int rc = 0;
+  struct fpga_mgmt_image_info info;
 
   // Check local image
   rc = fpga_mgmt_describe_local_image(slot_id, &info, 0);
