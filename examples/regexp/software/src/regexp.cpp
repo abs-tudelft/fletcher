@@ -62,8 +62,8 @@
 #define PLATFORM 0
 #endif
 
-#define PRINT_TIME(X) std::cout << setprecision(10) << (X) << ", " << flush
-#define PRINT_INT(X) std::cout << std::dec << (X) << ", " << flush
+#define PRINT_TIME(X) std::cout << std::setprecision(10) << (X) << ", " << std::flush
+#define PRINT_INT(X) std::cout << std::dec << (X) << ", " << std::flush
 
 using std::vector;
 using std::string;
@@ -227,7 +227,7 @@ void add_matches_omp(const vector<string> &strings,
     // Each thread gets a range of strings to work on
 #pragma omp for
     // Iterate over strings
-    for (int s = 0; s < strings.size(); s++) {
+    for (uint s = 0; s < strings.size(); s++) {
       std::string str = strings[s];
       // Iterate over programs
       for (int p = 0; p < np; p++) {
@@ -540,7 +540,7 @@ int main(int argc, char **argv) {
       t_copy[e] = (stop - start);
 
       // Create a UserCore
-      RegExUserCore uc(static_pointer_cast<fletcher::FPGAPlatform>(platform));
+      RegExUserCore uc(std::static_pointer_cast<fletcher::FPGAPlatform>(platform));
 
       // Reset it
       uc.reset();

@@ -21,7 +21,6 @@
 
 #define REUC_TOTAL_UNITS   16
 #define REUC_RESULT_OFFSET 21
-
 #ifndef REUC_ACTIVE_UNITS
 #define REUC_ACTIVE_UNITS 16
 #endif
