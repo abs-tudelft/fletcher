@@ -674,5 +674,8 @@ int main(int argc, char **argv) {
   if (data_buffer != NULL) {
     free(data_buffer);
   }
+
+  printf("%f", end-start);
+
   return rc;
 }
