@@ -153,7 +153,7 @@ shared_ptr<arrow::Table> create_table(const vector<string> &strings) {
   auto column_field = arrow::field("tweets", arrow::utf8(), false);
   vector<shared_ptr < arrow::Field>>
   fields = {column_field};
-  shared_ptr<arrow::Schema> schema = make_shared<arrow::Schema>(fields);
+  shared_ptr<arrow::Schema> schema = std::make_shared<arrow::Schema>(fields);
 
   // Create an array and finish the builder
   shared_ptr<arrow::Array> str_array;
@@ -227,11 +227,11 @@ void add_matches_omp(const vector<string> &strings,
     // Each thread gets a range of strings to work on
 #pragma omp for
     // Iterate over strings
-    for (const auto &string : strings) {
+    for (const auto &str : strings) {
       // Iterate over programs
       for (int p = 0; p < np; p++) {
         // Attempt to match each program
-        if (re2::RE2::FullMatch(string, *programs[p])) {
+        if (re2::RE2::FullMatch(str, *programs[p])) {
           // Increase the match count
           thread_matches[t * np + p]++;
         }
