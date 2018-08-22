@@ -19,9 +19,8 @@
 
 #include <arrow/api.h>
 
-#include "fletcher/fletcher.h"
-#include "fletcher/logging.h"
-#include "fletcher/snap/snap.h"
+#include "../logging.h"
+#include "../snap/snap.h"
 
 extern "C" {
 #include "libsnap.h"
@@ -120,10 +119,10 @@ inline int SNAPPlatform::write_mmio(uint64_t offset, fr_t value)
     LOGD("Writing to MMIO reg LO " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1) << " value: " << STRHEX32 << conv_value.half.lo);
     snap_mmio_write32(card_handle, 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1), conv_value.half.lo);
     
-    return FLETCHER_OK;
+    return fletcher::OK;
   } else {
     LOGE("Write unsuccessful. SNAP platform is in error state. Write " << STRHEX64 << value << " to " << STRHEX64 << offset);
-    return FLETCHER_ERROR;
+    return fletcher::ERROR;
   }
 }
 
@@ -144,10 +143,10 @@ inline int SNAPPlatform::read_mmio(uint64_t offset, fr_t* dest)
     LOGD("Read from MMIO reg LO " << std::dec << offset << " @ " << 4 * (2 * (SNAP_ACTION_REG_OFFSET + offset) + 1) << " value " << STRHEX32 << ret);
   } else {
     LOGE("Read unsuccessful. SNAP platform is in error state. Read from " << STRHEX64 << offset);
-    return FLETCHER_ERROR;
+    return fletcher::ERROR;
   }
   *dest = conv_value.full;
-  return FLETCHER_OK;
+  return fletcher::OK;
 }
 
 bool SNAPPlatform::good()

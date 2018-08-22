@@ -18,7 +18,6 @@
 
 #include <arrow/api.h>
 
-#include "../fletcher.h"
 #include "../logging.h"
 
 #include "aws.h"
