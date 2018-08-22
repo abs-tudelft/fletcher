@@ -199,11 +199,13 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
                            (size_t) dest_buf.size);
 
       // Check ddr:
+#ifdef DEBUG
       LOGD("[AWSPlatform] Checking DDR. Diff = ");
       int diff = check_ddr(reinterpret_cast<uint8_t *>(source_buf.address),
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
       LOGD(diff << "\n");
+#endif
 
       // Set the buffer address in the MMSRs:
       write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
