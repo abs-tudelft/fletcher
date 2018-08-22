@@ -31,11 +31,9 @@ extern "C" {
 namespace fletcher {
 
 AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
-{
-  this->slot_id = slot_id;
-  this->pf_id = pf_id;
-  this->bar_id = bar_id;
-
+    : slot_id(slot_id),
+      pf_id(pf_id),
+      bar_id(bar_id) {
   int rc = 0;
 
   // Initialize FPGA management library
@@ -59,7 +57,8 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
     edma_fd[q] = open(device_filename, O_RDWR);
 
     if (edma_fd[q] < 0) {
-      LOGE("[AWSPlatform] Did not get a valid file descriptor. FD: " << edma_fd[q] << ". Is the EDMA driver installed? Entering error state.");
+      LOGE("[AWSPlatform] Did not get a valid file descriptor. FD: " << edma_fd[q]
+                                                                     << ". Is the EDMA driver installed? Entering error state.");
       error = true;
       return;
     }
@@ -72,26 +71,25 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
   int ret = fpga_pci_attach(slot_id, pf_id, bar_id, 0, &pci_bar_handle);
 
   if (ret != 0) {
-    LOGE("[AWSPlatform] Could not attach PCI <-> FPGA. Are you running as root? Entering error state. fpga_pci_attach: " << ret);
+    LOGE("[AWSPlatform] Could not attach PCI <-> FPGA. Are you running as root? Entering error state. fpga_pci_attach: "
+             << ret);
     error = true;
   }
 }
 
-AWSPlatform::~AWSPlatform()
-{
+AWSPlatform::~AWSPlatform() {
   fpga_pci_detach(this->pci_bar_handle);
 
-  for (int q = 0; q < AWS_NUM_QUEUES; q++) {
-    close(edma_fd[q]);
+  for (int q : edma_fd) {
+    close(q);
   }
 }
 
-size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
-{
+size_t AWSPlatform::copy_to_ddr(void *source, fa_t address, size_t bytes) {
   size_t total = 0;
   if (!error) {
 
-    size_t written[AWS_NUM_QUEUES] = { 0 };
+    size_t written[AWS_NUM_QUEUES] = {0};
 
     int queues = AWS_NUM_QUEUES;
 
@@ -109,7 +107,7 @@ size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
       ssize_t rc = 0;
       // Determine number of bytes for the whole transfer
       size_t qtotal = qbytes;
-      void* qsource = (void*) ((uint64_t) source + q * qbytes);
+      auto *qsource = (void *) ((uint64_t) source + q * qbytes);
       fa_t qdest = address + qbytes * q;
 
       // For the last queue check how many extra bytes we must copy
@@ -117,15 +115,18 @@ size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
         qtotal = qbytes + (bytes % queues);
       }
 
-      LOGD("[AWSPlatform] Copying " << std::dec << (uint64_t)qtotal << " bytes from host: " << STRHEX64 << (uint64_t)qsource << " --> on-board DDR: " << STRHEX64 << qdest << " over queue " << q);
+      LOGD("[AWSPlatform] Copying " << std::dec << (uint64_t) qtotal << " bytes from host: " << STRHEX64
+                                    << (uint64_t) qsource << " --> on-board DDR: " << STRHEX64 << qdest
+                                    << " over queue " << q);
 
       while (written[q] < qtotal) {
         if (written[q] != 0) {
-          LOGD("[AWSPlatform] Partial copy, attempting to finish copy. " << written[q] << " out of " << qtotal << ", " << qtotal - written[q] << " remaining.");
+          LOGD("[AWSPlatform] Partial copy, attempting to finish copy. " << written[q] << " out of " << qtotal << ", "
+                                                                         << qtotal - written[q] << " remaining.");
         }
         // Write some bytes
         rc = pwrite(edma_fd[q],
-                    (void*) ((uint64_t) qsource + written[q]),
+                    (void *) ((uint64_t) qsource + written[q]),
                     qtotal - written[q],
                     qdest + written[q]);
         // If rc is negative there is something else going wrong. Abort the mission
@@ -144,8 +145,7 @@ size_t AWSPlatform::copy_to_ddr(void* source, fa_t address, size_t bytes)
 }
 
 uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buffers,
-                                       std::vector<BufConfig> &dest_buffers)
-{
+                                       std::vector<BufConfig> &dest_buffers) {
   uint64_t bytes = 0;
   if (!error) {
     LOGD("[AWSPlatform] Organizing buffers.");
@@ -157,7 +157,8 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
     for (unsigned int i = 0; i < source_buffers.size(); i++) {
       BufConfig source_buf = source_buffers[i];
 
-      LOGD("[AWSPlatform] Source buffer: " << source_buf.name << ", " << std::dec << source_buf.size << ", " << source_buf.capacity << ", " << STRHEX64 << source_buf.address);
+      LOGD("[AWSPlatform] Source buffer: " << source_buf.name << ", " << std::dec << source_buf.size << ", "
+                                           << source_buf.capacity << ", " << STRHEX64 << source_buf.address);
 
       // Align the buffer address to the next aligned address, if it's not
       // aligned already.
@@ -171,10 +172,11 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
       dest_buf.capacity = source_buf.capacity;
       dest_buf.address = address;
 
-      LOGD("[AWSPlatform] Destination buffer: " << dest_buf.name << ", " << std::dec << dest_buf.size << ", " << dest_buf.capacity << ", " << STRHEX64 << dest_buf.address);
+      LOGD("[AWSPlatform] Destination buffer: " << dest_buf.name << ", " << std::dec << dest_buf.size << ", "
+                                                << dest_buf.capacity << ", " << STRHEX64 << dest_buf.address);
       // Copy each of the buffers to the FPGA board memory
 
-      bytes += copy_to_ddr((void*) source_buf.address,
+      bytes += copy_to_ddr((void *) source_buf.address,
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
 
@@ -188,23 +190,24 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
     }
   }
   // Make sure all bytes are copied.
-  for (int q = 0; q < AWS_NUM_QUEUES; q++) {
+  for (int q : edma_fd) {
     LOGD("[AWSPlatform] Emptying queue " << q);
-    fsync(edma_fd[q]);
+    fsync(q);
   }
 
   return bytes;
 }
 
-int AWSPlatform::write_mmio(uint64_t offset, fr_t value)
-{
+int AWSPlatform::write_mmio(uint64_t offset, fr_t value) {
   if (!error) {
     int rc = 0;
     reg_conv_t conv_value;
     conv_value.full = value;
 
-    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.hi << std::dec << " to reg " << (2 * offset) << " addr " << STRHEX64 << (4 * (2 * offset)));
-    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.lo << std::dec << " to reg " << (2 * offset + 1) << " addr " << STRHEX64 << (4 * (2 * offset + 1)));
+    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.hi << std::dec << " to reg " << (2 * offset)
+                                            << " addr " << STRHEX64 << (4 * (2 * offset)));
+    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.lo << std::dec << " to reg "
+                                            << (2 * offset + 1) << " addr " << STRHEX64 << (4 * (2 * offset + 1)));
 
     rc |= fpga_pci_poke(pci_bar_handle, 4 * (2 * offset), conv_value.half.hi);
 
@@ -219,8 +222,7 @@ int AWSPlatform::write_mmio(uint64_t offset, fr_t value)
   return FLETCHER_OK;
 }
 
-int AWSPlatform::read_mmio(uint64_t offset, fr_t* dest)
-{
+int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
   if (!error) {
     int rc = 0;
     reg_conv_t conv_value;
@@ -229,12 +231,14 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t* dest)
     rc |= fpga_pci_peek(pci_bar_handle, 4 * (2 * offset), &ret);
     conv_value.half.hi = ret;
 
-    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2*offset) << " addr " << 4 * (2 * offset));
+    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2 * offset) << " addr "
+                                            << 4 * (2 * offset));
 
     rc |= fpga_pci_peek(pci_bar_handle, 4 * (2 * offset + 1), &ret);
     conv_value.half.lo = ret;
 
-    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2*offset+1) << " addr " << 4 * (2 * offset+1));
+    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2 * offset + 1)
+                                            << " addr " << 4 * (2 * offset + 1));
 
     if (rc != 0) {
       LOGD("[AWSPlatform] MMIO read failed.");
@@ -248,8 +252,7 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t* dest)
   }
 }
 
-bool AWSPlatform::good()
-{
+bool AWSPlatform::good() {
   return !error;
 }
 

@@ -101,7 +101,7 @@ void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::Array
 #endif
 
   // Check if this ArrayData has buffers
-  if (array_data->buffers.size() > 0) {
+  if (!array_data->buffers.empty()) {
     BufConfig vbm, off, dat;
     // Append each buffer to the vector of Buffer Addresses
     switch (array_data->buffers.size()) {
@@ -160,7 +160,7 @@ void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::Array
   LOGD(std::string(depth, '\t') << "\tChildren: " << array_data->child_data.size());
 
   // Check if chunk has child data (for lists and structs)
-  if (array_data->child_data.size() > 0) {
+  if (!array_data->child_data.empty()) {
     for (unsigned int c = 0; c < array_data->child_data.size(); c++) {
       auto array_child = array_data->child_data[c];
       auto field_child = field->type()->child(c);

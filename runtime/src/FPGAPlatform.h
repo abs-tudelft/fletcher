@@ -54,7 +54,7 @@ namespace fletcher {
 class FPGAPlatform
 {
  public:
-  virtual ~FPGAPlatform(){};
+  virtual ~FPGAPlatform()=default;
 
   /**
    * \brief Write a 64-bit value to a memory mapped slave register at 

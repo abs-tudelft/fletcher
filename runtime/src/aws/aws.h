@@ -23,7 +23,7 @@
 #include "../FPGAPlatform.h"
 #include "../UserCore.h"
 
-#define AWS_QUEUE_THRESHOLD 1024*1024*1 // 1 MiB
+#define AWS_QUEUE_THRESHOLD (1024*1024*1) // 1 MiB
 #define AWS_NUM_QUEUES 4
 
 // Forward declarations:
@@ -36,7 +36,7 @@ namespace fletcher {
 class AWSPlatform : public FPGAPlatform
 {
  public:
-  ~AWSPlatform();
+  ~AWSPlatform() override;
   /**
    * \brief AWSPlatform constructor
    * 
@@ -45,14 +45,14 @@ class AWSPlatform : public FPGAPlatform
    * \param bar_id   The BAR id you want to use for the memory-mapped slave 
    *                 registers. Default is APP_PF_BAR1.
    */
-  AWSPlatform(int slot_id = 0, int pf_id = 0, int bar_id = 1);
+  explicit AWSPlatform(int slot_id = 0, int pf_id = 0, int bar_id = 1);
 
-  int write_mmio(uint64_t offset, fr_t value);
-  int read_mmio(uint64_t offset, fr_t* dest);
+  int write_mmio(uint64_t offset, fr_t value) override;
+  int read_mmio(uint64_t offset, fr_t* dest) override;
 
-  void set_alignment(uint64_t alignment);
-  
-  bool good();
+  void set_alignment(uint64_t alignment) {}
+
+  bool good() override;
 
  private:
   std::string _name = "AWS EC2 F1";
@@ -67,7 +67,7 @@ class AWSPlatform : public FPGAPlatform
   size_t copy_to_ddr(void* source, fa_t offset, size_t size);
 
   uint64_t organize_buffers(const std::vector<BufConfig> &source_buffers,
-                            std::vector<BufConfig> &dest_buffers);
+                            std::vector<BufConfig> &dest_buffers) override;
 
   bool error = false;
 };

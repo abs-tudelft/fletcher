@@ -26,4 +26,4 @@
 #include "fletcher/echo/echo.h"
 
 #define FLETCHER_OK 0
-#define FLETCHER_ERROR -1
+#define FLETCHER_ERROR (-1)

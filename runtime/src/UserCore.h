@@ -41,7 +41,7 @@ typedef enum {
  */
 class UserCore {
  public:
-  UserCore(std::shared_ptr<FPGAPlatform> platform);
+  explicit UserCore(std::shared_ptr<FPGAPlatform> platform);
 
   /**
    * \brief Check if the Schema of this UserCore is compatible with another Schema
@@ -94,10 +94,10 @@ class UserCore {
   std::shared_ptr<FPGAPlatform> platform();
 
   // Default control and status values:
-  fr_t ctrl_start = 1L << UC_REG_CONTROL_START;
-  fr_t ctrl_reset = 1L << UC_REG_CONTROL_RESET;
-  fr_t done_status = 1L << UC_REG_STATUS_DONE;
-  fr_t done_status_mask = 1L << UC_REG_STATUS_DONE;
+  fr_t ctrl_start = 1UL << UC_REG_CONTROL_START;
+  fr_t ctrl_reset = 1UL << UC_REG_CONTROL_RESET;
+  fr_t done_status = 1UL << UC_REG_STATUS_DONE;
+  fr_t done_status_mask = 1UL << UC_REG_STATUS_DONE;
 
  private:
   std::shared_ptr<FPGAPlatform> _platform;

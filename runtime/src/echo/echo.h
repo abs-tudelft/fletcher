@@ -19,9 +19,7 @@
 
 #include <arrow/api.h>
 
-#include "../common.h"
 #include "../FPGAPlatform.h"
-#include "../UserCore.h"
 
 namespace fletcher {
 
@@ -30,25 +28,23 @@ namespace fletcher {
 class EchoPlatform : public FPGAPlatform
 {
  public:
-  ~EchoPlatform();
+  ~EchoPlatform() override;
   /**
    * \brief EchoPlatform constructor
    *
    */
   EchoPlatform();
 
-  int write_mmio(uint64_t offset, fr_t value);
-  int read_mmio(uint64_t offset, fr_t* dest);
+  int write_mmio(uint64_t offset, fr_t value) override;
+  int read_mmio(uint64_t offset, fr_t* dest) override;
 
-  void set_alignment(uint64_t alignment);
-
-  bool good();
+  bool good() override;
 
  private:
   std::string _name = "CAPI Echo";
   uint64_t alignment = 4096;  // TODO: this should become 64 after Arrow spec.
   uint64_t organize_buffers(const std::vector<BufConfig> &source_buffers,
-                            std::vector<BufConfig> &dest_buffers);
+                            std::vector<BufConfig> &dest_buffers) override;
 };
 
-}
+}//namespace fletcher
