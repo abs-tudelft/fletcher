@@ -44,7 +44,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
     return;
   }
 
-  LOGD("Slot config: " << check_slot_config());
+  LOGD("[AWSPlatform] Slot config: " << check_slot_config());
 
   // Open files for all queues
   for (int q = 0; q < AWS_NUM_QUEUES; q++) {
@@ -128,6 +128,7 @@ size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
                     (void *) ((uint64_t) qsource + written[q]),
                     qtotal - written[q],
                     qdest + written[q]);
+
         // If rc is negative there is something else going wrong. Abort the mission
         if (rc < 0) {
           LOGE("[AWSPlatform] Copy to DDR failed, Queue: " << q << " RC=" << rc);
@@ -138,9 +139,26 @@ size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
     }
     for (int q = 0; q < queues; q++) {
       total += written[q];
+
+      // Synchronize the files
+      fsync(edma_fd[q]);
     }
   }
   return total;
+}
+
+int AWSPlatform::check_ddr(uint8_t *source, fa_t offset, size_t size) {
+  ssize_t rc = 0;
+
+  auto *check_buffer = (uint8_t *) malloc(size);
+
+  rc = pread(edma_fd[0], check_buffer, size, offset);
+
+  int ret = memcmp(source, check_buffer, size);
+
+  free(check_buffer);
+
+  return ret;
 }
 
 uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buffers,
@@ -186,6 +204,13 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
                            (fa_t) dest_buf.address,
                            (size_t) dest_buf.size);
       LOGD(diff << "\n");
+
+      // Close the files:
+      for (int q = 0; q < AWS_NUM_QUEUES; q++) {
+        if (edma_fd[q] >= 0) {
+          close(edma_fd[q]);
+        }
+      }
 
       // Set the buffer address in the MMSRs:
       write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
@@ -261,20 +286,6 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
 
 bool AWSPlatform::good() {
   return !error;
-}
-
-int AWSPlatform::check_ddr(uint8_t *source, fa_t offset, size_t size) {
-  ssize_t rc = 0;
-
-  auto *check_buffer = (uint8_t *) malloc(size);
-
-  rc = pread(edma_fd[0], check_buffer, size, offset);
-
-  int ret = memcmp(source, check_buffer, size);
-
-  free(check_buffer);
-
-  return ret;
 }
 
 int AWSPlatform::check_slot_config() {
