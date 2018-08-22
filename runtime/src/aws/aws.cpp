@@ -44,7 +44,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
     return;
   }
 
-  check_slot_config();
+  LOGD("Slot config: " << check_slot_config());
 
   // Open files for all queues
   for (int q = 0; q < AWS_NUM_QUEUES; q++) {
@@ -99,9 +99,9 @@ size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
 
     size_t qbytes = bytes / queues;
 
-    omp_set_num_threads(queues);
+    //omp_set_num_threads(queues);
     // For each queue
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int q = 0; q < queues; q++) {
       ssize_t rc = 0;
       // Determine number of bytes for the whole transfer
@@ -312,7 +312,7 @@ int AWSPlatform::check_slot_config() {
     return fletcher::ERROR;;
   }
 
-  out: return rc;
+  return rc;
 }
 
 }

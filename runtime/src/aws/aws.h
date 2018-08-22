@@ -24,7 +24,7 @@
 #include "../UserCore.h"
 
 #define AWS_QUEUE_THRESHOLD (1024*1024*1) // 1 MiB
-#define AWS_NUM_QUEUES 4
+#define AWS_NUM_QUEUES 1
 
 // Forward declarations:
 typedef int pci_bar_handle_t;
