@@ -31,9 +31,9 @@
 
 #include <omp.h>
 
-//#define DEBUG
-//#define INFO
-//#define PRINT_STRINGS
+#define DEBUG
+#define INFO
+#define PRINT_STRINGS
 //#define USE_OMP
 
 #ifdef DEBUG
@@ -88,7 +88,11 @@ static uint16_t pci_device_id = 0xF001;
 
 #define BURST_LENGTH    4096
 
+#ifndef DEBUG
 #define TIME_PRINT      "%16.12f, "
+#else
+#define TIME_PRINT ""
+#endif
 
 /* Structure to easily convert from 64-bit addresses to 2x32-bit registers */
 typedef struct _lohi {
@@ -145,13 +149,17 @@ static int check_slot_config(int slot_id) {
 void print_strings(uint32_t* offsets, char* data, int num_rows, int hex) {
   int offsets_size = num_rows + 1;
   for (int i = 0; i < offsets_size; i++) {
-    INF("%6d, %5d, %5d, ", i, offsets[i], offsets[i + 1] - offsets[i]);
-    for (int j = offsets[i]; (j < offsets[i + 1]) && (i < num_rows); j++) {
-      if (hex) {
-        INF("%2X ", data[j]);
-      } else {
-        putchar(data[j]);
+    if (i < num_rows) {
+      INF("%6d, %5d, %5d, ", i, offsets[i], offsets[i + 1] - offsets[i]);
+      for (int j = offsets[i]; (j < offsets[i + 1]) && (i < num_rows); j++) {
+        if (hex) {
+          INF("%2X ", data[j]);
+        } else {
+          printf("%c", data[j]);
+        }
       }
+    } else {
+      INF("%6d, %5d, ", i, offsets[i]);
     }
     INF("\n");
   }
