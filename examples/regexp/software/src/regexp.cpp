@@ -62,8 +62,8 @@
 #define PLATFORM 0
 #endif
 
-#define PRINT_TIME(X) cout << setprecision(10) << (X) << ", " << flush
-#define PRINT_INT(X) cout << dec << (X) << ", " << flush
+#define PRINT_TIME(X) std::cout << setprecision(10) << (X) << ", " << flush
+#define PRINT_INT(X) std::cout << std::dec << (X) << ", " << flush
 
 using std::vector;
 using std::string;
@@ -265,7 +265,7 @@ void add_matches_arrow(const shared_ptr<arrow::Column> &column,
   auto programs = compile_regexes(regexes);
 
   // Get the StringArray representation
-  auto sa = static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+  auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
 
   // Iterate over all strings
   for (uint32_t i = 0; i < sa->length(); i++) {
@@ -312,7 +312,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column> &column,
     auto programs = compile_regexes(regexes);
 
     // Get the StringArray representation
-    auto sa = static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+    auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
 
     // Each thread gets a range of strings to work on
 #pragma omp for
