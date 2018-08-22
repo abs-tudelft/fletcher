@@ -48,6 +48,12 @@
 #define INF(...) 
 #endif
 
+#ifndef DEBUG
+#define TIME_PRINT(...) do{ fprintf( stderr, "%16.12f, ", __VA_ARGS__ ); } while( false )
+#else
+#define TIME_PRINT(...)
+#endif
+
 static uint16_t pci_vendor_id = 0x1D0F; /* Amazon PCI Vendor ID */
 static uint16_t pci_device_id = 0xF001;
 
@@ -87,12 +93,6 @@ static uint16_t pci_device_id = 0xF001;
 #define DEFAULT_ROWS    8*1024*1024 // About 1 gigabyte of characters
 
 #define BURST_LENGTH    4096
-
-#ifndef DEBUG
-#define TIME_PRINT      "%16.12f, "
-#else
-#define TIME_PRINT ""
-#endif
 
 /* Structure to easily convert from 64-bit addresses to 2x32-bit registers */
 typedef struct _lohi {
@@ -395,7 +395,7 @@ int copy_buffers(int slot_id,
   rc = pwrite(fd, offsets_buffer, offsets_size * sizeof(uint32_t), offsets_offset);
   end = omp_get_wtime();
   t_copy += end - start;
-  printf(TIME_PRINT, end - start);
+  TIME_PRINT(end-start);
   INF("\nCopied %d bytes for offsets buffer. \n", rc);
 
   INF("Copying data buffer: t=");
@@ -403,7 +403,7 @@ int copy_buffers(int slot_id,
   rc = pwrite(fd, data_buffer, data_size, data_offset);
   end = omp_get_wtime();
   t_copy += end - start;
-  printf(TIME_PRINT, end - start);
+  TIME_PRINT(end-start);
   INF("\nCopied %d bytes for data buffer. \n", rc);
   INF("Total copy time: %.16g\n", t_copy);
 
@@ -533,7 +533,7 @@ int count_matches_fpga(uint64_t offsets_address,
   double end = omp_get_wtime();
 
   INF("FPGA t=");
-  printf(TIME_PRINT, end - start);
+  TIME_PRINT(end-start);
   INF("\n");
 
   // Read the return registers (not necessary)
@@ -617,7 +617,7 @@ int main(int argc, char **argv) {
   start = omp_get_wtime();
   int insertions = gen_rand_strings_with(insstring, alphabet, &offsets_buffer, &data_buffer, &data_size, rows);
   end = omp_get_wtime();
-  printf(TIME_PRINT, end - start);
+  TIME_PRINT(end-start);
 
 #ifdef DEBUG
 #ifdef PRINT_STRINGS
@@ -637,7 +637,7 @@ int main(int argc, char **argv) {
   uint32_t cpu_matches = count_matches_cpu(offsets_buffer, data_buffer, insstring_regexp, rows);
 #endif
   end = omp_get_wtime();
-  printf(TIME_PRINT, end - start);
+  TIME_PRINT(end-start);
   INF("\nCPU RegExp matches %s %d times.\n", insstring_regexp, cpu_matches);
 
   /* Calculate the location of the buffers in the on-board memory */
