@@ -3,14 +3,13 @@ cmake_minimum_required(VERSION 3.5.1)
 project(regexp)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(regexp
-	regexp.cpp
-	RegExUserCore.cpp
+        src/regexp.cpp
+        src/RegExUserCore.cpp   src/RegExUserCore.h
 )
 
 find_library(LIB_FLETCHER fletcher)

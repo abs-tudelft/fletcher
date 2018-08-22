@@ -1,4 +1,5 @@
-.idea/*
+*/.idea/*
+*/cmake-build-debug/*
 *.pyc
 .cproject
 .settings/

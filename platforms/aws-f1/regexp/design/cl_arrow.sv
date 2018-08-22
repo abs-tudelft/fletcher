@@ -126,6 +126,9 @@ assign sh_bar1.rready  = sh_bar1_rready ;
 //----------------------------------------------
 // DMA PCI Slave Connections -> dma_pcis
 //----------------------------------------------
+assign cl_sh_dma_wr_full        = 1'b0;
+assign cl_sh_dma_rd_full        = 1'b0;
+
 assign dma_pcis.awid[5:0]       = sh_cl_dma_pcis_awid   ;
 assign dma_pcis.awaddr          = sh_cl_dma_pcis_awaddr ;
 assign dma_pcis.awlen           = sh_cl_dma_pcis_awlen  ;
@@ -165,6 +168,7 @@ assign cl_sh_ddr_awid           = ddr_c.awid            ;
 assign cl_sh_ddr_awaddr         = ddr_c.awaddr          ;
 assign cl_sh_ddr_awlen          = ddr_c.awlen           ;
 assign cl_sh_ddr_awsize         = ddr_c.awsize          ;
+assign cl_sh_ddr_awburst        = 2'b01                 ;
 assign cl_sh_ddr_awvalid        = ddr_c.awvalid         ;
 assign ddr_c.awready            = sh_cl_ddr_awready     ;
 
@@ -184,6 +188,7 @@ assign cl_sh_ddr_arid           = ddr_c.arid            ;
 assign cl_sh_ddr_araddr         = ddr_c.araddr          ;
 assign cl_sh_ddr_arlen          = ddr_c.arlen           ;
 assign cl_sh_ddr_arsize         = ddr_c.arsize          ;
+assign cl_sh_ddr_arburst        = 2'b01                 ;
 assign cl_sh_ddr_arvalid        = ddr_c.arvalid         ;
 assign ddr_c.arready            = sh_cl_ddr_arready     ;
 

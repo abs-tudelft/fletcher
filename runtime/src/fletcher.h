@@ -15,15 +15,12 @@
 #pragma once
 
 #include "fletcher/common.h"
-#include "fletcher/FPGAPlatform.h"
-#include "fletcher/logging.h"
-#include "fletcher/UserCore.h"
+#include "FPGAPlatform.h"
+#include "logging.h"
+#include "UserCore.h"
 
-#include "fletcher/aws/aws.h"
-#include "fletcher/snap/snap.h"
+#include "aws/aws.h"
+#include "snap/snap.h"
 
 // The boilerplate code for FPGA platform implementation
-#include "fletcher/echo/echo.h"
-
-#define FLETCHER_OK 0
-#define FLETCHER_ERROR -1
+#include "echo/echo.h"

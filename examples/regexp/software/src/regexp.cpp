@@ -43,6 +43,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <random>
 #include <omp.h>
 
 // RE2 regular expressions library
@@ -58,78 +59,79 @@
 #include "RegExUserCore.h"
 
 #ifndef PLATFORM
-  #define PLATFORM 0
+#define PLATFORM 0
 #endif
 
-#define PRINT_TIME(X) cout << setprecision(10) << X << ", " << flush
-#define PRINT_INT(X) cout << dec << X << ", " << flush
+#define PRINT_TIME(X) std::cout << std::setprecision(10) << (X) << ", " << std::flush
+#define PRINT_INT(X) std::cout << std::dec << (X) << ", " << std::flush
 
-using namespace std;
+using std::vector;
+using std::string;
+using std::endl;
+using std::shared_ptr;
 
 /**
  * Generate a random string possibly containing some other string.
  *
  * \param period The probability of insertion is 1/period
  */
-inline string generate_random_string_with(const vector<vector<string>>& insert_strings,
-                                          const string& alphabet,
-                                          size_t max_length,
-                                          int period,
-                                          int &which)
-{
+inline std::string generate_random_string_with(const vector<vector<string>> &insert_strings,
+                                               const string &alphabet,
+                                               size_t max_length,
+                                               int period,
+                                               int &which,
+                                               std::mt19937 &gen
+) {
+  std::uniform_int_distribution<int> dis(0, std::numeric_limits<int>::max());
+
   // Determine which string to insert
-  int s = rand() % insert_strings.size();
-  int n = rand() % insert_strings[s].size();
+  auto s = static_cast<int>(dis(gen) % insert_strings.size());
+  auto n = static_cast<int>(dis(gen) % insert_strings[s].size());
 
   // Determine the length of the resulting string
-  int strlen = insert_strings[s][n].length()
-      + (rand() % (max_length - insert_strings[s][n].length()));
+  auto strlen = static_cast<int>(insert_strings[s][n].length()
+                                 + (dis(gen) % (max_length - insert_strings[s][n].length())));
 
   // Create a string with nulls
   string ret((size_t) strlen, '\0');
 
   // Fill the string with random characters from the alphabet
   for (int i = 0; i < strlen; i++) {
-    ret[i] = alphabet[rand() % alphabet.length()];
+    ret[i] = alphabet[dis(gen) % alphabet.length()];
   }
 
   // Randomize insertion based on the period argument
-  if (rand() % period == 0) {
-    int start = rand() % ret.length();
-    int length = insert_strings[s][n].length();
-    ret.replace(start, length, insert_strings[s][n]);
+  if (dis(gen) % period == 0) {
+    auto start = static_cast<int>(dis(gen) % ret.length());
+    auto length = static_cast<int>(insert_strings[s][n].length());
+    ret.replace(static_cast<unsigned long>(start), static_cast<unsigned long>(length), insert_strings[s][n]);
     which = s;
   }
 
   return ret;
 }
 
-void generate_strings(vector<string>& strings,
-                      const vector<vector<string>>& insert_strings,
-                      const string& alphabet,
+void generate_strings(vector<string> &strings,
+                      const vector<vector<string>> &insert_strings,
+                      const string &alphabet,
                       uint32_t max_str_len,
                       uint32_t rows,
                       int period,
-                      bool save_to_file = true)
-{
-#pragma omp parallel for
+                      bool save_to_file = true) {
+  std::mt19937 gen(0);
   for (uint32_t i = 0; i < rows; i++) {
     int which = -1;
-    strings[i] = generate_random_string_with(insert_strings,
-                                             alphabet,
-                                             max_str_len,
-                                             period,
-                                             which);
+    strings[i] = generate_random_string_with(insert_strings, alphabet, max_str_len, period, which, gen);
   }
 
   // Used to compare performance with other programs
   if (save_to_file) {
     string fname("strings");
-    fname += to_string(rows);
+    fname += std::to_string(rows);
     fname += ".dat";
-    ofstream fs(fname);
+    std::ofstream fs(fname);
     if (fs.is_open()) {
-      for (auto str : strings) {
+      for (const auto &str : strings) {
         fs << str << endl;
       }
     }
@@ -139,37 +141,35 @@ void generate_strings(vector<string>& strings,
 /**
  * Create an Arrow table containing one column of random strings.
  */
-shared_ptr<arrow::Table> create_table(const vector<string>& strings)
-{
+shared_ptr<arrow::Table> create_table(const vector<string> &strings) {
 
   arrow::StringBuilder str_builder(arrow::default_memory_pool());
 
-  for (uint32_t i = 0; i < strings.size(); i++) {
-    auto s = strings[i];
+  for (auto s : strings) {
     str_builder.Append(s);
   }
 
   // Define the schema
   auto column_field = arrow::field("tweets", arrow::utf8(), false);
-  vector<shared_ptr<arrow::Field>> fields = { column_field };
-  shared_ptr<arrow::Schema> schema = make_shared<arrow::Schema>(fields);
+  vector<shared_ptr<arrow::Field>>
+      fields = {column_field};
+  shared_ptr<arrow::Schema> schema = std::make_shared<arrow::Schema>(fields);
 
   // Create an array and finish the builder
   shared_ptr<arrow::Array> str_array;
   str_builder.Finish(&str_array);
 
   // Create and return the table
-  return move(arrow::Table::Make(schema, { str_array }));
+  return move(arrow::Table::Make(schema, {str_array}));
 }
 
-vector<re2::RE2*> compile_regexes(const vector<string>& regexes)
-{
+vector<re2::RE2 *> compile_regexes(const vector<string> &regexes) {
   // Allocate a vector for the programs
-  vector<re2::RE2*> programs;
+  vector<re2::RE2 *> programs;
 
   // Compile the regexes
-  for (int i = 0; i < (int) regexes.size(); i++) {
-    re2::RE2* re = new re2::RE2(regexes[i]);
+  for (const auto &regexe : regexes) {
+    re2::RE2 *re = new re2::RE2(regexe);
 
     programs.push_back(re);
   }
@@ -177,8 +177,7 @@ vector<re2::RE2*> compile_regexes(const vector<string>& regexes)
   return programs;
 }
 
-void clear_programs(vector<re2::RE2*>& programs)
-{
+void clear_programs(vector<re2::RE2 *> &programs) {
   for (auto p : programs) {
     delete p;
   }
@@ -187,16 +186,15 @@ void clear_programs(vector<re2::RE2*>& programs)
 /**
  * Match regular expression using a vector of strings as a source
  */
-void add_matches(const vector<string>& strings,
-                 const vector<string>& regexes,
-                 vector<uint32_t>& matches)
-{
+void add_matches(const vector<string> &strings,
+                 const vector<string> &regexes,
+                 vector<uint32_t> &matches) {
   auto programs = compile_regexes(regexes);
 
   // Match the regexes to the strings
-  for (uint32_t i = 0; i < strings.size(); i++) {
+  for (const auto &string : strings) {
     for (int p = 0; p < (int) regexes.size(); p++) {
-      if (re2::RE2::FullMatch(strings[i], *programs[p])) {
+      if (re2::RE2::FullMatch(string, *programs[p])) {
         matches[p]++;
       }
     }
@@ -208,16 +206,15 @@ void add_matches(const vector<string>& strings,
 /**
  * Match regular expression on multiple cores using a vector of strings as a source
  */
-void add_matches_omp(const vector<string>& strings,
-                     const vector<string>& regexes,
-                     vector<uint32_t>& matches,
-                     int threads)
-{
+void add_matches_omp(const vector<string> &strings,
+                     const vector<string> &regexes,
+                     vector<uint32_t> &matches,
+                     int threads) {
   int nt = threads;
-  int np = regexes.size();
+  auto np = static_cast<int>(regexes.size());
 
   // Prepare some memory to store each thread result
-  uint32_t* thread_matches = (uint32_t*) calloc(sizeof(uint32_t), nt * np);
+  auto *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(nt * np));
 
   omp_set_num_threads(threads);
 
@@ -230,11 +227,12 @@ void add_matches_omp(const vector<string>& strings,
     // Each thread gets a range of strings to work on
 #pragma omp for
     // Iterate over strings
-    for (uint32_t i = 0; i < strings.size(); i++) {
+    for (uint s = 0; s < strings.size(); s++) {
+      std::string str = strings[s];
       // Iterate over programs
       for (int p = 0; p < np; p++) {
         // Attempt to match each program
-        if (re2::RE2::FullMatch(strings[i], *programs[p])) {
+        if (re2::RE2::FullMatch(str, *programs[p])) {
           // Increase the match count
           thread_matches[t * np + p]++;
         }
@@ -260,24 +258,23 @@ void add_matches_omp(const vector<string>& strings,
 /**
  * Match regular expression using Arrow table as a source
  */
-void add_matches_arrow(const shared_ptr<arrow::Column>& column,
-                       const vector<string>& regexes,
-                       vector<uint32_t>& matches)
-{
+void add_matches_arrow(const shared_ptr<arrow::Column> &column,
+                       const vector<string> &regexes,
+                       vector<uint32_t> &matches) {
 
   auto programs = compile_regexes(regexes);
 
   // Get the StringArray representation
-  auto sa = static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+  auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
 
   // Iterate over all strings
   for (uint32_t i = 0; i < sa->length(); i++) {
     // Get the string in a zero-copy manner
     int length;
-    const char* str = (const char*) sa->GetValue(i, &length);
+    const char *str = (const char *) sa->GetValue(i, &length);
 
     // Use a StringPiece for this, as Arrow does not (yet) support this in 0.8
-    re2::StringPiece strpiece(str, length);
+    re2::StringPiece strpiece(str, static_cast<re2::StringPiece::size_type>(length));
 
     // Iterate over programs
     for (int p = 0; p < (int) regexes.size(); p++) {
@@ -296,16 +293,15 @@ void add_matches_arrow(const shared_ptr<arrow::Column>& column,
 /**
  * Match regular expression on multiple cores using Arrow table as a source
  */
-void match_regex_arrow_omp(const shared_ptr<arrow::Column>& column,
-                           const vector<string>& regexes,
-                           vector<uint32_t>& matches,
-                           int threads)
-{
-  int np = matches.size();
+void match_regex_arrow_omp(const shared_ptr<arrow::Column> &column,
+                           const vector<string> &regexes,
+                           vector<uint32_t> &matches,
+                           int threads) {
+  int np = static_cast<int>(matches.size());
   int nt = threads;
 
   // Prepare some memory to store each thread result
-  uint32_t* thread_matches = (uint32_t*) calloc(sizeof(uint32_t), np * nt);
+  uint32_t *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(np * nt));
 
   omp_set_num_threads(threads);
 
@@ -316,7 +312,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column>& column,
     auto programs = compile_regexes(regexes);
 
     // Get the StringArray representation
-    auto sa = static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+    auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
 
     // Each thread gets a range of strings to work on
 #pragma omp for
@@ -324,10 +320,10 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column>& column,
     for (uint32_t i = 0; i < sa->length(); i++) {
       // Get the string in a zero-copy manner
       int length;
-      const char* str = (const char*) sa->GetValue(i, &length);
+      const char *str = (const char *) sa->GetValue(i, &length);
 
       // Use a StringPiece for this, as Arrow does not (yet) support this in 0.8
-      re2::StringPiece strpiece(str, length);
+      re2::StringPiece strpiece(str, static_cast<re2::StringPiece::size_type>(length));
 
       // Iterate over programs
       for (int p = 0; p < (int) regexes.size(); p++) {
@@ -355,21 +351,18 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column>& column,
   free(thread_matches);
 }
 
-double calc_sum(const vector<double>& values)
-{
+double calc_sum(const vector<double> &values) {
   return accumulate(values.begin(), values.end(), 0.0);
 }
 
-uint32_t calc_sum(const vector<uint32_t>& values)
-{
-  return accumulate(values.begin(), values.end(), 0.0);
+uint32_t calc_sum(const vector<uint32_t> &values) {
+  return static_cast<uint32_t>(accumulate(values.begin(), values.end(), 0.0));
 }
 
 /**
  * Main function for the regular expression matching example
  */
-int main(int argc, char ** argv)
-{
+int main(int argc, char **argv) {
   // For wall clock timers
   double start, stop;
 
@@ -380,22 +373,22 @@ int main(int argc, char ** argv)
 
   // Vector of vector of strings that get randomly inserted
   vector<vector<string>> insert_strings = {
-    {"birD","BirD","biRd","BIRd"},
-    {"BuNNy","bunNY","Bunny","BUnnY"},
-    {"CaT","CAT","caT","cAT"},
-    {"doG","DoG","doG","dOG"},
-    {"FerReT","fErret","feRret","FERrEt"},
-    {"fIsH","fIsH","fisH","fish"},
-    {"geRbil","GERbIl","geRBiL","GerBIL"},
-    {"hAMStER","haMsTer","hamstER","hAMstER"},
-    {"hOrsE","HoRSE","HORSe","horSe"},
-    {"KITTeN","KiTTEN","KitteN","KitTeN"},
-    {"LiZArd","LIzARd","lIzArd","LIzArD"},
-    {"MOusE","MOUsE","mOusE","MouSE"},
-    {"pUpPY","pUPPy","PUppY","pupPY"},
-    {"RaBBIt","RABBIt","RaBbit","RABBIt"},
-    {"Rat","rAT","rAT","rat"},
-    {"tuRtLE","TURTLE","tuRtle","TURTle"}
+      {"birD", "BirD", "biRd", "BIRd"},
+      {"BuNNy", "bunNY", "Bunny", "BUnnY"},
+      {"CaT", "CAT", "caT", "cAT"},
+      {"doG", "DoG", "doG", "dOG"},
+      {"FerReT", "fErret", "feRret", "FERrEt"},
+      {"fIsH", "fIsH", "fisH", "fish"},
+      {"geRbil", "GERbIl", "geRBiL", "GerBIL"},
+      {"hAMStER", "haMsTer", "hamstER", "hAMstER"},
+      {"hOrsE", "HoRSE", "HORSe", "horSe"},
+      {"KITTeN", "KiTTEN", "KitteN", "KitTeN"},
+      {"LiZArd", "LIzARd", "lIzArd", "LIzArD"},
+      {"MOusE", "MOUsE", "mOusE", "MouSE"},
+      {"pUpPY", "pUPPy", "PUppY", "pupPY"},
+      {"RaBBIt", "RABBIt", "RaBbit", "RABBIt"},
+      {"Rat", "rAT", "rAT", "rat"},
+      {"tuRtLE", "TURTLE", "tuRtle", "TURTle"}
   };
 
   // Regular expressions to match
@@ -425,7 +418,8 @@ int main(int argc, char ** argv)
   int period = 50;  // 1/50 chance to insert an insert_strings string in each row
   int num_threads = omp_get_max_threads();
 
-  flush(cout);
+  std::cout.flush();
+
   if (argc >= 2) {
     sscanf(argv[1], "%u", &num_rows);
   }
@@ -445,21 +439,21 @@ int main(int argc, char ** argv)
   uint64_t bytes_copied = 0;
 
   // Times
-  vector<double> t_vcpu(ne, 0.0);
-  vector<double> t_vomp(ne, 0.0);
-  vector<double> t_acpu(ne, 0.0);
-  vector<double> t_aomp(ne, 0.0);
-  vector<double> t_copy(ne, 0.0);
-  vector<double> t_fpga(ne, 0.0);
+  vector<double> t_vcpu(static_cast<unsigned long>(ne), 0.0);
+  vector<double> t_vomp(static_cast<unsigned long>(ne), 0.0);
+  vector<double> t_acpu(static_cast<unsigned long>(ne), 0.0);
+  vector<double> t_aomp(static_cast<unsigned long>(ne), 0.0);
+  vector<double> t_copy(static_cast<unsigned long>(ne), 0.0);
+  vector<double> t_fpga(static_cast<unsigned long>(ne), 0.0);
 
-  int np = regexes.size();
+  auto np = static_cast<int>(regexes.size());
 
   // Matches for each experimenthttps://webdata.tudelft.nl/
-  vector<vector<uint32_t>> m_vcpu(ne, vector<uint32_t>(np, 0));
-  vector<vector<uint32_t>> m_vomp(ne, vector<uint32_t>(np, 0));
-  vector<vector<uint32_t>> m_acpu(ne, vector<uint32_t>(np, 0));
-  vector<vector<uint32_t>> m_aomp(ne, vector<uint32_t>(np, 0));
-  vector<vector<uint32_t>> m_fpga(ne, vector<uint32_t>(np, 0));
+  vector<vector<uint32_t>> m_vcpu(static_cast<unsigned long>(ne), vector<uint32_t>(np, 0));
+  vector<vector<uint32_t>> m_vomp(static_cast<unsigned long>(ne), vector<uint32_t>(np, 0));
+  vector<vector<uint32_t>> m_acpu(static_cast<unsigned long>(ne), vector<uint32_t>(np, 0));
+  vector<vector<uint32_t>> m_aomp(static_cast<unsigned long>(ne), vector<uint32_t>(np, 0));
+  vector<vector<uint32_t>> m_fpga(static_cast<unsigned long>(ne), vector<uint32_t>(np, 0));
 
   uint32_t first_index = 0;
   uint32_t last_index = num_rows;
@@ -476,8 +470,8 @@ int main(int argc, char ** argv)
                    max_str_len,
                    num_rows,
                    period,
-                   num_threads);
-  
+                   true);
+
   stop = omp_get_wtime();
   t_create = (stop - start);
 
@@ -495,7 +489,7 @@ int main(int argc, char ** argv)
   for (int e = 0; e < ne; e++) {
 
     // Match on CPU
-    if (emask & 1) {
+    if (emask & 1u) {
       start = omp_get_wtime();
       add_matches(strings, regexes, m_vcpu[e]);
       stop = omp_get_wtime();
@@ -503,7 +497,7 @@ int main(int argc, char ** argv)
     }
 
     // Match on CPU using OpenMP
-    if (emask & 2) {
+    if (emask & 2u) {
       start = omp_get_wtime();
       add_matches_omp(strings, regexes, m_vomp[e], omp_get_max_threads());
       stop = omp_get_wtime();
@@ -511,7 +505,7 @@ int main(int argc, char ** argv)
     }
 
     // Match on CPU using Arrow
-    if (emask & 4) {
+    if (emask & 4u) {
       start = omp_get_wtime();
       add_matches_arrow(table->column(0), regexes, m_acpu[e]);
       stop = omp_get_wtime();
@@ -519,7 +513,7 @@ int main(int argc, char ** argv)
     }
 
     // Match on CPU using Arrow and OpenMP
-    if (emask & 8) {
+    if (emask & 8u) {
       start = omp_get_wtime();
       match_regex_arrow_omp(table->column(0), regexes, m_aomp[e], omp_get_max_threads());
       stop = omp_get_wtime();
@@ -527,16 +521,16 @@ int main(int argc, char ** argv)
     }
 
     // Match on FPGA
-    if (emask & 16) {
+    if (emask & 16u) {
       // Create a platform
 #if(PLATFORM == 0)
-        shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
+      shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
 #elif(PLATFORM == 1)
-        shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
+      shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
 #elif(PLATFORM == 2)
-        shared_ptr<fletcher::SNAPPlatform> platform(new fletcher::SNAPPlatform());
+      shared_ptr<fletcher::SNAPPlatform> platform(new fletcher::SNAPPlatform());
 #else
-        #error "PLATFORM must be 0, 1 or 2"
+#error "PLATFORM must be 0, 1 or 2"
 #endif
 
       // Prepare the colummn buffers
@@ -546,7 +540,7 @@ int main(int argc, char ** argv)
       t_copy[e] = (stop - start);
 
       // Create a UserCore
-      RegExUserCore uc(static_pointer_cast<fletcher::FPGAPlatform>(platform));
+      RegExUserCore uc(std::static_pointer_cast<fletcher::FPGAPlatform>(platform));
 
       // Reset it
       uc.reset();
@@ -578,7 +572,7 @@ int main(int argc, char ** argv)
   PRINT_TIME(calc_sum(t_aomp));
   PRINT_TIME(calc_sum(t_copy));
   PRINT_TIME(calc_sum(t_fpga));
-  
+
   // Report other settings
   PRINT_INT(ne);
   PRINT_INT(num_threads);
@@ -614,12 +608,12 @@ int main(int argc, char ** argv)
   // Check if matches are equal
   if ((a_vcpu == a_vomp) && (a_vomp == a_acpu) && (a_acpu == a_aomp)
       && (a_aomp == a_fpga)) {
-    cout << "PASS";
+    std::cout << "PASS";
   } else {
-    cout << "ERROR";
+    std::cout << "ERROR";
   }
 
-  cout << endl;
+  std::cout << endl;
 
   return 0;
 }
