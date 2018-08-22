@@ -419,7 +419,7 @@ int copy_buffers(int slot_id,
   rc = pread(fd, check_data_buffer, data_size * sizeof(char), data_offset);
 
 #ifdef PRINT_STRINGS
-  print_strings(check_offsets_buffer, check_data_buffer, rows, 0);
+  print_strings(check_offsets_buffer, check_data_buffer, rows, 1);
 #endif
 
   INF("Memory compare offsets buffer: %d\n",
@@ -628,7 +628,7 @@ int main(int argc, char **argv) {
 
 #ifdef DEBUG
 #ifdef PRINT_STRINGS
-  print_strings(offsets_buffer, data_buffer, rows, 0);
+  print_strings(offsets_buffer, data_buffer, rows, 1);
 #endif
 #endif
   INF("  Generated %d strings of which %d contain at least one deliberately inserted \"%s\".\n",
