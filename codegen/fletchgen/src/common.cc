@@ -25,12 +25,12 @@ std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostr
                                                      const std::shared_ptr<arrow::Schema> &schema,
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
-                                                     int user_regs) {
+                                                     config::Config cfg) {
   LOGD("Arrow Schema:");
   LOGD(schema->ToString());
 
   LOGD("Fletcher Wrapper Generation:");
-  auto col_wrapper = std::make_shared<ColumnWrapper>(schema, wrap_name, acc_name, user_regs);
+  auto col_wrapper = std::make_shared<ColumnWrapper>(schema, wrap_name, acc_name, cfg);
 
   auto ent = col_wrapper->entity()->toVHDL();
   auto arch = col_wrapper->architecture()->toVHDL();

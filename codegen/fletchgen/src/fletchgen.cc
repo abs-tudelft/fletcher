@@ -32,6 +32,8 @@
 #include "top/axi.h"
 #include "schema_test.h"
 
+#include "config.h"
+
 #include <plasma/client.h>
 
 using fletchgen::Mode;
@@ -51,7 +53,6 @@ int main(int argc, char **argv) {
   std::string output_fname;
   std::string acc_name;
   std::string wrap_name;
-  int regs = 0;
 
   /* Parse command-line options: */
   namespace po = boost::program_options;
@@ -119,11 +120,15 @@ int main(int argc, char **argv) {
   // Schema input:
   if (vm.count("input")) {
     schema_fname = vm["input"].as<std::string>();
+    schema = fletchgen::readSchemaFromFile(schema_fname);
   } else {
     std::cout << "No valid input file specified. Exiting..." << std::endl;
     desc.print(std::cout);
     return 0;
   }
+
+  // Get initial configuration from schema
+  auto cfg = fletchgen::config::fromSchema(schema.get());
 
   // VHDL output:
   if (vm.count("output")) {
@@ -147,7 +152,7 @@ int main(int argc, char **argv) {
 
   // UserCore registers:
   if (vm.count("custom_registers")) {
-    regs = vm["custom_registers"].as<int>();
+    cfg.user.num_user_regs = (unsigned int) vm["custom_registers"].as<int>();
   }
 
   std::vector<std::ostream *> outputs;
@@ -164,7 +169,7 @@ int main(int argc, char **argv) {
     outputs.push_back(&ofs);
   }
 
-  auto wrapper = fletchgen::generateColumnWrapper(outputs, fletchgen::readSchemaFromFile(schema_fname), acc_name, wrap_name, regs);
+  auto wrapper = fletchgen::generateColumnWrapper(outputs, schema, acc_name, wrap_name, cfg);
   LOGD("Wrapper generation finished.");
 
   /* AXI top level */

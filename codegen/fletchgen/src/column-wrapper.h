@@ -22,6 +22,7 @@
 #include "arrow-utils.h"
 #include "usercore.h"
 #include "usercore-controller.h"
+#include "config.h"
 
 using vhdl::Signal;
 
@@ -49,7 +50,7 @@ class ColumnWrapper : public StreamComponent {
   explicit ColumnWrapper(std::shared_ptr<arrow::Schema> schema,
                          std::string name,
                          std::string acc_name,
-                         int num_user_regs = 0);
+                         config::Config config = config::default_config);
 
   /// @brief Return the schema this wrapper implementation is derived from.
   std::shared_ptr<arrow::Schema> schema() { return schema_; }
@@ -75,11 +76,11 @@ class ColumnWrapper : public StreamComponent {
   int countRegisters();
 
   /// @brief Return the number of user registers.
-  int user_regs() { return user_regs_; }
+  int user_regs() { return cfg_.user.num_user_regs; }
 
  private:
   std::shared_ptr<arrow::Schema> schema_ = nullptr; ///< The schema this wrapper implementation is derived from.
-  int user_regs_ = 0; ///< Amount of registers for the UserCore
+  config::Config cfg_; ///< Configuration
 
   std::shared_ptr<UserCore> usercore_; ///< UserCore component that has to be implemented by the user.
   std::shared_ptr<Instantiation> usercore_inst_; ///< UserCore instance.

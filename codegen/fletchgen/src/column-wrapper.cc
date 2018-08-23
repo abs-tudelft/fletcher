@@ -18,6 +18,7 @@
 
 using std::string;
 using std::make_shared;
+using std::shared_ptr;
 
 using vhdl::seperator;
 using vhdl::t;
@@ -27,8 +28,11 @@ using vhdl::Generic;
 
 namespace fletchgen {
 
-ColumnWrapper::ColumnWrapper(std::shared_ptr<arrow::Schema> schema, string name, string acc_name, int num_user_regs)
-    : StreamComponent(std::move(name)), schema_(std::move(schema)), user_regs_(num_user_regs) {
+ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
+                             string name,
+                             string acc_name,
+                             config::Config config)
+    : StreamComponent(std::move(name)), schema_(std::move(schema)), cfg_(config) {
 
   /* Generics */
   addGenerics();
@@ -45,7 +49,7 @@ ColumnWrapper::ColumnWrapper(std::shared_ptr<arrow::Schema> schema, string name,
   uctrl_inst_->setComment(t(1) + "-- Controller instance.\n");
 
   /* UserCore */
-  usercore_ = make_shared<UserCore>(acc_name, this, countBuffers(), num_user_regs);
+  usercore_ = make_shared<UserCore>(acc_name, this, countBuffers(), user_regs());
   usercore_inst_ = make_shared<Instantiation>(nameFrom({usercore_->entity()->name(), "inst"}),
                                               std::static_pointer_cast<Component>(usercore_));
   architecture()->addComponent(usercore_);
@@ -122,29 +126,29 @@ void ColumnWrapper::addArbiter() {
 
 void ColumnWrapper::addGenerics() {
   int group = 0;
-  entity()->addGeneric(std::make_shared<Generic>(ce::BUS_DATA_WIDTH,
-                                                 "natural",
-                                                 Value(ce::BUS_DATA_WIDTH_DEFAULT),
-                                                 group));
-  entity()->addGeneric(std::make_shared<Generic>(ce::BUS_ADDR_WIDTH,
-                                                 "natural",
-                                                 Value(ce::BUS_ADDR_WIDTH_DEFAULT),
-                                                 group));
-  entity()->addGeneric(std::make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(8), group));
-  entity()->addGeneric(std::make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(1), group));
-  entity()->addGeneric(std::make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(8), group));
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH,
+                                            "natural",
+                                            Value(cfg_.plat.bus.data_width),
+                                            group));
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH,
+                                            "natural",
+                                            Value(cfg_.plat.bus.addr_width),
+                                            group));
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfg_.plat.bus.len_width), group));
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfg_.plat.bus.burst.step), group));
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(cfg_.plat.bus.burst.max), group));
 
   group++;
-  entity()->addGeneric(std::make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(32), group));
+  entity()->addGeneric(make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(cfg_.arr.index_width), group));
   group++;
-  entity()->addGeneric(std::make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group));
-  entity()->addGeneric(std::make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group));
-  entity()->addGeneric(std::make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs_), group));
+  entity()->addGeneric(make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group));
+  entity()->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group));
+  entity()->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group));
   entity()
-      ->addGeneric(std::make_shared<Generic>(ce::REG_WIDTH, "natural", Value(ce::REG_WIDTH_DEFAULT), group));
+      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfg_.plat.reg.reg_width), group));
   group++;
   entity()
-      ->addGeneric(std::make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(ce::TAG_WIDTH_DEFAULT), group));
+      ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfg_.user.tag_width), group));
 }
 
 void ColumnWrapper::addGlobalPorts() {
@@ -175,10 +179,10 @@ void ColumnWrapper::addRegisterPorts() {
   pgroup_++;
 }
 
-std::vector<std::shared_ptr<Column>> ColumnWrapper::createColumns() {
+std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
   LOGD("Creating Column(Reader/Writer) instances.");
 
-  std::vector<std::shared_ptr<Column>> columns;
+  std::vector<shared_ptr<Column>> columns;
   for (int f = 0; f < schema_->num_fields(); f++) {
     auto field = schema_->field(f);
     if (!mustIgnore(field.get())) {
@@ -197,7 +201,7 @@ std::vector<std::shared_ptr<Column>> ColumnWrapper::createColumns() {
   return columns;
 }
 
-void ColumnWrapper::addColumns(const std::vector<std::shared_ptr<Column>> &columns) {
+void ColumnWrapper::addColumns(const std::vector<shared_ptr<Column>> &columns) {
   for (auto const &column : columns) {
     LOGD("Adding instantiation of Column" + getModeString(column->mode()) + ": " + column->name());
     architecture()->addInstantiation(std::static_pointer_cast<Instantiation>(column));
@@ -217,7 +221,7 @@ void ColumnWrapper::addUserStreams() {
   }
 }
 
-std::shared_ptr<Instantiation> ColumnWrapper::read_arbiter_inst() {
+shared_ptr<Instantiation> ColumnWrapper::read_arbiter_inst() {
   // Iterate over all component instantiations
   for (auto &inst : architecture()->instances()) {
     // Get only instantiations of Column
@@ -229,8 +233,8 @@ std::shared_ptr<Instantiation> ColumnWrapper::read_arbiter_inst() {
   return nullptr;
 }
 
-std::vector<std::shared_ptr<Column>> ColumnWrapper::column_instances() {
-  std::vector<std::shared_ptr<Column>> ci;
+std::vector<shared_ptr<Column>> ColumnWrapper::column_instances() {
+  std::vector<shared_ptr<Column>> ci;
 
   // Iterate over all component instantiations
   for (auto &inst : architecture()->instances()) {
@@ -268,7 +272,7 @@ int ColumnWrapper::countColumnsOfMode(Mode mode) {
   return count;
 }
 
-std::vector<FletcherStream *> ColumnWrapper::getFletcherStreams(std::vector<std::shared_ptr<Stream>> streams) {
+std::vector<FletcherStream *> ColumnWrapper::getFletcherStreams(std::vector<shared_ptr<Stream>> streams) {
   std::vector<FletcherStream *> ret;
   for (const auto &s: streams) {
     auto fcs = dynamic_cast<FletcherStream *>(s.get());
@@ -286,7 +290,7 @@ void ColumnWrapper::addInternalColumnSignals() {
   for (const auto &i: column_instances()) {
     auto ports = i->component()->entity()->ports();
     for (const auto &p: ports) {
-      std::shared_ptr<SignalFromPort> sig;
+      shared_ptr<SignalFromPort> sig;
 
       // First make signals for the ArrowPorts.
       auto ap = dynamic_cast<GeneralPort *>(p);
@@ -294,9 +298,9 @@ void ColumnWrapper::addInternalColumnSignals() {
         // StreamPorts
         auto name = nameFrom({vhdl::INT_SIG, i->field()->name(), p->name()});
         if (p->isVector()) {
-          sig = std::make_shared<SignalFromPort>(name, p->width(), p);
+          sig = make_shared<SignalFromPort>(name, p->width(), p);
         } else {
-          sig = std::make_shared<SignalFromPort>(name, p);
+          sig = make_shared<SignalFromPort>(name, p);
         }
       } else {
         // Any other ports?
@@ -315,14 +319,14 @@ void ColumnWrapper::addInternalColumnSignals() {
   }
 }
 
-void ColumnWrapper::addInternalArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports) {
+void ColumnWrapper::addInternalArbiterSignals(std::vector<shared_ptr<StreamPort>> ports) {
   // ReadArbiter (if any)
   auto rai = read_arbiter_inst();
   if (rai != nullptr) {
     auto ra = std::dynamic_pointer_cast<ReadArbiter>(rai->component());
     for (const auto &p : ports) {
       auto name = nameFrom({vhdl::INT_SIG, p->name()});
-      auto sig = std::make_shared<SignalFromPort>(name, p->width(), p.get());
+      auto sig = make_shared<SignalFromPort>(name, p->width(), p.get());
       architecture()->addSignal(sig, sgroup_);
       rai->mapPort(p.get(), sig.get());
     }
@@ -340,7 +344,7 @@ int ColumnWrapper::countRegisters() {
   reg_count += 1;                  // First index
   reg_count += 1;                  // Last index
   reg_count += 2 * countBuffers(); // Buffer addresses
-  reg_count += user_regs_;         // User registers.
+  reg_count += user_regs();        // User registers.
 
   return reg_count;
 }
@@ -372,7 +376,7 @@ void ColumnWrapper::connectReadRequestChannels() {
             range = Range(hi, lo);
           }
           auto invert = rrp->dir() == Dir::OUT;
-          auto con = std::make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
           con->setGroup(pgroup_);
           architecture()->addConnection(con);
         }
@@ -409,7 +413,7 @@ void ColumnWrapper::connectReadDataChannels() {
         }
 
         auto invert = rdp->dir() == Dir::OUT;
-        auto con = std::make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
         con->setGroup(pgroup_);
         architecture()->addConnection(con);
       }
@@ -561,7 +565,7 @@ void ColumnWrapper::connectControllerSignals() {
 
 void ColumnWrapper::implementUserRegs() {
   /* User Regs */
-  if (user_regs_ > 0) {
+  if (user_regs() > 0) {
     auto srin = architecture()->addSignalFromPort(usercore_->user_regs_in(), "s", sgroup_);
     auto srout = architecture()->addSignalFromPort(usercore_->user_regs_out(), "s", sgroup_);
     auto sroute = architecture()->addSignalFromPort(usercore_->user_regs_out_en(), "s", sgroup_);
@@ -581,9 +585,9 @@ void ColumnWrapper::implementUserRegs() {
   /* Buffer Address Regs */
   int i = 0;
   for (const auto &b : usercore_->buffers()) {
-    Range r(Value((ce::NUM_DEFAULT_REGS + ce::REGS_PER_ADDRESS * (i + 1))) * Value(ce::REG_WIDTH)
-            - Value(1),
-            Value(ce::NUM_DEFAULT_REGS + (ce::REGS_PER_ADDRESS * i)) * Value(ce::REG_WIDTH));
+    Range
+        r(Value((ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * (i + 1))) * Value(ce::REG_WIDTH) - Value(1),
+          Value(ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * i) * Value(ce::REG_WIDTH));
     auto p = usercore_->entity()->getPortByName(nameFrom({"reg", b->name(), "addr"}));
     usercore_inst_->mapPort(p, regs_in(), r);
     i++;
@@ -604,7 +608,7 @@ GeneralPort *ColumnWrapper::regs_out_en() {
 
 void ColumnWrapper::mapUserGenerics() {
   auto ent = usercore_->entity();
-  if (user_regs_ > 0) {
+  if (user_regs() > 0) {
     usercore_inst_->mapGeneric(ent->getGenericByName(ce::NUM_USER_REGS), Value(ce::NUM_USER_REGS));
   }
   usercore_inst_->mapGeneric(ent->getGenericByName(ce::TAG_WIDTH), Value(ce::TAG_WIDTH));

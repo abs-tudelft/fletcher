@@ -89,7 +89,9 @@ std::shared_ptr<arrow::Schema> genStringSchema() {
   };
 
   // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto schema_meta = fletchgen::metaMode(fletchgen::Mode::READ);
+  schema_meta->Append("FLETCHGEN_BUS_ADDR_WIDTH","128");
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
 
   return schema;
 }
