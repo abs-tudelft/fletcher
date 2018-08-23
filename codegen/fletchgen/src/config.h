@@ -18,6 +18,7 @@ struct Burst {
 struct Bus {
   width addr_width = ce::BUS_ADDR_WIDTH_DEFAULT;
   width data_width = ce::BUS_DATA_WIDTH_DEFAULT;
+  width strobe_width = ce::BUS_STROBE_WIDTH_DEFAULT;
   width len_width = ce::BUS_LEN_WIDTH_DEFAULT;
   Burst burst;
 };

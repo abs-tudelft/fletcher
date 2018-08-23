@@ -88,8 +88,11 @@ class ColumnWrapper : public StreamComponent {
   std::shared_ptr<UserCoreController> uctrl_; ///< UserCore controller component
   std::shared_ptr<Instantiation> uctrl_inst_; ///< UserCore controller instance
 
-  std::shared_ptr<ReadArbiter> arbiter_; ///< Arbiter component.
-  std::shared_ptr<Instantiation> arbiter_inst_; ///< Arbiter instance.
+  std::shared_ptr<ReadArbiter> rarb; ///< Read Arbiter component.
+  std::shared_ptr<Instantiation> rarb_inst; ///< Read Arbiter instance.
+
+  std::shared_ptr<WriteArbiter> warb; ///< Write Arbiter component.
+  std::shared_ptr<Instantiation> warb_inst; ///< Write Arbiter instance.
 
   GeneralPort *regs_in();;
 
@@ -172,7 +175,8 @@ class ColumnWrapper : public StreamComponent {
 
   void implementUserRegs();
 
-  void addArbiter();
+  void addReadArbiter();
+  void addWriteArbiter();
 
   void mapUserGenerics();
 };

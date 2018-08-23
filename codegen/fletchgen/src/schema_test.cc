@@ -76,8 +76,11 @@ std::shared_ptr<arrow::Schema> genSimpleWriteSchema() {
       arrow::field("Num", arrow::uint8(), false)
   };
 
+  // Create some metadata
+  auto schema_meta = fletchgen::metaMode(fletchgen::Mode::WRITE);
+
   // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::WRITE));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
 
   return schema;
 }
@@ -88,9 +91,10 @@ std::shared_ptr<arrow::Schema> genStringSchema() {
       arrow::field("Name", arrow::utf8(), false, fletchgen::metaEPC(4))
   };
 
-  // Create the schema
+  // Create some metadata
   auto schema_meta = fletchgen::metaMode(fletchgen::Mode::READ);
-  schema_meta->Append("FLETCHGEN_BUS_ADDR_WIDTH","128");
+
+  // Create the schema
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
 
   return schema;

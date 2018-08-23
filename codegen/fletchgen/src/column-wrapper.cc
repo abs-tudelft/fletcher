@@ -56,8 +56,9 @@ ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
   architecture()->addInstantiation(usercore_inst_);
   usercore_inst_->setComment(t(1) + "-- Hardware Accelerated Function instance.\n");
 
-  /* Arbiter */
-  addArbiter();
+  /* Arbiters */
+  addReadArbiter();
+  addWriteArbiter();
 
   /* Ports */
   addGlobalPorts();
@@ -67,8 +68,8 @@ ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
   /* Internal signals */
   addInternalColumnSignals();
 
-  addInternalArbiterSignals(arbiter_->slv_rreq()->ports());
-  addInternalArbiterSignals(arbiter_->slv_rdat()->ports());
+  addInternalArbiterSignals(rarb->slv_rreq()->ports());
+  addInternalArbiterSignals(rarb->slv_rdat()->ports());
 
   implementUserRegs();
   mapUserGenerics();
@@ -93,46 +94,75 @@ int ColumnWrapper::countBuffers() {
   return bufs;
 }
 
-void ColumnWrapper::addArbiter() {
+void ColumnWrapper::addReadArbiter() {
   // TODO: don't create arbiter if there is just one column or bypass in arbiter implementation?
   auto num_read_columns = countColumnsOfMode(Mode::READ);
-  arbiter_ = make_shared<ReadArbiter>(num_read_columns);
-  arbiter_inst_ = make_shared<Instantiation>(nameFrom({arbiter_->entity()->name(), "inst"}),
-                                             std::static_pointer_cast<Component>(arbiter_));
-  architecture()->addInstantiation(arbiter_inst_);
-  arbiter_inst_->mapGeneric(arbiter_->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_read_columns));
-  arbiter_inst_
-      ->mapGeneric(arbiter_->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
-  arbiter_inst_
-      ->mapGeneric(arbiter_->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
-  arbiter_inst_
-      ->mapGeneric(arbiter_->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
-  arbiter_->mst_rreq()->setSource(arbiter_inst_.get());
-  arbiter_inst_->setComment(
+  rarb = make_shared<ReadArbiter>(num_read_columns);
+  rarb_inst = make_shared<Instantiation>(nameFrom({rarb->entity()->name(), "inst"}),
+                                        std::static_pointer_cast<Component>(rarb));
+  architecture()->addInstantiation(rarb_inst);
+  rarb_inst->mapGeneric(rarb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_read_columns));
+  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
+  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
+  rarb->mst_rreq()->setSource(rarb_inst.get());
+  rarb_inst->setComment(
       t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_read_columns) + " column readers.\n"
   );
-  for (const auto &p : arbiter_->mst_rreq()->ports()) {
-    arbiter_inst_->mapPort(p.get(), p.get());
+  for (const auto &p : rarb->mst_rreq()->ports()) {
+    rarb_inst->mapPort(p.get(), p.get());
   }
-  for (const auto &p : arbiter_->mst_rdat()->ports()) {
-    arbiter_inst_->mapPort(p.get(), p.get());
+  for (const auto &p : rarb->mst_rdat()->ports()) {
+    rarb_inst->mapPort(p.get(), p.get());
   }
 
-  arbiter_->mst_rreq()->setGroup(pgroup_++);
-  arbiter_->mst_rdat()->setGroup(pgroup_++);
-  appendStream(arbiter_->mst_rreq());
-  appendStream(arbiter_->mst_rdat());
+  rarb->mst_rreq()->setGroup(pgroup_++);
+  rarb->mst_rdat()->setGroup(pgroup_++);
+  appendStream(rarb->mst_rreq());
+  appendStream(rarb->mst_rdat());
+}
+
+void ColumnWrapper::addWriteArbiter() {
+  // TODO: don't create arbiter if there is just one column or bypass in arbiter implementation?
+  auto num_write_columns = countColumnsOfMode(Mode::WRITE);
+  warb = make_shared<WriteArbiter>(num_write_columns);
+  warb_inst = make_shared<Instantiation>(nameFrom({warb->entity()->name(), "inst"}),
+                                        std::static_pointer_cast<Component>(warb));
+  architecture()->addInstantiation(warb_inst);
+  warb_inst->mapGeneric(warb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_write_columns));
+  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
+  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
+  warb->mst_wreq()->setSource(rarb_inst.get());
+  warb_inst->setComment(
+      t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_write_columns) + " column writers.\n"
+  );
+  for (const auto &p : warb->mst_wreq()->ports()) {
+    warb_inst->mapPort(p.get(), p.get());
+  }
+  for (const auto &p : warb->mst_wdat()->ports()) {
+    warb_inst->mapPort(p.get(), p.get());
+  }
+
+  warb->mst_wreq()->setGroup(pgroup_++);
+  warb->mst_wdat()->setGroup(pgroup_++);
+  appendStream(warb->mst_wreq());
+  appendStream(warb->mst_wdat());
 }
 
 void ColumnWrapper::addGenerics() {
   int group = 0;
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH,
+                                            "natural",
+                                            Value(cfg_.plat.bus.addr_width),
+                                            group));
   entity()->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH,
                                             "natural",
                                             Value(cfg_.plat.bus.data_width),
                                             group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH,
+  entity()->addGeneric(make_shared<Generic>(ce::BUS_STROBE_WIDTH,
                                             "natural",
-                                            Value(cfg_.plat.bus.addr_width),
+                                            Value(cfg_.plat.bus.strobe_width),
                                             group));
   entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfg_.plat.bus.len_width), group));
   entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfg_.plat.bus.burst.step), group));
@@ -340,7 +370,7 @@ int ColumnWrapper::countRegisters() {
   // Assuming 32-bit registers:
   reg_count += 1;                  // Status
   reg_count += 1;                  // Control
-  reg_count += 2;                  // Return value (64 bit to support addresses)
+  reg_count += 2;                  // Return value (64 bit to support 64-bit addresses)
   reg_count += 1;                  // First index
   reg_count += 1;                  // Last index
   reg_count += 2 * countBuffers(); // Buffer addresses
@@ -516,7 +546,7 @@ void ColumnWrapper::connectGlobalPorts() {
     connectGlobalPortsOf(c.get());
   }
   // Connect the rest
-  connectGlobalPortsOf(arbiter_inst_.get());
+  connectGlobalPortsOf(rarb_inst.get());
   connectGlobalPortsOf(uctrl_inst_.get());
   connectGlobalPortsOf(usercore_inst_.get());
 }

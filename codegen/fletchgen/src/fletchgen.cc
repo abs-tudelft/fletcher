@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   //auto schema = genBigSchema();
   //auto schema = genPairHMMSchema();
   //auto schema = genSimpleReadSchema();
-  auto schema = genStringSchema();
+  auto schema = genSimpleWriteSchema();
   fletchgen::writeSchemaToFile(schema, "test.fbs");
   auto rb = getStringRB();
   fletchgen::srec::writeRecordBatchToFile(*rb, "test.rb");
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
          "tool will convert an Arrow RecordBatch message stored in a file into an "
          "SREC file. The SREC file can be used in simulation.")
       ("quiet,q", "Prevent output on stdout.")
-      ("axi,a", po::value<std::string>()->default_value("axi_top.vhd"), "Generate AXI top level.");
+      ("axi,a", po::value<std::string>()->default_value("axi_top.vhd"), "AXI top level template file");
 
   /* Positional options: */
   po::positional_options_description p;
