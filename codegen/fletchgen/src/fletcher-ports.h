@@ -16,7 +16,7 @@ enum class ASP {
   LAST,        ///< Last signal for streams
   LENGTH,      ///< Length for a variable length item.
   VALIDITY,    ///< Validity bit from the validity bitmap (element is not null)
-  COUNT,       ///< Count for list children with EPC > 1
+  COUNT,       ///< Count for listprim children.
 };
 
 /**

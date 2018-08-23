@@ -173,6 +173,9 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
   /// @brief Return whether this stream is a list child.
   bool isListChild();
 
+  /// @brief Return whether this stream is a listprim child
+  bool isListPrimChild();
+
   /// @brief Return whether this stream is a struct.
   bool isStruct();
 
