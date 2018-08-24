@@ -131,6 +131,4 @@ proc compile_fletcher {source_dir} {
   compile_buffers $source_dir
   compile_columns $source_dir
   compile_wrapper $source_dir
-  compile_columns $source_dir
-
 }
