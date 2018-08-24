@@ -20,8 +20,10 @@
 
 namespace top {
 
-/// @brief Generate an AXI top level on supplied output streams from a ColumnWrapper
-std::string generateAXITop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
-                           const std::vector<std::ostream *> &outputs);
+/// @brief Generate a simulation top level on supplied output streams from a ColumnWrapper
+std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
+                           const std::vector<std::ostream *> &outputs,
+                           const std::string read_srec_path = "",
+                           const std::string write_srec_path = "");
 
 }
