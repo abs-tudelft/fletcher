@@ -25,7 +25,6 @@ use work.Arrow.all;
 
 entity test is
   generic(
-    NUM_USER_REGS                              : natural;
     TAG_WIDTH                                  : natural;
     BUS_ADDR_WIDTH                             : natural;
     INDEX_WIDTH                                : natural;
@@ -62,10 +61,7 @@ entity test is
     -------------------------------------------------------------------------
     reg_return                                 : out std_logic_vector(2*REG_WIDTH-1 downto 0);
     reg_Name_values_addr                       : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    reg_Name_offsets_addr                      : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    regs_in                                    : in std_logic_vector(2*REG_WIDTH-1 downto 0);
-    regs_out                                   : out std_logic_vector(2*REG_WIDTH-1 downto 0);
-    regs_out_en                                : out std_logic_vector(1 downto 0)
+    reg_Name_offsets_addr                      : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
   );
 end test;
 
@@ -77,7 +73,7 @@ begin
     Name_out_chars_out_ready <= '1';
     loop
       wait until rising_edge(acc_clk);
-      if acc_reset /= '1' then 
+      if acc_reset /= '1' then
         Name_cmd_valid <= '1';
         Name_cmd_firstIdx <= (others => '0');
         Name_cmd_lastIdx <= std_logic_vector(to_unsigned(26, INDEX_WIDTH));
@@ -90,5 +86,5 @@ begin
     Name_cmd_valid <= '0';
     wait;
   end process;
-  
+
 end architecture;
