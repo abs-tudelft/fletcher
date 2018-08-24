@@ -35,11 +35,12 @@ set(SOURCE_FILES
         src/usercore.h              src/usercore.cc
         src/usercore-controller.h   src/usercore-controller.cc
 
-        src/srec/srec.h             src/srec/srec.cpp
-        src/srec/recordbatch.h      src/srec/recordbatch.cpp
+        src/srec/srec.h src/srec/srec.cc
+        src/srec/recordbatch.h src/srec/recordbatch.cc
 
-        src/vhdt/vhdt.h             src/vhdt/vhdt.cpp
-        src/top/axi.h               src/top/axi.cpp
+        src/vhdt/vhdt.h src/vhdt/vhdt.cc
+        src/top/axi.h src/top/axi.cc
+        src/top/sim.h src/top/sim.cc
         src/schema_test.h           src/schema_test.cc
 
         src/config.h                src/config.cc

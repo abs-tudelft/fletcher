@@ -68,7 +68,6 @@ class ColumnWrapper : public StreamComponent {
 
   UserCoreController *usercore_controller() { return uctrl_.get(); }
 
-  /* Registers */
   /// @brief Count the number of Arrow buffers used by this wrapper.
   int countBuffers();
 
@@ -77,6 +76,9 @@ class ColumnWrapper : public StreamComponent {
 
   /// @brief Return the number of user registers.
   int user_regs() { return cfg_.user.num_user_regs; }
+
+  /// @brief Return the global configuration
+  config::Config config() { return cfg_; };
 
  private:
   std::shared_ptr<arrow::Schema> schema_ = nullptr; ///< The schema this wrapper implementation is derived from.
@@ -129,10 +131,16 @@ class ColumnWrapper : public StreamComponent {
 
   /* Arbiter */
   /// @brief generate the internal signals for the arbiters.
-  void addInternalArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
+  void addInternalReadArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
 
   /// @brief Return the read arbiter instance if exists, nullptr otherwise.
   std::shared_ptr<Instantiation> read_arbiter_inst();
+
+  /// @brief Return the read arbiter component
+  ReadArbiter* read_arbiter() {return rarb.get();}
+
+  /// @brief Return the write arbiter component
+  WriteArbiter* write_arbiter() {return warb.get();}
 
   /* Ports */
   /// @brief Generate global ports for the wrapper, such as clk, reset, etc...
@@ -179,6 +187,14 @@ class ColumnWrapper : public StreamComponent {
   void addWriteArbiter();
 
   void mapUserGenerics();
+
+  void connectWriteRequestChannels();
+
+  void connectWriteDataChannels();
+
+  std::shared_ptr<Instantiation> write_arbiter_inst();
+
+  void addInternalWriteArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
 };
 
 }//namespace fletchgen

@@ -75,16 +75,17 @@ constexpr char ACC_RST[] = "acc_reset";
 constexpr char NUM_USER_REGS[] = "NUM_USER_REGS";
 
 // Default values
-constexpr unsigned int REG_WIDTH_DEFAULT = 32;
+constexpr unsigned int MMIO_DATA_WIDTH_DEFAULT = 32;
+constexpr unsigned int MMIO_ADDR_WIDTH_DEFAULT = 32;
 constexpr unsigned int BUS_ADDR_WIDTH_DEFAULT = 64;
-constexpr unsigned int BUS_DATA_WIDTH_DEFAULT = 32;
+constexpr unsigned int BUS_DATA_WIDTH_DEFAULT = 512;
 constexpr unsigned int BUS_STROBE_WIDTH_DEFAULT = BUS_DATA_WIDTH_DEFAULT / 8;
 constexpr unsigned int BUS_LEN_WIDTH_DEFAULT = 8;
 constexpr unsigned int BUS_BURST_STEP_LEN_DEFAULT = 1;
 constexpr unsigned int BUS_BURST_MAX_LEN_DEFAULT = 32;
 constexpr unsigned int INDEX_WIDTH_DEFAULT = 32;
 constexpr unsigned int TAG_WIDTH_DEFAULT = 1;
-constexpr unsigned int REGS_PER_ADDRESS = BUS_ADDR_WIDTH_DEFAULT / REG_WIDTH_DEFAULT;
+constexpr unsigned int REGS_PER_ADDRESS = BUS_ADDR_WIDTH_DEFAULT / MMIO_DATA_WIDTH_DEFAULT;
 
 } //namespace ce
 } //namespace fletchgen

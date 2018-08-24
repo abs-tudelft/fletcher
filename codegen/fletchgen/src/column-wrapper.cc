@@ -68,8 +68,10 @@ ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
   /* Internal signals */
   addInternalColumnSignals();
 
-  addInternalArbiterSignals(rarb->slv_rreq()->ports());
-  addInternalArbiterSignals(rarb->slv_rdat()->ports());
+  addInternalReadArbiterSignals(rarb->slv_rreq()->ports());
+  addInternalReadArbiterSignals(rarb->slv_rdat()->ports());
+  addInternalWriteArbiterSignals(warb->slv_wreq()->ports());
+  addInternalWriteArbiterSignals(warb->slv_wdat()->ports());
 
   implementUserRegs();
   mapUserGenerics();
@@ -81,6 +83,8 @@ ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
   connectGlobalPorts();
   connectReadRequestChannels();
   connectReadDataChannels();
+  connectWriteRequestChannels();
+  connectWriteDataChannels();
   connectControllerRegs();
   connectControllerSignals();
 }
@@ -95,27 +99,30 @@ int ColumnWrapper::countBuffers() {
 }
 
 void ColumnWrapper::addReadArbiter() {
-  // TODO: don't create arbiter if there is just one column or bypass in arbiter implementation?
   auto num_read_columns = countColumnsOfMode(Mode::READ);
   rarb = make_shared<ReadArbiter>(num_read_columns);
-  rarb_inst = make_shared<Instantiation>(nameFrom({rarb->entity()->name(), "inst"}),
-                                        std::static_pointer_cast<Component>(rarb));
-  architecture()->addInstantiation(rarb_inst);
-  rarb_inst->mapGeneric(rarb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_read_columns));
-  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
-  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
-  rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
-  rarb->mst_rreq()->setSource(rarb_inst.get());
-  rarb_inst->setComment(
-      t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_read_columns) + " column readers.\n"
-  );
-  for (const auto &p : rarb->mst_rreq()->ports()) {
-    rarb_inst->mapPort(p.get(), p.get());
-  }
-  for (const auto &p : rarb->mst_rdat()->ports()) {
-    rarb_inst->mapPort(p.get(), p.get());
-  }
+  // We create the read arbiter component to get the request and data stream ports on the wrapper top level,
+  // but we don't instantiate it in the wrapper if we don't need it.
+  if (num_read_columns > 0) {
+    rarb_inst = make_shared<Instantiation>(nameFrom({rarb->entity()->name(), "inst"}),
+                                           std::static_pointer_cast<Component>(rarb));
+    architecture()->addInstantiation(rarb_inst);
 
+    rarb_inst->mapGeneric(rarb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_read_columns));
+    rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
+    rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+    rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
+    rarb->mst_rreq()->setSource(rarb_inst.get());
+    rarb_inst->setComment(
+        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_read_columns) + " column readers.\n"
+    );
+    for (const auto &p : rarb->mst_rreq()->ports()) {
+      rarb_inst->mapPort(p.get(), p.get());
+    }
+    for (const auto &p : rarb->mst_rdat()->ports()) {
+      rarb_inst->mapPort(p.get(), p.get());
+    }
+  }
   rarb->mst_rreq()->setGroup(pgroup_++);
   rarb->mst_rdat()->setGroup(pgroup_++);
   appendStream(rarb->mst_rreq());
@@ -123,27 +130,27 @@ void ColumnWrapper::addReadArbiter() {
 }
 
 void ColumnWrapper::addWriteArbiter() {
-  // TODO: don't create arbiter if there is just one column or bypass in arbiter implementation?
   auto num_write_columns = countColumnsOfMode(Mode::WRITE);
   warb = make_shared<WriteArbiter>(num_write_columns);
-  warb_inst = make_shared<Instantiation>(nameFrom({warb->entity()->name(), "inst"}),
-                                        std::static_pointer_cast<Component>(warb));
-  architecture()->addInstantiation(warb_inst);
-  warb_inst->mapGeneric(warb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_write_columns));
-  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
-  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
-  warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
-  warb->mst_wreq()->setSource(rarb_inst.get());
-  warb_inst->setComment(
-      t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_write_columns) + " column writers.\n"
-  );
-  for (const auto &p : warb->mst_wreq()->ports()) {
-    warb_inst->mapPort(p.get(), p.get());
+  if (num_write_columns > 0) {
+    warb_inst = make_shared<Instantiation>(nameFrom({warb->entity()->name(), "inst"}),
+                                           std::static_pointer_cast<Component>(warb));
+    architecture()->addInstantiation(warb_inst);
+    warb_inst->mapGeneric(warb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_write_columns));
+    warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
+    warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+    warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
+    warb->mst_wreq()->setSource(rarb_inst.get());
+    warb_inst->setComment(
+        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_write_columns) + " column writers.\n"
+    );
+    for (const auto &p : warb->mst_wreq()->ports()) {
+      warb_inst->mapPort(p.get(), p.get());
+    }
+    for (const auto &p : warb->mst_wdat()->ports()) {
+      warb_inst->mapPort(p.get(), p.get());
+    }
   }
-  for (const auto &p : warb->mst_wdat()->ports()) {
-    warb_inst->mapPort(p.get(), p.get());
-  }
-
   warb->mst_wreq()->setGroup(pgroup_++);
   warb->mst_wdat()->setGroup(pgroup_++);
   appendStream(warb->mst_wreq());
@@ -175,7 +182,7 @@ void ColumnWrapper::addGenerics() {
   entity()->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group));
   entity()->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group));
   entity()
-      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfg_.plat.reg.reg_width), group));
+      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfg_.plat.mmio.data_width), group));
   group++;
   entity()
       ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfg_.user.tag_width), group));
@@ -260,6 +267,18 @@ shared_ptr<Instantiation> ColumnWrapper::read_arbiter_inst() {
       return inst;
   }
   LOGD("ReadArbiter was not instantiated in ColumnWrapper architecture.");
+  return nullptr;
+}
+
+shared_ptr<Instantiation> ColumnWrapper::write_arbiter_inst() {
+  // Iterate over all component instantiations
+  for (auto &inst : architecture()->instances()) {
+    // Get only instantiations of Column
+    auto wa = std::dynamic_pointer_cast<WriteArbiter>(inst->component());
+    if (wa != nullptr)
+      return inst;
+  }
+  LOGD("WriteArbiter was not instantiated in ColumnWrapper architecture.");
   return nullptr;
 }
 
@@ -349,16 +368,29 @@ void ColumnWrapper::addInternalColumnSignals() {
   }
 }
 
-void ColumnWrapper::addInternalArbiterSignals(std::vector<shared_ptr<StreamPort>> ports) {
+void ColumnWrapper::addInternalReadArbiterSignals(std::vector<shared_ptr<StreamPort>> ports) {
   // ReadArbiter (if any)
   auto rai = read_arbiter_inst();
   if (rai != nullptr) {
-    auto ra = std::dynamic_pointer_cast<ReadArbiter>(rai->component());
     for (const auto &p : ports) {
       auto name = nameFrom({vhdl::INT_SIG, p->name()});
       auto sig = make_shared<SignalFromPort>(name, p->width(), p.get());
       architecture()->addSignal(sig, sgroup_);
       rai->mapPort(p.get(), sig.get());
+    }
+    sgroup_++;
+  }
+}
+
+void ColumnWrapper::addInternalWriteArbiterSignals(std::vector<shared_ptr<StreamPort>> ports) {
+  // WriteArbiter (if any)
+  auto wai = write_arbiter_inst();
+  if (wai != nullptr) {
+    for (const auto &p : ports) {
+      auto name = nameFrom({vhdl::INT_SIG, p->name()});
+      auto sig = make_shared<SignalFromPort>(name, p->width(), p.get());
+      architecture()->addSignal(sig, sgroup_);
+      wai->mapPort(p.get(), sig.get());
     }
     sgroup_++;
   }
@@ -443,6 +475,80 @@ void ColumnWrapper::connectReadDataChannels() {
         }
 
         auto invert = rdp->dir() == Dir::OUT;
+        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+        con->setGroup(pgroup_);
+        architecture()->addConnection(con);
+      }
+    }
+    offset++;
+    pgroup_++;
+  }
+}
+
+void ColumnWrapper::connectWriteRequestChannels() {
+  // First find all the column bus signals
+  int offset = 0;
+  for (const auto &c : column_instances()) {
+    if (c->mode() == Mode::WRITE) {
+      auto cw = std::static_pointer_cast<ColumnWriter>(c->component());
+      auto ports = cw->stream_wreq_->ports();
+      for (const auto &p : ports) {
+        auto wrp = std::dynamic_pointer_cast<WriteReqPort>(p);
+        auto wrs = dynamic_cast<WriteRequestStream *>(p->parent());
+        if (wrs != nullptr) {
+          auto sname = wrs->name();
+          auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+          auto col_sig = architecture()->getSignal(col_signame);
+          auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wrs->type()), typeToString(wrp->type())});
+          auto arb_sig = architecture()->getSignal(arb_signame);
+
+          Range range;
+
+          if (!col_sig->isVector()) {
+            range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+          } else {
+            auto hi = col_sig->width() * (offset + 1) - Value(1);
+            auto lo = col_sig->width() * offset;
+            range = Range(hi, lo);
+          }
+          auto invert = wrp->dir() == Dir::IN;
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          con->setGroup(pgroup_);
+          architecture()->addConnection(con);
+        }
+      }
+    }
+    offset++;
+    pgroup_++;
+  }
+}
+
+void ColumnWrapper::connectWriteDataChannels() {
+  // First find all the column bus signals
+  int offset = 0;
+  for (const auto &c : column_instances()) {
+    if (c->mode() == Mode::WRITE) {
+      auto cw = std::static_pointer_cast<ColumnWriter>(c->component());
+      for (const auto &p : cw->stream_wdat_->ports()) {
+        auto wdp = std::dynamic_pointer_cast<WriteDataPort>(p);
+        auto wds = dynamic_cast<WriteDataStream *>(p->parent());
+        auto sname = wds->name();
+        auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+        auto col_sig = architecture()->getSignal(col_signame);
+        auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wds->type()), typeToString(wdp->type())});
+        auto arb_sig = architecture()->getSignal(arb_signame);
+
+        Range range;
+
+        if (!col_sig->isVector()) {
+          range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+        } else {
+          auto hi = col_sig->width() * (offset + 1) - Value(1);
+          auto lo = col_sig->width() * offset;
+          range = Range(hi, lo);
+        }
+
+        auto invert = wdp->dir() == Dir::IN;
         auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
         con->setGroup(pgroup_);
         architecture()->addConnection(con);
@@ -546,7 +652,12 @@ void ColumnWrapper::connectGlobalPorts() {
     connectGlobalPortsOf(c.get());
   }
   // Connect the rest
-  connectGlobalPortsOf(rarb_inst.get());
+  if (rarb_inst != nullptr) {
+    connectGlobalPortsOf(rarb_inst.get());
+  }
+  if (warb_inst != nullptr) {
+    connectGlobalPortsOf(warb_inst.get());
+  }
   connectGlobalPortsOf(uctrl_inst_.get());
   connectGlobalPortsOf(usercore_inst_.get());
 }

@@ -65,10 +65,15 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
   mapGeneric(ent->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
   mapGeneric(ent->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
   mapGeneric(ent->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
-  mapGeneric(ent->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
   mapGeneric(ent->getGenericByName(ce::BUS_BURST_STEP_LEN), Value(ce::BUS_BURST_STEP_LEN));
   mapGeneric(ent->getGenericByName(ce::BUS_BURST_MAX_LEN), Value(ce::BUS_BURST_MAX_LEN));
   mapGeneric(ent->getGenericByName(ce::INDEX_WIDTH), Value(ce::INDEX_WIDTH));
+
+  // Generics for columnwriters only
+  if (mode == Mode::WRITE) {
+    mapGeneric(ent->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
+  }
+
 }
 
 std::shared_ptr<ArrowStream> Column::getArrowStream(std::shared_ptr<arrow::Field> field,
