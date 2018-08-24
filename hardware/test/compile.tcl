@@ -100,6 +100,7 @@ proc compile_columns {source_dir} {
 proc compile_wrapper {source_dir} {
   echo "- Wrapper components."
   vcom -quiet -work work -93 $source_dir/wrapper/UserCoreController.vhd
+  vcom -quiet -work work -93 $source_dir/wrapper/Wrapper.vhd
 }
 
 proc compile_fletcher {source_dir} {
