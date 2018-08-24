@@ -80,11 +80,11 @@ end BusWriteSlaveMock;
 
 architecture Behavioral of BusWriteSlaveMock is
 
-  signal wreq_cons_valid         : std_logic;
-  signal wreq_cons_ready         : std_logic;
+  signal wreq_cons_valid        : std_logic;
+  signal wreq_cons_ready        : std_logic;
 
-  signal wreq_int_valid          : std_logic;
-  signal wreq_int_ready          : std_logic;
+  signal wreq_int_valid         : std_logic;
+  signal wreq_int_ready         : std_logic;
 
   signal wdat_prod_valid        : std_logic;
   signal wdat_prod_ready        : std_logic;

@@ -12,7 +12,6 @@ using vhdl::Value;
 
 namespace fletchgen {
 
-template<>
 string typeToString(ASP type) {
   switch (type) {
     case ASP::VALID: return "valid";
@@ -27,7 +26,6 @@ string typeToString(ASP type) {
   throw std::runtime_error("Unknown port type.");
 }
 
-template<>
 string typeToString(CSP type) {
   switch (type) {
     case CSP::FIRST_INDEX: return "firstIdx";
@@ -41,29 +39,6 @@ string typeToString(CSP type) {
   throw std::runtime_error("Unknown port type.");
 }
 
-template<>
-string typeToString(RRP type) {
-  switch (type) {
-    case RRP::VALID: return "valid";
-    case RRP::READY: return "ready";
-    case RRP::ADDRESS: return "addr";
-    case RRP::BURSTLEN: return "len";;
-  }
-  throw std::runtime_error("Unknown port type.");
-}
-
-template<>
-string typeToString(RDP type) {
-  switch (type) {
-    case RDP::VALID: return "valid";
-    case RDP::READY: return "ready";
-    case RDP::DATA: return "data";
-    case RDP::LAST: return "last";
-  }
-  throw std::runtime_error("Unknown port type.");
-}
-
-template<>
 string typeToString(GP type) {
   switch (type) {
     case GP::BUS_CLK:return ce::BUS_CLK;
@@ -77,6 +52,47 @@ string typeToString(GP type) {
     case GP::REG_USER:return "reg_user";
     case GP::SIG:return "signal";
     case GP::REG_RETURN:return "reg_return";
+  }
+  throw std::runtime_error("Unknown port type.");
+}
+
+string typeToString(RRP type) {
+  switch (type) {
+    case RRP::VALID: return "valid";
+    case RRP::READY: return "ready";
+    case RRP::ADDRESS: return "addr";
+    case RRP::BURSTLEN: return "len";;
+  }
+  throw std::runtime_error("Unknown port type.");
+}
+
+string typeToString(RDP type) {
+  switch (type) {
+    case RDP::VALID: return "valid";
+    case RDP::READY: return "ready";
+    case RDP::DATA: return "data";
+    case RDP::LAST: return "last";
+  }
+  throw std::runtime_error("Unknown port type.");
+}
+
+string typeToString(WDP type) {
+  switch (type) {
+    case WDP::VALID: return "valid";
+    case WDP::READY: return "ready";
+    case WDP::DATA: return "data";
+    case WDP::STROBE: return "strobe";
+    case WDP::LAST: return "last";
+  }
+  throw std::runtime_error("Unknown port type.");
+}
+
+string typeToString(WRP type) {
+  switch (type) {
+    case WRP::VALID: return "valid";
+    case WRP::READY: return "ready";
+    case WRP::ADDRESS: return "addr";
+    case WRP::BURSTLEN: return "len";;
   }
   throw std::runtime_error("Unknown port type.");
 }
@@ -144,6 +160,26 @@ ReadDataPort::ReadDataPort(const std::string &name, RDP type, Dir dir, const Val
       WithOffset(std::move(offset)) {}
 
 ReadDataPort::ReadDataPort(const std::string &name, RDP type, Dir dir, Stream *stream, Value offset)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream),
+      TypedBy(type),
+      WithOffset(std::move(offset)) {}
+
+WriteReqPort::WriteReqPort(const std::string &name, WRP type, Dir dir, const Value &width, Stream *stream, Value offset)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),
+      TypedBy(type),
+      WithOffset(std::move(offset)) {}
+
+WriteReqPort::WriteReqPort(const std::string &name, WRP type, Dir dir, Stream *stream, Value offset)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream),
+      TypedBy(type),
+      WithOffset(std::move(offset)) {}
+
+WriteDataPort::WriteDataPort(const std::string &name, WDP type, Dir dir, const Value &width, Stream *stream, Value offset)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),
+      TypedBy(type),
+      WithOffset(std::move(offset)) {}
+
+WriteDataPort::WriteDataPort(const std::string &name, WDP type, Dir dir, Stream *stream, Value offset)
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream),
       TypedBy(type),
       WithOffset(std::move(offset)) {}

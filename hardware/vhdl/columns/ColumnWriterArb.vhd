@@ -280,8 +280,8 @@ begin
         SLV_DAT_SLICES          => parse_param(CFG, "dat_out_slices", true)
       )
       port map (
-        clk                     => bus_clk,
-        reset                   => bus_reset,
+        bus_clk                 => bus_clk,
+        bus_reset               => bus_reset,
   
         -- Slave ports (input)
         bsv_wreq_valid          => a_bus_wreq_valid,

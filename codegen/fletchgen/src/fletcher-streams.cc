@@ -26,11 +26,11 @@ using vhdl::nameFrom;
 
 namespace fletchgen {
 
-template<>
 string typeToString(FST type) {
   switch (type) {
     case FST::CMD: return "cmd";
-    case FST::ARROW: return "out";
+    case FST::RARROW: return "out";
+    case FST::WARROW: return "in";
     case FST::UNLOCK: return "unl";
     case FST::RREQ: return "rreq";
     case FST::RDAT: return "rdat";
@@ -43,7 +43,8 @@ string typeToString(FST type) {
 string typeToLongString(FST type) {
   switch (type) {
     case FST::CMD: return "COMMAND";
-    case FST::ARROW: return "DATA";
+    case FST::RARROW: return "READ DATA";
+    case FST::WARROW: return "WRITE DATA";
     case FST::UNLOCK: return "UNLOCK";
     case FST::RREQ: return "BUS READ REQUEST";
     case FST::RDAT: return "BUS READ RESPONSE";
@@ -51,6 +52,14 @@ string typeToLongString(FST type) {
     case FST::WDAT: return "BUS WRITE RESPONSE";
   }
   throw std::runtime_error("Unknown stream type.");
+}
+
+FST modeToArrowType(Mode mode) {
+  if (mode == Mode::READ) {
+    return FST::RARROW;
+  } else {
+    return FST::WARROW;
+  }
 }
 
 vector<shared_ptr<Buffer>> ArrowStream::getBuffers() {
@@ -103,7 +112,7 @@ ArrowStream::ArrowStream(shared_ptr<arrow::Field> field, ArrowStream *parent, Mo
     : FletcherColumnStream(parent != nullptr ?
                            nameFrom({parent->name(), vhdl::makeIdentifier(field->name())})
                                              : vhdl::makeIdentifier(field->name()),
-                           FST::ARROW,
+                           modeToArrowType(mode),
                            column),
       ChildOf(parent),
       field_(move(field)),
@@ -158,7 +167,7 @@ ArrowStream::ArrowStream(shared_ptr<arrow::Field> field, ArrowStream *parent, Mo
 }
 
 ArrowStream::ArrowStream(string name, Value width, ArrowStream *parent, Mode mode, Column *column, int epc)
-    : FletcherColumnStream(parent != nullptr ? nameFrom({parent->name(), name}) : name, FST::ARROW, column),
+    : FletcherColumnStream(parent != nullptr ? nameFrom({parent->name(), name}) : name, modeToArrowType(mode), column),
       ChildOf(parent),
       field_(nullptr),
       mode_(mode),

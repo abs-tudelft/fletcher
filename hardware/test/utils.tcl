@@ -28,7 +28,7 @@ proc add_colored_unit_signals_to_group {group unit in_color out_color internal_c
   colorize $internal_list  $internal_color
 }
 
-proc add_waves {groups {in_color green} {out_color yellow} {internal_color white}} {
+proc add_waves {groups {in_color #2FCE03} {out_color #FDF23E} {internal_color #FFFFFF}} {
   for {set group_idx 0} {$group_idx < [llength $groups]} {incr group_idx} {
     set group [lindex [lindex $groups $group_idx] 0]
     set unit  [lindex [lindex $groups $group_idx] 1]
@@ -44,7 +44,7 @@ proc simulate {top {groups_and_units 0} {duration -all}} {
     echo "No groups and instances defined."
   } else {
     config    wave -signalnamewidth 1
-    add_waves $groups_and_units green yellow white
+    add_waves $groups_and_units
     configure wave -namecolwidth    256
     configure wave -valuecolwidth   192
   }

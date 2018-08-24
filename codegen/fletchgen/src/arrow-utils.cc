@@ -263,7 +263,7 @@ void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::
 }
 
 std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode) {
-  std::vector<std::string> keys = {"ce::mode"};
+  std::vector<std::string> keys = {"fletcher_mode"};
   std::vector<std::string> values;
   if (mode == Mode::READ)
     values = {"read"};
@@ -279,7 +279,7 @@ std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc) {
 }
 
 std::shared_ptr<arrow::KeyValueMetadata> metaIgnore() {
-  std::vector<std::string> ignore_key = {"ce::ignore"};
+  std::vector<std::string> ignore_key = {"fletcher_ignore"};
   std::vector<std::string> ignore_value = {"true"};
   return std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
 }

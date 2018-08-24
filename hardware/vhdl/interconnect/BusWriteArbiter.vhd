@@ -69,8 +69,8 @@ entity BusWriteArbiter is
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferWriter.
-    clk                         : in  std_logic;
-    reset                       : in  std_logic;
+    bus_clk                     : in  std_logic;
+    bus_reset                   : in  std_logic;
 
     -- Master port.
     mst_wreq_valid              : out std_logic;
@@ -518,8 +518,8 @@ begin
       SLV_DAT_SLICES            => SLV_DAT_SLICES
     )
     port map (
-      clk                       => clk,
-      reset                     => reset,
+      bus_clk                   => bus_clk,
+      bus_reset                 => bus_reset,
 
       mst_wreq_valid            => mst_wreq_valid,
       mst_wreq_ready            => mst_wreq_ready,

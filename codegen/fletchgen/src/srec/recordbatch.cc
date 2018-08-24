@@ -114,5 +114,6 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
   std::ofstream ofs(srec_fname, std::ofstream::out);
   sr.write(ofs);
   ofs.close();
+  free(srecbuf);
   return offsets;
 }

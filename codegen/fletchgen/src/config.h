@@ -18,13 +18,15 @@ struct Burst {
 struct Bus {
   width addr_width = ce::BUS_ADDR_WIDTH_DEFAULT;
   width data_width = ce::BUS_DATA_WIDTH_DEFAULT;
+  width strobe_width = ce::BUS_STROBE_WIDTH_DEFAULT;
   width len_width = ce::BUS_LEN_WIDTH_DEFAULT;
   Burst burst;
 };
 
 /// MMIO related configuration
-struct Reg {
-  width reg_width = ce::REG_WIDTH_DEFAULT;
+struct MMIO {
+  width data_width = ce::MMIO_DATA_WIDTH_DEFAULT;
+  width addr_width = ce::MMIO_ADDR_WIDTH_DEFAULT;
 };
 
 /// Arrow related configuration
@@ -41,8 +43,8 @@ struct User {
 /// Platform configuration
 struct Platform {
   Bus bus;
-  Reg reg;
-  unsigned int regs_per_address() { return bus.addr_width / reg.reg_width; }
+  MMIO mmio;
+  unsigned int regs_per_address() { return bus.addr_width / mmio.data_width; }
 };
 
 /// Global configuration used in creating wrapper & top level
