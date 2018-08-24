@@ -20,6 +20,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB();
 
 /// @brief Simplest example schema.
 std::shared_ptr<arrow::Schema> genSimpleReadSchema();
+std::shared_ptr<arrow::RecordBatch> getUint8RB();
 
 /// @brief Simple example schema with both read and write.
 std::shared_ptr<arrow::Schema> genSimpleWriteSchema();

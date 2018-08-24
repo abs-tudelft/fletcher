@@ -70,6 +70,30 @@ std::shared_ptr<arrow::Schema> genSimpleReadSchema() {
   return schema;
 }
 
+std::shared_ptr<arrow::RecordBatch> getUint8RB() {
+
+  std::vector<uint8_t> numbers = {1,3,3,7};
+
+  // Make a string builder
+  arrow::UInt8Builder int_builder;
+
+  int_builder.AppendValues(numbers);
+
+  // Array to hold Arrow formatted string data
+  std::shared_ptr<arrow::Array> data_array;
+
+  // Finish building and create a new data array around the data
+  if (!int_builder.Finish(&data_array).ok()) {
+    throw std::runtime_error("Could not finalize string builder.");
+  };
+
+  // Create the Record Batch
+  std::shared_ptr<arrow::RecordBatch>
+      record_batch = arrow::RecordBatch::Make(genSimpleReadSchema(), numbers.size(), {data_array});
+
+  return record_batch;
+}
+
 std::shared_ptr<arrow::Schema> genSimpleWriteSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
