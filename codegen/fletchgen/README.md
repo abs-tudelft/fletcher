@@ -99,3 +99,9 @@ This produces the wrapper on stdout. If you want to save it in a file:
 ## Field metadata:
 * `"fletcher_ignore" : "true" | "false"` - Whether the field must ignored in interface generation.
 * `"fletcher_epc" : "0" | "1" | "2" | "4" | ...` - The number of elements per clock cycle to deliver of this field. Must be power of 2. Only works on lists of primitives or primitive fields.
+
+# Further reading
+
+You can generate a simulation top level and provide a Flatbuffer file with a RecordBatch to the simulation environment.
+You can use this to debug your designs in simulation, independent of an FPGA platform specific simulation environment.
+[An example is shown here.](../../hardware/test/fletchgen/stringread).
