@@ -19,6 +19,7 @@ use ieee.math_real.all;
 
 library work;
 use work.Streams.all;
+use work.Columns.all;
 use work.SimUtils.all;
 
 entity ColumnWriterListSync_tb is

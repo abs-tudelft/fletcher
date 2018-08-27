@@ -328,18 +328,18 @@ begin
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
-      NUM_SLAVES                => 3,
+      NUM_SLAVE_PORTS           => 3,
       ARB_METHOD                => "ROUND-ROBIN",
       MAX_OUTSTANDING           => 4,
       RAM_CONFIG                => "",
-      REQ_IN_SLICES             => true,
-      REQ_OUT_SLICE             => true,
-      DAT_IN_SLICE              => true,
-      DAT_OUT_SLICE             => true
+      SLV_REQ_SLICES            => true,
+      MST_REQ_SLICE             => true,
+      MST_DAT_SLICE             => true,
+      SLV_DAT_SLICES            => true
     )
     port map (
-      clk                       => clk,
-      reset                     => reset,
+      bus_clk                   => clk,
+      bus_reset                 => reset,
 
       mst_wreq_valid            => a2s_wreq_valid,
       mst_wreq_ready            => a2s_wreq_ready,

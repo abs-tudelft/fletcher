@@ -1,16 +1,7 @@
-# SimpleReadColumn test setup
-do $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
-do $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
-
-proc comp_sim {} {
-  vcom -quiet -work work test.vhd
-  vcom -quiet -work work test_wrapper.vhd
-  vcom -quiet -work work sim_top.vhd
-}
+source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
 
 proc run_sim {} {
-  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-
+  compile_sources
   simulate work.sim_top {{"Testbench" sim:/sim_top/* }
                             {"Memory" sim:/sim_top/rmem_inst/*}
                             {"Wrapper" sim:/sim_top/test_wrapper_inst/*}
@@ -21,8 +12,11 @@ proc run_sim {} {
                            } 1000ns
 }
 
-compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
-compile_interconnect_tb $::env(FLETCHER_HARDWARE_DIR)/vhdl
+add_fletcher
+add_fletcher_tb
 
-comp_sim
+add_source test.vhd
+add_source test_wrapper.vhd
+add_source sim_top.vhd
+
 run_sim
