@@ -20,6 +20,8 @@ library work;
 use work.Utils.all;
 use work.Streams.all;
 use work.Buffers.all;
+use work.Interconnect.all;
+use work.Wrapper.all;
 
 -- This testbench is used to check the functionality of the BufferReader.
 -- TODO: it does not always return TEST_SUCCESSFUL even though it may be 
@@ -216,14 +218,14 @@ begin
     port map (
       clk                       => bus_clk,
       reset                     => bus_reset,
-      req_valid                 => bus_rreq_valid,
-      req_ready                 => bus_rreq_ready,
-      req_addr                  => bus_rreq_addr,
-      req_len                   => bus_rreq_len,
-      resp_valid                => bus_rdat_valid,
-      resp_ready                => bus_rdat_ready,
-      resp_data                 => bus_rdat_data,
-      resp_last                 => bus_rdat_last
+      rreq_valid                => bus_rreq_valid,
+      rreq_ready                => bus_rreq_ready,
+      rreq_addr                 => bus_rreq_addr,
+      rreq_len                  => bus_rreq_len,
+      rdat_valid                => bus_rdat_valid,
+      rdat_ready                => bus_rdat_ready,
+      rdat_data                 => bus_rdat_data,
+      rdat_last                 => bus_rdat_last
     );
 
   user_core : UserCoreMock
