@@ -44,18 +44,19 @@ begin
   begin
     if rising_edge(bus_clk) then
     
-      start <= control(0);
-      stop  <= control(1);
+      reset <= control(0);
+      start <= control(1);
+      stop  <= control(2);
       
       if bus_reset = '1' then
+        reset <= '0';
         start <= '0';
         stop  <= '0';
-        reset <= '0';
       end if;
       
       status(0) <= idle;
       status(1) <= busy;
-      status(2) <= done;    
+      status(2) <= done;
       status(31 downto 3) <= (others => '0');
     end if;
     

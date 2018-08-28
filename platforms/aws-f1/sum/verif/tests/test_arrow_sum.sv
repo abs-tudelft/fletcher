@@ -31,8 +31,8 @@
 
 `define REG_CONTROL_HI      2
 `define REG_CONTROL_LO      3
-`define   CONTROL_START     32'h00000001
-`define   CONTROL_RESET     32'h00000004
+`define   CONTROL_START     32'h00000002
+`define   CONTROL_RESET     32'h00000001
 
 `define REG_RETURN_HI       4
 `define REG_RETURN_LO       5
@@ -113,7 +113,7 @@ initial begin
 
   // Fill the buffer with random numbers
   for (int i = 0; i < num_rows; i++) begin
-    buf_data.i = i * 7;  // sum == 7 * (x/2 (1 + x))
+    buf_data.i = i * 7;  // sum == 7 * (num_rows * (num_rows - 1)) / 2
     tb.hm_put_byte(.addr(buffer_address + 8 * i    ), .d(buf_data.bytes[0]));
     tb.hm_put_byte(.addr(buffer_address + 8 * i + 1), .d(buf_data.bytes[1]));
     tb.hm_put_byte(.addr(buffer_address + 8 * i + 2), .d(buf_data.bytes[2]));
@@ -181,14 +181,23 @@ initial begin
   $display("[%t] : UserCore completed ", $realtime);
 
   // Get the return register value
-  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
-  $display("[t] : Return register HI: %d", read_data);
   tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
   $display("[t] : Return register LO: %d", read_data);
+  if (read_data != 0) begin
+    $display("[t] : ERROR: Expected 0 on return LO");
+    fail = 1;
+  end
+  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
+  $display("[t] : Return register HI: %d", read_data);
+  if (read_data != 7 * (num_rows * (num_rows - 1)) / 2) begin
+    $display("[t] : ERROR: Result does not match expected %d", 7 * (num_rows * (num_rows - 1)) / 2);
+    fail = 1;
+  end
 
   // Power down
   #500ns;
   tb.power_down();
+
 
   // Report pass/fail status
   $display("[%t] : Checking total error count...", $realtime);
