@@ -79,10 +79,10 @@ architecture Behavioral of axi_mmio is
   constant RESP_OK : std_logic_vector(1 downto 0) := "00";
   
   -- The LSB index in the slave address
-  constant SLV_ADDR_LSB : natural := log2floor(BUS_DATA_WIDTH/4) - 1;
+  constant SLV_ADDR_LSB : natural := log2ceil(BUS_DATA_WIDTH/4) - 1;
   
   -- The MSB index in the slave address
-  constant SLV_ADDR_MSB : natural := SLV_ADDR_LSB + log2floor(NUM_REGS);
+  constant SLV_ADDR_MSB : natural := SLV_ADDR_LSB + log2ceil(NUM_REGS) - 1;
   
   type state_type is (IDLE, WR, BR, RD);
   
