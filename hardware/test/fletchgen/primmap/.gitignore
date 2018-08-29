@@ -1,0 +1,5 @@
+*
+!.gitignore
+!primmap.vhd
+!primmap.tcl
+!README.md
