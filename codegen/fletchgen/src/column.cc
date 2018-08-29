@@ -329,19 +329,20 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
 
   /* Write request channel */
   stream_wreq_->addPort(
-      {make_shared<ReadReqPort>("", RRP::VALID, Dir::IN, stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::READY, Dir::OUT, stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_wreq_.get())
+      {make_shared<WriteReqPort>("", WRP::VALID, Dir::IN, stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::READY, Dir::OUT, stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_wreq_.get())
       }
   );
 
   /* Write data channel */
   stream_wdat_->addPort(
-      {make_shared<ReadDataPort>("", RDP::VALID, Dir::OUT, stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::READY, Dir::IN, stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::LAST, Dir::OUT, stream_wdat_.get())
+      {make_shared<WriteDataPort>("", WDP::VALID, Dir::OUT, stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::READY, Dir::IN, stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::STROBE, Dir::OUT, Value(ce::BUS_STROBE_WIDTH), stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::LAST, Dir::OUT, stream_wdat_.get())
       }
   );
 

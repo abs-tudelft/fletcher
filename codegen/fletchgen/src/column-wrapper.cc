@@ -139,6 +139,7 @@ void ColumnWrapper::addWriteArbiter() {
     warb_inst->mapGeneric(warb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_write_columns));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+    warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
     warb->mst_wreq()->setSource(rarb_inst.get());
     warb_inst->setComment(
@@ -421,7 +422,7 @@ void ColumnWrapper::connectReadRequestChannels() {
       for (const auto &p : ports) {
         auto rrp = std::dynamic_pointer_cast<ReadReqPort>(p);
         auto rrs = dynamic_cast<ReadRequestStream *>(p->parent());
-        if (rrs != nullptr) {
+        if ((rrs != nullptr) && (rrp != nullptr)) {
           auto sname = rrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
           auto col_sig = architecture()->getSignal(col_signame);
@@ -443,9 +444,9 @@ void ColumnWrapper::connectReadRequestChannels() {
           architecture()->addConnection(con);
         }
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -458,30 +459,32 @@ void ColumnWrapper::connectReadDataChannels() {
       for (const auto &p : cr->stream_rdat_->ports()) {
         auto rdp = std::dynamic_pointer_cast<ReadDataPort>(p);
         auto rds = dynamic_cast<ReadDataStream *>(p->parent());
-        auto sname = rds->name();
-        auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
-        auto col_sig = architecture()->getSignal(col_signame);
-        auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(rds->type()), typeToString(rdp->type())});
-        auto arb_sig = architecture()->getSignal(arb_signame);
+        if ((rds != nullptr) && (rdp != nullptr)) {
+          auto sname = rds->name();
+          auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+          auto col_sig = architecture()->getSignal(col_signame);
+          auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(rds->type()), typeToString(rdp->type())});
+          auto arb_sig = architecture()->getSignal(arb_signame);
 
-        Range range;
+          Range range;
 
-        if (!col_sig->isVector()) {
-          range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
-        } else {
-          auto hi = col_sig->width() * (offset + 1) - Value(1);
-          auto lo = col_sig->width() * offset;
-          range = Range(hi, lo);
+          if (!col_sig->isVector()) {
+            range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+          } else {
+            auto hi = col_sig->width() * (offset + 1) - Value(1);
+            auto lo = col_sig->width() * offset;
+            range = Range(hi, lo);
+          }
+
+          auto invert = rdp->dir() == Dir::OUT;
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          con->setGroup(pgroup_);
+          architecture()->addConnection(con);
         }
-
-        auto invert = rdp->dir() == Dir::OUT;
-        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
-        con->setGroup(pgroup_);
-        architecture()->addConnection(con);
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -495,7 +498,7 @@ void ColumnWrapper::connectWriteRequestChannels() {
       for (const auto &p : ports) {
         auto wrp = std::dynamic_pointer_cast<WriteReqPort>(p);
         auto wrs = dynamic_cast<WriteRequestStream *>(p->parent());
-        if (wrs != nullptr) {
+        if ((wrs != nullptr) && (wrp != nullptr)) {
           auto sname = wrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
           auto col_sig = architecture()->getSignal(col_signame);
@@ -517,9 +520,9 @@ void ColumnWrapper::connectWriteRequestChannels() {
           architecture()->addConnection(con);
         }
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -532,30 +535,32 @@ void ColumnWrapper::connectWriteDataChannels() {
       for (const auto &p : cw->stream_wdat_->ports()) {
         auto wdp = std::dynamic_pointer_cast<WriteDataPort>(p);
         auto wds = dynamic_cast<WriteDataStream *>(p->parent());
-        auto sname = wds->name();
-        auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
-        auto col_sig = architecture()->getSignal(col_signame);
-        auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wds->type()), typeToString(wdp->type())});
-        auto arb_sig = architecture()->getSignal(arb_signame);
+        if ((wds != nullptr) && (wdp != nullptr)) {
+          auto sname = wds->name();
+          auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+          auto col_sig = architecture()->getSignal(col_signame);
+          auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wds->type()), typeToString(wdp->type())});
+          auto arb_sig = architecture()->getSignal(arb_signame);
 
-        Range range;
+          Range range;
 
-        if (!col_sig->isVector()) {
-          range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
-        } else {
-          auto hi = col_sig->width() * (offset + 1) - Value(1);
-          auto lo = col_sig->width() * offset;
-          range = Range(hi, lo);
+          if (!col_sig->isVector()) {
+            range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+          } else {
+            auto hi = col_sig->width() * (offset + 1) - Value(1);
+            auto lo = col_sig->width() * offset;
+            range = Range(hi, lo);
+          }
+
+          auto invert = wdp->dir() == Dir::IN;
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          con->setGroup(pgroup_);
+          architecture()->addConnection(con);
         }
-
-        auto invert = wdp->dir() == Dir::IN;
-        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
-        con->setGroup(pgroup_);
-        architecture()->addConnection(con);
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
