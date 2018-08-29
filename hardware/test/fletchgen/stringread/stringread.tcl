@@ -9,7 +9,7 @@ proc run_sim {} {
                             {"ColumnReader" sim:/sim_top/test_wrapper_inst/Name_read_inst/*}
                             {"Offsets buffer" sim:/sim_top/test_wrapper_inst/Name_read_inst/arb_inst/a_inst/listprim_gen/list_inst/a_inst/*}
                             {"Values buffer" sim:/sim_top/test_wrapper_inst/Name_read_inst/arb_inst/a_inst/listprim_gen/list_inst/b_inst/*}
-                           } 1000ns
+                           }
 }
 
 add_fletcher
