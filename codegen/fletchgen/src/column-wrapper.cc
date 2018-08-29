@@ -510,7 +510,7 @@ void ColumnWrapper::connectWriteRequestChannels() {
             auto lo = col_sig->width() * offset;
             range = Range(hi, lo);
           }
-          auto invert = wrp->dir() == Dir::IN;
+          auto invert = wrp->dir() == Dir::OUT;
           auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
           con->setGroup(pgroup_);
           architecture()->addConnection(con);
