@@ -56,8 +56,7 @@ begin
       
       status(0) <= idle;
       status(1) <= busy;
-      status(2) <= done;    
-      status(31 downto 3) <= (others => '0');
+      status(2) <= done;
     end if;
     
   end process;
