@@ -7,9 +7,9 @@ namespace top {
 
 std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
                            const std::vector<std::ostream *> &outputs,
-                           std::string read_srec_path,
+                           const std::string &read_srec_path,
                            std::vector<uint64_t> buffers,
-                           std::string write_srec_path) {
+                           const std::string &dump_srec_path) {
   const char *fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
   if (fhwd == nullptr) {
     throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
@@ -45,7 +45,7 @@ std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_
   t.replace("FLETCHER_WRAPPER_INST_NAME", nameFrom({col_wrapper->entity()->name(), "inst"}));
 
   t.replace("READ_SREC_PATH", read_srec_path);
-  t.replace("WRITE_SREC_PATH", write_srec_path);
+  t.replace("DUMP_SREC_PATH", dump_srec_path);
 
   if (!buffers.empty()) {
     std::stringstream bufstr;

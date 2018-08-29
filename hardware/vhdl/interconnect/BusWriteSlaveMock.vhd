@@ -22,10 +22,11 @@ use work.Memory.all;
 use work.Utils.all;
 use work.Streams.all;
 use work.Interconnect.all;
+use work.SimUtils.all;
 
--- This simulation-only unit is a mockup of a bus slave that can either
--- respond based on an S-record file of the memory contents, or simply returns
--- the requested address as data. The handshake signals can be randomized.
+-- This simulation-only unit is a mockup of a bus slave that can either write 
+-- to an S-record file, or simply accept and print the written data on stdout.
+-- The handshake signals can be randomized.
 
 entity BusWriteSlaveMock is
   generic (
@@ -52,8 +53,8 @@ entity BusWriteSlaveMock is
     -- Whether to randomize the request stream handshake timing.
     RANDOM_RESPONSE_TIMING      : boolean := true;
 
-    -- S-record file to load into memory. If not specified, the unit reponds
-    -- with the requested address for each word.
+    -- S-record file to dump writes. If not specified, the unit dumps the 
+    -- writes on stdout
     SREC_FILE                   : string := ""
 
   );
@@ -100,7 +101,11 @@ begin
     variable len    : natural;
     variable addr   : unsigned(63 downto 0);
     variable data   : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    variable mem    : mem_state_type;
   begin
+    if SREC_FILE /= "" then
+      mem_clear(mem);
+    end if;
 
     state: loop
 
@@ -125,8 +130,6 @@ begin
 
       for i in 0 to len-1 loop
 
-        data := std_logic_vector(resize(addr, BUS_DATA_WIDTH));
-
         -- Accept the incoming data
         wdat_ready <= '1';
         
@@ -137,10 +140,13 @@ begin
           exit when wdat_valid = '1';
         end loop;
         
-        -- Check the data
-        assert wdat_data = data
-          report "Unexpected data on bus write data channel."
-          severity failure;
+        -- Print or dump the data to an SREC file
+        if (SREC_FILE = "") then
+          dumpStdOut("Write > " & sim_hex_no0x(std_logic_vector(addr)) & " > " & sim_hex_no0x(wdat_data));
+        else
+          mem_write(mem, std_logic_vector(addr), wdat_data);
+          mem_dumpSRec(mem, SREC_FILE);
+        end if;
         
         -- Check the last signal
         if i = len-1 then
@@ -155,7 +161,7 @@ begin
       
       -- Stop accepting data
       wdat_ready <= '0';
-
+      
     end loop;
   end process;
 

@@ -23,8 +23,8 @@ namespace top {
 /// @brief Generate a simulation top level on supplied output streams from a ColumnWrapper
 std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
                            const std::vector<std::ostream *> &outputs,
-                           std::string read_srec_path = "",
-                           std::vector<uint64_t> buffers = {},
-                           std::string write_srec_path = "");
+                           const std::string &read_srec_path,
+                           std::vector<uint64_t> buffers,
+                           const std::string &dump_srec_path);
 
 }

@@ -84,9 +84,11 @@ int main(int argc, char **argv) {
       ("axi", po::value<std::string>(), "AXI top level template file output")
       ("sim", po::value<std::string>(), "Simulation top level template file output")
       ("srec_output,x", po::value<std::string>(),
-       "SREC output file name. If this and recordbatch_in are specified, this "
-       "tool will convert an Arrow RecordBatch message stored in a file into an "
-       "SREC file. The SREC file can be used in the simulation top-level.")
+       "SREC output file name. If this and recordbatch_in are specified, this tool will convert an Arrow RecordBatch "
+       "message stored in a file into an SREC file. The SREC file can be used in the simulation top-level.")
+      ("srec_dump,y", po::value<std::string>(),
+          "SREC file name to be filled in in simulation top level. All writes to memory are dumped in this SREC file"
+          "during simulation.")
       ("quiet,q", "Prevent output on stdout.");
 
   /* Positional options: */
@@ -114,6 +116,7 @@ int main(int argc, char **argv) {
 
   // Optional RecordBatch <-> SREC conversion
   std::string sro_fname;
+  std::string srd_fname;
   std::vector<uint64_t> sro_buffers;
 
   auto cnt = vm.count("recordbatch_data") + vm.count("recordbatch_schema") + vm.count("srec_output");
@@ -134,6 +137,10 @@ int main(int argc, char **argv) {
         sro_buffers = fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
       }
     }
+  }
+
+  if (vm.count("srec_dump")) {
+    srd_fname = vm["srec_dump"].as<std::string>();
   }
 
   // Schema inputs:
@@ -209,7 +216,7 @@ int main(int argc, char **argv) {
     if (vm.count("quiet") == 0) {
       simtop_outputs.push_back(&std::cout);
     }
-    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers);
+    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers, srd_fname);
   }
 
   LOGD("Done.");

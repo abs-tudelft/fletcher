@@ -304,7 +304,7 @@ ${SREC_BUFFER_ADDRESSES}
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "${WRITE_SREC_PATH}"
+    SREC_FILE                   => "${DUMP_SREC_PATH}"
   )
   port map (
     clk                         => bus_clk,
