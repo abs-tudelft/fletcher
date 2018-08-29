@@ -61,6 +61,9 @@ using fletchgen::Mode;
 
 /// @brief Fletchgen main
 int main(int argc, char **argv) {
+  std::shared_ptr<arrow::Schema> schema;
+  std::shared_ptr<arrow::RecordBatch> rb ;
+
   std::string schema_fname;
   std::string output_fname;
   std::string acc_name;
