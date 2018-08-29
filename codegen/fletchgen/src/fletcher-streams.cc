@@ -151,14 +151,15 @@ ArrowStream::ArrowStream(shared_ptr<arrow::Field> field, ArrowStream *parent, Mo
   if (!isStruct()) {
     Value width = getWidth(field_->type().get());
     if (!isList()) {
+      // Add the data port
+      addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
+      data_offset = data_offset + (width * epc_);
 
       // Only add a count port if this is a listprim secondary stream
       if (isListPrimChild()) {
         addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
         data_offset += 1;
       }
-      // Add the data port
-      addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
     } else {
       // If this is a list, the data port is a length
       addPort(make_shared<ArrowPort>("", ASP::LENGTH, dir, width * epc_, ptr(), data_offset));
@@ -199,15 +200,16 @@ ArrowStream::ArrowStream(string name, Value width, ArrowStream *parent, Mode mod
     data_offset += 1;
   }
 
+  // Add data port. We don't have to check for struct or list because they must always have a child. A string and a
+  // width parameter do not expose a child like an arrow::Field could.
+  addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
+  data_offset = data_offset + width * epc_;
+
   // Add a count port if this is a listprim secondary stream
   if (isListPrimChild()) {
     addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
     data_offset += 1;
   }
-
-  // Add data port. We don't have to check for struct or list because they must always have a child. A string and a
-  // width parameter do not expose a child like an arrow::Field could.
-  addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
 
 }
 
