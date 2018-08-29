@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+
 #include "recordbatch.h"
 
 std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
@@ -27,6 +29,30 @@ std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffe
   }
   ret.push_back(addr);
   return ret;
+}
+
+void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::Array *array) {
+  // Because Arrow buffer order seems to be by convention and not by specification, handle these special cases:
+  // This is to reverse the order of offset and value buffer to correspond with the hardware implementation.
+  if (array->type() == arrow::binary()) {
+    auto ba = dynamic_cast<arrow::BinaryArray *>(array);
+    buffers.push_back(ba->value_data().get());
+    buffers.push_back(ba->value_offsets().get());
+  } else if (array->type() == arrow::utf8()) {
+    auto sa = dynamic_cast<arrow::StringArray *>(array);
+    buffers.push_back(sa->value_data().get());
+    buffers.push_back(sa->value_offsets().get());
+  } else {
+    for (const auto &buf: array->data()->buffers) {
+      auto addr = buf.get();
+      if (addr != nullptr) {
+        buffers.push_back(addr);
+      }
+    }
+    for (const auto &child: array->data()->child_data) {
+      appendBuffers(buffers, child.get());
+    }
+  }
 }
 
 void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::ArrayData *array_data) {
@@ -80,8 +106,8 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
 
   std::vector<arrow::Buffer *> buffers;
   for (int c = 0; c < record_batch->num_columns(); c++) {
-    auto array_data = record_batch->column(c)->data();
-    appendBuffers(buffers, array_data.get());
+    auto column = record_batch->column(c);
+    appendBuffers(buffers, column.get());
   }
 
   LOGD("RecordBatch has " + std::to_string(buffers.size()) + " Arrow buffers.");

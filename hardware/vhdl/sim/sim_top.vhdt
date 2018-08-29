@@ -93,6 +93,12 @@ architecture Behavorial of sim_top is
   end component;
   -----------------------------------------------------------------------------
 
+  -- Sim constants
+  constant REG_CONTROL          : natural := 0;
+  constant REG_STATUS           : natural := 1;
+  constant REG_RETURN0          : natural := 2;
+  constant REG_RETURN1          : natural := 3;
+
   -- Sim signals
   signal clock_stop             : boolean := false;
 
@@ -124,9 +130,111 @@ architecture Behavorial of sim_top is
 
   -- MMIO registers
   signal regs_in                : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+  signal regs                   : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
   signal regs_out               : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
   signal regs_out_en            : std_logic_vector(NUM_REGS-1 downto 0);
+  
+  -- Write to MMIO register by index
+  procedure mmio_write(idx  : in  natural;
+                       data : in  std_logic_vector(REG_WIDTH-1 downto 0);
+                       signal regs : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH) <= data;
+  end mmio_write;
+  
+  -- Procedure to easily write to a user register
+  procedure uc_reg_write(idx  : in  natural;
+                         data : in  std_logic_vector(REG_WIDTH-1 downto 0);
+                         signal regs : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    mmio_write(4+idx, data, regs);
+  end uc_reg_write;
+  
+  -- Read from MMIO register by index
+  procedure mmio_read(idx  : in  natural;
+                      data : out std_logic_vector(REG_WIDTH-1 downto 0);
+                      signal regs : in  std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    data := regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH);
+  end mmio_read;  
+  
+  -- Procedure to easily read from a user register
+  procedure uc_reg_read(idx  : in  natural;
+                        data : out std_logic_vector(REG_WIDTH-1 downto 0);
+                        signal regs : in  std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    mmio_read(4+idx, data, regs);
+  end uc_reg_read;
+  
+  procedure uc_start(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
+  begin 
+    mmio_write(REG_CONTROL, X"00000001", regs); 
+  end uc_start;
+  
+  procedure uc_stop (signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is
+  begin 
+    mmio_write(REG_CONTROL, X"00000002", regs); 
+  end uc_stop;
+  
+  procedure uc_reset(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
+  begin 
+    mmio_write(REG_CONTROL, X"00000004", regs); 
+  end uc_reset;
+  
 begin
+
+  -- Typical stimuli process:
+  stimuli_proc : process is
+    variable read_data : std_logic_vector(REG_WIDTH-1 downto 0);
+  begin
+    wait until acc_reset = '1' and bus_reset = '1';
+    
+    -- 1. Reset the user core
+    uc_reset(regs_in);
+    wait until rising_edge(acc_clk);
+    
+    
+    -- 2. Write addresses of the arrow buffers in the SREC file.
+${SREC_BUFFER_ADDRESSES}
+   
+    -- 3. Writes any user core registers.
+    --
+    -- Here you can write, for example, the first and last index
+    -- 
+    -- Example:
+    -- First index in user reg 0
+    -- uc_reg_write(0, X"00000000"); wait until rising_edge(acc_clk);
+    -- Last index in user reg 0
+    -- uc_reg_write(1, X"00000010"); wait until rising_edge(acc_clk);
+    
+    -- 4. Start the user core.    
+    uc_start(regs_in);
+    wait until rising_edge(acc_clk);
+    
+    -- 5. Poll for completion
+    loop
+      wait until rising_edge(acc_clk);
+      
+      -- Read from the status register.
+      mmio_read(REG_STATUS, read_data, regs);
+      
+      -- Stop polling when done bit is asserted.
+      exit when read_data(2) = '1';
+    end loop;
+    
+    -- 6. Read return register
+    mmio_read(REG_RETURN0, read_data, regs);
+    report "Return register 0: " & integer'image(to_integer(unsigned(read_data)));
+    
+    mmio_read(REG_RETURN0, read_data, regs);
+    report "Return register 1: " & integer'image(to_integer(unsigned(read_data)));
+    
+    -- 7. Finish and stop simulation
+    report "Stimuli done.";
+    clock_stop <= true;
+    
+    wait;
+  end process;
 
   clk_proc: process is
   begin
@@ -151,6 +259,17 @@ begin
     acc_reset <= '0';
     bus_reset <= '0';
     wait;
+  end process;
+  
+  regs_out_proc: process(acc_clk) is
+  begin
+    if rising_edge(acc_clk) then
+      for I in 0 to NUM_REGS-1 loop
+        if regs_out_en(I) = '1' then
+          regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_out((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
+        end if;
+      end loop;
+    end if;
   end process;
   
   rmem_inst: BusReadSlaveMock

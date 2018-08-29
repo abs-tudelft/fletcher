@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
       ("srec_output,x", po::value<std::string>(),
        "SREC output file name. If this and recordbatch_in are specified, this "
        "tool will convert an Arrow RecordBatch message stored in a file into an "
-       "SREC file. The SREC file can be used in simulation.")
+       "SREC file. The SREC file can be used in the simulation top-level.")
       ("quiet,q", "Prevent output on stdout.");
 
   /* Positional options: */
@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
 
   // Optional RecordBatch <-> SREC conversion
   std::string sro_fname;
+  std::vector<uint64_t> sro_buffers;
 
   auto cnt = vm.count("recordbatch_data") + vm.count("recordbatch_schema") + vm.count("srec_output");
   if ((cnt > 1) && (cnt < 3)) {
@@ -144,10 +145,11 @@ int main(int argc, char **argv) {
         sro_fname = vm["srec_output"].as<std::string>();
         auto rbs = fletchgen::readSchemaFromFile(rbs_fname);
         auto rbd = fletchgen::srec::readRecordBatchFromFile(rbd_fname, rbs);
-        fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
+        sro_buffers = fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
       }
     }
   }
+
   // Schema input:
   if (vm.count("input")) {
     schema_fname = vm["input"].as<std::string>();
@@ -224,7 +226,7 @@ int main(int argc, char **argv) {
     if (vm.count("quiet") == 0) {
       simtop_outputs.push_back(&std::cout);
     }
-    top::generateSimTop(wrapper, simtop_outputs, sro_fname);
+    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers);
   }
 
   LOGD("Done.");
