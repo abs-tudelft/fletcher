@@ -43,10 +43,9 @@ set(SOURCE_FILES
         src/top/sim.h src/top/sim.cc
 
         src/config.h src/config.cc
+        )
 
-        src/fletchgen.cc)
-
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} src/fletchgen.cc)
 
 find_library(LIB_ARROW arrow)
 find_package(Boost COMPONENTS program_options REQUIRED)
@@ -57,15 +56,20 @@ install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 option(ENABLE_TESTS "Enable building of test stuff" ON)
 
-message("Building tests.")
+########################################################################################################################
+# TEST SCHEMA/RECORDBATCH GENERATOR
+########################################################################################################################
 
 if (ENABLE_TESTS)
     set(TEST_NAME ${PROJECT_NAME}-test-generate)
-    set(TEST_SOURCE_FILES
-            src/arrow-utils.h src/arrow-utils.cc
+
+    set(TEST_SOURCE_FILES ${SOURCE_FILES}
             test/test_schemas.h test/test_schemas.cc
+            test/test_recordbatches.h test/test_recordbatches.cc
             test/test-generate.cc)
+
     add_executable(${PROJECT_NAME}-test-generate ${TEST_SOURCE_FILES})
+
     target_link_libraries(${TEST_NAME} ${REQUIRED} Boost::program_options)
     target_link_libraries(${TEST_NAME} ${REQUIRED} ${LIB_ARROW})
 endif (ENABLE_TESTS)

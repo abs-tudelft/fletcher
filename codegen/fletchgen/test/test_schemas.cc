@@ -26,7 +26,7 @@ namespace test {
 std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("my_num", arrow::uint8(), false)
+      arrow::field("primread", arrow::uint8(), false)
   };
 
   // Create the schema

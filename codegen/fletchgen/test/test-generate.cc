@@ -13,20 +13,29 @@
 // limitations under the License.
 
 #include "../src/arrow-utils.h"
+#include "../src/srec/recordbatch.h"
 
 #include "test_schemas.h"
+#include "test_recordbatches.h"
 
 int main(int argc, char* argv[]) {
   std::shared_ptr<arrow::Schema> schema;
+  std::shared_ptr<arrow::RecordBatch> recordbatch;
 
+  /* Primitive */
   schema = fletchgen::test::genPrimReadSchema();
-  fletchgen::writeSchemaToFile(schema, "primread.fbs");
+  fletchgen::writeSchemaToFile(schema, "schemas/primread.fbs");
+  recordbatch = fletchgen::test::getUint8RB();
+  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/primread.rb");
 
   schema = fletchgen::test::genPrimWriteSchema();
-  fletchgen::writeSchemaToFile(schema, "primwrite.fbs");
+  fletchgen::writeSchemaToFile(schema, "schemas/primwrite.fbs");
 
+  /* String */
   schema = fletchgen::test::genStringSchema();
-  fletchgen::writeSchemaToFile(schema, "stringread.fbs");
+  fletchgen::writeSchemaToFile(schema, "schemas/stringread.fbs");
+  recordbatch = fletchgen::test::getStringRB();
+  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/names.rb");
 
   return EXIT_SUCCESS;
 }
