@@ -53,13 +53,6 @@ int getEPC(arrow::Field *field);
 ConfigType getConfigType(arrow::DataType *type);
 
 /**
- * @brief Return the configuration string for an Arrow DataType.
- * @param field The DataType.
- * @return The configuration string.
- */
-std::string genConfigString(arrow::Field *field, int level = 0);
-
-/**
  * @brief Return the schema operational mode (read or write) from the metadata, if any.
  * @param schema The Arrow Schema to inspect.
  * @return The schema operational mode, if any. Default = READ.
@@ -94,11 +87,11 @@ std::string getMeta(arrow::Schema *schema, const std::string &key);
 void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name);
 
 /**
- * Reads a schema from a FlatBuffer file.
- * @param file_name File to read from.
- * @return The schema.
+ * Reads schemas from multiple FlatBuffer files.
+ * @param file_names Files to read from.
+ * @return The schemas.
  */
-std::shared_ptr<arrow::Schema> readSchemaFromFile(const std::string &file_name);
+std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names);
 
 /// @brief Generate Arrow key-value metadata to determine the mode (read/write) of a field.
 std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode);
