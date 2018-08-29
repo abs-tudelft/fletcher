@@ -112,6 +112,7 @@ WriteArbiter::WriteArbiter(int num_slave_ports) : StreamComponent("BusWriteArbit
   Value addr_width = Value(ce::BUS_ADDR_WIDTH) * num_slave_ports;
   Value len_width = Value(ce::BUS_LEN_WIDTH) * num_slave_ports;
   Value data_width = Value(ce::BUS_DATA_WIDTH) * num_slave_ports;
+  Value strobe_width = Value(ce::BUS_STROBE_WIDTH) * num_slave_ports;
 
   slv_wreq_->addPort({std::make_shared<WriteReqPort>("", WRP::VALID, Dir::IN, hs_width, slv_wreq),
                       std::make_shared<WriteReqPort>("", WRP::READY, Dir::OUT, hs_width, slv_wreq),
@@ -122,7 +123,7 @@ WriteArbiter::WriteArbiter(int num_slave_ports) : StreamComponent("BusWriteArbit
   slv_wdat_->addPort({std::make_shared<WriteDataPort>("", WDP::VALID, Dir::IN, hs_width, slv_wdat),
                       std::make_shared<WriteDataPort>("", WDP::READY, Dir::OUT, hs_width, slv_wdat),
                       std::make_shared<WriteDataPort>("", WDP::DATA, Dir::IN, data_width, slv_wdat),
-                      std::make_shared<WriteDataPort>("", WDP::STROBE, Dir::IN, data_width, slv_wdat),
+                      std::make_shared<WriteDataPort>("", WDP::STROBE, Dir::IN, strobe_width, slv_wdat),
                       std::make_shared<WriteDataPort>("", WDP::LAST, Dir::IN, hs_width, slv_wdat)
                      });
 

@@ -448,7 +448,7 @@ class Entity : public Comment {
   void addPort(const std::shared_ptr<Port> &port);
 
   ///@brief Add a generic to this entity.
-  void addGeneric(const std::shared_ptr<Generic> &generic);
+  Entity* addGeneric(const std::shared_ptr<Generic> &generic);
 
   /// @brief Return the ports of this entity.
   std::vector<Port *> ports();

@@ -18,7 +18,6 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Arrow.all;
 use work.SimUtils.all;
 
 -- Example simulation-only User Core for the string read example.

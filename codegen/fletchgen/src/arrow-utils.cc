@@ -123,60 +123,6 @@ ConfigType getConfigType(arrow::DataType *type) {
   return ret;
 }
 
-std::string genConfigString(arrow::Field *field, int level) {
-  std::string ret;
-  ConfigType ct = getConfigType(field->type().get());
-
-  if (field->nullable()) {
-    ret += "null(";
-    level++;
-  }
-
-  int epc = getEPC(field);
-
-  //if (ct == ARB) return "arb";
-  //else if (ct == NUL) return "null";
-  //else
-
-  if (ct == ConfigType::PRIM) {
-    Value w = getWidth(field->type().get());
-
-    ret += "prim(" + w.toString();
-    level++;
-
-  } else if (ct == ConfigType::LISTPRIM) {
-    ret += "listprim(";
-    level++;
-
-    Value w = Value(8);
-
-    ret += w.toString();
-  } else if (ct == ConfigType::LIST) {
-    ret += "list(";
-    level++;
-  } else if (ct == ConfigType::STRUCT) {
-    ret += "struct(";
-    level++;
-  }
-
-  if (epc > 1) {
-    ret += ";epc=" + std::to_string(epc);
-  }
-
-  // Append children
-  for (int c = 0; c < field->type()->num_children(); c++) {
-    auto child = field->type()->children()[c];
-    ret += genConfigString(child.get());
-    if (c != field->type()->num_children() - 1)
-      ret += ",";
-  }
-
-  for (; level > 0; level--)
-    ret += ")";
-
-  return ret;
-}
-
 std::string getMeta(arrow::Schema *schema, const std::string &key) {
   if (schema->metadata() != nullptr) {
     std::unordered_map<std::string, std::string> meta;
@@ -229,18 +175,22 @@ std::string getModeString(Mode mode) {
   }
 }
 
-std::shared_ptr<arrow::Schema> readSchemaFromFile(const std::string &file_name) {
-  std::shared_ptr<arrow::Schema> schema_to_read;
-  std::shared_ptr<arrow::io::ReadableFile> fis;
-  if (arrow::io::ReadableFile::Open(file_name, &fis).ok()) {
-    if (arrow::ipc::ReadSchema(fis.get(), &schema_to_read).ok()) {
-      return schema_to_read;
+std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names) {
+  std::vector<std::shared_ptr<arrow::Schema>> schemas;
+  for (const auto& file_name : file_names) {
+    std::shared_ptr<arrow::Schema> schema_to_read;
+    std::shared_ptr<arrow::io::ReadableFile> fis;
+    if (arrow::io::ReadableFile::Open(file_name, &fis).ok()) {
+      if (arrow::ipc::ReadSchema(fis.get(), &schema_to_read).ok()) {
+        schemas.push_back(schema_to_read);
+      } else {
+        throw std::runtime_error("Could not read schema " + file_name + " from file input stream.");
+      }
     } else {
-      throw std::runtime_error("Could not read schema from file input stream.");
+      throw std::runtime_error("Could not open schema file for reading: " + file_name);
     }
-  } else {
-    throw std::runtime_error("Could not open schema file for reading: " + file_name);
   }
+  return schemas;
 }
 
 void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name) {

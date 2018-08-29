@@ -33,10 +33,6 @@
 #include "top/axi.h"
 #include "top/sim.h"
 
-#include "schema_test.h"
-
-#include "config.h"
-
 using fletchgen::Mode;
 
 /**
@@ -61,10 +57,10 @@ using fletchgen::Mode;
 
 /// @brief Fletchgen main
 int main(int argc, char **argv) {
-  std::shared_ptr<arrow::Schema> schema;
-  std::shared_ptr<arrow::RecordBatch> rb ;
+  std::vector<std::shared_ptr<arrow::Schema>> schemas;
+  std::shared_ptr<arrow::RecordBatch> rb;
 
-  std::string schema_fname;
+  std::vector<std::string> schema_fnames;
   std::string output_fname;
   std::string acc_name;
   std::string wrap_name;
@@ -75,19 +71,24 @@ int main(int argc, char **argv) {
 
   desc.add_options()
       ("help,h", "Produce this help message")
-      ("input,i", po::value<std::string>(), "Flatbuffer file with Arrow schema to base wrapper on.")
+      ("input,i",
+       po::value<std::string>(),
+       "Flatbuffer files with Arrow schemas to base wrapper on, comma seperated. E.g. file1.fbs,file2.fbs,...")
       ("output,o", po::value<std::string>(), "Wrapper output file.")
-      ("name,n", po::value<std::string>()->default_value("<input file name>"), "Name of the accelerator component.")
+      ("name,n",
+       po::value<std::string>()->default_value("<first input file name>"),
+       "Name of the accelerator component.")
       ("wrapper_name,w", po::value<std::string>()->default_value("fletcher_wrapper"), "Name of the wrapper component.")
-      ("custom_registers,r", po::value<int>(), "Number 32-bit registers in accelerator component.")
       ("recordbatch_data,d", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
       ("recordbatch_schema,s", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
       ("axi", po::value<std::string>(), "AXI top level template file output")
       ("sim", po::value<std::string>(), "Simulation top level template file output")
       ("srec_output,x", po::value<std::string>(),
-       "SREC output file name. If this and recordbatch_in are specified, this "
-       "tool will convert an Arrow RecordBatch message stored in a file into an "
-       "SREC file. The SREC file can be used in the simulation top-level.")
+       "SREC output file name. If this and recordbatch_in are specified, this tool will convert an Arrow RecordBatch "
+       "message stored in a file into an SREC file. The SREC file can be used in the simulation top-level.")
+      ("srec_dump,y", po::value<std::string>(),
+          "SREC file name to be filled in in simulation top level. All writes to memory are dumped in this SREC file"
+          "during simulation.")
       ("quiet,q", "Prevent output on stdout.");
 
   /* Positional options: */
@@ -115,6 +116,7 @@ int main(int argc, char **argv) {
 
   // Optional RecordBatch <-> SREC conversion
   std::string sro_fname;
+  std::string srd_fname;
   std::vector<uint64_t> sro_buffers;
 
   auto cnt = vm.count("recordbatch_data") + vm.count("recordbatch_schema") + vm.count("srec_output");
@@ -130,25 +132,31 @@ int main(int argc, char **argv) {
       auto rbs_fname = vm["recordbatch_schema"].as<std::string>();
       if (vm.count("srec_output")) {
         sro_fname = vm["srec_output"].as<std::string>();
-        auto rbs = fletchgen::readSchemaFromFile(rbs_fname);
-        auto rbd = fletchgen::srec::readRecordBatchFromFile(rbd_fname, rbs);
+        auto rbs = fletchgen::readSchemasFromFiles({rbs_fname});
+        auto rbd = fletchgen::srec::readRecordBatchFromFile(rbd_fname, rbs[0]);
         sro_buffers = fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
       }
     }
   }
 
-  // Schema input:
+  if (vm.count("srec_dump")) {
+    srd_fname = vm["srec_dump"].as<std::string>();
+  }
+
+  // Schema inputs:
   if (vm.count("input")) {
-    schema_fname = vm["input"].as<std::string>();
-    schema = fletchgen::readSchemaFromFile(schema_fname);
+    // Split argument into vector of strings
+    auto schema_fnames_str = vm["input"].as<std::string>();
+    schema_fnames = fletchgen::split(schema_fnames_str);
+    schemas = fletchgen::readSchemasFromFiles(schema_fnames);
   } else {
     std::cout << "No valid input file specified. Exiting..." << std::endl;
     desc.print(std::cout);
     return 0;
   }
 
-  // Get initial configuration from schema
-  auto cfg = fletchgen::config::fromSchema(schema.get());
+  // Get initial configurations from schemas
+  auto cfgs = fletchgen::config::fromSchemas(schemas);
 
   // VHDL output:
   if (vm.count("output")) {
@@ -156,11 +164,11 @@ int main(int argc, char **argv) {
   }
 
   // UserCore name:
-  if (vm["name"].as<std::string>() != "<input file name>") {
+  if (vm["name"].as<std::string>() != "<first input file name>") {
     acc_name = vm["name"].as<std::string>();
   } else {
-    size_t lastindex = schema_fname.find_last_of('.');
-    acc_name = schema_fname.substr(0, lastindex);
+    size_t lastindex = schema_fnames[0].find_last_of('.');
+    acc_name = schema_fnames[0].substr(0, lastindex);
   }
 
   // Wrapper name:
@@ -168,11 +176,6 @@ int main(int argc, char **argv) {
     wrap_name = vm["wrapper_name"].as<std::string>();
   } else {
     wrap_name = nameFrom({"fletcher", "wrapper"});
-  }
-
-  // UserCore registers:
-  if (vm.count("custom_registers")) {
-    cfg.user.num_user_regs = (unsigned int) vm["custom_registers"].as<int>();
   }
 
   std::vector<std::ostream *> outputs;
@@ -189,7 +192,7 @@ int main(int argc, char **argv) {
     outputs.push_back(&ofs);
   }
 
-  auto wrapper = fletchgen::generateColumnWrapper(outputs, schema, acc_name, wrap_name, cfg);
+  auto wrapper = fletchgen::generateColumnWrapper(outputs, schemas, acc_name, wrap_name, cfgs);
   LOGD("Wrapper generation finished.");
 
   /* AXI top level */
@@ -213,11 +216,11 @@ int main(int argc, char **argv) {
     if (vm.count("quiet") == 0) {
       simtop_outputs.push_back(&std::cout);
     }
-    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers);
+    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers, srd_fname);
   }
 
   LOGD("Done.");
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 

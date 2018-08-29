@@ -15,53 +15,18 @@
 #include <arrow/type.h>
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
-#include "schema_test.h"
-#include "arrow-utils.h"
 
-std::shared_ptr<arrow::Schema> getStringSchema() {
-  // Schema
-  auto schema = arrow::schema({arrow::field("Name", arrow::utf8(), false)});
-  return schema;
-}
+#include "../src/arrow-utils.h"
 
-std::shared_ptr<arrow::RecordBatch> getStringRB() {
-  // Some names
-  std::vector<std::string> names = {"Alice", "Bob", "Carol", "David",
-                                    "Eve", "Frank", "Grace", "Harry",
-                                    "Isolde", "Jack", "Karen", "Leonard",
-                                    "Mary", "Nick", "Olivia", "Peter",
-                                    "Quinn", "Robert", "Sarah", "Travis",
-                                    "Uma", "Victor", "Wendy", "Xavier",
-                                    "Yasmine", "Zachary"
-  };
+#include "test_schemas.h"
 
-  // Make a string builder
-  arrow::StringBuilder string_builder;
+namespace fletchgen {
+namespace test {
 
-  // Append the strings in the string builder
-  if (!string_builder.AppendValues(names).ok()) {
-    throw std::runtime_error("Could not append strings to string builder.");
-  };
-
-  // Array to hold Arrow formatted string data
-  std::shared_ptr<arrow::Array> data_array;
-
-  // Finish building and create a new data array around the data
-  if (!string_builder.Finish(&data_array).ok()) {
-    throw std::runtime_error("Could not finalize string builder.");
-  };
-
-  // Create the Record Batch
-  std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(getStringSchema(), names.size(), {data_array});
-
-  return record_batch;
-}
-
-std::shared_ptr<arrow::Schema> genSimpleReadSchema() {
+std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Num", arrow::uint8(), false)
+      arrow::field("primread", arrow::uint8(), false)
   };
 
   // Create the schema
@@ -70,34 +35,10 @@ std::shared_ptr<arrow::Schema> genSimpleReadSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::RecordBatch> getUint8RB() {
-
-  std::vector<uint8_t> numbers = {1,3,3,7};
-
-  // Make a string builder
-  arrow::UInt8Builder int_builder;
-
-  int_builder.AppendValues(numbers);
-
-  // Array to hold Arrow formatted string data
-  std::shared_ptr<arrow::Array> data_array;
-
-  // Finish building and create a new data array around the data
-  if (!int_builder.Finish(&data_array).ok()) {
-    throw std::runtime_error("Could not finalize string builder.");
-  };
-
-  // Create the Record Batch
-  std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genSimpleReadSchema(), numbers.size(), {data_array});
-
-  return record_batch;
-}
-
-std::shared_ptr<arrow::Schema> genSimpleWriteSchema() {
+std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Num", arrow::uint8(), false)
+      arrow::field("primwrite", arrow::uint8(), false)
   };
 
   // Create some metadata
@@ -183,4 +124,7 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
   auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
 
   return schema;
+}
+
+}
 }

@@ -28,11 +28,14 @@ using vhdl::Generic;
 
 namespace fletchgen {
 
-ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
+ColumnWrapper::ColumnWrapper(std::vector<shared_ptr<arrow::Schema>> schemas,
                              string name,
                              string acc_name,
-                             config::Config config)
-    : StreamComponent(std::move(name)), schema_(std::move(schema)), cfg_(config) {
+                             std::vector<config::Config> configs)
+    : StreamComponent(std::move(name)), schemas_(std::move(schemas)), cfgs_(std::move(configs)) {
+
+  /* Validate schemas and configurations */
+  validateConfigs();
 
   /* Generics */
   addGenerics();
@@ -139,6 +142,7 @@ void ColumnWrapper::addWriteArbiter() {
     warb_inst->mapGeneric(warb->entity()->getGenericByName("NUM_SLAVE_PORTS"), Value(num_write_columns));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_ADDR_WIDTH), Value(ce::BUS_ADDR_WIDTH));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_DATA_WIDTH), Value(ce::BUS_DATA_WIDTH));
+    warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
     warb->mst_wreq()->setSource(rarb_inst.get());
     warb_inst->setComment(
@@ -159,33 +163,26 @@ void ColumnWrapper::addWriteArbiter() {
 
 void ColumnWrapper::addGenerics() {
   int group = 0;
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.addr_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.data_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_STROBE_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.strobe_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfg_.plat.bus.len_width), group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfg_.plat.bus.burst.step), group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(cfg_.plat.bus.burst.max), group));
+  entity()
+      ->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH, "natural", Value(cfgs_[0].plat.bus.addr_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH, "natural", Value(cfgs_[0].plat.bus.data_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_STROBE_WIDTH, "natural", Value(cfgs_[0].plat.bus.strobe_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfgs_[0].plat.bus.len_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfgs_[0].plat.bus.burst.step), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(cfgs_[0].plat.bus.burst.max), group));
 
   group++;
-  entity()->addGeneric(make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(cfg_.arr.index_width), group));
-  group++;
-  entity()->addGeneric(make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group));
-  entity()->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group));
-  entity()->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group));
   entity()
-      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfg_.plat.mmio.data_width), group));
+      ->addGeneric(make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(cfgs_[0].arr.index_width), group));
   group++;
   entity()
-      ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfg_.user.tag_width), group));
+      ->addGeneric(make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group))
+      ->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group))
+      ->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group))
+      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfgs_[0].plat.mmio.data_width), group));
+  group++;
+  entity()
+      ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfgs_[0].user.tag_width), group));
 }
 
 void ColumnWrapper::addGlobalPorts() {
@@ -220,19 +217,21 @@ std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
   LOGD("Creating Column(Reader/Writer) instances.");
 
   std::vector<shared_ptr<Column>> columns;
-  for (int f = 0; f < schema_->num_fields(); f++) {
-    auto field = schema_->field(f);
-    if (!mustIgnore(field.get())) {
-      LOGD("Creating column for [FIELD: " + field->ToString() + "]");
-      auto column = make_shared<Column>(field, getMode(schema_.get()));
-      // Generate a comment to place above the instantiation
-      column->setComment(
-          t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +
-          t(1) + "-- " + field->ToString() + "\n"
-      );
-      columns.push_back(column);
-    } else {
-      LOGD("Ignoring field " + field->name());
+  for (const auto &schema : schemas_) {
+    for (int f = 0; f < schema->num_fields(); f++) {
+      auto field = schema->field(f);
+      if (!mustIgnore(field.get())) {
+        LOGD("Creating column for [FIELD: " + field->ToString() + "]");
+        auto column = make_shared<Column>(field, getMode(schema.get()));
+        // Generate a comment to place above the instantiation
+        column->setComment(
+            t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +
+            t(1) + "-- " + field->ToString() + "\n"
+        );
+        columns.push_back(column);
+      } else {
+        LOGD("Ignoring field " + field->name());
+      }
     }
   }
   return columns;
@@ -242,8 +241,6 @@ void ColumnWrapper::addColumns(const std::vector<shared_ptr<Column>> &columns) {
   for (auto const &column : columns) {
     LOGD("Adding instantiation of Column" + getModeString(column->mode()) + ": " + column->name());
     architecture()->addInstantiation(std::static_pointer_cast<Instantiation>(column));
-    //CMD_TAG_ENABLE            : boolean := false;
-    //CMD_TAG_WIDTH             : natural := 1
   }
 }
 
@@ -421,7 +418,7 @@ void ColumnWrapper::connectReadRequestChannels() {
       for (const auto &p : ports) {
         auto rrp = std::dynamic_pointer_cast<ReadReqPort>(p);
         auto rrs = dynamic_cast<ReadRequestStream *>(p->parent());
-        if (rrs != nullptr) {
+        if ((rrs != nullptr) && (rrp != nullptr)) {
           auto sname = rrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
           auto col_sig = architecture()->getSignal(col_signame);
@@ -443,9 +440,9 @@ void ColumnWrapper::connectReadRequestChannels() {
           architecture()->addConnection(con);
         }
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -458,30 +455,32 @@ void ColumnWrapper::connectReadDataChannels() {
       for (const auto &p : cr->stream_rdat_->ports()) {
         auto rdp = std::dynamic_pointer_cast<ReadDataPort>(p);
         auto rds = dynamic_cast<ReadDataStream *>(p->parent());
-        auto sname = rds->name();
-        auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
-        auto col_sig = architecture()->getSignal(col_signame);
-        auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(rds->type()), typeToString(rdp->type())});
-        auto arb_sig = architecture()->getSignal(arb_signame);
+        if ((rds != nullptr) && (rdp != nullptr)) {
+          auto sname = rds->name();
+          auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+          auto col_sig = architecture()->getSignal(col_signame);
+          auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(rds->type()), typeToString(rdp->type())});
+          auto arb_sig = architecture()->getSignal(arb_signame);
 
-        Range range;
+          Range range;
 
-        if (!col_sig->isVector()) {
-          range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
-        } else {
-          auto hi = col_sig->width() * (offset + 1) - Value(1);
-          auto lo = col_sig->width() * offset;
-          range = Range(hi, lo);
+          if (!col_sig->isVector()) {
+            range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+          } else {
+            auto hi = col_sig->width() * (offset + 1) - Value(1);
+            auto lo = col_sig->width() * offset;
+            range = Range(hi, lo);
+          }
+
+          auto invert = rdp->dir() == Dir::OUT;
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          con->setGroup(pgroup_);
+          architecture()->addConnection(con);
         }
-
-        auto invert = rdp->dir() == Dir::OUT;
-        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
-        con->setGroup(pgroup_);
-        architecture()->addConnection(con);
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -495,7 +494,7 @@ void ColumnWrapper::connectWriteRequestChannels() {
       for (const auto &p : ports) {
         auto wrp = std::dynamic_pointer_cast<WriteReqPort>(p);
         auto wrs = dynamic_cast<WriteRequestStream *>(p->parent());
-        if (wrs != nullptr) {
+        if ((wrs != nullptr) && (wrp != nullptr)) {
           auto sname = wrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
           auto col_sig = architecture()->getSignal(col_signame);
@@ -511,15 +510,15 @@ void ColumnWrapper::connectWriteRequestChannels() {
             auto lo = col_sig->width() * offset;
             range = Range(hi, lo);
           }
-          auto invert = wrp->dir() == Dir::IN;
+          auto invert = wrp->dir() == Dir::OUT;
           auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
           con->setGroup(pgroup_);
           architecture()->addConnection(con);
         }
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -532,30 +531,32 @@ void ColumnWrapper::connectWriteDataChannels() {
       for (const auto &p : cw->stream_wdat_->ports()) {
         auto wdp = std::dynamic_pointer_cast<WriteDataPort>(p);
         auto wds = dynamic_cast<WriteDataStream *>(p->parent());
-        auto sname = wds->name();
-        auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
-        auto col_sig = architecture()->getSignal(col_signame);
-        auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wds->type()), typeToString(wdp->type())});
-        auto arb_sig = architecture()->getSignal(arb_signame);
+        if ((wds != nullptr) && (wdp != nullptr)) {
+          auto sname = wds->name();
+          auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
+          auto col_sig = architecture()->getSignal(col_signame);
+          auto arb_signame = nameFrom({vhdl::INT_SIG, "bsv", typeToString(wds->type()), typeToString(wdp->type())});
+          auto arb_sig = architecture()->getSignal(arb_signame);
 
-        Range range;
+          Range range;
 
-        if (!col_sig->isVector()) {
-          range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
-        } else {
-          auto hi = col_sig->width() * (offset + 1) - Value(1);
-          auto lo = col_sig->width() * offset;
-          range = Range(hi, lo);
+          if (!col_sig->isVector()) {
+            range = Range(Value(offset), Value(offset), Range::Type::SINGLE);
+          } else {
+            auto hi = col_sig->width() * (offset + 1) - Value(1);
+            auto lo = col_sig->width() * offset;
+            range = Range(hi, lo);
+          }
+
+          auto invert = wdp->dir() == Dir::IN;
+          auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
+          con->setGroup(pgroup_);
+          architecture()->addConnection(con);
         }
-
-        auto invert = wdp->dir() == Dir::IN;
-        auto con = make_shared<Connection>(col_sig, Range(), arb_sig, range, invert);
-        con->setGroup(pgroup_);
-        architecture()->addConnection(con);
       }
+      offset++;
+      pgroup_++;
     }
-    offset++;
-    pgroup_++;
   }
 }
 
@@ -735,8 +736,8 @@ void ColumnWrapper::implementUserRegs() {
   int i = 0;
   for (const auto &b : usercore_->buffers()) {
     Range
-        r(Value((ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * (i + 1))) * Value(ce::REG_WIDTH) - Value(1),
-          Value(ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * i) * Value(ce::REG_WIDTH));
+        r(Value((ce::NUM_DEFAULT_REGS + cfgs_[0].plat.regs_per_address() * (i + 1))) * Value(ce::REG_WIDTH) - Value(1),
+          Value(ce::NUM_DEFAULT_REGS + cfgs_[0].plat.regs_per_address() * i) * Value(ce::REG_WIDTH));
     auto p = usercore_->entity()->getPortByName(nameFrom({"reg", b->name(), "addr"}));
     usercore_inst_->mapPort(p, regs_in(), r);
     i++;

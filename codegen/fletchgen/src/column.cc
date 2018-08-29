@@ -329,19 +329,20 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
 
   /* Write request channel */
   stream_wreq_->addPort(
-      {make_shared<ReadReqPort>("", RRP::VALID, Dir::IN, stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::READY, Dir::OUT, stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_wreq_.get()),
-       make_shared<ReadReqPort>("", RRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_wreq_.get())
+      {make_shared<WriteReqPort>("", WRP::VALID, Dir::IN, stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::READY, Dir::OUT, stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_wreq_.get()),
+       make_shared<WriteReqPort>("", WRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_wreq_.get())
       }
   );
 
   /* Write data channel */
   stream_wdat_->addPort(
-      {make_shared<ReadDataPort>("", RDP::VALID, Dir::OUT, stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::READY, Dir::IN, stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_wdat_.get()),
-       make_shared<ReadDataPort>("", RDP::LAST, Dir::OUT, stream_wdat_.get())
+      {make_shared<WriteDataPort>("", WDP::VALID, Dir::OUT, stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::READY, Dir::IN, stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::STROBE, Dir::OUT, Value(ce::BUS_STROBE_WIDTH), stream_wdat_.get()),
+       make_shared<WriteDataPort>("", WDP::LAST, Dir::OUT, stream_wdat_.get())
       }
   );
 
@@ -370,6 +371,60 @@ std::string Column::getColumnModeString(Mode mode) {
   } else {
     return "Writer";
   }
+}
+
+std::string genConfigString(arrow::Field *field, int level) {
+  std::string ret;
+  ConfigType ct = getConfigType(field->type().get());
+
+  if (field->nullable()) {
+    ret += "null(";
+    level++;
+  }
+
+  int epc = getEPC(field);
+
+  //if (ct == ARB) return "arb";
+  //else if (ct == NUL) return "null";
+  //else
+
+  if (ct == ConfigType::PRIM) {
+    Value w = getWidth(field->type().get());
+
+    ret += "prim(" + w.toString();
+    level++;
+
+  } else if (ct == ConfigType::LISTPRIM) {
+    ret += "listprim(";
+    level++;
+
+    Value w = Value(8);
+
+    ret += w.toString();
+  } else if (ct == ConfigType::LIST) {
+    ret += "list(";
+    level++;
+  } else if (ct == ConfigType::STRUCT) {
+    ret += "struct(";
+    level++;
+  }
+
+  if (epc > 1) {
+    ret += ";epc=" + std::to_string(epc);
+  }
+
+  // Append children
+  for (int c = 0; c < field->type()->num_children(); c++) {
+    auto child = field->type()->children()[c];
+    ret += genConfigString(child.get());
+    if (c != field->type()->num_children() - 1)
+      ret += ",";
+  }
+
+  for (; level > 0; level--)
+    ret += ")";
+
+  return ret;
 }
 
 }//namespace fletchgen
