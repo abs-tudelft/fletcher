@@ -18,7 +18,7 @@
 #include <vector>
 #include "../column-wrapper.h"
 
-namespace axi {
+namespace top {
 
 /// @brief Generate an AXI top level on supplied output streams from a ColumnWrapper
 std::string generateAXITop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,

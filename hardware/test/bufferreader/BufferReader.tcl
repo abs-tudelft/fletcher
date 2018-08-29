@@ -1,12 +1,7 @@
-# BufferReader testbench setup
-proc t {} {
-  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
+source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
 
-  vcom -work work -2008 $vhdl_dir/arrow/BusReadMasterMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BusReadSlaveMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/UserCoreMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BufferReader_tb.vhd
-
+proc t {} { 
+  compile_sources
   simulate work.bufferreader_tb {{"Testbench"     sim:/bufferreader_tb/*                                      }
                                  {"Host Mem"      sim:/bufferreader_tb/host_mem/*                             }
                                  {"User Core"     sim:/bufferreader_tb/user_core/*                            }
@@ -17,8 +12,9 @@ proc t {} {
                                  {"Response ICS"  sim:/bufferreader_tb/dut/resp_inst/ctrl_inst/*              }}
 }
 
-do ../compile.tcl
-do ../utils.tcl
+add_fletcher
+add_fletcher_tb
 
-compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
+add_source BufferReader_tb.vhd -2008
+
 t

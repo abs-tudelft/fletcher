@@ -1,27 +1,14 @@
-proc listsync {} {
-  
-  set source_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-  
-  vcom -work work -93   $source_dir/arrow/ColumnWriterListSync.vhd
-  vcom -work work -2008 $source_dir/arrow/ColumnWriterListSync_tb.vhd
-  
+source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+
+proc test_listsync {} {
+  compile_sources
   simulate work.columnwriterlistsync_tb {{"Testbench" sim:/columnwriterlistsync_tb/*     }
                                          {"UUT"       sim:/columnwriterlistsync_tb/uut/* }}
   
 }
 
-proc lp {} {
-  
-  set source_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-  
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterArb.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListSync.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterListPrim.vhd
-  #vcom -quiet -work work -93 $source_dir/arrow/ColumnWriterLevel.vhd
-  vcom -quiet -work work -93 $source_dir/arrow/ColumnWriter.vhd
-  
-  vcom -work work -2008 listprim8epc4_tb.vhd
-  
+proc test_listprim {} {
+  compile_sources
   simulate work.listprim8epc4_tb {{"Testbench"    sim:/listprim8epc4_tb/*     }
                                   {"UUT"          sim:/listprim8epc4_tb/uut/* }
                                   {"Arb"          sim:/listprim8epc4_tb/uut/arb_inst/*}
@@ -34,9 +21,17 @@ proc lp {} {
   
 }
 
-do ../compile.tcl
-do ../utils.tcl
+proc test_prim {} {
+  compile_sources
+  simulate work.prim32_tb {{"Testbench"    sim:/prim32_tb/*     }
+                           {"UUT"          sim:/prim32_tb/uut/* }}
+}
 
-compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
+add_fletcher
+add_fletcher_tb
 
-lp
+add_source ColumnWriterListSync_tb.vhd -2008
+add_source listprim8epc4_tb.vhd -2008
+add_source prim32_tb.vhd -2008
+
+test_prim

@@ -1,4 +1,5 @@
-.idea/*
+*/.idea/*
+*/cmake-build-debug/*
 *.pyc
 .cproject
 .settings/
@@ -54,17 +55,11 @@ platforms/snap/stringwrite/sw/snap_stringwrite
 
 hardware/test/transcript
 
-hardware/test/fletchgen/simpleread/work/
-
-hardware/test/fletchgen/simpleread/transcript
-
 codegen/fletchgen/\.idea/
 
 codegen/fletchgen/cmake-build-debug/
 
 codegen/fletchgen/debug/
-
-hardware/test/fletchgen/simpleread/test_wrapper\.vhd
 
 examples/regexp/software/cmake-build-debug/
 

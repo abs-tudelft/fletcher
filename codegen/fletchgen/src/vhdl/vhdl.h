@@ -509,6 +509,21 @@ class Entity : public Comment {
 };
 
 /**
+ * A statement
+ */
+class Statement : public Comment {
+ public:
+  Statement(const std::string &prefix,
+            const std::string &sep,
+            const std::string &suffix)
+      : str_(alignStat(prefix, sep, suffix, COL_ALN)) {};
+
+  std::string toVHDL() { return str_; }
+ private:
+  std::string str_;
+};
+
+/**
  * @brief An architecture.
  */
 class Architecture : public Comment {
@@ -518,6 +533,9 @@ class Architecture : public Comment {
    * @param name The name/
    */
   Architecture(std::string name, std::shared_ptr<Entity> entity);
+
+  /// @brief Add a concurrent statement to the architecture.
+  Statement* addStatement(std::shared_ptr<Statement> statement);
 
   /**
    * @brief Add a signal to the architecture.
@@ -604,6 +622,7 @@ class Architecture : public Comment {
   std::vector<std::shared_ptr<Connection>> connections_;
   std::vector<std::shared_ptr<Instantiation>> instances_;
   std::vector<std::shared_ptr<Component>> comp_decls_;
+  std::vector<std::shared_ptr<Statement>> statements_;
 };
 
 /**

@@ -31,10 +31,37 @@ entity axi_mmio is
     BUS_ADDR_WIDTH              : natural;
     BUS_DATA_WIDTH              : natural;
     
+    ---------------------------------------------------------------------------
+    -- Register configuration
+    ---------------------------------------------------------------------------
+    
+    -- Number of 32-bit registers.    
     NUM_REGS                    : natural;
     
-    ENABLE_READ                 : bit_vector(NUM_REGS-1 downto 0) := (others => '1');
-    ENABLE_WRITE                : bit_vector(NUM_REGS-1 downto 0) := (others => '1')
+    -- Register read/write configuration:
+    -- Each character in this string will determine whether its corresponding
+    -- register is Write-Only (W), Read-Only (R) or Bidirectional (B).
+    --
+    -- Example : 0..3 write only, 4..5 read only 6..7 bidi
+    -- Register: 0 1 2 3 4 5 6 7
+    -- String  : W W W W R R B B -> "WWWWRRBB"
+    --
+    -- Leaving this string empty ("") will cause all registers to be 
+    -- bidirectional.
+    REG_CONFIG                  : string := "";
+    
+    -- Register reset configuration:
+    -- Each character in this string will determine whether its corresponding
+    -- register is reset when reset is asserted. 'Y' is used to reset, 'N' is
+    -- used to not reset.
+    --
+    -- Example : 0..3 should be reset, 4..7 should not be reset
+    -- Register: 0 1 2 3 4 5 6 7
+    -- String  : Y Y Y Y N N N N -> "YYYYNNNN"
+    --
+    -- Leave blank to reset no registers.    
+    REG_RESET                   : string := ""
+    
   );
   port (
     clk                         : in  std_logic;
@@ -127,13 +154,19 @@ begin
   begin
     if rising_edge(clk) then
       r <= d;
-            
+      
       -- Reset:
       if reset_n = '0' then
         r.state <= IDLE;
-        for I in 0 to NUM_REGS-1 loop
-          r.regs(I) <= (others => '0');
-        end loop;
+        
+        -- Check for each register if it needs to be reset
+        if (REG_RESET /= "") then
+          for I in 0 to NUM_REGS-1 loop
+              if (REG_RESET(i) = 'Y') then
+                r.regs(i) <= (others => '0');
+              end if;
+          end loop;
+        end if;
       end if;
     end if;
   end process;
@@ -156,7 +189,7 @@ begin
     v := r;
     
     o := comb_default;
-        
+    
     -- Writes from peripheral
     for I in 0 to NUM_REGS-1 loop
       if regs_in_en(I) = '1' then
@@ -183,18 +216,29 @@ begin
         widx := to_integer(unsigned(r.waddr));
         
         if s_axi_wvalid = '1' then
-          if (ENABLE_WRITE(widx) = '1') then
-            v.regs(widx) := s_axi_wdata;
-            o.wready := '1';
-            v.state := BR;
+          -- Acknowledge write
+          o.wready := '1';
+          v.state := BR;
             
-            -- Fast write response
-            o.bvalid := '1'; 
-            o.bresp := RESP_OK;
-            if s_axi_bready = '1' then 
+          -- Fast write response
+          o.bvalid := '1'; 
+          o.bresp := RESP_OK;
+          
+          -- Write only if register is writeable
+          if (REG_CONFIG = "") or (REG_CONFIG(widx) = 'W') or (REG_CONFIG(widx) = 'B') then
+            v.regs(widx) := s_axi_wdata;
+          else
+            -- If not writable, generate a warning in simulation            
+            report "[AXI MMIO] Attempted to write to read-only register " & 
+              integer'image(ridx) & "."
+              severity warning;
+          end if;
+          
+          -- Go to idle if write response was already ready.
+          if s_axi_bready = '1' then 
               v.state := IDLE;
             end if;
-          end if;
+                    
         end if;
         
       -- Waiting for write response handshake
@@ -208,14 +252,27 @@ begin
       -- Read response
       when RD => 
         ridx := to_integer(unsigned(r.raddr));
-        
-        if (ENABLE_READ(ridx) = '1') then
+
+        -- Accept the read
+        o.rvalid := '1';
+        o.rresp := RESP_OK;
+                
+        -- Check if register is readable
+        if (REG_CONFIG = "") or (REG_CONFIG(widx) = 'R') or (REG_CONFIG(widx) = 'B') then
           o.rdata := r.regs(ridx);
-          o.rvalid := '1';
-          o.rresp := RESP_OK;
-          if s_axi_rready = '1' then
-            v.state := IDLE;
-          end if;
+        else
+          -- Respond with DEADBEEF if not readable
+          o.rdata := X"DEADBEEF";
+          
+          -- Generate a warning in simulation.
+          report "[AXI MMIO] Attempted to read from write-only register " & 
+            integer'image(ridx) & "."
+            severity warning;
+        end if;
+        
+        -- Go back to idle if the read data was accepted.
+        if s_axi_rready = '1' then
+          v.state := IDLE;
         end if;
 
     end case;

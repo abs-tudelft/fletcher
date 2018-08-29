@@ -27,13 +27,15 @@ namespace fletchgen {
 // Forward declarations
 class Column;
 class ReadArbiter;
+class WriteArbiter;
 
 /**
  * @brief Stream type enumeration for streams.
  */
 enum class FST {
   CMD,      ///< Command stream
-  ARROW,    ///< Arrow data stream
+  RARROW,   ///< Arrow read data stream
+  WARROW,   ///< Arrow read data stream
   RREQ,     ///< Bus read request channel
   RDAT,     ///< Bus read response channel
   WREQ,     ///< Bus write request channel
@@ -41,8 +43,9 @@ enum class FST {
   UNLOCK    ///< Unlock stream
 };
 
+FST modeToArrowType(Mode mode);
+
 /// @brief Convert Fletcher Stream Type to a string.
-template<>
 std::string typeToString(FST type);
 
 /// @brief Convert Fletcher Stream Type to a longer string.
@@ -50,9 +53,7 @@ std::string typeToLongString(FST type);
 
 //TODO: introduce the concept Sinks, Sources, and concatenated versions of each. And then route streams between them..?
 
-/**
- * @brief A Fletcher stream
- */
+/// @brief A Fletcher stream
 class FletcherStream : public Stream, public TypedBy<FST> {
  public:
   FletcherStream(const std::string &name,
@@ -65,9 +66,7 @@ class FletcherStream : public Stream, public TypedBy<FST> {
   std::string toString() override;
 };
 
-/**
- * @brief A Fletcher Stream that is derived from a Column
- */
+/// @brief A Fletcher Stream that is derived from a Column
 class FletcherColumnStream : public FletcherStream, public DerivedFrom<Column> {
  public:
   FletcherColumnStream(const std::string &name,
@@ -82,9 +81,7 @@ class FletcherColumnStream : public FletcherStream, public DerivedFrom<Column> {
       : FletcherStream(type, std::move(ports)), DerivedFrom(column) {}
 };
 
-/**
- * @brief A column command stream.
- */
+/// @brief A column command stream.
 class CommandStream : public FletcherColumnStream {
  public:
   CommandStream(const std::string &name,
@@ -94,9 +91,7 @@ class CommandStream : public FletcherColumnStream {
 
 };
 
-/**
- * @brief A read request stream.
- */
+/// @brief A read request stream.
 class ReadRequestStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<ReadArbiter> {
  public:
@@ -108,9 +103,7 @@ class ReadRequestStream
 
 };
 
-/**
- * @brief A read response stream.
- */
+/// @brief A read data stream.
 class ReadDataStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<ReadArbiter> {
  public:
@@ -122,9 +115,32 @@ class ReadDataStream
 
 };
 
-/**
- * @brief A stream that delivers Arrow data
- */
+/// @brief A write request stream.
+class WriteRequestStream
+    : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
+ public:
+  explicit WriteRequestStream(const std::string &name,
+                             vhdl::Instantiation *source = nullptr,
+                             WriteArbiter *dest = nullptr,
+                             std::vector<std::shared_ptr<StreamPort>> ports = {})
+      : FletcherStream(name, FST::WREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
+
+};
+
+/// @brief A write data stream.
+class WriteDataStream
+    : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
+ public:
+  explicit WriteDataStream(const std::string &name,
+                          vhdl::Instantiation *source = nullptr,
+                          WriteArbiter *dest = nullptr,
+                          std::vector<std::shared_ptr<StreamPort>> ports = {})
+      : FletcherStream(name, FST::WDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
+
+};
+
+
+/// @brief A stream that delivers Arrow data
 class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, public ParentOf<ArrowStream> {
  public:
   /**
@@ -172,6 +188,9 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
 
   /// @brief Return whether this stream is a list child.
   bool isListChild();
+
+  /// @brief Return whether this stream is a listprim child
+  bool isListPrimChild();
 
   /// @brief Return whether this stream is a struct.
   bool isStruct();

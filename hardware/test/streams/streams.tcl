@@ -1,14 +1,6 @@
-set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-
-do $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
-do $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
-
-compile_utils $::env(FLETCHER_HARDWARE_DIR)/vhdl
-compile_streams $::env(FLETCHER_HARDWARE_DIR)/vhdl
+source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
 
 proc simtest {unit_name} {
-  # Put all files being worked on here:
-
   # adsdsfghadfsj tcl
   set lcname [string tolower $unit_name]
   set tbname sim:/${lcname}_tb/*
@@ -17,13 +9,18 @@ proc simtest {unit_name} {
   set uutsig [list "UUT" $uutname]
   set siglist [list $tbsig $uutsig]
   
-  # Common tb stuff
-  vcom -work work -93  $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/StreamTbProd.vhd
-  vcom -work work -93  $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/StreamTbCons.vhd
+  # Add UUT and testbench to sources to compile.
+  add_source $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/${unit_name}.vhd
+  add_source $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/${unit_name}_tb.vhd
   
-  vcom -work work -93  $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/${unit_name}.vhd
-  vcom -work work -93  $::env(FLETCHER_HARDWARE_DIR)/vhdl/streams/${unit_name}_tb.vhd
+  compile_sources
   
   simulate work.${unit_name}_tb $siglist
 
 }
+
+add_fletcher
+add_fletcher_tb
+
+echo "Use simtest <unit name> to simulate any stream component with a testbench."
+echo "Example: simtest StreamMaximizer

@@ -1,30 +1,47 @@
-# Hardware Guide
+# In-depth Hardware Guide
+
+### Please note:
+If you are just getting started with Fletcher, you might want to use the 
+[Wrapper Generator](../codegen/fletchgen/README.md) to automatically generate a
+wrapper that instantiates ColumnReader/ColumnWriters and sets their 
+configuration. It is still worthwhile to read this page to get a basic 
+understanding of the interfaces.
+
+## Hardware Guide
 
 Currently, the top-level component that you should use is called a 
-ColumnReader. A ColumnReader is not surprisingly able to read from an 
-Arrow Column. Because elements in columns in an Arrow Table have no
-dependencies amongst eachother, you are free to implement, for example:
+ColumnReader or a ColumnWriter, depending on whether you wanto read or write 
+data from/to an Arrow Column in a RecordBatch/Table.
+
+For reading, because elements in an Arrow Recordbatch/Table can be processed 
+in parallel, you are free to implement, for example:
 
 - One ColumnReader for each Arrow Column
 - Multiple ColumnReaders for each Arrow Column
 - One ColumnReader for just one of the Columns in a Table
 - Multiple ColumnReaders for each Arrow Column
 
-To configure a ColumnReader, you must set the generics to the HDL 
+For writing, this depends on the datatype. For primitive fixed-width types, it 
+is possible to have multiple ColumnWriters for a single column. However, for
+variable length types (for example; strings), this is currently not possible.
+Of course you are free to build up the dataset in parallel and merge them later
+on your host system in software.
+
+To configure a ColumnReader/ColumnWriter, you must set the generics to the HDL 
 component appropriately. Things like bus data width, bus address width,
 burst length, etc... should speak for itself. However, one important 
 generic is the configuration string.
 
-## ColumnReader configuration string
+## ColumnReader/Writer configuration string
 
-The configuration string provided to a ColumnReader is somewhat 
+The configuration string provided to a ColumnReader/Writer is somewhat 
 equivalent to an Arrow Schema. It conveys the same information about the
 layout/structure of the Column in memory. There are some additional 
 options to tweak internals (like FIFO depths), but we will ignore them 
 for now.
 
-[ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd) contains an in-depth guide on which entries of 
-the config string are supported.
+[ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd) contains an in-depth guide 
+on which entries of the config string are supported.
 
 **Make sure not to use any whitespace characters in the configuration 
 such as spaces or newlines.
@@ -42,11 +59,11 @@ The following elements are supported:
   - A non-nullable list of non-nullable 
     primitives, where you will receive N of these primitive elements per 
     cycle at the output. epc is optional. (useful for UTF8 strings, 
-    afor example).
+    for example).
 - null(\<A\>)
   - To allow an element to be nullable
 
-For example, if you have a Schema like:
+For example, if you have the Schema of a RecordBatch as follows:
 <pre>
   Schema {
     X: int32
@@ -57,33 +74,101 @@ For example, if you have a Schema like:
     }
   }
 </pre>
+For simplicity, assume all elements are non-nullable, except those of field A 
+in the struct of field Z. 
 
-For simplicity, assume all elements are non-nullable, except those of
-field A in the struct of field Z.
-
-You can instantiate three ColumnReaders using the following three 
-configuration strings:
+Suppose we would like to read from this RecordBatch in host memory. You can 
+instantiate three ColumnReaders using the following three configuration 
+strings:
 
 - X: "prim(32)"
 - Y: "listprim(8)"
 - Z" "struct(null(prim(32)),prim(64))"
 
-## ColumnReader interface
+## ColumnReader/Writer interface
 
-After you set the ColumnReader configuration string, the hardware
-structure is generated, but as of now, we don't have a nice wrapper
-generation tool (yet; incoming soon).
+After you set the ColumnReader/Writer configuration string, the hardware
+structure is generated.
 
-In any case, each ColumnReader allows to stream in a first and last 
-index. It will subsequently absorb these indices and stream out the 
-range of elements designated by those indices (exlusively the last 
-index).
+Each ColumnReader/Writer has the following streams:
 
-The data port on the output stream is dependent on the configuration
-string. Here are some examples:
+* From accelerator to ColumnReader/Writer:
+  * Command (cmd): To issue commands to the ColumnReader/Writer
 
-## Examples:
-In these examples, whenever the (nested) field is nullable, the config string should be wrapped with null().
+* From ColumnReader/Writer to accelerator:
+  * Unlock:  To notify the accelerator the command has been executed.
+
+A ColumnReader additionaly has the following streams:
+
+* From ColumnReader to host memory interface:
+  * Bus read request (bus_rreq): To issue burst read requests to the host
+    memory.
+* From host memory interface to ColumnReader:
+  * Bus read data (bus_rdat): To receive requested data from host memory.
+* From ColumnReader to accelerator:
+* Data (out):
+  * Streams of the datatype defined in the schema.
+
+For ColumnWriters:
+
+* From ColumnReader to host memory interface:
+  * Bus write request (bus_wreq): To issue burst write requests to the host
+    memory.
+  * Bus write data (bus_wdat): To stream write data to host memory.
+* From accelerator to ColumnWriter
+* Data (in):
+  * Streams of the datatype defined in the schema.
+
+The streams follow the ready/valid handshaking methodology similar to AXI4.
+This means a transaction is handshaked only when both the ready and valid
+signal are asserted in a single clock cycle. Furthermore, it means any producer
+of a stream may not wait for the ready signal to be asserted. However, a stream
+consumer may assert ready before any valid signal is asserted. For more detail,
+it is __highly recommended to read the AXI4 protocol specification chapter on 
+"Basic read and write transactions"__.
+
+### How to use a ColumnReader/ColumnWriter
+
+For a ColumnReader:
+
+1. Handshake a command on the Command stream (cmd). 
+   - The _firstIdx_ and _lastIdx_ correspond to the first and (exclusively) last 
+index in an Arrow RecordBatch or Table that you would like to load. For 
+example, if you want to stream in elements 0, 1 and 2, you would issue the
+command with _firstIdx_ = 0 and _lastIdx_ = 3. 
+   - Furthermore, you must supply the addresses of the Arrow
+buffers of the RecordBatch on the _ctrl_ port. This should be done in a 
+specific order seen in [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd). 
+   - Finally, you may provide a _tag_ with your command that will appear on the 
+unlock stream when the command is finished.
+
+2. The ColumnReader will now start requesting and receiving bursts through the
+bus request and data streams (bus_rreq and bus_rdat_.
+
+2. Absorb the data from the output stream (out).
+   - The signals of all output streams are all concatenated onto this stream.
+   This is also explained in [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd).
+   More examples are at the end of this page.
+   - The [Wrapper Generator](../codegen/fletchgen/README.md) automatically 
+   "unwraps" these concatenated streams into more readable streams 
+   corresponding to your schema.
+   
+3. Wait for the unlock stream (unlock) to deliver the tag of your command.
+   - The command has now been successfully executed.
+   
+For a ColumnWriter, the bus data stream is reversed, and the user is to supply
+the data to the ColumnWriter as an input stream (in). In terms of using the 
+command stream and unlock stream, the behaviour is similar. There is one 
+exception to the command stream. If you do not know (or care) in hardware how
+large your Column will be, you may set lastIdx = 0. In this case, the last 
+signal of the top-most input stream will determine the last index.
+
+## Additional configuration string examples:
+Here are some examples that show the lay-out of the output (out) or input (in)
+streams for specific schema's.
+
+In these examples, whenever the (nested) field is nullable, the config string
+should be wrapped with null().
 
 ### Int32 Array
 #### Config string

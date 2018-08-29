@@ -29,29 +29,58 @@
 
 #include "srec/recordbatch.h"
 #include "vhdt/vhdt.h"
+
 #include "top/axi.h"
+#include "top/sim.h"
+
 #include "schema_test.h"
+
+#include "config.h"
 
 #include <plasma/client.h>
 
 using fletchgen::Mode;
 
+/**
+ * @mainpage Fletchgen documentation
+ *
+ * @section Introduction
+ *
+ * Fletchgen is Fletcher's wrapper generation tool. The tool will take an Apache Arrow Schema, and convert it into a
+ * hardware description that wraps a bunch of ColumnReaders/Writers and generates an instantiation template for a
+ * hardware accelerator function operating on Arrow data.
+ *
+ * @section Components
+ * Fletchgen consists of a bunch of components.
+ * <pre>
+ * vhdl/ : Generic VHDL generation functionality
+ * vhdt/ : VHDL template support
+ * top/  : Support for various top-levels / platforms
+ * srec/ : SREC generation for simulation purposes
+ * </pre>
+ *
+ */
+
+/// @brief Fletchgen main
 int main(int argc, char **argv) {
   // TODO: Move this stuff to tests
-  //auto schema = genStructSchema();
-  //auto schema = genBigSchema();
-  //auto schema = genPairHMMSchema();
-  //auto schema = genSimpleReadSchema();
+
   auto schema = genStringSchema();
   fletchgen::writeSchemaToFile(schema, "test.fbs");
   auto rb = getStringRB();
   fletchgen::srec::writeRecordBatchToFile(*rb, "test.rb");
 
+  /*
+  auto schema = genSimpleReadSchema();
+  fletchgen::writeSchemaToFile(schema, "test.fbs");
+  auto rb = getUint8RB();
+  fletchgen::srec::writeRecordBatchToFile(*rb, "test.rb");
+  */
+
   std::string schema_fname;
   std::string output_fname;
   std::string acc_name;
   std::string wrap_name;
-  int regs = 0;
 
   /* Parse command-line options: */
   namespace po = boost::program_options;
@@ -66,12 +95,13 @@ int main(int argc, char **argv) {
       ("custom_registers,r", po::value<int>(), "Number 32-bit registers in accelerator component.")
       ("recordbatch_data,d", po::value<std::string>(), "RecordBatch data input file name for SREC generation.")
       ("recordbatch_schema,s", po::value<std::string>(), "RecordBatch schema input file name for SREC generation.")
+      ("axi", po::value<std::string>(), "AXI top level template file output")
+      ("sim", po::value<std::string>(), "Simulation top level template file output")
       ("srec_output,x", po::value<std::string>(),
-         "SREC output file name. If this and recordbatch_in are specified, this "
-         "tool will convert an Arrow RecordBatch message stored in a file into an "
-         "SREC file. The SREC file can be used in simulation.")
-      ("quiet,q", "Prevent output on stdout.")
-      ("axi,a", po::value<std::string>()->default_value("axi_top.vhd"), "Generate AXI top level.");
+       "SREC output file name. If this and recordbatch_in are specified, this "
+       "tool will convert an Arrow RecordBatch message stored in a file into an "
+       "SREC file. The SREC file can be used in the simulation top-level.")
+      ("quiet,q", "Prevent output on stdout.");
 
   /* Positional options: */
   po::positional_options_description p;
@@ -97,6 +127,9 @@ int main(int argc, char **argv) {
   }
 
   // Optional RecordBatch <-> SREC conversion
+  std::string sro_fname;
+  std::vector<uint64_t> sro_buffers;
+
   auto cnt = vm.count("recordbatch_data") + vm.count("recordbatch_schema") + vm.count("srec_output");
   if ((cnt > 1) && (cnt < 3)) {
     std::cout << "Options recordbatch_data, recordbatch_schema and srec_output must all be set. Exiting."
@@ -109,21 +142,26 @@ int main(int argc, char **argv) {
     if (vm.count("recordbatch_schema")) {
       auto rbs_fname = vm["recordbatch_schema"].as<std::string>();
       if (vm.count("srec_output")) {
-        auto sro_fname = vm["srec_output"].as<std::string>();
+        sro_fname = vm["srec_output"].as<std::string>();
         auto rbs = fletchgen::readSchemaFromFile(rbs_fname);
         auto rbd = fletchgen::srec::readRecordBatchFromFile(rbd_fname, rbs);
-        fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
+        sro_buffers = fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
       }
     }
   }
+
   // Schema input:
   if (vm.count("input")) {
     schema_fname = vm["input"].as<std::string>();
+    schema = fletchgen::readSchemaFromFile(schema_fname);
   } else {
     std::cout << "No valid input file specified. Exiting..." << std::endl;
     desc.print(std::cout);
     return 0;
   }
+
+  // Get initial configuration from schema
+  auto cfg = fletchgen::config::fromSchema(schema.get());
 
   // VHDL output:
   if (vm.count("output")) {
@@ -147,7 +185,7 @@ int main(int argc, char **argv) {
 
   // UserCore registers:
   if (vm.count("custom_registers")) {
-    regs = vm["custom_registers"].as<int>();
+    cfg.user.num_user_regs = (unsigned int) vm["custom_registers"].as<int>();
   }
 
   std::vector<std::ostream *> outputs;
@@ -164,20 +202,34 @@ int main(int argc, char **argv) {
     outputs.push_back(&ofs);
   }
 
-  auto wrapper = fletchgen::generateColumnWrapper(outputs, fletchgen::readSchemaFromFile(schema_fname), acc_name, wrap_name, regs);
+  auto wrapper = fletchgen::generateColumnWrapper(outputs, schema, acc_name, wrap_name, cfg);
   LOGD("Wrapper generation finished.");
 
   /* AXI top level */
   if (vm.count("axi")) {
+    LOGD("Generating AXI top level.");
     auto axi_file = vm["axi"].as<std::string>();
     std::ofstream aofs(axi_file);
     std::vector<std::ostream *> axi_outputs = {&aofs};
     if (vm.count("quiet") == 0) {
       axi_outputs.push_back(&std::cout);
     }
-    axi::generateAXITop(wrapper, axi_outputs);
-
+    top::generateAXITop(wrapper, axi_outputs);
   }
+
+  /* Simulation top level */
+  if (vm.count("sim")) {
+    LOGD("Generating simulation top level.");
+    auto simtop_file = vm["sim"].as<std::string>();
+    std::ofstream stofs(simtop_file);
+    std::vector<std::ostream *> simtop_outputs = {&stofs};
+    if (vm.count("quiet") == 0) {
+      simtop_outputs.push_back(&std::cout);
+    }
+    top::generateSimTop(wrapper, simtop_outputs, sro_fname, sro_buffers);
+  }
+
+  LOGD("Done.");
 
   return 0;
 }

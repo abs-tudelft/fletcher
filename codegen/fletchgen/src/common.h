@@ -33,6 +33,9 @@ namespace fletchgen {
 
 // Forward decl.
 class ColumnWrapper;
+namespace config {
+class Config;
+}
 
 /// @brief Mode for things that can either read or write.
 enum class Mode {
@@ -75,6 +78,6 @@ std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostr
                                                      const std::shared_ptr<arrow::Schema> &schema,
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
-                                                     int user_regs);
+                                                     config::Config cfg);
 
 }//namespace fletchgen

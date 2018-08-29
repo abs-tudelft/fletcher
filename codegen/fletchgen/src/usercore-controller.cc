@@ -59,7 +59,7 @@ UserCoreController::UserCoreController() : Component("UserCoreController") {
   entity()->addPort(done_, 3);
 
   entity()
-      ->addGeneric(std::make_shared<vhdl::Generic>(ce::REG_WIDTH, "natural", Value(ce::REG_WIDTH_DEFAULT)));
+      ->addGeneric(std::make_shared<vhdl::Generic>(ce::REG_WIDTH, "natural", Value(ce::MMIO_DATA_WIDTH_DEFAULT)));
 }
 
 }

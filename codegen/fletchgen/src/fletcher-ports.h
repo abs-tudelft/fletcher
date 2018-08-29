@@ -16,7 +16,7 @@ enum class ASP {
   LAST,        ///< Last signal for streams
   LENGTH,      ///< Length for a variable length item.
   VALIDITY,    ///< Validity bit from the validity bitmap (element is not null)
-  COUNT,       ///< Count for list children with EPC > 1
+  COUNT,       ///< Count for listprim children.
 };
 
 /**
@@ -53,6 +53,28 @@ enum class RDP {
 };
 
 /**
+ * @brief Port type enumerations for write request ports.
+ */
+enum class WRP {
+  VALID,       ///< Handshake valid signal.
+  READY,       ///< Handshake ready signal.
+  ADDRESS,     ///< An address in host memory.
+  BURSTLEN,    ///< Bus burst length
+};
+
+
+/**
+ * @brief Port type enumerations for write data ports.
+ */
+enum class WDP {
+  VALID,       ///< Handshake valid signal.
+  READY,       ///< Handshake ready signal.
+  DATA,        ///< Write data
+  STROBE,      ///< Write strobe
+  LAST,        ///< Last transfer for bursts
+};
+
+/**
  * @brief Port type enumeration for generic ports (not stream ports).
  */
 enum class GP {
@@ -69,20 +91,15 @@ enum class GP {
   SIG,         ///< Other signals
 };
 
-template<class T>
-std::string typeToString(T type);
-
-template<>
 std::string typeToString(ASP type);
-
-template<>
 std::string typeToString(CSP type);
-
-template<>
 std::string typeToString(GP type);
+std::string typeToString(RDP type);
+std::string typeToString(WDP type);
+std::string typeToString(RRP type);
+std::string typeToString(WRP type);
 
 ASP mapUserTypeToColumnType(ASP type);
-
 CSP mapUserTypeToColumnType(CSP type);
 
 /**
@@ -97,11 +114,7 @@ class ArrowPort : public StreamPort, public TypedBy<ASP>, public WithOffset {
   ArrowPort(const std::string &name, ASP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
 
-/**
- * @brief Command Stream Port
- *
- * A port that belongs to a Fletcher Command Stream.
- */
+///@brief Command Stream Port
 class CommandPort : public StreamPort, public TypedBy<CSP>, public WithOffset {
  public:
   CommandPort(const std::string &name, CSP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
@@ -109,11 +122,7 @@ class CommandPort : public StreamPort, public TypedBy<CSP>, public WithOffset {
   CommandPort(const std::string &name, CSP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
 
-/**
- * @brief Read Request Stream Port
- *
- * A port that belongs to a Fletcher Command Stream.
- */
+/// @brief Read Request Stream Port
 class ReadReqPort : public StreamPort, public TypedBy<RRP>, public WithOffset {
  public:
   ReadReqPort(const std::string &name,
@@ -126,16 +135,33 @@ class ReadReqPort : public StreamPort, public TypedBy<RRP>, public WithOffset {
   ReadReqPort(const std::string &name, RRP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
 
-/**
- * @brief Read Data Port
- *
- * A port that belongs to a Fletcher Command Stream.
- */
+/// @brief Read Data Port
 class ReadDataPort : public StreamPort, public TypedBy<RDP>, public WithOffset {
  public:
   ReadDataPort(const std::string &name, RDP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
 
   ReadDataPort(const std::string &name, RDP type, Dir dir, Stream *stream, Value offset = Value(0));
+};
+
+/// @brief Write Request Stream Port
+class WriteReqPort : public StreamPort, public TypedBy<WRP>, public WithOffset {
+ public:
+  WriteReqPort(const std::string &name,
+              WRP type,
+              Dir dir,
+              const Value &width,
+              Stream *stream,
+              Value offset = Value(0));
+
+  WriteReqPort(const std::string &name, WRP type, Dir dir, Stream *stream, Value offset = Value(0));
+};
+
+/// @brief Read Data Port
+class WriteDataPort : public StreamPort, public TypedBy<WDP>, public WithOffset {
+ public:
+  WriteDataPort(const std::string &name, WDP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
+
+  WriteDataPort(const std::string &name, WDP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
 
 /**
