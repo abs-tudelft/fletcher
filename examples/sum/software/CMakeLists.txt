@@ -12,10 +12,6 @@ add_executable(${PROJECT_NAME}
 	sum.cpp
 )
 
-add_executable(schema
-	schema.cpp
-)
-
 find_library(LIB_FLETCHER fletcher)
 find_library(LIB_ARROW arrow)
 
@@ -61,25 +57,10 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME}  PRIVATE PLATFORM=${RUNTIME_PLATFORM})
 
-target_link_libraries(schema
-  ${REQUIRED}
-  ${LIB_ARROW}
-)
-
 target_link_libraries(${PROJECT_NAME} 
   ${REQUIRED}
   ${LIB_ARROW}
   ${LIB_FLETCHER}
   ${LIB_PLATFORM}
 )
-
-# Wrapper generation
-add_custom_command(OUTPUT sum.fbs COMMAND schema)
-# We need two 64-bit user registers,
-# which translates to four 32-bit registers on this platform
-add_custom_command(OUTPUT fletcher_wrapper.vhd
-  COMMAND fletchgen -q -i sum.fbs -o fletcher_wrapper.vhd -r 4
-  DEPENDS sum.fbs)
-add_custom_target(wrapper ALL DEPENDS fletcher_wrapper.vhd)
-
 

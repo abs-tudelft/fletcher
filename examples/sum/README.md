@@ -96,11 +96,11 @@ Build [fletchgen](../../codegen/fletchgen/) as described in its README.
 The schema that is used for the input data must be written to a file
 in order for fletchgen to use it.
 An example of how to generate such a file using Apache Arrow can be found
-in [schema.cpp](./software/schema.cpp).
+in [schema.cpp](./hardware-gen/schema.cpp).
 The provided CMake project will create the schema file and the
 hardware skeleton files.
 
-    $ cd "FLETCHER_EXAMPLES_DIR/sum/software"
+    $ cd "FLETCHER_EXAMPLES_DIR/sum/hardware-gen"
     $ mkdir build
     $ cd build
     $ cmake ..
@@ -114,25 +114,28 @@ To create a schema manually after compiling:
 
 With the schema file (*sum.fbs*) from the previous step,
 generate the skeleton files.
-Additional configuration registers are needed to provide the start and end
-row number to the column reader. We use four 32-bit registers, and address
-them as two 64-bit registers in the host software.
-Note that the example hardware only supports start and end indices of 32-bit.
+The files will already have been generated if you used the CMake project in
+the previous step. This will produce fletcher_wrapper.vhd and axi_top.vhd.
 
-The files will already have been generated if using the CMake project.
+Additional configuration registers are needed to provide the start and end
+row number to the column reader. We use two 32-bit registers.
+This may be automatically provided in a later version of fletchgen.
+
 To run fletchgen manually:
 
     $ fletchgen --quiet \
         --input sum.fbs \
         --output fletcher_wrapper.vhd \
-        --custom_registers 4
+        --custom_registers 2
 
 ## Implement accelerated function
 
-Design the hardware accelerated function in the *sum.vhd* skeleton file.
+Design the hardware accelerated function, using the component description of
+*sum* in the generated [fletcher_wrapper.vhd](./hardware/fletcher_wrapper.vhd).
 The design will need a simple state machine, control signals,
 and status signals.
-The finished design is [included](./hardware/sum.vhd) in the repository.
+The finished design is included ([hardware/sum.vhd](./hardware/sum.vhd))
+in the repository.
 
 ## Create testbench
 

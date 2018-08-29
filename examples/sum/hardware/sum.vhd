@@ -38,7 +38,6 @@ entity sum is
     weight_out_valid                           : in std_logic;
     weight_out_ready                           : out std_logic;
     weight_out_last                            : in std_logic;
-    weight_out_count                           : in std_logic_vector(0 downto 0);
     -------------------------------------------------------------------------
     acc_reset                                  : in std_logic;
     acc_clk                                    : in std_logic;
@@ -50,7 +49,8 @@ entity sum is
     ctrl_stop                                  : in std_logic;
     ctrl_start                                 : in std_logic;
     -------------------------------------------------------------------------
-    reg_return                                 : out std_logic_vector(2*REG_WIDTH-1 downto 0);
+    reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+    reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
     reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     regs_in                                    : in std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
     regs_out                                   : out std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
@@ -74,13 +74,16 @@ begin
   regs_out_en <= (others => '0');
 
   -- Module output is the accumulator value
-  reg_return <= std_logic_vector(accumulator);
+  reg_return0 <= std_logic_vector(accumulator(1*REG_WIDTH-1 downto 0*REG_WIDTH));
+  reg_return1 <= std_logic_vector(accumulator(2*REG_WIDTH-1 downto 1*REG_WIDTH));
 
-  -- Provide base address and indexes to ColumnReader
+  -- Provide base address to ColumnReader
   weight_cmd_weight_values_addr <= reg_weight_values_addr;
   weight_cmd_tag <= (others => '0');
-  weight_cmd_firstIdx <= regs_in(2*REG_WIDTH-1 downto 1*REG_WIDTH);
-  weight_cmd_lastIdx  <= regs_in(4*REG_WIDTH-1 downto 3*REG_WIDTH);
+
+  -- The indexes are in user register 1 and 2
+  weight_cmd_firstIdx <= regs_in(1*REG_WIDTH-1 downto 0*REG_WIDTH);
+  weight_cmd_lastIdx  <= regs_in(2*REG_WIDTH-1 downto 1*REG_WIDTH);
 
   logic_p: process (state, ctrl_start, accumulator,
     weight_cmd_ready, weight_out_valid, weight_out_data, weight_out_last)

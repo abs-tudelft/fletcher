@@ -26,8 +26,8 @@ entity axi_top is
     -- Accelerator properties
     INDEX_WIDTH                 : natural := 32;
     NUM_ARROW_BUFFERS           : natural := 1;
-    NUM_USER_REGS               : natural := 4;
-    NUM_REGS                    : natural := 12;
+    NUM_USER_REGS               : natural := 2;
+    NUM_REGS                    : natural := 10;
     REG_WIDTH                   : natural := 32;
     TAG_WIDTH                   : natural := 1;
 

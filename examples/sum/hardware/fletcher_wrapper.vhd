@@ -27,8 +27,9 @@ use work.Wrapper.all;
 
 entity fletcher_wrapper is
   generic(
-    BUS_DATA_WIDTH                             : natural;
     BUS_ADDR_WIDTH                             : natural;
+    BUS_DATA_WIDTH                             : natural;
+    BUS_STROBE_WIDTH                           : natural;
     BUS_LEN_WIDTH                              : natural;
     BUS_BURST_STEP_LEN                         : natural;
     BUS_BURST_MAX_LEN                          : natural;
@@ -43,10 +44,10 @@ entity fletcher_wrapper is
     TAG_WIDTH                                  : natural
   );
   port(
-    acc_clk                                    : in std_logic;
     acc_reset                                  : in std_logic;
     bus_clk                                    : in std_logic;
     bus_reset                                  : in std_logic;
+    acc_clk                                    : in std_logic;
     ---------------------------------------------------------------------------
     mst_rreq_valid                             : out std_logic;
     mst_rreq_ready                             : in std_logic;
@@ -57,6 +58,17 @@ entity fletcher_wrapper is
     mst_rdat_ready                             : out std_logic;
     mst_rdat_data                              : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     mst_rdat_last                              : in std_logic;
+    ---------------------------------------------------------------------------
+    mst_wreq_valid                             : out std_logic;
+    mst_wreq_len                               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_wreq_addr                              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_wreq_ready                             : in std_logic;
+    ---------------------------------------------------------------------------
+    mst_wdat_valid                             : out std_logic;
+    mst_wdat_ready                             : in std_logic;
+    mst_wdat_data                              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+    mst_wdat_strobe                            : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    mst_wdat_last                              : out std_logic;
     ---------------------------------------------------------------------------
     regs_in                                    : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
     regs_out                                   : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
@@ -88,7 +100,6 @@ architecture Implementation of fletcher_wrapper is
       weight_out_valid                           : in std_logic;
       weight_out_ready                           : out std_logic;
       weight_out_last                            : in std_logic;
-      weight_out_count                           : in std_logic_vector(0 downto 0);
       -------------------------------------------------------------------------
       acc_reset                                  : in std_logic;
       acc_clk                                    : in std_logic;
@@ -100,7 +111,8 @@ architecture Implementation of fletcher_wrapper is
       ctrl_stop                                  : in std_logic;
       ctrl_start                                 : in std_logic;
       -------------------------------------------------------------------------
-      reg_return                                 : out std_logic_vector(2*REG_WIDTH-1 downto 0);
+      reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+      reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
       reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       regs_in                                    : in std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
       regs_out                                   : out std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
@@ -199,8 +211,8 @@ begin
       acc_reset                                => acc_reset,
       bus_clk                                  => bus_clk,
       bus_reset                                => bus_reset,
-      status                                   => regs_out(2*REG_WIDTH-1 downto 1*REG_WIDTH),
-      control                                  => regs_in (4*REG_WIDTH-1 downto 3*REG_WIDTH),
+      status                                   => regs_out(2*REG_WIDTH-1 downto REG_WIDTH),
+      control                                  => regs_in(REG_WIDTH-1 downto 0),
       start                                    => uctrl_start,
       stop                                     => uctrl_stop,
       reset                                    => uctrl_reset,
@@ -208,8 +220,6 @@ begin
       busy                                     => uctrl_busy,
       done                                     => uctrl_done
     );
-  -- Always write to status reg, but never control reg
-  regs_out_en(3 downto 0) <= "0010";
 
   -- Hardware Accelerated Function instance.
   sum_inst: sum
@@ -232,7 +242,6 @@ begin
       weight_out_valid                         => s_weight_out_valid(0),
       weight_out_ready                         => s_weight_out_ready(0),
       weight_out_last                          => s_weight_out_last(0),
-      weight_out_count                         => s_weight_out_data(0 downto 0),
       weight_out_data                          => s_weight_out_data(63 downto 0),
       weight_cmd_valid                         => s_weight_cmd_valid,
       weight_cmd_ready                         => s_weight_cmd_ready,
@@ -240,14 +249,13 @@ begin
       weight_cmd_lastIdx                       => s_weight_cmd_lastIdx(INDEX_WIDTH-1 downto 0),
       weight_cmd_tag                           => s_weight_cmd_tag(TAG_WIDTH-1 downto 0),
       weight_cmd_weight_values_addr            => s_weight_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
-      reg_return                               => regs_out(6*REG_WIDTH-1 downto 4*REG_WIDTH),
-      reg_weight_values_addr                   => regs_in (8*REG_WIDTH-1 downto 6*REG_WIDTH),
+      reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),
+      reg_return1                              => regs_out(4*REG_WIDTH-1 downto 3*REG_WIDTH),
+      reg_weight_values_addr                   => regs_in(6*REG_WIDTH-1 downto 4*REG_WIDTH),
       regs_in                                  => s_regs_in,
       regs_out                                 => s_regs_out,
       regs_out_en                              => s_regs_out_en
     );
-  -- Always write to return reg, but never to column address reg
-  regs_out_en(7 downto 4) <= "0011";
 
   -- Arbiter instance generated to serve 1 column readers.
   BusReadArbiterVec_inst: BusReadArbiterVec
@@ -292,6 +300,10 @@ begin
   s_weight_bus_rdat_last                       <= s_bsv_rdat_last(0);
   s_bsv_rdat_ready(0)                          <= s_weight_bus_rdat_ready;
   s_weight_bus_rdat_valid                      <= s_bsv_rdat_valid(0);
+  regs_out_en(0)                               <='0';
+  regs_out_en(1)                               <='1';
+  regs_out_en(2)                               <='1';
+  regs_out_en(3)                               <='1';
 
 end architecture;
 
