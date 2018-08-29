@@ -28,11 +28,14 @@ using vhdl::Generic;
 
 namespace fletchgen {
 
-ColumnWrapper::ColumnWrapper(shared_ptr<arrow::Schema> schema,
+ColumnWrapper::ColumnWrapper(std::vector<shared_ptr<arrow::Schema>> schemas,
                              string name,
                              string acc_name,
-                             config::Config config)
-    : StreamComponent(std::move(name)), schema_(std::move(schema)), cfg_(config) {
+                             std::vector<config::Config> configs)
+    : StreamComponent(std::move(name)), schemas_(std::move(schemas)), cfgs_(std::move(configs)) {
+
+  /* Validate schemas and configurations */
+  validateConfigs();
 
   /* Generics */
   addGenerics();
@@ -160,33 +163,26 @@ void ColumnWrapper::addWriteArbiter() {
 
 void ColumnWrapper::addGenerics() {
   int group = 0;
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.addr_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.data_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_STROBE_WIDTH,
-                                            "natural",
-                                            Value(cfg_.plat.bus.strobe_width),
-                                            group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfg_.plat.bus.len_width), group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfg_.plat.bus.burst.step), group));
-  entity()->addGeneric(make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(cfg_.plat.bus.burst.max), group));
+  entity()
+      ->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH, "natural", Value(cfgs_[0].plat.bus.addr_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_DATA_WIDTH, "natural", Value(cfgs_[0].plat.bus.data_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_STROBE_WIDTH, "natural", Value(cfgs_[0].plat.bus.strobe_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(cfgs_[0].plat.bus.len_width), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_BURST_STEP_LEN, "natural", Value(cfgs_[0].plat.bus.burst.step), group))
+      ->addGeneric(make_shared<Generic>(ce::BUS_BURST_MAX_LEN, "natural", Value(cfgs_[0].plat.bus.burst.max), group));
 
   group++;
-  entity()->addGeneric(make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(cfg_.arr.index_width), group));
-  group++;
-  entity()->addGeneric(make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group));
-  entity()->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group));
-  entity()->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group));
   entity()
-      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfg_.plat.mmio.data_width), group));
+      ->addGeneric(make_shared<Generic>(ce::INDEX_WIDTH, "natural", Value(cfgs_[0].arr.index_width), group));
   group++;
   entity()
-      ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfg_.user.tag_width), group));
+      ->addGeneric(make_shared<Generic>("NUM_ARROW_BUFFERS", "natural", Value(countBuffers()), group))
+      ->addGeneric(make_shared<Generic>("NUM_REGS", "natural", Value(countRegisters()), group))
+      ->addGeneric(make_shared<Generic>(ce::NUM_USER_REGS, "natural", Value(user_regs()), group))
+      ->addGeneric(make_shared<Generic>(ce::REG_WIDTH, "natural", Value(cfgs_[0].plat.mmio.data_width), group));
+  group++;
+  entity()
+      ->addGeneric(make_shared<Generic>(ce::TAG_WIDTH, "natural", Value(cfgs_[0].user.tag_width), group));
 }
 
 void ColumnWrapper::addGlobalPorts() {
@@ -221,19 +217,21 @@ std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
   LOGD("Creating Column(Reader/Writer) instances.");
 
   std::vector<shared_ptr<Column>> columns;
-  for (int f = 0; f < schema_->num_fields(); f++) {
-    auto field = schema_->field(f);
-    if (!mustIgnore(field.get())) {
-      LOGD("Creating column for [FIELD: " + field->ToString() + "]");
-      auto column = make_shared<Column>(field, getMode(schema_.get()));
-      // Generate a comment to place above the instantiation
-      column->setComment(
-          t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +
-          t(1) + "-- " + field->ToString() + "\n"
-      );
-      columns.push_back(column);
-    } else {
-      LOGD("Ignoring field " + field->name());
+  for (const auto &schema : schemas_) {
+    for (int f = 0; f < schema->num_fields(); f++) {
+      auto field = schema->field(f);
+      if (!mustIgnore(field.get())) {
+        LOGD("Creating column for [FIELD: " + field->ToString() + "]");
+        auto column = make_shared<Column>(field, getMode(schema.get()));
+        // Generate a comment to place above the instantiation
+        column->setComment(
+            t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +
+            t(1) + "-- " + field->ToString() + "\n"
+        );
+        columns.push_back(column);
+      } else {
+        LOGD("Ignoring field " + field->name());
+      }
     }
   }
   return columns;
@@ -243,8 +241,6 @@ void ColumnWrapper::addColumns(const std::vector<shared_ptr<Column>> &columns) {
   for (auto const &column : columns) {
     LOGD("Adding instantiation of Column" + getModeString(column->mode()) + ": " + column->name());
     architecture()->addInstantiation(std::static_pointer_cast<Instantiation>(column));
-    //CMD_TAG_ENABLE            : boolean := false;
-    //CMD_TAG_WIDTH             : natural := 1
   }
 }
 
@@ -740,8 +736,8 @@ void ColumnWrapper::implementUserRegs() {
   int i = 0;
   for (const auto &b : usercore_->buffers()) {
     Range
-        r(Value((ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * (i + 1))) * Value(ce::REG_WIDTH) - Value(1),
-          Value(ce::NUM_DEFAULT_REGS + cfg_.plat.regs_per_address() * i) * Value(ce::REG_WIDTH));
+        r(Value((ce::NUM_DEFAULT_REGS + cfgs_[0].plat.regs_per_address() * (i + 1))) * Value(ce::REG_WIDTH) - Value(1),
+          Value(ce::NUM_DEFAULT_REGS + cfgs_[0].plat.regs_per_address() * i) * Value(ce::REG_WIDTH));
     auto p = usercore_->entity()->getPortByName(nameFrom({"reg", b->name(), "addr"}));
     usercore_inst_->mapPort(p, regs_in(), r);
     i++;

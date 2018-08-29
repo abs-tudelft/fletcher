@@ -2,29 +2,42 @@
 
 namespace fletchgen {
 namespace config {
-Config fromSchema(arrow::Schema *schema) {
-  Config ret;
-  std::string val;
-  if (!(val = getMeta(schema, "fletcher_bus_addr_width")).empty()) {
-    ret.plat.bus.addr_width = (width) std::stoul(val);
+
+std::vector<Config> fromSchemas(std::vector<std::shared_ptr<arrow::Schema>> schemas) {
+  std::vector<Config> configs;
+  for (const auto &schema : schemas) {
+    Config cfg;
+    std::string val;
+    if (!(val = getMeta(schema.get(), "fletcher_bus_addr_width")).empty()) {
+      cfg.plat.bus.addr_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_bus_data_width")).empty()) {
+      cfg.plat.bus.data_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_bus_len_width")).empty()) {
+      cfg.plat.bus.len_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_bus_burst_step")).empty()) {
+      cfg.plat.bus.burst.step = (unsigned int) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_bus_burst_max")).empty()) {
+      cfg.plat.bus.burst.max = (unsigned int) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_reg_width")).empty()) {
+      cfg.plat.mmio.data_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_index_width")).empty()) {
+      cfg.arr.index_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_tag_width")).empty()) {
+      cfg.user.tag_width = (width) std::stoul(val);
+    }
+    if (!(val = getMeta(schema.get(), "fletcher_num_user_regs")).empty()) {
+      cfg.user.num_user_regs = (unsigned int) std::stoul(val);
+    }
+    configs.push_back(cfg);
   }
-  if (!(val = getMeta(schema, "fletcher_bus_data_width")).empty()) {
-    ret.plat.bus.data_width = (width) std::stoul(val);
-  }
-  if (!(val = getMeta(schema, "fletcher_bus_len_width")).empty()) { ret.plat.bus.len_width = (width) std::stoul(val); }
-  if (!(val = getMeta(schema, "fletcher_bus_burst_step")).empty()) {
-    ret.plat.bus.burst.step = (unsigned int) std::stoul(val);
-  }
-  if (!(val = getMeta(schema, "fletcher_bus_burst_max")).empty()) {
-    ret.plat.bus.burst.max = (unsigned int) std::stoul(val);
-  }
-  if (!(val = getMeta(schema, "fletcher_reg_width")).empty()) { ret.plat.mmio.data_width = (width) std::stoul(val); }
-  if (!(val = getMeta(schema, "fletcher_index_width")).empty()) { ret.arr.index_width = (width) std::stoul(val); }
-  if (!(val = getMeta(schema, "fletcher_tag_width")).empty()) { ret.user.tag_width = (width) std::stoul(val); }
-  if (!(val = getMeta(schema, "fletcher_num_user_regs")).empty()) {
-    ret.user.num_user_regs = (unsigned int) std::stoul(val);
-  }
-  return ret;
+  return configs;
 }
 
 } // namespace config

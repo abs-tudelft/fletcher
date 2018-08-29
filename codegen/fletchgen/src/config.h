@@ -60,7 +60,7 @@ struct Config {
 constexpr Config default_config;
 
 /// @brief Derive a configuration from Schema metadata.
-Config fromSchema(arrow::Schema *schema);
+std::vector<Config> fromSchemas(std::vector<std::shared_ptr<arrow::Schema>> schemas);
 
 } // namespace config
 } // namespace fletchgen

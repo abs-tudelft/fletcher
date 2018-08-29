@@ -328,12 +328,13 @@ std::string Generic::toVHDL() {
   return comment() + alignStat(t(2) + name_, ": ", type_ + " := " + value_.toString(), COL_ALN);
 }
 
-void Entity::addGeneric(const std::shared_ptr<Generic> &generic) {
+Entity *Entity::addGeneric(const std::shared_ptr<Generic> &generic) {
   if (!hasGenericWithName(generic->name())) {
     generics_.push_back(generic);
   } else {
     throw std::runtime_error("Generic " + generic->name() + " already exists on entity " + name_);
   }
+  return this;
 }
 
 void Entity::addPort(const std::shared_ptr<Port> &port, int group) {
@@ -602,6 +603,8 @@ std::string Architecture::toVHDL() {
     }
     ret += con->toVHDL() + "\n";
   }
+
+  ret += seperator(1);
 
   /* Statements */
   for (const auto &stat : statements_) {

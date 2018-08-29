@@ -22,15 +22,17 @@
 namespace fletchgen {
 
 std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostream *> &outputs,
-                                                     const std::shared_ptr<arrow::Schema> &schema,
+                                                     const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
-                                                     config::Config cfg) {
-  LOGD("Arrow Schema:");
-  LOGD(schema->ToString());
+                                                     std::vector<config::Config> &cfgs) {
+  LOGD("Arrow Schemas:");
+  for (const auto &schema : schemas) {
+    LOGD(schema->ToString());
+  }
 
   LOGD("Fletcher Wrapper Generation:");
-  auto col_wrapper = std::make_shared<ColumnWrapper>(schema, wrap_name, acc_name, cfg);
+  auto col_wrapper = std::make_shared<ColumnWrapper>(schemas, wrap_name, acc_name, cfgs);
 
   auto ent = col_wrapper->entity()->toVHDL();
   auto arch = col_wrapper->architecture()->toVHDL();
@@ -47,6 +49,16 @@ std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostr
   }
 
   return col_wrapper;
+}
+
+std::vector<std::string> split(const std::string &str, const char delim) {
+  std::vector<std::string> strings;
+  std::istringstream input;
+  input.str(str);
+  for (std::string line; std::getline(input, line, ',');) {
+    strings.push_back(line);
+  }
+  return strings;
 }
 
 }//namespace fletchgen
