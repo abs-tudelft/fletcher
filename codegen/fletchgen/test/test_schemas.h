@@ -14,18 +14,16 @@
 
 #pragma once
 
-std::shared_ptr<arrow::Schema> getStringSchema();
+namespace fletchgen {
+namespace test {
 
-std::shared_ptr<arrow::RecordBatch> getStringRB();
+/// @brief Simplest example schema to read a primitive.
+std::shared_ptr<arrow::Schema> genPrimReadSchema();
 
-/// @brief Simplest example schema.
-std::shared_ptr<arrow::Schema> genSimpleReadSchema();
-std::shared_ptr<arrow::RecordBatch> getUint8RB();
+/// @brief Simple example schema to write a primitive.
+std::shared_ptr<arrow::Schema> genPrimWriteSchema();
 
-/// @brief Simple example schema with both read and write.
-std::shared_ptr<arrow::Schema> genSimpleWriteSchema();
-
-/// @brief A simple example schema.
+/// @brief A schema to read strings.
 std::shared_ptr<arrow::Schema> genStringSchema();
 
 /// @brief  A struct schema.
@@ -36,3 +34,6 @@ std::shared_ptr<arrow::Schema> genBigSchema();
 
 /// @brief An example schema from a genomics pipeline application.
 std::shared_ptr<arrow::Schema> genPairHMMSchema();
+
+}
+}
