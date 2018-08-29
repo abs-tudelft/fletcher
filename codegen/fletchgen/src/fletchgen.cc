@@ -37,8 +37,6 @@
 
 #include "config.h"
 
-#include <plasma/client.h>
-
 using fletchgen::Mode;
 
 /**
@@ -63,19 +61,8 @@ using fletchgen::Mode;
 
 /// @brief Fletchgen main
 int main(int argc, char **argv) {
-  // TODO: Move this stuff to tests
-
-  auto schema = genStringSchema();
-  fletchgen::writeSchemaToFile(schema, "test.fbs");
-  auto rb = getStringRB();
-  fletchgen::srec::writeRecordBatchToFile(*rb, "test.rb");
-
-  /*
-  auto schema = genSimpleReadSchema();
-  fletchgen::writeSchemaToFile(schema, "test.fbs");
-  auto rb = getUint8RB();
-  fletchgen::srec::writeRecordBatchToFile(*rb, "test.rb");
-  */
+  std::shared_ptr<arrow::Schema> schema;
+  std::shared_ptr<arrow::RecordBatch> rb ;
 
   std::string schema_fname;
   std::string output_fname;
