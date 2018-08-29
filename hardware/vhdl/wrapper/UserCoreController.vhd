@@ -56,7 +56,7 @@ begin
       
       status(0) <= idle;
       status(1) <= busy;
-      status(2) <= done;      
+      status(2) <= done;
     end if;
     
   end process;

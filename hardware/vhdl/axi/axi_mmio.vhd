@@ -18,6 +18,7 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
+use work.Utils.all;
 use work.axi.all;
 
 -- Provides an AXI4-lite slave MMIO to a serialized std_logic_vector compatible
@@ -104,14 +105,20 @@ architecture Behavioral of axi_mmio is
   
   constant RESP_OK : std_logic_vector(1 downto 0) := "00";
   
+  -- The LSB index in the slave address
+  constant SLV_ADDR_LSB : natural := log2ceil(BUS_DATA_WIDTH/4) - 1;
+  
+  -- The MSB index in the slave address
+  constant SLV_ADDR_MSB : natural := SLV_ADDR_LSB + log2ceil(NUM_REGS) - 1;
+  
   type state_type is (IDLE, WR, BR, RD);
   
   type regs_array_type is array (0 to NUM_REGS-1) of std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   
   type reg_type is record
     state : state_type;
-    waddr : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    raddr : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    waddr : std_logic_vector(SLV_ADDR_MSB - SLV_ADDR_LSB downto 0);
+    raddr : std_logic_vector(SLV_ADDR_MSB - SLV_ADDR_LSB downto 0);
     regs  : regs_array_type;
   end record;
   
@@ -147,9 +154,11 @@ begin
   begin
     if rising_edge(clk) then
       r <= d;
-            
+      
       -- Reset:
       if reset_n = '0' then
+        r.state <= IDLE;
+        
         -- Check for each register if it needs to be reset
         if (REG_RESET /= "") then
           for I in 0 to NUM_REGS-1 loop
@@ -180,7 +189,7 @@ begin
     v := r;
     
     o := comb_default;
-        
+    
     -- Writes from peripheral
     for I in 0 to NUM_REGS-1 loop
       if regs_in_en(I) = '1' then
@@ -193,12 +202,12 @@ begin
         if s_axi_awvalid = '1' then
           -- Write request
           v.state := WR;
-          v.waddr := s_axi_awaddr;
+          v.waddr := s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.awready := '1';
         elsif s_axi_arvalid = '1' then
           -- Read request
           v.state := RD;
-          v.raddr := s_axi_araddr;
+          v.raddr := s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.arready := '1';
         end if;
 

@@ -743,6 +743,7 @@ void ColumnWrapper::implementUserRegs() {
   }
 
   /* Default read regs are always enabled */
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(0)", "<=", "'0';")); // control
   architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(1)", "<=", "'1';")); // status
   architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(2)", "<=", "'1';")); // return 0
   architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(3)", "<=", "'1';")); // return 1

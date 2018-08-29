@@ -64,7 +64,9 @@ architecture Behavioral of Ram1R1W is
 
   -- Shared variable to represent the memory.
   type mem_type is array (2**DEPTH_LOG2-1 downto 0) of std_logic_vector(WIDTH-1 downto 0);
-  shared variable mem : mem_type;
+  -- Shared variable needs to be protected for synthesis by vivado.
+  -- Use a signal instead.
+  signal mem : mem_type;
 
 begin
 
@@ -73,7 +75,7 @@ begin
   begin
     if rising_edge(w_clk) then
       if w_ena = '1' then
-        mem(to_integer(unsigned(w_addr))) := w_data;
+        mem(to_integer(unsigned(w_addr))) <= w_data;
       end if;
     end if;
   end process;
