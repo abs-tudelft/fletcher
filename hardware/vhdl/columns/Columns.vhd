@@ -35,8 +35,8 @@ package Columns is
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       CFG                       : string;
-      CMD_TAG_ENABLE            : boolean;
-      CMD_TAG_WIDTH             : natural
+      CMD_TAG_ENABLE            : boolean := false;
+      CMD_TAG_WIDTH             : natural := 1
     );
     port (
       bus_clk                   : in  std_logic;
