@@ -65,9 +65,11 @@ UserCore::UserCore(std::string name, ColumnWrapper *parent, int num_addr_regs, i
              t(1) + "-- This component should be implemented by the user.\n"
   );
 
-  /* Return register */
-  auto rr = make_shared<GeneralPort>("reg_return", GP::REG_RETURN, Dir::OUT, Value(2) * Value(ce::REG_WIDTH));
-  entity()->addPort(rr, group);
+  /* Return registers */
+  auto r0 = make_shared<GeneralPort>(nameFrom({"reg","return0"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
+  auto r1 = make_shared<GeneralPort>(nameFrom({"reg","return1"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
+  entity()->addPort(r0, group);
+  entity()->addPort(r1, group);
 
   /* Buffer Address registers */
   // Get all buffers

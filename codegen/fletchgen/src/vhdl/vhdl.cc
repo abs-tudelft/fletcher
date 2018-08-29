@@ -553,6 +553,7 @@ std::string Architecture::toVHDL() {
 
   int group = 0;
 
+  /* Component declarations */
   if (!comp_decls_.empty()) {
     for (const auto &c: comp_decls_) {
       ret += seperator(1);
@@ -562,6 +563,7 @@ std::string Architecture::toVHDL() {
     ret += "\n";
   }
 
+  /* Signal declarations */
   if (!signals_.empty()) {
     std::sort(signals_.begin(), signals_.end(), Groupable::compare_sp);
 
@@ -578,14 +580,14 @@ std::string Architecture::toVHDL() {
 
   ret += "begin\n";
 
-  // Component instantiations:
+  /* Component instantiations */
   for (const auto &inst : instances_) {
     ret += inst->toVHDL() + "\n";
   }
 
   ret += "\n";
 
-  // Connections
+  /* Connections */
   // Sort connections by name first
   std::sort(connections_.begin(), connections_.end(), Connection::sortFun);
   // Then by group
@@ -599,6 +601,11 @@ std::string Architecture::toVHDL() {
       group = con->group();
     }
     ret += con->toVHDL() + "\n";
+  }
+
+  /* Statements */
+  for (const auto &stat : statements_) {
+    ret += stat->toVHDL() + "\n";
   }
 
   ret += "\nend architecture;\n";
@@ -626,6 +633,11 @@ void Architecture::removeSignal(std::string signal) {
   } else {
     LOGE("Cannot remove " + signal + " from " + this->toString() + " because it does not exist.");
   }
+}
+
+Statement *Architecture::addStatement(std::shared_ptr<Statement> statement) {
+  statements_.push_back(statement);
+  return statement.get();
 }
 
 Instantiation::Instantiation(std::shared_ptr<Component> component) :

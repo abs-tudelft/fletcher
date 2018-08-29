@@ -46,11 +46,12 @@ begin
     
       start <= control(0);
       stop  <= control(1);
+      reset <= control(2);
       
       if bus_reset = '1' then
         start <= '0';
         stop  <= '0';
-        reset <= '0';
+        reset <= '1';
       end if;
       
       status(0) <= idle;

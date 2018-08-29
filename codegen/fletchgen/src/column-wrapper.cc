@@ -723,6 +723,14 @@ void ColumnWrapper::implementUserRegs() {
     architecture()->addConnection(make_shared<Connection>(sroute, Range(), regs_out_en(), wer));
   }
 
+  /* Return regs */
+  auto reg0 = usercore_->entity()->getPortByName(nameFrom({"reg", "return0"}));
+  auto reg1 = usercore_->entity()->getPortByName(nameFrom({"reg", "return1"}));
+  Range range0(Value(3) * Value(ce::REG_WIDTH) - Value(1), Value(2) * Value(ce::REG_WIDTH));
+  Range range1(Value(4) * Value(ce::REG_WIDTH) - Value(1), Value(3) * Value(ce::REG_WIDTH));
+  usercore_inst_->mapPort(reg0, regs_out(), range0);
+  usercore_inst_->mapPort(reg1, regs_out(), range1);
+
   /* Buffer Address Regs */
   int i = 0;
   for (const auto &b : usercore_->buffers()) {
@@ -733,6 +741,11 @@ void ColumnWrapper::implementUserRegs() {
     usercore_inst_->mapPort(p, regs_in(), r);
     i++;
   }
+
+  /* Default read regs are always enabled */
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(1)", "<=", "'1';")); // status
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(2)", "<=", "'1';")); // return 0
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(3)", "<=", "'1';")); // return 1
 }
 
 GeneralPort *ColumnWrapper::regs_in() {
