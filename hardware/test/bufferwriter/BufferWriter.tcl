@@ -1,19 +1,8 @@
+source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+
 # BufferWriter testbench setup
 proc t {} {
-  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-  
-  # Put all files being worked on here:
-  
-  vcom -work work -93 $vhdl_dir/arrow/Arrow.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPrePadder.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPreCmdGen.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPre.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriter.vhd
-  
-  vcom -work work -2008 $vhdl_dir/arrow/BufferWriter_tb.vhd
-
+  compile_sources
   simulate work.bufferwriter_tb {{"Testbench"         sim:/bufferwriter_tb/*                          }
                                  {"Buffer Writer"     sim:/bufferwriter_tb/uut/*                      }
                                  {"Preprocessor"      sim:/bufferwriter_tb/uut/pre_inst/*             }
@@ -24,21 +13,7 @@ proc t {} {
 
 # BufferWriters testbench setup
 proc a {} {
-  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-  
-  # Put all files being worked on here:
-  
-  vcom -work work -93 $vhdl_dir/arrow/Arrow.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterCmdGenBusReq.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPrePadder.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPreCmdGen.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriterPre.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BufferWriter.vhd
-  
-  vcom -work work -2008 $vhdl_dir/arrow/BufferWriter_tb.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BufferWriters_tb.vhd
-
+  compile_sources
   simulate work.bufferwriters_tb  {
     {"Inst 0" sim:/bufferwriters_tb/inst0/* }
     {"Inst 1" sim:/bufferwriters_tb/inst1/* }
@@ -57,20 +32,7 @@ proc a {} {
 
 # Bus write infrastructure test
 proc b {} {
-  set vhdl_dir $::env(FLETCHER_HARDWARE_DIR)/vhdl
-  
-  # Put all files being worked on here:
-  
-  vcom -work work -93 $vhdl_dir/arrow/Arrow.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteArbiter.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteArbiterVec.vhd
-  vcom -work work -93 $vhdl_dir/arrow/BusWriteBuffer.vhd
-  
-  vcom -work work -2008 $vhdl_dir/arrow/BusWriteMasterMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BusWriteSlaveMock.vhd
-  vcom -work work -2008 $vhdl_dir/arrow/BusWriteArbiter_tb.vhd
-
+  compile_sources
   simulate work.buswritearbiter_tb {{"Testbench" sim:/buswritearbiter_tb/*                  }
                                     {"Arbiter"   sim:/buswritearbiter_tb/uut/arb_inst/*     }
                                     {"Buffer A"  sim:/buswritearbiter_tb/mst_a_buffer_inst/*}
@@ -78,9 +40,11 @@ proc b {} {
                                     
 }
 
-do ../compile.tcl
-do ../utils.tcl
+add_fletcher
+add_fletcher_tb
 
-compile_fletcher $::env(FLETCHER_HARDWARE_DIR)/vhdl
+add_source BufferWriter_tb.vhd -2008
+add_source BufferWriters_tb.vhd -2008
+add_source BusWriteArbiter_tb.vhd -2008
 
-echo "Testbench loaded, use \"t\" to start one, or a to start all."
+echo "Testbench loaded, use \"t\" to start one, or a to start all, or b to start the bus infrastructure test."

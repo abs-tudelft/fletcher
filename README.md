@@ -43,15 +43,14 @@ following features:
 
 ### Platform support:
 * Our core hardware descriptions are vendor independent; __we don't use any vendor IP__.
-* There is an example project for the Amazon EC2 F1 and POWER8/9 CAPI SNAP FPGA platforms.
+* Amazon's EC2 F1 platform is supported.
+* IBM's POWER8/9 CAPI FPGA platform is supported through the use of SNAP.
 * Our bus interconnect is similar to AXI, so it should be easy to integrate in many existing 
   platforms.
-* Upcoming: OpenCAPI support
 
 ## Further reading
-  * [How to generate a Column Reader](hardware). 
-    * For the current state of the project, this would be your starting
-      point in hardware design.
+  * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator converts Arrow schema's to wrappers around ColumnReaders/ColumnWriters. It also provides instantiation templates for your hardware accelerator implementation.
+  * [How to generate a Column Reader](hardware) - A more flexible but low-level hardware design approach, using ColumnReader/ColumnWriters directly.
   * [How to use the host-side run-time library](runtime).
   * [Regular Expression matching example on Amazon EC2 F1](platforms/aws-f1/regexp)
   * [Regular Expression matching example on CAPI SNAP](platforms/snap/regexp)

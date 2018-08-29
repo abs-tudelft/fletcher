@@ -145,8 +145,8 @@ package AXI is
       BUS_ADDR_WIDTH            : natural;
       BUS_DATA_WIDTH            : natural;   
       NUM_REGS                  : natural;
-      ENABLE_READ               : bit_vector(NUM_REGS-1 downto 0) := (others => '1');
-      ENABLE_WRITE              : bit_vector(NUM_REGS-1 downto 0) := (others => '1')
+      REG_CONFIG                : string := "";
+      REG_RESET                 : string := ""
     );
     port (
       clk                       : in  std_logic;

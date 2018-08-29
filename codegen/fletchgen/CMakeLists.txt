@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 
 # Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
 
 set(SOURCE_FILES
         src/logging.h
@@ -35,12 +35,15 @@ set(SOURCE_FILES
         src/usercore.h              src/usercore.cc
         src/usercore-controller.h   src/usercore-controller.cc
 
-        src/srec/srec.cpp           src/srec/srec.h
-        src/srec/recordbatch.cpp    src/srec/recordbatch.h
+        src/srec/srec.h src/srec/srec.cc
+        src/srec/recordbatch.h src/srec/recordbatch.cc
 
-        src/vhdt/vhdt.cpp           src/vhdt/vhdt.h
-        src/top/axi.cpp             src/top/axi.h
-        src/schema_test.cpp         src/schema_test.h
+        src/vhdt/vhdt.h src/vhdt/vhdt.cc
+        src/top/axi.h src/top/axi.cc
+        src/top/sim.h src/top/sim.cc
+        src/schema_test.h           src/schema_test.cc
+
+        src/config.h                src/config.cc
 
         src/fletchgen.cc )
 

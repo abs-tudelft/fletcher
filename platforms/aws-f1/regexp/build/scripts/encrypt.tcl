@@ -27,9 +27,10 @@ set FLETCHER_EXAMPLES_DIR $::env(FLETCHER_EXAMPLES_DIR)
 set TARGET_DIR $CL_DIR/build/src_post_encryption
 set UNUSED_TEMPLATES_DIR $HDK_SHELL_DESIGN_DIR/interfaces
 
-
 # Remove any previously encrypted files, that may no longer be used
-exec rm -f $TARGET_DIR/*
+if {[llength [glob -nocomplain -dir $TARGET_DIR *]] != 0} {
+  eval file delete -force [glob $TARGET_DIR/*]
+}
 
 #---- Developr would replace this section with design files ----
 
@@ -81,9 +82,11 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderStruct.vhd     
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReaderUnlockCombine.vhd   $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/columns/ColumnReader.vhd                $TARGET_DIR
 
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_read_converter.vhd              $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi.vhd                             $TARGET_DIR
+
 # Regexp example files:
 
-file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/axi_read_converter.vhd  $TARGET_DIR
 file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp_unit.vhd   $TARGET_DIR
 file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp_pkg.vhd    $TARGET_DIR
 file copy -force $FLETCHER_EXAMPLES_DIR/regexp/hardware/arrow_regexp.vhd        $TARGET_DIR
@@ -117,6 +120,12 @@ file copy -force $CL_DIR/design/cl_arrow.sv                           $TARGET_DI
 # Make sure files have write permissions for the encryption
 
 exec chmod +w {*}[glob $TARGET_DIR/*]
+
+set TOOL_VERSION $::env(VIVADO_TOOL_VERSION)
+set vivado_version [version -short]
+set ver_2017_4 2017.4
+puts "AWS FPGA: VIVADO_TOOL_VERSION $TOOL_VERSION"
+puts "vivado_version $vivado_version"
 
 # As we open-source everything, we don't care about encrypting the sources and
 # skip the encryption step. Re-enable if you want your sources to become

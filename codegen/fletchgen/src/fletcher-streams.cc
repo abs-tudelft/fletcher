@@ -26,11 +26,11 @@ using vhdl::nameFrom;
 
 namespace fletchgen {
 
-template<>
 string typeToString(FST type) {
   switch (type) {
     case FST::CMD: return "cmd";
-    case FST::ARROW: return "out";
+    case FST::RARROW: return "out";
+    case FST::WARROW: return "in";
     case FST::UNLOCK: return "unl";
     case FST::RREQ: return "rreq";
     case FST::RDAT: return "rdat";
@@ -43,7 +43,8 @@ string typeToString(FST type) {
 string typeToLongString(FST type) {
   switch (type) {
     case FST::CMD: return "COMMAND";
-    case FST::ARROW: return "DATA";
+    case FST::RARROW: return "READ DATA";
+    case FST::WARROW: return "WRITE DATA";
     case FST::UNLOCK: return "UNLOCK";
     case FST::RREQ: return "BUS READ REQUEST";
     case FST::RDAT: return "BUS READ RESPONSE";
@@ -51,6 +52,14 @@ string typeToLongString(FST type) {
     case FST::WDAT: return "BUS WRITE RESPONSE";
   }
   throw std::runtime_error("Unknown stream type.");
+}
+
+FST modeToArrowType(Mode mode) {
+  if (mode == Mode::READ) {
+    return FST::RARROW;
+  } else {
+    return FST::WARROW;
+  }
 }
 
 vector<shared_ptr<Buffer>> ArrowStream::getBuffers() {
@@ -103,7 +112,7 @@ ArrowStream::ArrowStream(shared_ptr<arrow::Field> field, ArrowStream *parent, Mo
     : FletcherColumnStream(parent != nullptr ?
                            nameFrom({parent->name(), vhdl::makeIdentifier(field->name())})
                                              : vhdl::makeIdentifier(field->name()),
-                           FST::ARROW,
+                           modeToArrowType(mode),
                            column),
       ChildOf(parent),
       field_(move(field)),
@@ -142,17 +151,24 @@ ArrowStream::ArrowStream(shared_ptr<arrow::Field> field, ArrowStream *parent, Mo
   if (!isStruct()) {
     Value width = getWidth(field_->type().get());
     if (!isList()) {
-      addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
-      data_offset += 1;
+      // Add the data port
       addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
+      data_offset = data_offset + (width * epc_);
+
+      // Only add a count port if this is a listprim secondary stream
+      if (isListPrimChild()) {
+        addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
+        data_offset += 1;
+      }
     } else {
+      // If this is a list, the data port is a length
       addPort(make_shared<ArrowPort>("", ASP::LENGTH, dir, width * epc_, ptr(), data_offset));
     }
   }
 }
 
 ArrowStream::ArrowStream(string name, Value width, ArrowStream *parent, Mode mode, Column *column, int epc)
-    : FletcherColumnStream(parent != nullptr ? nameFrom({parent->name(), name}) : name, FST::ARROW, column),
+    : FletcherColumnStream(parent != nullptr ? nameFrom({parent->name(), name}) : name, modeToArrowType(mode), column),
       ChildOf(parent),
       field_(nullptr),
       mode_(mode),
@@ -184,11 +200,16 @@ ArrowStream::ArrowStream(string name, Value width, ArrowStream *parent, Mode mod
     data_offset += 1;
   }
 
-  // Add data ports. We don't have to check for struct or list because they must always have a child. A string and a
+  // Add data port. We don't have to check for struct or list because they must always have a child. A string and a
   // width parameter do not expose a child like an arrow::Field could.
-  addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
-  data_offset += 1;
   addPort(make_shared<ArrowPort>("", ASP::DATA, dir, width * epc_, ptr(), data_offset));
+  data_offset = data_offset + width * epc_;
+
+  // Add a count port if this is a listprim secondary stream
+  if (isListPrimChild()) {
+    addPort(make_shared<ArrowPort>("", ASP::COUNT, dir, Value(vhdl::log2ceil(epc_ + 1)), ptr(), data_offset));
+    data_offset += 1;
+  }
 
 }
 
@@ -224,6 +245,15 @@ bool ArrowStream::isStruct() {
   } else {
     return false;
   }
+}
+
+bool ArrowStream::isListPrimChild() {
+  bool ret = false;
+  // For now, basedOnField is only true for string and binary.
+  if (!basedOnField()) {
+    return true;
+  }
+  return ret;
 }
 
 bool ArrowStream::isListChild() { return hasParent() ? parent()->isList() : false; }

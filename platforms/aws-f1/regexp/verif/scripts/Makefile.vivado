@@ -20,12 +20,18 @@
 compile:
 	rm -rf $(SIM_DIR)/xsim.dir
 	mkdir -p $(SIM_DIR)
+
 	cd $(SIM_DIR) && xsc $(C_TEST_NAME) --additional_option "-I$(C_SDK_USR_INC_DIR)" --additional_option "-I$(C_SDK_USR_UTILS_DIR)" --additional_option "-I$(C_COMMON_DIR)" --additional_option "-I$(C_INC_DIR)" --additional_option "-DVIVADO_SIM"
 
 	cd $(SIM_DIR) && xvlog --sv -m64 --initfile $(XILINX_VIVADO)/data/xsim/ip/xsim_ip.ini --work xil_defaultlib --relax -f $(SCRIPTS_DIR)/top_verilog.vivado.f
 	cd $(SIM_DIR) && xvhdl -m64 --initfile $(XILINX_VIVADO)/data/xsim/ip/xsim_ip.ini --work xil_defaultlib --relax -f $(SCRIPTS_DIR)/top_vhdl.vivado.f
 
-	# TODO: figure out which libraries are still unused
+	# TODO: figure out which libraries are still unused.
+	# Unfortunately the IP used in simulation has to be set here and is not set in some other file.
+	# This causes us to have to update this file every time AWS changes their internals.
+
+  # Create a symbolic link to the test input file
+	cd $(SIM_DIR) && ln -sf $(FLETCHER_EXAMPLES_DIR)/regexp/hardware/test.txt test.txt
 
 	cd $(SIM_DIR) && xelab \
 	-m64 \
@@ -34,18 +40,21 @@ compile:
 	--debug typical \
 	--relax \
 	--mt 8 \
-	-L axi_clock_converter_v2_1_11 -L generic_baseblocks_v2_1_0 \
-	-L axi_infrastructure_v1_1_0 -L axi_register_slice_v2_1_12 \
-	-L fifo_generator_v13_1_4 \
-	-L axi_data_fifo_v2_1_11 \
-	-L axi_crossbar_v2_1_13 \
+  -L axi_clock_converter_v2_1_14 \
+  -L generic_baseblocks_v2_1_0 \
+  -L axi_infrastructure_v1_1_0 \
+  -L axi_register_slice_v2_1_15 \
+  -L axi_register_slice_v2_1_12 \
+  -L fifo_generator_v13_2_1 \
+  -L fifo_generator_v13_1_4 \
+  -L axi_data_fifo_v2_1_11 \
+  -L axi_crossbar_v2_1_13 \
 	-L axi_interconnect_v1_7_13 \
-	-L axi_dwidth_converter_v2_1_12 \
-	-L xil_defaultlib \
-	-L unisims_ver \
-	-L unimacro_ver \
-	-L secureip \
-	-L xpm \
+  -L xil_defaultlib \
+  -L unisims_ver \
+  -L unimacro_ver \
+  -L secureip \
+  -L xpm \
 	-sv_lib dpi \
 	--snapshot tb \
 	xil_defaultlib.tb \

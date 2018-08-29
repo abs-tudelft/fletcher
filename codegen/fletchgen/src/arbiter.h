@@ -44,4 +44,26 @@ class ReadArbiter : public StreamComponent {
   std::shared_ptr<ReadDataStream> mst_rdat_;
 };
 
+/**
+ * @brief A write arbiter component.
+ */
+class WriteArbiter : public StreamComponent {
+ public:
+  explicit WriteArbiter(int num_slave_ports = 1);
+
+  std::shared_ptr<WriteRequestStream> slv_wreq() { return slv_wreq_; }
+
+  std::shared_ptr<WriteDataStream> slv_wdat() { return slv_wdat_; }
+
+  std::shared_ptr<WriteRequestStream> mst_wreq() { return mst_wreq_; }
+
+  std::shared_ptr<WriteDataStream> mst_wdat() { return mst_wdat_; }
+
+ private:
+  std::shared_ptr<WriteRequestStream> slv_wreq_;
+  std::shared_ptr<WriteDataStream> slv_wdat_;
+  std::shared_ptr<WriteRequestStream> mst_wreq_;
+  std::shared_ptr<WriteDataStream> mst_wdat_;
+};
+
 }//namespace fletchgen

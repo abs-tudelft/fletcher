@@ -87,7 +87,7 @@ package ColumnConfig is
   --
   -- Control vector:
   --   - baseAddr: BUS_ADDR_WIDTH
-  --     Specifies the base address for the null bitmap.
+  --     Specifies the base address for the offsets buffer.
   --   - <>
   --
   -- Number of masters: <> + 1

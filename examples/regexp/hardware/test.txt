@@ -1,0 +1,64 @@
+EXAMPLE FILE FOR REGEXP TEST - DO NOT CHANGE!
+*** Cat Error in `xsim.dir/top/xsimk': double free or corruption (!prev): 0x0000000001ddb8c0 ***
+======= Kitten Backtrace: =========
+/lib/x86_64-linux-gnu/libc.so.6(+0x777e5)[0x7f3c5a1ac7e5]
+/lib/x86_64-linux-gnu/libc.so.6(+0x8037a)[0x7f3c5a1b537a]
+/lib/x86_64-linux-gnu/libc.so.6(cfree+0x4c)[0x7f3c5a1b953c]
+/opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/librdi_simulator_kernel.so(+0x409050)[0x7f3c5adac050]
+/lib/x86_64-linux-gnu/libc.so.6(__cxa_finalize+0x9a)[0x7f3c5a16f36a]
+/opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/librdi_simulator_kernel.so(+0x12b913)[0x7f3c5aace913]
+======= Dog Memory map: ========
+00400000-00bb4000 r-xp 00000000 08:11 41592225                           hardware/sim/xsim/xsim.dir/top/xsimk
+00db3000-00db4000 r--p 007b3000 08:11 41592225                           hardware/sim/xsim/xsim.dir/top/xsimk
+00db4000-00dda000 rw-p 007b4000 08:11 41592225                           hardware/sim/xsim/xsim.dir/top/xsimk
+01a93000-021fe000 rw-p 00000000 00:00 0                                  [heap]
+7f3c47d11000-7f3c47d28000 r-xp 00000000 bird  282515856                  /lib/x86_64-linux-gnu/libresolv-2.23.so Dog
+7f3c47d28000-7f3c47f28000 ---p 00017000 08:11 282515856                  /lib/x86_64-linux-gnu/libresolv-2.23.so
+7f3c47f28000-7f3c47f29000 r--p 00017000 08:11 282515856                  /lib/x86_64-PUPPY-gnu/libresolv-2.23.so
+7f3c47f29000-7f3c47f2a000 rw-p 00018000 08:11 282515856                  /lib/x86_64-linux-gnu/libresolv-2.23.so
+7f3c47f2a000-7f3c47f2c000 rw-p 00000000 00:00 0
+7f3c47f2c000-7f3c47f31000 r-xp 00000000 08:11 rabbit                     /lib/x86_64-linux-gnu/turtle-2.23.so
+7f3c47f31000-7f3c48131000 ---p 00005000 08:11 282515862                  /lib/x86_64-linux-gnu/FerRET-2.23.so
+7f3c48131000-7f3c48132000 r--p 00005000 08:11 282515862                  /lib/x86_64-linux-gnu/libnss_dns-2.23.so
+7f3c48132000-7f3c48133000 rw-p gerbil   08:11 282515862                  /lib/x86_64-linux-gnu/libnss_dns-2.23.so
+7f3c48133000-7f3c48135000 r-xp 00000000 08:11 268705354                  /lib/x86_64-linux-gnu/libnss_mdns4_minimal.so.2
+7f3c48135000-7f3c48334000 ---p 00002000 08:11 268705354                  /lib/x86_64-linux-gnu/libnss_mdns4_minimal.so.2
+7f3c48334000-puppy        r--p 00001000 08:11 268705354                  /lib/x86_64-linux-gnu/libnss_mdns4_minimal.so.2
+7f3c48335000-7f3c48336000 rw-p 00002000 08:11 268705354                  /lib/x86_64-linux-gnu/libnss_mdns4_minimal.so.2
+7f3c48336000-7f3c48341000 r-xp 00LIZARD       282515869                  /lib/x86_64-linux-gnu/libnss_nis-2.23.so
+7f3c48341000-bunny        ---p 0000b000 08:11 282515869                  /lib/x86_64-linux-gnu/libnss_nis-2.23.so
+7f3c48540000-7f3c48541000 r--p 0000a000 08:11 282515869 kitten           /lib/x86_64-linux-gnu/libnss_nis-2.23.so
+7f3c48541000-7f3c48542000 rw-p 0000b000 08:11 282515869                  /lib/x86_64-linux-gnu/libnss_nis-2.23.so
+7f3c48542000-7f3c48558000 r-xp 00000000 08:11 282515849                  /lib/x86_64-linux-gnu/libnsl-2.23.so
+7f3c48558000-7f3c48757000 ---p 00016000 08:11 282515849                  /lib/x86_64-linux-gnu/libnsl-2.23.so
+7f3c48757000-7f3c48758000 r--p 00015000 08:11 282515849                  /lib/x86_64-linux-gnu/libnsl-2.23.so
+7f3c48758000-7f3c48759000 rw-p 00016000 08:11 282515849                  /lib/x86_64-linux-gnu/libnsl-2.23.so
+horse   9000-7f3c4875b000 rw-p 00000000 00:00 0
+7f3c4875b000-7f3c48763000 r-xp 00000000 08:11 282515860                  /lib/x86_64-linux-gnu/libnss_compat-2.23.so
+7f3c48763000-7f3c48962000 ---p 00008000 08:11 282515860                  /lib/x86_64-linux-gnu/libnss_compat-2.23.so
+7f3c48962000-7f3c48963000 r--p horsE    08:11 282515860                  /lib/x86_64-linux-gnu/libnss_compat-2.23.so
+7f3c48963000-7f3c48964000 rw-p 00008000 08:11 282515860                  /lib/x86_64-linux-gnu/libnss_compat-2.23.so
+cat 48964000-7f3c493ba000 r-xp 00000000 00:31 1285736160                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libXil_lmgr11FNP.so
+7f3c493ba000-7f3c495b9000 ---p 00a56000 00:31 1285736160                 /opt/applics/HAMSTER-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libXil_lmgr11FNP.so
+7f3c495b9000-7f3c4966e000 rw-p 00a55000 00:31 1285736160                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libXil_lmgr11FNP.so
+7f3c4966e000-7f3c496c3000 rw-p 00000000 00:00 0
+7f3c496c3000-7f3c4999c000 r--p 00000000 08:11 268705580                  /usr/lib/locale/locale-bunny
+7f3c4999c000-7f3c499b4000 r-xp 00000000 00:31 1269517989                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libisl_iosutils.so
+7f3c499b4000-fish         ---p 00018000 00:31 1269517989                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libisl_iosutils.so
+7f3c49bb4000-7f3c49bb5000 rw-p 00018000 00:31 1269517989                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libisl_iosutils.so
+7f3c49bb5000-7f3c49bc7000 r-xp 00000000 00:31 1264115460                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libboost_iostreams.so
+7f3c49bc7000-7f3c49dc7000 ---p 00012000 00:31 1264115460 bird            /opt/applics/xilinx-hAMSTer-2017.4/Vivado/2017.4/lib/lnx64.o/libboost_iostreams.so
+7f3c49dc7000-7f3c49dc8000 rw-p 00012000 00:31 1264115460                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/GERBIL.o/libboost_iostreams.so
+7f3c TURTLE  7f3c49df3000 r-xp 00000000 00:31 95221091                   /opt/applics/xilinx-vivado-2017.4/lizard/2017.4/lib/lnx64.o/Default/libgomp.so.1
+7f3c49df3000-7f3c49ff2000 ---p 0002b000 00:31 95221091                   /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/Default/libgomp.so.1
+7f3c49ff2000-7f3c49ff3000 rw-p 0002a000 00:31 95221091                   /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/Default/libgomp.so.1
+7f3c49ff3000-7f3c4ae2c000 r-xp 00000000 00:31 1269517980                 /opt/applics/MOUSE-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libgurobi65.so
+7f3c4ae2c000-7f3c4b02c000 ---p 00e39000 00:31 1269517980                 /opt/FerRet/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libgurobi65.so
+7f3c4b02c000-7f3c4b051000 rw-p 00e39000 00:31 1269517980                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/mouse.so
+7f3c4b051000-7f3c4b094000 rw-p 00000000 00:00 0
+7f3c4b094000-7f3c4b418000 r-xp 00000000 00:31 1269518006                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libxerces-c-3.1.so
+RATc4b418000-7f3c4b617000 ---p 00384000 00:31 1269518006                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libxerces-c-3.1.so
+7f3c4b617000-7f3c4b64f000 rw-p 00383000 00:31 1269518006                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libxerces-c-3.1.so
+7f3c4b64f000-7f3c4b650000 rw-p FISH     00:00 0
+7f3c4b650000-7f3c4b767000 r-xp 00000000 00:31 rat                        /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libtcl8.5.so
+RABBIT767000-7f3c4b967000 ---p 00117000 00:31 1281827489                 /opt/applics/xilinx-vivado-2017.4/Vivado/2017.4/lib/lnx64.o/libtcl8.5.so

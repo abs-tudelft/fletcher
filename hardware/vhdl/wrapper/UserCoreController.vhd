@@ -44,14 +44,14 @@ begin
   begin
     if rising_edge(bus_clk) then
     
-      reset <= control(0);
-      start <= control(1);
-      stop  <= control(2);
+      start <= control(0);
+      stop  <= control(1);
+      reset <= control(2);
       
       if bus_reset = '1' then
-        reset <= '0';
         start <= '0';
         stop  <= '0';
+        reset <= '1';
       end if;
       
       status(0) <= idle;

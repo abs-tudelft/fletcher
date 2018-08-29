@@ -30,14 +30,14 @@ entity axi_mmio_tb is
 
     NUM_REGS                    : natural := 8;
 
-    ENABLE_READ                 : bit_vector(NUM_REGS-1 downto 0) := (others => '1');
-    ENABLE_WRITE                : bit_vector(NUM_REGS-1 downto 0) := (others => '1')
+    REG_CONFIG                  : string := "";
+    REG_RESET                   : string := ""
   );
 end axi_mmio_tb;
 
 architecture Behavioral of axi_mmio_tb is
   signal clk                    : std_logic;
-  signal reset                  : std_logic;
+  signal reset_n                : std_logic := '0';
   signal s_axi_awvalid          : std_logic;
   signal s_axi_awready          : std_logic;
   signal s_axi_awaddr           : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -82,17 +82,17 @@ begin
   -- Reset
   reset_proc: process is
   begin
-    reset <= '1';
+    reset_n <= '0';
     wait for 8 ns;
     wait until rising_edge(clk);
-    reset <= '0';
+    reset_n <= '1';
     wait;
   end process;
   
   -- Writes from peripheral
   per_write_proc: process is
   begin
-    wait until reset <= '0';
+    wait until reset_n <= '1';
     
     for I in 0 to NUM_REGS-1 loop
       write_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH) <= std_logic_vector(to_unsigned(I,BUS_DATA_WIDTH));
@@ -112,7 +112,7 @@ begin
     variable raddr : natural := 0;
     variable rdat  : natural := 0;
   begin
-    wait until reset = '0';
+    wait until reset_n = '1';
 
     loop
       s_axi_arvalid <= '0';
@@ -174,7 +174,7 @@ begin
     variable waddr : natural := 0;
     variable wdat  : natural := NUM_REGS;
   begin
-    wait until reset <= '0';
+    wait until reset_n <= '1';
     
     s_axi_awvalid <= '0';
     s_axi_bready <= '0';
@@ -225,13 +225,11 @@ begin
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      NUM_REGS                  => NUM_REGS,
-      ENABLE_READ               => ENABLE_READ,
-      ENABLE_WRITE              => ENABLE_WRITE
+      NUM_REGS                  => NUM_REGS
     )
     port map (
       clk => clk,
-      reset => reset,
+      reset_n => reset_n,
       s_axi_awvalid             => s_axi_awvalid,
       s_axi_awready             => s_axi_awready,
       s_axi_awaddr              => s_axi_awaddr,
@@ -249,9 +247,9 @@ begin
       s_axi_rready              => s_axi_rready,
       s_axi_rdata               => s_axi_rdata,
       s_axi_rresp               => s_axi_rresp,
-      regs_data                 => regs_data,
-      write_data                => write_data,
-      write_enable              => write_enable
+      regs_out                  => regs_data,
+      regs_in                   => write_data,
+      regs_in_en                => write_enable
     );
 
 end Behavioral;

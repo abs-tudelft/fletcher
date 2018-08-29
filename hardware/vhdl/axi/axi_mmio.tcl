@@ -1,10 +1,11 @@
-vcom -2008 -work work axi.vhd
-vcom -2008 -work work axi_mmio.vhd
-vcom -2008 -work work axi_mmio_tb.vhd
+source $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
 
-vsim -novopt work.axi_mmio_tb
+add_source axi.vhd
+add_source axi_mmio.vhd
+add_source axi_mmio_tb.vhd
 
-add wave sim:/axi_mmio_tb/*
-add wave sim:/axi_mmio_tb/uut/*
+compile_sources
 
-run -all
+simulate axi_mmio_tb {{"TB"  sim:/axi_mmio_tb/*}
+                      {"UUT" sim:/axi_mmio_tb/uut/*}}

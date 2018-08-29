@@ -108,8 +108,17 @@ struct ColumnReader : public StreamComponent, public DerivedFrom<Column> {
 /**
  * @brief A ColumnWriter component
  */
+/**
+ * @brief A ColumnReader component
+ */
 struct ColumnWriter : public StreamComponent, public DerivedFrom<Column> {
-  explicit ColumnWriter(Column *column) : StreamComponent("ColumnWriter"), DerivedFrom(column) {};
+  ColumnWriter(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width);
+
+  std::shared_ptr<Stream> stream_cmd_;
+  std::shared_ptr<Stream> stream_unl_;
+  std::shared_ptr<Stream> stream_in_;
+  std::shared_ptr<Stream> stream_wreq_;
+  std::shared_ptr<Stream> stream_wdat_;
 };
 
 }//namespace fletchgen

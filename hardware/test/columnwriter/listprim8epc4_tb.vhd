@@ -22,8 +22,9 @@ use work.Streams.all;
 use work.Utils.all;
 use work.SimUtils.all;
 use work.Arrow.all;
-use work.ColumnReaderConfig.all;
-use work.ColumnReaderConfigParse.all;
+use work.Columns.all;
+use work.ColumnConfig.all;
+use work.ColumnConfigParse.all;
 
 entity listprim8epc4_tb is
 end listprim8epc4_tb;
