@@ -120,7 +120,7 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
          "Use the SREC utility only for functional verification purposes in simulation.");
   }
 
-  uint i = 0;
+  unsigned int i = 0;
   for (const auto &buf : buffers) {
     HexView hv(0);
     hv.addData(buf->data(), static_cast<size_t>(buf->size()));

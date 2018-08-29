@@ -48,7 +48,7 @@ std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_
   if (!buffers.empty()) {
     std::stringstream bufstr;
 
-    for (uint i = 0; i < buffers.size() - 1; i++) {
+    for (unsigned int i = 0; i < buffers.size() - 1; i++) {
       auto addr = buffers[i];
       auto msb = (uint32_t) (addr >> 32u);
       auto lsb = (uint32_t) (addr & 0xFFFFFFFF);
