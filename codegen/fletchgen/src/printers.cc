@@ -63,7 +63,7 @@ std::string HexView::toString(bool header) {
   std::string ret;
   if (header) {
     ret = "                  ";
-    for (uint i = 0; i < width; i++) {
+    for (unsigned int i = 0; i < width; i++) {
       sprintf(buf, "%02X ", i);
       ret.append(buf);
     }
@@ -84,7 +84,7 @@ void HexView::addData(const uint8_t *ptr, size_t size) {
   std::string left;
   std::string right;
 
-  uint i = 0;
+  unsigned int i = 0;
 
   while (i < size) {
     if (col % width == 0) {
@@ -114,7 +114,7 @@ void HexView::addData(const uint8_t *ptr, size_t size) {
     i++;
   }
 
-  left.append(std::string(18+3*width - left.length(), ' '));
+  left.append(std::string(18 + 3 * width - left.length(), ' '));
 
   str.append(left);
   str.append(" ");

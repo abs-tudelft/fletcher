@@ -40,7 +40,7 @@ uint8_t Record::checksum() {
   ret += (uint8_t) (address_ & 0xFFu);
 
   // Data
-  for (uint i = 0; i < length_; i++)
+  for (unsigned int i = 0; i < length_; i++)
     ret += (uint8_t) data_[i];
 
   // 1's complement the final result
