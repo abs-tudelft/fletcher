@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Check if environment variables are set
+if {![info exists ::env(FLETCHER_HARDWARE_DIR)]} {
+  error "Environment variable FLETCHER_HARDWARE_DIR not set. Please source fletcher/env.sh."
+}
+
 # Load compilation script and utilities
 source $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
 source $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
