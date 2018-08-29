@@ -67,6 +67,96 @@ entity primmap is
 end entity;
 
 architecture Behavioral of primmap is
+  constant MAX_STR_LEN : natural := 32;
 begin
+  process is
+    variable idx : natural := 0;
+  begin
+    -- Initial outputs
+    ctrl_busy <= '0';
+    ctrl_done <= '0';
+    ctrl_idle <= '0';
+    
+    primread_cmd_valid <= '0';
+    primwrite_cmd_valid <= '0';
+    
+    primread_out_ready <= '0';
+    primwrite_in_valid <= '0';
+    primwrite_in_last  <= '0';
+    
+    -- Wait for reset to go low and start to go high.
+    loop
+      wait until rising_edge(acc_clk);
+      exit when ctrl_reset = '0' and ctrl_start = '1';
+    end loop;
+    
+    ctrl_busy <= '1';
+        
+    -- Issue the commands
+    primread_cmd_firstIdx <= (others => '0');
+    primread_cmd_lastIdx <= std_logic_vector(to_unsigned(4, INDEX_WIDTH));
+    primread_cmd_primread_values_addr <= reg_primread_values_addr;
+    primread_cmd_valid <= '1';
 
+    -- Wait for read command to be accepted.
+    loop
+      wait until rising_edge(acc_clk);
+      exit when primread_cmd_ready = '1';
+    end loop;
+    primread_cmd_valid <= '0';    
+
+    primwrite_cmd_firstIdx <= (others => '0');
+    primwrite_cmd_lastIdx <= std_logic_vector(to_unsigned(4, INDEX_WIDTH));
+    -- Write to some buffer that should normally be preallocated and passed
+    -- through registers
+    primwrite_cmd_primwrite_values_addr <= X"0000000000000000";
+    primwrite_cmd_valid <= '1';
+    
+    -- Wait for write command to be accepted.
+    loop
+      wait until rising_edge(acc_clk);
+      exit when primwrite_cmd_ready = '1';
+    end loop;
+    primwrite_cmd_valid <= '0';
+    
+    -- Receive the primitives
+    loop 
+      primread_out_ready <= '1';
+      loop
+        wait until rising_edge(acc_clk);
+        exit when primread_out_valid = '1';
+      end loop;
+      primread_out_ready <= '0';
+      
+      -- Add one to the input and put it on the output.
+      primwrite_in_data <= std_logic_vector(unsigned(primread_out_data)+1);
+      
+      -- Check if this is the last primitive
+      if (idx = 3) then
+        primwrite_in_last <= '1';
+      end if;
+      
+      -- Wait for handshake
+      primwrite_in_valid <= '1';
+      loop
+        wait until rising_edge(acc_clk);
+        exit when primwrite_in_ready = '1';
+      end loop;
+      primwrite_in_valid <= '0';
+      
+      idx := idx + 1;
+      exit when idx = 4;
+    end loop;
+        
+    -- Wait a few extra cycles ... 
+    -- (normally you should use unlock stream for this)
+    for I in 0 to 128 loop
+        wait until rising_edge(acc_clk);
+    end loop;
+    
+    -- Signal done to the usercore controller
+    ctrl_busy <= '0';
+    ctrl_done <= '1';
+    wait;
+  end process;
 end Behavioral;
