@@ -77,7 +77,7 @@ begin
   reg_return <= std_logic_vector(accumulator);
 
   -- Provide base address and indexes to ColumnReader
-  weight_cmd_weight_values_addr <= reg_weight_values_addr(31 downto 0) & reg_weight_values_addr(63 downto 32);
+  weight_cmd_weight_values_addr <= reg_weight_values_addr;
   weight_cmd_tag <= (others => '0');
   weight_cmd_firstIdx <= regs_in(2*REG_WIDTH-1 downto 1*REG_WIDTH);
   weight_cmd_lastIdx  <= regs_in(4*REG_WIDTH-1 downto 3*REG_WIDTH);

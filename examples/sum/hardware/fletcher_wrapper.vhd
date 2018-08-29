@@ -208,7 +208,7 @@ begin
       busy                                     => uctrl_busy,
       done                                     => uctrl_done
     );
-  -- Write one reg of status, not control
+  -- Always write to status reg, but never control reg
   regs_out_en(3 downto 0) <= "0010";
 
   -- Hardware Accelerated Function instance.
@@ -246,7 +246,7 @@ begin
       regs_out                                 => s_regs_out,
       regs_out_en                              => s_regs_out_en
     );
-  -- Write to return reg
+  -- Always write to return reg, but never to column address reg
   regs_out_en(7 downto 4) <= "0011";
 
   -- Arbiter instance generated to serve 1 column readers.
