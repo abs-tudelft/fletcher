@@ -64,3 +64,6 @@ codegen/fletchgen/cmake-build-debug/
 codegen/fletchgen/debug/
 
 hardware/test/fletchgen/simpleread/test_wrapper\.vhd
+
+# ghdl wave output
+*.ghw
