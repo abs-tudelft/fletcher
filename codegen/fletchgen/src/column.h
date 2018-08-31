@@ -121,4 +121,12 @@ struct ColumnWriter : public StreamComponent, public DerivedFrom<Column> {
   std::shared_ptr<Stream> stream_wdat_;
 };
 
+
+/**
+ * @brief Return the configuration string for an Arrow DataType.
+ * @param field The DataType.
+ * @return The configuration string.
+ */
+std::string genConfigString(arrow::Field *field, int level = 0);
+
 }//namespace fletchgen

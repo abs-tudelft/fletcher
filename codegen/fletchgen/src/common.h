@@ -75,9 +75,12 @@ std::vector<T *> ptrvec(std::vector<std::shared_ptr<T>> vec) {
  * @return The column wrapper
  */
 std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostream *> &outputs,
-                                                     const std::shared_ptr<arrow::Schema> &schema,
+                                                     const std::vector<std::shared_ptr<arrow::Schema>> &schema,
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
-                                                     config::Config cfg);
+                                                     std::vector<config::Config> &cfgs);
+
+/// @brief Split a string \p str by delimeter \p delim and return a vector of strings.
+std::vector<std::string> split(const std::string &str, const char delim = ',');
 
 }//namespace fletchgen

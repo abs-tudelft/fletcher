@@ -14,17 +14,14 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include "../column-wrapper.h"
+#include <arrow/record_batch.h>
 
-namespace top {
+namespace fletchgen {
+namespace test {
 
-/// @brief Generate a simulation top level on supplied output streams from a ColumnWrapper
-std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_wrapper,
-                           const std::vector<std::ostream *> &outputs,
-                           const std::string &read_srec_path,
-                           std::vector<uint64_t> buffers,
-                           const std::string &dump_srec_path);
+std::shared_ptr<arrow::RecordBatch> getStringRB();
 
+std::shared_ptr<arrow::RecordBatch> getUint8RB();
+
+}
 }

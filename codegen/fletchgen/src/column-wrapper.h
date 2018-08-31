@@ -47,13 +47,13 @@ class SignalFromPort : public Signal, public DerivedFrom<Port> {
  */
 class ColumnWrapper : public StreamComponent {
  public:
-  explicit ColumnWrapper(std::shared_ptr<arrow::Schema> schema,
+  explicit ColumnWrapper(std::vector<std::shared_ptr<arrow::Schema>> schemas,
                          std::string name,
                          std::string acc_name,
-                         config::Config config = config::default_config);
+                         std::vector<config::Config> configs = {});
 
   /// @brief Return the schema this wrapper implementation is derived from.
-  std::shared_ptr<arrow::Schema> schema() { return schema_; }
+  std::vector<std::shared_ptr<arrow::Schema>> schemas() { return schemas_; }
 
   /// @brief Return a human readable string with some info about this wrapper.
   std::string toString() override;
@@ -75,14 +75,21 @@ class ColumnWrapper : public StreamComponent {
   int countRegisters();
 
   /// @brief Return the number of user registers.
-  int user_regs() { return cfg_.user.num_user_regs; }
+  int user_regs() {
+    int ret = 0;
+    for (const auto &cfg : cfgs_) {
+      ret += cfg.user.num_user_regs;
+    }
+    return ret;
+  }
 
-  /// @brief Return the global configuration
-  config::Config config() { return cfg_; };
+  /// @brief Return the configurations for each Schema
+  std::vector<config::Config> configs() { return cfgs_; };
 
  private:
-  std::shared_ptr<arrow::Schema> schema_ = nullptr; ///< The schema this wrapper implementation is derived from.
-  config::Config cfg_; ///< Configuration
+  std::vector<std::shared_ptr<arrow::Schema>>
+      schemas_ = {}; ///< The schema this wrapper implementation is derived from.
+  std::vector<config::Config> cfgs_; ///< Configurations
 
   std::shared_ptr<UserCore> usercore_; ///< UserCore component that has to be implemented by the user.
   std::shared_ptr<Instantiation> usercore_inst_; ///< UserCore instance.
@@ -129,18 +136,30 @@ class ColumnWrapper : public StreamComponent {
   /// @brief Return all Fletcher stream of a specific type on this wrapper.
   std::vector<FletcherStream *> getFletcherStreams(std::vector<std::shared_ptr<Stream>> streams);
 
-  /* Arbiter */
-  /// @brief generate the internal signals for the arbiters.
+  /* Arbiters */
+  /// @brief generate the internal signals for the read arbiter.
   void addInternalReadArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
+
+  /// @brief generate the internal signals for the write arbiter.
+  void addInternalWriteArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
+
+  /// @brief Add the read arbiter
+  void addReadArbiter();
+
+  /// @brief Add the write arbiter
+  void addWriteArbiter();
+
+  /// @brief Return the write arbiter instance if it exists, nullptr otherwise.
+  std::shared_ptr<Instantiation> write_arbiter_inst();
 
   /// @brief Return the read arbiter instance if exists, nullptr otherwise.
   std::shared_ptr<Instantiation> read_arbiter_inst();
 
   /// @brief Return the read arbiter component
-  ReadArbiter* read_arbiter() {return rarb.get();}
+  ReadArbiter *read_arbiter() { return rarb.get(); }
 
   /// @brief Return the write arbiter component
-  WriteArbiter* write_arbiter() {return warb.get();}
+  WriteArbiter *write_arbiter() { return warb.get(); }
 
   /* Ports */
   /// @brief Generate global ports for the wrapper, such as clk, reset, etc...
@@ -148,7 +167,6 @@ class ColumnWrapper : public StreamComponent {
 
   /// @brief Add register ports.
   void addRegisterPorts();
-
 
   /* Connections */
   /// @brief Connect global ports of some instance
@@ -169,6 +187,12 @@ class ColumnWrapper : public StreamComponent {
   /// @brief Connect read data channels to arbiter.
   void connectReadDataChannels();
 
+  /// @brief Connect write request channels to arbiter.
+  void connectWriteRequestChannels();
+
+  /// @brief Connect write data channels to arbiter.
+  void connectWriteDataChannels();
+
   /// @brief Connect global ports such as clock, reset, etc...
   void connectGlobalPorts();
 
@@ -183,18 +207,10 @@ class ColumnWrapper : public StreamComponent {
 
   void implementUserRegs();
 
-  void addReadArbiter();
-  void addWriteArbiter();
-
   void mapUserGenerics();
 
-  void connectWriteRequestChannels();
-
-  void connectWriteDataChannels();
-
-  std::shared_ptr<Instantiation> write_arbiter_inst();
-
-  void addInternalWriteArbiterSignals(std::vector<std::shared_ptr<StreamPort>> ports);
+  // TODO: implement validation of config compatibility amongst multiple schemas
+  void validateConfigs() {};
 };
 
 }//namespace fletchgen
