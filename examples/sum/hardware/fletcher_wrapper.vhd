@@ -251,7 +251,7 @@ begin
       weight_cmd_weight_values_addr            => s_weight_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
       reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),
       reg_return1                              => regs_out(4*REG_WIDTH-1 downto 3*REG_WIDTH),
-      reg_weight_values_addr                   => regs_in(6*REG_WIDTH-1 downto 4*REG_WIDTH),
+      reg_weight_values_addr                   => regs_in(8*REG_WIDTH-1 downto 6*REG_WIDTH),
       regs_in                                  => s_regs_in,
       regs_out                                 => s_regs_out,
       regs_out_en                              => s_regs_out_en

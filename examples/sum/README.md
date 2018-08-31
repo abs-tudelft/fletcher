@@ -9,7 +9,9 @@ Be sure to read the sources as well, they contain useful hints.
 ## Generating the hardware skeleton files
 
 Note: The produced files are available in the repository, so these steps
-can be skipped if so desired.
+can be skipped if so desired. They also provide a reference for when
+the tools are updated and their output changes. The goal is to track these
+changes into this example as quickly as possible, but it may lag behind.
 
 The main component of Fletcher is the
 [ColumnReader](../../hardware/vhdl/columns/ColumnReader.vhd).
@@ -117,16 +119,12 @@ generate the skeleton files.
 The files will already have been generated if you used the CMake project in
 the previous step. This will produce fletcher_wrapper.vhd and axi_top.vhd.
 
-Additional configuration registers are needed to provide the start and end
-row number to the column reader. We use two 32-bit registers.
-This may be automatically provided in a later version of fletchgen.
-
 To run fletchgen manually:
 
     $ fletchgen --quiet \
         --input sum.fbs \
         --output fletcher_wrapper.vhd \
-        --custom_registers 2
+        --axi axi_top.vhd
 
 ## Implement accelerated function
 

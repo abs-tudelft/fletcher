@@ -29,7 +29,9 @@ set UNUSED_TEMPLATES_DIR $HDK_SHELL_DESIGN_DIR/interfaces
 
 
 # Remove any previously encrypted files, that may no longer be used
-exec rm -f $TARGET_DIR/*
+if {[llength [glob -nocomplain -dir $TARGET_DIR *]] != 0} {
+  eval file delete -force [glob $TARGET_DIR/*]
+}
 
 #---- Developr would replace this section with design files ----
 
@@ -88,12 +90,11 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi.vhd                        
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_mmio.vhd                        $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_read_converter.vhd              $TARGET_DIR
 
-# Fletcher to AWS glue
-file copy -force $FLETCHER_EXAMPLES_DIR/sum/hardware/fletcher_wrapper.vhd  $TARGET_DIR
-file copy -force $FLETCHER_EXAMPLES_DIR/sum/hardware/axi_top.vhd           $TARGET_DIR
-
-# User provided hardware accelerated function
-file copy -force $FLETCHER_EXAMPLES_DIR/sum/hardware/sum.vhd               $TARGET_DIR
+# Copy all project files
+set cl_filelist [glob -nocomplain -dir $FLETCHER_EXAMPLES_DIR/sum/hardware/ *]
+foreach cl_file $cl_filelist {
+  file copy -force $cl_file $TARGET_DIR
+}
 
 # AWS EC2 F1 files:
 file copy -force $CL_DIR/design/cl_arrow_defines.vh                   $TARGET_DIR
@@ -106,6 +107,12 @@ file copy -force $CL_DIR/design/cl_arrow.sv                           $TARGET_DI
 # Make sure files have write permissions for the encryption
 
 exec chmod +w {*}[glob $TARGET_DIR/*]
+
+set TOOL_VERSION $::env(VIVADO_TOOL_VERSION)
+set vivado_version [version -short]
+set ver_2017_4 2017.4
+puts "AWS FPGA: VIVADO_TOOL_VERSION $TOOL_VERSION"
+puts "vivado_version $vivado_version"
 
 # As we open-source everything, we don't care about encrypting the sources and
 # skip the encryption step. Re-enable if you want your sources to become

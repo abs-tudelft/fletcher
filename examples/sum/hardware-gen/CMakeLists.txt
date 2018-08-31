@@ -31,8 +31,11 @@ target_link_libraries(schema
 add_custom_command(OUTPUT sum.fbs COMMAND schema)
 # We need two user registers, one for the start and one for the end row number
 add_custom_command(OUTPUT fletcher_wrapper.vhd
-  COMMAND fletchgen -q -i sum.fbs -o fletcher_wrapper.vhd
-    -r 2 --axi axi_top.vhd
+  COMMAND fletchgen
+    --quiet
+    --input sum.fbs
+    --output fletcher_wrapper.vhd
+    --axi axi_top.vhd
   DEPENDS sum.fbs)
 add_custom_target(wrapper ALL DEPENDS fletcher_wrapper.vhd)
 

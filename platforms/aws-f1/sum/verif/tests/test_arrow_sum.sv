@@ -24,11 +24,11 @@
  */
 
 // Register offsets & some default values:
-`define REG_STATUS          0
+`define REG_STATUS          1
 `define   STATUS_BUSY       32'h00000002
 `define   STATUS_DONE       32'h00000005
 
-`define REG_CONTROL         1
+`define REG_CONTROL         0
 `define   CONTROL_START     32'h00000001
 `define   CONTROL_RESET     32'h00000004
 
@@ -44,11 +44,13 @@
 
 `define NUM_REGISTERS       10
 
-// Offset buffer address
+// Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000
-`define OFF_ADDR_LO         32'h00000100
+`define OFF_ADDR_LO         32'h00001000
+// Offset buffer address in host memory
+`define HOST_ADDR           64'h0000000000000120
 
-`define NUM_ROWS            512
+`define NUM_ROWS            541
 
 module test_arrow_sum();
 
@@ -72,7 +74,8 @@ union {
 
 initial begin
 
-  logic[63:0] buffer_address;
+  logic[63:0] host_buffer_address;
+  logic[63:0] cl_buffer_address;
 
   // Power up the testbench
   tb.power_up(.clk_recipe_a(ClockRecipe::A1),
@@ -96,30 +99,28 @@ initial begin
 
   $display("[%t] : Initializing buffers", $realtime);
 
-  buffer_address = {`OFF_ADDR_HI, `OFF_ADDR_LO};
+  host_buffer_address = `HOST_ADDR;
+  cl_buffer_address = {`OFF_ADDR_HI, `OFF_ADDR_LO};
 
   // Queue the data movement
   tb.que_buffer_to_cl(
     .chan(0),
-    .src_addr(buffer_address),
-    .cl_addr(64'h0000_0000_0000),
+    .src_addr(host_buffer_address),
+    .cl_addr(cl_buffer_address),
     .len(num_buf_bytes)
   );
-
-  // Set a random seed
-  $srandom(0);
 
   // Fill the buffer with random numbers
   for (int i = 0; i < num_rows; i++) begin
     buf_data.i = i * 7;  // sum == 7 * (num_rows * (num_rows - 1)) / 2
-    tb.hm_put_byte(.addr(buffer_address + 8 * i    ), .d(buf_data.bytes[0]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 1), .d(buf_data.bytes[1]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 2), .d(buf_data.bytes[2]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 3), .d(buf_data.bytes[3]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 4), .d(buf_data.bytes[4]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 5), .d(buf_data.bytes[5]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 6), .d(buf_data.bytes[6]));
-    tb.hm_put_byte(.addr(buffer_address + 8 * i + 7), .d(buf_data.bytes[7]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i    ), .d(buf_data.bytes[0]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 1), .d(buf_data.bytes[1]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 2), .d(buf_data.bytes[2]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 3), .d(buf_data.bytes[3]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 4), .d(buf_data.bytes[4]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 5), .d(buf_data.bytes[5]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 6), .d(buf_data.bytes[6]));
+    tb.hm_put_byte(.addr(host_buffer_address + 8 * i + 7), .d(buf_data.bytes[7]));
   end
 
   $display("[%t] : Starting host to CL DMA transfers ", $realtime);
@@ -165,12 +166,12 @@ initial begin
   // Start UserCore
   tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
 
-  // Poll status at an interval of 5000 nsec
+  // Poll status at an interval of 1000 nsec
   // For the real thing, you should probably increase this to put 
   // less stress on the PCI interface
   do
     begin
-      tb.nsec_delay(5000);
+      tb.nsec_delay(1000);
       tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
       $display("[%t] : UserCore status: %H", $realtime, read_data);
     end
@@ -179,14 +180,14 @@ initial begin
   $display("[%t] : UserCore completed ", $realtime);
 
   // Get the return register value
-  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
-  $display("[t] : Return register LO: %d", read_data);
-  if (read_data != 0) begin
-    $display("[t] : ERROR: Expected 0 on return LO");
-    fail = 1;
-  end
   tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
   $display("[t] : Return register HI: %d", read_data);
+  if (read_data != 0) begin
+    $display("[t] : ERROR: Expected 0 on return HI");
+    fail = 1;
+  end
+  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
+  $display("[t] : Return register LO: %d", read_data);
   if (read_data != 7 * (num_rows * (num_rows - 1)) / 2) begin
     $display("[t] : ERROR: Result does not match expected %d", 7 * (num_rows * (num_rows - 1)) / 2);
     fail = 1;
