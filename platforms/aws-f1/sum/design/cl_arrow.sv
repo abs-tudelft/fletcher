@@ -131,6 +131,9 @@ assign sh_bar1.rready  = sh_bar1_rready ;
 //----------------------------------------------
 // DMA PCI Slave Connections -> dma_pcis
 //----------------------------------------------
+assign cl_sh_dma_wr_full        = 1'b0;
+assign cl_sh_dma_rd_full        = 1'b0;
+
 assign dma_pcis.awid[5:0]       = sh_cl_dma_pcis_awid   ;
 assign dma_pcis.awaddr          = sh_cl_dma_pcis_awaddr ;
 assign dma_pcis.awlen           = sh_cl_dma_pcis_awlen  ;
@@ -170,6 +173,7 @@ assign cl_sh_ddr_awid           = ddr_c.awid            ;
 assign cl_sh_ddr_awaddr         = ddr_c.awaddr          ;
 assign cl_sh_ddr_awlen          = ddr_c.awlen           ;
 assign cl_sh_ddr_awsize         = ddr_c.awsize          ;
+assign cl_sh_ddr_awburst        = 2'b01                 ;
 assign cl_sh_ddr_awvalid        = ddr_c.awvalid         ;
 assign ddr_c.awready            = sh_cl_ddr_awready     ;
 
@@ -189,6 +193,7 @@ assign cl_sh_ddr_arid           = ddr_c.arid            ;
 assign cl_sh_ddr_araddr         = ddr_c.araddr          ;
 assign cl_sh_ddr_arlen          = ddr_c.arlen           ;
 assign cl_sh_ddr_arsize         = ddr_c.arsize          ;
+assign cl_sh_ddr_arburst        = 2'b01                 ;
 assign cl_sh_ddr_arvalid        = ddr_c.arvalid         ;
 assign ddr_c.arready            = sh_cl_ddr_arready     ;
 
@@ -512,9 +517,7 @@ axi_interconnect_top AXI_INTERCONNECT (
 );
 
 // Write channel tie off
-assign arrow_mst.awvalid        = 1'b0;
-assign arrow_mst.wvalid         = 1'b0;
-assign arrow_mst.bready         = 1'b0;
+assign arrow_mst.bready         = 1'b1;
 
 // Read channel defaults:
 assign arrow_mst.arsize         = 3'b110; // 512 bit beats
@@ -546,6 +549,20 @@ assign arrow_mst.arid           = 0;
    .m_axi_rdata  (arrow_mst.rdata  ),
    .m_axi_rresp  (arrow_mst.rresp  ),
    .m_axi_rlast  (arrow_mst.rlast  ),
+
+    // Write address channel
+   .m_axi_awvalid(arrow_mst.awvalid),
+   .m_axi_awready(arrow_mst.awready),
+   .m_axi_awaddr (arrow_mst.awaddr),
+   .m_axi_awlen  (arrow_mst.awlen),
+   .m_axi_awsize (arrow_mst.awsize),
+
+    // Write data channel
+   .m_axi_wvalid (arrow_mst.wvalid),
+   .m_axi_wready (arrow_mst.wready),
+   .m_axi_wdata  (arrow_mst.wdata),
+   .m_axi_wlast  (arrow_mst.wlast),
+   .m_axi_wstrb  (arrow_mst.wstrb),
 
    // Slave interface
    .s_axi_awvalid(arrow_slv.awvalid),

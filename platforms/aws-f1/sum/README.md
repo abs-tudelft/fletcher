@@ -24,41 +24,44 @@ The hardware development environment is needed when synthesizing or
 simulating the design. The software development environment is needed when
 compiling or running the host software and requires root privileges to install.
 
-    $ curl "https://codeload.github.com/aws/aws-fpga/tar.gz/v1.4.1" \
+    $ curl "https://codeload.github.com/aws/aws-fpga/tar.gz/v1.4.2" \
         | tar --extract --gzip
-    $ cd aws-fpga-1.4.1
+    $ cd aws-fpga-1.4.2
     $ source hdk_setup.sh
     $ source sdk_setup.sh
 
 ## Create the project
 
-Set up environment variables:
-
-    $ cd "$FLETCHER_PLATFORM_DIR/aws-f1/sum"
-    $ export CL_DIR=$(pwd)
-
 A project can be created by adapting one of the examples delivered with
 aws-fpga, or use the script [project-generate.sh](../project-generate.sh).
 Important files hat need to be modified include:
 
-  * ***build/scripts/synth_cl_arrow ???*** Is this file used at all? (TODO)
+  * build/scripts/synth_cl_arrow
   * build/scripts/encrypt.tcl
   * verif/scripts/top_verilog.vivado.f
   * verif/scripts/top_vhdl.vivado.f
 
+After creating the project, set the CL_DIR environment variable.
+
+    $ cd "$FLETCHER_PLATFORM_DIR/aws-f1/sum"
+    $ export CL_DIR=$(pwd)
+
 ## Create testbench
 
+A test bench can be created that simulates the FPGA card in its entirety.
 An example testbench can be found in
 [verif/tests/test_arrow_sum.sv](./verif/tests/test_arrow_sum.sv)
 
-## Synthesize IP
+## Generate IP
+
+The AXI IP needs to be generated before continuing with the rest of the steps.
 
     $ cd "$CL_DIR"
     $ source generate_ip.sh
 
 ## Run test
 
-At the time of writing, the tests always exit with a segmentation fault.
+At the time of writing, xsim always exits with a segmentation fault.
 The test itself runs fine though.
 
     $ cd "$CL_DIR/verif/scripts"
@@ -89,7 +92,7 @@ an image from it. The unique afi id will be printed on the command line.
     $ designlocal=$(ls "$CL_DIR/build/checkpoints/to_aws/"*.tar | tail -n 1)
     $ designfile=$(basename "$designlocal")
     $ aws s3 cp \
-        "$CL_DIR/build/checkpoints/to_aws/*.tar" \
+        "$CL_DIR/build/checkpoints/to_aws/$designfile" \
         "s3://my_bucket/my_directory/"
     $ aws ec2 create-fpga-image \
         --name my_name \
@@ -112,6 +115,10 @@ To list all your FPGA images:
 
 ## Compile run-time software
 
+If you have not done so yet, start an AWS-f1 instance and continue the next
+steps on the instance after setting up the SDK environment as described in
+the first step of this readme.
+
 Compile the fletcher run-time library with support for AWS:
 
     $ cd "$FLETCHER_RUNTIME_DIR"
@@ -119,6 +126,7 @@ Compile the fletcher run-time library with support for AWS:
     $ cd build
     $ cmake \
         -DPLATFORM_AWS=ON \
+        -DENABLE_DEBUG=ON \
         ..
     $ make install
 
@@ -135,21 +143,18 @@ Compile the host software:
 ## Load FPGA image
 
 To load an FPGA image inside an f1 instance, install management software
-and load system drivers:
+and load system drivers. The management software is installed by sourcing the
+`sdk_setup.sh` script, you should have done this in a previous step already.
 
-    $ curl "https://codeload.github.com/aws/aws-fpga/tar.gz/v1.3.8" \
-        | tar --extract --gzip
-    $ cd aws-fpga-1.3.8
-    $ source sdk_setup.sh
-    $ cd aws-fpga-1.3.8
-    $ source sdk_setup.sh
+    $ cd "$AWS_FPGA_REPO_DIR"
     $ cd sdk/linux_kernel_drivers/edma
     $ make
     $ sudo make install
     $ sudo modprobe edma-drv
+    
     $ sudo fpga-clear-local-image -S 0 -H
     $ sudo fpga-load-local-image -S 0 -I agfi-xxxx456789abcxxxx
 
-Finally, run the software:
+Finally, [compile](../../../examples/sum/) and run the software:
 
     $ sudo "$FLETCHER_EXAMPLES_DIR/sum/software/build/sum"

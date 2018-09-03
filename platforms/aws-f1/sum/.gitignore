@@ -1,7 +1,6 @@
 /build/checkpoints
 /build/reports
 /build/constraints/cl_clocks_aws.xdc
-/build/scripts/aws_build_dcp_from_cl.sh
 /build/scripts/.Xil/
 /build/scripts/*.log
 /build/scripts/last_log
