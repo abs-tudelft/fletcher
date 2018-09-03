@@ -56,7 +56,7 @@ shared_ptr<arrow::Table> create_table(int num_rows)
     (uintmax_t) numeric_limits<int64_t>::max() / num_rows, // arrow data type,
     min(
       (uintmax_t) numeric_limits<int>::max() / num_rows, // return type on CPU
-      (uintmax_t) numeric_limits<fletcher::fr_t>::max() / num_rows // return type on FPGA
+      (uintmax_t) numeric_limits<fletcher::fa_t>::max() / num_rows // return type on FPGA
     )
   );
   std::uniform_int_distribution<int64_t> int_dist(0, element_max);
