@@ -45,7 +45,7 @@ cp "$AWS_PATH/hdk/cl/examples/cl_dram_dma/verif/scripts/waves.tcl" \
 cp "$SHELL_PATH/build/scripts/aws_build_dcp_from_cl.sh" \
   "build/scripts/aws_build_dcp_from_cl.sh"
 
-sed -e 's/cl_dram_dma/cl_arrow/g' \
+sed -e 's/cl_dram_dma/cl_arrow/g; s/write_checkpoint -encrypt /write_checkpoint /g' \
   < "$AWS_PATH/hdk/cl/examples/cl_dram_dma/build/scripts/create_dcp_from_cl.tcl" \
   > "build/scripts/create_dcp_from_cl.tcl"
 
