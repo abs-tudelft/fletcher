@@ -52,6 +52,7 @@ string typeToString(GP type) {
     case GP::REG_USER:return "reg_user";
     case GP::SIG:return "signal";
     case GP::REG_RETURN:return "reg_return";
+    case GP::REG_IDX:return "reg_idx";
   }
   throw std::runtime_error("Unknown port type.");
 }
