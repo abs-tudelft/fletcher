@@ -126,7 +126,7 @@ fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
   uc.reset();
 
   // Determine size of table
-  uint64_t last_index = table->num_rows();
+  fletcher::fr_t last_index = table->num_rows();
   std::vector<fletcher::fr_t> user_logic_args = {0, last_index};
   uc.set_arguments(user_logic_args);
 
