@@ -127,7 +127,7 @@ void ColumnWrapper::addReadArbiter() {
     }
 
   } else {
-    // No readers, tie off write channel
+    // No readers, tie off read channel
     architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rreq_valid", "<=", "'0';"));
     architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rdat_ready", "<=", "'0';"));
   }
