@@ -39,10 +39,10 @@
 `define REG_OFF_ADDR_LO     6
 
 // Registers for first and last (exclusive) row index
-`define REG_FIRST_IDX       8
-`define REG_LAST_IDX        9
+`define REG_FIRST_IDX       4
+`define REG_LAST_IDX        5
 
-`define NUM_REGISTERS       10
+`define NUM_REGISTERS       8
 
 // Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000

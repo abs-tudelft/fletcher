@@ -21,7 +21,6 @@ library work;
 
 entity sum is
   generic(
-    NUM_USER_REGS                              : natural;
     TAG_WIDTH                                  : natural;
     BUS_ADDR_WIDTH                             : natural;
     INDEX_WIDTH                                : natural;
@@ -49,12 +48,12 @@ entity sum is
     ctrl_stop                                  : in std_logic;
     ctrl_start                                 : in std_logic;
     -------------------------------------------------------------------------
+    idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
+    idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
     reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
     reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-    reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    regs_in                                    : in std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-    regs_out                                   : out std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-    regs_out_en                                : out std_logic_vector(NUM_USER_REGS-1 downto 0)
+    -------------------------------------------------------------------------
+    reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
   );
 end entity sum;
 
@@ -69,10 +68,6 @@ architecture rtl of sum is
 
 begin
 
-  -- Don't write to any of the mapped registers
-  regs_out <= (others => '0');
-  regs_out_en <= (others => '0');
-
   -- Module output is the accumulator value
   reg_return0 <= std_logic_vector(accumulator(1*REG_WIDTH-1 downto 0*REG_WIDTH));
   reg_return1 <= std_logic_vector(accumulator(2*REG_WIDTH-1 downto 1*REG_WIDTH));
@@ -81,9 +76,9 @@ begin
   weight_cmd_weight_values_addr <= reg_weight_values_addr;
   weight_cmd_tag <= (others => '0');
 
-  -- The indexes are in user register 1 and 2
-  weight_cmd_firstIdx <= regs_in(1*REG_WIDTH-1 downto 0*REG_WIDTH);
-  weight_cmd_lastIdx  <= regs_in(2*REG_WIDTH-1 downto 1*REG_WIDTH);
+  -- Set the first and last index on our column
+  weight_cmd_firstIdx <= idx_first;
+  weight_cmd_lastIdx  <= idx_last;
 
   logic_p: process (state, ctrl_start, accumulator,
     weight_cmd_ready, weight_out_valid, weight_out_data, weight_out_last)

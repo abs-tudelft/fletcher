@@ -23,24 +23,27 @@ use work.axi.all;
 -- AXI4 compatible top level for Fletcher generated accelerators.
 entity axi_top is
   generic (
-    -- Accelerator properties
-    INDEX_WIDTH                 : natural := 32;
-    NUM_ARROW_BUFFERS           : natural := 1;
-    NUM_USER_REGS               : natural := 2;
-    NUM_REGS                    : natural := 10;
-    REG_WIDTH                   : natural := 32;
-    TAG_WIDTH                   : natural := 1;
-
     -- Host bus properties
     BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 512;
+    BUS_STROBE_WIDTH            : natural := 64;
     BUS_LEN_WIDTH               : natural := 8;
-    BUS_BURST_MAX_LEN           : natural := 16;
+    BUS_BURST_MAX_LEN           : natural := 64;
     BUS_BURST_STEP_LEN          : natural := 1;
-
+    
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural := 32;
-    SLV_BUS_DATA_WIDTH          : natural := 32
+    SLV_BUS_DATA_WIDTH          : natural := 32;
+  
+    -- Arrow properties
+    INDEX_WIDTH                 : natural := 32;
+  
+    -- Accelerator properties
+    TAG_WIDTH                   : natural := 1;
+    NUM_ARROW_BUFFERS           : natural := 1;
+    NUM_USER_REGS               : natural := 0;
+    NUM_REGS                    : natural := 8;
+    REG_WIDTH                   : natural := SLV_BUS_DATA_WIDTH
   );
 
   port (
@@ -117,57 +120,47 @@ architecture Behavorial of axi_top is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  -- If you have changed the name of your wrapper component, you are currently
-  -- on your own.
   component fletcher_wrapper is
-  generic(
-    BUS_ADDR_WIDTH                             : natural;
-    BUS_DATA_WIDTH                             : natural;
-    BUS_STROBE_WIDTH                           : natural;
-    BUS_LEN_WIDTH                              : natural;
-    BUS_BURST_STEP_LEN                         : natural;
-    BUS_BURST_MAX_LEN                          : natural;
-    ---------------------------------------------------------------------------
-    INDEX_WIDTH                                : natural;
-    ---------------------------------------------------------------------------
-    NUM_ARROW_BUFFERS                          : natural;
-    NUM_REGS                                   : natural;
-    NUM_USER_REGS                              : natural;
-    REG_WIDTH                                  : natural;
-    ---------------------------------------------------------------------------
-    TAG_WIDTH                                  : natural
-  );
-  port(
-    acc_reset                                  : in std_logic;
-    bus_clk                                    : in std_logic;
-    bus_reset                                  : in std_logic;
-    acc_clk                                    : in std_logic;
-    ---------------------------------------------------------------------------
-    mst_rreq_valid                             : out std_logic;
-    mst_rreq_ready                             : in std_logic;
-    mst_rreq_addr                              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    mst_rreq_len                               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    ---------------------------------------------------------------------------
-    mst_rdat_valid                             : in std_logic;
-    mst_rdat_ready                             : out std_logic;
-    mst_rdat_data                              : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_rdat_last                              : in std_logic;
-    ---------------------------------------------------------------------------
-    mst_wreq_valid                             : out std_logic;
-    mst_wreq_len                               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    mst_wreq_addr                              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    mst_wreq_ready                             : in std_logic;
-    ---------------------------------------------------------------------------
-    mst_wdat_valid                             : out std_logic;
-    mst_wdat_ready                             : in std_logic;
-    mst_wdat_data                              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wdat_strobe                            : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-    mst_wdat_last                              : out std_logic;
-    ---------------------------------------------------------------------------
-    regs_in                                    : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-    regs_out                                   : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-    regs_out_en                                : out std_logic_vector(NUM_REGS-1 downto 0)
-  );
+    generic(
+      BUS_DATA_WIDTH            : natural;
+      BUS_ADDR_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      NUM_ARROW_BUFFERS         : natural;
+      NUM_REGS                  : natural;
+      NUM_USER_REGS             : natural;
+      REG_WIDTH                 : natural;
+      TAG_WIDTH                 : natural
+    );
+    port(
+      acc_clk                   : in std_logic;
+      acc_reset                 : in std_logic;
+      bus_clk                   : in std_logic;
+      bus_reset                 : in std_logic;
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in std_logic;
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic;
+      regs_in                   : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+      regs_out                  : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+      regs_out_en               : out std_logic_vector(NUM_REGS-1 downto 0)
+    );
   end component;
   -----------------------------------------------------------------------------
 
@@ -178,10 +171,22 @@ architecture Behavorial of axi_top is
   signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal bus_rreq_valid         : std_logic;
   signal bus_rreq_ready         : std_logic;
+
   signal bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_rdat_last          : std_logic;
   signal bus_rdat_valid         : std_logic;
   signal bus_rdat_ready         : std_logic;
+
+  signal bus_wreq_valid         : std_logic;
+  signal bus_wreq_ready         : std_logic;
+  signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+
+  signal bus_wdat_valid         : std_logic;
+  signal bus_wdat_ready         : std_logic;
+  signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bus_wdat_last          : std_logic;
 
   -- MMIO registers
   signal regs_in                : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
@@ -192,10 +197,6 @@ begin
   -- Active high reset
   bus_reset <= '1' when bus_reset_n = '0' else '0';
 
-  -- Tie off unused master write channel
-  m_axi_awvalid <= '0';
-  m_axi_wvalid <= '0';
-
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
@@ -203,7 +204,7 @@ begin
     generic map (
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_DATA_WIDTH/8,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
@@ -227,8 +228,15 @@ begin
       mst_rdat_ready            => bus_rdat_ready,
       mst_rdat_data             => bus_rdat_data,
       mst_rdat_last             => bus_rdat_last,
-      mst_wreq_ready            => '1', -- Silently discard writes for now
-      mst_wdat_ready            => '1',
+      mst_wreq_valid            => bus_wreq_valid,
+      mst_wreq_ready            => bus_wreq_ready,
+      mst_wreq_addr             => bus_wreq_addr,
+      mst_wreq_len              => bus_wreq_len,
+      mst_wdat_valid            => bus_wdat_valid,
+      mst_wdat_ready            => bus_wdat_ready,
+      mst_wdat_data             => bus_wdat_data,
+      mst_wdat_strobe           => bus_wdat_strobe,
+      mst_wdat_last             => bus_wdat_last,
       regs_in                   => regs_in,
       regs_out                  => regs_out,
       regs_out_en               => regs_out_en
@@ -267,6 +275,43 @@ begin
       m_axi_rlast               => m_axi_rlast,
       m_axi_rvalid              => m_axi_rvalid,
       m_axi_rready              => m_axi_rready
+    );
+    
+  -----------------------------------------------------------------------------
+  -- AXI write converter
+  -----------------------------------------------------------------------------
+  axi_write_conv_inst: axi_write_converter
+    generic map (
+      ADDR_WIDTH                => BUS_ADDR_WIDTH,
+      MASTER_DATA_WIDTH         => BUS_DATA_WIDTH,
+      MASTER_LEN_WIDTH          => BUS_LEN_WIDTH,
+      SLAVE_DATA_WIDTH          => BUS_DATA_WIDTH,
+      SLAVE_LEN_WIDTH           => BUS_LEN_WIDTH,
+      SLAVE_MAX_BURST           => BUS_BURST_MAX_LEN,
+      ENABLE_FIFO               => false
+    )
+    port map (
+      clk                       => bus_clk,
+      reset_n                   => bus_reset_n,
+      slv_bus_wreq_addr         => bus_wreq_addr,
+      slv_bus_wreq_len          => bus_wreq_len,
+      slv_bus_wreq_valid        => bus_wreq_valid,
+      slv_bus_wreq_ready        => bus_wreq_ready,
+      slv_bus_wdat_data         => bus_wdat_data,
+      slv_bus_wdat_strobe       => bus_wdat_strobe,
+      slv_bus_wdat_last         => bus_wdat_last,
+      slv_bus_wdat_valid        => bus_wdat_valid,
+      slv_bus_wdat_ready        => bus_wdat_ready,
+      m_axi_awaddr              => m_axi_awaddr,
+      m_axi_awlen               => m_axi_awlen,
+      m_axi_awvalid             => m_axi_awvalid,
+      m_axi_awready             => m_axi_awready,
+      m_axi_awsize              => m_axi_awsize,
+      m_axi_wdata               => m_axi_wdata,
+      m_axi_wstrb               => m_axi_wstrb,
+      m_axi_wlast               => m_axi_wlast,
+      m_axi_wvalid              => m_axi_wvalid,
+      m_axi_wready              => m_axi_wready
     );
 
   -----------------------------------------------------------------------------

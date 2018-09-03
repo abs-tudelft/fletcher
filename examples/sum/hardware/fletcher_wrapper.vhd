@@ -83,7 +83,6 @@ architecture Implementation of fletcher_wrapper is
   -- This component should be implemented by the user.
   component sum is
     generic(
-      NUM_USER_REGS                              : natural;
       TAG_WIDTH                                  : natural;
       BUS_ADDR_WIDTH                             : natural;
       INDEX_WIDTH                                : natural;
@@ -111,17 +110,17 @@ architecture Implementation of fletcher_wrapper is
       ctrl_stop                                  : in std_logic;
       ctrl_start                                 : in std_logic;
       -------------------------------------------------------------------------
+      idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
+      idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
       reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
       reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-      reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      regs_in                                    : in std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-      regs_out                                   : out std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-      regs_out_en                                : out std_logic_vector(NUM_USER_REGS-1 downto 0)
+      -------------------------------------------------------------------------
+      reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
     );
   end component;
   -----------------------------------------------------------------------------
 
-  signal s_weight_cmd_ready                    : std_logic;
+  signal s_weight_bus_rdat_data                : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal uctrl_done                            : std_logic;
   signal uctrl_busy                            : std_logic;
   signal uctrl_idle                            : std_logic;
@@ -131,12 +130,12 @@ architecture Implementation of fletcher_wrapper is
   signal uctrl_control                         : std_logic_vector(REG_WIDTH-1 downto 0);
   signal uctrl_status                          : std_logic_vector(REG_WIDTH-1 downto 0);
   signal s_weight_bus_rdat_last                : std_logic;
-  signal s_weight_bus_rdat_data                : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_weight_cmd_valid                    : std_logic;
   signal s_weight_bus_rdat_ready               : std_logic;
   signal s_weight_bus_rdat_valid               : std_logic;
   signal s_weight_bus_rreq_len                 : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal s_weight_bus_rreq_ready               : std_logic;
-  signal s_weight_cmd_valid                    : std_logic;
+  signal s_weight_cmd_ready                    : std_logic;
   signal s_weight_cmd_firstIdx                 : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_weight_cmd_lastIdx                  : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_weight_cmd_ctrl                     : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -158,10 +157,6 @@ architecture Implementation of fletcher_wrapper is
   signal s_bsv_rdat_ready                      : std_logic_vector(0 downto 0);
   signal s_bsv_rdat_data                       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal s_bsv_rdat_last                       : std_logic_vector(0 downto 0);
-  -----------------------------------------------------------------------------
-  signal s_regs_in                             : std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-  signal s_regs_out                            : std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
-  signal s_regs_out_en                         : std_logic_vector(NUM_USER_REGS-1 downto 0);
 begin
   -- ColumnReader instance generated from Arrow schema field:
   -- weight: int64 not null
@@ -224,7 +219,6 @@ begin
   -- Hardware Accelerated Function instance.
   sum_inst: sum
     generic map (
-      NUM_USER_REGS                            => NUM_USER_REGS,
       TAG_WIDTH                                => TAG_WIDTH,
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       INDEX_WIDTH                              => INDEX_WIDTH,
@@ -249,12 +243,11 @@ begin
       weight_cmd_lastIdx                       => s_weight_cmd_lastIdx(INDEX_WIDTH-1 downto 0),
       weight_cmd_tag                           => s_weight_cmd_tag(TAG_WIDTH-1 downto 0),
       weight_cmd_weight_values_addr            => s_weight_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
+      idx_first                                => regs_in(5*REG_WIDTH-1 downto 4*REG_WIDTH),
+      idx_last                                 => regs_in(6*REG_WIDTH-1 downto 5*REG_WIDTH),
       reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),
       reg_return1                              => regs_out(4*REG_WIDTH-1 downto 3*REG_WIDTH),
-      reg_weight_values_addr                   => regs_in(8*REG_WIDTH-1 downto 6*REG_WIDTH),
-      regs_in                                  => s_regs_in,
-      regs_out                                 => s_regs_out,
-      regs_out_en                              => s_regs_out_en
+      reg_weight_values_addr                   => regs_in(8*REG_WIDTH-1 downto 6*REG_WIDTH)
     );
 
   -- Arbiter instance generated to serve 1 column readers.
@@ -287,10 +280,6 @@ begin
     );
 
 
-  regs_out(NUM_REGS*REG_WIDTH-1 downto (NUM_REGS-NUM_USER_REGS)*REG_WIDTH)<= s_regs_out;
-  regs_out_en(NUM_REGS-1 downto NUM_REGS-NUM_USER_REGS)<= s_regs_out_en;
-  s_regs_in                                    <= regs_in(NUM_REGS*REG_WIDTH-1 downto (NUM_REGS-NUM_USER_REGS)*REG_WIDTH);
-  -----------------------------------------------------------------------------
   s_bsv_rreq_addr(BUS_ADDR_WIDTH-1 downto 0)   <= s_weight_bus_rreq_addr;
   s_bsv_rreq_len(BUS_LEN_WIDTH-1 downto 0)     <= s_weight_bus_rreq_len;
   s_weight_bus_rreq_ready                      <= s_bsv_rreq_ready(0);
@@ -300,6 +289,9 @@ begin
   s_weight_bus_rdat_last                       <= s_bsv_rdat_last(0);
   s_bsv_rdat_ready(0)                          <= s_weight_bus_rdat_ready;
   s_weight_bus_rdat_valid                      <= s_bsv_rdat_valid(0);
+  -----------------------------------------------------------------------------
+  mst_wdat_valid                               <='0';
+  mst_wreq_valid                               <='0';
   regs_out_en(0)                               <='0';
   regs_out_en(1)                               <='1';
   regs_out_en(2)                               <='1';
