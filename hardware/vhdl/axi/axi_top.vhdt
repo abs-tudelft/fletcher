@@ -124,6 +124,7 @@ architecture Behavorial of axi_top is
     generic(
       BUS_DATA_WIDTH            : natural;
       BUS_ADDR_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
@@ -151,11 +152,11 @@ architecture Behavorial of axi_top is
       mst_wreq_ready            : in std_logic;
       mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_wdat_valid            : in std_logic;
-      mst_wdat_ready            : out std_logic;
-      mst_wdat_data             : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : in std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      mst_wdat_last             : in std_logic;
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic;
       regs_in                   : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
       regs_out                  : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
       regs_out_en               : out std_logic_vector(NUM_REGS-1 downto 0)
@@ -170,10 +171,22 @@ architecture Behavorial of axi_top is
   signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal bus_rreq_valid         : std_logic;
   signal bus_rreq_ready         : std_logic;
+
   signal bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_rdat_last          : std_logic;
   signal bus_rdat_valid         : std_logic;
   signal bus_rdat_ready         : std_logic;
+
+  signal bus_wreq_valid         : std_logic;
+  signal bus_wreq_ready         : std_logic;
+  signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+
+  signal bus_wdat_valid         : std_logic;
+  signal bus_wdat_ready         : std_logic;
+  signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bus_wdat_last          : std_logic;
 
   -- MMIO registers
   signal regs_in                : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
@@ -191,6 +204,7 @@ begin
     generic map (
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
@@ -221,6 +235,7 @@ begin
       mst_wdat_valid            => bus_wdat_valid,
       mst_wdat_ready            => bus_wdat_ready,
       mst_wdat_data             => bus_wdat_data,
+      mst_wdat_strobe           => bus_wdat_strobe,
       mst_wdat_last             => bus_wdat_last,
       regs_in                   => regs_in,
       regs_out                  => regs_out,
