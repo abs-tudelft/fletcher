@@ -48,7 +48,8 @@ uint64_t FPGAPlatform::prepare_column_chunks(const std::shared_ptr<arrow::Column
 
   size_t nbufs = host_bufs.size();
 
-  this->_argument_offset += nbufs;
+  // Each buffer address uses two 32-bit registers
+  this->_argument_offset += nbufs * 2;
 
   LOGD("Configured " << nbufs << " buffers. " "Argument offset starting at " << this->argument_offset());
 

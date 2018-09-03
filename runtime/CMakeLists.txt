@@ -103,4 +103,5 @@ endif ()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
-install(DIRECTORY src DESTINATION include)
+install(DIRECTORY src/ DESTINATION include/fletcher
+    FILES_MATCHING PATTERN "*.h")

@@ -71,7 +71,7 @@ class UserCore {
   /**
    * \brief Read the result register of the UserCore
    */
-  fr_t get_return();
+  fa_t get_return();
 
   /**
    * \brief  A blocking function that waits for the UserCore to finish

@@ -55,8 +55,8 @@ shared_ptr<arrow::Table> create_table(int num_rows)
   int64_t element_max = min(
     (uintmax_t) numeric_limits<int64_t>::max() / num_rows, // arrow data type,
     min(
-      (uintmax_t) numeric_limits<int>::max() / num_rows, // return type on CPU
-      (uintmax_t) numeric_limits<fletcher::fr_t>::max() / num_rows // return type on FPGA
+      (uintmax_t) numeric_limits<long long int>::max() / num_rows, // return type on CPU
+      (uintmax_t) numeric_limits<fletcher::fa_t>::max() / num_rows // return type on FPGA
     )
   );
   std::uniform_int_distribution<int64_t> int_dist(0, element_max);
@@ -88,11 +88,11 @@ shared_ptr<arrow::Table> create_table(int num_rows)
 /**
  * Calculate the sum of all numbers in the arrow column using the CPU.
  */
-int arrow_column_sum_cpu(shared_ptr<arrow::Table> table)
+long long int arrow_column_sum_cpu(shared_ptr<arrow::Table> table)
 {
   auto num_array = static_pointer_cast<arrow::Int64Array>(table->column(0)->data()->chunk(0));
   const int64_t *data = num_array->raw_values();
-  int sum = 0;
+  long long int sum = 0;
   for (int i = 0; i < num_array->length(); i++) {
     sum += data[i];
   }
@@ -103,7 +103,7 @@ int arrow_column_sum_cpu(shared_ptr<arrow::Table> table)
 /**
  * Calculate the sum of all numbers in the arrow column using an FPGA.
  */
-fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
+fletcher::fa_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
 {
   // Create a platform
 #if(PLATFORM == 0)
@@ -126,7 +126,7 @@ fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
   uc.reset();
 
   // Determine size of table
-  uint64_t last_index = table->num_rows();
+  fletcher::fr_t last_index = table->num_rows();
   std::vector<fletcher::fr_t> user_logic_args = {0, last_index};
   uc.set_arguments(user_logic_args);
 
@@ -140,10 +140,10 @@ fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
 
   // Start the FPGA user function
   uc.start();
-  uc.wait_for_finish(100000); // Poll every 100 ms
+  uc.wait_for_finish(10000); // Poll every 10 ms
 
   // Get the sum from the UserCore
-  fletcher::fr_t sum_fpga = uc.get_return();
+  fletcher::fa_t sum_fpga = uc.get_return();
 
   return sum_fpga;
 }
@@ -170,10 +170,10 @@ int main(int argc, char ** argv)
   shared_ptr<arrow::Table> table = create_table(num_rows);
 
   // Sum on CPU
-  int sum_cpu = arrow_column_sum_cpu(table);
+  long long int sum_cpu = arrow_column_sum_cpu(table);
 
   // Sum on FPGA
-  fletcher::fr_t sum_fpga = arrow_column_sum_fpga(table);
+  fletcher::fa_t sum_fpga = arrow_column_sum_fpga(table);
 
   cout << "expected sum: " << sum_cpu << endl;
   cout << "fpga sum: " << sum_fpga << endl;

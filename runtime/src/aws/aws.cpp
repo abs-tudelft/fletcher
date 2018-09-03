@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <omp.h>
+#include <assert.h>
 
 #include <arrow/api.h>
 
@@ -169,7 +170,7 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
 
     // First buffer goes to address 0 for now
     // TODO: manage memory on on-board DDR
-    uint64_t address = 0x0;
+    fa_t address = 0x0;
 
     for (unsigned int i = 0; i < source_buffers.size(); i++) {
       BufConfig source_buf = source_buffers[i];
@@ -208,7 +209,14 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
 #endif
 
       // Set the buffer address in the MMSRs:
-      write_mmio(UC_REG_BUFFERS + i, (fr_t) dest_buf.address);
+      assert(sizeof(fr_t) == 4);
+      assert(sizeof(fa_t) == 8);
+      write_mmio(
+          UC_REG_BUFFERS + i * 2,
+          (fr_t) (dest_buf.address & 0xffffffff));
+      write_mmio(
+          UC_REG_BUFFERS + i * 2 + 1,
+          (fr_t) ((dest_buf.address >> 32) & 0xffffffff));
 
       dest_buffers.push_back(dest_buf);
 
@@ -235,17 +243,12 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
 int AWSPlatform::write_mmio(uint64_t offset, fr_t value) {
   if (!error) {
     int rc = 0;
-    reg_conv_t conv_value;
-    conv_value.full = value;
 
-    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.hi << std::dec << " to reg " << (2 * offset)
-                                            << " addr " << STRHEX64 << (4 * (2 * offset)));
-    LOGD("[AWSPlatform] AWS fpga_pci_poke " << STRHEX32 << conv_value.half.lo << std::dec << " to reg "
-                                            << (2 * offset + 1) << " addr " << STRHEX64 << (4 * (2 * offset + 1)));
+    LOGD("[AWSPlatform] AWS fpga_pci_poke " 
+        << STRHEX32 << value << std::dec << " to reg " << (offset)
+        << " addr " << STRHEX64 << (sizeof(fr_t) * offset));
 
-    rc |= fpga_pci_poke(pci_bar_handle, 4 * (2 * offset), conv_value.half.hi);
-
-    rc |= fpga_pci_poke(pci_bar_handle, 4 * (2 * offset + 1), conv_value.half.lo);
+    rc = fpga_pci_poke(pci_bar_handle, sizeof(fr_t) * offset, value);
 
     // We can't write MMIO
     if (rc != 0) {
@@ -259,27 +262,18 @@ int AWSPlatform::write_mmio(uint64_t offset, fr_t value) {
 int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
   if (!error) {
     int rc = 0;
-    reg_conv_t conv_value;
-    uint32_t ret = 0xDEADBEEF;
 
-    rc |= fpga_pci_peek(pci_bar_handle, 4 * (2 * offset), &ret);
-    conv_value.half.hi = ret;
+    rc = fpga_pci_peek(pci_bar_handle, sizeof(fr_t) * offset, dest);
 
-    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2 * offset) << " addr "
-                                            << 4 * (2 * offset));
-
-    rc |= fpga_pci_peek(pci_bar_handle, 4 * (2 * offset + 1), &ret);
-    conv_value.half.lo = ret;
-
-    LOGD("[AWSPlatform] AWS fpga_pci_peek " << STRHEX32 << ret << " from reg " << std::dec << (2 * offset + 1)
-                                            << " addr " << 4 * (2 * offset + 1));
+    LOGD("[AWSPlatform] AWS fpga_pci_peek "
+        << STRHEX32 << *dest << " from reg " << std::dec << offset
+        << " addr " << STRHEX64 << (sizeof(fr_t) * offset));
 
     if (rc != 0) {
       LOGD("[AWSPlatform] MMIO read failed.");
       return fletcher::ERROR;
     }
 
-    *dest = conv_value.full;
     return fletcher::OK;
   } else {
     return fletcher::ERROR;
