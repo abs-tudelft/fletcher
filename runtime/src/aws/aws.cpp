@@ -266,7 +266,7 @@ int AWSPlatform::read_mmio(uint64_t offset, fr_t *dest) {
     rc = fpga_pci_peek(pci_bar_handle, sizeof(fr_t) * offset, dest);
 
     LOGD("[AWSPlatform] AWS fpga_pci_peek "
-        << STRHEX32 << ret << " from reg " << std::dec << offset
+        << STRHEX32 << *dest << " from reg " << std::dec << offset
         << " addr " << STRHEX64 << (sizeof(fr_t) * offset));
 
     if (rc != 0) {
