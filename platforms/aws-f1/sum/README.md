@@ -143,18 +143,15 @@ Compile the host software:
 ## Load FPGA image
 
 To load an FPGA image inside an f1 instance, install management software
-and load system drivers:
+and load system drivers. The management software is installed by sourcing the
+`sdk_setup.sh` script, you should have done this in a previous step already.
 
-    $ curl "https://codeload.github.com/aws/aws-fpga/tar.gz/v1.4.2" \
-        | tar --extract --gzip
-    $ cd aws-fpga-1.4.2
-    $ source sdk_setup.sh
-    $ cd aws-fpga-1.4.2
-    $ source sdk_setup.sh
+    $ cd "$AWS_FPGA_REPO_DIR"
     $ cd sdk/linux_kernel_drivers/edma
     $ make
     $ sudo make install
     $ sudo modprobe edma-drv
+    
     $ sudo fpga-clear-local-image -S 0 -H
     $ sudo fpga-load-local-image -S 0 -I agfi-xxxx456789abcxxxx
 
