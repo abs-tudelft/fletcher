@@ -55,9 +55,17 @@ fr_t UserCore::get_status() {
   return ret;
 }
 
-fr_t UserCore::get_return() {
-  fr_t ret = 0xDEAFBEEF;
-  _platform->read_mmio(UC_REG_RETURN, &ret);
+fa_t UserCore::get_return() {
+  fr_t reg_val = 0xDEAFBEEF;
+  fa_t ret = 0;
+
+  // Fetch multiple registers, assuming big endian order
+  for (int a = (sizeof(fa_t) / sizeof(fr_t)) - 1; a >= 0; a--)
+  {
+    ret = ret << (sizeof(fr_t) * 8);
+    _platform->read_mmio(UC_REG_RETURN + a, &reg_val);
+    ret |= reg_val;
+  }
   return ret;
 }
 

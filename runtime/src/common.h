@@ -25,7 +25,7 @@ constexpr int ERROR = -1;
 typedef uint64_t fa_t;
 
 /// Fletcher Register Type
-typedef uint64_t fr_t;
+typedef uint32_t fr_t;
 
 /**
  * A Buffer configuration element
