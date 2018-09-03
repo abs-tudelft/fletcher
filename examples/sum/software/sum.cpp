@@ -103,7 +103,7 @@ long long int arrow_column_sum_cpu(shared_ptr<arrow::Table> table)
 /**
  * Calculate the sum of all numbers in the arrow column using an FPGA.
  */
-fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
+fletcher::fa_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
 {
   // Create a platform
 #if(PLATFORM == 0)
@@ -143,7 +143,7 @@ fletcher::fr_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
   uc.wait_for_finish(10000); // Poll every 10 ms
 
   // Get the sum from the UserCore
-  fletcher::fr_t sum_fpga = uc.get_return();
+  fletcher::fa_t sum_fpga = uc.get_return();
 
   return sum_fpga;
 }
@@ -173,7 +173,7 @@ int main(int argc, char ** argv)
   long long int sum_cpu = arrow_column_sum_cpu(table);
 
   // Sum on FPGA
-  fletcher::fr_t sum_fpga = arrow_column_sum_fpga(table);
+  fletcher::fa_t sum_fpga = arrow_column_sum_fpga(table);
 
   cout << "expected sum: " << sum_cpu << endl;
   cout << "fpga sum: " << sum_fpga << endl;
