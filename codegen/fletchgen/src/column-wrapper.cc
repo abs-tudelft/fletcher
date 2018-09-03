@@ -125,7 +125,13 @@ void ColumnWrapper::addReadArbiter() {
     for (const auto &p : rarb->mst_rdat()->ports()) {
       rarb_inst->mapPort(p.get(), p.get());
     }
+
+  } else {
+    // No readers, tie off write channel
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rreq_valid", "<=", "'0';"));
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rdat_ready", "<=", "'0';"));
   }
+
   rarb->mst_rreq()->setGroup(pgroup_++);
   rarb->mst_rdat()->setGroup(pgroup_++);
   appendStream(rarb->mst_rreq());
@@ -154,7 +160,13 @@ void ColumnWrapper::addWriteArbiter() {
     for (const auto &p : warb->mst_wdat()->ports()) {
       warb_inst->mapPort(p.get(), p.get());
     }
+
+  } else {
+    // No writers, tie off write channel
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_wdat_valid", "<=", "'0';"));
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_wreq_valid", "<=", "'0';"));
   }
+
   warb->mst_wreq()->setGroup(pgroup_++);
   warb->mst_wdat()->setGroup(pgroup_++);
   appendStream(warb->mst_wreq());
