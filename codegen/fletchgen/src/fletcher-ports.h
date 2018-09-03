@@ -88,6 +88,7 @@ enum class GP {
   REG_ADDR,    ///< Address regiser
   REG_USER,    ///< User registers
   REG_RETURN,  ///< Return register
+  REG_IDX,     ///< Row index register
   SIG,         ///< Other signals
 };
 

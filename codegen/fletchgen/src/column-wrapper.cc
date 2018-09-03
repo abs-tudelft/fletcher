@@ -724,6 +724,14 @@ void ColumnWrapper::implementUserRegs() {
     architecture()->addConnection(make_shared<Connection>(sroute, Range(), regs_out_en(), wer));
   }
 
+  /* First and last index regs */
+  auto p_idx_first = usercore_->entity()->getPortByName(nameFrom({"idx", "first"}));
+  auto p_idx_last  = usercore_->entity()->getPortByName(nameFrom({"idx", "last"}));
+  Range range_idx_first(Value(5) * Value(ce::REG_WIDTH) - Value(1), Value(4) * Value(ce::REG_WIDTH));
+  Range range_idx_last( Value(6) * Value(ce::REG_WIDTH) - Value(1), Value(5) * Value(ce::REG_WIDTH));
+  usercore_inst_->mapPort(p_idx_first, regs_in(), range_idx_first);
+  usercore_inst_->mapPort(p_idx_last, regs_in(), range_idx_last);
+
   /* Return regs */
   auto reg0 = usercore_->entity()->getPortByName(nameFrom({"reg", "return0"}));
   auto reg1 = usercore_->entity()->getPortByName(nameFrom({"reg", "return1"}));
