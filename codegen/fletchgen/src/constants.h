@@ -22,8 +22,8 @@ namespace fletchgen {
  */
 namespace ce {
 
-// Status, Control, Return(2)
-constexpr unsigned int NUM_DEFAULT_REGS = 4;
+// Status, Control, Return(2), First idx, Last idx
+constexpr unsigned int NUM_DEFAULT_REGS = 6;
 
 constexpr char
     COPYRIGHT_NOTICE[] = "-- Copyright 2018 Delft University of Technology\n"
