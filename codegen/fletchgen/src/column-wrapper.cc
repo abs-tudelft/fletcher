@@ -125,7 +125,13 @@ void ColumnWrapper::addReadArbiter() {
     for (const auto &p : rarb->mst_rdat()->ports()) {
       rarb_inst->mapPort(p.get(), p.get());
     }
+
+  } else {
+    // No readers, tie off read channel
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rreq_valid", "<=", "'0';"));
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_rdat_ready", "<=", "'0';"));
   }
+
   rarb->mst_rreq()->setGroup(pgroup_++);
   rarb->mst_rdat()->setGroup(pgroup_++);
   appendStream(rarb->mst_rreq());
@@ -154,7 +160,13 @@ void ColumnWrapper::addWriteArbiter() {
     for (const auto &p : warb->mst_wdat()->ports()) {
       warb_inst->mapPort(p.get(), p.get());
     }
+
+  } else {
+    // No writers, tie off write channel
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_wdat_valid", "<=", "'0';"));
+    architecture()->addStatement(make_shared<vhdl::Statement>("  mst_wreq_valid", "<=", "'0';"));
   }
+
   warb->mst_wreq()->setGroup(pgroup_++);
   warb->mst_wdat()->setGroup(pgroup_++);
   appendStream(warb->mst_wreq());
@@ -723,6 +735,14 @@ void ColumnWrapper::implementUserRegs() {
     architecture()->addConnection(make_shared<Connection>(srout, Range(), regs_out(), rr));
     architecture()->addConnection(make_shared<Connection>(sroute, Range(), regs_out_en(), wer));
   }
+
+  /* First and last index regs */
+  auto p_idx_first = usercore_->entity()->getPortByName(nameFrom({"idx", "first"}));
+  auto p_idx_last  = usercore_->entity()->getPortByName(nameFrom({"idx", "last"}));
+  Range range_idx_first(Value(5) * Value(ce::REG_WIDTH) - Value(1), Value(4) * Value(ce::REG_WIDTH));
+  Range range_idx_last( Value(6) * Value(ce::REG_WIDTH) - Value(1), Value(5) * Value(ce::REG_WIDTH));
+  usercore_inst_->mapPort(p_idx_first, regs_in(), range_idx_first);
+  usercore_inst_->mapPort(p_idx_last, regs_in(), range_idx_last);
 
   /* Return regs */
   auto reg0 = usercore_->entity()->getPortByName(nameFrom({"reg", "return0"}));
