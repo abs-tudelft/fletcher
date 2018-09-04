@@ -89,6 +89,7 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/wrapper/UserCoreController.vhd     
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi.vhd                             $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_mmio.vhd                        $TARGET_DIR
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_read_converter.vhd              $TARGET_DIR
+file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_write_converter.vhd             $TARGET_DIR
 
 # Copy all project files
 set cl_filelist [glob -nocomplain -dir $FLETCHER_EXAMPLES_DIR/sum/hardware/ *]

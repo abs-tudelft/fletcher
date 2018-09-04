@@ -53,6 +53,7 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/wrapper/UserCoreController.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_mmio.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_read_converter.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_write_converter.vhd
 
 # Fletcher to AWS glue
 $FLETCHER_EXAMPLES_DIR/sum/hardware/fletcher_wrapper.vhd
