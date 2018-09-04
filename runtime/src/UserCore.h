@@ -54,6 +54,11 @@ class UserCore {
   uc_stat reset();
 
   /**
+   * \brief Set the first (inclusive) and last (exclusive) column to process
+   */
+  uc_stat set_range(fr_t first, fr_t last);
+
+  /**
    * \brief Set the parameters of the UserCore
    */
   uc_stat set_arguments(std::vector<fr_t> arguments);

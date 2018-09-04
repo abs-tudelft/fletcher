@@ -35,6 +35,22 @@ uc_stat UserCore::reset() {
   return SUCCESS;
 }
 
+uc_stat UserCore::set_range(fr_t first, fr_t last) {
+  if (first >= last) {
+    LOGE("Row range invalid: [ " << first << ", " << last << " )");
+    return FAILURE;
+  }
+
+  uc_stat ret = SUCCESS;
+  if (OK != this->_platform->write_mmio(UC_REG_INDEX_FIRST, first)) {
+    ret = FAILURE;
+  }
+  if (OK != this->_platform->write_mmio(UC_REG_INDEX_LAST, last)) {
+    ret = FAILURE;
+  }
+  return ret;
+}
+
 uc_stat UserCore::set_arguments(std::vector<fr_t> arguments) {
   LOGD("Setting arguments. Argument offset: " << this->arg_offset);
   for (int i = 0; (size_t) i < arguments.size(); i++) {
