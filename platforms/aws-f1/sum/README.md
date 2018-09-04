@@ -69,7 +69,7 @@ The test itself runs fine though.
 
 To run the test in a GUI:
 
-    $ cd "$CL_DIR/verif/sim/test_arrow_sum
+    $ cd "$CL_DIR/verif/sim/vivado/test_arrow_sum"
     $ xsim tb -gui
 
 ## Synthesize
