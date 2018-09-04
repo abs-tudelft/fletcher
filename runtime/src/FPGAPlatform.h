@@ -23,22 +23,26 @@
 #include "common.h"
 
 /// The status register and bits
-#define UC_REG_STATUS   0
+#define UC_REG_STATUS   1
 #define   UC_REG_STATUS_IDLE 0
 #define   UC_REG_STATUS_BUSY 1
 #define   UC_REG_STATUS_DONE 2
 
 /// The control register
-#define UC_REG_CONTROL  1
-#define   UC_REG_CONTROL_RESET 0
-#define   UC_REG_CONTROL_START 1
-#define   UC_REG_CONTROL_STOP  2
+#define UC_REG_CONTROL  0
+#define   UC_REG_CONTROL_START 0
+#define   UC_REG_CONTROL_STOP  1
+#define   UC_REG_CONTROL_RESET 2
 
 /// The return register
-#define UC_REG_RETURN   2
+#define UC_REG_RETURN 2
+
+/// The index of the first and last row
+#define UC_REG_INDEX_FIRST 4
+#define UC_REG_INDEX_LAST  5
 
 /// The offset of the buffer addresses
-#define UC_REG_BUFFERS  3
+#define UC_REG_BUFFERS  6
 
 namespace fletcher {
 
@@ -57,13 +61,13 @@ class FPGAPlatform
   virtual ~FPGAPlatform()=default;
 
   /**
-   * \brief Write a 64-bit value to a memory mapped slave register at 
+   * \brief Write a 32-bit value to a memory mapped slave register at 
    * some offset (address).
    */
   virtual int write_mmio(uint64_t offset, fr_t value)=0;
 
   /**
-   * \brief Read a 64-bit value from a memory mapped slave register at
+   * \brief Read a 32-bit value from a memory mapped slave register at
    * some offset (address) and store it in dest
    */
   virtual int read_mmio(uint64_t offset, fr_t* dest)=0;
