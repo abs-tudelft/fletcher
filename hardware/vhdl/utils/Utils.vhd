@@ -106,13 +106,13 @@ package Utils is
 
   -- Returns the first integer multiple of 2^b above or equal to a
   function align_aeq(a : in unsigned; b : in natural) return unsigned;
-  
+
   -- Returns true if a is an integer multiple of 2^b, false otherwise
   function is_aligned(a : in unsigned; b : natural) return boolean;
-  
+
   -- Returns the one-hot encoded version of a count with implicit '1' MSB
   function cnt2oh(a: in unsigned; bits : natural) return std_logic_vector;
-  
+
   -- Returns the count with implicit '1' MSB of a one-hot encoded value
   function oh2cnt(a: in std_logic_vector) return unsigned;
 
@@ -167,7 +167,7 @@ package body Utils is
       return f;
     end if;
   end sel;
-  
+
   function sel(s: boolean; t: boolean; f: boolean) return boolean is
   begin
     if s then
@@ -341,14 +341,14 @@ package body Utils is
     return                  result;
   end function ones;
 
-  function shift_right_cut (a : in unsigned; b : natural) return unsigned is
+  function shift_right_cut (a : in unsigned; b : in natural) return unsigned is
     variable shifted : unsigned(a'range);
   begin
     shifted := shift_right(a, b);
     return shifted(a'high-b downto 0);
   end function shift_right_cut;
 
-  function shift_right_round_up(a : in unsigned; b : natural) return unsigned is
+  function shift_right_round_up(a : in unsigned; b : in natural) return unsigned is
     variable arg_v : unsigned(a'length-1 downto 0);
     variable lsb_v : unsigned(b-1 downto 0);
   begin
@@ -364,7 +364,7 @@ package body Utils is
     return arg_v;
   end shift_right_round_up;
 
-  function shift_left_with_neg (a: in unsigned; b : integer) return unsigned is
+  function shift_left_with_neg (a: in unsigned; b : in integer) return unsigned is
   begin
     if b >= 0 then
       return shift_left(a, b);
@@ -373,7 +373,7 @@ package body Utils is
     end if;
   end function shift_left_with_neg;
 
-  function shift_left_with_neg_round_up (a: in unsigned; b : integer) return unsigned is
+  function shift_left_with_neg_round_up (a: in unsigned; b : in integer) return unsigned is
   begin
     if b >= 0 then
       return shift_left(a, b);
@@ -382,25 +382,25 @@ package body Utils is
     end if;
   end function shift_left_with_neg_round_up;
 
-  function div_floor(a: in unsigned; b : natural) return unsigned is
+  function div_floor(a: in unsigned; b : in natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "div_p2_floor() second argument is not a power of 2." severity failure;
     return shift_right(a, log2floor(b));
   end div_floor;
 
-  function div_ceil(a: in unsigned; b : natural) return unsigned is
+  function div_ceil(a: in unsigned; b : in natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "div_p2_ceil() second argument is not a power of 2." severity failure;
     return shift_right_round_up(a, log2floor(b));
   end div_ceil;
 
-  function mul(a: in unsigned; b : natural) return unsigned is
+  function mul(a: in unsigned; b : in natural) return unsigned is
   begin
     assert log2ceil(b) = log2floor(b) report "mul() second argument is not a power of 2." severity failure;
     return shift_left(a, log2floor(b));
   end mul;
 
-  function align_beq(a : in unsigned; b : natural) return unsigned is
+  function align_beq(a : in unsigned; b : in natural) return unsigned is
     variable arg_v : unsigned(a'length-1 downto 0);
   begin
     if b /= 0 then
@@ -411,7 +411,7 @@ package body Utils is
     return shift_left(arg_v, b);
   end align_beq;
 
-  function align_aeq(a : in unsigned; b : natural) return unsigned is
+  function align_aeq(a : in unsigned; b : in natural) return unsigned is
     variable arg_v : unsigned(a'length-1 downto 0);
     variable lsb_v : unsigned(b-1 downto 0);
   begin
@@ -429,7 +429,7 @@ package body Utils is
     end if;
     return shift_left(arg_v, b);
   end align_aeq;
-  
+
   function is_aligned(a : in unsigned; b : natural) return boolean is
     variable lsb_v : unsigned(b-1 downto 0);
   begin
@@ -444,7 +444,7 @@ package body Utils is
       return true;
     end if;
   end is_aligned;
-  
+
   function cnt2oh(a: in unsigned; bits: natural) return std_logic_vector is
     type ret_array_type is array(0 to bits-1) of std_logic_vector(bits-1 downto 0);
     variable ret_array : ret_array_type;
@@ -457,13 +457,13 @@ package body Utils is
         ret_array(i)(j) := '0';
       end loop;
     end loop;
-    
+
     -- all zeros is max count
     ret_array(0) := (others => '1');
-    
+
     return ret_array(to_integer(a) mod bits);
   end cnt2oh;
-  
+
   function oh2cnt(a: in std_logic_vector) return unsigned is
     variable cnt : unsigned(log2ceil(a'length)-1 downto 0) := (others => '0');
   begin

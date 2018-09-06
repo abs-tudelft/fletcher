@@ -587,7 +587,7 @@ package Interconnect is
   -----------------------------------------------------------------------------
   -- pragma translate_off
 
-  component BusMasterMock is
+  component BusReadMasterMock is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
