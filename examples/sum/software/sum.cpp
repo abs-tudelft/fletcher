@@ -16,6 +16,7 @@
  * Example for summing a list with FPGA acceleration
  *
  */
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -41,6 +42,8 @@
 
 using namespace std;
 
+typedef chrono::high_resolution_clock perf_clock;
+
 intmax_t sum_check = 0;
 
 /**
@@ -55,8 +58,10 @@ shared_ptr<arrow::Table> create_table(int num_rows)
   int64_t element_max = min(
     (uintmax_t) numeric_limits<int64_t>::max() / num_rows, // arrow data type,
     min(
-      (uintmax_t) numeric_limits<long long int>::max() / num_rows, // return type on CPU
-      (uintmax_t) numeric_limits<fletcher::fa_t>::max() / num_rows // return type on FPGA
+      // return type on CPU
+      (uintmax_t) numeric_limits<long long int>::max() / num_rows,
+      // return type on FPGA
+      (uintmax_t) numeric_limits<fletcher::fa_t>::max() / num_rows
     )
   );
   std::uniform_int_distribution<int64_t> int_dist(0, element_max);
@@ -90,12 +95,24 @@ shared_ptr<arrow::Table> create_table(int num_rows)
  */
 long long int arrow_column_sum_cpu(shared_ptr<arrow::Table> table)
 {
-  auto num_array = static_pointer_cast<arrow::Int64Array>(table->column(0)->data()->chunk(0));
+  // Performance timer open
+  auto t1 = perf_clock::now();
+
+  // Get data pointer
+  auto num_array = static_pointer_cast<arrow::Int64Array>(
+                                        table->column(0)->data()->chunk(0) );
   const int64_t *data = num_array->raw_values();
+  // Sum loop
   long long int sum = 0;
   for (int i = 0; i < num_array->length(); i++) {
     sum += data[i];
   }
+
+  // Performance timer close
+  auto t2 = perf_clock::now();
+  chrono::duration<double> time_span = chrono::duration_cast<
+                                          chrono::duration<double> >(t2 - t1);
+  std::cout << "Sum CPU time: " << time_span.count() << " seconds" << endl;
   return sum;
 }
 
@@ -116,8 +133,18 @@ fletcher::fa_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
   #error "PLATFORM must be 0, 1 or 2"
 #endif
 
+  // Performance time open
+  auto t1 = perf_clock::now();
+
   // Prepare the colummn buffers
   platform->prepare_column_chunks(table->column(0));
+
+  // Performance timer close
+  auto t2 = perf_clock::now();
+  chrono::duration<double> time_span = chrono::duration_cast<
+                                          chrono::duration<double> >(t2 - t1);
+  std::cout << "FPGA copy time: " << time_span.count() << " seconds" << endl;
+
 
   // Create a UserCore
   fletcher::UserCore uc(static_pointer_cast<fletcher::FPGAPlatform>(platform));
@@ -129,7 +156,7 @@ fletcher::fa_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
   fletcher::fr_t last_index = table->num_rows();
   uc.set_range(0, last_index);
 
-  // Read back
+  // Read back registers for debugging
   for (int i = 0; i < 6; i++)
   {
     fletcher::fr_t reg;
@@ -137,12 +164,20 @@ fletcher::fa_t arrow_column_sum_fpga(shared_ptr<arrow::Table> table)
     cout << "fpga register " << i << ": " << std::hex << reg << endl;
   }
 
+  // Performance timer open
+  t1 = perf_clock::now();
+
   // Start the FPGA user function
   uc.start();
-  uc.wait_for_finish(10000); // Poll every 10 ms
+  uc.wait_for_finish(1000); // Poll every 1 ms
 
   // Get the sum from the UserCore
   fletcher::fa_t sum_fpga = uc.get_return();
+
+  // Performance timer close
+  t2 = perf_clock::now();
+  time_span = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
+  std::cout << "Sum FPGA time: " << time_span.count() << " seconds" << endl;
 
   return sum_fpga;
 }
