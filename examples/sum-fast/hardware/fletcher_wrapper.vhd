@@ -166,7 +166,7 @@ begin
   -- weight: int64 not null
   weight_read_inst: ColumnReader
     generic map (
-      CFG                                      => "prim(" & to_string(PRIM_WIDTH * PRIM_EPC) & ")",
+      CFG                                      => "prim(" & integer'image(PRIM_WIDTH * PRIM_EPC) & ")",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                            => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
