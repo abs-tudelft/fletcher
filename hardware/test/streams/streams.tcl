@@ -23,4 +23,4 @@ add_fletcher
 add_fletcher_tb
 
 echo "Use simtest <unit name> to simulate any stream component with a testbench."
-echo "Example: simtest StreamMaximizer
+echo "Example: simtest StreamMaximizer"

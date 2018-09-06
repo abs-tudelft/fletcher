@@ -301,7 +301,7 @@ begin
       if reset = '1' then
         expected_result         <= u(0, ELEMENT_WIDTH);
       else
-        if cmd_valid = '1' and cmd_ready = '1' then
+        if rq.valid = '1' and cmd_ready = '1' then
           -- The expected result is the sum of indices of the requested indexes
           -- If first idx = a and last idx = b then
           -- s is the sum from n=a to n=b-1 of n, which is

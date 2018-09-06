@@ -105,8 +105,10 @@ begin
     generic map (
       DATA_WIDTH                => 4,
       CTRL_WIDTH                => 1,
-      FACTOR                    => 4,
-      COUNT_WIDTH               => 2
+      IN_COUNT_WIDTH            => 1,
+      IN_COUNT_MAX              => 1,
+      OUT_COUNT_MAX             => 4,
+      OUT_COUNT_WIDTH           => 2
     )
     port map (
       clk                       => clk,
