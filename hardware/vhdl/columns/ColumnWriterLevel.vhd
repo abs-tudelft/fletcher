@@ -180,7 +180,9 @@ begin
         cmdIn_firstIdx          => cmd_firstIdx,
         cmdIn_lastIdx           => cmd_lastIdx,
         cmdIn_baseAddr          => cmd_ctrl,
+        cmdIn_ctrl              => "0",
         cmdIn_tag               => cmd_tag,
+        cmdIn_implicit          => '0',
 
         unlock_valid            => unlock_valid,
         unlock_ready            => unlock_ready,
