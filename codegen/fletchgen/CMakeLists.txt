@@ -16,6 +16,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 # Release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
 
+# Set runtime path
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 set(SOURCE_FILES
         src/logging.h
         src/meta.h

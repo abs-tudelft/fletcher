@@ -27,16 +27,18 @@ end StreamBarrel_tb;
 architecture tb of StreamBarrel_tb is
   constant ELEMENT_WIDTH        : natural := 8;
   constant COUNT_MAX            : natural := 4;
-  constant ROTATE_WIDTH         : natural := 3;
+  constant AMOUNT_MAX           : natural := 4;
+  constant AMOUNT_WIDTH         : natural := 3;
   constant DIRECTION            : string  := "left";
   constant OPERATION            : string  := "shift";
   constant CTRL_WIDTH           : natural := 1;
+  constant STAGES               : natural := 4;
 
   signal clk                    : std_logic;
   signal reset                  : std_logic;
   signal in_valid               : std_logic;
   signal in_ready               : std_logic;
-  signal in_rotate              : std_logic_vector(ROTATE_WIDTH-1 downto 0);
+  signal in_rotate              : std_logic_vector(AMOUNT_WIDTH-1 downto 0);
   signal in_data                : std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal in_ctrl                : std_logic_vector(CTRL_WIDTH-1 downto 0);
   signal out_valid              : std_logic;
@@ -80,7 +82,7 @@ begin
         in_data((i+1)*ELEMENT_WIDTH-1 downto i * ELEMENT_WIDTH) <= std_logic_vector(to_unsigned(i, ELEMENT_WIDTH));
       end loop;
       
-      in_rotate <= std_logic_vector(to_unsigned(x mod COUNT_MAX, ROTATE_WIDTH));
+      in_rotate <= std_logic_vector(to_unsigned(x mod COUNT_MAX, AMOUNT_WIDTH));
       in_ctrl <= "0";
       in_valid <= '1';     
       
@@ -98,10 +100,12 @@ begin
     generic map (
       ELEMENT_WIDTH   => ELEMENT_WIDTH,
       COUNT_MAX       => COUNT_MAX,
-      ROTATE_WIDTH    => ROTATE_WIDTH,
+      AMOUNT_WIDTH    => AMOUNT_WIDTH,
+      AMOUNT_MAX      => AMOUNT_MAX,
       DIRECTION       => DIRECTION,
       OPERATION       => OPERATION,
-      CTRL_WIDTH      => CTRL_WIDTH   
+      CTRL_WIDTH      => CTRL_WIDTH,
+      STAGES          => STAGES
     )
     port map (
       clk             => clk,

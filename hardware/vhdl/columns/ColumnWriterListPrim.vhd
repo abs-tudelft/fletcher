@@ -302,6 +302,7 @@ begin
       cmdIn_baseAddr            => cmd_ctrl(CSI(2)-1 downto CSI(1)),
       cmdIn_ctrl                => cmd_ctrl(CSI(1)-1 downto CSI(0)),
       cmdIn_tag                 => cmd_tag,
+      cmdIn_implicit            => '0',
 
       cmdOut_valid              => b_cmd_valid,
       cmdOut_ready              => b_cmd_ready,
@@ -363,6 +364,7 @@ begin
       cmdIn_baseAddr            => b_cmd_baseAddr,
       cmdIn_ctrl                => "0",
       cmdIn_tag                 => b_cmd_tag,
+      cmdIn_implicit            => '0',
 
       unlock_valid              => b_unlock_valid,
       unlock_ready              => b_unlock_ready,
