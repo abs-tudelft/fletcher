@@ -84,7 +84,7 @@ std::string FPGAPlatform::name() {
 void FPGAPlatform::append_chunk_buffer_config(const std::shared_ptr<arrow::ArrayData> &array_data,
                                               const std::shared_ptr<arrow::Field> &field,
                                               std::vector<BufConfig> &config_vector,
-                                              uint depth) {
+                                              unsigned int depth) {
   LOGD(std::string(depth, '\t') << "Chunk (ArrayData):");
   LOGD(std::string(depth, '\t') << "\tType: " << array_data->type->ToString());
   LOGD(std::string(depth, '\t') << "\tBuffers: " << array_data->buffers.size());

@@ -130,7 +130,7 @@ class FPGAPlatform
   void append_chunk_buffer_config(const std::shared_ptr<arrow::ArrayData>& array_data,
                                   const std::shared_ptr<arrow::Field>& field,
                                   std::vector<BufConfig>& config_vector,
-                                  uint depth = 1);
+                                  unsigned int depth = 1);
 };
 
 std::string ToString(std::shared_ptr<arrow::Buffer> buf, int width = 64);
