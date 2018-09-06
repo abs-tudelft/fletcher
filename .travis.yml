@@ -19,7 +19,7 @@ jobs:
   include:
 
     - stage: build
-      name: fletcher
+      name: [C++] fletcher
       script:
         # build fletcher image
         - docker build -t fletcher --build-arg ARROW_VERSION=$ARROW_VERSION .
