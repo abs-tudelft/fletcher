@@ -62,7 +62,7 @@ class AWSPlatform : public FPGAPlatform {
   int bar_id;
   pci_bar_handle_t pci_bar_handle;
   char device_filename[256];
-  int edma_fd[AWS_NUM_QUEUES];
+  int xdma_fd[AWS_NUM_QUEUES];
   uint64_t alignment = 4096;  // TODO: this should become 64 after Arrow spec.
 
   size_t copy_to_ddr(uint8_t *source, fa_t offset, size_t size);
