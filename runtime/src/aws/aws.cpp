@@ -49,16 +49,16 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
 
   // Open files for all queues
   for (int q = 0; q < AWS_NUM_QUEUES; q++) {
-    // Get the EDMA device filename
-    sprintf(device_filename, "/dev/edma%i_queue_%i", slot_id, q);
+    // Get the XDMA device filename
+    sprintf(device_filename, "/dev/xdma%i_h2c_%i", slot_id, q);
 
-    // Attempt to open the EDMA file
+    // Attempt to open the XDMA file
     LOGD("[AWSPlatform] Attempting to open device file " << device_filename);
-    edma_fd[q] = open(device_filename, O_RDWR);
+    xdma_fd[q] = open(device_filename, O_WRONLY);
 
-    if (edma_fd[q] < 0) {
-      LOGE("[AWSPlatform] Did not get a valid file descriptor. FD: " << edma_fd[q]
-                                                                     << ". Is the EDMA driver installed? Entering error state.");
+    if (xdma_fd[q] < 0) {
+      LOGE("[AWSPlatform] Did not get a valid file descriptor. FD: " << xdma_fd[q]
+                                                                     << ". Is the XDMA driver installed? Entering error state.");
       error = true;
       return;
     }
@@ -80,7 +80,7 @@ AWSPlatform::AWSPlatform(int slot_id, int pf_id, int bar_id)
 AWSPlatform::~AWSPlatform() {
   fpga_pci_detach(this->pci_bar_handle);
 
-  for (int q : edma_fd) {
+  for (int q : xdma_fd) {
     close(q);
   }
 }
@@ -125,7 +125,7 @@ size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
                                                                          << qtotal - written[q] << " remaining.");
         }
         // Write some bytes
-        rc = pwrite(edma_fd[q],
+        rc = pwrite(xdma_fd[q],
                     (void *) ((uint64_t) qsource + written[q]),
                     qtotal - written[q],
                     qdest + written[q]);
@@ -142,7 +142,7 @@ size_t AWSPlatform::copy_to_ddr(uint8_t *source, fa_t address, size_t bytes) {
       total += written[q];
 
       // Synchronize the files
-      fsync(edma_fd[q]);
+      fsync(xdma_fd[q]);
     }
   }
   return total;
@@ -153,7 +153,7 @@ int AWSPlatform::check_ddr(uint8_t *source, fa_t offset, size_t size) {
 
   auto *check_buffer = (uint8_t *) malloc(size);
 
-  rc = pread(edma_fd[0], check_buffer, size, offset);
+  rc = pread(xdma_fd[0], check_buffer, size, offset);
 
   int ret = memcmp(source, check_buffer, size);
 
@@ -225,15 +225,15 @@ uint64_t AWSPlatform::organize_buffers(const std::vector<BufConfig> &source_buff
     }
   }
   // Make sure all bytes are copied.
-  for (int q : edma_fd) {
+  for (int q : xdma_fd) {
     LOGD("[AWSPlatform] Emptying queue " << q);
     fsync(q);
   }
 
   // Close the files:
   for (int q = 0; q < AWS_NUM_QUEUES; q++) {
-    if (edma_fd[q] >= 0) {
-      close(edma_fd[q]);
+    if (xdma_fd[q] >= 0) {
+      close(xdma_fd[q]);
     }
   }
 
@@ -313,8 +313,8 @@ int AWSPlatform::check_slot_config() {
     LOGE(
         "The slot appears loaded, but the pci vendor or device ID doesn't match the expected values. You may need to rescan the fpga with\n"
         "fpga-describe-local-image -S " << slot_id << " -R\n"
-                                                      "Note that rescanning can change which device file in /dev/ a FPGA will map to. To remove and re-add your edma driver and reset the device file mappings, run\n"
-                                                      "`sudo rmmod edma-drv && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/edma/edma-drv.ko`\n"
+                                                      "Note that rescanning can change which device file in /dev/ a FPGA will map to. To remove and re-add your xdma driver and reset the device file mappings, run\n"
+                                                      "`sudo rmmod xdma && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/xdma/xdma.ko`\n"
                                                       "The PCI vendor id and device of the loaded image are not the expected values.");
     return fletcher::ERROR;;
   }
