@@ -47,4 +47,15 @@ jobs:
     - <<: *vhdl-08
       name: "[VHDL-08] Tests"
       before_script:
-        - export SRC_PATH=hardware/test
+        - export SRC_PATH=hardware/
+
+    - &vhdl-test
+      stage: test
+      name: "[VHDL-08] Tests"
+      env: STD=08
+      before_script:
+        - export SRC_PATH=hardware/
+      script:
+        # this build and simulates all testbenches (entity name ends with: _tb) and runs simluation for 1us
+        # TODO: improve readability of output + make sure all simulations end
+        - docker run --rm -e STD -v `pwd`/$SRC_PATH:/src ghdl/ghdl:ubuntu18-llvm-5.0 bash -c "shopt -s globstar && ghdl -i -v --std=$STD /src/**/*.vhd | grep entity | grep _tb | sed -e 's/entity //' | sed -e 's/ \*\*//' | xargs -i -t bash -c 'ghdl -m --std=$STD --ieee=synopsys {}; ghdl -r --std=$STD --ieee=synopsys {} --stop-time=100ns'"
