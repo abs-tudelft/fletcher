@@ -42,7 +42,7 @@ for ext in ext_modules:
     ext.library_dirs.extend(["/usr/local/lib"])
     # Try uncommenting the following line on Linux if you otherwise
     # get weird linker errors or runtime crashes
-    #ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
+    ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
 setup(
     ext_modules=ext_modules,

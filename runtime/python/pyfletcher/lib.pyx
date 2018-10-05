@@ -22,4 +22,3 @@ from includes.libfletcher cimport *
 include "usercore.pxi"
 
 include "platforms.pxi"
-

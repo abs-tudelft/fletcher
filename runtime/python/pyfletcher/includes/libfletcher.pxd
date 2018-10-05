@@ -19,6 +19,7 @@ cimport cython
 from libcpp.memory cimport shared_ptr
 from libc.stdint cimport *
 from libcpp.string cimport string as cpp_string
+from libcpp.vector cimport vector
 from libcpp cimport bool as cpp_bool
 
 from pyarrow.lib cimport *
@@ -32,12 +33,26 @@ cdef extern from "fletcher/fletcher.h" namespace "fletcher" nogil:
         uint64_t prepare_column_chunks(const shared_ptr[CColumn]& column)
         uint64_t argument_offset()
         cpp_string name()
-
-    cdef cppclass CEchoPlatform" fletcher::EchoPlatform"(CFPGAPlatform):
-        CEchoPlatform()
         int write_mmio(uint64_t offset, fr_t value)
         int read_mmio(uint64_t offset, fr_t *dest)
         cpp_bool good()
 
+    cdef cppclass CEchoPlatform" fletcher::EchoPlatform"(CFPGAPlatform):
+        CEchoPlatform() except +
+
+    ctypedef enum uc_stat:
+        FAILURE,
+        SUCCESS
+
     cdef cppclass CUserCore" fletcher::UserCore":
-        pass
+        CUserCore(shared_ptr[CFPGAPlatform] platform) except +
+        cpp_bool implements_schema(const shared_ptr[CSchema]& schema)
+        uc_stat reset()
+        uc_stat set_range(fr_t first, fr_t last)
+        # Todo: set_arguments wont work like this
+        uc_stat set_arguments(vector[fr_t] arguments)
+        uc_stat start()
+        fr_t get_status()
+        fa_t get_return()
+        uc_stat wait_for_finish(unsigned int poll_interval_usec)
+        uc_stat wait_for_finish()

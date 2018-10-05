@@ -12,5 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import pyarrow as pa
 import pyfletcher as pf
+
+testarray = pa.array([1, 2, 3, 4, 5])
+testcolumn = pa.column("hello", testarray)
+
+echo = pf.EchoPlatform()
+
+echo.prepare_column_chunks(testcolumn)
+
+print(echo.good())
+print(echo.argument_offset())
+print(echo.name())
+
+uc = pf.UserCore(echo)

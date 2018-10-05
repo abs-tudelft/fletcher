@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cdef class Usercore:
+cdef class UserCore:
     cdef:
         shared_ptr[CUserCore] usercore
 
-    def __cinit__(self):
-        pass
+    def __cinit__(self, FPGAPlatform platform):
+        self.usercore.reset(new CUserCore(platform.fpgaplatform))
