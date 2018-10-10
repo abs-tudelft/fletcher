@@ -49,10 +49,9 @@ cdef extern from "fletcher/fletcher.h" namespace "fletcher" nogil:
         cpp_bool implements_schema(const shared_ptr[CSchema]& schema)
         uc_stat reset()
         uc_stat set_range(fr_t first, fr_t last)
-        # Todo: set_arguments wont work like this
+        # Todo: set_arguments wont work like this. Maybe make a python implementation?
         uc_stat set_arguments(vector[fr_t] arguments)
         uc_stat start()
         fr_t get_status()
         fa_t get_return()
         uc_stat wait_for_finish(unsigned int poll_interval_usec)
-        uc_stat wait_for_finish()

@@ -14,9 +14,19 @@
 
 import pyarrow as pa
 import pyfletcher as pf
+import numpy as np
+import pandas as pd
 
-testarray = pa.array([1, 2, 3, 4, 5])
+num_rows=1024
+
+np.random.seed(42)
+element_max = np.iinfo(np.int64).max/num_rows
+int_dist = np.random.randint(0, element_max, num_rows)
+print(int_dist)
+
+testarray = pa.array(int_dist, mask=[False]*len(int_dist))
 testcolumn = pa.column("hello", testarray)
+print(testarray.buffers())
 
 echo = pf.EchoPlatform()
 
