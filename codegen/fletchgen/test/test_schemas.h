@@ -35,5 +35,8 @@ std::shared_ptr<arrow::Schema> genBigSchema();
 /// @brief An example schema from a genomics pipeline application.
 std::shared_ptr<arrow::Schema> genPairHMMSchema();
 
+/// @brief An example schema with lists of numbers
+std::shared_ptr<arrow::Schema> genNumberListSchema();
+
 }
 }
