@@ -20,48 +20,49 @@ use IEEE.numeric_std.all;
 library work;
 
 entity kmeans is
-  generic(
-    TAG_WIDTH                                  : natural;
-    BUS_ADDR_WIDTH                             : natural;
-    INDEX_WIDTH                                : natural;
-    REG_WIDTH                                  : natural
-  );
-  port(
-    point_out_valid                            : in std_logic;
-    point_out_dimension_out_data               : in std_logic_vector(63 downto 0);
-    point_out_dimension_out_dvalid             : in std_logic;
-    point_out_dimension_out_last               : in std_logic;
-    point_out_dimension_out_ready              : out std_logic;
-    point_out_dimension_out_valid              : in std_logic;
-    point_out_length                           : in std_logic_vector(INDEX_WIDTH-1 downto 0);
-    point_out_last                             : in std_logic;
-    point_out_ready                            : out std_logic;
-    point_cmd_valid                            : out std_logic;
-    point_cmd_ready                            : in std_logic;
-    point_cmd_firstIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-    point_cmd_lastIdx                          : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-    point_cmd_tag                              : out std_logic_vector(TAG_WIDTH-1 downto 0);
-    point_cmd_point_dimension_values_addr      : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    point_cmd_point_offsets_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    -------------------------------------------------------------------------
-    acc_reset                                  : in std_logic;
-    acc_clk                                    : in std_logic;
-    -------------------------------------------------------------------------
-    ctrl_done                                  : out std_logic;
-    ctrl_busy                                  : out std_logic;
-    ctrl_idle                                  : out std_logic;
-    ctrl_reset                                 : in std_logic;
-    ctrl_stop                                  : in std_logic;
-    ctrl_start                                 : in std_logic;
-    -------------------------------------------------------------------------
-    idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
-    idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
-    reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-    reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-    -------------------------------------------------------------------------
-    reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
-  );
+    generic(
+      TAG_WIDTH                                  : natural;
+      BUS_ADDR_WIDTH                             : natural;
+      INDEX_WIDTH                                : natural;
+      REG_WIDTH                                  : natural
+    );
+    port(
+      point_out_ready                            : out std_logic;
+      point_out_dimension_out_count              : in std_logic_vector(3 downto 0);
+      point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
+      point_out_dimension_out_dvalid             : in std_logic;
+      point_out_dimension_out_last               : in std_logic;
+      point_out_dimension_out_ready              : out std_logic;
+      point_out_dimension_out_valid              : in std_logic;
+      point_out_length                           : in std_logic_vector(INDEX_WIDTH-1 downto 0);
+      point_out_last                             : in std_logic;
+      point_out_valid                            : in std_logic;
+      point_cmd_valid                            : out std_logic;
+      point_cmd_ready                            : in std_logic;
+      point_cmd_firstIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      point_cmd_lastIdx                          : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      point_cmd_tag                              : out std_logic_vector(TAG_WIDTH-1 downto 0);
+      point_cmd_point_dimension_values_addr      : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      point_cmd_point_offsets_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      -------------------------------------------------------------------------
+      acc_reset                                  : in std_logic;
+      acc_clk                                    : in std_logic;
+      -------------------------------------------------------------------------
+      ctrl_done                                  : out std_logic;
+      ctrl_busy                                  : out std_logic;
+      ctrl_idle                                  : out std_logic;
+      ctrl_reset                                 : in std_logic;
+      ctrl_stop                                  : in std_logic;
+      ctrl_start                                 : in std_logic;
+      -------------------------------------------------------------------------
+      idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
+      idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
+      reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+      reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+      -------------------------------------------------------------------------
+      reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
+    );
 end entity kmeans;
 
 

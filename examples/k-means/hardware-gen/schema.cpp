@@ -30,14 +30,18 @@ int main()
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
     arrow::field(
       "point", arrow::list(
-        arrow::field("dimension", arrow::float64(), false)
-      ),
-      false//,
-//      std::make_shared<arrow::KeyValueMetadata>(
-//        std::vector<std::string> {"epc"},
-//        std::vector<std::string> {std::to_string(512/64)}
-//      )
-    )
+        arrow::field(
+          "dimension",
+          arrow::float64(),
+          false, // non-nullable
+          std::make_shared<arrow::KeyValueMetadata>(
+            std::vector<std::string> {"epc"},
+            std::vector<std::string> {std::to_string(512/64)}
+          )
+        ) // end dimension field
+      ), // end list datatype
+      false // non-nullable
+    ) // end point field
   };
 
   // Create the schema
