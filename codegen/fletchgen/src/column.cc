@@ -383,6 +383,7 @@ std::string genConfigString(arrow::Field *field, int level) {
   }
 
   int epc = getEPC(field);
+  bool is_implicit_listprim = false;
 
   //if (ct == ARB) return "arb";
   //else if (ct == NUL) return "null";
@@ -395,15 +396,35 @@ std::string genConfigString(arrow::Field *field, int level) {
     level++;
 
   } else if (ct == ConfigType::LISTPRIM) {
+    // String or binary with 8 bits per element
     ret += "listprim(";
     level++;
 
     Value w = Value(8);
 
     ret += w.toString();
+
   } else if (ct == ConfigType::LIST) {
-    ret += "list(";
-    level++;
+    // Convert list(prim(x)) to listprim(x), for epc support on this type
+    arrow::Field *child;
+    // List should always have at least one child, but check anyway
+    is_implicit_listprim = field->type()->num_children() == 1
+      && ( child = field->type()->children()[0].get() )
+      && getConfigType(child->type().get()) == ConfigType::PRIM;
+
+    if (is_implicit_listprim) {
+      epc = getEPC(child);
+      Value w = getWidth(child->type().get());
+
+      ret += "listprim(" + w.toString();
+      level++;
+
+    // Normal, nested list structure
+    } else {
+      ret += "list(";
+      level++;
+    }
+
   } else if (ct == ConfigType::STRUCT) {
     ret += "struct(";
     level++;
@@ -414,11 +435,14 @@ std::string genConfigString(arrow::Field *field, int level) {
   }
 
   // Append children
-  for (int c = 0; c < field->type()->num_children(); c++) {
-    auto child = field->type()->children()[c];
-    ret += genConfigString(child.get());
-    if (c != field->type()->num_children() - 1)
-      ret += ",";
+  // Implicit listprim has no children
+  if (!is_implicit_listprim) {
+    for (int c = 0; c < field->type()->num_children(); c++) {
+      auto child = field->type()->children()[c];
+      ret += genConfigString(child.get());
+      if (c != field->type()->num_children() - 1)
+        ret += ",";
+    }
   }
 
   for (; level > 0; level--)
