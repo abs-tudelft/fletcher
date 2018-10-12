@@ -38,7 +38,7 @@ install(TARGETS ${PROJECT_NAME}
 # TESTS
 ########################################################################################################################
 
-set(TEST_SOURCES src/test/test.cpp)
+set(TEST_SOURCES test/test.cpp)
 #set(TEST_HEADERS src/test/test.h)
 
 add_executable(test_${PROJECT_NAME} ${TEST_HEADERS} ${TEST_SOURCES})

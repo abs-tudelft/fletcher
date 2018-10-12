@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "platform.h"
 
 namespace fletcher {
 
 std::string Platform::getName() {
+  assert(platformGetName != nullptr);
   char buf[64] = {0};
   platformGetName(buf, 64);
   return std::string(buf);
@@ -41,34 +42,42 @@ Status Platform::create(const std::string &name, std::shared_ptr<fletcher::Platf
     if (!quiet) {
       std::cerr << dlerror() << std::endl;
     }
-    return Status::FAIL();
+    return Status::ERROR();
   }
 }
 
 Status Platform::link(void *handle, bool quiet) {
   if (handle) {
-    *reinterpret_cast<void **>((&platformGetName)) = dlsym(handle, "platformGetName");
-    *reinterpret_cast<void **>((&platformWriteMMIO)) = dlsym(handle, "platformWriteMMIO");
-    *reinterpret_cast<void **>((&platformReadMMIO)) = dlsym(handle, "platformReadMMIO");
-    *reinterpret_cast<void **>((&platformCopyHostToDevice)) = dlsym(handle, "platformCopyHostToDevice");
-    *reinterpret_cast<void **>((&platformCopyDeviceToHost)) = dlsym(handle, "platformCopyDeviceToHost");
+    *reinterpret_cast<void **>((&platformInit))               = dlsym(handle, "platformInit");
+    *reinterpret_cast<void **>((&platformGetName))            = dlsym(handle, "platformGetName");
+    *reinterpret_cast<void **>((&platformWriteMMIO))          = dlsym(handle, "platformWriteMMIO");
+    *reinterpret_cast<void **>((&platformReadMMIO))           = dlsym(handle, "platformReadMMIO");
+    *reinterpret_cast<void **>((&platformDeviceMalloc))       = dlsym(handle, "platformDeviceMalloc");
+    *reinterpret_cast<void **>((&platformDeviceFree))         = dlsym(handle, "platformDeviceFree");
+    *reinterpret_cast<void **>((&platformCopyHostToDevice))   = dlsym(handle, "platformCopyHostToDevice");
+    *reinterpret_cast<void **>((&platformCopyDeviceToHost))   = dlsym(handle, "platformCopyDeviceToHost");
+    *reinterpret_cast<void **>((&platformPrepareHostBuffer))  = dlsym(handle, "platformPrepareHostBuffer");
+    *reinterpret_cast<void **>((&platformCacheHostBuffer))    = dlsym(handle, "platformCacheHostBuffer");
+    *reinterpret_cast<void **>((&platformTerminate))          = dlsym(handle, "platformTerminate");
+
     char *err = dlerror();
+
     if (err == nullptr) {
       return Status::OK();
     } else {
       if (!quiet) {
         std::cerr << err << std::endl;
       }
-      return Status::FAIL();
+      return Status::ERROR();
     }
   } else {
     std::cerr << "Cannot link FPGA platform functions. Invalid handle." << std::endl;
-    return Status::FAIL();
+    return Status::ERROR();
   }
 }
 
 Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
-  Status err = Status::FAIL();
+  Status err = Status::ERROR();
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
@@ -76,7 +85,7 @@ Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
     err = create(p, platform);
     if (err.ok()) {
       std::cerr << "SUCCESS." << std::endl;
-      break;
+      return err;
     } else {
       std::cerr << "FAILED." << std::endl;
     }
@@ -84,4 +93,4 @@ Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
   return err;
 }
 
-} //namespace fletcher
+}  // namespace fletcher

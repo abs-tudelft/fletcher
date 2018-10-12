@@ -16,12 +16,16 @@
 
 #include <stdint.h>
 
+#define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
+
 #define FLETCHER_STATUS_OK 0
 #define FLETCHER_STATUS_ERROR 1
 
-#define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
-
+/// @brief Fletcher Status
 typedef uint64_t fstatus_t;
-typedef uint8_t *ha_t;
-typedef uint64_t da_t;
 
+/// @brief Host Address type
+typedef uint8_t *ha_t;
+
+/// @brief Device Address type
+typedef uint64_t da_t;
