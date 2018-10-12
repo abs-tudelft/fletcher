@@ -223,6 +223,16 @@ int ArrowStream::depth() {
   return d;
 }
 
+bool ArrowStream::isPrim() {
+  if (field_ != nullptr) {
+    if (getConfigType(field_->type().get()) == ConfigType::PRIM)
+      return true;
+    else
+      return false;
+  }
+  return false;
+}
+
 bool ArrowStream::isList() {
   bool ret = false;
   ret |= field_->type()->id() == arrow::Type::LIST;
@@ -253,6 +263,8 @@ bool ArrowStream::isListPrimChild() {
   if (!basedOnField()) {
     return true;
   }
+  if (isListChild() && isPrim())
+    return true;
   return ret;
 }
 
@@ -263,7 +275,7 @@ bool ArrowStream::isStructChild() { return hasParent() ? parent()->isStruct() : 
 shared_ptr<arrow::Field> ArrowStream::field() { return field_; }
 
 void ArrowStream::setEPC(int epc) {
-  if (epc_ > 0) {
+  if (epc > 0) {
     epc_ = epc;
   } else {
     throw std::domain_error("Elements per cycle must be a positive non-zero value.");
