@@ -63,7 +63,7 @@ bool test_context() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::create(&platform).ewf();
+  fletcher::Platform::create("echo", &platform).ewf();
 
   // Init
   platform->init().ewf();
@@ -119,14 +119,14 @@ bool test_context() {
   auto rb = arrow::RecordBatch::Make(schema, 4, {a, b, c, d});
 
   std::shared_ptr<fletcher::Context> context;
-  fletcher::Context::Make(&context, platform);
+  fletcher::Context::Make(&context, platform).ewf();
 
-  context->queueRecordBatch(rb);
+  context->queueRecordBatch(rb).ewf();
 
-  context->queueArray(f);
+  context->queueArray(f).ewf();
 
   // Write buffers
-  context->enable();
+  context->enable().ewf();
 
   // Terminate:
   platform->terminate().ewf();

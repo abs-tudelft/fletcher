@@ -153,10 +153,14 @@ Status Context::queueArray(const std::shared_ptr<arrow::Array> &array,
 }
 
 Status Context::queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache) {
-  for (int c = 0; c < record_batch->num_columns(); c++) {
-    queueArray(record_batch->column(c), record_batch->schema()->field(c), cache);
+  if (record_batch != nullptr) {
+    for (int c = 0; c < record_batch->num_columns(); c++) {
+      queueArray(record_batch->column(c), record_batch->schema()->field(c), cache);
+    }
+    return Status::OK();
+  } else {
+    return Status::ERROR();
   }
-  return Status::OK();
 }
 
 }  // namespace fletcher
