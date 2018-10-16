@@ -15,25 +15,12 @@
 import pyarrow as pa
 import pyfletcher as pf
 import numpy as np
-import pandas as pd
 
-num_rows=1024
+teststatus = pf.PyStatus()
 
-np.random.seed(42)
-element_max = np.iinfo(np.int64).max/num_rows
-int_dist = np.random.randint(0, element_max, num_rows)
-print(int_dist)
+teststatus.create(0)
 
-testarray = pa.array(int_dist, mask=[False]*len(int_dist))
-testcolumn = pa.column("hello", testarray)
-print(testarray.buffers())
+print(teststatus.val)
 
-echo = pf.AWSPlatform()
+print(teststatus.ok())
 
-echo.prepare_column_chunks(testcolumn)
-
-print(echo.good())
-print(echo.argument_offset())
-print(echo.name())
-
-uc = pf.UserCore(echo)

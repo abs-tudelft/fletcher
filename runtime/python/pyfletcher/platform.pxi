@@ -12,14 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+cdef class PyStatus:
+    cdef:
+        CStatus status
 
-class Usercore(lib._Usercore):
-    """
-    Python wrapper for Fletcher C++ UserCore class
+    def __cinit__(self):
+        pass
 
-    :param platform: todo
-    """
-    def __init__(self, platform):
-        self._create(platform)
+    def __init__(self):
+        pass
 
-# Why a .py file?
+    def create(self, fstatus_t val):
+        self.status = CStatus()
+
+    def ok(self):
+        return self.status.ok()
+
+    @property
+    def val(self):
+        return self.status.val

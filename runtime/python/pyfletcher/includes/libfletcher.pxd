@@ -24,49 +24,21 @@ from libcpp cimport bool as cpp_bool
 
 from pyarrow.lib cimport *
 
+#Todo: Remove temporary relative imports
+cdef extern from "fletcher.h" nogil:
+    ctypedef unsigned long long fstatus_t
+    ctypedef unsigned long long da_t
 
-cdef extern from "<memory>":
-    shared_ptr[CEchoPlatform] base_to_echo "std::static_pointer_cast<fletcher::EchoPlatform>" (shared_ptr[CFPGAPlatform])
-    #shared_ptr[CAWSPlatform] base_to_aws "std::static_pointer_cast<fletcher::AWSPlatform>" (shared_ptr[CFPGAPlatform])
-    #shared_ptr[CSNAPPlatform] base_to_snap "std::static_pointer_cast<fletcher::SNAPPlatform>" (shared_ptr[CFPGAPlatform])
+cdef extern from "../../../cpp/src/status.h" nogil:
+    cdef struct CStatus"Status":
+        fstatus_t val
+        CStatus() except +
+        CStatus(fstatus_t val) except +
+        cpp_bool ok()
+        void ewf()
+        CStatus OK()
+        CStatus ERROR()
 
-cdef extern from "fletcher/fletcher.h" namespace "fletcher" nogil:
-    ctypedef unsigned long long fa_t
-    ctypedef unsigned int fr_t
-
-    cdef cppclass CFPGAPlatform" fletcher::FPGAPlatform":
-        uint64_t prepare_column_chunks(const shared_ptr[CColumn]& column)
-        uint64_t argument_offset()
-        cpp_string name()
-        int write_mmio(uint64_t offset, fr_t value)
-        int read_mmio(uint64_t offset, fr_t *dest)
-        cpp_bool good()
-
-    cdef cppclass CEchoPlatform" fletcher::EchoPlatform"(CFPGAPlatform):
-        CEchoPlatform() except +
-
-
-    #cdef cppclass CAWSPlatform" fletcher::AWSPlatform"(CFPGAPlatform):
-    #    CAWSPlatform(int slot_id, int pf_id, int bar_id) except +
-    #    void set_alignment(uint64_t alignment)
-
-    #cdef cppclass CSNAPPlatform" fletcher::SNAPPlatform"(CFPGAPlatform):
-    #    CSNAPPlatform(int card_no, uint32_t action_type, cpp_bool sim) except +
-    #    void set_alignment(uint64_t alignment)
-
-
-    ctypedef enum uc_stat:
-        FAILURE,
-        SUCCESS
-
-    cdef cppclass CUserCore" fletcher::UserCore":
-        CUserCore(shared_ptr[CFPGAPlatform] platform) except +
-        cpp_bool implements_schema(const shared_ptr[CSchema]& schema)
-        uc_stat reset()
-        uc_stat set_range(fr_t first, fr_t last)
-        # Todo: set_arguments wont work like this. Maybe make a python implementation?
-        uc_stat set_arguments(vector[fr_t] arguments)
-        uc_stat start()
-        fr_t get_status()
-        fa_t get_return()
-        uc_stat wait_for_finish(unsigned int poll_interval_usec)
+cdef extern from "../../../cpp/src/platform.h" namespace "fletcher" nogil:
+    cdef cppclass CPlatform" fletcher::Platform":
+        pass
