@@ -63,7 +63,7 @@ bool test_context() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::create("echo", &platform).ewf();
+  fletcher::Platform::create(&platform).ewf();
 
   // Init
   platform->init().ewf();
