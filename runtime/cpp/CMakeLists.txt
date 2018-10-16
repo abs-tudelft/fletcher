@@ -57,7 +57,8 @@ install(FILES ${HEADERS}
 # Headers from common library
 set(COMMON_HEADERS
         ../../common/cpp/src/common/arrow-utils.h
-        ../../common/cpp/src/common/hex-view.h)
+        ../../common/cpp/src/common/hex-view.h
+        ../../common/cpp/src/common/timer.h)
 
 install(FILES ${COMMON_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common

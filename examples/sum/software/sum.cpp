@@ -34,15 +34,12 @@
 
 // Fletcher
 #include <fletcher/api.h>
+#include <fletcher/common/timer.h>
 
 using std::shared_ptr;
 using std::numeric_limits;
 using std::vector;
 using std::static_pointer_cast;
-
-typedef std::chrono::high_resolution_clock perf_clock;
-
-intmax_t sum_check = 0;
 
 /**
  * Create an Arrow table containing one column of random 64-bit numbers.
@@ -51,17 +48,9 @@ shared_ptr<arrow::RecordBatch> createRecordBatch(int num_rows) {
   // Set up random number generator
   std::mt19937 rng;
   rng.seed(0);
-  // Ensure the sum fits in the return types used by all summing methods
-  int64_t element_max = std::min(
-      (uintmax_t) numeric_limits<int64_t>::max() / num_rows, // arrow data type,
-      std::min(
-          // return type on CPU
-          (uintmax_t) numeric_limits<long long int>::max() / num_rows,
-          // return type on FPGA
-          (uintmax_t) numeric_limits<int64_t>::max() / num_rows
-      )
-  );
-  std::uniform_int_distribution<int64_t> int_dist(0, element_max);
+
+  // Uniformly distributed numbers between 0 and 1
+  std::uniform_int_distribution<int64_t> int_dist(0, 1);
 
   // Create arrow builder for appending numbers
   arrow::Int64Builder int_builder(arrow::default_memory_pool());
@@ -69,7 +58,6 @@ shared_ptr<arrow::RecordBatch> createRecordBatch(int num_rows) {
   // Generate all rows and fill with random numbers
   for (int i = 0; i < num_rows; i++) {
     int64_t rnd_num = int_dist(rng);
-    sum_check += rnd_num;
     int_builder.Append(rnd_num);
   }
 
@@ -83,16 +71,13 @@ shared_ptr<arrow::RecordBatch> createRecordBatch(int num_rows) {
   int_builder.Finish(&num_array);
 
   // Create and return the table
-  return std::move(arrow::RecordBatch::Make(schema, num_rows, {num_array}));
+  return arrow::RecordBatch::Make(schema, num_rows, {num_array});
 }
 
 /**
  * Calculate the sum of all numbers in the arrow column using the CPU.
  */
 int64_t sumCPU(const shared_ptr<arrow::RecordBatch> &recordbatch) {
-  // Performance timer open
-  auto t1 = perf_clock::now();
-
   // Get data pointer
   auto num_array = static_pointer_cast<arrow::Int64Array>(recordbatch->column(0));
   const int64_t *data = num_array->raw_values();
@@ -101,12 +86,6 @@ int64_t sumCPU(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   for (int i = 0; i < num_array->length(); i++) {
     sum += data[i];
   }
-
-  // Performance timer close
-  auto t2 = perf_clock::now();
-  std::chrono::duration<double> time_span = std::chrono::duration_cast<
-      std::chrono::duration<double> >(t2 - t1);
-  std::cout << "Sum CPU time: " << time_span.count() << " seconds" << std::endl;
   return sum;
 }
 
@@ -127,12 +106,12 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   context->queueRecordBatch(recordbatch);
 
   // Performance time open
-  auto t1 = perf_clock::now();
+  fletcher::Timer t;
+  t.start();
   context->enable();
   // Performance timer close
-  auto t2 = perf_clock::now();
-  std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
-  std::cout << "FPGA copy time: " << time_span.count() << " seconds" << std::endl;
+  t.stop();
+  std::cout << "FPGA copy time (s): " << t.seconds() << std::endl;
 
   // Create a UserCore
   fletcher::UserCore uc(platform);
@@ -141,12 +120,10 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   uc.reset();
 
   // Determine size of table
-  int32_t last_index = recordbatch->num_rows();
-
+  auto last_index = (int32_t) recordbatch->num_rows();
   uc.setRange(0, last_index);
 
-  // Performance timer open
-  t1 = perf_clock::now();
+  t.start();
 
   // Start the FPGA user function
   uc.start();
@@ -157,9 +134,8 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   uc.getReturn(&ret.lo, &ret.hi);
 
   // Performance timer close
-  t2 = perf_clock::now();
-  time_span = std::chrono::duration_cast<std::chrono::duration<double >>(t2 - t1);
-  std::cout << "Sum FPGA time: " << time_span.count() << " seconds" << std::endl;
+  t.stop();
+  std::cout << "Sum FPGA time (s): " << t.seconds() << " seconds" << std::endl;
 
   return ret.full;
 }
@@ -170,6 +146,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  * Finally compares the results.
  */
 int main(int argc, char **argv) {
+  fletcher::Timer t;
   unsigned int num_rows = 1024;
 
   if (argc >= 2) {
@@ -184,13 +161,16 @@ int main(int argc, char **argv) {
   shared_ptr<arrow::RecordBatch> recordbatch = createRecordBatch(num_rows);
 
   // Sum on CPU
+  t.start();
   int64_t sum_cpu = sumCPU(recordbatch);
+  t.stop();
+  std::cout << "CPU run time (s): " << t.seconds() << std::endl;
 
   // Sum on FPGA
   int64_t sum_fpga = sumFPGA(recordbatch);
 
-  std::cout << "expected sum: " << sum_cpu << std::endl;
-  std::cout << "fpga sum: " << sum_fpga << std::endl;
+  std::cout << "Expected sum : " << sum_cpu << std::endl;
+  std::cout << "FPGA sum     : " << sum_fpga << std::endl;
 
   // Check whether sums are the same
   int exit_status;
