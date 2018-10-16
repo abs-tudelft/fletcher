@@ -17,18 +17,32 @@
 #include <memory>
 
 #include <arrow/util/logging.h>
+#include <arrow/record_batch.h>
 
 #include "./context.h"
+#include "context.h"
 
 namespace fletcher {
 
-DeviceArray::DeviceArray(const std::shared_ptr<arrow::Array> &array, DeviceArray::mode_t mode)
-    : host_array(array), mode(mode) {
+DeviceArray::DeviceArray(const std::shared_ptr<arrow::Array> &array,
+                         const std::shared_ptr<arrow::Field> &field,
+                         DeviceArray::mode_t mode)
+    : host_array(array), field(field), mode(mode) {
   std::vector<arrow::Buffer *> host_buffers;
-  common::flattenArrayBuffers(&host_buffers, host_array);
+  if (field != nullptr) {
+    common::flattenArrayBuffers(&host_buffers, host_array, field);
+  } else {
+    ARROW_LOG(WARNING) << "Flattening of array buffers without field specification may lead to discrepancy between "
+                          "hardware and software implementation.";
+    common::flattenArrayBuffers(&host_buffers, host_array);
+  }
   buffers.reserve(buffers.size());
   for (const auto &buf : host_buffers) {
-    buffers.emplace_back(buf->data(), buf->size());
+    if (buf != nullptr) {
+      buffers.emplace_back(buf->data(), buf->size());
+    } else {
+      buffers.emplace_back(nullptr, 0);
+    }
   }
   mode = DeviceArray::PREPARE;
 }
@@ -38,22 +52,23 @@ Status Context::Make(std::shared_ptr<Context> *context, std::shared_ptr<Platform
   return Status::OK();
 }
 
-Status Context::prepareArray(const std::shared_ptr<arrow::Array> &array) {
+Status Context::prepareArray(const std::shared_ptr<arrow::Array> &array, const std::shared_ptr<arrow::Field> &field) {
   // Check if this Array was already queued (cached or prepared).
   // If so, we can refer to the cached version. Since Arrow Arrays are immutable, we don't have to make a copy.
   for (const auto &a : device_arrays) {
     if (array == a->host_array) {
       ARROW_LOG(WARNING) << array->type()->ToString() + " array already queued to device. Duplicating reference.";
       device_arrays.push_back(a);
+      device_arrays.back()->field = field;
       return Status::OK();
     }
   }
   // Otherwise add it to the queue
-  device_arrays.emplace_back(std::make_shared<DeviceArray>(array, DeviceArray::PREPARE));
+  device_arrays.emplace_back(std::make_shared<DeviceArray>(array, field, DeviceArray::PREPARE));
   return Status::OK();
 }
 
-Status Context::cacheArray(const std::shared_ptr<arrow::Array> &array) {
+Status Context::cacheArray(const std::shared_ptr<arrow::Array> &array, const std::shared_ptr<arrow::Field> &field) {
   // Check if this Array is already referred to in the queue
   size_t array_cnt = device_arrays.size();
   bool queued = false;
@@ -63,13 +78,14 @@ Status Context::cacheArray(const std::shared_ptr<arrow::Array> &array) {
                                                         " Ensuring caching and duplicating reference.";
       device_arrays[i]->mode = DeviceArray::CACHE;
       device_arrays.push_back(device_arrays[i]);
+      device_arrays.back()->field = field;
       queued = true;
     }
   }
 
   // Otherwise add it to the queue
   if (!queued) {
-    device_arrays.emplace_back(std::make_shared<DeviceArray>(array, DeviceArray::CACHE));
+    device_arrays.emplace_back(std::make_shared<DeviceArray>(array, field, DeviceArray::CACHE));
   }
   return Status::OK();
 }
@@ -86,7 +102,7 @@ Context::~Context() {
   }
 }
 
-Status Context::writeBufferConfig() {
+Status Context::enable() {
   written = true;
 
   for (const auto &array : device_arrays) {
@@ -113,6 +129,34 @@ Status Context::writeBufferConfig() {
     }
   }
 
+  uint64_t off = FLETCHER_REG_BUFFER_OFFSET;
+  for (const auto &array: device_arrays) {
+    for (const auto &buf : array->buffers) {
+      dau_t address;
+      address.full = buf.device_address;
+      platform->writeMMIO(off, address.lo);
+      off++;
+      platform->writeMMIO(off, address.hi);
+      off++;
+    }
+  }
+  return Status::OK();
+}
+
+Status Context::queueArray(const std::shared_ptr<arrow::Array> &array,
+                           const std::shared_ptr<arrow::Field> &field,
+                           bool cache) {
+  if (cache) {
+    return cacheArray(array, field);
+  } else {
+    return prepareArray(array, field);
+  }
+}
+
+Status Context::queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache) {
+  for (int c = 0; c < record_batch->num_columns(); c++) {
+    queueArray(record_batch->column(c), record_batch->schema()->field(c), cache);
+  }
   return Status::OK();
 }
 

@@ -74,7 +74,7 @@ bool test_context() {
   schema_fields.push_back(std::make_shared<arrow::Field>("b", arrow::utf8(), false));
   schema_fields.push_back(std::make_shared<arrow::Field>("c", arrow::uint64(), true));
   schema_fields.push_back(std::make_shared<arrow::Field>("d", arrow::list(
-      std::make_shared<arrow::Field>("e", arrow::uint32(), false)), false));
+      std::make_shared<arrow::Field>("e", arrow::uint32(), true)), false));
 
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
 
@@ -84,62 +84,49 @@ bool test_context() {
   auto be = std::make_shared<arrow::UInt32Builder>();
   arrow::ListBuilder bd(arrow::default_memory_pool(), be);
 
-  ba.AppendValues({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
+  // A builder not part of the recordbatch; it has no schema
+  arrow::UInt32Builder bf;
 
-  bb.AppendValues({"hello", "world", "fletcher", "arrow", "hello", "world", "fletcher", "arrow", "hi", "bye", "bla"});
+  ba.AppendValues({1, 2, 3, 4});
 
-  bc.AppendValues({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, {true, false, true, true, true, false, true, true, true, true, true});
+  bb.AppendValues({"hello", "world", "fletcher", "arrow"});
+
+  bc.AppendValues({5, 6, 7, 8}, {true, false, true, true});
 
   bd.Append();
-  be->AppendValues({10, 11, 12});
+  be->AppendValues({9, 10, 11, 12});
   bd.Append();
   be->AppendValues({13, 14});
   bd.Append();
-  be->AppendValues({15, 16, 17, 18});
+  be->AppendValues({15, 16, 17});
   bd.Append();
-  be->AppendValues({19});
-  bd.Append();
-  be->AppendValues({15, 16, 17, 18});
-  bd.Append();
-  be->AppendValues({19});
-  bd.Append();
-  be->AppendValues({15, 16, 17, 18});
-  bd.Append();
-  be->AppendValues({13, 14});
-  bd.Append();
-  be->AppendValues({13, 14, 21});
-  bd.Append();
-  be->AppendValues({13, 14, 15, 16, 17, 18});
-  bd.Append();
+  be->AppendValues({18});
+
+  bf.AppendValues({19,20,21,22});
 
   std::shared_ptr<arrow::Array> a;
   std::shared_ptr<arrow::Array> b;
   std::shared_ptr<arrow::Array> c;
   std::shared_ptr<arrow::Array> d;
+  std::shared_ptr<arrow::Array> f;
 
   ba.Finish(&a);
   bb.Finish(&b);
   bc.Finish(&c);
   bd.Finish(&d);
+  bf.Finish(&f);
 
   auto rb = arrow::RecordBatch::Make(schema, 4, {a, b, c, d});
 
   std::shared_ptr<fletcher::Context> context;
   fletcher::Context::Make(&context, platform);
 
+  context->queueRecordBatch(rb);
 
-  // Prepare columns.
-  for (int col = 0; col < 4; col++) {
-    context->prepareArray(rb->column(col));
-  }
-
-  // Cache the first two.
-  for (int col = 0; col < 2; col++) {
-    context->cacheArray(rb->column(col));
-  }
+  context->queueArray(f);
 
   // Write buffers
-  context->writeBufferConfig();
+  context->enable();
 
   // Terminate:
   platform->terminate().ewf();
@@ -148,6 +135,7 @@ bool test_context() {
 }
 
 int main() {
+  //test_platform();
   test_context();
   return EXIT_SUCCESS;
 }
