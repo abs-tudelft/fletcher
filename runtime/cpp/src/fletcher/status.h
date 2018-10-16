@@ -18,6 +18,8 @@
 
 #include "./fletcher.h"
 
+namespace fletcher {
+
 struct Status {
   fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
 
@@ -36,3 +38,5 @@ struct Status {
 
   static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
 };
+
+}
