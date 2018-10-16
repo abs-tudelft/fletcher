@@ -21,9 +21,9 @@
 
 #include "common/arrow-utils.h"
 
-#include "../src/platform.h"
-#include "../src/context.h"
-#include "../src/status.h"
+#include "../src/fletcher/platform.h"
+#include "../src/fletcher/context.h"
+#include "../src/fletcher/status.h"
 
 bool test_platform() {
   std::shared_ptr<fletcher::Platform> platform;

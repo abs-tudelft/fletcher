@@ -13,14 +13,16 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES
-        src/platform.cpp
-        src/context.cpp)
+        src/fletcher/platform.cpp
+        src/fletcher/context.cpp
+        src/fletcher/usercore.cpp)
 
 set(HEADERS
         ../../common/cpp/src/fletcher.h
-        src/platform.h
-        src/context.h
-        src/status.h)
+        src/fletcher/platform.h
+        src/fletcher/context.h
+        src/fletcher/status.h
+        src/fletcher/usercore.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
@@ -40,12 +42,26 @@ target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
 find_library(LIB_ARROW arrow)
 target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
 
-target_include_directories(${PROJECT_NAME} PRIVATE include)
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/${PROJECT_NAME}/api.h)
 
+# Install .so
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+
+# Install headers
+install(FILES ${HEADERS}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        )
+
+# Headers from common library
+set(COMMON_HEADERS
+        ../../common/cpp/src/common/arrow-utils.h
+        ../../common/cpp/src/common/hex-view.h)
+
+install(FILES ${COMMON_HEADERS}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common
+        )
 
 ########################################################################################################################
 # TESTS

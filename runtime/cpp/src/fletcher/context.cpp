@@ -20,7 +20,6 @@
 #include <arrow/record_batch.h>
 
 #include "./context.h"
-#include "context.h"
 
 namespace fletcher {
 
