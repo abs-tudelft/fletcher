@@ -14,18 +14,25 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdlib>
 
-#define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
+#include "./fletcher.h"
 
-#define FLETCHER_STATUS_OK 0
-#define FLETCHER_STATUS_ERROR 1
+struct Status {
+  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
 
-/// @brief Fletcher Status
-typedef uint64_t fstatus_t;
+  Status() = default;
 
-/// @brief Host Address type
-typedef uint8_t *ha_t;
+  explicit Status(fstatus_t val) : val(val) {}
 
-/// @brief Device Address type
-typedef uint64_t da_t;
+  bool ok() { return val == FLETCHER_STATUS_OK; }
+
+  /// @brief Exit when fail
+  void ewf() {
+    if (!ok()) { exit(EXIT_FAILURE); }
+  }
+
+  static Status OK() { return Status(FLETCHER_STATUS_OK); }
+
+  static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
+};

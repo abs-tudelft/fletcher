@@ -13,11 +13,12 @@
 // limitations under the License.
 
 #include <stdio.h>
-#include <string.h>
+#include <memory.h>
 
 #include "fletcher.h"
-
 #include "fletcher_echo.h"
+
+da_t buffer_ptr = 0x0;
 
 fstatus_t platformGetName(char *name, size_t size) {
   size_t len = strlen(FLETCHER_PLATFORM_NAME);
@@ -46,16 +47,16 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
   return FLETCHER_STATUS_OK;
 }
 
-fstatus_t platformCopyHostToDevice(ha_t host_source, da_t device_destination, uint64_t size) {
-  printf("[ECHO] Copying from host to device. [host] %016lX (%10lu bytes) => [dev]  %016lX.\n",
+fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size) {
+  printf("[ECHO] Copying from host to device. [host] %016lX (%lu bytes) => [dev]  %016lX.\n",
          (unsigned long) host_source,
          size,
          device_destination);
   return FLETCHER_STATUS_OK;
 }
 
-fstatus_t platformCopyDeviceToHost(da_t device_source, ha_t host_destination, uint64_t size) {
-  printf("[ECHO] Copying from device to host. [dev]  %016lX (%8lu bytes) => [host] %016lX.\n",
+fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size) {
+  printf("[ECHO] Copying from device to host. [dev]  %016lX (%lu bytes) => [host] %016lX.\n",
          device_source,
          size,
          (unsigned long) host_destination);
@@ -67,9 +68,10 @@ fstatus_t platformTerminate(void *arg) {
   return FLETCHER_STATUS_OK;
 }
 
-fstatus_t platformDeviceMalloc(da_t *device_address, size_t size) {
-  *device_address = 0xFEEDBEEFDEADBEEF;
+fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
+  *device_address = buffer_ptr;
   printf("[ECHO] Allocating device memory.    %lu bytes @ [device] %016lX.\n", size, (unsigned long) device_address);
+  buffer_ptr += size;
   return FLETCHER_STATUS_OK;
 }
 
@@ -78,19 +80,23 @@ fstatus_t platformDeviceFree(da_t device_address) {
   return FLETCHER_STATUS_OK;
 }
 
-fstatus_t platformPrepareHostBuffer(ha_t host_source, da_t *device_destination, uint64_t size) {
-  *device_destination = 0xFEEDBEEFDEADBEEF;
-  printf("[ECHO] Preparing buffer for device. Preparing %8lu bytes @ [host] %016lX => %016lX.\n",
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced) {
+  *device_destination = buffer_ptr;
+  *alloced = 1;
+  printf("[ECHO] Preparing buffer for device. %lu bytes @ [host] %016lX => %016lX.\n",
          size,
          (unsigned long) host_source,
          (unsigned long) *device_destination);
+  buffer_ptr += size;
   return FLETCHER_STATUS_OK;
 }
 
-fstatus_t platformCacheHostBuffer(ha_t host_source, da_t *device_destination, uint64_t size) {
-  printf("[ECHO] Caching buffer on device.    Preparing %8lu bytes @ [host] %016lX => %016lX.\n",
+fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
+  *device_destination = buffer_ptr;
+  printf("[ECHO] Caching buffer on device.    %lu bytes @ [host] %016lX => %016lX.\n",
          size,
          (unsigned long) host_source,
          (unsigned long) *device_destination);
+  buffer_ptr += size;
   return FLETCHER_STATUS_OK;
 }

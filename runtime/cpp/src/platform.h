@@ -20,26 +20,17 @@
 #include <string>
 #include <cassert>
 
-#include "fletcher.h"
+#include "./status.h"
+#include "./fletcher.h"
 
 namespace fletcher {
-
-struct Status {
-  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
-  Status() = default;
-  explicit Status(fstatus_t val) : val(val) {}
-  bool ok() { return val == FLETCHER_STATUS_OK; }
-  void check() {
-    if (!ok()) { exit(EXIT_FAILURE); }
-  }
-  static Status OK() { return Status(0); }
-  static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
-};
 
 class Platform {
  public:
   ~Platform() {
-    platformTerminate(terminate_data);
+    if (!terminated) {
+      platformTerminate(terminate_data);
+    }
   }
 
   static Status create(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
@@ -72,40 +63,60 @@ class Platform {
     return Status(platformDeviceFree(device_address));
   }
 
-  inline Status copyHostToDevice(ha_t host_source, da_t device_destination, uint64_t size) {
+  inline Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size) {
     assert(platformCopyHostToDevice != nullptr);
     return Status(platformCopyHostToDevice(host_source, device_destination, size));
   }
 
-  inline Status copyDeviceToHost(da_t device_source, ha_t host_destination, uint64_t size) {
+  inline Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size) {
     assert(platformCopyDeviceToHost != nullptr);
     return Status(platformCopyDeviceToHost(device_source, host_destination, size));
   }
 
+  inline Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) {
+    assert(platformPrepareHostBuffer != nullptr);
+    int ll_alloced = 0;
+    auto stat = platformPrepareHostBuffer(host_source, device_destination, size, &ll_alloced);
+    *alloced = ll_alloced == 1;
+    return Status(stat);
+  }
+
+  inline Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
+    assert(platformCacheHostBuffer != nullptr);
+    return Status(platformCacheHostBuffer(host_source, device_destination, size));
+  }
+
   inline Status terminate() {
     assert(platformTerminate != nullptr);
+    terminated = true;
     return Status(platformTerminate(terminate_data));
   }
 
   void *terminate_data = nullptr;
   void *init_data = nullptr;
 
- private:
   // Functions to be linked
   fstatus_t (*platformGetName)(char *name, size_t size) = nullptr;
   fstatus_t (*platformInit)(void *arg) = nullptr;
   fstatus_t (*platformWriteMMIO)(uint64_t offset, uint32_t value) = nullptr;
   fstatus_t (*platformReadMMIO)(uint64_t offset, uint32_t *value) = nullptr;
-  fstatus_t (*platformDeviceMalloc)(da_t *device_address, size_t size) = nullptr;
+  fstatus_t (*platformDeviceMalloc)(da_t *device_address, int64_t size) = nullptr;
   fstatus_t (*platformDeviceFree)(da_t device_address) = nullptr;
-  fstatus_t (*platformCopyHostToDevice)(ha_t host_source, da_t device_destination, uint64_t size) = nullptr;
-  fstatus_t (*platformCopyDeviceToHost)(da_t device_source, ha_t host_destination, uint64_t size) = nullptr;
-  fstatus_t (*platformPrepareHostBuffer)(ha_t host_source, da_t *device_destination, uint64_t size) = nullptr;
-  fstatus_t (*platformCacheHostBuffer)(ha_t host_source, da_t *device_destination, uint64_t size) = nullptr;
+  fstatus_t (*platformCopyHostToDevice)(const uint8_t *host_source, da_t device_destination, int64_t size) = nullptr;
+  fstatus_t (*platformCopyDeviceToHost)(const da_t device_source, uint8_t *host_destination, int64_t size) = nullptr;
+  fstatus_t (*platformPrepareHostBuffer)(const uint8_t *host_source,
+                                         da_t *device_destination,
+                                         int64_t size,
+                                         int *alloced) = nullptr;
+  fstatus_t (*platformCacheHostBuffer)(const uint8_t *host_source, da_t *device_destination, int64_t size) = nullptr;
   fstatus_t (*platformTerminate)(void *arg) = nullptr;
+
+ private:
 
   /// @brief Attempt to link all functions using a handle obtained by dlopen
   Status link(void *handle, bool quiet = true);
+
+  bool terminated = false;
 
 };
 

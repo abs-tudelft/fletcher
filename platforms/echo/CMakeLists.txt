@@ -16,6 +16,8 @@ set(HEADERS
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
+include_directories(../../common/cpp/fletcher.h)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})

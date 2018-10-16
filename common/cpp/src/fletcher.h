@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
+#pragma once
 
-#include "../platform.h"
+#include <stdint.h>
 
-int main() {
-  std::shared_ptr<fletcher::Platform> platform;
+#define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
 
-  fletcher::Platform::create(&platform).check();
+#define FLETCHER_STATUS_OK 0
+#define FLETCHER_STATUS_ERROR 1
 
-  std::cout << "Platform name: " << platform->getName() << std::endl;
+/// Fletcher Status
+typedef uint64_t fstatus_t;
 
-}
+/// Device Address type
+typedef uint64_t da_t;
+
+/// Device nullptr
+#define D_NULLPTR (da_t) 0x0
+
+/// Hardware defaults
+#define FLETCHER_REG_BUFFERS

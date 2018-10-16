@@ -14,8 +14,12 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
-#include "platform.h"
+#include <arrow/util/logging.h>
+
+#include "./platform.h"
+#include "./status.h"
 
 namespace fletcher {
 
@@ -48,17 +52,17 @@ Status Platform::create(const std::string &name, std::shared_ptr<fletcher::Platf
 
 Status Platform::link(void *handle, bool quiet) {
   if (handle) {
-    *reinterpret_cast<void **>((&platformInit))               = dlsym(handle, "platformInit");
-    *reinterpret_cast<void **>((&platformGetName))            = dlsym(handle, "platformGetName");
-    *reinterpret_cast<void **>((&platformWriteMMIO))          = dlsym(handle, "platformWriteMMIO");
-    *reinterpret_cast<void **>((&platformReadMMIO))           = dlsym(handle, "platformReadMMIO");
-    *reinterpret_cast<void **>((&platformDeviceMalloc))       = dlsym(handle, "platformDeviceMalloc");
-    *reinterpret_cast<void **>((&platformDeviceFree))         = dlsym(handle, "platformDeviceFree");
-    *reinterpret_cast<void **>((&platformCopyHostToDevice))   = dlsym(handle, "platformCopyHostToDevice");
-    *reinterpret_cast<void **>((&platformCopyDeviceToHost))   = dlsym(handle, "platformCopyDeviceToHost");
-    *reinterpret_cast<void **>((&platformPrepareHostBuffer))  = dlsym(handle, "platformPrepareHostBuffer");
-    *reinterpret_cast<void **>((&platformCacheHostBuffer))    = dlsym(handle, "platformCacheHostBuffer");
-    *reinterpret_cast<void **>((&platformTerminate))          = dlsym(handle, "platformTerminate");
+    *reinterpret_cast<void **>((&platformInit)) = dlsym(handle, "platformInit");
+    *reinterpret_cast<void **>((&platformGetName)) = dlsym(handle, "platformGetName");
+    *reinterpret_cast<void **>((&platformWriteMMIO)) = dlsym(handle, "platformWriteMMIO");
+    *reinterpret_cast<void **>((&platformReadMMIO)) = dlsym(handle, "platformReadMMIO");
+    *reinterpret_cast<void **>((&platformDeviceMalloc)) = dlsym(handle, "platformDeviceMalloc");
+    *reinterpret_cast<void **>((&platformDeviceFree)) = dlsym(handle, "platformDeviceFree");
+    *reinterpret_cast<void **>((&platformCopyHostToDevice)) = dlsym(handle, "platformCopyHostToDevice");
+    *reinterpret_cast<void **>((&platformCopyDeviceToHost)) = dlsym(handle, "platformCopyDeviceToHost");
+    *reinterpret_cast<void **>((&platformPrepareHostBuffer)) = dlsym(handle, "platformPrepareHostBuffer");
+    *reinterpret_cast<void **>((&platformCacheHostBuffer)) = dlsym(handle, "platformCacheHostBuffer");
+    *reinterpret_cast<void **>((&platformTerminate)) = dlsym(handle, "platformTerminate");
 
     char *err = dlerror();
 
@@ -71,7 +75,7 @@ Status Platform::link(void *handle, bool quiet) {
       return Status::ERROR();
     }
   } else {
-    std::cerr << "Cannot link FPGA platform functions. Invalid handle." << std::endl;
+    ARROW_LOG(ERROR) << "Cannot link FPGA platform functions. Invalid handle.";
     return Status::ERROR();
   }
 }
@@ -79,16 +83,19 @@ Status Platform::link(void *handle, bool quiet) {
 Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
   Status err = Status::ERROR();
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
+  std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    std::cerr << "[FLETCHER] Attempting to autodetect " << p << ": ";
+    logstr = "Attempting to autodetect " + p + ": ";
     err = create(p, platform);
     if (err.ok()) {
-      std::cerr << "SUCCESS." << std::endl;
+      logstr += "SUCCESS.";
+      ARROW_LOG(INFO) << logstr;
       return err;
     } else {
-      std::cerr << "FAILED." << std::endl;
+      logstr += "FAILED.";
     }
+    ARROW_LOG(INFO) << logstr;
   }
   return err;
 }

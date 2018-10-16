@@ -32,13 +32,13 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value);
 fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value);
 
 /// @brief Copy \p size bytes from host address \p host_source to device address \p device_destination.
-fstatus_t platformCopyHostToDevice(ha_t host_source, da_t device_destination, uint64_t size);
+fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size);
 
 /// @brief Copy \p size bytes from device address \p device_source to host address \p host_destination.
-fstatus_t platformCopyDeviceToHost(da_t device_source, ha_t host_destination, uint64_t size);
+fstatus_t platformCopyDeviceToHost(const da_t device_source, uint8_t *host_destination, int64_t size);
 
 /// @brief Allocate \p size bytes on the device.
-fstatus_t platformDeviceMalloc(da_t *device_address, size_t size);
+fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size);
 
 /// @brief Free the memory allocated at \p device_address.
 fstatus_t platformDeviceFree(da_t device_address);
@@ -59,9 +59,11 @@ fstatus_t platformDeviceFree(da_t device_address);
  * @param host_source           Host address of the source data.
  * @param device_destination    Pointer to store the device destination address at.
  * @param size                  Number of bytes to prepare.
+ * @param alloced               Whether the buffer caused a new allocation on the device, that should be freed after
+ *                              usage (0 = not alloced, 1 = alloced).
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformPrepareHostBuffer(ha_t host_source, da_t *device_destination, uint64_t size);
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced);
 
 /**
  * @brief Explicitly cache \p size bytes from \p host_source on device on-board memory.
@@ -75,7 +77,7 @@ fstatus_t platformPrepareHostBuffer(ha_t host_source, da_t *device_destination, 
  * @param size                  Number of bytes to prepare.
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformCacheHostBuffer(ha_t host_source, da_t *device_destination, uint64_t size);
+fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size);
 
 /**
  * @brief Terminate the platform.
