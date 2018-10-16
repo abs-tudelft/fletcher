@@ -44,7 +44,7 @@ Status Platform::create(const std::string &name, std::shared_ptr<fletcher::Platf
     // Could not open shared library
     platform = nullptr;
     if (!quiet) {
-      std::cerr << dlerror() << std::endl;
+      ARROW_LOG(ERROR) << dlerror();
     }
     return Status::ERROR();
   }
@@ -70,7 +70,7 @@ Status Platform::link(void *handle, bool quiet) {
       return Status::OK();
     } else {
       if (!quiet) {
-        std::cerr << err << std::endl;
+        ARROW_LOG(ERROR) << err;
       }
       return Status::ERROR();
     }
@@ -86,14 +86,14 @@ Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    logstr = "Attempting to autodetect " + p + ": ";
+    logstr = "Searching for " + p + ": ";
     err = create(p, platform);
     if (err.ok()) {
-      logstr += "SUCCESS.";
+      logstr += "Found.";
       ARROW_LOG(INFO) << logstr;
       return err;
     } else {
-      logstr += "FAILED.";
+      logstr += "Not found.";
     }
     ARROW_LOG(INFO) << logstr;
   }

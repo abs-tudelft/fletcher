@@ -13,6 +13,7 @@ set(SOURCES
 
 set(HEADERS
         src/common/arrow-utils.h
-        src/common/hex-view.h)
+        src/common/hex-view.h
+        src/common/timer.h)
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})

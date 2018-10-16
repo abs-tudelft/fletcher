@@ -14,13 +14,29 @@
 
 #pragma once
 
-#include "fletcher/common.h"
-#include "FPGAPlatform.h"
-#include "logging.h"
-#include "UserCore.h"
+#include <cstdlib>
 
-#include "aws/aws.h"
-#include "snap/snap.h"
+#include "./fletcher.h"
 
-// The boilerplate code for FPGA platform implementation
-#include "echo/echo.h"
+namespace fletcher {
+
+struct Status {
+  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
+
+  Status() = default;
+
+  explicit Status(fstatus_t val) : val(val) {}
+
+  bool ok() { return val == FLETCHER_STATUS_OK; }
+
+  /// @brief Exit when fail
+  void ewf() {
+    if (!ok()) { exit(EXIT_FAILURE); }
+  }
+
+  static Status OK() { return Status(FLETCHER_STATUS_OK); }
+
+  static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
+};
+
+}

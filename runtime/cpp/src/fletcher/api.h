@@ -14,25 +14,7 @@
 
 #pragma once
 
-#include <cstdlib>
-
-#include "./fletcher.h"
-
-struct Status {
-  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
-
-  Status() = default;
-
-  explicit Status(fstatus_t val) : val(val) {}
-
-  bool ok() { return val == FLETCHER_STATUS_OK; }
-
-  /// @brief Exit when fail
-  void ewf() {
-    if (!ok()) { exit(EXIT_FAILURE); }
-  }
-
-  static Status OK() { return Status(FLETCHER_STATUS_OK); }
-
-  static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
-};
+#include "./context.h"
+#include "./platform.h"
+#include "./status.h"
+#include "./usercore.h"

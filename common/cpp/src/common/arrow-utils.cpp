@@ -24,7 +24,7 @@
 namespace fletcher {
 namespace common {
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData>& array_data) {
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data) {
   for (const auto &buf : array_data->buffers) {
     auto addr = buf.get();
     if (addr != nullptr) {
@@ -36,7 +36,7 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
   }
 }
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array>& array) {
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array) {
   // Because Arrow buffer order seems to be by convention and not by specification, handle these special cases:
   // This is to reverse the order of offset and values buffer to correspond with the hardware implementation.
   if (array->type() == arrow::binary()) {
@@ -56,6 +56,67 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
     }
     for (const auto &child : array->data()->child_data) {
       flattenArrayBuffers(buffers, child);
+    }
+  }
+}
+
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+                         const std::shared_ptr<arrow::ArrayData> &array_data,
+                         const std::shared_ptr<arrow::Field> &field) {
+  size_t b = 0;
+  if (!field->nullable()) {
+    b = 1;
+  } else if (array_data->null_count == 0) {
+    buffers->push_back(nullptr);
+    b = 1;
+  }
+  for (; b < array_data->buffers.size(); b++) {
+    auto addr = array_data->buffers[b].get();
+    if (addr != nullptr) {
+      buffers->push_back(addr);
+    }
+    for (size_t c = 0; c < array_data->child_data.size(); c++) {
+      flattenArrayBuffers(buffers, array_data->child_data[c], field->type()->child(static_cast<int>(c)));
+    }
+  }
+}
+
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+                         const std::shared_ptr<arrow::Array> &array,
+                         const std::shared_ptr<arrow::Field> &field) {
+  if (field->type()->id() != array->type()->id()) {
+    throw std::runtime_error("Incompatible schema.");
+  }
+  if (array->type() == arrow::binary()) {
+    auto ba = std::dynamic_pointer_cast<arrow::BinaryArray>(array);
+    if (field->nullable() && (ba->null_count() == 0)) {
+      buffers->push_back(nullptr);
+    }
+    buffers->push_back(ba->value_data().get());
+    buffers->push_back(ba->value_offsets().get());
+  } else if (array->type() == arrow::utf8()) {
+    auto sa = std::dynamic_pointer_cast<arrow::StringArray>(array);
+    if (field->nullable() && (sa->null_count() == 0)) {
+      buffers->push_back(nullptr);
+    }
+    buffers->push_back(sa->value_data().get());
+    buffers->push_back(sa->value_offsets().get());
+  } else {
+    size_t b = 0;
+    if (!field->nullable()) {
+      b = 1;
+    } else if (array->null_count() == 0) {
+      buffers->push_back(nullptr);
+      b = 1;
+    }
+    for (; b < array->data()->buffers.size(); b++) {
+      auto addr = array->data()->buffers[b].get();
+      if (addr != nullptr) {
+        buffers->push_back(addr);
+      }
+    }
+    for (size_t c = 0; c < array->data()->child_data.size(); c++) {
+      flattenArrayBuffers(buffers, array->data()->child_data[c], field->type()->child(static_cast<int>(c)));
     }
   }
 }

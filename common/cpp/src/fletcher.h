@@ -27,8 +27,31 @@ typedef uint64_t fstatus_t;
 /// Device Address type
 typedef uint64_t da_t;
 
+/// Convenience union to convert addresses to a high and low part
+typedef union {
+  struct {
+    uint32_t hi;
+    uint32_t lo;
+  };
+  da_t full;
+} dau_t;
+
 /// Device nullptr
 #define D_NULLPTR (da_t) 0x0
 
 /// Hardware defaults
-#define FLETCHER_REG_BUFFERS
+#define FLETCHER_REG_CONTROL        0
+#define FLETCHER_REG_STATUS         1
+#define FLETCHER_REG_RETURN0        2
+#define FLETCHER_REG_RETURN1        3
+#define FLETCHER_REG_FIRSTIDX       4
+#define FLETCHER_REG_LASTIDX        5
+#define FLETCHER_REG_BUFFER_OFFSET  6
+
+#define FLETCHER_REG_CONTROL_START  0x0
+#define FLETCHER_REG_CONTROL_STOP   0x1
+#define FLETCHER_REG_CONTROL_RESET  0x2
+
+#define FLETCHER_REG_STATUS_IDLE    0
+#define FLETCHER_REG_STATUS_BUSY    1
+#define FLETCHER_REG_STATUS_DONE    2

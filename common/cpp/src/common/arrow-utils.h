@@ -23,8 +23,44 @@
 namespace fletcher {
 namespace common {
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array>& array);
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData>& array_data);
+/**
+ * @brief Append a vector of buffers with the buffers contained within an Arrow::array
+ * @param buffers   The buffers to append to
+ * @param array     The Arrow::array to append buffers from
+ */
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array);
+
+/**
+ * @brief Append a vector of buffers with the buffers contained within an Arrow::ArrayData
+ * @param buffers   The buffers to append to
+ * @param array     The Arrow::ArrayData to append buffers from
+ */
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data);
+
+/**
+ * @brief Given an arrow::Field, and corresponding arrow::Array, append the buffers of the array.
+ *
+ * This is useful in case the Arrow implementation allocated a validity bitmap buffer even though the field (or any
+ * child) was defined to be non-nullable. In this case, the flattened buffers will not contain a validity bitmap buffer.
+ *
+ * @param buffers   The buffers to append to
+ * @param array     The Arrow::Array to append buffers from
+ * @param field     The arrow::Field from a schema.
+ */
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+                         const std::shared_ptr<arrow::Array> &array,
+                         const std::shared_ptr<arrow::Field> &field);
+
+/**
+ * @brief Given an arrow::Field, and corresponding arrow::ArrayData, append the buffers of the array.
+ *
+ * @param buffers   The buffers to append to
+ * @param array     The Arrow::ArrayData to append buffers from
+ * @param field     The arrow::Field from a schema.
+ */
+void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+                         const std::shared_ptr<arrow::ArrayData> &array_data,
+                         const std::shared_ptr<arrow::Field> &field);
 
 }  // namespace common
 }  // namespace fletcher
