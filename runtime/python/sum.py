@@ -26,9 +26,9 @@ def create_table(num_rows):
     int_dist = np.random.randint(0, element_max, num_rows)
 
     # Force creation of null bitmap because Fletcher requires it to not be null
-    num_array = pa.array(int_dist, mask=[False]*len(int_dist))
+    num_array = pa.array(int_dist)
 
-    column_field = pa.field("weight", pa.int64())
+    column_field = pa.field("weight", pa.int64(), nullable=False)
     schema = pa.schema([column_field])
 
     return pa.Table.from_arrays([num_array], schema=schema)
@@ -51,9 +51,6 @@ def arrow_column_sum_fpga(table, platform_type):
         print("Unsupported platform type " + str(platform_type) + ". Options: 0, 1, 2.", file=sys.stderr)
         sys.exit(1)
 
-    field = table.column(0).field
-    print(field.nullable)
-
     start_time = timeit.default_timer()
     platform.prepare_column_chunks(table.column(0))
     stop_time = timeit.default_timer()
@@ -61,7 +58,6 @@ def arrow_column_sum_fpga(table, platform_type):
     print("FPGA copy time " + str(stop_time - start_time) + " seconds")
 
     uc = pf.UserCore(platform)
-
     uc.reset()
 
     last_index = table.num_rows

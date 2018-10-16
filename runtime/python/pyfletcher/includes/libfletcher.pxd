@@ -25,6 +25,11 @@ from libcpp cimport bool as cpp_bool
 from pyarrow.lib cimport *
 
 
+cdef extern from "<memory>":
+    shared_ptr[CEchoPlatform] base_to_echo "std::static_pointer_cast<fletcher::EchoPlatform>" (shared_ptr[CFPGAPlatform])
+    #shared_ptr[CAWSPlatform] base_to_aws "std::static_pointer_cast<fletcher::AWSPlatform>" (shared_ptr[CFPGAPlatform])
+    #shared_ptr[CSNAPPlatform] base_to_snap "std::static_pointer_cast<fletcher::SNAPPlatform>" (shared_ptr[CFPGAPlatform])
+
 cdef extern from "fletcher/fletcher.h" namespace "fletcher" nogil:
     ctypedef unsigned long long fa_t
     ctypedef unsigned int fr_t
@@ -39,6 +44,16 @@ cdef extern from "fletcher/fletcher.h" namespace "fletcher" nogil:
 
     cdef cppclass CEchoPlatform" fletcher::EchoPlatform"(CFPGAPlatform):
         CEchoPlatform() except +
+
+
+    #cdef cppclass CAWSPlatform" fletcher::AWSPlatform"(CFPGAPlatform):
+    #    CAWSPlatform(int slot_id, int pf_id, int bar_id) except +
+    #    void set_alignment(uint64_t alignment)
+
+    #cdef cppclass CSNAPPlatform" fletcher::SNAPPlatform"(CFPGAPlatform):
+    #    CSNAPPlatform(int card_no, uint32_t action_type, cpp_bool sim) except +
+    #    void set_alignment(uint64_t alignment)
+
 
     ctypedef enum uc_stat:
         FAILURE,

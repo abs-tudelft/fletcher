@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cdef extern from "<memory>":
-    shared_ptr[CEchoPlatform] base_to_echo "std::static_pointer_cast<fletcher::EchoPlatform>" (shared_ptr[CFPGAPlatform])
 
 # Todo: implement check status for write/read_mmio (?)
 cdef class FPGAPlatform:
@@ -35,7 +33,7 @@ cdef class FPGAPlatform:
     def name(self):
         return self.fpgaplatform.get().name()
 
-    def write_mmio(self, unsigned long long offset, fr_t value):
+    def write_mmio(self, uint64_t offset, fr_t value):
         self.fpgaplatform.get().write_mmio(offset, value)
 
     cdef _read_mmio(self, uint64_t offset):
@@ -44,11 +42,12 @@ cdef class FPGAPlatform:
 
         return dest
 
-    def read_mmio(self, unsigned long long offset):
+    def read_mmio(self, uint64_t offset):
         return self._read_mmio(offset)
 
     def good(self):
         return self.fpgaplatform.get().good()
+
 
 cdef class EchoPlatform(FPGAPlatform):
     cdef:
@@ -61,3 +60,35 @@ cdef class EchoPlatform(FPGAPlatform):
 
     def __init__(self, *args, **kwargs):
         pass
+
+
+#cdef class AWSPlatform(FPGAPlatform):
+#    cdef:
+#        shared_ptr[CAWSPlatform] awsplatform
+#
+#    def __cinit__(self, int slot_id=0, int pf_id=0, int bar_id=1):
+#        if type(self) is AWSPlatform:
+#            self.fpgaplatform.reset(new CAWSPlatform(slot_id, pf_id, bar_id))
+#            self.awsplatform = base_to_aws(self.fpgaplatform)
+#
+#    def __init__(self, int slot_id=0, int pf_id=0, int bar_id=0):
+#        pass
+#
+#    def set_alignment(self, uint64_t alignment):
+#        return self.awsplatform.get().set_alignment(alignment)
+#
+#
+#cdef class SNAPPlatform(FPGAPlatform):
+#    cdef:
+#        shared_ptr[CSNAPPlatform] snapplatform
+#
+#    def __cinit__(self, int card_no=0, uint32_t action_type=1, cpp_bool sim=False):
+#        if type(self) is SNAPPlatform:
+#            self.fpgaplatform.reset(new CSNAPPlatform(card_no, action_type, sim))
+#            self.snapplatform = base_to_snap(self.fpgaplatform)
+#
+#    def __init__(self, card_no=0, action_type=1, sim=False):
+#        pass
+#
+#    def set_alignment(self, uint64_t alignment):
+#        return self.SNAPplatform.get().set_alignment(alignment)

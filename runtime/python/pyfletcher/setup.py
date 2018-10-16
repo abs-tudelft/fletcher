@@ -47,3 +47,5 @@ for ext in ext_modules:
 setup(
     ext_modules=ext_modules,
 )
+
+#https://github.com/pypa/manylinux

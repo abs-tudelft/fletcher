@@ -28,7 +28,7 @@ testarray = pa.array(int_dist, mask=[False]*len(int_dist))
 testcolumn = pa.column("hello", testarray)
 print(testarray.buffers())
 
-echo = pf.EchoPlatform()
+echo = pf.AWSPlatform()
 
 echo.prepare_column_chunks(testcolumn)
 

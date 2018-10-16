@@ -25,7 +25,7 @@ cdef class UserCore:
     def reset(self):
         self.usercore.get().reset()
 
-    def set_range(self, unsigned int first, unsigned int last):
+    def set_range(self, uint32_t first, uint32_t last):
         self.usercore.get().set_range(first, last)
 
     # Todo: To be implemented
