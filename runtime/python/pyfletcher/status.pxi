@@ -11,3 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# Todo: Either complete or remove
+cdef class PyStatus:
+    cdef:
+        Status status
+
+    def __cinit__(self):
+        pass
+
+    def __init__(self):
+        pass
+
+    def create(self, fstatus_t val):
+        self.status = Status(val)
+
+    def ok(self):
+        return self.status.ok()
+
+    @property
+    def val(self):
+        return self.status.val
+
+    def OK(self):
+        self.status = self.status.OK()
+
+    def ERROR(self):
+        self.status = self.status.ERROR()

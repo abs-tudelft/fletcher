@@ -15,12 +15,3 @@
 import pyarrow as pa
 import pyfletcher as pf
 import numpy as np
-
-teststatus = pf.PyStatus()
-
-teststatus.create(0)
-
-print(teststatus.val)
-
-print(teststatus.ok())
-

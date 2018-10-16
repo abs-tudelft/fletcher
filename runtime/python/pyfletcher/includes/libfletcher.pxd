@@ -24,21 +24,42 @@ from libcpp cimport bool as cpp_bool
 
 from pyarrow.lib cimport *
 
-#Todo: Remove temporary relative imports
 cdef extern from "fletcher.h" nogil:
     ctypedef unsigned long long fstatus_t
     ctypedef unsigned long long da_t
 
-cdef extern from "../../../cpp/src/status.h" nogil:
-    cdef struct CStatus"Status":
+cdef extern from "fletcher/status.h" namespace "fletcher" nogil:
+    cdef cppclass Status:
         fstatus_t val
-        CStatus() except +
-        CStatus(fstatus_t val) except +
+        Status() except +
+        Status(fstatus_t val) except +
         cpp_bool ok()
         void ewf()
-        CStatus OK()
-        CStatus ERROR()
+        Status OK()
+        Status ERROR()
 
-cdef extern from "../../../cpp/src/platform.h" namespace "fletcher" nogil:
+cdef extern from "fletcher/platform.h" namespace "fletcher" nogil:
     cdef cppclass CPlatform" fletcher::Platform":
+        Status create(const cpp_string &name, shared_ptr[CPlatform] *platform, cpp_bool quiet)
+        Status create(shared_ptr[CPlatform] *platform)
+        cpp_string getName()
+        Status init()
+        Status writeMMIO(uint64_t offset, uint32_t value)
+        Status readMMIO(uint64_t offset, uint32_t *value)
+        Status deviceMalloc(da_t *device_address, size_t size)
+        Status deviceFree(da_t device_address)
+        Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
+        Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size)
+        Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, cpp_bool *alloced)
+        Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size)
+        Status terminate()
+
+cdef extern from "fletcher/context.h" namespace "fletcher" nogil:
+    cdef cppclass CContext" fletcher::Context":
+        CContext(shared_ptr[CPlatform] platform)
+        Status Make(shared_ptr[CContext] *context, shared_ptr[CPlatform] platform)
+        Status queueArray(const shared_ptr[CArray] &array, cpp_bool cache)
+
+cdef extern from "fletcher/usercore.h" namespace "fletcher" nogil:
+    cdef cppclass CUserCore" fletcher::UserCore":
         pass
