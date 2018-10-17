@@ -21,11 +21,14 @@
 #define FLETCHER_STATUS_OK 0
 #define FLETCHER_STATUS_ERROR 1
 
-/// Fletcher Status
+/// Status for function return values
 typedef uint64_t fstatus_t;
 
 /// Device Address type
 typedef uint64_t da_t;
+
+/// Register type
+typedef uint32_t freg_t;
 
 /// Convenience union to convert addresses to a high and low part
 typedef union {
