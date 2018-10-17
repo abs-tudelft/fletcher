@@ -48,7 +48,6 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
 
         cpp_string getName()
         Status init()
-        Status init(shared_ptr[CPlatform] *platform)
         Status writeMMIO(uint64_t offset, uint32_t value)
         Status readMMIO(uint64_t offset, uint32_t *value)
         Status deviceMalloc(da_t *device_address, size_t size)

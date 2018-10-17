@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
+
+# Todo: Have copy_host_to_device and prepare_host_buffer accept arrow arrays (?)
+
 cdef class Platform:
     cdef:
         shared_ptr[CPlatform] platform
@@ -27,3 +31,73 @@ cdef class Platform:
             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
         else:
             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
+
+    def get_name(self):
+        return self.platform.get().getName().decode("utf-8")
+
+    def init(self):
+        check_fletcher_status(self.platform.get().init())
+
+    def write_mmio(self, uint64_t offset, uint32_t value):
+        check_fletcher_status(self.platform.get().writeMMIO(offset, value))
+
+    def read_mmio(self, uint64_t offset):
+        cdef uint32_t value
+        check_fletcher_status(self.platform.get().readMMIO(offset, &value))
+
+        return value
+
+    def device_malloc(self, size_t size):
+        cdef da_t device_address
+        check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
+
+        return device_address
+
+    def device_free(self, da_t device_address):
+        check_fletcher_status(self.platform.get().deviceFree(device_address))
+
+    def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
+        #Accepts bytes-like objects for host_bytes
+        cdef const uint8_t[:] host_source_view = host_bytes
+        cdef const uint8_t *host_source = &host_source_view[0]
+
+        check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
+
+    # Todo: Discuss if numpy array is the best return type
+    def copy_device_to_host(self, da_t device_source, uint64_t size):
+        buffer = np.zeros((size,), dtype=np.uint8)
+        cdef const uint8_t[:] buffer_view = buffer
+        cdef const uint8_t *host_destination = &buffer_view[0]
+
+        check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
+
+        return buffer
+
+    def prepare_host_buffer(self, host_bytes, int64_t size):
+        #Accepts bytes-like objects for host_bytes
+        cdef const uint8_t[:] host_source_view = host_bytes
+        cdef const uint8_t *host_source = &host_source_view[0]
+
+        cdef da_t device_destination
+        cdef cpp_bool alloced
+
+        check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))
+
+        return device_destination, alloced
+
+
+    def cache_host_buffer(self, host_bytes, int64_t size):
+        #Accepts bytes-like objects for host_bytes
+        cdef const uint8_t[:] host_source_view = host_bytes
+        cdef const uint8_t *host_source = &host_source_view[0]
+
+        cdef da_t device_destination
+
+        check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))
+
+        return device_destination
+
+    def terminate(self):
+        check_fletcher_status(self.platform.get().terminate())
+
+

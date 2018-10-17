@@ -16,6 +16,41 @@ import pyarrow as pa
 import pyfletcher as pf
 import numpy as np
 
-testplatform = pf.Platform()
+def test_platform():
+    # Create
+    platform = pf.Platform()
 
-print("Hello")
+    # Init
+    platform.init()
+
+    # Info
+    print("Platform name: " + platform.get_name())
+
+    # Malloc/free
+    address = platform.device_malloc(1024)
+    platform.device_free(address)
+
+    # MMIO
+    platform.write_mmio(0, 0)
+    val = platform.read_mmio(0)
+
+    # Buffers
+    size = 7
+    host_bytes = bytes([1, 2, 3, 4, 5, 6, 7])
+    host_bytearray = bytearray([1, 2, 3, 4, 5, 6, 7])
+    host_nparray = np.array([1, 2, 3, 4, 5, 6, 7], dtype=np.uint8)
+
+    platform.copy_host_to_device(host_bytes, 0, size)
+    platform.copy_host_to_device(host_bytearray, 7, size)
+    platform.copy_host_to_device(host_nparray, 14, size)
+
+    buffer = platform.copy_device_to_host(0, 7)
+
+    platform.terminate()
+
+    return True
+
+if __name__ == "__main__":
+    test_platform()
+
+    print("Reaching end of program")
