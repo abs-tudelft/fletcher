@@ -838,6 +838,7 @@ static const char *__pyx_f[] = {
   "stringsource",
   "error.pxi",
   "status.pxi",
+  "public-api.pxi",
   "platform.pxi",
   "usercore.pxi",
   "lib.pyx",
@@ -1020,8 +1021,8 @@ struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 struct __pyx_opt_args_3lib_8Platform__create;
 
-/* "platform.pxi":29
- *         #                .format(self.__class__.__name__))
+/* "platform.pxi":32
+ *         self.platform = platform
  * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
  *         if not name:
@@ -1790,10 +1791,12 @@ struct __pyx_obj_3lib_Platform {
  * 
  * cdef class UserCore:             # <<<<<<<<<<<<<<
  *     cdef:
- *         shared_ptr[CUserCore] usercore
+ *         shared_ptr[CPlatform] ucplatform
  */
 struct __pyx_obj_3lib_UserCore {
   PyObject_HEAD
+  struct __pyx_vtabstruct_3lib_UserCore *__pyx_vtab;
+  std::shared_ptr< fletcher::Platform>  ucplatform;
   std::shared_ptr< fletcher::UserCore>  usercore;
 };
 
@@ -2624,9 +2627,24 @@ static struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile *__pyx_vtabptr_7pyarrow_
  */
 
 struct __pyx_vtabstruct_3lib_Platform {
+  PyObject *(*from_pointer)(struct __pyx_obj_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &);
   PyObject *(*_create)(struct __pyx_obj_3lib_Platform *, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args);
 };
 static struct __pyx_vtabstruct_3lib_Platform *__pyx_vtabptr_3lib_Platform;
+
+
+/* "usercore.pxi":15
+ * # limitations under the License.
+ * 
+ * cdef class UserCore:             # <<<<<<<<<<<<<<
+ *     cdef:
+ *         shared_ptr[CPlatform] ucplatform
+ */
+
+struct __pyx_vtabstruct_3lib_UserCore {
+  PyObject *(*from_pointer)(struct __pyx_obj_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &);
+};
+static struct __pyx_vtabstruct_3lib_UserCore *__pyx_vtabptr_3lib_UserCore;
 
 
 /* "View.MemoryView":104
@@ -3338,6 +3356,9 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn_
 /* CheckBinaryVersion.proto */
 static int __Pyx_check_binary_version(void);
 
+/* FunctionExport.proto */
+static int __Pyx_ExportFunction(const char *name, void (*f)(void), const char *sig);
+
 /* PyIdentifierFromString.proto */
 #if !defined(__Pyx_PyIdentifier_FromString)
 #if PY_MAJOR_VERSION < 3
@@ -3359,7 +3380,9 @@ static int __Pyx_ImportFunction(PyObject *module, const char *funcname, void (**
 /* InitStrings.proto */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
+static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform); /* proto*/
 static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *__pyx_v_self, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args); /* proto*/
+static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore); /* proto*/
 static PyObject *__pyx_array_get_memview(struct __pyx_array_obj *__pyx_v_self); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
@@ -3574,6 +3597,12 @@ static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
 static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status); /*proto*/
+__PYX_EXTERN_C int pyfletcher_is_usercore(PyObject *); /*proto*/
+__PYX_EXTERN_C PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &); /*proto*/
+__PYX_EXTERN_C std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *); /*proto*/
+__PYX_EXTERN_C int pyfletcher_is_platform(PyObject *); /*proto*/
+__PYX_EXTERN_C PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &); /*proto*/
+__PYX_EXTERN_C std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *); /*proto*/
 static std::string __pyx_convert_string_from_py_std__in_string(PyObject *); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyObject_string_to_py_std__in_string(std::string const &); /*proto*/
 static CYTHON_INLINE PyObject *__pyx_convert_PyUnicode_string_to_py_std__in_string(std::string const &); /*proto*/
@@ -3868,13 +3897,14 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
 static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_18__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_20__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_18platform(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_20__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_22__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array_2__getbuffer__(struct __pyx_array_obj *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_array___pyx_pf_15View_dot_MemoryView_5array_4__dealloc__(struct __pyx_array_obj *__pyx_v_self); /* proto */
@@ -4514,6 +4544,386 @@ static PyObject *__pyx_pf_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED str
   return __pyx_r;
 }
 
+/* "public-api.pxi":16
+ * 
+ * 
+ * cdef public api bint pyfletcher_is_usercore(object usercore):             # <<<<<<<<<<<<<<
+ *     return isinstance(usercore, UserCore)
+ * 
+ */
+
+int pyfletcher_is_usercore(PyObject *__pyx_v_usercore) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  __Pyx_RefNannySetupContext("pyfletcher_is_usercore", 0);
+
+  /* "public-api.pxi":17
+ * 
+ * cdef public api bint pyfletcher_is_usercore(object usercore):
+ *     return isinstance(usercore, UserCore)             # <<<<<<<<<<<<<<
+ * 
+ * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
+ */
+  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_usercore, __pyx_ptype_3lib_UserCore); 
+  __pyx_r = __pyx_t_1;
+  goto __pyx_L0;
+
+  /* "public-api.pxi":16
+ * 
+ * 
+ * cdef public api bint pyfletcher_is_usercore(object usercore):             # <<<<<<<<<<<<<<
+ *     return isinstance(usercore, UserCore)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "public-api.pxi":19
+ *     return isinstance(usercore, UserCore)
+ * 
+ * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):             # <<<<<<<<<<<<<<
+ *     cdef UserCore result = UserCore.__new__(UserCore)
+ *     result.from_pointer(uc)
+ */
+
+PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &__pyx_v_uc) {
+  struct __pyx_obj_3lib_UserCore *__pyx_v_result = 0;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("pyfletcher_wrap_usercore", 0);
+
+  /* "public-api.pxi":20
+ * 
+ * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
+ *     cdef UserCore result = UserCore.__new__(UserCore)             # <<<<<<<<<<<<<<
+ *     result.from_pointer(uc)
+ *     return result
+ */
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_3lib_UserCore(((PyTypeObject *)__pyx_ptype_3lib_UserCore), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 20, __pyx_L1_error)
+  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+  __pyx_v_result = ((struct __pyx_obj_3lib_UserCore *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "public-api.pxi":21
+ * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
+ *     cdef UserCore result = UserCore.__new__(UserCore)
+ *     result.from_pointer(uc)             # <<<<<<<<<<<<<<
+ *     return result
+ * 
+ */
+  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_UserCore *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_uc); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 21, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "public-api.pxi":22
+ *     cdef UserCore result = UserCore.__new__(UserCore)
+ *     result.from_pointer(uc)
+ *     return result             # <<<<<<<<<<<<<<
+ * 
+ * cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(((PyObject *)__pyx_v_result));
+  __pyx_r = ((PyObject *)__pyx_v_result);
+  goto __pyx_L0;
+
+  /* "public-api.pxi":19
+ *     return isinstance(usercore, UserCore)
+ * 
+ * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):             # <<<<<<<<<<<<<<
+ *     cdef UserCore result = UserCore.__new__(UserCore)
+ *     result.from_pointer(uc)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lib.pyfletcher_wrap_usercore", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_result);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "public-api.pxi":24
+ *     return result
+ * 
+ * cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):             # <<<<<<<<<<<<<<
+ *     cdef UserCore uc
+ * 
+ */
+
+std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx_v_usercore) {
+  struct __pyx_obj_3lib_UserCore *__pyx_v_uc = 0;
+  std::shared_ptr< fletcher::UserCore>  __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  __Pyx_RefNannySetupContext("pyfletcher_unwrap_usercore", 0);
+
+  /* "public-api.pxi":27
+ *     cdef UserCore uc
+ * 
+ *     if pyfletcher_is_usercore(usercore):             # <<<<<<<<<<<<<<
+ *         uc = <UserCore>(usercore)
+ *         return uc.usercore
+ */
+  __pyx_t_1 = (pyfletcher_is_usercore(__pyx_v_usercore) != 0);
+  if (__pyx_t_1) {
+
+    /* "public-api.pxi":28
+ * 
+ *     if pyfletcher_is_usercore(usercore):
+ *         uc = <UserCore>(usercore)             # <<<<<<<<<<<<<<
+ *         return uc.usercore
+ * 
+ */
+    __pyx_t_2 = __pyx_v_usercore;
+    __Pyx_INCREF(__pyx_t_2);
+    __pyx_v_uc = ((struct __pyx_obj_3lib_UserCore *)__pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "public-api.pxi":29
+ *     if pyfletcher_is_usercore(usercore):
+ *         uc = <UserCore>(usercore)
+ *         return uc.usercore             # <<<<<<<<<<<<<<
+ * 
+ *     return shared_ptr[CUserCore]()
+ */
+    __pyx_r = __pyx_v_uc->usercore;
+    goto __pyx_L0;
+
+    /* "public-api.pxi":27
+ *     cdef UserCore uc
+ * 
+ *     if pyfletcher_is_usercore(usercore):             # <<<<<<<<<<<<<<
+ *         uc = <UserCore>(usercore)
+ *         return uc.usercore
+ */
+  }
+
+  /* "public-api.pxi":31
+ *         return uc.usercore
+ * 
+ *     return shared_ptr[CUserCore]()             # <<<<<<<<<<<<<<
+ * 
+ * cdef public api bint pyfletcher_is_platform(object platform):
+ */
+  __pyx_r = std::shared_ptr< fletcher::UserCore> ();
+  goto __pyx_L0;
+
+  /* "public-api.pxi":24
+ *     return result
+ * 
+ * cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):             # <<<<<<<<<<<<<<
+ *     cdef UserCore uc
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_uc);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "public-api.pxi":33
+ *     return shared_ptr[CUserCore]()
+ * 
+ * cdef public api bint pyfletcher_is_platform(object platform):             # <<<<<<<<<<<<<<
+ *     return isinstance(platform, Platform)
+ * 
+ */
+
+int pyfletcher_is_platform(PyObject *__pyx_v_platform) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  __Pyx_RefNannySetupContext("pyfletcher_is_platform", 0);
+
+  /* "public-api.pxi":34
+ * 
+ * cdef public api bint pyfletcher_is_platform(object platform):
+ *     return isinstance(platform, Platform)             # <<<<<<<<<<<<<<
+ * 
+ * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
+ */
+  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_platform, __pyx_ptype_3lib_Platform); 
+  __pyx_r = __pyx_t_1;
+  goto __pyx_L0;
+
+  /* "public-api.pxi":33
+ *     return shared_ptr[CUserCore]()
+ * 
+ * cdef public api bint pyfletcher_is_platform(object platform):             # <<<<<<<<<<<<<<
+ *     return isinstance(platform, Platform)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "public-api.pxi":36
+ *     return isinstance(platform, Platform)
+ * 
+ * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):             # <<<<<<<<<<<<<<
+ *     cdef Platform result = Platform.__new__(Platform)
+ *     result.from_pointer(plat)
+ */
+
+PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &__pyx_v_plat) {
+  struct __pyx_obj_3lib_Platform *__pyx_v_result = 0;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("pyfletcher_wrap_platform", 0);
+
+  /* "public-api.pxi":37
+ * 
+ * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
+ *     cdef Platform result = Platform.__new__(Platform)             # <<<<<<<<<<<<<<
+ *     result.from_pointer(plat)
+ *     return result
+ */
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_3lib_Platform(((PyTypeObject *)__pyx_ptype_3lib_Platform), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 37, __pyx_L1_error)
+  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+  __pyx_v_result = ((struct __pyx_obj_3lib_Platform *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "public-api.pxi":38
+ * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
+ *     cdef Platform result = Platform.__new__(Platform)
+ *     result.from_pointer(plat)             # <<<<<<<<<<<<<<
+ *     return result
+ * 
+ */
+  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Platform *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_plat); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 38, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "public-api.pxi":39
+ *     cdef Platform result = Platform.__new__(Platform)
+ *     result.from_pointer(plat)
+ *     return result             # <<<<<<<<<<<<<<
+ * 
+ * cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(((PyObject *)__pyx_v_result));
+  __pyx_r = ((PyObject *)__pyx_v_result);
+  goto __pyx_L0;
+
+  /* "public-api.pxi":36
+ *     return isinstance(platform, Platform)
+ * 
+ * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):             # <<<<<<<<<<<<<<
+ *     cdef Platform result = Platform.__new__(Platform)
+ *     result.from_pointer(plat)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lib.pyfletcher_wrap_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_result);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "public-api.pxi":41
+ *     return result
+ * 
+ * cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform):             # <<<<<<<<<<<<<<
+ *     cdef Platform plat
+ * 
+ */
+
+std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx_v_platform) {
+  struct __pyx_obj_3lib_Platform *__pyx_v_plat = 0;
+  std::shared_ptr< fletcher::Platform>  __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  __Pyx_RefNannySetupContext("pyfletcher_unwrap_platform", 0);
+
+  /* "public-api.pxi":44
+ *     cdef Platform plat
+ * 
+ *     if pyfletcher_is_platform(platform):             # <<<<<<<<<<<<<<
+ *         plat = <Platform>(platform)
+ *         return plat.platform
+ */
+  __pyx_t_1 = (pyfletcher_is_platform(__pyx_v_platform) != 0);
+  if (__pyx_t_1) {
+
+    /* "public-api.pxi":45
+ * 
+ *     if pyfletcher_is_platform(platform):
+ *         plat = <Platform>(platform)             # <<<<<<<<<<<<<<
+ *         return plat.platform
+ * 
+ */
+    __pyx_t_2 = __pyx_v_platform;
+    __Pyx_INCREF(__pyx_t_2);
+    __pyx_v_plat = ((struct __pyx_obj_3lib_Platform *)__pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "public-api.pxi":46
+ *     if pyfletcher_is_platform(platform):
+ *         plat = <Platform>(platform)
+ *         return plat.platform             # <<<<<<<<<<<<<<
+ * 
+ *     return shared_ptr[CPlatform]()
+ */
+    __pyx_r = __pyx_v_plat->platform;
+    goto __pyx_L0;
+
+    /* "public-api.pxi":44
+ *     cdef Platform plat
+ * 
+ *     if pyfletcher_is_platform(platform):             # <<<<<<<<<<<<<<
+ *         plat = <Platform>(platform)
+ *         return plat.platform
+ */
+  }
+
+  /* "public-api.pxi":48
+ *         return plat.platform
+ * 
+ *     return shared_ptr[CPlatform]()             # <<<<<<<<<<<<<<
+ */
+  __pyx_r = std::shared_ptr< fletcher::Platform> ();
+  goto __pyx_L0;
+
+  /* "public-api.pxi":41
+ *     return result
+ * 
+ * cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform):             # <<<<<<<<<<<<<<
+ *     cdef Platform plat
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_plat);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
 /* "platform.pxi":23
  *         shared_ptr[CPlatform] platform
  * 
@@ -4561,7 +4971,7 @@ static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(3, 23, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(4, 23, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4578,13 +4988,13 @@ static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 23, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 23, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) __PYX_ERR(3, 23, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) __PYX_ERR(4, 23, __pyx_L1_error)
   __pyx_r = __pyx_pf_3lib_8Platform___init__(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_name, __pyx_v_quiet);
 
   /* function exit code */
@@ -4613,7 +5023,7 @@ static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__py
   __pyx_t_2.__pyx_n = 2;
   __pyx_t_2.name = __pyx_v_name;
   __pyx_t_2.quiet = __pyx_v_quiet;
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Platform *)__pyx_v_self->__pyx_vtab)->_create(__pyx_v_self, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 24, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Platform *)__pyx_v_self->__pyx_vtab)->_create(__pyx_v_self, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
@@ -4640,6 +5050,43 @@ static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__py
 /* "platform.pxi":29
  *         #                .format(self.__class__.__name__))
  * 
+ *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):             # <<<<<<<<<<<<<<
+ *         self.platform = platform
+ * 
+ */
+
+static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("from_pointer", 0);
+
+  /* "platform.pxi":30
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):
+ *         self.platform = platform             # <<<<<<<<<<<<<<
+ * 
+ *     cdef _create(self, str name = "", quiet = True):
+ */
+  __pyx_v_self->platform = __pyx_v_platform;
+
+  /* "platform.pxi":29
+ *         #                .format(self.__class__.__name__))
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):             # <<<<<<<<<<<<<<
+ *         self.platform = platform
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "platform.pxi":32
+ *         self.platform = platform
+ * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
  *         if not name:
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
@@ -4665,29 +5112,29 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
     }
   }
 
-  /* "platform.pxi":30
+  /* "platform.pxi":33
  * 
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:             # <<<<<<<<<<<<<<
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
  *         else:
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_name); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(3, 30, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_name); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(4, 33, __pyx_L1_error)
   __pyx_t_2 = ((!__pyx_t_1) != 0);
   if (__pyx_t_2) {
 
-    /* "platform.pxi":31
+    /* "platform.pxi":34
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))             # <<<<<<<<<<<<<<
  *         else:
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  */
-    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 31, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 34, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "platform.pxi":30
+    /* "platform.pxi":33
  * 
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:             # <<<<<<<<<<<<<<
@@ -4697,7 +5144,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
     goto __pyx_L3;
   }
 
-  /* "platform.pxi":33
+  /* "platform.pxi":36
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
  *         else:
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))             # <<<<<<<<<<<<<<
@@ -4705,19 +5152,19 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
  *     def get_name(self):
  */
   /*else*/ {
-    __pyx_t_3 = __Pyx_CallUnboundCMethod1(&__pyx_umethod_PyString_Type_encode, __pyx_v_name, __pyx_kp_s_utf_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 33, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_CallUnboundCMethod1(&__pyx_umethod_PyString_Type_encode, __pyx_v_name, __pyx_kp_s_utf_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 36, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __pyx_convert_string_from_py_std__in_string(__pyx_t_3); if (unlikely(PyErr_Occurred())) __PYX_ERR(3, 33, __pyx_L1_error)
+    __pyx_t_4 = __pyx_convert_string_from_py_std__in_string(__pyx_t_3); if (unlikely(PyErr_Occurred())) __PYX_ERR(4, 36, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_quiet); if (unlikely((__pyx_t_5 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(3, 33, __pyx_L1_error)
-    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 33, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_quiet); if (unlikely((__pyx_t_5 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(4, 36, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 36, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __pyx_L3:;
 
-  /* "platform.pxi":29
- *         #                .format(self.__class__.__name__))
+  /* "platform.pxi":32
+ *         self.platform = platform
  * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
  *         if not name:
@@ -4737,7 +5184,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
   return __pyx_r;
 }
 
-/* "platform.pxi":35
+/* "platform.pxi":38
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  * 
  *     def get_name(self):             # <<<<<<<<<<<<<<
@@ -4764,7 +5211,7 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_name", 0);
 
-  /* "platform.pxi":36
+  /* "platform.pxi":39
  * 
  *     def get_name(self):
  *         return self.platform.get().getName().decode("utf-8")             # <<<<<<<<<<<<<<
@@ -4772,13 +5219,13 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
  *     def init(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_decode_cpp_string(__pyx_v_self->platform.get()->getName(), 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 36, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_decode_cpp_string(__pyx_v_self->platform.get()->getName(), 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":35
+  /* "platform.pxi":38
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  * 
  *     def get_name(self):             # <<<<<<<<<<<<<<
@@ -4797,7 +5244,7 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
   return __pyx_r;
 }
 
-/* "platform.pxi":38
+/* "platform.pxi":41
  *         return self.platform.get().getName().decode("utf-8")
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -4824,18 +5271,18 @@ static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *_
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("init", 0);
 
-  /* "platform.pxi":39
+  /* "platform.pxi":42
  * 
  *     def init(self):
  *         check_fletcher_status(self.platform.get().init())             # <<<<<<<<<<<<<<
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->init()); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 39, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->init()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":38
+  /* "platform.pxi":41
  *         return self.platform.get().getName().decode("utf-8")
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -4856,7 +5303,7 @@ static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *_
   return __pyx_r;
 }
 
-/* "platform.pxi":41
+/* "platform.pxi":44
  *         check_fletcher_status(self.platform.get().init())
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):             # <<<<<<<<<<<<<<
@@ -4895,11 +5342,11 @@ static PyObject *__pyx_pw_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyO
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_value)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("write_mmio", 1, 2, 2, 1); __PYX_ERR(3, 41, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("write_mmio", 1, 2, 2, 1); __PYX_ERR(4, 44, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "write_mmio") < 0)) __PYX_ERR(3, 41, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "write_mmio") < 0)) __PYX_ERR(4, 44, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -4907,12 +5354,12 @@ static PyObject *__pyx_pw_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyO
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_offset = __Pyx_PyInt_As_uint64_t(values[0]); if (unlikely((__pyx_v_offset == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 41, __pyx_L3_error)
-    __pyx_v_value = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 41, __pyx_L3_error)
+    __pyx_v_offset = __Pyx_PyInt_As_uint64_t(values[0]); if (unlikely((__pyx_v_offset == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 44, __pyx_L3_error)
+    __pyx_v_value = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 44, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("write_mmio", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 41, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("write_mmio", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 44, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.write_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -4931,18 +5378,18 @@ static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platf
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("write_mmio", 0);
 
-  /* "platform.pxi":42
+  /* "platform.pxi":45
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))             # <<<<<<<<<<<<<<
  * 
  *     def read_mmio(self, uint64_t offset):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->writeMMIO(__pyx_v_offset, __pyx_v_value)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 42, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->writeMMIO(__pyx_v_offset, __pyx_v_value)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 45, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":41
+  /* "platform.pxi":44
  *         check_fletcher_status(self.platform.get().init())
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):             # <<<<<<<<<<<<<<
@@ -4963,7 +5410,7 @@ static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platf
   return __pyx_r;
 }
 
-/* "platform.pxi":44
+/* "platform.pxi":47
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
  * 
  *     def read_mmio(self, uint64_t offset):             # <<<<<<<<<<<<<<
@@ -4979,7 +5426,7 @@ static PyObject *__pyx_pw_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyOb
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("read_mmio (wrapper)", 0);
   assert(__pyx_arg_offset); {
-    __pyx_v_offset = __Pyx_PyInt_As_uint64_t(__pyx_arg_offset); if (unlikely((__pyx_v_offset == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 44, __pyx_L3_error)
+    __pyx_v_offset = __Pyx_PyInt_As_uint64_t(__pyx_arg_offset); if (unlikely((__pyx_v_offset == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 47, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5001,18 +5448,18 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("read_mmio", 0);
 
-  /* "platform.pxi":46
+  /* "platform.pxi":49
  *     def read_mmio(self, uint64_t offset):
  *         cdef uint32_t value
  *         check_fletcher_status(self.platform.get().readMMIO(offset, &value))             # <<<<<<<<<<<<<<
  * 
  *         return value
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->readMMIO(__pyx_v_offset, (&__pyx_v_value))); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 46, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->readMMIO(__pyx_v_offset, (&__pyx_v_value))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":48
+  /* "platform.pxi":51
  *         check_fletcher_status(self.platform.get().readMMIO(offset, &value))
  * 
  *         return value             # <<<<<<<<<<<<<<
@@ -5020,13 +5467,13 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
  *     def device_malloc(self, size_t size):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_value); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 48, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_value); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":44
+  /* "platform.pxi":47
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
  * 
  *     def read_mmio(self, uint64_t offset):             # <<<<<<<<<<<<<<
@@ -5045,7 +5492,7 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
   return __pyx_r;
 }
 
-/* "platform.pxi":50
+/* "platform.pxi":53
  *         return value
  * 
  *     def device_malloc(self, size_t size):             # <<<<<<<<<<<<<<
@@ -5061,7 +5508,7 @@ static PyObject *__pyx_pw_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self,
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("device_malloc (wrapper)", 0);
   assert(__pyx_arg_size); {
-    __pyx_v_size = __Pyx_PyInt_As_size_t(__pyx_arg_size); if (unlikely((__pyx_v_size == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(3, 50, __pyx_L3_error)
+    __pyx_v_size = __Pyx_PyInt_As_size_t(__pyx_arg_size); if (unlikely((__pyx_v_size == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(4, 53, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5083,18 +5530,18 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("device_malloc", 0);
 
-  /* "platform.pxi":52
+  /* "platform.pxi":55
  *     def device_malloc(self, size_t size):
  *         cdef da_t device_address
  *         check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))             # <<<<<<<<<<<<<<
  * 
  *         return device_address
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceMalloc((&__pyx_v_device_address), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 52, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceMalloc((&__pyx_v_device_address), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":54
+  /* "platform.pxi":57
  *         check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
  * 
  *         return device_address             # <<<<<<<<<<<<<<
@@ -5102,13 +5549,13 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
  *     def device_free(self, da_t device_address):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_da_t(__pyx_v_device_address); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 54, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_da_t(__pyx_v_device_address); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 57, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":50
+  /* "platform.pxi":53
  *         return value
  * 
  *     def device_malloc(self, size_t size):             # <<<<<<<<<<<<<<
@@ -5127,7 +5574,7 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
   return __pyx_r;
 }
 
-/* "platform.pxi":56
+/* "platform.pxi":59
  *         return device_address
  * 
  *     def device_free(self, da_t device_address):             # <<<<<<<<<<<<<<
@@ -5143,7 +5590,7 @@ static PyObject *__pyx_pw_3lib_8Platform_13device_free(PyObject *__pyx_v_self, P
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("device_free (wrapper)", 0);
   assert(__pyx_arg_device_address); {
-    __pyx_v_device_address = __Pyx_PyInt_As_da_t(__pyx_arg_device_address); if (unlikely((__pyx_v_device_address == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 56, __pyx_L3_error)
+    __pyx_v_device_address = __Pyx_PyInt_As_da_t(__pyx_arg_device_address); if (unlikely((__pyx_v_device_address == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 59, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5164,18 +5611,18 @@ static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Pla
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("device_free", 0);
 
-  /* "platform.pxi":57
+  /* "platform.pxi":60
  * 
  *     def device_free(self, da_t device_address):
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))             # <<<<<<<<<<<<<<
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceFree(__pyx_v_device_address)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 57, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceFree(__pyx_v_device_address)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":56
+  /* "platform.pxi":59
  *         return device_address
  * 
  *     def device_free(self, da_t device_address):             # <<<<<<<<<<<<<<
@@ -5196,7 +5643,7 @@ static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Pla
   return __pyx_r;
 }
 
-/* "platform.pxi":59
+/* "platform.pxi":62
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):             # <<<<<<<<<<<<<<
@@ -5238,17 +5685,17 @@ static PyObject *__pyx_pw_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_device_destination)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, 1); __PYX_ERR(3, 59, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, 1); __PYX_ERR(4, 62, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, 2); __PYX_ERR(3, 59, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, 2); __PYX_ERR(4, 62, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "copy_host_to_device") < 0)) __PYX_ERR(3, 59, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "copy_host_to_device") < 0)) __PYX_ERR(4, 62, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -5258,12 +5705,12 @@ static PyObject *__pyx_pw_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
     __pyx_v_host_bytes = values[0];
-    __pyx_v_device_destination = __Pyx_PyInt_As_da_t(values[1]); if (unlikely((__pyx_v_device_destination == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 59, __pyx_L3_error)
-    __pyx_v_size = __Pyx_PyInt_As_uint64_t(values[2]); if (unlikely((__pyx_v_size == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 59, __pyx_L3_error)
+    __pyx_v_device_destination = __Pyx_PyInt_As_da_t(values[1]); if (unlikely((__pyx_v_device_destination == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 62, __pyx_L3_error)
+    __pyx_v_size = __Pyx_PyInt_As_uint64_t(values[2]); if (unlikely((__pyx_v_size == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 62, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 59, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 62, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.copy_host_to_device", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5287,19 +5734,19 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("copy_host_to_device", 0);
 
-  /* "platform.pxi":61
+  /* "platform.pxi":64
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
  *         cdef const uint8_t *host_source = &host_source_view[0]
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(3, 61, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(4, 64, __pyx_L1_error)
   __pyx_v_host_source_view = __pyx_t_1;
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":62
+  /* "platform.pxi":65
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -5314,22 +5761,22 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   } else if (unlikely(__pyx_t_2 >= __pyx_v_host_source_view.shape[0])) __pyx_t_3 = 0;
   if (unlikely(__pyx_t_3 != -1)) {
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
-    __PYX_ERR(3, 62, __pyx_L1_error)
+    __PYX_ERR(4, 65, __pyx_L1_error)
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":64
+  /* "platform.pxi":67
  *         cdef const uint8_t *host_source = &host_source_view[0]
  * 
  *         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))             # <<<<<<<<<<<<<<
  * 
  *     # Todo: Discuss if numpy array is the best return type
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyHostToDevice(((uint8_t *)__pyx_v_host_source), __pyx_v_device_destination, __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 64, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyHostToDevice(((uint8_t *)__pyx_v_host_source), __pyx_v_device_destination, __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":59
+  /* "platform.pxi":62
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):             # <<<<<<<<<<<<<<
@@ -5352,7 +5799,7 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":67
+/* "platform.pxi":70
  * 
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
@@ -5391,11 +5838,11 @@ static PyObject *__pyx_pw_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, 1); __PYX_ERR(3, 67, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, 1); __PYX_ERR(4, 70, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "copy_device_to_host") < 0)) __PYX_ERR(3, 67, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "copy_device_to_host") < 0)) __PYX_ERR(4, 70, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -5403,12 +5850,12 @@ static PyObject *__pyx_pw_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_device_source = __Pyx_PyInt_As_da_t(values[0]); if (unlikely((__pyx_v_device_source == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 67, __pyx_L3_error)
-    __pyx_v_size = __Pyx_PyInt_As_uint64_t(values[1]); if (unlikely((__pyx_v_size == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 67, __pyx_L3_error)
+    __pyx_v_device_source = __Pyx_PyInt_As_da_t(values[0]); if (unlikely((__pyx_v_device_source == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 70, __pyx_L3_error)
+    __pyx_v_size = __Pyx_PyInt_As_uint64_t(values[1]); if (unlikely((__pyx_v_size == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 70, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 67, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 70, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5437,40 +5884,40 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   int __pyx_t_8;
   __Pyx_RefNannySetupContext("copy_device_to_host", 0);
 
-  /* "platform.pxi":68
+  /* "platform.pxi":71
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):
  *         buffer = np.zeros((size,), dtype=np.uint8)             # <<<<<<<<<<<<<<
  *         cdef const uint8_t[:] buffer_view = buffer
  *         cdef const uint8_t *host_destination = &buffer_view[0]
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
   __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_uint8); if (unlikely(!__pyx_t_5)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_uint8); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(3, 68, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(3, 68, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5478,19 +5925,19 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __pyx_v_buffer = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "platform.pxi":69
+  /* "platform.pxi":72
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):
  *         buffer = np.zeros((size,), dtype=np.uint8)
  *         cdef const uint8_t[:] buffer_view = buffer             # <<<<<<<<<<<<<<
  *         cdef const uint8_t *host_destination = &buffer_view[0]
  * 
  */
-  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_buffer, 0); if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(3, 69, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_buffer, 0); if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(4, 72, __pyx_L1_error)
   __pyx_v_buffer_view = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "platform.pxi":70
+  /* "platform.pxi":73
  *         buffer = np.zeros((size,), dtype=np.uint8)
  *         cdef const uint8_t[:] buffer_view = buffer
  *         cdef const uint8_t *host_destination = &buffer_view[0]             # <<<<<<<<<<<<<<
@@ -5505,22 +5952,22 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   } else if (unlikely(__pyx_t_7 >= __pyx_v_buffer_view.shape[0])) __pyx_t_8 = 0;
   if (unlikely(__pyx_t_8 != -1)) {
     __Pyx_RaiseBufferIndexError(__pyx_t_8);
-    __PYX_ERR(3, 70, __pyx_L1_error)
+    __PYX_ERR(4, 73, __pyx_L1_error)
   }
   __pyx_v_host_destination = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_buffer_view.data + __pyx_t_7 * __pyx_v_buffer_view.strides[0]) ))));
 
-  /* "platform.pxi":72
+  /* "platform.pxi":75
  *         cdef const uint8_t *host_destination = &buffer_view[0]
  * 
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))             # <<<<<<<<<<<<<<
  * 
  *         return buffer
  */
-  __pyx_t_5 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_5)) __PYX_ERR(3, 72, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "platform.pxi":74
+  /* "platform.pxi":77
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
  * 
  *         return buffer             # <<<<<<<<<<<<<<
@@ -5532,7 +5979,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __pyx_r = __pyx_v_buffer;
   goto __pyx_L0;
 
-  /* "platform.pxi":67
+  /* "platform.pxi":70
  * 
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
@@ -5558,7 +6005,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":76
+/* "platform.pxi":79
  *         return buffer
  * 
  *     def prepare_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -5597,11 +6044,11 @@ static PyObject *__pyx_pw_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("prepare_host_buffer", 1, 2, 2, 1); __PYX_ERR(3, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("prepare_host_buffer", 1, 2, 2, 1); __PYX_ERR(4, 79, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "prepare_host_buffer") < 0)) __PYX_ERR(3, 76, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "prepare_host_buffer") < 0)) __PYX_ERR(4, 79, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -5610,11 +6057,11 @@ static PyObject *__pyx_pw_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
     __pyx_v_host_bytes = values[0];
-    __pyx_v_size = __Pyx_PyInt_As_int64_t(values[1]); if (unlikely((__pyx_v_size == ((int64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 76, __pyx_L3_error)
+    __pyx_v_size = __Pyx_PyInt_As_int64_t(values[1]); if (unlikely((__pyx_v_size == ((int64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 79, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("prepare_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 76, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("prepare_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 79, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.prepare_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5642,19 +6089,19 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("prepare_host_buffer", 0);
 
-  /* "platform.pxi":78
+  /* "platform.pxi":81
  *     def prepare_host_buffer(self, host_bytes, int64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
  *         cdef const uint8_t *host_source = &host_source_view[0]
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(3, 78, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(4, 81, __pyx_L1_error)
   __pyx_v_host_source_view = __pyx_t_1;
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":79
+  /* "platform.pxi":82
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -5669,22 +6116,22 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   } else if (unlikely(__pyx_t_2 >= __pyx_v_host_source_view.shape[0])) __pyx_t_3 = 0;
   if (unlikely(__pyx_t_3 != -1)) {
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
-    __PYX_ERR(3, 79, __pyx_L1_error)
+    __PYX_ERR(4, 82, __pyx_L1_error)
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":84
+  /* "platform.pxi":87
  *         cdef cpp_bool alloced
  * 
  *         check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))             # <<<<<<<<<<<<<<
  * 
  *         return device_destination, alloced
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->prepareHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size, (&__pyx_v_alloced))); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 84, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->prepareHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size, (&__pyx_v_alloced))); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":86
+  /* "platform.pxi":89
  *         check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))
  * 
  *         return device_destination, alloced             # <<<<<<<<<<<<<<
@@ -5692,11 +6139,11 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_da_t(__pyx_v_device_destination); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 86, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_da_t(__pyx_v_device_destination); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 89, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyBool_FromLong(__pyx_v_alloced); if (unlikely(!__pyx_t_5)) __PYX_ERR(3, 86, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyBool_FromLong(__pyx_v_alloced); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 89, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(3, 86, __pyx_L1_error)
+  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(4, 89, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4);
@@ -5708,7 +6155,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":76
+  /* "platform.pxi":79
  *         return buffer
  * 
  *     def prepare_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -5731,7 +6178,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":89
+/* "platform.pxi":92
  * 
  * 
  *     def cache_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -5770,11 +6217,11 @@ static PyObject *__pyx_pw_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_s
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("cache_host_buffer", 1, 2, 2, 1); __PYX_ERR(3, 89, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("cache_host_buffer", 1, 2, 2, 1); __PYX_ERR(4, 92, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "cache_host_buffer") < 0)) __PYX_ERR(3, 89, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "cache_host_buffer") < 0)) __PYX_ERR(4, 92, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -5783,11 +6230,11 @@ static PyObject *__pyx_pw_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_s
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
     __pyx_v_host_bytes = values[0];
-    __pyx_v_size = __Pyx_PyInt_As_int64_t(values[1]); if (unlikely((__pyx_v_size == ((int64_t)-1)) && PyErr_Occurred())) __PYX_ERR(3, 89, __pyx_L3_error)
+    __pyx_v_size = __Pyx_PyInt_As_int64_t(values[1]); if (unlikely((__pyx_v_size == ((int64_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 92, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("cache_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(3, 89, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("cache_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 92, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.Platform.cache_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5812,19 +6259,19 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("cache_host_buffer", 0);
 
-  /* "platform.pxi":91
+  /* "platform.pxi":94
  *     def cache_host_buffer(self, host_bytes, int64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
  *         cdef const uint8_t *host_source = &host_source_view[0]
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(3, 91, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_host_bytes, 0); if (unlikely(!__pyx_t_1.memview)) __PYX_ERR(4, 94, __pyx_L1_error)
   __pyx_v_host_source_view = __pyx_t_1;
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":92
+  /* "platform.pxi":95
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -5839,22 +6286,22 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   } else if (unlikely(__pyx_t_2 >= __pyx_v_host_source_view.shape[0])) __pyx_t_3 = 0;
   if (unlikely(__pyx_t_3 != -1)) {
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
-    __PYX_ERR(3, 92, __pyx_L1_error)
+    __PYX_ERR(4, 95, __pyx_L1_error)
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":96
+  /* "platform.pxi":99
  *         cdef da_t device_destination
  * 
  *         check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))             # <<<<<<<<<<<<<<
  * 
  *         return device_destination
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->cacheHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 96, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->cacheHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":98
+  /* "platform.pxi":101
  *         check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))
  * 
  *         return device_destination             # <<<<<<<<<<<<<<
@@ -5862,13 +6309,13 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
  *     def terminate(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_da_t(__pyx_v_device_destination); if (unlikely(!__pyx_t_4)) __PYX_ERR(3, 98, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_da_t(__pyx_v_device_destination); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 101, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":89
+  /* "platform.pxi":92
  * 
  * 
  *     def cache_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -5889,7 +6336,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   return __pyx_r;
 }
 
-/* "platform.pxi":100
+/* "platform.pxi":103
  *         return device_destination
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -5916,18 +6363,18 @@ static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platf
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("terminate", 0);
 
-  /* "platform.pxi":101
+  /* "platform.pxi":104
  * 
  *     def terminate(self):
  *         check_fletcher_status(self.platform.get().terminate())             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 101, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 104, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":100
+  /* "platform.pxi":103
  *         return device_destination
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -6055,12 +6502,12 @@ static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED str
   return __pyx_r;
 }
 
-/* "usercore.pxi":19
+/* "usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
  *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
  *         self.usercore.reset(new CUserCore(platform.platform))
- * 
+ *         self.ucplatform = platform.platform
  */
 
 /* Python wrapper */
@@ -6089,7 +6536,7 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__cinit__") < 0)) __PYX_ERR(4, 19, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__cinit__") < 0)) __PYX_ERR(5, 20, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 1) {
       goto __pyx_L5_argtuple_error;
@@ -6100,13 +6547,13 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 19, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 20, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.UserCore.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_platform), __pyx_ptype_3lib_Platform, 1, "platform", 0))) __PYX_ERR(4, 19, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_platform), __pyx_ptype_3lib_Platform, 1, "platform", 0))) __PYX_ERR(5, 20, __pyx_L1_error)
   __pyx_r = __pyx_pf_3lib_8UserCore___cinit__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_platform);
 
   /* function exit code */
@@ -6121,23 +6568,34 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
 static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
+  std::shared_ptr< fletcher::Platform>  __pyx_t_1;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "usercore.pxi":20
+  /* "usercore.pxi":21
  * 
  *     def __cinit__(self, Platform platform):
  *         self.usercore.reset(new CUserCore(platform.platform))             # <<<<<<<<<<<<<<
+ *         self.ucplatform = platform.platform
  * 
- *     def implements_schema(self, schema):
  */
   __pyx_v_self->usercore.reset(new  fletcher::UserCore(__pyx_v_platform->platform));
 
-  /* "usercore.pxi":19
+  /* "usercore.pxi":22
+ *     def __cinit__(self, Platform platform):
+ *         self.usercore.reset(new CUserCore(platform.platform))
+ *         self.ucplatform = platform.platform             # <<<<<<<<<<<<<<
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
+ */
+  __pyx_t_1 = __pyx_v_platform->platform;
+  __pyx_v_self->ucplatform = __pyx_t_1;
+
+  /* "usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
  *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
  *         self.usercore.reset(new CUserCore(platform.platform))
- * 
+ *         self.ucplatform = platform.platform
  */
 
   /* function exit code */
@@ -6146,8 +6604,54 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
   return __pyx_r;
 }
 
-/* "usercore.pxi":22
- *         self.usercore.reset(new CUserCore(platform.platform))
+/* "usercore.pxi":24
+ *         self.ucplatform = platform.platform
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
+ *         self.usercore = usercore
+ *         self.ucplatform = self.usercore.get().platform()
+ */
+
+static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("from_pointer", 0);
+
+  /* "usercore.pxi":25
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
+ *         self.usercore = usercore             # <<<<<<<<<<<<<<
+ *         self.ucplatform = self.usercore.get().platform()
+ * 
+ */
+  __pyx_v_self->usercore = __pyx_v_usercore;
+
+  /* "usercore.pxi":26
+ *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
+ *         self.usercore = usercore
+ *         self.ucplatform = self.usercore.get().platform()             # <<<<<<<<<<<<<<
+ * 
+ *     def implements_schema(self, schema):
+ */
+  __pyx_v_self->ucplatform = __pyx_v_self->usercore.get()->platform();
+
+  /* "usercore.pxi":24
+ *         self.ucplatform = platform.platform
+ * 
+ *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
+ *         self.usercore = usercore
+ *         self.ucplatform = self.usercore.get().platform()
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "usercore.pxi":28
+ *         self.ucplatform = self.usercore.get().platform()
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
@@ -6173,7 +6677,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("implements_schema", 0);
 
-  /* "usercore.pxi":23
+  /* "usercore.pxi":29
  * 
  *     def implements_schema(self, schema):
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))             # <<<<<<<<<<<<<<
@@ -6181,14 +6685,14 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
  *     def reset(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->usercore.get()->implementsSchema(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema(__pyx_v_schema))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 23, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->usercore.get()->implementsSchema(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema(__pyx_v_schema))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":22
- *         self.usercore.reset(new CUserCore(platform.platform))
+  /* "usercore.pxi":28
+ *         self.ucplatform = self.usercore.get().platform()
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
@@ -6206,7 +6710,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
   return __pyx_r;
 }
 
-/* "usercore.pxi":25
+/* "usercore.pxi":31
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -6233,18 +6737,18 @@ static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("reset", 0);
 
-  /* "usercore.pxi":26
+  /* "usercore.pxi":32
  * 
  *     def reset(self):
  *         check_fletcher_status(self.usercore.get().reset())             # <<<<<<<<<<<<<<
  * 
  *     def set_range(self, uint32_t first, uint32_t last):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 26, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":25
+  /* "usercore.pxi":31
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -6265,7 +6769,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *
   return __pyx_r;
 }
 
-/* "usercore.pxi":28
+/* "usercore.pxi":34
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -6304,11 +6808,11 @@ static PyObject *__pyx_pw_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyOb
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_last)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, 1); __PYX_ERR(4, 28, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, 1); __PYX_ERR(5, 34, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "set_range") < 0)) __PYX_ERR(4, 28, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "set_range") < 0)) __PYX_ERR(5, 34, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -6316,12 +6820,12 @@ static PyObject *__pyx_pw_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyOb
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_first = __Pyx_PyInt_As_uint32_t(values[0]); if (unlikely((__pyx_v_first == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 28, __pyx_L3_error)
-    __pyx_v_last = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_last == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 28, __pyx_L3_error)
+    __pyx_v_first = __Pyx_PyInt_As_uint32_t(values[0]); if (unlikely((__pyx_v_first == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(5, 34, __pyx_L3_error)
+    __pyx_v_last = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_last == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(5, 34, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 28, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 34, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -6340,18 +6844,18 @@ static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCo
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("set_range", 0);
 
-  /* "usercore.pxi":29
+  /* "usercore.pxi":35
  * 
  *     def set_range(self, uint32_t first, uint32_t last):
  *         check_fletcher_status(self.usercore.get().setRange(first, last))             # <<<<<<<<<<<<<<
  * 
  *     # Todo: To be implemented
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 29, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":28
+  /* "usercore.pxi":34
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -6372,41 +6876,91 @@ static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCo
   return __pyx_r;
 }
 
-/* "usercore.pxi":32
+/* "usercore.pxi":38
  * 
  *     # Todo: To be implemented
- *     def set_arguments(self):             # <<<<<<<<<<<<<<
- *         pass
- * 
+ *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
+ *         for argument in arguments:
+ *             pass
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_arguments (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_8set_arguments(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_arguments), (&PyList_Type), 1, "arguments", 1))) __PYX_ERR(5, 38, __pyx_L1_error)
+  __pyx_r = __pyx_pf_3lib_8UserCore_8set_arguments(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject*)__pyx_v_arguments));
 
   /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments) {
+  CYTHON_UNUSED PyObject *__pyx_v_argument = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  Py_ssize_t __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
   __Pyx_RefNannySetupContext("set_arguments", 0);
+
+  /* "usercore.pxi":39
+ *     # Todo: To be implemented
+ *     def set_arguments(self, list arguments):
+ *         for argument in arguments:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+ */
+  if (unlikely(__pyx_v_arguments == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
+    __PYX_ERR(5, 39, __pyx_L1_error)
+  }
+  __pyx_t_1 = __pyx_v_arguments; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
+  for (;;) {
+    if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
+    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(5, 39, __pyx_L1_error)
+    #else
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(5, 39, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    #endif
+    __Pyx_XDECREF_SET(__pyx_v_argument, __pyx_t_3);
+    __pyx_t_3 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "usercore.pxi":38
+ * 
+ *     # Todo: To be implemented
+ *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
+ *         for argument in arguments:
+ *             pass
+ */
 
   /* function exit code */
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_AddTraceback("lib.UserCore.set_arguments", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_argument);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "usercore.pxi":35
- *         pass
+/* "usercore.pxi":42
+ *             pass
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.usercore.get().start())
@@ -6432,19 +6986,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore 
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("start", 0);
 
-  /* "usercore.pxi":36
+  /* "usercore.pxi":43
  * 
  *     def start(self):
  *         check_fletcher_status(self.usercore.get().start())             # <<<<<<<<<<<<<<
  * 
  *     def get_status(self):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 36, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":35
- *         pass
+  /* "usercore.pxi":42
+ *             pass
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.usercore.get().start())
@@ -6464,7 +7018,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore 
   return __pyx_r;
 }
 
-/* "usercore.pxi":38
+/* "usercore.pxi":45
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -6492,18 +7046,18 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_status", 0);
 
-  /* "usercore.pxi":40
+  /* "usercore.pxi":47
  *     def get_status(self):
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))             # <<<<<<<<<<<<<<
  *         return status
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 40, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":41
+  /* "usercore.pxi":48
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))
  *         return status             # <<<<<<<<<<<<<<
@@ -6511,13 +7065,13 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
  *     def get_return(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 41, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":38
+  /* "usercore.pxi":45
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -6536,7 +7090,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
   return __pyx_r;
 }
 
-/* "usercore.pxi":43
+/* "usercore.pxi":50
  *         return status
  * 
  *     def get_return(self):             # <<<<<<<<<<<<<<
@@ -6566,18 +7120,18 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_return", 0);
 
-  /* "usercore.pxi":48
+  /* "usercore.pxi":55
  *         cdef uint64_t ret
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))             # <<<<<<<<<<<<<<
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 48, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":49
+  /* "usercore.pxi":56
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))
  *         ret = (<uint64_t>hi << 32) + lo             # <<<<<<<<<<<<<<
@@ -6586,7 +7140,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
  */
   __pyx_v_ret = ((((uint64_t)__pyx_v_hi) << 32) + __pyx_v_lo);
 
-  /* "usercore.pxi":51
+  /* "usercore.pxi":58
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  *         return ret             # <<<<<<<<<<<<<<
@@ -6594,13 +7148,13 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
  *     def wait_for_finish(self, poll_interval_usec=0):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_ret); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 51, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_ret); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":43
+  /* "usercore.pxi":50
  *         return status
  * 
  *     def get_return(self):             # <<<<<<<<<<<<<<
@@ -6619,11 +7173,12 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   return __pyx_r;
 }
 
-/* "usercore.pxi":53
+/* "usercore.pxi":60
  *         return ret
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
+ * 
  */
 
 /* Python wrapper */
@@ -6655,7 +7210,7 @@ static PyObject *__pyx_pw_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_sel
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wait_for_finish") < 0)) __PYX_ERR(4, 53, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wait_for_finish") < 0)) __PYX_ERR(5, 60, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -6669,7 +7224,7 @@ static PyObject *__pyx_pw_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_sel
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("wait_for_finish", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 53, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("wait_for_finish", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 60, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -6689,21 +7244,24 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("wait_for_finish", 0);
 
-  /* "usercore.pxi":54
+  /* "usercore.pxi":61
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))             # <<<<<<<<<<<<<<
+ * 
+ *     def platform(self):
  */
-  __pyx_t_1 = __Pyx_PyInt_As_unsigned_int(__pyx_v_poll_interval_usec); if (unlikely((__pyx_t_1 == (unsigned int)-1) && PyErr_Occurred())) __PYX_ERR(4, 54, __pyx_L1_error)
-  __pyx_t_2 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 54, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_unsigned_int(__pyx_v_poll_interval_usec); if (unlikely((__pyx_t_1 == (unsigned int)-1) && PyErr_Occurred())) __PYX_ERR(5, 61, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "usercore.pxi":53
+  /* "usercore.pxi":60
  *         return ret
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
+ * 
  */
 
   /* function exit code */
@@ -6719,6 +7277,62 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
   return __pyx_r;
 }
 
+/* "usercore.pxi":63
+ *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
+ * 
+ *     def platform(self):             # <<<<<<<<<<<<<<
+ *         return pyfletcher_wrap_platform(self.ucplatform)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_3lib_8UserCore_19platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_19platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("platform (wrapper)", 0);
+  __pyx_r = __pyx_pf_3lib_8UserCore_18platform(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_3lib_8UserCore_18platform(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("platform", 0);
+
+  /* "usercore.pxi":64
+ * 
+ *     def platform(self):
+ *         return pyfletcher_wrap_platform(self.ucplatform)             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = pyfletcher_wrap_platform(__pyx_v_self->ucplatform); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 64, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "usercore.pxi":63
+ *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
+ * 
+ *     def platform(self):             # <<<<<<<<<<<<<<
+ *         return pyfletcher_wrap_platform(self.ucplatform)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lib.UserCore.platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
 /* "(tree fragment)":1
  * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
  *     raise TypeError("no default __reduce__ due to non-trivial __cinit__")
@@ -6726,19 +7340,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_19__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_19__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3lib_8UserCore_21__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_21__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_18__reduce_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3lib_8UserCore_20__reduce_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_18__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_3lib_8UserCore_20__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6780,19 +7394,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_18__reduce_cython__(CYTHON_UNUSED struc
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_21__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_21__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_3lib_8UserCore_23__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_23__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_20__setstate_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_3lib_8UserCore_22__setstate_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_20__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_3lib_8UserCore_22__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -20297,6 +20911,7 @@ static PyTypeObject __pyx_type_3lib_Platform = {
   0, /*tp_finalize*/
   #endif
 };
+static struct __pyx_vtabstruct_3lib_UserCore __pyx_vtable_3lib_UserCore;
 
 static PyObject *__pyx_tp_new_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObject *k) {
   struct __pyx_obj_3lib_UserCore *p;
@@ -20308,6 +20923,8 @@ static PyObject *__pyx_tp_new_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObje
   }
   if (unlikely(!o)) return 0;
   p = ((struct __pyx_obj_3lib_UserCore *)o);
+  p->__pyx_vtab = __pyx_vtabptr_3lib_UserCore;
+  new((void*)&(p->ucplatform)) std::shared_ptr< fletcher::Platform> ();
   new((void*)&(p->usercore)) std::shared_ptr< fletcher::UserCore> ();
   if (unlikely(__pyx_pw_3lib_8UserCore_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
@@ -20323,6 +20940,7 @@ static void __pyx_tp_dealloc_3lib_UserCore(PyObject *o) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
   }
   #endif
+  __Pyx_call_destructor(p->ucplatform);
   __Pyx_call_destructor(p->usercore);
   (*Py_TYPE(o)->tp_free)(o);
 }
@@ -20331,13 +20949,14 @@ static PyMethodDef __pyx_methods_3lib_UserCore[] = {
   {"implements_schema", (PyCFunction)__pyx_pw_3lib_8UserCore_3implements_schema, METH_O, 0},
   {"reset", (PyCFunction)__pyx_pw_3lib_8UserCore_5reset, METH_NOARGS, 0},
   {"set_range", (PyCFunction)__pyx_pw_3lib_8UserCore_7set_range, METH_VARARGS|METH_KEYWORDS, 0},
-  {"set_arguments", (PyCFunction)__pyx_pw_3lib_8UserCore_9set_arguments, METH_NOARGS, 0},
+  {"set_arguments", (PyCFunction)__pyx_pw_3lib_8UserCore_9set_arguments, METH_O, 0},
   {"start", (PyCFunction)__pyx_pw_3lib_8UserCore_11start, METH_NOARGS, 0},
   {"get_status", (PyCFunction)__pyx_pw_3lib_8UserCore_13get_status, METH_NOARGS, 0},
   {"get_return", (PyCFunction)__pyx_pw_3lib_8UserCore_15get_return, METH_NOARGS, 0},
   {"wait_for_finish", (PyCFunction)__pyx_pw_3lib_8UserCore_17wait_for_finish, METH_VARARGS|METH_KEYWORDS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_19__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_21__setstate_cython__, METH_O, 0},
+  {"platform", (PyCFunction)__pyx_pw_3lib_8UserCore_19platform, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_21__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_23__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -21600,11 +22219,11 @@ static int __Pyx_InitCachedConstants(void) {
 
 static int __Pyx_InitGlobals(void) {
   __pyx_umethod_PyString_Type_encode.type = (PyObject*)&PyString_Type;
-  if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(5, 1, __pyx_L1_error);
-  __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_int_184977713 = PyInt_FromLong(184977713L); if (unlikely(!__pyx_int_184977713)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_int_neg_1 = PyInt_FromLong(-1); if (unlikely(!__pyx_int_neg_1)) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(6, 1, __pyx_L1_error);
+  __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_int_184977713 = PyInt_FromLong(184977713L); if (unlikely(!__pyx_int_184977713)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_int_neg_1 = PyInt_FromLong(-1); if (unlikely(!__pyx_int_neg_1)) __PYX_ERR(6, 1, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -21643,8 +22262,17 @@ static int __Pyx_modinit_function_export_code(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_modinit_function_export_code", 0);
   /*--- Function export code ---*/
+  if (__Pyx_ExportFunction("pyfletcher_is_usercore", (void (*)(void))pyfletcher_is_usercore, "int (PyObject *)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("pyfletcher_wrap_usercore", (void (*)(void))pyfletcher_wrap_usercore, "PyObject *(std::shared_ptr< fletcher::UserCore>  const &)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("pyfletcher_unwrap_usercore", (void (*)(void))pyfletcher_unwrap_usercore, "std::shared_ptr< fletcher::UserCore>  (PyObject *)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("pyfletcher_is_platform", (void (*)(void))pyfletcher_is_platform, "int (PyObject *)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("pyfletcher_wrap_platform", (void (*)(void))pyfletcher_wrap_platform, "PyObject *(std::shared_ptr< fletcher::Platform>  const &)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("pyfletcher_unwrap_platform", (void (*)(void))pyfletcher_unwrap_platform, "std::shared_ptr< fletcher::Platform>  (PyObject *)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
+  __pyx_L1_error:;
+  __Pyx_RefNannyFinishContext();
+  return -1;
 }
 
 static int __Pyx_modinit_type_init_code(void) {
@@ -21660,23 +22288,27 @@ static int __Pyx_modinit_type_init_code(void) {
   if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
   __pyx_ptype_3lib_PyStatus = &__pyx_type_3lib_PyStatus;
   __pyx_vtabptr_3lib_Platform = &__pyx_vtable_3lib_Platform;
+  __pyx_vtable_3lib_Platform.from_pointer = (PyObject *(*)(struct __pyx_obj_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &))__pyx_f_3lib_8Platform_from_pointer;
   __pyx_vtable_3lib_Platform._create = (PyObject *(*)(struct __pyx_obj_3lib_Platform *, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args))__pyx_f_3lib_8Platform__create;
-  if (PyType_Ready(&__pyx_type_3lib_Platform) < 0) __PYX_ERR(3, 19, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 19, __pyx_L1_error)
   __pyx_type_3lib_Platform.tp_print = 0;
   if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_Platform.tp_dictoffset && __pyx_type_3lib_Platform.tp_getattro == PyObject_GenericGetAttr)) {
     __pyx_type_3lib_Platform.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_3lib_Platform.tp_dict, __pyx_vtabptr_3lib_Platform) < 0) __PYX_ERR(3, 19, __pyx_L1_error)
-  if (PyObject_SetAttrString(__pyx_m, "Platform", (PyObject *)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(3, 19, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(3, 19, __pyx_L1_error)
+  if (__Pyx_SetVtable(__pyx_type_3lib_Platform.tp_dict, __pyx_vtabptr_3lib_Platform) < 0) __PYX_ERR(4, 19, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "Platform", (PyObject *)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 19, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 19, __pyx_L1_error)
   __pyx_ptype_3lib_Platform = &__pyx_type_3lib_Platform;
-  if (PyType_Ready(&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(4, 15, __pyx_L1_error)
+  __pyx_vtabptr_3lib_UserCore = &__pyx_vtable_3lib_UserCore;
+  __pyx_vtable_3lib_UserCore.from_pointer = (PyObject *(*)(struct __pyx_obj_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &))__pyx_f_3lib_8UserCore_from_pointer;
+  if (PyType_Ready(&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 15, __pyx_L1_error)
   __pyx_type_3lib_UserCore.tp_print = 0;
   if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_UserCore.tp_dictoffset && __pyx_type_3lib_UserCore.tp_getattro == PyObject_GenericGetAttr)) {
     __pyx_type_3lib_UserCore.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (PyObject_SetAttrString(__pyx_m, "UserCore", (PyObject *)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(4, 15, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(4, 15, __pyx_L1_error)
+  if (__Pyx_SetVtable(__pyx_type_3lib_UserCore.tp_dict, __pyx_vtabptr_3lib_UserCore) < 0) __PYX_ERR(5, 15, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "UserCore", (PyObject *)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 15, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 15, __pyx_L1_error)
   __pyx_ptype_3lib_UserCore = &__pyx_type_3lib_UserCore;
   __pyx_vtabptr_array = &__pyx_vtable_array;
   __pyx_vtable_array.get_memview = (PyObject *(*)(struct __pyx_array_obj *))__pyx_array_get_memview;
@@ -21738,116 +22370,116 @@ static int __Pyx_modinit_type_import_code(void) {
   #else
   sizeof(PyHeapTypeObject),
   #endif
-  0); if (unlikely(!__pyx_ptype_7cpython_4type_type)) __PYX_ERR(6, 9, __pyx_L1_error)
-  __pyx_ptype_7cpython_4bool_bool = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "bool", sizeof(PyBoolObject), 0); if (unlikely(!__pyx_ptype_7cpython_4bool_bool)) __PYX_ERR(7, 8, __pyx_L1_error)
-  __pyx_ptype_7cpython_7complex_complex = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "complex", sizeof(PyComplexObject), 0); if (unlikely(!__pyx_ptype_7cpython_7complex_complex)) __PYX_ERR(8, 15, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Message = __Pyx_ImportType("pyarrow.lib", "Message", sizeof(struct __pyx_obj_7pyarrow_3lib_Message), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Message)) __PYX_ERR(9, 32, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_MemoryPool = __Pyx_ImportType("pyarrow.lib", "MemoryPool", sizeof(struct __pyx_obj_7pyarrow_3lib_MemoryPool), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_MemoryPool)) __PYX_ERR(9, 37, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_MemoryPool = (struct __pyx_vtabstruct_7pyarrow_3lib_MemoryPool*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_MemoryPool->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_MemoryPool)) __PYX_ERR(9, 37, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_DataType = __Pyx_ImportType("pyarrow.lib", "DataType", sizeof(struct __pyx_obj_7pyarrow_3lib_DataType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DataType)) __PYX_ERR(9, 47, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_DataType = (struct __pyx_vtabstruct_7pyarrow_3lib_DataType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DataType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DataType)) __PYX_ERR(9, 47, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ListType = __Pyx_ImportType("pyarrow.lib", "ListType", sizeof(struct __pyx_obj_7pyarrow_3lib_ListType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListType)) __PYX_ERR(9, 56, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ListType = (struct __pyx_vtabstruct_7pyarrow_3lib_ListType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListType)) __PYX_ERR(9, 56, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_DictionaryType = __Pyx_ImportType("pyarrow.lib", "DictionaryType", sizeof(struct __pyx_obj_7pyarrow_3lib_DictionaryType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DictionaryType)) __PYX_ERR(9, 61, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_DictionaryType = (struct __pyx_vtabstruct_7pyarrow_3lib_DictionaryType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DictionaryType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DictionaryType)) __PYX_ERR(9, 61, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_TimestampType = __Pyx_ImportType("pyarrow.lib", "TimestampType", sizeof(struct __pyx_obj_7pyarrow_3lib_TimestampType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_TimestampType)) __PYX_ERR(9, 66, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_TimestampType = (struct __pyx_vtabstruct_7pyarrow_3lib_TimestampType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_TimestampType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_TimestampType)) __PYX_ERR(9, 66, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Time32Type = __Pyx_ImportType("pyarrow.lib", "Time32Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Time32Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Time32Type)) __PYX_ERR(9, 71, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Time32Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Time32Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Time32Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Time32Type)) __PYX_ERR(9, 71, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Time64Type = __Pyx_ImportType("pyarrow.lib", "Time64Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Time64Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Time64Type)) __PYX_ERR(9, 76, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Time64Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Time64Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Time64Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Time64Type)) __PYX_ERR(9, 76, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryType", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType)) __PYX_ERR(9, 81, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryType = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryType)) __PYX_ERR(9, 81, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Decimal128Type = __Pyx_ImportType("pyarrow.lib", "Decimal128Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Decimal128Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Decimal128Type)) __PYX_ERR(9, 86, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Decimal128Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Decimal128Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Decimal128Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Decimal128Type)) __PYX_ERR(9, 86, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Field = __Pyx_ImportType("pyarrow.lib", "Field", sizeof(struct __pyx_obj_7pyarrow_3lib_Field), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Field)) __PYX_ERR(9, 91, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Field = (struct __pyx_vtabstruct_7pyarrow_3lib_Field*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Field->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Field)) __PYX_ERR(9, 91, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Schema = __Pyx_ImportType("pyarrow.lib", "Schema", sizeof(struct __pyx_obj_7pyarrow_3lib_Schema), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Schema)) __PYX_ERR(9, 102, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Schema = (struct __pyx_vtabstruct_7pyarrow_3lib_Schema*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Schema->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Schema)) __PYX_ERR(9, 102, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Scalar = __Pyx_ImportType("pyarrow.lib", "Scalar", sizeof(struct __pyx_obj_7pyarrow_3lib_Scalar), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Scalar)) __PYX_ERR(9, 111, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_NAType = __Pyx_ImportType("pyarrow.lib", "NAType", sizeof(struct __pyx_obj_7pyarrow_3lib_NAType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NAType)) __PYX_ERR(9, 116, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ArrayValue = __Pyx_ImportType("pyarrow.lib", "ArrayValue", sizeof(struct __pyx_obj_7pyarrow_3lib_ArrayValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ArrayValue)) __PYX_ERR(9, 120, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ArrayValue = (struct __pyx_vtabstruct_7pyarrow_3lib_ArrayValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ArrayValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ArrayValue)) __PYX_ERR(9, 120, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int8Value = __Pyx_ImportType("pyarrow.lib", "Int8Value", sizeof(struct __pyx_obj_7pyarrow_3lib_Int8Value), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int8Value)) __PYX_ERR(9, 131, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int8Value = (struct __pyx_vtabstruct_7pyarrow_3lib_Int8Value*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int8Value->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int8Value)) __PYX_ERR(9, 131, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int64Value = __Pyx_ImportType("pyarrow.lib", "Int64Value", sizeof(struct __pyx_obj_7pyarrow_3lib_Int64Value), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int64Value)) __PYX_ERR(9, 135, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int64Value = (struct __pyx_vtabstruct_7pyarrow_3lib_Int64Value*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int64Value->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int64Value)) __PYX_ERR(9, 135, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ListValue = __Pyx_ImportType("pyarrow.lib", "ListValue", sizeof(struct __pyx_obj_7pyarrow_3lib_ListValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListValue)) __PYX_ERR(9, 139, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ListValue = (struct __pyx_vtabstruct_7pyarrow_3lib_ListValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListValue)) __PYX_ERR(9, 139, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_StructValue = __Pyx_ImportType("pyarrow.lib", "StructValue", sizeof(struct __pyx_obj_7pyarrow_3lib_StructValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StructValue)) __PYX_ERR(9, 150, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_StructValue = (struct __pyx_vtabstruct_7pyarrow_3lib_StructValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StructValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StructValue)) __PYX_ERR(9, 150, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UnionValue = __Pyx_ImportType("pyarrow.lib", "UnionValue", sizeof(struct __pyx_obj_7pyarrow_3lib_UnionValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UnionValue)) __PYX_ERR(9, 155, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UnionValue = (struct __pyx_vtabstruct_7pyarrow_3lib_UnionValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UnionValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UnionValue)) __PYX_ERR(9, 155, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_StringValue = __Pyx_ImportType("pyarrow.lib", "StringValue", sizeof(struct __pyx_obj_7pyarrow_3lib_StringValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StringValue)) __PYX_ERR(9, 163, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_StringValue = (struct __pyx_vtabstruct_7pyarrow_3lib_StringValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StringValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StringValue)) __PYX_ERR(9, 163, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryValue", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue)) __PYX_ERR(9, 167, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryValue = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryValue)) __PYX_ERR(9, 167, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Array = __Pyx_ImportType("pyarrow.lib", "Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Array)) __PYX_ERR(9, 171, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Array)) __PYX_ERR(9, 171, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Tensor = __Pyx_ImportType("pyarrow.lib", "Tensor", sizeof(struct __pyx_obj_7pyarrow_3lib_Tensor), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Tensor)) __PYX_ERR(9, 184, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Tensor = (struct __pyx_vtabstruct_7pyarrow_3lib_Tensor*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Tensor->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Tensor)) __PYX_ERR(9, 184, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_NullArray = __Pyx_ImportType("pyarrow.lib", "NullArray", sizeof(struct __pyx_obj_7pyarrow_3lib_NullArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NullArray)) __PYX_ERR(9, 195, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_NullArray = (struct __pyx_vtabstruct_7pyarrow_3lib_NullArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NullArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NullArray)) __PYX_ERR(9, 195, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_BooleanArray = __Pyx_ImportType("pyarrow.lib", "BooleanArray", sizeof(struct __pyx_obj_7pyarrow_3lib_BooleanArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_BooleanArray)) __PYX_ERR(9, 199, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_BooleanArray = (struct __pyx_vtabstruct_7pyarrow_3lib_BooleanArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_BooleanArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_BooleanArray)) __PYX_ERR(9, 199, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_NumericArray = __Pyx_ImportType("pyarrow.lib", "NumericArray", sizeof(struct __pyx_obj_7pyarrow_3lib_NumericArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NumericArray)) __PYX_ERR(9, 203, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_NumericArray = (struct __pyx_vtabstruct_7pyarrow_3lib_NumericArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NumericArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NumericArray)) __PYX_ERR(9, 203, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_IntegerArray = __Pyx_ImportType("pyarrow.lib", "IntegerArray", sizeof(struct __pyx_obj_7pyarrow_3lib_IntegerArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_IntegerArray)) __PYX_ERR(9, 207, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_IntegerArray = (struct __pyx_vtabstruct_7pyarrow_3lib_IntegerArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_IntegerArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_IntegerArray)) __PYX_ERR(9, 207, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_FloatingPointArray = __Pyx_ImportType("pyarrow.lib", "FloatingPointArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FloatingPointArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FloatingPointArray)) __PYX_ERR(9, 211, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_FloatingPointArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FloatingPointArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FloatingPointArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FloatingPointArray)) __PYX_ERR(9, 211, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int8Array = __Pyx_ImportType("pyarrow.lib", "Int8Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int8Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int8Array)) __PYX_ERR(9, 215, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int8Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int8Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int8Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int8Array)) __PYX_ERR(9, 215, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UInt8Array = __Pyx_ImportType("pyarrow.lib", "UInt8Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt8Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt8Array)) __PYX_ERR(9, 219, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UInt8Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt8Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt8Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt8Array)) __PYX_ERR(9, 219, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int16Array = __Pyx_ImportType("pyarrow.lib", "Int16Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int16Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int16Array)) __PYX_ERR(9, 223, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int16Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int16Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int16Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int16Array)) __PYX_ERR(9, 223, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UInt16Array = __Pyx_ImportType("pyarrow.lib", "UInt16Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt16Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt16Array)) __PYX_ERR(9, 227, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UInt16Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt16Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt16Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt16Array)) __PYX_ERR(9, 227, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int32Array = __Pyx_ImportType("pyarrow.lib", "Int32Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int32Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int32Array)) __PYX_ERR(9, 231, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int32Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int32Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int32Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int32Array)) __PYX_ERR(9, 231, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UInt32Array = __Pyx_ImportType("pyarrow.lib", "UInt32Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt32Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt32Array)) __PYX_ERR(9, 235, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UInt32Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt32Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt32Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt32Array)) __PYX_ERR(9, 235, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Int64Array = __Pyx_ImportType("pyarrow.lib", "Int64Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int64Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int64Array)) __PYX_ERR(9, 239, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Int64Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int64Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int64Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int64Array)) __PYX_ERR(9, 239, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UInt64Array = __Pyx_ImportType("pyarrow.lib", "UInt64Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt64Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt64Array)) __PYX_ERR(9, 243, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UInt64Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt64Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt64Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt64Array)) __PYX_ERR(9, 243, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_HalfFloatArray = __Pyx_ImportType("pyarrow.lib", "HalfFloatArray", sizeof(struct __pyx_obj_7pyarrow_3lib_HalfFloatArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_HalfFloatArray)) __PYX_ERR(9, 247, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_HalfFloatArray = (struct __pyx_vtabstruct_7pyarrow_3lib_HalfFloatArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_HalfFloatArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_HalfFloatArray)) __PYX_ERR(9, 247, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_FloatArray = __Pyx_ImportType("pyarrow.lib", "FloatArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FloatArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FloatArray)) __PYX_ERR(9, 251, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_FloatArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FloatArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FloatArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FloatArray)) __PYX_ERR(9, 251, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_DoubleArray = __Pyx_ImportType("pyarrow.lib", "DoubleArray", sizeof(struct __pyx_obj_7pyarrow_3lib_DoubleArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DoubleArray)) __PYX_ERR(9, 255, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_DoubleArray = (struct __pyx_vtabstruct_7pyarrow_3lib_DoubleArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DoubleArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DoubleArray)) __PYX_ERR(9, 255, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray)) __PYX_ERR(9, 259, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryArray)) __PYX_ERR(9, 259, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Decimal128Array = __Pyx_ImportType("pyarrow.lib", "Decimal128Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Decimal128Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Decimal128Array)) __PYX_ERR(9, 263, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Decimal128Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Decimal128Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Decimal128Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Decimal128Array)) __PYX_ERR(9, 263, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_StructArray = __Pyx_ImportType("pyarrow.lib", "StructArray", sizeof(struct __pyx_obj_7pyarrow_3lib_StructArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StructArray)) __PYX_ERR(9, 267, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_StructArray = (struct __pyx_vtabstruct_7pyarrow_3lib_StructArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StructArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StructArray)) __PYX_ERR(9, 267, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ListArray = __Pyx_ImportType("pyarrow.lib", "ListArray", sizeof(struct __pyx_obj_7pyarrow_3lib_ListArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListArray)) __PYX_ERR(9, 271, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ListArray = (struct __pyx_vtabstruct_7pyarrow_3lib_ListArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListArray)) __PYX_ERR(9, 271, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_UnionArray = __Pyx_ImportType("pyarrow.lib", "UnionArray", sizeof(struct __pyx_obj_7pyarrow_3lib_UnionArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UnionArray)) __PYX_ERR(9, 275, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_UnionArray = (struct __pyx_vtabstruct_7pyarrow_3lib_UnionArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UnionArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UnionArray)) __PYX_ERR(9, 275, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_StringArray = __Pyx_ImportType("pyarrow.lib", "StringArray", sizeof(struct __pyx_obj_7pyarrow_3lib_StringArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StringArray)) __PYX_ERR(9, 279, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_StringArray = (struct __pyx_vtabstruct_7pyarrow_3lib_StringArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StringArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StringArray)) __PYX_ERR(9, 279, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_BinaryArray = __Pyx_ImportType("pyarrow.lib", "BinaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_BinaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_BinaryArray)) __PYX_ERR(9, 283, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_BinaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_BinaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_BinaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_BinaryArray)) __PYX_ERR(9, 283, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_DictionaryArray = __Pyx_ImportType("pyarrow.lib", "DictionaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_DictionaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DictionaryArray)) __PYX_ERR(9, 287, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_DictionaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_DictionaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DictionaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DictionaryArray)) __PYX_ERR(9, 287, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ChunkedArray = __Pyx_ImportType("pyarrow.lib", "ChunkedArray", sizeof(struct __pyx_obj_7pyarrow_3lib_ChunkedArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ChunkedArray)) __PYX_ERR(9, 298, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ChunkedArray = (struct __pyx_vtabstruct_7pyarrow_3lib_ChunkedArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ChunkedArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ChunkedArray)) __PYX_ERR(9, 298, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Column = __Pyx_ImportType("pyarrow.lib", "Column", sizeof(struct __pyx_obj_7pyarrow_3lib_Column), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Column)) __PYX_ERR(9, 307, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Column = (struct __pyx_vtabstruct_7pyarrow_3lib_Column*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Column->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Column)) __PYX_ERR(9, 307, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Table = __Pyx_ImportType("pyarrow.lib", "Table", sizeof(struct __pyx_obj_7pyarrow_3lib_Table), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Table)) __PYX_ERR(9, 315, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Table = (struct __pyx_vtabstruct_7pyarrow_3lib_Table*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Table->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Table)) __PYX_ERR(9, 315, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_RecordBatch = __Pyx_ImportType("pyarrow.lib", "RecordBatch", sizeof(struct __pyx_obj_7pyarrow_3lib_RecordBatch), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_RecordBatch)) __PYX_ERR(9, 323, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_RecordBatch = (struct __pyx_vtabstruct_7pyarrow_3lib_RecordBatch*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_RecordBatch->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_RecordBatch)) __PYX_ERR(9, 323, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_Buffer = __Pyx_ImportType("pyarrow.lib", "Buffer", sizeof(struct __pyx_obj_7pyarrow_3lib_Buffer), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Buffer)) __PYX_ERR(9, 332, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_Buffer = (struct __pyx_vtabstruct_7pyarrow_3lib_Buffer*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Buffer->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Buffer)) __PYX_ERR(9, 332, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_ResizableBuffer = __Pyx_ImportType("pyarrow.lib", "ResizableBuffer", sizeof(struct __pyx_obj_7pyarrow_3lib_ResizableBuffer), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ResizableBuffer)) __PYX_ERR(9, 342, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_ResizableBuffer = (struct __pyx_vtabstruct_7pyarrow_3lib_ResizableBuffer*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ResizableBuffer->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ResizableBuffer)) __PYX_ERR(9, 342, __pyx_L1_error)
-  __pyx_ptype_7pyarrow_3lib_NativeFile = __Pyx_ImportType("pyarrow.lib", "NativeFile", sizeof(struct __pyx_obj_7pyarrow_3lib_NativeFile), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NativeFile)) __PYX_ERR(9, 347, __pyx_L1_error)
-  __pyx_vtabptr_7pyarrow_3lib_NativeFile = (struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NativeFile->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NativeFile)) __PYX_ERR(9, 347, __pyx_L1_error)
+  0); if (unlikely(!__pyx_ptype_7cpython_4type_type)) __PYX_ERR(7, 9, __pyx_L1_error)
+  __pyx_ptype_7cpython_4bool_bool = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "bool", sizeof(PyBoolObject), 0); if (unlikely(!__pyx_ptype_7cpython_4bool_bool)) __PYX_ERR(8, 8, __pyx_L1_error)
+  __pyx_ptype_7cpython_7complex_complex = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "complex", sizeof(PyComplexObject), 0); if (unlikely(!__pyx_ptype_7cpython_7complex_complex)) __PYX_ERR(9, 15, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Message = __Pyx_ImportType("pyarrow.lib", "Message", sizeof(struct __pyx_obj_7pyarrow_3lib_Message), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Message)) __PYX_ERR(10, 32, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_MemoryPool = __Pyx_ImportType("pyarrow.lib", "MemoryPool", sizeof(struct __pyx_obj_7pyarrow_3lib_MemoryPool), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_MemoryPool)) __PYX_ERR(10, 37, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_MemoryPool = (struct __pyx_vtabstruct_7pyarrow_3lib_MemoryPool*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_MemoryPool->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_MemoryPool)) __PYX_ERR(10, 37, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_DataType = __Pyx_ImportType("pyarrow.lib", "DataType", sizeof(struct __pyx_obj_7pyarrow_3lib_DataType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DataType)) __PYX_ERR(10, 47, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_DataType = (struct __pyx_vtabstruct_7pyarrow_3lib_DataType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DataType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DataType)) __PYX_ERR(10, 47, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ListType = __Pyx_ImportType("pyarrow.lib", "ListType", sizeof(struct __pyx_obj_7pyarrow_3lib_ListType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListType)) __PYX_ERR(10, 56, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ListType = (struct __pyx_vtabstruct_7pyarrow_3lib_ListType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListType)) __PYX_ERR(10, 56, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_DictionaryType = __Pyx_ImportType("pyarrow.lib", "DictionaryType", sizeof(struct __pyx_obj_7pyarrow_3lib_DictionaryType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DictionaryType)) __PYX_ERR(10, 61, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_DictionaryType = (struct __pyx_vtabstruct_7pyarrow_3lib_DictionaryType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DictionaryType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DictionaryType)) __PYX_ERR(10, 61, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_TimestampType = __Pyx_ImportType("pyarrow.lib", "TimestampType", sizeof(struct __pyx_obj_7pyarrow_3lib_TimestampType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_TimestampType)) __PYX_ERR(10, 66, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_TimestampType = (struct __pyx_vtabstruct_7pyarrow_3lib_TimestampType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_TimestampType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_TimestampType)) __PYX_ERR(10, 66, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Time32Type = __Pyx_ImportType("pyarrow.lib", "Time32Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Time32Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Time32Type)) __PYX_ERR(10, 71, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Time32Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Time32Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Time32Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Time32Type)) __PYX_ERR(10, 71, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Time64Type = __Pyx_ImportType("pyarrow.lib", "Time64Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Time64Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Time64Type)) __PYX_ERR(10, 76, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Time64Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Time64Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Time64Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Time64Type)) __PYX_ERR(10, 76, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryType", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType)) __PYX_ERR(10, 81, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryType = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryType*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryType->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryType)) __PYX_ERR(10, 81, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Decimal128Type = __Pyx_ImportType("pyarrow.lib", "Decimal128Type", sizeof(struct __pyx_obj_7pyarrow_3lib_Decimal128Type), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Decimal128Type)) __PYX_ERR(10, 86, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Decimal128Type = (struct __pyx_vtabstruct_7pyarrow_3lib_Decimal128Type*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Decimal128Type->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Decimal128Type)) __PYX_ERR(10, 86, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Field = __Pyx_ImportType("pyarrow.lib", "Field", sizeof(struct __pyx_obj_7pyarrow_3lib_Field), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Field)) __PYX_ERR(10, 91, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Field = (struct __pyx_vtabstruct_7pyarrow_3lib_Field*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Field->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Field)) __PYX_ERR(10, 91, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Schema = __Pyx_ImportType("pyarrow.lib", "Schema", sizeof(struct __pyx_obj_7pyarrow_3lib_Schema), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Schema)) __PYX_ERR(10, 102, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Schema = (struct __pyx_vtabstruct_7pyarrow_3lib_Schema*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Schema->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Schema)) __PYX_ERR(10, 102, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Scalar = __Pyx_ImportType("pyarrow.lib", "Scalar", sizeof(struct __pyx_obj_7pyarrow_3lib_Scalar), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Scalar)) __PYX_ERR(10, 111, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_NAType = __Pyx_ImportType("pyarrow.lib", "NAType", sizeof(struct __pyx_obj_7pyarrow_3lib_NAType), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NAType)) __PYX_ERR(10, 116, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ArrayValue = __Pyx_ImportType("pyarrow.lib", "ArrayValue", sizeof(struct __pyx_obj_7pyarrow_3lib_ArrayValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ArrayValue)) __PYX_ERR(10, 120, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ArrayValue = (struct __pyx_vtabstruct_7pyarrow_3lib_ArrayValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ArrayValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ArrayValue)) __PYX_ERR(10, 120, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int8Value = __Pyx_ImportType("pyarrow.lib", "Int8Value", sizeof(struct __pyx_obj_7pyarrow_3lib_Int8Value), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int8Value)) __PYX_ERR(10, 131, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int8Value = (struct __pyx_vtabstruct_7pyarrow_3lib_Int8Value*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int8Value->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int8Value)) __PYX_ERR(10, 131, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int64Value = __Pyx_ImportType("pyarrow.lib", "Int64Value", sizeof(struct __pyx_obj_7pyarrow_3lib_Int64Value), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int64Value)) __PYX_ERR(10, 135, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int64Value = (struct __pyx_vtabstruct_7pyarrow_3lib_Int64Value*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int64Value->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int64Value)) __PYX_ERR(10, 135, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ListValue = __Pyx_ImportType("pyarrow.lib", "ListValue", sizeof(struct __pyx_obj_7pyarrow_3lib_ListValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListValue)) __PYX_ERR(10, 139, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ListValue = (struct __pyx_vtabstruct_7pyarrow_3lib_ListValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListValue)) __PYX_ERR(10, 139, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_StructValue = __Pyx_ImportType("pyarrow.lib", "StructValue", sizeof(struct __pyx_obj_7pyarrow_3lib_StructValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StructValue)) __PYX_ERR(10, 150, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_StructValue = (struct __pyx_vtabstruct_7pyarrow_3lib_StructValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StructValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StructValue)) __PYX_ERR(10, 150, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UnionValue = __Pyx_ImportType("pyarrow.lib", "UnionValue", sizeof(struct __pyx_obj_7pyarrow_3lib_UnionValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UnionValue)) __PYX_ERR(10, 155, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UnionValue = (struct __pyx_vtabstruct_7pyarrow_3lib_UnionValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UnionValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UnionValue)) __PYX_ERR(10, 155, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_StringValue = __Pyx_ImportType("pyarrow.lib", "StringValue", sizeof(struct __pyx_obj_7pyarrow_3lib_StringValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StringValue)) __PYX_ERR(10, 163, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_StringValue = (struct __pyx_vtabstruct_7pyarrow_3lib_StringValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StringValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StringValue)) __PYX_ERR(10, 163, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryValue", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryValue), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue)) __PYX_ERR(10, 167, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryValue = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryValue*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryValue->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryValue)) __PYX_ERR(10, 167, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Array = __Pyx_ImportType("pyarrow.lib", "Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Array)) __PYX_ERR(10, 171, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Array)) __PYX_ERR(10, 171, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Tensor = __Pyx_ImportType("pyarrow.lib", "Tensor", sizeof(struct __pyx_obj_7pyarrow_3lib_Tensor), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Tensor)) __PYX_ERR(10, 184, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Tensor = (struct __pyx_vtabstruct_7pyarrow_3lib_Tensor*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Tensor->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Tensor)) __PYX_ERR(10, 184, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_NullArray = __Pyx_ImportType("pyarrow.lib", "NullArray", sizeof(struct __pyx_obj_7pyarrow_3lib_NullArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NullArray)) __PYX_ERR(10, 195, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_NullArray = (struct __pyx_vtabstruct_7pyarrow_3lib_NullArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NullArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NullArray)) __PYX_ERR(10, 195, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_BooleanArray = __Pyx_ImportType("pyarrow.lib", "BooleanArray", sizeof(struct __pyx_obj_7pyarrow_3lib_BooleanArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_BooleanArray)) __PYX_ERR(10, 199, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_BooleanArray = (struct __pyx_vtabstruct_7pyarrow_3lib_BooleanArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_BooleanArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_BooleanArray)) __PYX_ERR(10, 199, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_NumericArray = __Pyx_ImportType("pyarrow.lib", "NumericArray", sizeof(struct __pyx_obj_7pyarrow_3lib_NumericArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NumericArray)) __PYX_ERR(10, 203, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_NumericArray = (struct __pyx_vtabstruct_7pyarrow_3lib_NumericArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NumericArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NumericArray)) __PYX_ERR(10, 203, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_IntegerArray = __Pyx_ImportType("pyarrow.lib", "IntegerArray", sizeof(struct __pyx_obj_7pyarrow_3lib_IntegerArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_IntegerArray)) __PYX_ERR(10, 207, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_IntegerArray = (struct __pyx_vtabstruct_7pyarrow_3lib_IntegerArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_IntegerArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_IntegerArray)) __PYX_ERR(10, 207, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_FloatingPointArray = __Pyx_ImportType("pyarrow.lib", "FloatingPointArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FloatingPointArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FloatingPointArray)) __PYX_ERR(10, 211, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_FloatingPointArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FloatingPointArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FloatingPointArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FloatingPointArray)) __PYX_ERR(10, 211, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int8Array = __Pyx_ImportType("pyarrow.lib", "Int8Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int8Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int8Array)) __PYX_ERR(10, 215, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int8Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int8Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int8Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int8Array)) __PYX_ERR(10, 215, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UInt8Array = __Pyx_ImportType("pyarrow.lib", "UInt8Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt8Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt8Array)) __PYX_ERR(10, 219, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UInt8Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt8Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt8Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt8Array)) __PYX_ERR(10, 219, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int16Array = __Pyx_ImportType("pyarrow.lib", "Int16Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int16Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int16Array)) __PYX_ERR(10, 223, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int16Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int16Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int16Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int16Array)) __PYX_ERR(10, 223, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UInt16Array = __Pyx_ImportType("pyarrow.lib", "UInt16Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt16Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt16Array)) __PYX_ERR(10, 227, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UInt16Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt16Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt16Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt16Array)) __PYX_ERR(10, 227, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int32Array = __Pyx_ImportType("pyarrow.lib", "Int32Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int32Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int32Array)) __PYX_ERR(10, 231, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int32Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int32Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int32Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int32Array)) __PYX_ERR(10, 231, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UInt32Array = __Pyx_ImportType("pyarrow.lib", "UInt32Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt32Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt32Array)) __PYX_ERR(10, 235, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UInt32Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt32Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt32Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt32Array)) __PYX_ERR(10, 235, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Int64Array = __Pyx_ImportType("pyarrow.lib", "Int64Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Int64Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Int64Array)) __PYX_ERR(10, 239, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Int64Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Int64Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Int64Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Int64Array)) __PYX_ERR(10, 239, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UInt64Array = __Pyx_ImportType("pyarrow.lib", "UInt64Array", sizeof(struct __pyx_obj_7pyarrow_3lib_UInt64Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UInt64Array)) __PYX_ERR(10, 243, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UInt64Array = (struct __pyx_vtabstruct_7pyarrow_3lib_UInt64Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UInt64Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UInt64Array)) __PYX_ERR(10, 243, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_HalfFloatArray = __Pyx_ImportType("pyarrow.lib", "HalfFloatArray", sizeof(struct __pyx_obj_7pyarrow_3lib_HalfFloatArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_HalfFloatArray)) __PYX_ERR(10, 247, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_HalfFloatArray = (struct __pyx_vtabstruct_7pyarrow_3lib_HalfFloatArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_HalfFloatArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_HalfFloatArray)) __PYX_ERR(10, 247, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_FloatArray = __Pyx_ImportType("pyarrow.lib", "FloatArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FloatArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FloatArray)) __PYX_ERR(10, 251, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_FloatArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FloatArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FloatArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FloatArray)) __PYX_ERR(10, 251, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_DoubleArray = __Pyx_ImportType("pyarrow.lib", "DoubleArray", sizeof(struct __pyx_obj_7pyarrow_3lib_DoubleArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DoubleArray)) __PYX_ERR(10, 255, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_DoubleArray = (struct __pyx_vtabstruct_7pyarrow_3lib_DoubleArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DoubleArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DoubleArray)) __PYX_ERR(10, 255, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray = __Pyx_ImportType("pyarrow.lib", "FixedSizeBinaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_FixedSizeBinaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray)) __PYX_ERR(10, 259, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_FixedSizeBinaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_FixedSizeBinaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_FixedSizeBinaryArray)) __PYX_ERR(10, 259, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Decimal128Array = __Pyx_ImportType("pyarrow.lib", "Decimal128Array", sizeof(struct __pyx_obj_7pyarrow_3lib_Decimal128Array), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Decimal128Array)) __PYX_ERR(10, 263, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Decimal128Array = (struct __pyx_vtabstruct_7pyarrow_3lib_Decimal128Array*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Decimal128Array->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Decimal128Array)) __PYX_ERR(10, 263, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_StructArray = __Pyx_ImportType("pyarrow.lib", "StructArray", sizeof(struct __pyx_obj_7pyarrow_3lib_StructArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StructArray)) __PYX_ERR(10, 267, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_StructArray = (struct __pyx_vtabstruct_7pyarrow_3lib_StructArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StructArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StructArray)) __PYX_ERR(10, 267, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ListArray = __Pyx_ImportType("pyarrow.lib", "ListArray", sizeof(struct __pyx_obj_7pyarrow_3lib_ListArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ListArray)) __PYX_ERR(10, 271, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ListArray = (struct __pyx_vtabstruct_7pyarrow_3lib_ListArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ListArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ListArray)) __PYX_ERR(10, 271, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_UnionArray = __Pyx_ImportType("pyarrow.lib", "UnionArray", sizeof(struct __pyx_obj_7pyarrow_3lib_UnionArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_UnionArray)) __PYX_ERR(10, 275, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_UnionArray = (struct __pyx_vtabstruct_7pyarrow_3lib_UnionArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_UnionArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_UnionArray)) __PYX_ERR(10, 275, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_StringArray = __Pyx_ImportType("pyarrow.lib", "StringArray", sizeof(struct __pyx_obj_7pyarrow_3lib_StringArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_StringArray)) __PYX_ERR(10, 279, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_StringArray = (struct __pyx_vtabstruct_7pyarrow_3lib_StringArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_StringArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_StringArray)) __PYX_ERR(10, 279, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_BinaryArray = __Pyx_ImportType("pyarrow.lib", "BinaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_BinaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_BinaryArray)) __PYX_ERR(10, 283, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_BinaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_BinaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_BinaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_BinaryArray)) __PYX_ERR(10, 283, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_DictionaryArray = __Pyx_ImportType("pyarrow.lib", "DictionaryArray", sizeof(struct __pyx_obj_7pyarrow_3lib_DictionaryArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_DictionaryArray)) __PYX_ERR(10, 287, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_DictionaryArray = (struct __pyx_vtabstruct_7pyarrow_3lib_DictionaryArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_DictionaryArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_DictionaryArray)) __PYX_ERR(10, 287, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ChunkedArray = __Pyx_ImportType("pyarrow.lib", "ChunkedArray", sizeof(struct __pyx_obj_7pyarrow_3lib_ChunkedArray), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ChunkedArray)) __PYX_ERR(10, 298, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ChunkedArray = (struct __pyx_vtabstruct_7pyarrow_3lib_ChunkedArray*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ChunkedArray->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ChunkedArray)) __PYX_ERR(10, 298, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Column = __Pyx_ImportType("pyarrow.lib", "Column", sizeof(struct __pyx_obj_7pyarrow_3lib_Column), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Column)) __PYX_ERR(10, 307, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Column = (struct __pyx_vtabstruct_7pyarrow_3lib_Column*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Column->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Column)) __PYX_ERR(10, 307, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Table = __Pyx_ImportType("pyarrow.lib", "Table", sizeof(struct __pyx_obj_7pyarrow_3lib_Table), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Table)) __PYX_ERR(10, 315, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Table = (struct __pyx_vtabstruct_7pyarrow_3lib_Table*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Table->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Table)) __PYX_ERR(10, 315, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_RecordBatch = __Pyx_ImportType("pyarrow.lib", "RecordBatch", sizeof(struct __pyx_obj_7pyarrow_3lib_RecordBatch), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_RecordBatch)) __PYX_ERR(10, 323, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_RecordBatch = (struct __pyx_vtabstruct_7pyarrow_3lib_RecordBatch*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_RecordBatch->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_RecordBatch)) __PYX_ERR(10, 323, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_Buffer = __Pyx_ImportType("pyarrow.lib", "Buffer", sizeof(struct __pyx_obj_7pyarrow_3lib_Buffer), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_Buffer)) __PYX_ERR(10, 332, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_Buffer = (struct __pyx_vtabstruct_7pyarrow_3lib_Buffer*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_Buffer->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_Buffer)) __PYX_ERR(10, 332, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_ResizableBuffer = __Pyx_ImportType("pyarrow.lib", "ResizableBuffer", sizeof(struct __pyx_obj_7pyarrow_3lib_ResizableBuffer), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_ResizableBuffer)) __PYX_ERR(10, 342, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_ResizableBuffer = (struct __pyx_vtabstruct_7pyarrow_3lib_ResizableBuffer*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_ResizableBuffer->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_ResizableBuffer)) __PYX_ERR(10, 342, __pyx_L1_error)
+  __pyx_ptype_7pyarrow_3lib_NativeFile = __Pyx_ImportType("pyarrow.lib", "NativeFile", sizeof(struct __pyx_obj_7pyarrow_3lib_NativeFile), 1); if (unlikely(!__pyx_ptype_7pyarrow_3lib_NativeFile)) __PYX_ERR(10, 347, __pyx_L1_error)
+  __pyx_vtabptr_7pyarrow_3lib_NativeFile = (struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile*)__Pyx_GetVtable(__pyx_ptype_7pyarrow_3lib_NativeFile->tp_dict); if (unlikely(!__pyx_vtabptr_7pyarrow_3lib_NativeFile)) __PYX_ERR(10, 347, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -21868,8 +22500,8 @@ static int __Pyx_modinit_function_import_code(void) {
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("__Pyx_modinit_function_import_code", 0);
   /*--- Function import code ---*/
-  __pyx_t_1 = __Pyx_ImportModule("pyarrow.lib"); if (!__pyx_t_1) __PYX_ERR(5, 1, __pyx_L1_error)
-  if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_schema", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema, "std::shared_ptr< arrow::Schema>  (PyObject *)") < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportModule("pyarrow.lib"); if (!__pyx_t_1) __PYX_ERR(6, 1, __pyx_L1_error)
+  if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_schema", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema, "std::shared_ptr< arrow::Schema>  (PyObject *)") < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_RefNannyFinishContext();
   return 0;
@@ -21971,27 +22603,27 @@ if (!__Pyx_RefNanny) {
 }
 #endif
   __Pyx_RefNannySetupContext("__Pyx_PyMODINIT_FUNC PyInit_lib(void)", 0);
-  if (__Pyx_check_binary_version() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_empty_unicode = PyUnicode_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_unicode)) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_check_binary_version() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_empty_unicode = PyUnicode_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_unicode)) __PYX_ERR(6, 1, __pyx_L1_error)
   #ifdef __Pyx_CyFunction_USED
-  if (__pyx_CyFunction_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_CyFunction_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   #ifdef __Pyx_FusedFunction_USED
-  if (__pyx_FusedFunction_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_FusedFunction_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   #ifdef __Pyx_Coroutine_USED
-  if (__pyx_Coroutine_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_Coroutine_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   #ifdef __Pyx_Generator_USED
-  if (__pyx_Generator_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_Generator_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   #ifdef __Pyx_AsyncGen_USED
-  if (__pyx_AsyncGen_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_AsyncGen_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   #ifdef __Pyx_StopAsyncIteration_USED
-  if (__pyx_StopAsyncIteration_init() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__pyx_StopAsyncIteration_init() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   /*--- Library function declarations ---*/
   /*--- Threads initialization code ---*/
@@ -22010,47 +22642,47 @@ if (!__Pyx_RefNanny) {
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
-  if (unlikely(!__pyx_m)) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (unlikely(!__pyx_m)) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
-  __pyx_d = PyModule_GetDict(__pyx_m); if (unlikely(!__pyx_d)) __PYX_ERR(5, 1, __pyx_L1_error)
+  __pyx_d = PyModule_GetDict(__pyx_m); if (unlikely(!__pyx_d)) __PYX_ERR(6, 1, __pyx_L1_error)
   Py_INCREF(__pyx_d);
-  __pyx_b = PyImport_AddModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_b)) __PYX_ERR(5, 1, __pyx_L1_error)
-  __pyx_cython_runtime = PyImport_AddModule((char *) "cython_runtime"); if (unlikely(!__pyx_cython_runtime)) __PYX_ERR(5, 1, __pyx_L1_error)
+  __pyx_b = PyImport_AddModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_b)) __PYX_ERR(6, 1, __pyx_L1_error)
+  __pyx_cython_runtime = PyImport_AddModule((char *) "cython_runtime"); if (unlikely(!__pyx_cython_runtime)) __PYX_ERR(6, 1, __pyx_L1_error)
   #if CYTHON_COMPILING_IN_PYPY
   Py_INCREF(__pyx_b);
   #endif
-  if (PyObject_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) __PYX_ERR(5, 1, __pyx_L1_error);
+  if (PyObject_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) __PYX_ERR(6, 1, __pyx_L1_error);
   /*--- Initialize various global constants etc. ---*/
-  if (__Pyx_InitGlobals() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_InitGlobals() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
-  if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
   if (__pyx_module_is_main_lib) {
-    if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+    if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
-    PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(5, 1, __pyx_L1_error)
+    PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(6, 1, __pyx_L1_error)
     if (!PyDict_GetItemString(modules, "lib")) {
-      if (unlikely(PyDict_SetItemString(modules, "lib", __pyx_m) < 0)) __PYX_ERR(5, 1, __pyx_L1_error)
+      if (unlikely(PyDict_SetItemString(modules, "lib", __pyx_m) < 0)) __PYX_ERR(6, 1, __pyx_L1_error)
     }
   }
   #endif
   /*--- Builtin init code ---*/
-  if (__Pyx_InitCachedBuiltins() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_InitCachedBuiltins() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   /*--- Constants init code ---*/
-  if (__Pyx_InitCachedConstants() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_InitCachedConstants() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   /*--- Global type/function init code ---*/
   (void)__Pyx_modinit_global_init_code();
   (void)__Pyx_modinit_variable_export_code();
-  (void)__Pyx_modinit_function_export_code();
+  if (unlikely(__Pyx_modinit_function_export_code() != 0)) goto __pyx_L1_error;
   if (unlikely(__Pyx_modinit_type_init_code() != 0)) goto __pyx_L1_error;
   if (unlikely(__Pyx_modinit_type_import_code() != 0)) goto __pyx_L1_error;
   (void)__Pyx_modinit_variable_import_code();
   if (unlikely(__Pyx_modinit_function_import_code() != 0)) goto __pyx_L1_error;
   /*--- Execution code ---*/
   #if defined(__Pyx_Generator_USED) || defined(__Pyx_Coroutine_USED)
-  if (__Pyx_patch_abc() < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (__Pyx_patch_abc() < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   #endif
 
   /* "error.pxi":15
@@ -22072,9 +22704,9 @@ if (!__Pyx_RefNanny) {
  * 
  * # Todo: Have copy_host_to_device and prepare_host_buffer accept arrow arrays (?)
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 15, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 15, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(3, 15, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(4, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "lib.pyx":1
@@ -22082,9 +22714,9 @@ if (!__Pyx_RefNanny) {
  * #
  * # Licensed under the Apache License, Version 2.0 (the "License");
  */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 1, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(6, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(5, 1, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(6, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "View.MemoryView":208
@@ -27496,6 +28128,43 @@ __pyx_fail:
         return PyErr_WarnEx(NULL, message, 1);
     }
     return 0;
+}
+
+/* FunctionExport */
+        static int __Pyx_ExportFunction(const char *name, void (*f)(void), const char *sig) {
+    PyObject *d = 0;
+    PyObject *cobj = 0;
+    union {
+        void (*fp)(void);
+        void *p;
+    } tmp;
+    d = PyObject_GetAttrString(__pyx_m, (char *)"__pyx_capi__");
+    if (!d) {
+        PyErr_Clear();
+        d = PyDict_New();
+        if (!d)
+            goto bad;
+        Py_INCREF(d);
+        if (PyModule_AddObject(__pyx_m, (char *)"__pyx_capi__", d) < 0)
+            goto bad;
+    }
+    tmp.fp = f;
+#if PY_VERSION_HEX >= 0x02070000
+    cobj = PyCapsule_New(tmp.p, sig, 0);
+#else
+    cobj = PyCObject_FromVoidPtrAndDesc(tmp.p, (void *)sig, 0);
+#endif
+    if (!cobj)
+        goto bad;
+    if (PyDict_SetItemString(d, name, cobj) < 0)
+        goto bad;
+    Py_DECREF(cobj);
+    Py_DECREF(d);
+    return 0;
+bad:
+    Py_XDECREF(cobj);
+    Py_XDECREF(d);
+    return -1;
 }
 
 /* ModuleImport */

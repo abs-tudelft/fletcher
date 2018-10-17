@@ -26,6 +26,9 @@ cdef class Platform:
         #                "pyfletcher.Platform.create() instead."
         #                .format(self.__class__.__name__))
 
+    cdef from_pointer(self, const shared_ptr[CPlatform]& platform):
+        self.platform = platform
+
     cdef _create(self, str name = "", quiet = True):
         if not name:
             check_fletcher_status(CPlatform.createUnnamed(&self.platform))

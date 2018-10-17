@@ -23,6 +23,8 @@ include "error.pxi"
 
 include "status.pxi"
 
+include "public-api.pxi"
+
 include "platform.pxi"
 
 include "usercore.pxi"
