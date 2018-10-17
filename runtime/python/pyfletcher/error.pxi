@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# distutils: language = c++
+import sys
 
-import cython
-
-# Todo: pyfletcher.includes.libfletcher
-from includes.libfletcher cimport *
-
-include "error.pxi"
-
-include "status.pxi"
-
-include "platform.pxi"
-
-include "usercore.pxi"
+# Todo: Expand, make neat
+cdef check_fletcher_status(Status status):
+    if not status.ok():
+        sys.stderr.write("Fletcher error")
+    status.ewf()

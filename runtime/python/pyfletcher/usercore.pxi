@@ -16,30 +16,39 @@ cdef class UserCore:
     cdef:
         shared_ptr[CUserCore] usercore
 
-    def __cinit__(self, FPGAPlatform platform):
-        self.usercore.reset(new CUserCore(platform.fpgaplatform))
+    def __cinit__(self, Platform platform):
+        self.usercore.reset(new CUserCore(platform.platform))
 
     def implements_schema(self, schema):
-        return self.usercore.get().implements_schema(pyarrow_unwrap_schema(schema))
+        return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
 
     def reset(self):
-        self.usercore.get().reset()
+        check_fletcher_status(self.usercore.get().reset())
 
     def set_range(self, uint32_t first, uint32_t last):
-        self.usercore.get().set_range(first, last)
+        check_fletcher_status(self.usercore.get().setRange(first, last))
 
     # Todo: To be implemented
     def set_arguments(self):
         pass
 
     def start(self):
-        self.usercore.get().start()
+        check_fletcher_status(self.usercore.get().start())
 
     def get_status(self):
-        return self.usercore.get().get_status()
+        cdef uint32_t status
+        check_fletcher_status(self.usercore.get().getStatus(&status))
+        return status
 
     def get_return(self):
-        return self.usercore.get().get_return()
+        cdef uint32_t hi
+        cdef uint32_t lo
+        cdef uint64_t ret
+
+        check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))
+        ret = (<uint64_t>hi << 32) + lo
+
+        return ret
 
     def wait_for_finish(self, poll_interval_usec=0):
-        return self.usercore.get().wait_for_finish(poll_interval_usec)
+        check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))

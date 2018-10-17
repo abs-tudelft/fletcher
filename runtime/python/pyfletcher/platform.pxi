@@ -11,3 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+cdef class Platform:
+    cdef:
+        shared_ptr[CPlatform] platform
+
+    def __init__(self, str name = "", quiet = True):
+        self._create(name, quiet)
+        #raise TypeError("Do not call {}'s constructor directly, use "
+        #                "pyfletcher.Platform.create() instead."
+        #                .format(self.__class__.__name__))
+
+    cdef _create(self, str name = "", quiet = True):
+        if not name:
+            check_fletcher_status(CPlatform.createUnnamed(&self.platform))
+        else:
+            check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))

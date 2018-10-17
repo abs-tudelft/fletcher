@@ -15,3 +15,7 @@
 import pyarrow as pa
 import pyfletcher as pf
 import numpy as np
+
+testplatform = pf.Platform()
+
+print("Hello")
