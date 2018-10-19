@@ -102,6 +102,15 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   // Create a context
   fletcher::Context::Make(&context, platform);
 
+  // Create a UserCore
+  fletcher::UserCore uc(platform);
+
+  // Initialize the platform.
+  platform->init();
+
+  // Reset it
+  uc.reset();
+
   // Prepare the recordbatch
   context->queueRecordBatch(recordbatch);
 
@@ -113,11 +122,6 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   t.stop();
   std::cout << "FPGA copy time (s): " << t.seconds() << std::endl;
 
-  // Create a UserCore
-  fletcher::UserCore uc(platform);
-
-  // Reset it
-  uc.reset();
 
   // Determine size of table
   auto last_index = (int32_t) recordbatch->num_rows();
@@ -131,11 +135,12 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
 
   // Get the sum from the UserCore
   dau_t ret;
-  uc.getReturn(&ret.lo, &ret.hi);
+  uc.getReturn(&ret.hi, &ret.lo);
 
   // Performance timer close
   t.stop();
   std::cout << "Sum FPGA time (s): " << t.seconds() << " seconds" << std::endl;
+  std::cout << "Result: " << ret.full << std::endl;
 
   return ret.full;
 }
@@ -150,7 +155,7 @@ int main(int argc, char **argv) {
   unsigned int num_rows = 1024;
 
   if (argc >= 2) {
-    std::strtoul(argv[1], nullptr, 10);
+    num_rows = std::strtoul(argv[1], nullptr, 10);
   }
   if (num_rows > INT_MAX) {
     std::cout << "Too many rows" << std::endl;
@@ -165,12 +170,10 @@ int main(int argc, char **argv) {
   int64_t sum_cpu = sumCPU(recordbatch);
   t.stop();
   std::cout << "CPU run time (s): " << t.seconds() << std::endl;
+  std::cout << "CPU sum : " << sum_cpu << std::endl;
 
   // Sum on FPGA
   int64_t sum_fpga = sumFPGA(recordbatch);
-
-  std::cout << "Expected sum : " << sum_cpu << std::endl;
-  std::cout << "FPGA sum     : " << sum_fpga << std::endl;
 
   // Check whether sums are the same
   int exit_status;

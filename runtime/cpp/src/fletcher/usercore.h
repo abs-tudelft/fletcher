@@ -14,22 +14,6 @@
 
 #pragma once
 
-// Copyright 2018 Delft University of Technology
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#pragma once
-
 #include <cstdint>
 #include <vector>
 #include <memory>
@@ -69,7 +53,7 @@ class UserCore {
   Status getReturn(uint32_t *ret0, uint32_t *ret1);
 
   /**
-   * @brief  A blocking function that waits for the UserCore to finish
+   * @brief A blocking function that waits for the UserCore to finish
    *
    * Polls with an interval of poll_interval_usec microseconds.
    */
@@ -86,7 +70,7 @@ class UserCore {
 
   // Default control and status values:
   uint32_t ctrl_start = 1UL << FLETCHER_REG_CONTROL_START;
-  uint32_t ctrl_reset = 1UL << FLETCHER_REG_CONTROL_STOP;
+  uint32_t ctrl_reset = 1UL << FLETCHER_REG_CONTROL_RESET;
   uint32_t done_status = 1UL << FLETCHER_REG_STATUS_DONE;
   uint32_t done_status_mask = 1UL << FLETCHER_REG_STATUS_DONE;
 

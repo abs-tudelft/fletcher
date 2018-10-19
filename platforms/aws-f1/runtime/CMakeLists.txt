@@ -5,7 +5,7 @@ project(fletcher_aws VERSION 0.0.1 DESCRIPTION "Fletcher AWS platform")
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "-Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG "-g")
+set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES

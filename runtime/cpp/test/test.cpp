@@ -123,7 +123,7 @@ bool test_context() {
 
   context->queueRecordBatch(rb).ewf();
 
-  context->queueArray(f).ewf();
+  //context->queueArray(f).ewf();
 
   // Write buffers
   context->enable().ewf();
