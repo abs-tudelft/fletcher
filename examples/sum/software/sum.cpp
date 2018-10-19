@@ -102,8 +102,14 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   // Create a context
   fletcher::Context::Make(&context, platform);
 
+  // Create a UserCore
+  fletcher::UserCore uc(platform);
+
   // Initialize the platform.
   platform->init();
+
+  // Reset it
+  uc.reset();
 
   // Prepare the recordbatch
   context->queueRecordBatch(recordbatch);
@@ -116,11 +122,6 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   t.stop();
   std::cout << "FPGA copy time (s): " << t.seconds() << std::endl;
 
-  // Create a UserCore
-  fletcher::UserCore uc(platform);
-
-  // Reset it
-  uc.reset();
 
   // Determine size of table
   auto last_index = (int32_t) recordbatch->num_rows();

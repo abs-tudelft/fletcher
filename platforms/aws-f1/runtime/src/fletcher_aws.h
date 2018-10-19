@@ -16,6 +16,12 @@
 
 #include <fletcher/fletcher.h>
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
+#define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+
 #define FLETCHER_PLATFORM_NAME "aws"
 
 #define FLETCHER_AWS_NUM_QUEUES       4
@@ -34,6 +40,7 @@ typedef struct {
   pci_bar_handle_t pci_bar_handle;
   char device_filename[256];
   uint64_t alignment;
+  int error;
 } PlatformState;
 
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.
@@ -81,7 +88,7 @@ fstatus_t platformDeviceFree(da_t device_address);
  *                              usage (0 = not alloced, 1 = alloced).
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced);
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced);
 
 /**
  * @brief Explicitly cache \p size bytes from \p host_source on device on-board memory.
