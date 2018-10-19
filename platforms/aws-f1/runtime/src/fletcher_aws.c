@@ -56,13 +56,13 @@ static fstatus_t check_slot_config(int slot_id) {
   if (info.spec.map[FPGA_APP_PF].vendor_id != pci_vendor_id || info.spec.map[FPGA_APP_PF].device_id != pci_device_id) {
     rc = 1;
     fprintf(stderr,
-        "[AWS] Slot appears loaded, but pci vendor or device ID doesn't match the expected value. \n"
-        "\tYou may need to rescan the fpga with:\n"
-        "\tfpga-describe-local-image -S  %d -R\n"
-        "\tNote that rescanning can change which device file in /dev/ a FPGA will map to. "
-        "\tTo remove and re-add your xdma driver and reset the device file mappings, run\n"
-        "\t`sudo rmmod xdma && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/xdma/xdma.ko`\n"
-        "\tThe PCI vendor id and device of the loaded image are not the expected values.", slot_id);
+            "[AWS] Slot appears loaded, but pci vendor or device ID doesn't match the expected value. \n"
+            "\tYou may need to rescan the fpga with:\n"
+            "\tfpga-describe-local-image -S  %d -R\n"
+            "\tNote that rescanning can change which device file in /dev/ a FPGA will map to. "
+            "\tTo remove and re-add your xdma driver and reset the device file mappings, run\n"
+            "\t`sudo rmmod xdma && sudo insmod <aws-fpga>/sdk/linux_kernel_drivers/xdma/xdma.ko`\n"
+            "\tThe PCI vendor id and device of the loaded image are not the expected values.", slot_id);
     return FLETCHER_STATUS_ERROR;
   }
 
@@ -112,7 +112,7 @@ fstatus_t platformInit(void *arg) {
 
     if (aws_state.xdma_fd[q] < 0) {
       fprintf(stderr, "[AWS] Did not get a valid file descriptor. FD: %ud.\n"
-             "\tIs the XDMA driver installed?\n", aws_state.xdma_fd[q]);
+                      "\tIs the XDMA driver installed?\n", aws_state.xdma_fd[q]);
       return FLETCHER_STATUS_ERROR;
     }
   }
@@ -130,7 +130,7 @@ fstatus_t platformInit(void *arg) {
 
   if (rc != 0) {
     fprintf(stderr, "[AWS] Could not attach PCI <-> FPGA. Are you running as root? "
-           "\tEntering error state. fpga_pci_attach: %d\n", rc);
+                    "\tEntering error state. fpga_pci_attach: %d\n", rc);
     return FLETCHER_STATUS_ERROR;
   }
 
@@ -161,7 +161,10 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size) {
   size_t total = 0;
 
-  printf("[AWS] Copying host to device %016lX -> %016lX (%li bytes).\n", (uint64_t)host_source, (uint64_t)device_destination, size);
+  printf("[AWS] Copying host to device %016lX -> %016lX (%li bytes).\n",
+         (uint64_t) host_source,
+         (uint64_t) device_destination,
+         size);
 
   size_t written[FLETCHER_AWS_NUM_QUEUES] = {0};
 
@@ -246,11 +249,11 @@ fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_des
          (unsigned long) host_source,
          (unsigned long) *device_destination,
          size);
-  platformCopyHostToDevice(host_source, buffer_ptr, size);
+  fstatus_t ret = platformCopyHostToDevice(host_source, buffer_ptr, size);
   *device_destination = buffer_ptr;
   *alloced = 1;
   buffer_ptr += size;
-  return FLETCHER_STATUS_OK;
+  return ret;
 }
 
 fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
