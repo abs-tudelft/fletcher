@@ -17,11 +17,13 @@
 
 #include <arrow/util/logging.h>
 
+#include "./context.h"
+#include "./usercore.h"
 #include "usercore.h"
 
 namespace fletcher {
 
-UserCore::UserCore(std::shared_ptr<Platform> platform) : _platform(std::move(platform)) {}
+UserCore::UserCore(std::shared_ptr<Context> context) : _platform(context->platform), _context(context) {}
 
 bool UserCore::implementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
   // TODO(johanpel): Implement checking if the platform implements the same Schema
@@ -52,7 +54,7 @@ Status UserCore::setRange(int32_t first, int32_t last) {
 
 Status UserCore::setArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    this->_platform->writeMMIO(this->arg_offset + i, arguments[i]);
+    _platform->writeMMIO(_context->num_buffers() * 2 + i, arguments[i]);
   }
 
   return Status::OK();
@@ -95,7 +97,11 @@ Status UserCore::waitForFinish(unsigned int poll_interval_usec) {
 }
 
 std::shared_ptr<Platform> UserCore::platform() {
-  return this->_platform;
+  return _platform;
+}
+
+std::shared_ptr<Context> UserCore::context() {
+  return _context;
 }
 
 }

@@ -123,7 +123,11 @@ class Context {
   /// @brief Enable the usage of the enqueued buffers by the device
   Status enable();
 
+  uint64_t arg_offset() { return _arg_offset; }
+
  private:
+  uint64_t _arg_offset;
+
   bool written = false;
 
   /**

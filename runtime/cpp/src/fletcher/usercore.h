@@ -20,6 +20,7 @@
 
 #include <arrow/api.h>
 
+#include "./context.h"
 #include "./platform.h"
 
 namespace fletcher {
@@ -29,7 +30,7 @@ namespace fletcher {
  */
 class UserCore {
  public:
-  explicit UserCore(std::shared_ptr<Platform> platform);
+  explicit UserCore(std::shared_ptr<Context> context);
 
   /// @brief Check if the Schema of this UserCore is compatible with another Schema
   bool implementsSchema(const std::shared_ptr<arrow::Schema> &schema);
@@ -67,6 +68,7 @@ class UserCore {
   Status waitForFinish();
 
   std::shared_ptr<Platform> platform();
+  std::shared_ptr<Context> context();
 
   // Default control and status values:
   uint32_t ctrl_start = 1UL << FLETCHER_REG_CONTROL_START;
@@ -76,8 +78,7 @@ class UserCore {
 
  private:
   std::shared_ptr<Platform> _platform;
-
-  uint64_t arg_offset;
+  std::shared_ptr<Context> _context;
 };
 
 }
