@@ -163,4 +163,12 @@ Status Context::queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
   }
 }
 
+uint64_t Context::num_buffers() {
+  uint64_t cnt = 0;
+  for (const auto &arr : device_arrays) {
+    cnt += arr->buffers.size();
+  }
+  return cnt;
+}
+
 }  // namespace fletcher
