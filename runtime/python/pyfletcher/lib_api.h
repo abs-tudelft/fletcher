@@ -17,6 +17,12 @@ static PyObject *(*__pyx_api_f_3lib_pyfletcher_wrap_platform)(std::shared_ptr< f
 #define pyfletcher_wrap_platform __pyx_api_f_3lib_pyfletcher_wrap_platform
 static std::shared_ptr< fletcher::Platform>  (*__pyx_api_f_3lib_pyfletcher_unwrap_platform)(PyObject *) = 0;
 #define pyfletcher_unwrap_platform __pyx_api_f_3lib_pyfletcher_unwrap_platform
+static int (*__pyx_api_f_3lib_pyfletcher_is_context)(PyObject *) = 0;
+#define pyfletcher_is_context __pyx_api_f_3lib_pyfletcher_is_context
+static PyObject *(*__pyx_api_f_3lib_pyfletcher_wrap_context)(std::shared_ptr< fletcher::Context>  const &) = 0;
+#define pyfletcher_wrap_context __pyx_api_f_3lib_pyfletcher_wrap_context
+static std::shared_ptr< fletcher::Context>  (*__pyx_api_f_3lib_pyfletcher_unwrap_context)(PyObject *) = 0;
+#define pyfletcher_unwrap_context __pyx_api_f_3lib_pyfletcher_unwrap_context
 #if !defined(__Pyx_PyIdentifier_FromString)
 #if PY_MAJOR_VERSION < 3
   #define __Pyx_PyIdentifier_FromString(s) PyString_FromString(s)
@@ -106,6 +112,9 @@ static int import_lib(void) {
   if (__Pyx_ImportFunction(module, "pyfletcher_is_platform", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_is_platform, "int (PyObject *)") < 0) goto bad;
   if (__Pyx_ImportFunction(module, "pyfletcher_wrap_platform", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_wrap_platform, "PyObject *(std::shared_ptr< fletcher::Platform>  const &)") < 0) goto bad;
   if (__Pyx_ImportFunction(module, "pyfletcher_unwrap_platform", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_unwrap_platform, "std::shared_ptr< fletcher::Platform>  (PyObject *)") < 0) goto bad;
+  if (__Pyx_ImportFunction(module, "pyfletcher_is_context", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_is_context, "int (PyObject *)") < 0) goto bad;
+  if (__Pyx_ImportFunction(module, "pyfletcher_wrap_context", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_wrap_context, "PyObject *(std::shared_ptr< fletcher::Context>  const &)") < 0) goto bad;
+  if (__Pyx_ImportFunction(module, "pyfletcher_unwrap_context", (void (**)(void))&__pyx_api_f_3lib_pyfletcher_unwrap_context, "std::shared_ptr< fletcher::Context>  (PyObject *)") < 0) goto bad;
   Py_DECREF(module); module = 0;
   return 0;
   bad:

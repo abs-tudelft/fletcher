@@ -28,3 +28,5 @@ include "public-api.pxi"
 include "platform.pxi"
 
 include "usercore.pxi"
+
+include "context.pxi"

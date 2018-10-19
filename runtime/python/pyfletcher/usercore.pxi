@@ -14,16 +14,13 @@
 
 cdef class UserCore:
     cdef:
-        shared_ptr[CPlatform] ucplatform
         shared_ptr[CUserCore] usercore
 
     def __cinit__(self, Platform platform):
         self.usercore.reset(new CUserCore(platform.platform))
-        self.ucplatform = platform.platform
 
     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
         self.usercore = usercore
-        self.ucplatform = self.usercore.get().platform()
 
     def implements_schema(self, schema):
         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
@@ -60,5 +57,5 @@ cdef class UserCore:
     def wait_for_finish(self, poll_interval_usec=0):
         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
 
-    def platform(self):
-        return pyfletcher_wrap_platform(self.ucplatform)
+    def get_platform(self):
+        return pyfletcher_wrap_platform(self.usercore.get().platform())

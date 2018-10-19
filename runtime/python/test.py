@@ -18,7 +18,7 @@ import numpy as np
 
 def test_platform():
     # Create
-    platform = pf.Platform()
+    platform = pf.Platform("echo")
 
     # Init
     platform.init()
@@ -50,7 +50,51 @@ def test_platform():
 
     return True
 
+def test_context():
+    # Create
+    platform = pf.Platform("echo")
+
+    # Init
+    platform.init()
+
+    # Create a schema with some stuff
+    fields = [
+        pa.field("a", pa.uint64(), False),
+        pa.field("b", pa.string(), False),
+        pa.field("c", pa.uint64(), True),
+        pa.field("d", pa.list_(pa.field("e", pa.uint32(), True)), False)
+    ]
+
+    schema = pa.schema(fields)
+
+    a = pa.array([1, 2, 3, 4], type=pa.uint64())
+    b = pa.array(["hello", "world", "fletcher", "arrow"], type=pa.string())
+    c = pa.array([5, 6, 7, 8], mask=np.array([True, False, True, True]), type=pa.uint64())
+    d = pa.array([[9, 10, 11, 12], [13, 14], [15, 16, 17], [18]], type=pa.list_(pa.uint32()))
+    f = pa.array([19, 20, 21, 22], type=pa.uint32())
+    g = pa.array([23, 24, 25, 26], type=pa.uint32())
+
+    rb = pa.RecordBatch.from_arrays([a, b, c, d], schema)
+
+    context = pf.Context(platform)
+
+    context.queueRecordBatch(rb)
+
+    context.queueArray(f)
+
+    context.queueArray(g, field=pa.field("g", pa.uint32(), False))
+
+    # Write buffers
+    context.enable()
+
+    # Terminate
+    platform.terminate()
+
+
 if __name__ == "__main__":
+    print("Platform test:")
     test_platform()
+    print("\nContext test:")
+    test_context()
 
     print("Reaching end of program")

@@ -59,7 +59,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status terminate()
 
     cdef cppclass CContext" fletcher::Context":
-        CContext(shared_ptr[CPlatform] platform)
+        @staticmethod
         Status Make(shared_ptr[CContext] *context, shared_ptr[CPlatform] platform)
         Status queueArray(const shared_ptr[CArray] &array, cpp_bool cache)
         Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, cpp_bool cache)

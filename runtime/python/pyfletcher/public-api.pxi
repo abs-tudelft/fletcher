@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Taken from pyarrow and adjusted for pyfletcher
+
 
 cdef public api bint pyfletcher_is_usercore(object usercore):
     return isinstance(usercore, UserCore)
@@ -46,3 +48,20 @@ cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform
         return plat.platform
 
     return shared_ptr[CPlatform]()
+
+cdef public api bint pyfletcher_is_context(object context):
+    return isinstance(context, Context)
+
+cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):
+    cdef Context result = Context.__new__(Context)
+    result.from_pointer(cont)
+    return result
+
+cdef public api shared_ptr[CContext] pyfletcher_unwrap_context(object context):
+    cdef Context cont
+
+    if pyfletcher_is_context(context):
+        cont = <Context>(context)
+        return cont.context
+
+    return shared_ptr[CContext]()

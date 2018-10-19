@@ -24,6 +24,9 @@ __PYX_EXTERN_C std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(
 __PYX_EXTERN_C int pyfletcher_is_platform(PyObject *);
 __PYX_EXTERN_C PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &);
 __PYX_EXTERN_C std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *);
+__PYX_EXTERN_C int pyfletcher_is_context(PyObject *);
+__PYX_EXTERN_C PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &);
+__PYX_EXTERN_C std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *);
 
 #endif /* !__PYX_HAVE_API__lib */
 
