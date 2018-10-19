@@ -4160,6 +4160,7 @@ static const char __pyx_k_struct[] = "struct";
 static const char __pyx_k_uint64[] = "uint64";
 static const char __pyx_k_unpack[] = "unpack";
 static const char __pyx_k_update[] = "update";
+static const char __pyx_k_context[] = "context";
 static const char __pyx_k_fortran[] = "fortran";
 static const char __pyx_k_memview[] = "memview";
 static const char __pyx_k_pyarrow[] = "pyarrow";
@@ -4270,6 +4271,7 @@ static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_cache;
 static PyObject *__pyx_n_s_class;
 static PyObject *__pyx_n_s_cline_in_traceback;
+static PyObject *__pyx_n_s_context;
 static PyObject *__pyx_kp_s_contiguous_and_direct;
 static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_device_destination;
@@ -4382,7 +4384,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
 static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform); /* proto */
+static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Context *__pyx_v_context); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last); /* proto */
@@ -4392,8 +4394,9 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
 static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyArray_Descr *__pyx_v_nptype); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec); /* proto */
 static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_20__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_22__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_3lib_7Context___cinit__(struct __pyx_obj_3lib_Context *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform); /* proto */
 static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache); /* proto */
 static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
@@ -7189,20 +7192,20 @@ static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED str
 /* "usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
- *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
- *         self.usercore.reset(new CUserCore(platform.platform))
+ *     def __cinit__(self, Context context):             # <<<<<<<<<<<<<<
+ *         self.usercore.reset(new CUserCore(context.context))
  * 
  */
 
 /* Python wrapper */
 static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_3lib_Platform *__pyx_v_platform = 0;
+  struct __pyx_obj_3lib_Context *__pyx_v_context = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_platform,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_context,0};
     PyObject* values[1] = {0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
@@ -7216,7 +7219,7 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
       kw_args = PyDict_Size(__pyx_kwds);
       switch (pos_args) {
         case  0:
-        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_platform)) != 0)) kw_args--;
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_context)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
@@ -7227,7 +7230,7 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_platform = ((struct __pyx_obj_3lib_Platform *)values[0]);
+    __pyx_v_context = ((struct __pyx_obj_3lib_Context *)values[0]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -7237,8 +7240,8 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_platform), __pyx_ptype_3lib_Platform, 1, "platform", 0))) __PYX_ERR(5, 20, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_8UserCore___cinit__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_platform);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_context), __pyx_ptype_3lib_Context, 1, "context", 0))) __PYX_ERR(5, 20, __pyx_L1_error)
+  __pyx_r = __pyx_pf_3lib_8UserCore___cinit__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_context);
 
   /* function exit code */
   goto __pyx_L0;
@@ -7249,25 +7252,25 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform) {
+static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Context *__pyx_v_context) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
   /* "usercore.pxi":21
  * 
- *     def __cinit__(self, Platform platform):
- *         self.usercore.reset(new CUserCore(platform.platform))             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, Context context):
+ *         self.usercore.reset(new CUserCore(context.context))             # <<<<<<<<<<<<<<
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
  */
-  __pyx_v_self->usercore.reset(new  fletcher::UserCore(__pyx_v_platform->platform));
+  __pyx_v_self->usercore.reset(new  fletcher::UserCore(__pyx_v_context->context));
 
   /* "usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
- *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
- *         self.usercore.reset(new CUserCore(platform.platform))
+ *     def __cinit__(self, Context context):             # <<<<<<<<<<<<<<
+ *         self.usercore.reset(new CUserCore(context.context))
  * 
  */
 
@@ -7278,7 +7281,7 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
 }
 
 /* "usercore.pxi":23
- *         self.usercore.reset(new CUserCore(platform.platform))
+ *         self.usercore.reset(new CUserCore(context.context))
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
  *         self.usercore = usercore
@@ -7300,7 +7303,7 @@ static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserC
   __pyx_v_self->usercore = __pyx_v_usercore;
 
   /* "usercore.pxi":23
- *         self.usercore.reset(new CUserCore(platform.platform))
+ *         self.usercore.reset(new CUserCore(context.context))
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
  *         self.usercore = usercore
@@ -8133,6 +8136,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
+ * 
  */
 
 /* Python wrapper */
@@ -8158,6 +8162,8 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
  * 
  *     def get_platform(self):
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())             # <<<<<<<<<<<<<<
+ * 
+ *     def get_context(self):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = pyfletcher_wrap_platform(__pyx_v_self->usercore.get()->platform()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 68, __pyx_L1_error)
@@ -8171,12 +8177,69 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
+ * 
  */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_AddTraceback("lib.UserCore.get_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "usercore.pxi":70
+ *         return pyfletcher_wrap_platform(self.usercore.get().platform())
+ * 
+ *     def get_context(self):             # <<<<<<<<<<<<<<
+ *         return pyfletcher_wrap_context(self.usercore.get().context())
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("get_context (wrapper)", 0);
+  __pyx_r = __pyx_pf_3lib_8UserCore_20get_context(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_context", 0);
+
+  /* "usercore.pxi":71
+ * 
+ *     def get_context(self):
+ *         return pyfletcher_wrap_context(self.usercore.get().context())             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = pyfletcher_wrap_context(__pyx_v_self->usercore.get()->context()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 71, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "usercore.pxi":70
+ *         return pyfletcher_wrap_platform(self.usercore.get().platform())
+ * 
+ *     def get_context(self):             # <<<<<<<<<<<<<<
+ *         return pyfletcher_wrap_context(self.usercore.get().context())
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lib.UserCore.get_context", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8191,19 +8254,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_21__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_21__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_20__reduce_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3lib_8UserCore_22__reduce_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_20__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8245,19 +8308,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_20__reduce_cython__(CYTHON_UNUSED struc
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_23__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_23__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_22__setstate_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_3lib_8UserCore_24__setstate_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_22__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -24858,8 +24921,9 @@ static PyMethodDef __pyx_methods_3lib_UserCore[] = {
   {"get_return", (PyCFunction)__pyx_pw_3lib_8UserCore_15get_return, METH_O, 0},
   {"wait_for_finish", (PyCFunction)__pyx_pw_3lib_8UserCore_17wait_for_finish, METH_VARARGS|METH_KEYWORDS, 0},
   {"get_platform", (PyCFunction)__pyx_pw_3lib_8UserCore_19get_platform, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_21__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_23__setstate_cython__, METH_O, 0},
+  {"get_context", (PyCFunction)__pyx_pw_3lib_8UserCore_21get_context, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_23__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_25__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -25766,6 +25830,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cache, __pyx_k_cache, sizeof(__pyx_k_cache), 0, 0, 1, 1},
   {&__pyx_n_s_class, __pyx_k_class, sizeof(__pyx_k_class), 0, 0, 1, 1},
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
+  {&__pyx_n_s_context, __pyx_k_context, sizeof(__pyx_k_context), 0, 0, 1, 1},
   {&__pyx_kp_s_contiguous_and_direct, __pyx_k_contiguous_and_direct, sizeof(__pyx_k_contiguous_and_direct), 0, 0, 1, 0},
   {&__pyx_kp_s_contiguous_and_indirect, __pyx_k_contiguous_and_indirect, sizeof(__pyx_k_contiguous_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_device_destination, __pyx_k_device_destination, sizeof(__pyx_k_device_destination), 0, 0, 1, 1},

@@ -67,7 +67,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status enable()
 
     cdef cppclass CUserCore" fletcher::UserCore":
-        CUserCore(shared_ptr[CPlatform] platform)
+        CUserCore(shared_ptr[CContext] context)
         cpp_bool implementsSchema(const shared_ptr[CSchema] &schema)
         Status reset()
         Status setRange(int32_t first, int32_t last)
@@ -77,3 +77,4 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status getReturn(uint32_t *ret0, uint32_t *ret1)
         Status waitForFinish(unsigned int poll_interval_usec)
         shared_ptr[CPlatform] platform()
+        shared_ptr[CContext] context()

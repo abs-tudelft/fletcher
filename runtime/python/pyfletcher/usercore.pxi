@@ -17,8 +17,8 @@ cdef class UserCore:
     cdef:
         shared_ptr[CUserCore] usercore
 
-    def __cinit__(self, Platform platform):
-        self.usercore.reset(new CUserCore(platform.platform))
+    def __cinit__(self, Context context):
+        self.usercore.reset(new CUserCore(context.context))
 
     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
         self.usercore = usercore
@@ -66,3 +66,6 @@ cdef class UserCore:
 
     def get_platform(self):
         return pyfletcher_wrap_platform(self.usercore.get().platform())
+
+    def get_context(self):
+        return pyfletcher_wrap_context(self.usercore.get().context())
