@@ -20,7 +20,7 @@ import sys
 import argparse
 
 
-def create_table(num_rows):
+def create_record_batch(num_rows):
     np.random.seed(42)
     element_max = np.iinfo(np.int64).max/num_rows
     int_dist = np.random.randint(0, element_max, num_rows)
@@ -31,12 +31,12 @@ def create_table(num_rows):
     column_field = pa.field("weight", pa.int64(), nullable=False)
     schema = pa.schema([column_field])
 
-    return pa.Table.from_arrays([num_array], schema=schema)
+    return pa.RecordBatch.from_arrays([num_array], schema)
 
 
-def arrow_column_sum_cpu(table):
+def arrow_column_sum_cpu(batch):
     start_time = timeit.default_timer()
-    sum_cpu = np.sum(table.column(0).data.chunk(0).to_numpy())
+    sum_cpu = np.sum(batch.column(0).to_numpy())
     stop_time = timeit.default_timer()
 
     print("Sum CPU time: " + str(stop_time - start_time) + " seconds")
@@ -44,34 +44,43 @@ def arrow_column_sum_cpu(table):
     return sum_cpu
 
 
-def arrow_column_sum_fpga(table, platform_type):
-    if platform_type==0:
-        platform = pf.EchoPlatform()
-    else:
-        print("Unsupported platform type " + str(platform_type) + ". Options: 0, 1, 2.", file=sys.stderr)
-        sys.exit(1)
+def arrow_column_sum_fpga(batch, platform_type):
+    # Create a platform
+    platform = pf.Platform(platform_type)
+
+    # Create a context
+    context = pf.Context(platform)
+
+    # Initialize the platform
+    platform.init()
+
+    # Prepare the recordbatch
+    context.queueRecordBatch(batch)
 
     start_time = timeit.default_timer()
-    platform.prepare_column_chunks(table.column(0))
+    context.enable()
     stop_time = timeit.default_timer()
 
     print("FPGA copy time " + str(stop_time - start_time) + " seconds")
 
+    # Create UserCore
     uc = pf.UserCore(platform)
+
+    # Reset it
     uc.reset()
 
-    last_index = table.num_rows
+    # Determine size of table
+    last_index = batch.num_rows
     uc.set_range(0, last_index)
-
-    for i in range(6):
-        reg = platform.read_mmio(i)
-        print("fpga register " + str(i) + ": " + format(reg, "02x"))
 
     start_time = timeit.default_timer()
 
+    # Start the FPGA user function
     uc.start()
     uc.wait_for_finish(1000)
-    sum_fpga = uc.get_return()
+
+    #Get the sum from UserCore
+    sum_fpga = uc.get_return(np.dtype(np.int64))
 
     stop_time = timeit.default_timer()
     print("Sum FPGA time: " + str(stop_time - start_time) + " seconds")
@@ -80,15 +89,15 @@ def arrow_column_sum_fpga(table, platform_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--platform_type", dest="platform_type", default="0",
-                        help="Type of FPGA platform. 0: Echo, 1: AWS, 2: SNAP")
+    parser.add_argument("--platform_type", dest="platform_type", default="echo",
+                        help="Type of FPGA platform. Options: echo")
     parser.add_argument("--num_rows", dest="num_rows", default=1024,
                         help="Number of integers in the Arrow array")
     args = parser.parse_args()
 
-    table = create_table(int(args.num_rows))
-    sum_cpu = arrow_column_sum_cpu(table)
-    sum_fpga = arrow_column_sum_fpga(table, int(args.platform_type))
+    batch = create_record_batch(int(args.num_rows))
+    sum_cpu = arrow_column_sum_cpu(batch)
+    sum_fpga = arrow_column_sum_fpga(batch, args.platform_type)
 
     print("Expected sum: " + str(sum_cpu))
     print("FPGA sum: " + str(sum_fpga))
@@ -98,4 +107,4 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         print("ERROR")
-        sys.exit(1)
+sys.exit(1)

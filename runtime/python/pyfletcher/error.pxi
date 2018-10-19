@@ -17,5 +17,5 @@ import sys
 # Todo: Expand, make neat
 cdef check_fletcher_status(Status status):
     if not status.ok():
-        sys.stderr.write("Fletcher error")
+        print("Fletcher error")
     status.ewf()

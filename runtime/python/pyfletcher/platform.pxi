@@ -14,17 +14,12 @@
 
 import numpy as np
 
-# Todo: Have copy_host_to_device and prepare_host_buffer accept arrow arrays (?)
-
 cdef class Platform:
     cdef:
         shared_ptr[CPlatform] platform
 
     def __init__(self, str name = "", quiet = True):
         self._create(name, quiet)
-        #raise TypeError("Do not call {}'s constructor directly, use "
-        #                "pyfletcher.Platform.create() instead."
-        #                .format(self.__class__.__name__))
 
     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):
         self.platform = platform
