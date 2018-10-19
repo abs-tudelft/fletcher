@@ -127,12 +127,6 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   auto last_index = (int32_t) recordbatch->num_rows();
   uc.setRange(0, last_index);
 
-  uint32_t val;
-  for (int i=0;i<10;i++) {
-    platform->readMMIO(i, &val);
-    std::cout << i << " = " << val << std::endl;
-  }
-
   t.start();
 
   // Start the FPGA user function
@@ -141,7 +135,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
 
   // Get the sum from the UserCore
   dau_t ret;
-  uc.getReturn(&ret.lo, &ret.hi);
+  uc.getReturn(&ret.hi, &ret.lo);
 
   // Performance timer close
   t.stop();
@@ -161,7 +155,7 @@ int main(int argc, char **argv) {
   unsigned int num_rows = 1024;
 
   if (argc >= 2) {
-    std::strtoul(argv[1], nullptr, 10);
+    num_rows = std::strtoul(argv[1], nullptr, 10);
   }
   if (num_rows > INT_MAX) {
     std::cout << "Too many rows" << std::endl;

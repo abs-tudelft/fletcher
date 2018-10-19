@@ -25,7 +25,7 @@
 da_t buffer_ptr = 0x0;
 
 // Dirty globals
-AwsConfig aws_default_config = {0, 0, 0};
+AwsConfig aws_default_config = {0, 0, 1};
 PlatformState aws_state = {{0, 0, 0}, {0}, 0, {0}, 4096, 0};
 
 static fstatus_t check_slot_config(int slot_id) {
@@ -92,6 +92,8 @@ fstatus_t platformInit(void *arg) {
     config = &aws_default_config;
   }
 
+  aws_state.config = *config;
+
   debug_print("[AWS] Initializing platform.       Arguments @ [host] %016lX.\n", (unsigned long) arg);
 
   int rc = fpga_mgmt_init();
@@ -123,6 +125,7 @@ fstatus_t platformInit(void *arg) {
 
   // Set the PCI bar handle init
   aws_state.pci_bar_handle = PCI_BAR_HANDLE_INIT;
+  debug_print("[AWS] Bar handle init: %d\n", aws_state.pci_bar_handle);
 
   // Attach the FPGA
   debug_print("[AWS] Attaching PCI <-> FPGA\n");
@@ -131,6 +134,8 @@ fstatus_t platformInit(void *arg) {
                        aws_state.config.bar_id,
                        0,
                        &aws_state.pci_bar_handle);
+
+  debug_print("[AWS] Bar handle init: %d\n", aws_state.pci_bar_handle);
 
   if (rc != 0) {
     fprintf(stderr, "[AWS] Could not attach PCI <-> FPGA. Are you running as root? "
@@ -149,6 +154,7 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
+  debug_print("[AWS] MMIO Write %d : %08lX\n", offset, (uint32_t)value);
   return FLETCHER_STATUS_OK;
 }
 
@@ -161,6 +167,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
+  debug_print("[AWS] MMIO Read %d : %08lX\n", offset, (uint32_t)(*value));
   return FLETCHER_STATUS_OK;
 }
 

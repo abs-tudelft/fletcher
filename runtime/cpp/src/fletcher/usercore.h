@@ -70,7 +70,7 @@ class UserCore {
 
   // Default control and status values:
   uint32_t ctrl_start = 1UL << FLETCHER_REG_CONTROL_START;
-  uint32_t ctrl_reset = 1UL << FLETCHER_REG_CONTROL_STOP;
+  uint32_t ctrl_reset = 1UL << FLETCHER_REG_CONTROL_RESET;
   uint32_t done_status = 1UL << FLETCHER_REG_STATUS_DONE;
   uint32_t done_status_mask = 1UL << FLETCHER_REG_STATUS_DONE;
 
