@@ -30,7 +30,8 @@ bool UserCore::implementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
 }
 
 Status UserCore::reset() {
-  return _platform->writeMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
+  _platform->writeMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
+  return _platform->writeMMIO(FLETCHER_REG_CONTROL, 0);
 }
 
 Status UserCore::setRange(int32_t first, int32_t last) {

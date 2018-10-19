@@ -41,21 +41,21 @@ static fstatus_t check_slot_config(int slot_id) {
   // Check local image
   rc = fpga_mgmt_describe_local_image(slot_id, &info, 0);
   if (rc != 0) {
-    printf("[AWS] Unable to get local image information. Are you running as root?\n");
+    fprintf(stderr, "[AWS] Unable to get local image information. Are you running as root?\n");
     return FLETCHER_STATUS_ERROR;
   }
 
   // Check if slot is ready
   if (info.status != FPGA_STATUS_LOADED) {
     rc = 1;
-    printf("[AWS] Slot %d is not ready.\n", slot_id);
+    fprintf(stderr, "[AWS] Slot %d is not ready.\n", slot_id);
     return FLETCHER_STATUS_ERROR;
   }
 
   // Confirm that AFI is loaded
   if (info.spec.map[FPGA_APP_PF].vendor_id != pci_vendor_id || info.spec.map[FPGA_APP_PF].device_id != pci_device_id) {
     rc = 1;
-    printf(
+    fprintf(stderr,
         "[AWS] Slot appears loaded, but pci vendor or device ID doesn't match the expected value. \n"
         "\tYou may need to rescan the fpga with:\n"
         "\tfpga-describe-local-image -S  %d -R\n"
@@ -95,7 +95,7 @@ fstatus_t platformInit(void *arg) {
   int rc = fpga_mgmt_init();
 
   if (rc != 0) {
-    printf("[AWS] Cannot initialize FPGA management library.");
+    fprintf(stderr, "[AWS] Cannot initialize FPGA management library.\n");
     return FLETCHER_STATUS_ERROR;
   }
 
@@ -111,7 +111,7 @@ fstatus_t platformInit(void *arg) {
     aws_state.xdma_fd[q] = open(aws_state.device_filename, O_WRONLY);
 
     if (aws_state.xdma_fd[q] < 0) {
-      printf("[AWS] Did not get a valid file descriptor. FD: %ud.\n"
+      fprintf(stderr, "[AWS] Did not get a valid file descriptor. FD: %ud.\n"
              "\tIs the XDMA driver installed?\n", aws_state.xdma_fd[q]);
       return FLETCHER_STATUS_ERROR;
     }
@@ -129,7 +129,7 @@ fstatus_t platformInit(void *arg) {
                        &aws_state.pci_bar_handle);
 
   if (rc != 0) {
-    printf("[AWS] Could not attach PCI <-> FPGA. Are you running as root? "
+    fprintf(stderr, "[AWS] Could not attach PCI <-> FPGA. Are you running as root? "
            "\tEntering error state. fpga_pci_attach: %d\n", rc);
     return FLETCHER_STATUS_ERROR;
   }
@@ -141,7 +141,7 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
   int rc = 0;
   rc = fpga_pci_poke(aws_state.pci_bar_handle, sizeof(uint32_t) * offset, value);
   if (rc != 0) {
-    printf("[AWS] MMIO write failed.");
+    fprintf(stderr, "[AWS] MMIO write failed.\n");
     return FLETCHER_STATUS_ERROR;
   }
   return FLETCHER_STATUS_OK;
@@ -152,7 +152,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
   int rc = 0;
   rc = fpga_pci_peek(aws_state.pci_bar_handle, sizeof(uint32_t) * offset, value);
   if (rc != 0) {
-    printf("[AWS] MMIO read failed.");
+    fprintf(stderr, "[AWS] MMIO read failed.\n");
     return FLETCHER_STATUS_ERROR;
   }
   return FLETCHER_STATUS_OK;
@@ -160,6 +160,8 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
 
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size) {
   size_t total = 0;
+
+  printf("[AWS] Copying host to device %016lX -> %016lX (%li bytes).\n", (uint64_t)host_source, (uint64_t)device_destination, size);
 
   size_t written[FLETCHER_AWS_NUM_QUEUES] = {0};
 
@@ -192,6 +194,7 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
 
       // If rc is negative there is something else going wrong. Abort the mission
       if (rc < 0) {
+        fprintf(stderr, "[AWS] Copy host to device failed.\n");
         return FLETCHER_STATUS_ERROR;
       }
       written[q] += rc;

@@ -126,6 +126,12 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   auto last_index = (int32_t) recordbatch->num_rows();
   uc.setRange(0, last_index);
 
+  uint32_t val;
+  for (int i=0;i<10;i++) {
+    platform->readMMIO(i, &val);
+    std::cout << i << " = " << val << std::endl;
+  }
+
   t.start();
 
   // Start the FPGA user function
