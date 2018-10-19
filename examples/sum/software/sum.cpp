@@ -102,6 +102,9 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   // Create a context
   fletcher::Context::Make(&context, platform);
 
+  // Initialize the platform.
+  platform->init();
+
   // Prepare the recordbatch
   context->queueRecordBatch(recordbatch);
 
@@ -136,6 +139,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   // Performance timer close
   t.stop();
   std::cout << "Sum FPGA time (s): " << t.seconds() << " seconds" << std::endl;
+  std::cout << "Result: " << ret.full << std::endl;
 
   return ret.full;
 }
@@ -165,12 +169,10 @@ int main(int argc, char **argv) {
   int64_t sum_cpu = sumCPU(recordbatch);
   t.stop();
   std::cout << "CPU run time (s): " << t.seconds() << std::endl;
+  std::cout << "CPU sum : " << sum_cpu << std::endl;
 
   // Sum on FPGA
   int64_t sum_fpga = sumFPGA(recordbatch);
-
-  std::cout << "Expected sum : " << sum_cpu << std::endl;
-  std::cout << "FPGA sum     : " << sum_fpga << std::endl;
 
   // Check whether sums are the same
   int exit_status;

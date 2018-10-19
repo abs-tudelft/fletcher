@@ -15,6 +15,8 @@
 #pragma once
 
 #include <cstdlib>
+#include <string>
+#include <iostream>
 
 #include "./fletcher.h"
 
@@ -27,16 +29,19 @@ struct Status {
 
   explicit Status(fstatus_t val) : val(val) {}
 
-  bool ok() { return val == FLETCHER_STATUS_OK; }
+  inline bool ok() { return val == FLETCHER_STATUS_OK; }
 
   /// @brief Exit when fail
-  void ewf() {
-    if (!ok()) { exit(EXIT_FAILURE); }
+  inline void ewf(const std::string &msg = "") {
+    if (!ok()) {
+      std::cerr << msg << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
-  static Status OK() { return Status(FLETCHER_STATUS_OK); }
+  inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
 
-  static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
+  inline static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
 };
 
 }

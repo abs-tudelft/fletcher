@@ -216,11 +216,13 @@ fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination
 
 fstatus_t platformTerminate(void *arg) {
   printf("[AWS] Terminating platform.        Arguments @ [host] 0x%016lX.\n", (uint64_t) arg);
-  fpga_pci_detach(aws_state.pci_bar_handle);
 
   for (int q = 0; q < FLETCHER_AWS_NUM_QUEUES; q++) {
     close(q);
   }
+
+  fpga_pci_detach(aws_state.pci_bar_handle);
+
   return FLETCHER_STATUS_OK;
 }
 
