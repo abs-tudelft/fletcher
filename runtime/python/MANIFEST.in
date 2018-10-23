@@ -3,5 +3,3 @@ include README.md
 
 
 recursive-include pyfletcher *.py *.pxd *.pxi *.pyx *.h *.cpp
-
-global-exclude *.so

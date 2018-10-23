@@ -31,6 +31,7 @@ for ext in ext_modules:
     ext.include_dirs.append(pa.get_include())
     ext.libraries.extend(pa.get_libraries())
     ext.library_dirs.extend(pa.get_library_dirs())
+    ext.runtime_library_dirs.extend(pa.get_library_dirs())
     ext.libraries.extend(["fletcher"])
     ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
