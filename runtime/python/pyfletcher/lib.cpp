@@ -12,12 +12,12 @@
             "-std=c++11"
         ],
         "language": "c++",
-        "name": "lib",
+        "name": "pyfletcher.lib",
         "sources": [
-            "lib.pyx"
+            "pyfletcher/lib.pyx"
         ]
     },
-    "module_name": "lib"
+    "module_name": "pyfletcher.lib"
 }
 END: Cython Metadata */
 
@@ -594,8 +594,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__lib
-#define __PYX_HAVE_API__lib
+#define __PYX_HAVE__pyfletcher__lib
+#define __PYX_HAVE_API__pyfletcher__lib
 /* Early includes */
 #include <string.h>
 #include <stdio.h>
@@ -860,14 +860,14 @@ static const char *__pyx_filename;
 
 static const char *__pyx_f[] = {
   "stringsource",
-  "error.pxi",
-  "status.pxi",
-  "public-api.pxi",
-  "platform.pxi",
-  "usercore.pxi",
-  "context.pxi",
+  "pyfletcher/error.pxi",
+  "pyfletcher/status.pxi",
+  "pyfletcher/public-api.pxi",
+  "pyfletcher/platform.pxi",
+  "pyfletcher/usercore.pxi",
+  "pyfletcher/context.pxi",
   "__init__.pxd",
-  "lib.pyx",
+  "pyfletcher/lib.pyx",
   "type.pxd",
   "bool.pxd",
   "complex.pxd",
@@ -982,7 +982,7 @@ typedef struct {
 } __Pyx_BufFmt_Context;
 
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":730
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":730
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -991,7 +991,7 @@ typedef struct {
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":731
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":731
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -1000,7 +1000,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":732
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":732
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -1009,7 +1009,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":733
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":733
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -1018,7 +1018,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":737
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":737
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -1027,7 +1027,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":738
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":738
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -1036,7 +1036,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":739
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":739
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -1045,7 +1045,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":740
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":740
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -1054,7 +1054,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":744
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":744
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -1063,7 +1063,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":745
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":745
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -1072,7 +1072,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":754
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":754
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -1081,7 +1081,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":755
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":755
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -1090,7 +1090,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":756
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":756
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -1099,7 +1099,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":758
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":758
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -1108,7 +1108,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":759
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":759
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -1117,7 +1117,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":760
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":760
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -1126,7 +1126,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":762
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":762
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -1135,7 +1135,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":763
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":763
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -1144,7 +1144,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":765
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":765
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -1153,7 +1153,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":766
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":766
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -1162,7 +1162,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":767
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":767
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -1251,16 +1251,16 @@ struct __pyx_obj_7pyarrow_3lib_RecordBatch;
 struct __pyx_obj_7pyarrow_3lib_Buffer;
 struct __pyx_obj_7pyarrow_3lib_ResizableBuffer;
 struct __pyx_obj_7pyarrow_3lib_NativeFile;
-struct __pyx_obj_3lib_PyStatus;
-struct __pyx_obj_3lib_Platform;
-struct __pyx_obj_3lib_UserCore;
-struct __pyx_obj_3lib_Context;
+struct __pyx_obj_10pyfletcher_3lib_PyStatus;
+struct __pyx_obj_10pyfletcher_3lib_Platform;
+struct __pyx_obj_10pyfletcher_3lib_UserCore;
+struct __pyx_obj_10pyfletcher_3lib_Context;
 struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":769
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":769
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -1269,7 +1269,7 @@ struct __pyx_memoryviewslice_obj;
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":770
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":770
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -1278,7 +1278,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -1287,7 +1287,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":773
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":773
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -1295,16 +1295,16 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
-struct __pyx_opt_args_3lib_8Platform__create;
+struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create;
 
-/* "platform.pxi":27
+/* "pyfletcher/platform.pxi":27
  *         self.platform = platform
  * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
  *         if not name:
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
  */
-struct __pyx_opt_args_3lib_8Platform__create {
+struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create {
   int __pyx_n;
   PyObject *name;
   PyObject *quiet;
@@ -2035,57 +2035,57 @@ struct __pyx_obj_7pyarrow_3lib_NativeFile {
 };
 
 
-/* "status.pxi":16
+/* "pyfletcher/status.pxi":16
  * 
  * # Todo: Either complete or remove
  * cdef class PyStatus:             # <<<<<<<<<<<<<<
  *     cdef:
  *         Status status
  */
-struct __pyx_obj_3lib_PyStatus {
+struct __pyx_obj_10pyfletcher_3lib_PyStatus {
   PyObject_HEAD
   fletcher::Status status;
 };
 
 
-/* "platform.pxi":17
+/* "pyfletcher/platform.pxi":17
  * import numpy as np
  * 
  * cdef class Platform:             # <<<<<<<<<<<<<<
  *     cdef:
  *         shared_ptr[CPlatform] platform
  */
-struct __pyx_obj_3lib_Platform {
+struct __pyx_obj_10pyfletcher_3lib_Platform {
   PyObject_HEAD
-  struct __pyx_vtabstruct_3lib_Platform *__pyx_vtab;
+  struct __pyx_vtabstruct_10pyfletcher_3lib_Platform *__pyx_vtab;
   std::shared_ptr< fletcher::Platform>  platform;
 };
 
 
-/* "usercore.pxi":16
+/* "pyfletcher/usercore.pxi":16
  * 
  * 
  * cdef class UserCore:             # <<<<<<<<<<<<<<
  *     cdef:
  *         shared_ptr[CUserCore] usercore
  */
-struct __pyx_obj_3lib_UserCore {
+struct __pyx_obj_10pyfletcher_3lib_UserCore {
   PyObject_HEAD
-  struct __pyx_vtabstruct_3lib_UserCore *__pyx_vtab;
+  struct __pyx_vtabstruct_10pyfletcher_3lib_UserCore *__pyx_vtab;
   std::shared_ptr< fletcher::UserCore>  usercore;
 };
 
 
-/* "context.pxi":17
+/* "pyfletcher/context.pxi":17
  * import pyarrow as pa
  * 
  * cdef class Context():             # <<<<<<<<<<<<<<
  *     cdef:
  *         shared_ptr[CContext] context
  */
-struct __pyx_obj_3lib_Context {
+struct __pyx_obj_10pyfletcher_3lib_Context {
   PyObject_HEAD
-  struct __pyx_vtabstruct_3lib_Context *__pyx_vtab;
+  struct __pyx_vtabstruct_10pyfletcher_3lib_Context *__pyx_vtab;
   std::shared_ptr< fletcher::Context>  context;
 };
 
@@ -2907,7 +2907,7 @@ struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile {
 static struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile *__pyx_vtabptr_7pyarrow_3lib_NativeFile;
 
 
-/* "platform.pxi":17
+/* "pyfletcher/platform.pxi":17
  * import numpy as np
  * 
  * cdef class Platform:             # <<<<<<<<<<<<<<
@@ -2915,14 +2915,14 @@ static struct __pyx_vtabstruct_7pyarrow_3lib_NativeFile *__pyx_vtabptr_7pyarrow_
  *         shared_ptr[CPlatform] platform
  */
 
-struct __pyx_vtabstruct_3lib_Platform {
-  PyObject *(*from_pointer)(struct __pyx_obj_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &);
-  PyObject *(*_create)(struct __pyx_obj_3lib_Platform *, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args);
+struct __pyx_vtabstruct_10pyfletcher_3lib_Platform {
+  PyObject *(*from_pointer)(struct __pyx_obj_10pyfletcher_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &);
+  PyObject *(*_create)(struct __pyx_obj_10pyfletcher_3lib_Platform *, struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create *__pyx_optional_args);
 };
-static struct __pyx_vtabstruct_3lib_Platform *__pyx_vtabptr_3lib_Platform;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_Platform *__pyx_vtabptr_10pyfletcher_3lib_Platform;
 
 
-/* "usercore.pxi":16
+/* "pyfletcher/usercore.pxi":16
  * 
  * 
  * cdef class UserCore:             # <<<<<<<<<<<<<<
@@ -2930,13 +2930,13 @@ static struct __pyx_vtabstruct_3lib_Platform *__pyx_vtabptr_3lib_Platform;
  *         shared_ptr[CUserCore] usercore
  */
 
-struct __pyx_vtabstruct_3lib_UserCore {
-  PyObject *(*from_pointer)(struct __pyx_obj_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &);
+struct __pyx_vtabstruct_10pyfletcher_3lib_UserCore {
+  PyObject *(*from_pointer)(struct __pyx_obj_10pyfletcher_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &);
 };
-static struct __pyx_vtabstruct_3lib_UserCore *__pyx_vtabptr_3lib_UserCore;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_UserCore *__pyx_vtabptr_10pyfletcher_3lib_UserCore;
 
 
-/* "context.pxi":17
+/* "pyfletcher/context.pxi":17
  * import pyarrow as pa
  * 
  * cdef class Context():             # <<<<<<<<<<<<<<
@@ -2944,10 +2944,10 @@ static struct __pyx_vtabstruct_3lib_UserCore *__pyx_vtabptr_3lib_UserCore;
  *         shared_ptr[CContext] context
  */
 
-struct __pyx_vtabstruct_3lib_Context {
-  PyObject *(*from_pointer)(struct __pyx_obj_3lib_Context *, std::shared_ptr< fletcher::Context> );
+struct __pyx_vtabstruct_10pyfletcher_3lib_Context {
+  PyObject *(*from_pointer)(struct __pyx_obj_10pyfletcher_3lib_Context *, std::shared_ptr< fletcher::Context> );
 };
-static struct __pyx_vtabstruct_3lib_Context *__pyx_vtabptr_3lib_Context;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_Context *__pyx_vtabptr_10pyfletcher_3lib_Context;
 
 
 /* "View.MemoryView":104
@@ -3812,10 +3812,10 @@ static int __Pyx_ImportFunction(PyObject *module, const char *funcname, void (**
 /* InitStrings.proto */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform); /* proto*/
-static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *__pyx_v_self, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args); /* proto*/
-static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore); /* proto*/
-static PyObject *__pyx_f_3lib_7Context_from_pointer(struct __pyx_obj_3lib_Context *__pyx_v_self, std::shared_ptr< fletcher::Context>  __pyx_v_context); /* proto*/
+static PyObject *__pyx_f_10pyfletcher_3lib_8Platform_from_pointer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform); /* proto*/
+static PyObject *__pyx_f_10pyfletcher_3lib_8Platform__create(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create *__pyx_optional_args); /* proto*/
+static PyObject *__pyx_f_10pyfletcher_3lib_8UserCore_from_pointer(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore); /* proto*/
+static PyObject *__pyx_f_10pyfletcher_3lib_7Context_from_pointer(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, std::shared_ptr< fletcher::Context>  __pyx_v_context); /* proto*/
 static PyObject *__pyx_array_get_memview(struct __pyx_array_obj *__pyx_v_self); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
@@ -4022,13 +4022,13 @@ static std::shared_ptr< arrow::Schema>  (*__pyx_f_7pyarrow_3lib_pyarrow_unwrap_s
 static std::shared_ptr< arrow::Table>  (*__pyx_f_7pyarrow_3lib_pyarrow_unwrap_table)(PyObject *); /*proto*/
 static std::shared_ptr< arrow::Tensor>  (*__pyx_f_7pyarrow_3lib_pyarrow_unwrap_tensor)(PyObject *); /*proto*/
 
-/* Module declarations from 'includes.libfletcher' */
+/* Module declarations from 'pyfletcher.includes.libfletcher' */
 
-/* Module declarations from 'lib' */
-static PyTypeObject *__pyx_ptype_3lib_PyStatus = 0;
-static PyTypeObject *__pyx_ptype_3lib_Platform = 0;
-static PyTypeObject *__pyx_ptype_3lib_UserCore = 0;
-static PyTypeObject *__pyx_ptype_3lib_Context = 0;
+/* Module declarations from 'pyfletcher.lib' */
+static PyTypeObject *__pyx_ptype_10pyfletcher_3lib_PyStatus = 0;
+static PyTypeObject *__pyx_ptype_10pyfletcher_3lib_Platform = 0;
+static PyTypeObject *__pyx_ptype_10pyfletcher_3lib_UserCore = 0;
+static PyTypeObject *__pyx_ptype_10pyfletcher_3lib_Context = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -4040,7 +4040,7 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status); /*proto*/
+static PyObject *__pyx_f_10pyfletcher_3lib_check_fletcher_status(fletcher::Status); /*proto*/
 __PYX_EXTERN_C int pyfletcher_is_usercore(PyObject *); /*proto*/
 __PYX_EXTERN_C PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &); /*proto*/
 __PYX_EXTERN_C std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *); /*proto*/
@@ -4090,11 +4090,11 @@ static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *, PyObject *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_uint8_t__const__ = { "const uint8_t", NULL, sizeof(uint8_t const ), { 0 }, 0, IS_UNSIGNED(uint8_t const ) ? 'U' : 'I', IS_UNSIGNED(uint8_t const ), 0 };
-#define __Pyx_MODULE_NAME "lib"
-extern int __pyx_module_is_main_lib;
-int __pyx_module_is_main_lib = 0;
+#define __Pyx_MODULE_NAME "pyfletcher.lib"
+extern int __pyx_module_is_main_pyfletcher__lib;
+int __pyx_module_is_main_pyfletcher__lib = 0;
 
-/* Implementation of 'lib' */
+/* Implementation of 'pyfletcher.lib' */
 static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
@@ -4361,48 +4361,48 @@ static PyObject *__pyx_n_s_update;
 static PyObject *__pyx_kp_s_utf_8;
 static PyObject *__pyx_n_s_value;
 static PyObject *__pyx_n_s_zeros;
-static int __pyx_pf_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static int __pyx_pf_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus *__pyx_v_self, fstatus_t __pyx_v_val); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_8OK(struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_10ERROR(struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_quiet); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset, uint32_t __pyx_v_value); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_Platform *__pyx_v_self, size_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_address); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, da_t __pyx_v_device_destination, uint64_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Context *__pyx_v_context); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyArray_Descr *__pyx_v_nptype); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static int __pyx_pf_3lib_7Context___cinit__(struct __pyx_obj_3lib_Context *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform); /* proto */
-static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache); /* proto */
-static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
-static PyObject *__pyx_pf_3lib_7Context_6enable(struct __pyx_obj_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_4create(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self, fstatus_t __pyx_v_val); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_6ok(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_3val___get__(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_8OK(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_10ERROR(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8Platform___init__(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_quiet); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_2get_name(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_4init(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_6write_mmio(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset, uint32_t __pyx_v_value); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_8read_mmio(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_10device_malloc(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, size_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_12device_free(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_address); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, da_t __pyx_v_device_destination, uint64_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_22terminate(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8UserCore___cinit__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_context); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_4reset(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10start(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyArray_Descr *__pyx_v_nptype); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_20get_context(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_7Context___cinit__(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_platform); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -4447,10 +4447,10 @@ static PyObject *__pyx_pf_15View_dot_MemoryView_16_memoryviewslice_4base___get__
 static PyObject *__pyx_pf___pyx_memoryviewslice___reduce_cython__(CYTHON_UNUSED struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf___pyx_memoryviewslice_2__setstate_cython__(CYTHON_UNUSED struct __pyx_memoryviewslice_obj *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static PyObject *__pyx_pf_15View_dot_MemoryView___pyx_unpickle_Enum(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state); /* proto */
-static PyObject *__pyx_tp_new_3lib_PyStatus(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_3lib_Platform(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_3lib_Context(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_PyStatus(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_Platform(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_Context(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -4507,7 +4507,7 @@ static PyObject *__pyx_tuple__45;
 static PyObject *__pyx_codeobj__46;
 /* Late includes */
 
-/* "error.pxi":18
+/* "pyfletcher/error.pxi":18
  * 
  * # Todo: Expand, make neat
  * cdef check_fletcher_status(Status status):             # <<<<<<<<<<<<<<
@@ -4515,13 +4515,13 @@ static PyObject *__pyx_codeobj__46;
  *         print("Fletcher error")
  */
 
-static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_status) {
+static PyObject *__pyx_f_10pyfletcher_3lib_check_fletcher_status(fletcher::Status __pyx_v_status) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("check_fletcher_status", 0);
 
-  /* "error.pxi":19
+  /* "pyfletcher/error.pxi":19
  * # Todo: Expand, make neat
  * cdef check_fletcher_status(Status status):
  *     if not status.ok():             # <<<<<<<<<<<<<<
@@ -4531,7 +4531,7 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
   __pyx_t_1 = ((!(__pyx_v_status.ok() != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "error.pxi":20
+    /* "pyfletcher/error.pxi":20
  * cdef check_fletcher_status(Status status):
  *     if not status.ok():
  *         print("Fletcher error")             # <<<<<<<<<<<<<<
@@ -4539,7 +4539,7 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
  */
     if (__Pyx_PrintOne(0, __pyx_kp_s_Fletcher_error) < 0) __PYX_ERR(1, 20, __pyx_L1_error)
 
-    /* "error.pxi":19
+    /* "pyfletcher/error.pxi":19
  * # Todo: Expand, make neat
  * cdef check_fletcher_status(Status status):
  *     if not status.ok():             # <<<<<<<<<<<<<<
@@ -4548,14 +4548,14 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
  */
   }
 
-  /* "error.pxi":21
+  /* "pyfletcher/error.pxi":21
  *     if not status.ok():
  *         print("Fletcher error")
  *     status.ewf()             # <<<<<<<<<<<<<<
  */
   __pyx_v_status.ewf();
 
-  /* "error.pxi":18
+  /* "pyfletcher/error.pxi":18
  * 
  * # Todo: Expand, make neat
  * cdef check_fletcher_status(Status status):             # <<<<<<<<<<<<<<
@@ -4567,7 +4567,7 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("lib.check_fletcher_status", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.check_fletcher_status", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4575,7 +4575,7 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
   return __pyx_r;
 }
 
-/* "status.pxi":20
+/* "pyfletcher/status.pxi":20
  *         Status status
  * 
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -4584,22 +4584,22 @@ static PyObject *__pyx_f_3lib_check_fletcher_status(fletcher::Status __pyx_v_sta
  */
 
 /* Python wrapper */
-static int __pyx_pw_3lib_8PyStatus_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3lib_8PyStatus_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_10pyfletcher_3lib_8PyStatus_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8PyStatus_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__cinit__", 0))) return -1;
-  __pyx_r = __pyx_pf_3lib_8PyStatus___cinit__(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus___cinit__(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static int __pyx_pf_10pyfletcher_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
@@ -4610,7 +4610,7 @@ static int __pyx_pf_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_3lib
   return __pyx_r;
 }
 
-/* "status.pxi":23
+/* "pyfletcher/status.pxi":23
  *         pass
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -4619,22 +4619,22 @@ static int __pyx_pf_3lib_8PyStatus___cinit__(CYTHON_UNUSED struct __pyx_obj_3lib
  */
 
 /* Python wrapper */
-static int __pyx_pw_3lib_8PyStatus_3__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3lib_8PyStatus_3__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_10pyfletcher_3lib_8PyStatus_3__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8PyStatus_3__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("__init__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__init__", 0))) return -1;
-  __pyx_r = __pyx_pf_3lib_8PyStatus_2__init__(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_2__init__(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static int __pyx_pf_10pyfletcher_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
@@ -4645,7 +4645,7 @@ static int __pyx_pf_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_3lib
   return __pyx_r;
 }
 
-/* "status.pxi":26
+/* "pyfletcher/status.pxi":26
  *         pass
  * 
  *     def create(self, fstatus_t val):             # <<<<<<<<<<<<<<
@@ -4654,8 +4654,8 @@ static int __pyx_pf_3lib_8PyStatus_2__init__(CYTHON_UNUSED struct __pyx_obj_3lib
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_5create(PyObject *__pyx_v_self, PyObject *__pyx_arg_val); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_5create(PyObject *__pyx_v_self, PyObject *__pyx_arg_val) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_5create(PyObject *__pyx_v_self, PyObject *__pyx_arg_val); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_5create(PyObject *__pyx_v_self, PyObject *__pyx_arg_val) {
   fstatus_t __pyx_v_val;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -4665,24 +4665,24 @@ static PyObject *__pyx_pw_3lib_8PyStatus_5create(PyObject *__pyx_v_self, PyObjec
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.PyStatus.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8PyStatus_4create(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self), ((fstatus_t)__pyx_v_val));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_4create(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self), ((fstatus_t)__pyx_v_val));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus *__pyx_v_self, fstatus_t __pyx_v_val) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_4create(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self, fstatus_t __pyx_v_val) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   fletcher::Status __pyx_t_1;
   __Pyx_RefNannySetupContext("create", 0);
 
-  /* "status.pxi":27
+  /* "pyfletcher/status.pxi":27
  * 
  *     def create(self, fstatus_t val):
  *         self.status = Status(val)             # <<<<<<<<<<<<<<
@@ -4697,7 +4697,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus 
   }
   __pyx_v_self->status = __pyx_t_1;
 
-  /* "status.pxi":26
+  /* "pyfletcher/status.pxi":26
  *         pass
  * 
  *     def create(self, fstatus_t val):             # <<<<<<<<<<<<<<
@@ -4709,7 +4709,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus 
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("lib.PyStatus.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4717,7 +4717,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus 
   return __pyx_r;
 }
 
-/* "status.pxi":29
+/* "pyfletcher/status.pxi":29
  *         self.status = Status(val)
  * 
  *     def ok(self):             # <<<<<<<<<<<<<<
@@ -4726,25 +4726,25 @@ static PyObject *__pyx_pf_3lib_8PyStatus_4create(struct __pyx_obj_3lib_PyStatus 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_7ok(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_7ok(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_7ok(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_7ok(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("ok (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_6ok(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_6ok(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_6ok(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("ok", 0);
 
-  /* "status.pxi":30
+  /* "pyfletcher/status.pxi":30
  * 
  *     def ok(self):
  *         return self.status.ok()             # <<<<<<<<<<<<<<
@@ -4758,7 +4758,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__p
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "status.pxi":29
+  /* "pyfletcher/status.pxi":29
  *         self.status = Status(val)
  * 
  *     def ok(self):             # <<<<<<<<<<<<<<
@@ -4769,7 +4769,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__p
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.PyStatus.ok", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.ok", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4777,7 +4777,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__p
   return __pyx_r;
 }
 
-/* "status.pxi":33
+/* "pyfletcher/status.pxi":33
  * 
  *     @property
  *     def val(self):             # <<<<<<<<<<<<<<
@@ -4786,25 +4786,25 @@ static PyObject *__pyx_pf_3lib_8PyStatus_6ok(struct __pyx_obj_3lib_PyStatus *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_3val_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_3val_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_3val_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_3val_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_3val___get__(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_3val___get__(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_3val___get__(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "status.pxi":34
+  /* "pyfletcher/status.pxi":34
  *     @property
  *     def val(self):
  *         return self.status.val             # <<<<<<<<<<<<<<
@@ -4818,7 +4818,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PySt
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "status.pxi":33
+  /* "pyfletcher/status.pxi":33
  * 
  *     @property
  *     def val(self):             # <<<<<<<<<<<<<<
@@ -4829,7 +4829,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PySt
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.PyStatus.val.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.val.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4837,7 +4837,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PySt
   return __pyx_r;
 }
 
-/* "status.pxi":36
+/* "pyfletcher/status.pxi":36
  *         return self.status.val
  * 
  *     def OK(self):             # <<<<<<<<<<<<<<
@@ -4846,24 +4846,24 @@ static PyObject *__pyx_pf_3lib_8PyStatus_3val___get__(struct __pyx_obj_3lib_PySt
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_9OK(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_9OK(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_9OK(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_9OK(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("OK (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_8OK(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_8OK(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_8OK(struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_8OK(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("OK", 0);
 
-  /* "status.pxi":37
+  /* "pyfletcher/status.pxi":37
  * 
  *     def OK(self):
  *         self.status = self.status.OK()             # <<<<<<<<<<<<<<
@@ -4872,7 +4872,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_8OK(struct __pyx_obj_3lib_PyStatus *__p
  */
   __pyx_v_self->status = __pyx_v_self->status.OK();
 
-  /* "status.pxi":36
+  /* "pyfletcher/status.pxi":36
  *         return self.status.val
  * 
  *     def OK(self):             # <<<<<<<<<<<<<<
@@ -4887,7 +4887,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_8OK(struct __pyx_obj_3lib_PyStatus *__p
   return __pyx_r;
 }
 
-/* "status.pxi":39
+/* "pyfletcher/status.pxi":39
  *         self.status = self.status.OK()
  * 
  *     def ERROR(self):             # <<<<<<<<<<<<<<
@@ -4895,31 +4895,31 @@ static PyObject *__pyx_pf_3lib_8PyStatus_8OK(struct __pyx_obj_3lib_PyStatus *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_11ERROR(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_11ERROR(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_11ERROR(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_11ERROR(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("ERROR (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_10ERROR(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_10ERROR(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_10ERROR(struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_10ERROR(struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("ERROR", 0);
 
-  /* "status.pxi":40
+  /* "pyfletcher/status.pxi":40
  * 
  *     def ERROR(self):
  *         self.status = self.status.ERROR()             # <<<<<<<<<<<<<<
  */
   __pyx_v_self->status = __pyx_v_self->status.ERROR();
 
-  /* "status.pxi":39
+  /* "pyfletcher/status.pxi":39
  *         self.status = self.status.OK()
  * 
  *     def ERROR(self):             # <<<<<<<<<<<<<<
@@ -4940,19 +4940,19 @@ static PyObject *__pyx_pf_3lib_8PyStatus_10ERROR(struct __pyx_obj_3lib_PyStatus 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_12__reduce_cython__(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_12__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4979,7 +4979,7 @@ static PyObject *__pyx_pf_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struc
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.PyStatus.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -4994,19 +4994,19 @@ static PyObject *__pyx_pf_3lib_8PyStatus_12__reduce_cython__(CYTHON_UNUSED struc
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8PyStatus_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_8PyStatus_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8PyStatus_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8PyStatus_14__setstate_cython__(((struct __pyx_obj_3lib_PyStatus *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8PyStatus_14__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_PyStatus *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_PyStatus *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5033,14 +5033,14 @@ static PyObject *__pyx_pf_3lib_8PyStatus_14__setstate_cython__(CYTHON_UNUSED str
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.PyStatus.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.PyStatus.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "public-api.pxi":18
+/* "pyfletcher/public-api.pxi":18
  * 
  * 
  * cdef public api bint pyfletcher_is_usercore(object usercore):             # <<<<<<<<<<<<<<
@@ -5054,18 +5054,18 @@ int pyfletcher_is_usercore(PyObject *__pyx_v_usercore) {
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("pyfletcher_is_usercore", 0);
 
-  /* "public-api.pxi":19
+  /* "pyfletcher/public-api.pxi":19
  * 
  * cdef public api bint pyfletcher_is_usercore(object usercore):
  *     return isinstance(usercore, UserCore)             # <<<<<<<<<<<<<<
  * 
  * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
  */
-  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_usercore, __pyx_ptype_3lib_UserCore); 
+  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_usercore, __pyx_ptype_10pyfletcher_3lib_UserCore); 
   __pyx_r = __pyx_t_1;
   goto __pyx_L0;
 
-  /* "public-api.pxi":18
+  /* "pyfletcher/public-api.pxi":18
  * 
  * 
  * cdef public api bint pyfletcher_is_usercore(object usercore):             # <<<<<<<<<<<<<<
@@ -5079,7 +5079,7 @@ int pyfletcher_is_usercore(PyObject *__pyx_v_usercore) {
   return __pyx_r;
 }
 
-/* "public-api.pxi":21
+/* "pyfletcher/public-api.pxi":21
  *     return isinstance(usercore, UserCore)
  * 
  * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):             # <<<<<<<<<<<<<<
@@ -5088,36 +5088,36 @@ int pyfletcher_is_usercore(PyObject *__pyx_v_usercore) {
  */
 
 PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &__pyx_v_uc) {
-  struct __pyx_obj_3lib_UserCore *__pyx_v_result = 0;
+  struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_result = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_wrap_usercore", 0);
 
-  /* "public-api.pxi":22
+  /* "pyfletcher/public-api.pxi":22
  * 
  * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
  *     cdef UserCore result = UserCore.__new__(UserCore)             # <<<<<<<<<<<<<<
  *     result.from_pointer(uc)
  *     return result
  */
-  __pyx_t_1 = ((PyObject *)__pyx_tp_new_3lib_UserCore(((PyTypeObject *)__pyx_ptype_3lib_UserCore), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 22, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_10pyfletcher_3lib_UserCore(((PyTypeObject *)__pyx_ptype_10pyfletcher_3lib_UserCore), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 22, __pyx_L1_error)
   __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-  __pyx_v_result = ((struct __pyx_obj_3lib_UserCore *)__pyx_t_1);
+  __pyx_v_result = ((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "public-api.pxi":23
+  /* "pyfletcher/public-api.pxi":23
  * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
  *     cdef UserCore result = UserCore.__new__(UserCore)
  *     result.from_pointer(uc)             # <<<<<<<<<<<<<<
  *     return result
  * 
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_UserCore *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_uc); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 23, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_10pyfletcher_3lib_UserCore *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_uc); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "public-api.pxi":24
+  /* "pyfletcher/public-api.pxi":24
  *     cdef UserCore result = UserCore.__new__(UserCore)
  *     result.from_pointer(uc)
  *     return result             # <<<<<<<<<<<<<<
@@ -5129,7 +5129,7 @@ PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &
   __pyx_r = ((PyObject *)__pyx_v_result);
   goto __pyx_L0;
 
-  /* "public-api.pxi":21
+  /* "pyfletcher/public-api.pxi":21
  *     return isinstance(usercore, UserCore)
  * 
  * cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):             # <<<<<<<<<<<<<<
@@ -5140,7 +5140,7 @@ PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.pyfletcher_wrap_usercore", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.pyfletcher_wrap_usercore", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_result);
@@ -5149,7 +5149,7 @@ PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &
   return __pyx_r;
 }
 
-/* "public-api.pxi":26
+/* "pyfletcher/public-api.pxi":26
  *     return result
  * 
  * cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):             # <<<<<<<<<<<<<<
@@ -5158,14 +5158,14 @@ PyObject *pyfletcher_wrap_usercore(std::shared_ptr< fletcher::UserCore>  const &
  */
 
 std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx_v_usercore) {
-  struct __pyx_obj_3lib_UserCore *__pyx_v_uc = 0;
+  struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_uc = 0;
   std::shared_ptr< fletcher::UserCore>  __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_unwrap_usercore", 0);
 
-  /* "public-api.pxi":29
+  /* "pyfletcher/public-api.pxi":29
  *     cdef UserCore uc
  * 
  *     if pyfletcher_is_usercore(usercore):             # <<<<<<<<<<<<<<
@@ -5175,7 +5175,7 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
   __pyx_t_1 = (pyfletcher_is_usercore(__pyx_v_usercore) != 0);
   if (__pyx_t_1) {
 
-    /* "public-api.pxi":30
+    /* "pyfletcher/public-api.pxi":30
  * 
  *     if pyfletcher_is_usercore(usercore):
  *         uc = <UserCore>(usercore)             # <<<<<<<<<<<<<<
@@ -5184,10 +5184,10 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
  */
     __pyx_t_2 = __pyx_v_usercore;
     __Pyx_INCREF(__pyx_t_2);
-    __pyx_v_uc = ((struct __pyx_obj_3lib_UserCore *)__pyx_t_2);
+    __pyx_v_uc = ((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "public-api.pxi":31
+    /* "pyfletcher/public-api.pxi":31
  *     if pyfletcher_is_usercore(usercore):
  *         uc = <UserCore>(usercore)
  *         return uc.usercore             # <<<<<<<<<<<<<<
@@ -5197,7 +5197,7 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
     __pyx_r = __pyx_v_uc->usercore;
     goto __pyx_L0;
 
-    /* "public-api.pxi":29
+    /* "pyfletcher/public-api.pxi":29
  *     cdef UserCore uc
  * 
  *     if pyfletcher_is_usercore(usercore):             # <<<<<<<<<<<<<<
@@ -5206,7 +5206,7 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
  */
   }
 
-  /* "public-api.pxi":33
+  /* "pyfletcher/public-api.pxi":33
  *         return uc.usercore
  * 
  *     return shared_ptr[CUserCore]()             # <<<<<<<<<<<<<<
@@ -5216,7 +5216,7 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
   __pyx_r = std::shared_ptr< fletcher::UserCore> ();
   goto __pyx_L0;
 
-  /* "public-api.pxi":26
+  /* "pyfletcher/public-api.pxi":26
  *     return result
  * 
  * cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):             # <<<<<<<<<<<<<<
@@ -5231,7 +5231,7 @@ std::shared_ptr< fletcher::UserCore>  pyfletcher_unwrap_usercore(PyObject *__pyx
   return __pyx_r;
 }
 
-/* "public-api.pxi":35
+/* "pyfletcher/public-api.pxi":35
  *     return shared_ptr[CUserCore]()
  * 
  * cdef public api bint pyfletcher_is_platform(object platform):             # <<<<<<<<<<<<<<
@@ -5245,18 +5245,18 @@ int pyfletcher_is_platform(PyObject *__pyx_v_platform) {
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("pyfletcher_is_platform", 0);
 
-  /* "public-api.pxi":36
+  /* "pyfletcher/public-api.pxi":36
  * 
  * cdef public api bint pyfletcher_is_platform(object platform):
  *     return isinstance(platform, Platform)             # <<<<<<<<<<<<<<
  * 
  * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
  */
-  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_platform, __pyx_ptype_3lib_Platform); 
+  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_platform, __pyx_ptype_10pyfletcher_3lib_Platform); 
   __pyx_r = __pyx_t_1;
   goto __pyx_L0;
 
-  /* "public-api.pxi":35
+  /* "pyfletcher/public-api.pxi":35
  *     return shared_ptr[CUserCore]()
  * 
  * cdef public api bint pyfletcher_is_platform(object platform):             # <<<<<<<<<<<<<<
@@ -5270,7 +5270,7 @@ int pyfletcher_is_platform(PyObject *__pyx_v_platform) {
   return __pyx_r;
 }
 
-/* "public-api.pxi":38
+/* "pyfletcher/public-api.pxi":38
  *     return isinstance(platform, Platform)
  * 
  * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):             # <<<<<<<<<<<<<<
@@ -5279,36 +5279,36 @@ int pyfletcher_is_platform(PyObject *__pyx_v_platform) {
  */
 
 PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &__pyx_v_plat) {
-  struct __pyx_obj_3lib_Platform *__pyx_v_result = 0;
+  struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_result = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_wrap_platform", 0);
 
-  /* "public-api.pxi":39
+  /* "pyfletcher/public-api.pxi":39
  * 
  * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
  *     cdef Platform result = Platform.__new__(Platform)             # <<<<<<<<<<<<<<
  *     result.from_pointer(plat)
  *     return result
  */
-  __pyx_t_1 = ((PyObject *)__pyx_tp_new_3lib_Platform(((PyTypeObject *)__pyx_ptype_3lib_Platform), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 39, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_10pyfletcher_3lib_Platform(((PyTypeObject *)__pyx_ptype_10pyfletcher_3lib_Platform), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 39, __pyx_L1_error)
   __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-  __pyx_v_result = ((struct __pyx_obj_3lib_Platform *)__pyx_t_1);
+  __pyx_v_result = ((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "public-api.pxi":40
+  /* "pyfletcher/public-api.pxi":40
  * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):
  *     cdef Platform result = Platform.__new__(Platform)
  *     result.from_pointer(plat)             # <<<<<<<<<<<<<<
  *     return result
  * 
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Platform *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_plat); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 40, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_10pyfletcher_3lib_Platform *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_plat); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "public-api.pxi":41
+  /* "pyfletcher/public-api.pxi":41
  *     cdef Platform result = Platform.__new__(Platform)
  *     result.from_pointer(plat)
  *     return result             # <<<<<<<<<<<<<<
@@ -5320,7 +5320,7 @@ PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &
   __pyx_r = ((PyObject *)__pyx_v_result);
   goto __pyx_L0;
 
-  /* "public-api.pxi":38
+  /* "pyfletcher/public-api.pxi":38
  *     return isinstance(platform, Platform)
  * 
  * cdef public api object pyfletcher_wrap_platform(const shared_ptr[CPlatform]& plat):             # <<<<<<<<<<<<<<
@@ -5331,7 +5331,7 @@ PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.pyfletcher_wrap_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.pyfletcher_wrap_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_result);
@@ -5340,7 +5340,7 @@ PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &
   return __pyx_r;
 }
 
-/* "public-api.pxi":43
+/* "pyfletcher/public-api.pxi":43
  *     return result
  * 
  * cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform):             # <<<<<<<<<<<<<<
@@ -5349,14 +5349,14 @@ PyObject *pyfletcher_wrap_platform(std::shared_ptr< fletcher::Platform>  const &
  */
 
 std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx_v_platform) {
-  struct __pyx_obj_3lib_Platform *__pyx_v_plat = 0;
+  struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_plat = 0;
   std::shared_ptr< fletcher::Platform>  __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_unwrap_platform", 0);
 
-  /* "public-api.pxi":46
+  /* "pyfletcher/public-api.pxi":46
  *     cdef Platform plat
  * 
  *     if pyfletcher_is_platform(platform):             # <<<<<<<<<<<<<<
@@ -5366,7 +5366,7 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
   __pyx_t_1 = (pyfletcher_is_platform(__pyx_v_platform) != 0);
   if (__pyx_t_1) {
 
-    /* "public-api.pxi":47
+    /* "pyfletcher/public-api.pxi":47
  * 
  *     if pyfletcher_is_platform(platform):
  *         plat = <Platform>(platform)             # <<<<<<<<<<<<<<
@@ -5375,10 +5375,10 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
  */
     __pyx_t_2 = __pyx_v_platform;
     __Pyx_INCREF(__pyx_t_2);
-    __pyx_v_plat = ((struct __pyx_obj_3lib_Platform *)__pyx_t_2);
+    __pyx_v_plat = ((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "public-api.pxi":48
+    /* "pyfletcher/public-api.pxi":48
  *     if pyfletcher_is_platform(platform):
  *         plat = <Platform>(platform)
  *         return plat.platform             # <<<<<<<<<<<<<<
@@ -5388,7 +5388,7 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
     __pyx_r = __pyx_v_plat->platform;
     goto __pyx_L0;
 
-    /* "public-api.pxi":46
+    /* "pyfletcher/public-api.pxi":46
  *     cdef Platform plat
  * 
  *     if pyfletcher_is_platform(platform):             # <<<<<<<<<<<<<<
@@ -5397,7 +5397,7 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
  */
   }
 
-  /* "public-api.pxi":50
+  /* "pyfletcher/public-api.pxi":50
  *         return plat.platform
  * 
  *     return shared_ptr[CPlatform]()             # <<<<<<<<<<<<<<
@@ -5407,7 +5407,7 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
   __pyx_r = std::shared_ptr< fletcher::Platform> ();
   goto __pyx_L0;
 
-  /* "public-api.pxi":43
+  /* "pyfletcher/public-api.pxi":43
  *     return result
  * 
  * cdef public api shared_ptr[CPlatform] pyfletcher_unwrap_platform(object platform):             # <<<<<<<<<<<<<<
@@ -5422,7 +5422,7 @@ std::shared_ptr< fletcher::Platform>  pyfletcher_unwrap_platform(PyObject *__pyx
   return __pyx_r;
 }
 
-/* "public-api.pxi":52
+/* "pyfletcher/public-api.pxi":52
  *     return shared_ptr[CPlatform]()
  * 
  * cdef public api bint pyfletcher_is_context(object context):             # <<<<<<<<<<<<<<
@@ -5436,18 +5436,18 @@ int pyfletcher_is_context(PyObject *__pyx_v_context) {
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("pyfletcher_is_context", 0);
 
-  /* "public-api.pxi":53
+  /* "pyfletcher/public-api.pxi":53
  * 
  * cdef public api bint pyfletcher_is_context(object context):
  *     return isinstance(context, Context)             # <<<<<<<<<<<<<<
  * 
  * cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):
  */
-  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_context, __pyx_ptype_3lib_Context); 
+  __pyx_t_1 = __Pyx_TypeCheck(__pyx_v_context, __pyx_ptype_10pyfletcher_3lib_Context); 
   __pyx_r = __pyx_t_1;
   goto __pyx_L0;
 
-  /* "public-api.pxi":52
+  /* "pyfletcher/public-api.pxi":52
  *     return shared_ptr[CPlatform]()
  * 
  * cdef public api bint pyfletcher_is_context(object context):             # <<<<<<<<<<<<<<
@@ -5461,7 +5461,7 @@ int pyfletcher_is_context(PyObject *__pyx_v_context) {
   return __pyx_r;
 }
 
-/* "public-api.pxi":55
+/* "pyfletcher/public-api.pxi":55
  *     return isinstance(context, Context)
  * 
  * cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):             # <<<<<<<<<<<<<<
@@ -5470,36 +5470,36 @@ int pyfletcher_is_context(PyObject *__pyx_v_context) {
  */
 
 PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &__pyx_v_cont) {
-  struct __pyx_obj_3lib_Context *__pyx_v_result = 0;
+  struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_result = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_wrap_context", 0);
 
-  /* "public-api.pxi":56
+  /* "pyfletcher/public-api.pxi":56
  * 
  * cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):
  *     cdef Context result = Context.__new__(Context)             # <<<<<<<<<<<<<<
  *     result.from_pointer(cont)
  *     return result
  */
-  __pyx_t_1 = ((PyObject *)__pyx_tp_new_3lib_Context(((PyTypeObject *)__pyx_ptype_3lib_Context), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 56, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_tp_new_10pyfletcher_3lib_Context(((PyTypeObject *)__pyx_ptype_10pyfletcher_3lib_Context), __pyx_empty_tuple, NULL)); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 56, __pyx_L1_error)
   __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-  __pyx_v_result = ((struct __pyx_obj_3lib_Context *)__pyx_t_1);
+  __pyx_v_result = ((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "public-api.pxi":57
+  /* "pyfletcher/public-api.pxi":57
  * cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):
  *     cdef Context result = Context.__new__(Context)
  *     result.from_pointer(cont)             # <<<<<<<<<<<<<<
  *     return result
  * 
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Context *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_cont); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 57, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_10pyfletcher_3lib_Context *)__pyx_v_result->__pyx_vtab)->from_pointer(__pyx_v_result, __pyx_v_cont); if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 57, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "public-api.pxi":58
+  /* "pyfletcher/public-api.pxi":58
  *     cdef Context result = Context.__new__(Context)
  *     result.from_pointer(cont)
  *     return result             # <<<<<<<<<<<<<<
@@ -5511,7 +5511,7 @@ PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &__
   __pyx_r = ((PyObject *)__pyx_v_result);
   goto __pyx_L0;
 
-  /* "public-api.pxi":55
+  /* "pyfletcher/public-api.pxi":55
  *     return isinstance(context, Context)
  * 
  * cdef public api object pyfletcher_wrap_context(const shared_ptr[CContext]& cont):             # <<<<<<<<<<<<<<
@@ -5522,7 +5522,7 @@ PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &__
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.pyfletcher_wrap_context", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.pyfletcher_wrap_context", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_result);
@@ -5531,7 +5531,7 @@ PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &__
   return __pyx_r;
 }
 
-/* "public-api.pxi":60
+/* "pyfletcher/public-api.pxi":60
  *     return result
  * 
  * cdef public api shared_ptr[CContext] pyfletcher_unwrap_context(object context):             # <<<<<<<<<<<<<<
@@ -5540,14 +5540,14 @@ PyObject *pyfletcher_wrap_context(std::shared_ptr< fletcher::Context>  const &__
  */
 
 std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v_context) {
-  struct __pyx_obj_3lib_Context *__pyx_v_cont = 0;
+  struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_cont = 0;
   std::shared_ptr< fletcher::Context>  __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("pyfletcher_unwrap_context", 0);
 
-  /* "public-api.pxi":63
+  /* "pyfletcher/public-api.pxi":63
  *     cdef Context cont
  * 
  *     if pyfletcher_is_context(context):             # <<<<<<<<<<<<<<
@@ -5557,7 +5557,7 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
   __pyx_t_1 = (pyfletcher_is_context(__pyx_v_context) != 0);
   if (__pyx_t_1) {
 
-    /* "public-api.pxi":64
+    /* "pyfletcher/public-api.pxi":64
  * 
  *     if pyfletcher_is_context(context):
  *         cont = <Context>(context)             # <<<<<<<<<<<<<<
@@ -5566,10 +5566,10 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
  */
     __pyx_t_2 = __pyx_v_context;
     __Pyx_INCREF(__pyx_t_2);
-    __pyx_v_cont = ((struct __pyx_obj_3lib_Context *)__pyx_t_2);
+    __pyx_v_cont = ((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "public-api.pxi":65
+    /* "pyfletcher/public-api.pxi":65
  *     if pyfletcher_is_context(context):
  *         cont = <Context>(context)
  *         return cont.context             # <<<<<<<<<<<<<<
@@ -5579,7 +5579,7 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
     __pyx_r = __pyx_v_cont->context;
     goto __pyx_L0;
 
-    /* "public-api.pxi":63
+    /* "pyfletcher/public-api.pxi":63
  *     cdef Context cont
  * 
  *     if pyfletcher_is_context(context):             # <<<<<<<<<<<<<<
@@ -5588,7 +5588,7 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
  */
   }
 
-  /* "public-api.pxi":67
+  /* "pyfletcher/public-api.pxi":67
  *         return cont.context
  * 
  *     return shared_ptr[CContext]()             # <<<<<<<<<<<<<<
@@ -5596,7 +5596,7 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
   __pyx_r = std::shared_ptr< fletcher::Context> ();
   goto __pyx_L0;
 
-  /* "public-api.pxi":60
+  /* "pyfletcher/public-api.pxi":60
  *     return result
  * 
  * cdef public api shared_ptr[CContext] pyfletcher_unwrap_context(object context):             # <<<<<<<<<<<<<<
@@ -5611,7 +5611,7 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
   return __pyx_r;
 }
 
-/* "platform.pxi":21
+/* "pyfletcher/platform.pxi":21
  *         shared_ptr[CPlatform] platform
  * 
  *     def __init__(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
@@ -5620,8 +5620,8 @@ std::shared_ptr< fletcher::Context>  pyfletcher_unwrap_context(PyObject *__pyx_v
  */
 
 /* Python wrapper */
-static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_10pyfletcher_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_name = 0;
   PyObject *__pyx_v_quiet = 0;
   int __pyx_r;
@@ -5677,12 +5677,12 @@ static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *_
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__init__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 21, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) __PYX_ERR(4, 21, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_8Platform___init__(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_name, __pyx_v_quiet);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform___init__(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_name, __pyx_v_quiet);
 
   /* function exit code */
   goto __pyx_L0;
@@ -5693,14 +5693,14 @@ static int __pyx_pw_3lib_8Platform_1__init__(PyObject *__pyx_v_self, PyObject *_
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_quiet) {
+static int __pyx_pf_10pyfletcher_3lib_8Platform___init__(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_quiet) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
-  struct __pyx_opt_args_3lib_8Platform__create __pyx_t_2;
+  struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create __pyx_t_2;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "platform.pxi":22
+  /* "pyfletcher/platform.pxi":22
  * 
  *     def __init__(self, str name = "", quiet = True):
  *         self._create(name, quiet)             # <<<<<<<<<<<<<<
@@ -5710,11 +5710,11 @@ static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__py
   __pyx_t_2.__pyx_n = 2;
   __pyx_t_2.name = __pyx_v_name;
   __pyx_t_2.quiet = __pyx_v_quiet;
-  __pyx_t_1 = ((struct __pyx_vtabstruct_3lib_Platform *)__pyx_v_self->__pyx_vtab)->_create(__pyx_v_self, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 22, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_10pyfletcher_3lib_Platform *)__pyx_v_self->__pyx_vtab)->_create(__pyx_v_self, &__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":21
+  /* "pyfletcher/platform.pxi":21
  *         shared_ptr[CPlatform] platform
  * 
  *     def __init__(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
@@ -5727,14 +5727,14 @@ static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__py
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "platform.pxi":24
+/* "pyfletcher/platform.pxi":24
  *         self._create(name, quiet)
  * 
  *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):             # <<<<<<<<<<<<<<
@@ -5742,12 +5742,12 @@ static int __pyx_pf_3lib_8Platform___init__(struct __pyx_obj_3lib_Platform *__py
  * 
  */
 
-static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform) {
+static PyObject *__pyx_f_10pyfletcher_3lib_8Platform_from_pointer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, std::shared_ptr< fletcher::Platform>  const &__pyx_v_platform) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("from_pointer", 0);
 
-  /* "platform.pxi":25
+  /* "pyfletcher/platform.pxi":25
  * 
  *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):
  *         self.platform = platform             # <<<<<<<<<<<<<<
@@ -5756,7 +5756,7 @@ static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platf
  */
   __pyx_v_self->platform = __pyx_v_platform;
 
-  /* "platform.pxi":24
+  /* "pyfletcher/platform.pxi":24
  *         self._create(name, quiet)
  * 
  *     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):             # <<<<<<<<<<<<<<
@@ -5771,7 +5771,7 @@ static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platf
   return __pyx_r;
 }
 
-/* "platform.pxi":27
+/* "pyfletcher/platform.pxi":27
  *         self.platform = platform
  * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
@@ -5779,7 +5779,7 @@ static PyObject *__pyx_f_3lib_8Platform_from_pointer(struct __pyx_obj_3lib_Platf
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
  */
 
-static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *__pyx_v_self, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args) {
+static PyObject *__pyx_f_10pyfletcher_3lib_8Platform__create(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create *__pyx_optional_args) {
   PyObject *__pyx_v_name = ((PyObject*)__pyx_kp_s__3);
   PyObject *__pyx_v_quiet = ((PyObject *)Py_True);
   PyObject *__pyx_r = NULL;
@@ -5799,7 +5799,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
     }
   }
 
-  /* "platform.pxi":28
+  /* "pyfletcher/platform.pxi":28
  * 
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:             # <<<<<<<<<<<<<<
@@ -5810,18 +5810,18 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
   __pyx_t_2 = ((!__pyx_t_1) != 0);
   if (__pyx_t_2) {
 
-    /* "platform.pxi":29
+    /* "pyfletcher/platform.pxi":29
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))             # <<<<<<<<<<<<<<
  *         else:
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  */
-    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 29, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::create((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 29, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "platform.pxi":28
+    /* "pyfletcher/platform.pxi":28
  * 
  *     cdef _create(self, str name = "", quiet = True):
  *         if not name:             # <<<<<<<<<<<<<<
@@ -5831,7 +5831,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
     goto __pyx_L3;
   }
 
-  /* "platform.pxi":31
+  /* "pyfletcher/platform.pxi":31
  *             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
  *         else:
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))             # <<<<<<<<<<<<<<
@@ -5844,13 +5844,13 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
     __pyx_t_4 = __pyx_convert_string_from_py_std__in_string(__pyx_t_3); if (unlikely(PyErr_Occurred())) __PYX_ERR(4, 31, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_quiet); if (unlikely((__pyx_t_5 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(4, 31, __pyx_L1_error)
-    __pyx_t_3 = __pyx_f_3lib_check_fletcher_status( fletcher::Platform::create(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 31, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::create(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 31, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __pyx_L3:;
 
-  /* "platform.pxi":27
+  /* "pyfletcher/platform.pxi":27
  *         self.platform = platform
  * 
  *     cdef _create(self, str name = "", quiet = True):             # <<<<<<<<<<<<<<
@@ -5863,7 +5863,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("lib.Platform._create", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform._create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5871,7 +5871,7 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
   return __pyx_r;
 }
 
-/* "platform.pxi":33
+/* "pyfletcher/platform.pxi":33
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  * 
  *     def get_name(self):             # <<<<<<<<<<<<<<
@@ -5880,25 +5880,25 @@ static PyObject *__pyx_f_3lib_8Platform__create(struct __pyx_obj_3lib_Platform *
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_3get_name(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_3get_name(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_3get_name(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_3get_name(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_name (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8Platform_2get_name(((struct __pyx_obj_3lib_Platform *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_2get_name(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platform *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_2get_name(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_name", 0);
 
-  /* "platform.pxi":34
+  /* "pyfletcher/platform.pxi":34
  * 
  *     def get_name(self):
  *         return self.platform.get().getName().decode("utf-8")             # <<<<<<<<<<<<<<
@@ -5912,7 +5912,7 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":33
+  /* "pyfletcher/platform.pxi":33
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  * 
  *     def get_name(self):             # <<<<<<<<<<<<<<
@@ -5923,7 +5923,7 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.get_name", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5931,7 +5931,7 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
   return __pyx_r;
 }
 
-/* "platform.pxi":36
+/* "pyfletcher/platform.pxi":36
  *         return self.platform.get().getName().decode("utf-8")
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -5940,36 +5940,36 @@ static PyObject *__pyx_pf_3lib_8Platform_2get_name(struct __pyx_obj_3lib_Platfor
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_5init(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_5init(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_5init(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_5init(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8Platform_4init(((struct __pyx_obj_3lib_Platform *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_4init(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_4init(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("init", 0);
 
-  /* "platform.pxi":37
+  /* "pyfletcher/platform.pxi":37
  * 
  *     def init(self):
  *         check_fletcher_status(self.platform.get().init())             # <<<<<<<<<<<<<<
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->init()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 37, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->init()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":36
+  /* "pyfletcher/platform.pxi":36
  *         return self.platform.get().getName().decode("utf-8")
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -5982,7 +5982,7 @@ static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *_
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.init", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.init", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5990,7 +5990,7 @@ static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *_
   return __pyx_r;
 }
 
-/* "platform.pxi":39
+/* "pyfletcher/platform.pxi":39
  *         check_fletcher_status(self.platform.get().init())
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):             # <<<<<<<<<<<<<<
@@ -5999,8 +5999,8 @@ static PyObject *__pyx_pf_3lib_8Platform_4init(struct __pyx_obj_3lib_Platform *_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   uint64_t __pyx_v_offset;
   uint32_t __pyx_v_value;
   PyObject *__pyx_r = 0;
@@ -6048,35 +6048,35 @@ static PyObject *__pyx_pw_3lib_8Platform_7write_mmio(PyObject *__pyx_v_self, PyO
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("write_mmio", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 39, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.write_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.write_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_6write_mmio(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_offset, __pyx_v_value);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_6write_mmio(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_offset, __pyx_v_value);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset, uint32_t __pyx_v_value) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_6write_mmio(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset, uint32_t __pyx_v_value) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("write_mmio", 0);
 
-  /* "platform.pxi":40
+  /* "pyfletcher/platform.pxi":40
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))             # <<<<<<<<<<<<<<
  * 
  *     def read_mmio(self, uint64_t offset):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->writeMMIO(__pyx_v_offset, __pyx_v_value)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 40, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->writeMMIO(__pyx_v_offset, __pyx_v_value)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":39
+  /* "pyfletcher/platform.pxi":39
  *         check_fletcher_status(self.platform.get().init())
  * 
  *     def write_mmio(self, uint64_t offset, uint32_t value):             # <<<<<<<<<<<<<<
@@ -6089,7 +6089,7 @@ static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platf
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.write_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.write_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6097,7 +6097,7 @@ static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platf
   return __pyx_r;
 }
 
-/* "platform.pxi":42
+/* "pyfletcher/platform.pxi":42
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
  * 
  *     def read_mmio(self, uint64_t offset):             # <<<<<<<<<<<<<<
@@ -6106,8 +6106,8 @@ static PyObject *__pyx_pf_3lib_8Platform_6write_mmio(struct __pyx_obj_3lib_Platf
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyObject *__pyx_arg_offset); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyObject *__pyx_arg_offset) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyObject *__pyx_arg_offset); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyObject *__pyx_arg_offset) {
   uint64_t __pyx_v_offset;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -6117,36 +6117,36 @@ static PyObject *__pyx_pw_3lib_8Platform_9read_mmio(PyObject *__pyx_v_self, PyOb
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.read_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.read_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_8read_mmio(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), ((uint64_t)__pyx_v_offset));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_8read_mmio(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), ((uint64_t)__pyx_v_offset));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_8read_mmio(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, uint64_t __pyx_v_offset) {
   uint32_t __pyx_v_value;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("read_mmio", 0);
 
-  /* "platform.pxi":44
+  /* "pyfletcher/platform.pxi":44
  *     def read_mmio(self, uint64_t offset):
  *         cdef uint32_t value
  *         check_fletcher_status(self.platform.get().readMMIO(offset, &value))             # <<<<<<<<<<<<<<
  * 
  *         return value
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->readMMIO(__pyx_v_offset, (&__pyx_v_value))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 44, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->readMMIO(__pyx_v_offset, (&__pyx_v_value))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 44, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":46
+  /* "pyfletcher/platform.pxi":46
  *         check_fletcher_status(self.platform.get().readMMIO(offset, &value))
  * 
  *         return value             # <<<<<<<<<<<<<<
@@ -6160,7 +6160,7 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":42
+  /* "pyfletcher/platform.pxi":42
  *         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
  * 
  *     def read_mmio(self, uint64_t offset):             # <<<<<<<<<<<<<<
@@ -6171,7 +6171,7 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.read_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.read_mmio", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6179,7 +6179,7 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
   return __pyx_r;
 }
 
-/* "platform.pxi":48
+/* "pyfletcher/platform.pxi":48
  *         return value
  * 
  *     def device_malloc(self, size_t size):             # <<<<<<<<<<<<<<
@@ -6188,8 +6188,8 @@ static PyObject *__pyx_pf_3lib_8Platform_8read_mmio(struct __pyx_obj_3lib_Platfo
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self, PyObject *__pyx_arg_size); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self, PyObject *__pyx_arg_size) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self, PyObject *__pyx_arg_size); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self, PyObject *__pyx_arg_size) {
   size_t __pyx_v_size;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -6199,36 +6199,36 @@ static PyObject *__pyx_pw_3lib_8Platform_11device_malloc(PyObject *__pyx_v_self,
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.device_malloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.device_malloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_10device_malloc(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), ((size_t)__pyx_v_size));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_10device_malloc(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), ((size_t)__pyx_v_size));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_Platform *__pyx_v_self, size_t __pyx_v_size) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_10device_malloc(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, size_t __pyx_v_size) {
   da_t __pyx_v_device_address;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("device_malloc", 0);
 
-  /* "platform.pxi":50
+  /* "pyfletcher/platform.pxi":50
  *     def device_malloc(self, size_t size):
  *         cdef da_t device_address
  *         check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))             # <<<<<<<<<<<<<<
  * 
  *         return device_address
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceMalloc((&__pyx_v_device_address), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 50, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceMalloc((&__pyx_v_device_address), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":52
+  /* "pyfletcher/platform.pxi":52
  *         check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
  * 
  *         return device_address             # <<<<<<<<<<<<<<
@@ -6242,7 +6242,7 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":48
+  /* "pyfletcher/platform.pxi":48
  *         return value
  * 
  *     def device_malloc(self, size_t size):             # <<<<<<<<<<<<<<
@@ -6253,7 +6253,7 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.device_malloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.device_malloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6261,7 +6261,7 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
   return __pyx_r;
 }
 
-/* "platform.pxi":54
+/* "pyfletcher/platform.pxi":54
  *         return device_address
  * 
  *     def device_free(self, da_t device_address):             # <<<<<<<<<<<<<<
@@ -6270,8 +6270,8 @@ static PyObject *__pyx_pf_3lib_8Platform_10device_malloc(struct __pyx_obj_3lib_P
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_13device_free(PyObject *__pyx_v_self, PyObject *__pyx_arg_device_address); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_13device_free(PyObject *__pyx_v_self, PyObject *__pyx_arg_device_address) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_13device_free(PyObject *__pyx_v_self, PyObject *__pyx_arg_device_address); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_13device_free(PyObject *__pyx_v_self, PyObject *__pyx_arg_device_address) {
   da_t __pyx_v_device_address;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -6281,35 +6281,35 @@ static PyObject *__pyx_pw_3lib_8Platform_13device_free(PyObject *__pyx_v_self, P
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.device_free", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.device_free", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_12device_free(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), ((da_t)__pyx_v_device_address));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_12device_free(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), ((da_t)__pyx_v_device_address));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_address) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_12device_free(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_address) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("device_free", 0);
 
-  /* "platform.pxi":55
+  /* "pyfletcher/platform.pxi":55
  * 
  *     def device_free(self, da_t device_address):
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))             # <<<<<<<<<<<<<<
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceFree(__pyx_v_device_address)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 55, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->deviceFree(__pyx_v_device_address)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":54
+  /* "pyfletcher/platform.pxi":54
  *         return device_address
  * 
  *     def device_free(self, da_t device_address):             # <<<<<<<<<<<<<<
@@ -6322,7 +6322,7 @@ static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Pla
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.device_free", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.device_free", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6330,7 +6330,7 @@ static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Pla
   return __pyx_r;
 }
 
-/* "platform.pxi":57
+/* "pyfletcher/platform.pxi":57
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):             # <<<<<<<<<<<<<<
@@ -6339,8 +6339,8 @@ static PyObject *__pyx_pf_3lib_8Platform_12device_free(struct __pyx_obj_3lib_Pla
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_host_bytes = 0;
   da_t __pyx_v_device_destination;
   uint64_t __pyx_v_size;
@@ -6399,18 +6399,18 @@ static PyObject *__pyx_pw_3lib_8Platform_15copy_host_to_device(PyObject *__pyx_v
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("copy_host_to_device", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 57, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.copy_host_to_device", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_host_to_device", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_14copy_host_to_device(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_device_destination, __pyx_v_size);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_14copy_host_to_device(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_device_destination, __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, da_t __pyx_v_device_destination, uint64_t __pyx_v_size) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, da_t __pyx_v_device_destination, uint64_t __pyx_v_size) {
   __Pyx_memviewslice __pyx_v_host_source_view = { 0, 0, { 0 }, { 0 }, { 0 } };
   uint8_t const *__pyx_v_host_source;
   PyObject *__pyx_r = NULL;
@@ -6421,7 +6421,7 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("copy_host_to_device", 0);
 
-  /* "platform.pxi":59
+  /* "pyfletcher/platform.pxi":59
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
@@ -6433,7 +6433,7 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":60
+  /* "pyfletcher/platform.pxi":60
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -6452,18 +6452,18 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":62
+  /* "pyfletcher/platform.pxi":62
  *         cdef const uint8_t *host_source = &host_source_view[0]
  * 
  *         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))             # <<<<<<<<<<<<<<
  * 
  *     # Todo: Discuss if numpy array is the best return type
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyHostToDevice(((uint8_t *)__pyx_v_host_source), __pyx_v_device_destination, __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 62, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyHostToDevice(((uint8_t *)__pyx_v_host_source), __pyx_v_device_destination, __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 62, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":57
+  /* "pyfletcher/platform.pxi":57
  *         check_fletcher_status(self.platform.get().deviceFree(device_address))
  * 
  *     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):             # <<<<<<<<<<<<<<
@@ -6477,7 +6477,7 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   __pyx_L1_error:;
   __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("lib.Platform.copy_host_to_device", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_host_to_device", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_host_source_view, 1);
@@ -6486,7 +6486,7 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":65
+/* "pyfletcher/platform.pxi":65
  * 
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
@@ -6495,8 +6495,8 @@ static PyObject *__pyx_pf_3lib_8Platform_14copy_host_to_device(struct __pyx_obj_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   da_t __pyx_v_device_source;
   uint64_t __pyx_v_size;
   PyObject *__pyx_r = 0;
@@ -6544,18 +6544,18 @@ static PyObject *__pyx_pw_3lib_8Platform_17copy_device_to_host(PyObject *__pyx_v
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 65, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_16copy_device_to_host(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_device_source, __pyx_v_size);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_16copy_device_to_host(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_device_source, __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size) {
   PyObject *__pyx_v_buffer = NULL;
   __Pyx_memviewslice __pyx_v_buffer_view = { 0, 0, { 0 }, { 0 }, { 0 } };
   uint8_t const *__pyx_v_host_destination;
@@ -6571,7 +6571,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   int __pyx_t_8;
   __Pyx_RefNannySetupContext("copy_device_to_host", 0);
 
-  /* "platform.pxi":66
+  /* "pyfletcher/platform.pxi":66
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):
  *         buffer = np.zeros((size,), dtype=np.uint8)             # <<<<<<<<<<<<<<
@@ -6612,7 +6612,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __pyx_v_buffer = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "platform.pxi":67
+  /* "pyfletcher/platform.pxi":67
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):
  *         buffer = np.zeros((size,), dtype=np.uint8)
  *         cdef const uint8_t[:] buffer_view = buffer             # <<<<<<<<<<<<<<
@@ -6624,7 +6624,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "platform.pxi":68
+  /* "pyfletcher/platform.pxi":68
  *         buffer = np.zeros((size,), dtype=np.uint8)
  *         cdef const uint8_t[:] buffer_view = buffer
  *         cdef const uint8_t *host_destination = &buffer_view[0]             # <<<<<<<<<<<<<<
@@ -6643,18 +6643,18 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   }
   __pyx_v_host_destination = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_buffer_view.data + __pyx_t_7 * __pyx_v_buffer_view.strides[0]) ))));
 
-  /* "platform.pxi":70
+  /* "pyfletcher/platform.pxi":70
  *         cdef const uint8_t *host_destination = &buffer_view[0]
  * 
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))             # <<<<<<<<<<<<<<
  * 
  *         return buffer
  */
-  __pyx_t_5 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 70, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_5)) __PYX_ERR(4, 70, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "platform.pxi":72
+  /* "pyfletcher/platform.pxi":72
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
  * 
  *         return buffer             # <<<<<<<<<<<<<<
@@ -6666,7 +6666,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __pyx_r = __pyx_v_buffer;
   goto __pyx_L0;
 
-  /* "platform.pxi":65
+  /* "pyfletcher/platform.pxi":65
  * 
  *     # Todo: Discuss if numpy array is the best return type
  *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
@@ -6682,7 +6682,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __PYX_XDEC_MEMVIEW(&__pyx_t_6, 1);
-  __Pyx_AddTraceback("lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_buffer);
@@ -6692,7 +6692,7 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":74
+/* "pyfletcher/platform.pxi":74
  *         return buffer
  * 
  *     def prepare_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -6701,8 +6701,8 @@ static PyObject *__pyx_pf_3lib_8Platform_16copy_device_to_host(struct __pyx_obj_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_host_bytes = 0;
   int64_t __pyx_v_size;
   PyObject *__pyx_r = 0;
@@ -6750,18 +6750,18 @@ static PyObject *__pyx_pw_3lib_8Platform_19prepare_host_buffer(PyObject *__pyx_v
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("prepare_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 74, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.prepare_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.prepare_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_18prepare_host_buffer(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_size);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_18prepare_host_buffer(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size) {
   __Pyx_memviewslice __pyx_v_host_source_view = { 0, 0, { 0 }, { 0 }, { 0 } };
   uint8_t const *__pyx_v_host_source;
   da_t __pyx_v_device_destination;
@@ -6776,7 +6776,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("prepare_host_buffer", 0);
 
-  /* "platform.pxi":76
+  /* "pyfletcher/platform.pxi":76
  *     def prepare_host_buffer(self, host_bytes, int64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
@@ -6788,7 +6788,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":77
+  /* "pyfletcher/platform.pxi":77
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -6807,18 +6807,18 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":82
+  /* "pyfletcher/platform.pxi":82
  *         cdef cpp_bool alloced
  * 
  *         check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))             # <<<<<<<<<<<<<<
  * 
  *         return device_destination, alloced
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->prepareHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size, (&__pyx_v_alloced))); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 82, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->prepareHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size, (&__pyx_v_alloced))); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":84
+  /* "pyfletcher/platform.pxi":84
  *         check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))
  * 
  *         return device_destination, alloced             # <<<<<<<<<<<<<<
@@ -6842,7 +6842,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":74
+  /* "pyfletcher/platform.pxi":74
  *         return buffer
  * 
  *     def prepare_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -6856,7 +6856,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("lib.Platform.prepare_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.prepare_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_host_source_view, 1);
@@ -6865,7 +6865,7 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "platform.pxi":87
+/* "pyfletcher/platform.pxi":87
  * 
  * 
  *     def cache_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -6874,8 +6874,8 @@ static PyObject *__pyx_pf_3lib_8Platform_18prepare_host_buffer(struct __pyx_obj_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_host_bytes = 0;
   int64_t __pyx_v_size;
   PyObject *__pyx_r = 0;
@@ -6923,18 +6923,18 @@ static PyObject *__pyx_pw_3lib_8Platform_21cache_host_buffer(PyObject *__pyx_v_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("cache_host_buffer", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 87, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Platform.cache_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.cache_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8Platform_20cache_host_buffer(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_size);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_20cache_host_buffer(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_host_bytes, __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, int64_t __pyx_v_size) {
   __Pyx_memviewslice __pyx_v_host_source_view = { 0, 0, { 0 }, { 0 }, { 0 } };
   uint8_t const *__pyx_v_host_source;
   da_t __pyx_v_device_destination;
@@ -6946,7 +6946,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("cache_host_buffer", 0);
 
-  /* "platform.pxi":89
+  /* "pyfletcher/platform.pxi":89
  *     def cache_host_buffer(self, host_bytes, int64_t size):
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes             # <<<<<<<<<<<<<<
@@ -6958,7 +6958,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   __pyx_t_1.memview = NULL;
   __pyx_t_1.data = NULL;
 
-  /* "platform.pxi":90
+  /* "pyfletcher/platform.pxi":90
  *         #Accepts bytes-like objects for host_bytes
  *         cdef const uint8_t[:] host_source_view = host_bytes
  *         cdef const uint8_t *host_source = &host_source_view[0]             # <<<<<<<<<<<<<<
@@ -6977,18 +6977,18 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   }
   __pyx_v_host_source = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_host_source_view.data + __pyx_t_2 * __pyx_v_host_source_view.strides[0]) ))));
 
-  /* "platform.pxi":94
+  /* "pyfletcher/platform.pxi":94
  *         cdef da_t device_destination
  * 
  *         check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))             # <<<<<<<<<<<<<<
  * 
  *         return device_destination
  */
-  __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->cacheHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 94, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->cacheHostBuffer(__pyx_v_host_source, (&__pyx_v_device_destination), __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(4, 94, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "platform.pxi":96
+  /* "pyfletcher/platform.pxi":96
  *         check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))
  * 
  *         return device_destination             # <<<<<<<<<<<<<<
@@ -7002,7 +7002,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "platform.pxi":87
+  /* "pyfletcher/platform.pxi":87
  * 
  * 
  *     def cache_host_buffer(self, host_bytes, int64_t size):             # <<<<<<<<<<<<<<
@@ -7014,7 +7014,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   __pyx_L1_error:;
   __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("lib.Platform.cache_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.cache_host_buffer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_host_source_view, 1);
@@ -7023,7 +7023,7 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
   return __pyx_r;
 }
 
-/* "platform.pxi":98
+/* "pyfletcher/platform.pxi":98
  *         return device_destination
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -7032,36 +7032,36 @@ static PyObject *__pyx_pf_3lib_8Platform_20cache_host_buffer(struct __pyx_obj_3l
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_23terminate(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_23terminate(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_23terminate(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_23terminate(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("terminate (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8Platform_22terminate(((struct __pyx_obj_3lib_Platform *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_22terminate(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platform *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_22terminate(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("terminate", 0);
 
-  /* "platform.pxi":99
+  /* "pyfletcher/platform.pxi":99
  * 
  *     def terminate(self):
  *         check_fletcher_status(self.platform.get().terminate())             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 99, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":98
+  /* "pyfletcher/platform.pxi":98
  *         return device_destination
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -7074,7 +7074,7 @@ static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platf
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.terminate", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.terminate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7089,19 +7089,19 @@ static PyObject *__pyx_pf_3lib_8Platform_22terminate(struct __pyx_obj_3lib_Platf
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_25__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_25__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_25__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_25__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8Platform_24__reduce_cython__(((struct __pyx_obj_3lib_Platform *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_24__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7128,7 +7128,7 @@ static PyObject *__pyx_pf_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struc
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -7143,19 +7143,19 @@ static PyObject *__pyx_pf_3lib_8Platform_24__reduce_cython__(CYTHON_UNUSED struc
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8Platform_27__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_8Platform_27__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_27__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_27__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8Platform_26__setstate_cython__(((struct __pyx_obj_3lib_Platform *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_26__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7182,14 +7182,14 @@ static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED str
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Platform.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Platform.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "usercore.pxi":20
+/* "pyfletcher/usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
  *     def __cinit__(self, Context context):             # <<<<<<<<<<<<<<
@@ -7198,9 +7198,9 @@ static PyObject *__pyx_pf_3lib_8Platform_26__setstate_cython__(CYTHON_UNUSED str
  */
 
 /* Python wrapper */
-static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_3lib_Context *__pyx_v_context = 0;
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_context = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
@@ -7230,18 +7230,18 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_context = ((struct __pyx_obj_3lib_Context *)values[0]);
+    __pyx_v_context = ((struct __pyx_obj_10pyfletcher_3lib_Context *)values[0]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 20, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.UserCore.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_context), __pyx_ptype_3lib_Context, 1, "context", 0))) __PYX_ERR(5, 20, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_8UserCore___cinit__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_context);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_context), __pyx_ptype_10pyfletcher_3lib_Context, 1, "context", 0))) __PYX_ERR(5, 20, __pyx_L1_error)
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore___cinit__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), __pyx_v_context);
 
   /* function exit code */
   goto __pyx_L0;
@@ -7252,12 +7252,12 @@ static int __pyx_pw_3lib_8UserCore_1__cinit__(PyObject *__pyx_v_self, PyObject *
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__pyx_v_self, struct __pyx_obj_3lib_Context *__pyx_v_context) {
+static int __pyx_pf_10pyfletcher_3lib_8UserCore___cinit__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_context) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "usercore.pxi":21
+  /* "pyfletcher/usercore.pxi":21
  * 
  *     def __cinit__(self, Context context):
  *         self.usercore.reset(new CUserCore(context.context))             # <<<<<<<<<<<<<<
@@ -7266,7 +7266,7 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
  */
   __pyx_v_self->usercore.reset(new  fletcher::UserCore(__pyx_v_context->context));
 
-  /* "usercore.pxi":20
+  /* "pyfletcher/usercore.pxi":20
  *         shared_ptr[CUserCore] usercore
  * 
  *     def __cinit__(self, Context context):             # <<<<<<<<<<<<<<
@@ -7280,7 +7280,7 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
   return __pyx_r;
 }
 
-/* "usercore.pxi":23
+/* "pyfletcher/usercore.pxi":23
  *         self.usercore.reset(new CUserCore(context.context))
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
@@ -7288,12 +7288,12 @@ static int __pyx_pf_3lib_8UserCore___cinit__(struct __pyx_obj_3lib_UserCore *__p
  * 
  */
 
-static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore) {
+static PyObject *__pyx_f_10pyfletcher_3lib_8UserCore_from_pointer(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, std::shared_ptr< fletcher::UserCore>  const &__pyx_v_usercore) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("from_pointer", 0);
 
-  /* "usercore.pxi":24
+  /* "pyfletcher/usercore.pxi":24
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
  *         self.usercore = usercore             # <<<<<<<<<<<<<<
@@ -7302,7 +7302,7 @@ static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserC
  */
   __pyx_v_self->usercore = __pyx_v_usercore;
 
-  /* "usercore.pxi":23
+  /* "pyfletcher/usercore.pxi":23
  *         self.usercore.reset(new CUserCore(context.context))
  * 
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):             # <<<<<<<<<<<<<<
@@ -7317,7 +7317,7 @@ static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserC
   return __pyx_r;
 }
 
-/* "usercore.pxi":26
+/* "pyfletcher/usercore.pxi":26
  *         self.usercore = usercore
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
@@ -7326,25 +7326,25 @@ static PyObject *__pyx_f_3lib_8UserCore_from_pointer(struct __pyx_obj_3lib_UserC
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_3implements_schema(PyObject *__pyx_v_self, PyObject *__pyx_v_schema); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_3implements_schema(PyObject *__pyx_v_self, PyObject *__pyx_v_schema) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_3implements_schema(PyObject *__pyx_v_self, PyObject *__pyx_v_schema); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_3implements_schema(PyObject *__pyx_v_self, PyObject *__pyx_v_schema) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("implements_schema (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_2implements_schema(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v_schema));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v_schema));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("implements_schema", 0);
 
-  /* "usercore.pxi":27
+  /* "pyfletcher/usercore.pxi":27
  * 
  *     def implements_schema(self, schema):
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))             # <<<<<<<<<<<<<<
@@ -7358,7 +7358,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":26
+  /* "pyfletcher/usercore.pxi":26
  *         self.usercore = usercore
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
@@ -7369,7 +7369,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.implements_schema", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.implements_schema", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7377,7 +7377,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
   return __pyx_r;
 }
 
-/* "usercore.pxi":29
+/* "pyfletcher/usercore.pxi":29
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -7386,36 +7386,36 @@ static PyObject *__pyx_pf_3lib_8UserCore_2implements_schema(struct __pyx_obj_3li
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_5reset(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_5reset(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_5reset(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_5reset(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("reset (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_4reset(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_4reset(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_4reset(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("reset", 0);
 
-  /* "usercore.pxi":30
+  /* "pyfletcher/usercore.pxi":30
  * 
  *     def reset(self):
  *         check_fletcher_status(self.usercore.get().reset())             # <<<<<<<<<<<<<<
  * 
  *     def set_range(self, uint32_t first, uint32_t last):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 30, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":29
+  /* "pyfletcher/usercore.pxi":29
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -7428,7 +7428,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.reset", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.reset", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7436,7 +7436,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *
   return __pyx_r;
 }
 
-/* "usercore.pxi":32
+/* "pyfletcher/usercore.pxi":32
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -7445,8 +7445,8 @@ static PyObject *__pyx_pf_3lib_8UserCore_4reset(struct __pyx_obj_3lib_UserCore *
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   uint32_t __pyx_v_first;
   uint32_t __pyx_v_last;
   PyObject *__pyx_r = 0;
@@ -7494,35 +7494,35 @@ static PyObject *__pyx_pw_3lib_8UserCore_7set_range(PyObject *__pyx_v_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 32, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8UserCore_6set_range(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_first, __pyx_v_last);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), __pyx_v_first, __pyx_v_last);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("set_range", 0);
 
-  /* "usercore.pxi":33
+  /* "pyfletcher/usercore.pxi":33
  * 
  *     def set_range(self, uint32_t first, uint32_t last):
  *         check_fletcher_status(self.usercore.get().setRange(first, last))             # <<<<<<<<<<<<<<
  * 
  *     def set_arguments(self, list arguments):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 33, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":32
+  /* "pyfletcher/usercore.pxi":32
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -7535,7 +7535,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCo
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7543,7 +7543,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCo
   return __pyx_r;
 }
 
-/* "usercore.pxi":35
+/* "pyfletcher/usercore.pxi":35
  *         check_fletcher_status(self.usercore.get().setRange(first, last))
  * 
  *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
@@ -7552,13 +7552,13 @@ static PyObject *__pyx_pf_3lib_8UserCore_6set_range(struct __pyx_obj_3lib_UserCo
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, PyObject *__pyx_v_arguments) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_arguments (wrapper)", 0);
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_arguments), (&PyList_Type), 1, "arguments", 1))) __PYX_ERR(5, 35, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_8UserCore_8set_arguments(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject*)__pyx_v_arguments));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyObject*)__pyx_v_arguments));
 
   /* function exit code */
   goto __pyx_L0;
@@ -7569,7 +7569,7 @@ static PyObject *__pyx_pw_3lib_8UserCore_9set_arguments(PyObject *__pyx_v_self, 
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_arguments) {
   std::vector<uint32_t>  __pyx_v_cpp_arguments;
   PyObject *__pyx_v_argument = NULL;
   PyObject *__pyx_r = NULL;
@@ -7580,7 +7580,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
   uint32_t __pyx_t_4;
   __Pyx_RefNannySetupContext("set_arguments", 0);
 
-  /* "usercore.pxi":37
+  /* "pyfletcher/usercore.pxi":37
  *     def set_arguments(self, list arguments):
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:             # <<<<<<<<<<<<<<
@@ -7603,7 +7603,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
     __Pyx_XDECREF_SET(__pyx_v_argument, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "usercore.pxi":38
+    /* "pyfletcher/usercore.pxi":38
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:
  *             cpp_arguments.push_back(argument)             # <<<<<<<<<<<<<<
@@ -7618,7 +7618,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
       __PYX_ERR(5, 38, __pyx_L1_error)
     }
 
-    /* "usercore.pxi":37
+    /* "pyfletcher/usercore.pxi":37
  *     def set_arguments(self, list arguments):
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:             # <<<<<<<<<<<<<<
@@ -7628,7 +7628,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":40
+  /* "pyfletcher/usercore.pxi":40
  *             cpp_arguments.push_back(argument)
  * 
  *         self.usercore.get().setArguments(cpp_arguments)             # <<<<<<<<<<<<<<
@@ -7637,7 +7637,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
  */
   (void)(__pyx_v_self->usercore.get()->setArguments(__pyx_v_cpp_arguments));
 
-  /* "usercore.pxi":35
+  /* "pyfletcher/usercore.pxi":35
  *         check_fletcher_status(self.usercore.get().setRange(first, last))
  * 
  *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
@@ -7651,7 +7651,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("lib.UserCore.set_arguments", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.set_arguments", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_argument);
@@ -7660,7 +7660,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
   return __pyx_r;
 }
 
-/* "usercore.pxi":42
+/* "pyfletcher/usercore.pxi":42
  *         self.usercore.get().setArguments(cpp_arguments)
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
@@ -7669,36 +7669,36 @@ static PyObject *__pyx_pf_3lib_8UserCore_8set_arguments(struct __pyx_obj_3lib_Us
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_11start(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_11start(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_11start(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_11start(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("start (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_10start(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_10start(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10start(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("start", 0);
 
-  /* "usercore.pxi":43
+  /* "pyfletcher/usercore.pxi":43
  * 
  *     def start(self):
  *         check_fletcher_status(self.usercore.get().start())             # <<<<<<<<<<<<<<
  * 
  *     def get_status(self):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 43, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":42
+  /* "pyfletcher/usercore.pxi":42
  *         self.usercore.get().setArguments(cpp_arguments)
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
@@ -7711,7 +7711,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore 
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.start", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.start", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7719,7 +7719,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore 
   return __pyx_r;
 }
 
-/* "usercore.pxi":45
+/* "pyfletcher/usercore.pxi":45
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -7728,37 +7728,37 @@ static PyObject *__pyx_pf_3lib_8UserCore_10start(struct __pyx_obj_3lib_UserCore 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_13get_status(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_13get_status(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_13get_status(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_13get_status(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_status (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_12get_status(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   uint32_t __pyx_v_status;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_status", 0);
 
-  /* "usercore.pxi":47
+  /* "pyfletcher/usercore.pxi":47
  *     def get_status(self):
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))             # <<<<<<<<<<<<<<
  *         return status
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 47, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":48
+  /* "pyfletcher/usercore.pxi":48
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))
  *         return status             # <<<<<<<<<<<<<<
@@ -7772,7 +7772,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":45
+  /* "pyfletcher/usercore.pxi":45
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -7783,7 +7783,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.get_status", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.get_status", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7791,7 +7791,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
   return __pyx_r;
 }
 
-/* "usercore.pxi":51
+/* "pyfletcher/usercore.pxi":51
  * 
  *     # Todo: Discuss: Return numpy scalar or python object?
  *     def get_return(self, np.dtype nptype):             # <<<<<<<<<<<<<<
@@ -7800,13 +7800,13 @@ static PyObject *__pyx_pf_3lib_8UserCore_12get_status(struct __pyx_obj_3lib_User
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_15get_return(PyObject *__pyx_v_self, PyObject *__pyx_v_nptype); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_15get_return(PyObject *__pyx_v_self, PyObject *__pyx_v_nptype) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_15get_return(PyObject *__pyx_v_self, PyObject *__pyx_v_nptype); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_15get_return(PyObject *__pyx_v_self, PyObject *__pyx_v_nptype) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_return (wrapper)", 0);
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_nptype), __pyx_ptype_5numpy_dtype, 1, "nptype", 0))) __PYX_ERR(5, 51, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_8UserCore_14get_return(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyArray_Descr *)__pyx_v_nptype));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyArray_Descr *)__pyx_v_nptype));
 
   /* function exit code */
   goto __pyx_L0;
@@ -7817,7 +7817,7 @@ static PyObject *__pyx_pw_3lib_8UserCore_15get_return(PyObject *__pyx_v_self, Py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyArray_Descr *__pyx_v_nptype) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyArray_Descr *__pyx_v_nptype) {
   uint32_t __pyx_v_hi;
   uint32_t __pyx_v_lo;
   uint64_t __pyx_v_ret;
@@ -7832,18 +7832,18 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   PyObject *__pyx_t_5 = NULL;
   __Pyx_RefNannySetupContext("get_return", 0);
 
-  /* "usercore.pxi":56
+  /* "pyfletcher/usercore.pxi":56
  *         cdef uint64_t ret
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))             # <<<<<<<<<<<<<<
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 56, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "usercore.pxi":57
+  /* "pyfletcher/usercore.pxi":57
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))
  *         ret = (<uint64_t>hi << 32) + lo             # <<<<<<<<<<<<<<
@@ -7852,7 +7852,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
  */
   __pyx_v_ret = ((((uint64_t)__pyx_v_hi) << 32) + __pyx_v_lo);
 
-  /* "usercore.pxi":59
+  /* "pyfletcher/usercore.pxi":59
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  *         scalar = np.uint64(ret)             # <<<<<<<<<<<<<<
@@ -7915,7 +7915,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   __pyx_v_scalar = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "usercore.pxi":60
+  /* "pyfletcher/usercore.pxi":60
  * 
  *         scalar = np.uint64(ret)
  *         cast_scalar = scalar.astype(nptype)             # <<<<<<<<<<<<<<
@@ -7970,7 +7970,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   __pyx_v_cast_scalar = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "usercore.pxi":62
+  /* "pyfletcher/usercore.pxi":62
  *         cast_scalar = scalar.astype(nptype)
  * 
  *         return cast_scalar.item()             # <<<<<<<<<<<<<<
@@ -8002,7 +8002,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":51
+  /* "pyfletcher/usercore.pxi":51
  * 
  *     # Todo: Discuss: Return numpy scalar or python object?
  *     def get_return(self, np.dtype nptype):             # <<<<<<<<<<<<<<
@@ -8017,7 +8017,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("lib.UserCore.get_return", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.get_return", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_scalar);
@@ -8027,7 +8027,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
   return __pyx_r;
 }
 
-/* "usercore.pxi":64
+/* "pyfletcher/usercore.pxi":64
  *         return cast_scalar.item()
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):             # <<<<<<<<<<<<<<
@@ -8036,8 +8036,8 @@ static PyObject *__pyx_pf_3lib_8UserCore_14get_return(struct __pyx_obj_3lib_User
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_poll_interval_usec = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -8080,25 +8080,25 @@ static PyObject *__pyx_pw_3lib_8UserCore_17wait_for_finish(PyObject *__pyx_v_sel
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("wait_for_finish", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 64, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_8UserCore_16wait_for_finish(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), __pyx_v_poll_interval_usec);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_16wait_for_finish(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), __pyx_v_poll_interval_usec);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_poll_interval_usec) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   unsigned int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("wait_for_finish", 0);
 
-  /* "usercore.pxi":65
+  /* "pyfletcher/usercore.pxi":65
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))             # <<<<<<<<<<<<<<
@@ -8106,11 +8106,11 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
  *     def get_platform(self):
  */
   __pyx_t_1 = __Pyx_PyInt_As_unsigned_int(__pyx_v_poll_interval_usec); if (unlikely((__pyx_t_1 == (unsigned int)-1) && PyErr_Occurred())) __PYX_ERR(5, 65, __pyx_L1_error)
-  __pyx_t_2 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 65, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 65, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "usercore.pxi":64
+  /* "pyfletcher/usercore.pxi":64
  *         return cast_scalar.item()
  * 
  *     def wait_for_finish(self, poll_interval_usec=0):             # <<<<<<<<<<<<<<
@@ -8123,7 +8123,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8131,7 +8131,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
   return __pyx_r;
 }
 
-/* "usercore.pxi":67
+/* "pyfletcher/usercore.pxi":67
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
@@ -8140,25 +8140,25 @@ static PyObject *__pyx_pf_3lib_8UserCore_16wait_for_finish(struct __pyx_obj_3lib
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_19get_platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_19get_platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_19get_platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_19get_platform(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_platform (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_18get_platform(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_platform", 0);
 
-  /* "usercore.pxi":68
+  /* "pyfletcher/usercore.pxi":68
  * 
  *     def get_platform(self):
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())             # <<<<<<<<<<<<<<
@@ -8172,7 +8172,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":67
+  /* "pyfletcher/usercore.pxi":67
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
@@ -8183,7 +8183,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.get_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.get_platform", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8191,7 +8191,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
   return __pyx_r;
 }
 
-/* "usercore.pxi":70
+/* "pyfletcher/usercore.pxi":70
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
  * 
  *     def get_context(self):             # <<<<<<<<<<<<<<
@@ -8199,25 +8199,25 @@ static PyObject *__pyx_pf_3lib_8UserCore_18get_platform(struct __pyx_obj_3lib_Us
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_21get_context(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_context (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_20get_context(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_20get_context(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_20get_context(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_context", 0);
 
-  /* "usercore.pxi":71
+  /* "pyfletcher/usercore.pxi":71
  * 
  *     def get_context(self):
  *         return pyfletcher_wrap_context(self.usercore.get().context())             # <<<<<<<<<<<<<<
@@ -8229,7 +8229,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_Use
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "usercore.pxi":70
+  /* "pyfletcher/usercore.pxi":70
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
  * 
  *     def get_context(self):             # <<<<<<<<<<<<<<
@@ -8239,7 +8239,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_Use
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.get_context", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.get_context", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8254,19 +8254,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_20get_context(struct __pyx_obj_3lib_Use
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_23__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_22__reduce_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_22__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8293,7 +8293,7 @@ static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struc
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -8308,19 +8308,19 @@ static PyObject *__pyx_pf_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struc
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_25__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_8UserCore_24__setstate_cython__(((struct __pyx_obj_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_24__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8347,14 +8347,14 @@ static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED str
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.UserCore.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "context.pxi":21
+/* "pyfletcher/context.pxi":21
  *         shared_ptr[CContext] context
  * 
  *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
@@ -8363,9 +8363,9 @@ static PyObject *__pyx_pf_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED str
  */
 
 /* Python wrapper */
-static int __pyx_pw_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_3lib_Platform *__pyx_v_platform = 0;
+static int __pyx_pw_10pyfletcher_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_platform = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
@@ -8395,18 +8395,18 @@ static int __pyx_pw_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *_
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_platform = ((struct __pyx_obj_3lib_Platform *)values[0]);
+    __pyx_v_platform = ((struct __pyx_obj_10pyfletcher_3lib_Platform *)values[0]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(6, 21, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Context.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_platform), __pyx_ptype_3lib_Platform, 1, "platform", 0))) __PYX_ERR(6, 21, __pyx_L1_error)
-  __pyx_r = __pyx_pf_3lib_7Context___cinit__(((struct __pyx_obj_3lib_Context *)__pyx_v_self), __pyx_v_platform);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_platform), __pyx_ptype_10pyfletcher_3lib_Platform, 1, "platform", 0))) __PYX_ERR(6, 21, __pyx_L1_error)
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context___cinit__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_platform);
 
   /* function exit code */
   goto __pyx_L0;
@@ -8417,24 +8417,24 @@ static int __pyx_pw_3lib_7Context_1__cinit__(PyObject *__pyx_v_self, PyObject *_
   return __pyx_r;
 }
 
-static int __pyx_pf_3lib_7Context___cinit__(struct __pyx_obj_3lib_Context *__pyx_v_self, struct __pyx_obj_3lib_Platform *__pyx_v_platform) {
+static int __pyx_pf_10pyfletcher_3lib_7Context___cinit__(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_platform) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "context.pxi":22
+  /* "pyfletcher/context.pxi":22
  * 
  *     def __cinit__(self, Platform platform):
  *         check_fletcher_status(CContext.Make(&self.context, platform.platform))             # <<<<<<<<<<<<<<
  * 
  *     cdef from_pointer(self, shared_ptr[CContext] context):
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status( fletcher::Context::Make((&__pyx_v_self->context), __pyx_v_platform->platform)); if (unlikely(!__pyx_t_1)) __PYX_ERR(6, 22, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Context::Make((&__pyx_v_self->context), __pyx_v_platform->platform)); if (unlikely(!__pyx_t_1)) __PYX_ERR(6, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "context.pxi":21
+  /* "pyfletcher/context.pxi":21
  *         shared_ptr[CContext] context
  * 
  *     def __cinit__(self, Platform platform):             # <<<<<<<<<<<<<<
@@ -8447,14 +8447,14 @@ static int __pyx_pf_3lib_7Context___cinit__(struct __pyx_obj_3lib_Context *__pyx
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Context.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "context.pxi":24
+/* "pyfletcher/context.pxi":24
  *         check_fletcher_status(CContext.Make(&self.context, platform.platform))
  * 
  *     cdef from_pointer(self, shared_ptr[CContext] context):             # <<<<<<<<<<<<<<
@@ -8462,12 +8462,12 @@ static int __pyx_pf_3lib_7Context___cinit__(struct __pyx_obj_3lib_Context *__pyx
  * 
  */
 
-static PyObject *__pyx_f_3lib_7Context_from_pointer(struct __pyx_obj_3lib_Context *__pyx_v_self, std::shared_ptr< fletcher::Context>  __pyx_v_context) {
+static PyObject *__pyx_f_10pyfletcher_3lib_7Context_from_pointer(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, std::shared_ptr< fletcher::Context>  __pyx_v_context) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("from_pointer", 0);
 
-  /* "context.pxi":25
+  /* "pyfletcher/context.pxi":25
  * 
  *     cdef from_pointer(self, shared_ptr[CContext] context):
  *         self.context = context             # <<<<<<<<<<<<<<
@@ -8476,7 +8476,7 @@ static PyObject *__pyx_f_3lib_7Context_from_pointer(struct __pyx_obj_3lib_Contex
  */
   __pyx_v_self->context = __pyx_v_context;
 
-  /* "context.pxi":24
+  /* "pyfletcher/context.pxi":24
  *         check_fletcher_status(CContext.Make(&self.context, platform.platform))
  * 
  *     cdef from_pointer(self, shared_ptr[CContext] context):             # <<<<<<<<<<<<<<
@@ -8491,7 +8491,7 @@ static PyObject *__pyx_f_3lib_7Context_from_pointer(struct __pyx_obj_3lib_Contex
   return __pyx_r;
 }
 
-/* "context.pxi":27
+/* "pyfletcher/context.pxi":27
  *         self.context = context
  * 
  *     def queueArray(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
@@ -8500,8 +8500,8 @@ static PyObject *__pyx_f_3lib_7Context_from_pointer(struct __pyx_obj_3lib_Contex
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_array = 0;
   PyObject *__pyx_v_field = 0;
   PyObject *__pyx_v_cache = 0;
@@ -8566,18 +8566,18 @@ static PyObject *__pyx_pw_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("queueArray", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(6, 27, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_7Context_2queueArray(((struct __pyx_obj_3lib_Context *)__pyx_v_self), __pyx_v_array, __pyx_v_field, __pyx_v_cache);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_2queueArray(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_array, __pyx_v_field, __pyx_v_cache);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -8586,7 +8586,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("queueArray", 0);
 
-  /* "context.pxi":28
+  /* "pyfletcher/context.pxi":28
  * 
  *     def queueArray(self, array, field=None, cache=False):
  *         if not field:             # <<<<<<<<<<<<<<
@@ -8597,7 +8597,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
   __pyx_t_2 = ((!__pyx_t_1) != 0);
   if (__pyx_t_2) {
 
-    /* "context.pxi":29
+    /* "pyfletcher/context.pxi":29
  *     def queueArray(self, array, field=None, cache=False):
  *         if not field:
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), cache))             # <<<<<<<<<<<<<<
@@ -8605,11 +8605,11 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),
  */
     __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_cache); if (unlikely((__pyx_t_3 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(6, 29, __pyx_L1_error)
-    __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueArray(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_array(__pyx_v_array), __pyx_t_3)); if (unlikely(!__pyx_t_4)) __PYX_ERR(6, 29, __pyx_L1_error)
+    __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueArray(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_array(__pyx_v_array), __pyx_t_3)); if (unlikely(!__pyx_t_4)) __PYX_ERR(6, 29, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "context.pxi":28
+    /* "pyfletcher/context.pxi":28
  * 
  *     def queueArray(self, array, field=None, cache=False):
  *         if not field:             # <<<<<<<<<<<<<<
@@ -8619,7 +8619,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
     goto __pyx_L3;
   }
 
-  /* "context.pxi":31
+  /* "pyfletcher/context.pxi":31
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), cache))
  *         else:
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),             # <<<<<<<<<<<<<<
@@ -8628,7 +8628,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
  */
   /*else*/ {
 
-    /* "context.pxi":33
+    /* "pyfletcher/context.pxi":33
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),
  *                                                                 pyarrow_unwrap_field(field),
  *                                                                 cache))             # <<<<<<<<<<<<<<
@@ -8637,20 +8637,20 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
  */
     __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_cache); if (unlikely((__pyx_t_3 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(6, 33, __pyx_L1_error)
 
-    /* "context.pxi":31
+    /* "pyfletcher/context.pxi":31
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), cache))
  *         else:
  *             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),             # <<<<<<<<<<<<<<
  *                                                                 pyarrow_unwrap_field(field),
  *                                                                 cache))
  */
-    __pyx_t_4 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueArray(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_array(__pyx_v_array), __pyx_f_7pyarrow_3lib_pyarrow_unwrap_field(__pyx_v_field), __pyx_t_3)); if (unlikely(!__pyx_t_4)) __PYX_ERR(6, 31, __pyx_L1_error)
+    __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueArray(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_array(__pyx_v_array), __pyx_f_7pyarrow_3lib_pyarrow_unwrap_field(__pyx_v_field), __pyx_t_3)); if (unlikely(!__pyx_t_4)) __PYX_ERR(6, 31, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __pyx_L3:;
 
-  /* "context.pxi":27
+  /* "pyfletcher/context.pxi":27
  *         self.context = context
  * 
  *     def queueArray(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
@@ -8663,7 +8663,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8671,7 +8671,7 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
   return __pyx_r;
 }
 
-/* "context.pxi":35
+/* "pyfletcher/context.pxi":35
  *                                                                 cache))
  * 
  *     def queueRecordBatch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
@@ -8680,8 +8680,8 @@ static PyObject *__pyx_pf_3lib_7Context_2queueArray(struct __pyx_obj_3lib_Contex
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_record_batch = 0;
   PyObject *__pyx_v_cache = 0;
   PyObject *__pyx_r = 0;
@@ -8733,25 +8733,25 @@ static PyObject *__pyx_pw_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("queueRecordBatch", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(6, 35, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3lib_7Context_4queueRecordBatch(((struct __pyx_obj_3lib_Context *)__pyx_v_self), __pyx_v_record_batch, __pyx_v_cache);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_record_batch, __pyx_v_cache);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   bool __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("queueRecordBatch", 0);
 
-  /* "context.pxi":36
+  /* "pyfletcher/context.pxi":36
  * 
  *     def queueRecordBatch(self, record_batch, cache=False):
  *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))             # <<<<<<<<<<<<<<
@@ -8759,11 +8759,11 @@ static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_
  *     def enable(self):
  */
   __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_cache); if (unlikely((__pyx_t_1 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(6, 36, __pyx_L1_error)
-  __pyx_t_2 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueRecordBatch(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_batch(__pyx_v_record_batch), __pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(6, 36, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueRecordBatch(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_batch(__pyx_v_record_batch), __pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(6, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "context.pxi":35
+  /* "pyfletcher/context.pxi":35
  *                                                                 cache))
  * 
  *     def queueRecordBatch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
@@ -8776,7 +8776,7 @@ static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8784,7 +8784,7 @@ static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_
   return __pyx_r;
 }
 
-/* "context.pxi":38
+/* "pyfletcher/context.pxi":38
  *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
  * 
  *     def enable(self):             # <<<<<<<<<<<<<<
@@ -8792,34 +8792,34 @@ static PyObject *__pyx_pf_3lib_7Context_4queueRecordBatch(struct __pyx_obj_3lib_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("enable (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_7Context_6enable(((struct __pyx_obj_3lib_Context *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_6enable(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_7Context_6enable(struct __pyx_obj_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("enable", 0);
 
-  /* "context.pxi":39
+  /* "pyfletcher/context.pxi":39
  * 
  *     def enable(self):
  *         check_fletcher_status(self.context.get().enable())             # <<<<<<<<<<<<<<
  */
-  __pyx_t_1 = __pyx_f_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(6, 39, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(6, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "context.pxi":38
+  /* "pyfletcher/context.pxi":38
  *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
  * 
  *     def enable(self):             # <<<<<<<<<<<<<<
@@ -8831,7 +8831,7 @@ static PyObject *__pyx_pf_3lib_7Context_6enable(struct __pyx_obj_3lib_Context *_
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Context.enable", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.enable", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8846,19 +8846,19 @@ static PyObject *__pyx_pf_3lib_7Context_6enable(struct __pyx_obj_3lib_Context *_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_7Context_8__reduce_cython__(((struct __pyx_obj_3lib_Context *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8885,7 +8885,7 @@ static PyObject *__pyx_pf_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Context.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -8900,19 +8900,19 @@ static PyObject *__pyx_pf_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3lib_7Context_10__setstate_cython__(((struct __pyx_obj_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8939,14 +8939,14 @@ static PyObject *__pyx_pf_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED stru
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("lib.Context.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -8994,7 +8994,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_info->obj = Py_None; __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(__pyx_v_info->obj);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  * 
  *             cdef int i, ndim
  *             cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -9003,7 +9003,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":223
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":223
  *             cdef int i, ndim
  *             cdef int endian_detector = 1
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -9012,7 +9012,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":225
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":225
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)
  * 
  *             ndim = PyArray_NDIM(self)             # <<<<<<<<<<<<<<
@@ -9021,7 +9021,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_ndim = PyArray_NDIM(__pyx_v_self);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *             ndim = PyArray_NDIM(self)
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9035,7 +9035,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L4_bool_binop_done;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":228
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":228
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -9046,7 +9046,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *             ndim = PyArray_NDIM(self)
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9055,7 +9055,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   if (unlikely(__pyx_t_1)) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -9068,7 +9068,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(7, 229, __pyx_L1_error)
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *             ndim = PyArray_NDIM(self)
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9077,7 +9077,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9091,7 +9091,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L7_bool_binop_done;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":232
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":232
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -9102,7 +9102,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9111,7 +9111,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   if (unlikely(__pyx_t_1)) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -9124,7 +9124,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(7, 233, __pyx_L1_error)
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":231
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -9133,7 +9133,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":235
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":235
  *                 raise ValueError(u"ndarray is not Fortran contiguous")
  * 
  *             info.buf = PyArray_DATA(self)             # <<<<<<<<<<<<<<
@@ -9142,7 +9142,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->buf = PyArray_DATA(__pyx_v_self);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":236
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":236
  * 
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim             # <<<<<<<<<<<<<<
@@ -9151,7 +9151,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->ndim = __pyx_v_ndim;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":237
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":237
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -9161,7 +9161,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":240
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":240
  *                 # Allocate new buffer for strides and shape info.
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>PyObject_Malloc(sizeof(Py_ssize_t) * 2 * <size_t>ndim)             # <<<<<<<<<<<<<<
@@ -9170,7 +9170,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)PyObject_Malloc((((sizeof(Py_ssize_t)) * 2) * ((size_t)__pyx_v_ndim))));
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":241
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":241
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>PyObject_Malloc(sizeof(Py_ssize_t) * 2 * <size_t>ndim)
  *                 info.shape = info.strides + ndim             # <<<<<<<<<<<<<<
@@ -9179,7 +9179,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->shape = (__pyx_v_info->strides + __pyx_v_ndim);
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":242
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":242
  *                 info.strides = <Py_ssize_t*>PyObject_Malloc(sizeof(Py_ssize_t) * 2 * <size_t>ndim)
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):             # <<<<<<<<<<<<<<
@@ -9191,7 +9191,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_5; __pyx_t_6+=1) {
       __pyx_v_i = __pyx_t_6;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":243
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":243
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]             # <<<<<<<<<<<<<<
@@ -9200,7 +9200,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       (__pyx_v_info->strides[__pyx_v_i]) = (PyArray_STRIDES(__pyx_v_self)[__pyx_v_i]);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":244
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":244
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]
  *                     info.shape[i] = PyArray_DIMS(self)[i]             # <<<<<<<<<<<<<<
@@ -9210,7 +9210,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       (__pyx_v_info->shape[__pyx_v_i]) = (PyArray_DIMS(__pyx_v_self)[__pyx_v_i]);
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":237
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":237
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -9220,7 +9220,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L9;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":246
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":246
  *                     info.shape[i] = PyArray_DIMS(self)[i]
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)             # <<<<<<<<<<<<<<
@@ -9230,7 +9230,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   /*else*/ {
     __pyx_v_info->strides = ((Py_ssize_t *)PyArray_STRIDES(__pyx_v_self));
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":247
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":247
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)             # <<<<<<<<<<<<<<
@@ -9241,7 +9241,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L9:;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL             # <<<<<<<<<<<<<<
@@ -9250,7 +9250,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->suboffsets = NULL;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":249
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":249
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)             # <<<<<<<<<<<<<<
@@ -9259,7 +9259,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->itemsize = PyArray_ITEMSIZE(__pyx_v_self);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":250
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":250
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)
  *             info.readonly = not PyArray_ISWRITEABLE(self)             # <<<<<<<<<<<<<<
@@ -9268,7 +9268,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->readonly = (!(PyArray_ISWRITEABLE(__pyx_v_self) != 0));
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":253
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":253
  * 
  *             cdef int t
  *             cdef char* f = NULL             # <<<<<<<<<<<<<<
@@ -9277,7 +9277,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_f = NULL;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":254
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":254
  *             cdef int t
  *             cdef char* f = NULL
  *             cdef dtype descr = self.descr             # <<<<<<<<<<<<<<
@@ -9289,7 +9289,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_descr = ((PyArray_Descr *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *             cdef int offset
  * 
  *             info.obj = self             # <<<<<<<<<<<<<<
@@ -9302,7 +9302,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __Pyx_DECREF(__pyx_v_info->obj);
   __pyx_v_info->obj = ((PyObject *)__pyx_v_self);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *             info.obj = self
  * 
  *             if not PyDataType_HASFIELDS(descr):             # <<<<<<<<<<<<<<
@@ -9312,7 +9312,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = ((!(PyDataType_HASFIELDS(__pyx_v_descr) != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":260
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":260
  * 
  *             if not PyDataType_HASFIELDS(descr):
  *                 t = descr.type_num             # <<<<<<<<<<<<<<
@@ -9322,7 +9322,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_4 = __pyx_v_descr->type_num;
     __pyx_v_t = __pyx_t_4;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *             if not PyDataType_HASFIELDS(descr):
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -9342,7 +9342,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     }
     __pyx_L15_next_or:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":262
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":262
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -9359,7 +9359,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_1 = __pyx_t_2;
     __pyx_L14_bool_binop_done:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *             if not PyDataType_HASFIELDS(descr):
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -9368,7 +9368,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     if (unlikely(__pyx_t_1)) {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -9381,7 +9381,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __PYX_ERR(7, 263, __pyx_L1_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *             if not PyDataType_HASFIELDS(descr):
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -9390,7 +9390,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":264
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":264
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"             # <<<<<<<<<<<<<<
@@ -9402,7 +9402,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"b");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":265
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":265
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"             # <<<<<<<<<<<<<<
@@ -9413,7 +9413,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"B");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":266
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":266
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"             # <<<<<<<<<<<<<<
@@ -9424,7 +9424,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"h");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":267
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":267
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"             # <<<<<<<<<<<<<<
@@ -9435,7 +9435,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"H");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":268
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":268
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"             # <<<<<<<<<<<<<<
@@ -9446,7 +9446,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"i");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":269
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":269
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"             # <<<<<<<<<<<<<<
@@ -9457,7 +9457,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"I");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":270
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":270
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"             # <<<<<<<<<<<<<<
@@ -9468,7 +9468,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"l");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":271
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":271
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"             # <<<<<<<<<<<<<<
@@ -9479,7 +9479,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"L");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":272
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":272
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"             # <<<<<<<<<<<<<<
@@ -9490,7 +9490,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"q");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":273
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":273
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"             # <<<<<<<<<<<<<<
@@ -9501,7 +9501,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"Q");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"             # <<<<<<<<<<<<<<
@@ -9512,7 +9512,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"f");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":275
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":275
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"             # <<<<<<<<<<<<<<
@@ -9523,7 +9523,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"d");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":276
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":276
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"             # <<<<<<<<<<<<<<
@@ -9534,7 +9534,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"g");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":277
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":277
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"             # <<<<<<<<<<<<<<
@@ -9545,7 +9545,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"Zf");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":278
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":278
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"             # <<<<<<<<<<<<<<
@@ -9556,7 +9556,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"Zd");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":279
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":279
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"             # <<<<<<<<<<<<<<
@@ -9567,7 +9567,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = ((char *)"Zg");
       break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":280
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":280
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -9579,7 +9579,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
       default:
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":282
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":282
  *                 elif t == NPY_OBJECT:      f = "O"
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -9600,7 +9600,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":283
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":283
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f             # <<<<<<<<<<<<<<
@@ -9609,7 +9609,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = __pyx_v_f;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":284
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":284
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f
  *                 return             # <<<<<<<<<<<<<<
@@ -9619,7 +9619,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_r = 0;
     goto __pyx_L0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *             info.obj = self
  * 
  *             if not PyDataType_HASFIELDS(descr):             # <<<<<<<<<<<<<<
@@ -9628,7 +9628,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":286
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":286
  *                 return
  *             else:
  *                 info.format = <char*>PyObject_Malloc(_buffer_format_string_len)             # <<<<<<<<<<<<<<
@@ -9638,7 +9638,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   /*else*/ {
     __pyx_v_info->format = ((char *)PyObject_Malloc(0xFF));
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":287
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":287
  *             else:
  *                 info.format = <char*>PyObject_Malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment             # <<<<<<<<<<<<<<
@@ -9647,7 +9647,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     (__pyx_v_info->format[0]) = '^';
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 info.format = <char*>PyObject_Malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0             # <<<<<<<<<<<<<<
@@ -9656,7 +9656,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_offset = 0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":289
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":289
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0
  *                 f = _util_dtypestring(descr, info.format + 1,             # <<<<<<<<<<<<<<
@@ -9666,7 +9666,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_8 = __pyx_f_5numpy__util_dtypestring(__pyx_v_descr, (__pyx_v_info->format + 1), (__pyx_v_info->format + 0xFF), (&__pyx_v_offset)); if (unlikely(__pyx_t_8 == ((char *)NULL))) __PYX_ERR(7, 289, __pyx_L1_error)
     __pyx_v_f = __pyx_t_8;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":292
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":292
  *                                       info.format + _buffer_format_string_len,
  *                                       &offset)
  *                 f[0] = c'\0' # Terminate format string             # <<<<<<<<<<<<<<
@@ -9676,7 +9676,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     (__pyx_v_f[0]) = '\x00';
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -9708,7 +9708,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":294
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":294
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -9732,7 +9732,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__releasebuffer__", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":295
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":295
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -9742,7 +9742,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (PyArray_HASFIELDS(__pyx_v_self) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":296
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":296
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):
  *                 PyObject_Free(info.format)             # <<<<<<<<<<<<<<
@@ -9751,7 +9751,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
     PyObject_Free(__pyx_v_info->format);
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":295
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":295
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -9760,7 +9760,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":297
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":297
  *             if PyArray_HASFIELDS(self):
  *                 PyObject_Free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -9770,7 +9770,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":298
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":298
  *                 PyObject_Free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 PyObject_Free(info.strides)             # <<<<<<<<<<<<<<
@@ -9779,7 +9779,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
     PyObject_Free(__pyx_v_info->strides);
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":297
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":297
  *             if PyArray_HASFIELDS(self):
  *                 PyObject_Free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -9788,7 +9788,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":294
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":294
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -9800,7 +9800,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":775
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":775
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -9814,7 +9814,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":776
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":776
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -9828,7 +9828,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":775
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":775
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -9847,7 +9847,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":778
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":778
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -9861,7 +9861,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":779
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":779
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -9875,7 +9875,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":778
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":778
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -9894,7 +9894,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":781
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":781
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -9908,7 +9908,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":782
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":782
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -9922,7 +9922,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":781
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":781
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -9941,7 +9941,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":784
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":784
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -9955,7 +9955,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":785
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":785
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -9969,7 +9969,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":784
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":784
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -9988,7 +9988,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":787
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":787
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -10002,7 +10002,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":788
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":788
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -10016,7 +10016,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":787
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":787
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -10035,7 +10035,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
@@ -10049,7 +10049,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
@@ -10059,7 +10059,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   __pyx_t_1 = (PyDataType_HASSUBARRAY(__pyx_v_d) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":792
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":792
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape             # <<<<<<<<<<<<<<
@@ -10071,7 +10071,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     __pyx_r = ((PyObject*)__pyx_v_d->subarray->shape);
     goto __pyx_L0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
@@ -10080,7 +10080,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *         return <tuple>d.subarray.shape
  *     else:
  *         return ()             # <<<<<<<<<<<<<<
@@ -10094,7 +10094,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     goto __pyx_L0;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
@@ -10109,7 +10109,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *         return ()
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -10138,7 +10138,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   char *__pyx_t_9;
   __Pyx_RefNannySetupContext("_util_dtypestring", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  * 
  *     cdef dtype child
  *     cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -10147,7 +10147,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":802
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":802
  *     cdef dtype child
  *     cdef int endian_detector = 1
  *     cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -10156,7 +10156,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":805
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":805
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -10179,7 +10179,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_childname, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":806
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":806
  * 
  *     for childname in descr.names:
  *         fields = descr.fields[childname]             # <<<<<<<<<<<<<<
@@ -10196,7 +10196,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_fields, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":807
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":807
  *     for childname in descr.names:
  *         fields = descr.fields[childname]
  *         child, new_offset = fields             # <<<<<<<<<<<<<<
@@ -10231,7 +10231,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_new_offset, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":809
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":809
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -10248,7 +10248,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((((__pyx_v_end - __pyx_v_f) - ((int)__pyx_t_5)) < 15) != 0);
     if (unlikely(__pyx_t_6)) {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":810
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":810
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -10261,7 +10261,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __PYX_ERR(7, 810, __pyx_L1_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":809
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":809
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -10270,7 +10270,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10290,7 +10290,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L8_next_or:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":813
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":813
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -10307,7 +10307,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = __pyx_t_7;
     __pyx_L7_bool_binop_done:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10316,7 +10316,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     if (unlikely(__pyx_t_6)) {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -10329,7 +10329,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __PYX_ERR(7, 814, __pyx_L1_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":812
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10338,7 +10338,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":824
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":824
  * 
  *         # Output padding bytes
  *         while offset[0] < new_offset:             # <<<<<<<<<<<<<<
@@ -10354,7 +10354,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (!__pyx_t_6) break;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":825
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":825
  *         # Output padding bytes
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte             # <<<<<<<<<<<<<<
@@ -10363,7 +10363,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       (__pyx_v_f[0]) = 0x78;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":826
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":826
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte
  *             f += 1             # <<<<<<<<<<<<<<
@@ -10372,7 +10372,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":827
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":827
  *             f[0] = 120 # "x"; pad byte
  *             f += 1
  *             offset[0] += 1             # <<<<<<<<<<<<<<
@@ -10383,7 +10383,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + 1);
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":829
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":829
  *             offset[0] += 1
  * 
  *         offset[0] += child.itemsize             # <<<<<<<<<<<<<<
@@ -10393,7 +10393,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_8 = 0;
     (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + __pyx_v_child->elsize);
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -10403,7 +10403,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((!(PyDataType_HASFIELDS(__pyx_v_child) != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":832
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":832
  * 
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num             # <<<<<<<<<<<<<<
@@ -10415,7 +10415,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -10425,7 +10425,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __pyx_t_6 = (((__pyx_v_end - __pyx_v_f) < 5) != 0);
       if (unlikely(__pyx_t_6)) {
 
-        /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+        /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -10438,7 +10438,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __PYX_ERR(7, 834, __pyx_L1_error)
 
-        /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+        /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -10447,7 +10447,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":837
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":837
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"             # <<<<<<<<<<<<<<
@@ -10465,7 +10465,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":838
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":838
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"             # <<<<<<<<<<<<<<
@@ -10483,7 +10483,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":839
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":839
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"             # <<<<<<<<<<<<<<
@@ -10501,7 +10501,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":840
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":840
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"             # <<<<<<<<<<<<<<
@@ -10519,7 +10519,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":841
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":841
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"             # <<<<<<<<<<<<<<
@@ -10537,7 +10537,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":842
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":842
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"             # <<<<<<<<<<<<<<
@@ -10555,7 +10555,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":843
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":843
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"             # <<<<<<<<<<<<<<
@@ -10573,7 +10573,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":844
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":844
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"             # <<<<<<<<<<<<<<
@@ -10591,7 +10591,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":845
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":845
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"             # <<<<<<<<<<<<<<
@@ -10609,7 +10609,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":846
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":846
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"             # <<<<<<<<<<<<<<
@@ -10627,7 +10627,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":847
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":847
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"             # <<<<<<<<<<<<<<
@@ -10645,7 +10645,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":848
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":848
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"             # <<<<<<<<<<<<<<
@@ -10663,7 +10663,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":849
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":849
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"             # <<<<<<<<<<<<<<
@@ -10681,7 +10681,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":850
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":850
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf             # <<<<<<<<<<<<<<
@@ -10701,7 +10701,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":851
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":851
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd             # <<<<<<<<<<<<<<
@@ -10721,7 +10721,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":852
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":852
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg             # <<<<<<<<<<<<<<
@@ -10741,7 +10741,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":853
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":853
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"             # <<<<<<<<<<<<<<
@@ -10759,7 +10759,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":855
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":855
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -10778,7 +10778,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       __pyx_L15:;
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":856
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":856
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *             f += 1             # <<<<<<<<<<<<<<
@@ -10787,7 +10787,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -10797,7 +10797,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       goto __pyx_L13;
     }
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":860
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":860
  *             # Cython ignores struct boundary information ("T{...}"),
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)             # <<<<<<<<<<<<<<
@@ -10810,7 +10810,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L13:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":805
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":805
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -10820,7 +10820,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":861
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":861
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)
  *     return f             # <<<<<<<<<<<<<<
@@ -10830,7 +10830,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   __pyx_r = __pyx_v_f;
   goto __pyx_L0;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *         return ()
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -10855,7 +10855,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -10870,7 +10870,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":979
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":979
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -10881,7 +10881,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":980
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":980
  *      cdef PyObject* baseptr
  *      if base is None:
  *          baseptr = NULL             # <<<<<<<<<<<<<<
@@ -10890,7 +10890,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
     __pyx_v_baseptr = NULL;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":979
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":979
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -10900,7 +10900,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
     goto __pyx_L3;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":982
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":982
  *          baseptr = NULL
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!             # <<<<<<<<<<<<<<
@@ -10910,7 +10910,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   /*else*/ {
     Py_INCREF(__pyx_v_base);
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":983
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":983
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base             # <<<<<<<<<<<<<<
@@ -10921,7 +10921,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   __pyx_L3:;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":984
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":984
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)             # <<<<<<<<<<<<<<
@@ -10930,7 +10930,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_XDECREF(__pyx_v_arr->base);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":985
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":985
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)
  *      arr.base = baseptr             # <<<<<<<<<<<<<<
@@ -10939,7 +10939,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   __pyx_v_arr->base = __pyx_v_baseptr;
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -10951,7 +10951,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":987
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":987
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -10965,7 +10965,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":988
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":988
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -10975,7 +10975,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_arr->base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":989
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":989
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -10986,7 +10986,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":988
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":988
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -10995,7 +10995,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  */
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":991
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":991
  *         return None
  *     else:
  *         return <object>arr.base             # <<<<<<<<<<<<<<
@@ -11009,7 +11009,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     goto __pyx_L0;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":987
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":987
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -11024,7 +11024,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":996
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":996
  * # Versions of the import_* functions which are more suitable for
  * # Cython code.
  * cdef inline int import_array() except -1:             # <<<<<<<<<<<<<<
@@ -11045,7 +11045,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
   PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("import_array", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11061,7 +11061,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":998
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":998
  * cdef inline int import_array() except -1:
  *     try:
  *         _import_array()             # <<<<<<<<<<<<<<
@@ -11070,7 +11070,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  */
       __pyx_t_4 = _import_array(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(7, 998, __pyx_L3_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11084,7 +11084,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":999
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":999
  *     try:
  *         _import_array()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -11099,7 +11099,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1000
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1000
  *         _import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
@@ -11115,7 +11115,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":997
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11130,7 +11130,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":996
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":996
  * # Versions of the import_* functions which are more suitable for
  * # Cython code.
  * cdef inline int import_array() except -1:             # <<<<<<<<<<<<<<
@@ -11153,7 +11153,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1002
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1002
  *         raise ImportError("numpy.core.multiarray failed to import")
  * 
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
@@ -11174,7 +11174,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("import_umath", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11190,7 +11190,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1004
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1004
  * cdef inline int import_umath() except -1:
  *     try:
  *         _import_umath()             # <<<<<<<<<<<<<<
@@ -11199,7 +11199,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  */
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(7, 1004, __pyx_L3_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11213,7 +11213,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1005
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1005
  *     try:
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -11228,7 +11228,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1006
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1006
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -11244,7 +11244,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1003
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11259,7 +11259,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1002
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1002
  *         raise ImportError("numpy.core.multiarray failed to import")
  * 
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
@@ -11282,7 +11282,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   return __pyx_r;
 }
 
-/* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1008
+/* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1008
  *         raise ImportError("numpy.core.umath failed to import")
  * 
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
@@ -11303,7 +11303,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   PyObject *__pyx_t_8 = NULL;
   __Pyx_RefNannySetupContext("import_ufunc", 0);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11319,7 +11319,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1010
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1010
  * cdef inline int import_ufunc() except -1:
  *     try:
  *         _import_umath()             # <<<<<<<<<<<<<<
@@ -11328,7 +11328,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  */
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(7, 1010, __pyx_L3_error)
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11342,7 +11342,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1011
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1011
  *     try:
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -11356,7 +11356,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1012
+      /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1012
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -11370,7 +11370,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
+    /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1009
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -11385,7 +11385,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1008
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1008
  *         raise ImportError("numpy.core.umath failed to import")
  * 
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
@@ -24672,8 +24672,8 @@ static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *__
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_3lib_PyStatus(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
-  struct __pyx_obj_3lib_PyStatus *p;
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_PyStatus(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_10pyfletcher_3lib_PyStatus *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -24681,17 +24681,17 @@ static PyObject *__pyx_tp_new_3lib_PyStatus(PyTypeObject *t, CYTHON_UNUSED PyObj
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_3lib_PyStatus *)o);
+  p = ((struct __pyx_obj_10pyfletcher_3lib_PyStatus *)o);
   new((void*)&(p->status)) fletcher::Status();
-  if (unlikely(__pyx_pw_3lib_8PyStatus_1__cinit__(o, __pyx_empty_tuple, NULL) < 0)) goto bad;
+  if (unlikely(__pyx_pw_10pyfletcher_3lib_8PyStatus_1__cinit__(o, __pyx_empty_tuple, NULL) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static void __pyx_tp_dealloc_3lib_PyStatus(PyObject *o) {
-  struct __pyx_obj_3lib_PyStatus *p = (struct __pyx_obj_3lib_PyStatus *)o;
+static void __pyx_tp_dealloc_10pyfletcher_3lib_PyStatus(PyObject *o) {
+  struct __pyx_obj_10pyfletcher_3lib_PyStatus *p = (struct __pyx_obj_10pyfletcher_3lib_PyStatus *)o;
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -24701,31 +24701,31 @@ static void __pyx_tp_dealloc_3lib_PyStatus(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyObject *__pyx_getprop_3lib_8PyStatus_val(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_3lib_8PyStatus_3val_1__get__(o);
+static PyObject *__pyx_getprop_10pyfletcher_3lib_8PyStatus_val(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_10pyfletcher_3lib_8PyStatus_3val_1__get__(o);
 }
 
-static PyMethodDef __pyx_methods_3lib_PyStatus[] = {
-  {"create", (PyCFunction)__pyx_pw_3lib_8PyStatus_5create, METH_O, 0},
-  {"ok", (PyCFunction)__pyx_pw_3lib_8PyStatus_7ok, METH_NOARGS, 0},
-  {"OK", (PyCFunction)__pyx_pw_3lib_8PyStatus_9OK, METH_NOARGS, 0},
-  {"ERROR", (PyCFunction)__pyx_pw_3lib_8PyStatus_11ERROR, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8PyStatus_13__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8PyStatus_15__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_10pyfletcher_3lib_PyStatus[] = {
+  {"create", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_5create, METH_O, 0},
+  {"ok", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_7ok, METH_NOARGS, 0},
+  {"OK", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_9OK, METH_NOARGS, 0},
+  {"ERROR", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_11ERROR, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_13__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8PyStatus_15__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static struct PyGetSetDef __pyx_getsets_3lib_PyStatus[] = {
-  {(char *)"val", __pyx_getprop_3lib_8PyStatus_val, 0, (char *)0, 0},
+static struct PyGetSetDef __pyx_getsets_10pyfletcher_3lib_PyStatus[] = {
+  {(char *)"val", __pyx_getprop_10pyfletcher_3lib_8PyStatus_val, 0, (char *)0, 0},
   {0, 0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_3lib_PyStatus = {
+static PyTypeObject __pyx_type_10pyfletcher_3lib_PyStatus = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.PyStatus", /*tp_name*/
-  sizeof(struct __pyx_obj_3lib_PyStatus), /*tp_basicsize*/
+  "pyfletcher.lib.PyStatus", /*tp_name*/
+  sizeof(struct __pyx_obj_10pyfletcher_3lib_PyStatus), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_3lib_PyStatus, /*tp_dealloc*/
+  __pyx_tp_dealloc_10pyfletcher_3lib_PyStatus, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -24753,17 +24753,17 @@ static PyTypeObject __pyx_type_3lib_PyStatus = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_3lib_PyStatus, /*tp_methods*/
+  __pyx_methods_10pyfletcher_3lib_PyStatus, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_3lib_PyStatus, /*tp_getset*/
+  __pyx_getsets_10pyfletcher_3lib_PyStatus, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
   0, /*tp_descr_set*/
   0, /*tp_dictoffset*/
-  __pyx_pw_3lib_8PyStatus_3__init__, /*tp_init*/
+  __pyx_pw_10pyfletcher_3lib_8PyStatus_3__init__, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_3lib_PyStatus, /*tp_new*/
+  __pyx_tp_new_10pyfletcher_3lib_PyStatus, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -24777,10 +24777,10 @@ static PyTypeObject __pyx_type_3lib_PyStatus = {
   0, /*tp_finalize*/
   #endif
 };
-static struct __pyx_vtabstruct_3lib_Platform __pyx_vtable_3lib_Platform;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_Platform __pyx_vtable_10pyfletcher_3lib_Platform;
 
-static PyObject *__pyx_tp_new_3lib_Platform(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
-  struct __pyx_obj_3lib_Platform *p;
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_Platform(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_10pyfletcher_3lib_Platform *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -24788,14 +24788,14 @@ static PyObject *__pyx_tp_new_3lib_Platform(PyTypeObject *t, CYTHON_UNUSED PyObj
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_3lib_Platform *)o);
-  p->__pyx_vtab = __pyx_vtabptr_3lib_Platform;
+  p = ((struct __pyx_obj_10pyfletcher_3lib_Platform *)o);
+  p->__pyx_vtab = __pyx_vtabptr_10pyfletcher_3lib_Platform;
   new((void*)&(p->platform)) std::shared_ptr< fletcher::Platform> ();
   return o;
 }
 
-static void __pyx_tp_dealloc_3lib_Platform(PyObject *o) {
-  struct __pyx_obj_3lib_Platform *p = (struct __pyx_obj_3lib_Platform *)o;
+static void __pyx_tp_dealloc_10pyfletcher_3lib_Platform(PyObject *o) {
+  struct __pyx_obj_10pyfletcher_3lib_Platform *p = (struct __pyx_obj_10pyfletcher_3lib_Platform *)o;
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -24805,29 +24805,29 @@ static void __pyx_tp_dealloc_3lib_Platform(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_3lib_Platform[] = {
-  {"get_name", (PyCFunction)__pyx_pw_3lib_8Platform_3get_name, METH_NOARGS, 0},
-  {"init", (PyCFunction)__pyx_pw_3lib_8Platform_5init, METH_NOARGS, 0},
-  {"write_mmio", (PyCFunction)__pyx_pw_3lib_8Platform_7write_mmio, METH_VARARGS|METH_KEYWORDS, 0},
-  {"read_mmio", (PyCFunction)__pyx_pw_3lib_8Platform_9read_mmio, METH_O, 0},
-  {"device_malloc", (PyCFunction)__pyx_pw_3lib_8Platform_11device_malloc, METH_O, 0},
-  {"device_free", (PyCFunction)__pyx_pw_3lib_8Platform_13device_free, METH_O, 0},
-  {"copy_host_to_device", (PyCFunction)__pyx_pw_3lib_8Platform_15copy_host_to_device, METH_VARARGS|METH_KEYWORDS, 0},
-  {"copy_device_to_host", (PyCFunction)__pyx_pw_3lib_8Platform_17copy_device_to_host, METH_VARARGS|METH_KEYWORDS, 0},
-  {"prepare_host_buffer", (PyCFunction)__pyx_pw_3lib_8Platform_19prepare_host_buffer, METH_VARARGS|METH_KEYWORDS, 0},
-  {"cache_host_buffer", (PyCFunction)__pyx_pw_3lib_8Platform_21cache_host_buffer, METH_VARARGS|METH_KEYWORDS, 0},
-  {"terminate", (PyCFunction)__pyx_pw_3lib_8Platform_23terminate, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8Platform_25__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8Platform_27__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_10pyfletcher_3lib_Platform[] = {
+  {"get_name", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_3get_name, METH_NOARGS, 0},
+  {"init", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_5init, METH_NOARGS, 0},
+  {"write_mmio", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_7write_mmio, METH_VARARGS|METH_KEYWORDS, 0},
+  {"read_mmio", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_9read_mmio, METH_O, 0},
+  {"device_malloc", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_11device_malloc, METH_O, 0},
+  {"device_free", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_13device_free, METH_O, 0},
+  {"copy_host_to_device", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_15copy_host_to_device, METH_VARARGS|METH_KEYWORDS, 0},
+  {"copy_device_to_host", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_17copy_device_to_host, METH_VARARGS|METH_KEYWORDS, 0},
+  {"prepare_host_buffer", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_19prepare_host_buffer, METH_VARARGS|METH_KEYWORDS, 0},
+  {"cache_host_buffer", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_21cache_host_buffer, METH_VARARGS|METH_KEYWORDS, 0},
+  {"terminate", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_23terminate, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_25__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8Platform_27__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_3lib_Platform = {
+static PyTypeObject __pyx_type_10pyfletcher_3lib_Platform = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.Platform", /*tp_name*/
-  sizeof(struct __pyx_obj_3lib_Platform), /*tp_basicsize*/
+  "pyfletcher.lib.Platform", /*tp_name*/
+  sizeof(struct __pyx_obj_10pyfletcher_3lib_Platform), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_3lib_Platform, /*tp_dealloc*/
+  __pyx_tp_dealloc_10pyfletcher_3lib_Platform, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -24855,7 +24855,7 @@ static PyTypeObject __pyx_type_3lib_Platform = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_3lib_Platform, /*tp_methods*/
+  __pyx_methods_10pyfletcher_3lib_Platform, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -24863,9 +24863,9 @@ static PyTypeObject __pyx_type_3lib_Platform = {
   0, /*tp_descr_get*/
   0, /*tp_descr_set*/
   0, /*tp_dictoffset*/
-  __pyx_pw_3lib_8Platform_1__init__, /*tp_init*/
+  __pyx_pw_10pyfletcher_3lib_8Platform_1__init__, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_3lib_Platform, /*tp_new*/
+  __pyx_tp_new_10pyfletcher_3lib_Platform, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -24879,10 +24879,10 @@ static PyTypeObject __pyx_type_3lib_Platform = {
   0, /*tp_finalize*/
   #endif
 };
-static struct __pyx_vtabstruct_3lib_UserCore __pyx_vtable_3lib_UserCore;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_UserCore __pyx_vtable_10pyfletcher_3lib_UserCore;
 
-static PyObject *__pyx_tp_new_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_3lib_UserCore *p;
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_10pyfletcher_3lib_UserCore *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -24890,18 +24890,18 @@ static PyObject *__pyx_tp_new_3lib_UserCore(PyTypeObject *t, PyObject *a, PyObje
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_3lib_UserCore *)o);
-  p->__pyx_vtab = __pyx_vtabptr_3lib_UserCore;
+  p = ((struct __pyx_obj_10pyfletcher_3lib_UserCore *)o);
+  p->__pyx_vtab = __pyx_vtabptr_10pyfletcher_3lib_UserCore;
   new((void*)&(p->usercore)) std::shared_ptr< fletcher::UserCore> ();
-  if (unlikely(__pyx_pw_3lib_8UserCore_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_10pyfletcher_3lib_8UserCore_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static void __pyx_tp_dealloc_3lib_UserCore(PyObject *o) {
-  struct __pyx_obj_3lib_UserCore *p = (struct __pyx_obj_3lib_UserCore *)o;
+static void __pyx_tp_dealloc_10pyfletcher_3lib_UserCore(PyObject *o) {
+  struct __pyx_obj_10pyfletcher_3lib_UserCore *p = (struct __pyx_obj_10pyfletcher_3lib_UserCore *)o;
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -24911,28 +24911,28 @@ static void __pyx_tp_dealloc_3lib_UserCore(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_3lib_UserCore[] = {
-  {"implements_schema", (PyCFunction)__pyx_pw_3lib_8UserCore_3implements_schema, METH_O, 0},
-  {"reset", (PyCFunction)__pyx_pw_3lib_8UserCore_5reset, METH_NOARGS, 0},
-  {"set_range", (PyCFunction)__pyx_pw_3lib_8UserCore_7set_range, METH_VARARGS|METH_KEYWORDS, 0},
-  {"set_arguments", (PyCFunction)__pyx_pw_3lib_8UserCore_9set_arguments, METH_O, 0},
-  {"start", (PyCFunction)__pyx_pw_3lib_8UserCore_11start, METH_NOARGS, 0},
-  {"get_status", (PyCFunction)__pyx_pw_3lib_8UserCore_13get_status, METH_NOARGS, 0},
-  {"get_return", (PyCFunction)__pyx_pw_3lib_8UserCore_15get_return, METH_O, 0},
-  {"wait_for_finish", (PyCFunction)__pyx_pw_3lib_8UserCore_17wait_for_finish, METH_VARARGS|METH_KEYWORDS, 0},
-  {"get_platform", (PyCFunction)__pyx_pw_3lib_8UserCore_19get_platform, METH_NOARGS, 0},
-  {"get_context", (PyCFunction)__pyx_pw_3lib_8UserCore_21get_context, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_23__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_8UserCore_25__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_10pyfletcher_3lib_UserCore[] = {
+  {"implements_schema", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_3implements_schema, METH_O, 0},
+  {"reset", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_5reset, METH_NOARGS, 0},
+  {"set_range", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_7set_range, METH_VARARGS|METH_KEYWORDS, 0},
+  {"set_arguments", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_9set_arguments, METH_O, 0},
+  {"start", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_11start, METH_NOARGS, 0},
+  {"get_status", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_13get_status, METH_NOARGS, 0},
+  {"get_return", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_15get_return, METH_O, 0},
+  {"wait_for_finish", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_17wait_for_finish, METH_VARARGS|METH_KEYWORDS, 0},
+  {"get_platform", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_19get_platform, METH_NOARGS, 0},
+  {"get_context", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_21get_context, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_23__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_25__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_3lib_UserCore = {
+static PyTypeObject __pyx_type_10pyfletcher_3lib_UserCore = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.UserCore", /*tp_name*/
-  sizeof(struct __pyx_obj_3lib_UserCore), /*tp_basicsize*/
+  "pyfletcher.lib.UserCore", /*tp_name*/
+  sizeof(struct __pyx_obj_10pyfletcher_3lib_UserCore), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_3lib_UserCore, /*tp_dealloc*/
+  __pyx_tp_dealloc_10pyfletcher_3lib_UserCore, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -24960,7 +24960,7 @@ static PyTypeObject __pyx_type_3lib_UserCore = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_3lib_UserCore, /*tp_methods*/
+  __pyx_methods_10pyfletcher_3lib_UserCore, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -24970,7 +24970,7 @@ static PyTypeObject __pyx_type_3lib_UserCore = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_3lib_UserCore, /*tp_new*/
+  __pyx_tp_new_10pyfletcher_3lib_UserCore, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -24984,10 +24984,10 @@ static PyTypeObject __pyx_type_3lib_UserCore = {
   0, /*tp_finalize*/
   #endif
 };
-static struct __pyx_vtabstruct_3lib_Context __pyx_vtable_3lib_Context;
+static struct __pyx_vtabstruct_10pyfletcher_3lib_Context __pyx_vtable_10pyfletcher_3lib_Context;
 
-static PyObject *__pyx_tp_new_3lib_Context(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_3lib_Context *p;
+static PyObject *__pyx_tp_new_10pyfletcher_3lib_Context(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_10pyfletcher_3lib_Context *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -24995,18 +24995,18 @@ static PyObject *__pyx_tp_new_3lib_Context(PyTypeObject *t, PyObject *a, PyObjec
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_3lib_Context *)o);
-  p->__pyx_vtab = __pyx_vtabptr_3lib_Context;
+  p = ((struct __pyx_obj_10pyfletcher_3lib_Context *)o);
+  p->__pyx_vtab = __pyx_vtabptr_10pyfletcher_3lib_Context;
   new((void*)&(p->context)) std::shared_ptr< fletcher::Context> ();
-  if (unlikely(__pyx_pw_3lib_7Context_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_10pyfletcher_3lib_7Context_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static void __pyx_tp_dealloc_3lib_Context(PyObject *o) {
-  struct __pyx_obj_3lib_Context *p = (struct __pyx_obj_3lib_Context *)o;
+static void __pyx_tp_dealloc_10pyfletcher_3lib_Context(PyObject *o) {
+  struct __pyx_obj_10pyfletcher_3lib_Context *p = (struct __pyx_obj_10pyfletcher_3lib_Context *)o;
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -25016,21 +25016,21 @@ static void __pyx_tp_dealloc_3lib_Context(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_3lib_Context[] = {
-  {"queueArray", (PyCFunction)__pyx_pw_3lib_7Context_3queueArray, METH_VARARGS|METH_KEYWORDS, 0},
-  {"queueRecordBatch", (PyCFunction)__pyx_pw_3lib_7Context_5queueRecordBatch, METH_VARARGS|METH_KEYWORDS, 0},
-  {"enable", (PyCFunction)__pyx_pw_3lib_7Context_7enable, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_3lib_7Context_9__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_3lib_7Context_11__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_10pyfletcher_3lib_Context[] = {
+  {"queueArray", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_3queueArray, METH_VARARGS|METH_KEYWORDS, 0},
+  {"queueRecordBatch", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch, METH_VARARGS|METH_KEYWORDS, 0},
+  {"enable", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_7enable, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_3lib_Context = {
+static PyTypeObject __pyx_type_10pyfletcher_3lib_Context = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.Context", /*tp_name*/
-  sizeof(struct __pyx_obj_3lib_Context), /*tp_basicsize*/
+  "pyfletcher.lib.Context", /*tp_name*/
+  sizeof(struct __pyx_obj_10pyfletcher_3lib_Context), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_3lib_Context, /*tp_dealloc*/
+  __pyx_tp_dealloc_10pyfletcher_3lib_Context, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -25058,7 +25058,7 @@ static PyTypeObject __pyx_type_3lib_Context = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_3lib_Context, /*tp_methods*/
+  __pyx_methods_10pyfletcher_3lib_Context, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -25068,7 +25068,7 @@ static PyTypeObject __pyx_type_3lib_Context = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_3lib_Context, /*tp_new*/
+  __pyx_tp_new_10pyfletcher_3lib_Context, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -25205,7 +25205,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.array", /*tp_name*/
+  "pyfletcher.lib.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -25313,7 +25313,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.Enum", /*tp_name*/
+  "pyfletcher.lib.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -25563,7 +25563,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib.memoryview", /*tp_name*/
+  "pyfletcher.lib.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -25690,7 +25690,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "lib._memoryviewslice", /*tp_name*/
+  "pyfletcher.lib._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -26018,7 +26018,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -26029,7 +26029,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -26040,7 +26040,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -26051,7 +26051,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":810
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":810
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -26062,7 +26062,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -26073,7 +26073,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -26084,7 +26084,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1000
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1000
  *         _import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
@@ -26095,7 +26095,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1006
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1006
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -26106,7 +26106,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "../../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1012
+  /* "../../../../../../../usr/local/lib/python3.6/dist-packages/Cython/Includes/numpy/__init__.pxd":1012
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -26476,48 +26476,48 @@ static int __Pyx_modinit_type_init_code(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
-  __pyx_type_3lib_PyStatus.tp_print = 0;
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_PyStatus.tp_dictoffset && __pyx_type_3lib_PyStatus.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_3lib_PyStatus.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if (PyType_Ready(&__pyx_type_10pyfletcher_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
+  __pyx_type_10pyfletcher_3lib_PyStatus.tp_print = 0;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_10pyfletcher_3lib_PyStatus.tp_dictoffset && __pyx_type_10pyfletcher_3lib_PyStatus.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_10pyfletcher_3lib_PyStatus.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (PyObject_SetAttrString(__pyx_m, "PyStatus", (PyObject *)&__pyx_type_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
-  __pyx_ptype_3lib_PyStatus = &__pyx_type_3lib_PyStatus;
-  __pyx_vtabptr_3lib_Platform = &__pyx_vtable_3lib_Platform;
-  __pyx_vtable_3lib_Platform.from_pointer = (PyObject *(*)(struct __pyx_obj_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &))__pyx_f_3lib_8Platform_from_pointer;
-  __pyx_vtable_3lib_Platform._create = (PyObject *(*)(struct __pyx_obj_3lib_Platform *, struct __pyx_opt_args_3lib_8Platform__create *__pyx_optional_args))__pyx_f_3lib_8Platform__create;
-  if (PyType_Ready(&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
-  __pyx_type_3lib_Platform.tp_print = 0;
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_Platform.tp_dictoffset && __pyx_type_3lib_Platform.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_3lib_Platform.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if (PyObject_SetAttrString(__pyx_m, "PyStatus", (PyObject *)&__pyx_type_10pyfletcher_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_10pyfletcher_3lib_PyStatus) < 0) __PYX_ERR(2, 16, __pyx_L1_error)
+  __pyx_ptype_10pyfletcher_3lib_PyStatus = &__pyx_type_10pyfletcher_3lib_PyStatus;
+  __pyx_vtabptr_10pyfletcher_3lib_Platform = &__pyx_vtable_10pyfletcher_3lib_Platform;
+  __pyx_vtable_10pyfletcher_3lib_Platform.from_pointer = (PyObject *(*)(struct __pyx_obj_10pyfletcher_3lib_Platform *, std::shared_ptr< fletcher::Platform>  const &))__pyx_f_10pyfletcher_3lib_8Platform_from_pointer;
+  __pyx_vtable_10pyfletcher_3lib_Platform._create = (PyObject *(*)(struct __pyx_obj_10pyfletcher_3lib_Platform *, struct __pyx_opt_args_10pyfletcher_3lib_8Platform__create *__pyx_optional_args))__pyx_f_10pyfletcher_3lib_8Platform__create;
+  if (PyType_Ready(&__pyx_type_10pyfletcher_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
+  __pyx_type_10pyfletcher_3lib_Platform.tp_print = 0;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_10pyfletcher_3lib_Platform.tp_dictoffset && __pyx_type_10pyfletcher_3lib_Platform.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_10pyfletcher_3lib_Platform.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_3lib_Platform.tp_dict, __pyx_vtabptr_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
-  if (PyObject_SetAttrString(__pyx_m, "Platform", (PyObject *)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
-  __pyx_ptype_3lib_Platform = &__pyx_type_3lib_Platform;
-  __pyx_vtabptr_3lib_UserCore = &__pyx_vtable_3lib_UserCore;
-  __pyx_vtable_3lib_UserCore.from_pointer = (PyObject *(*)(struct __pyx_obj_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &))__pyx_f_3lib_8UserCore_from_pointer;
-  if (PyType_Ready(&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
-  __pyx_type_3lib_UserCore.tp_print = 0;
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_UserCore.tp_dictoffset && __pyx_type_3lib_UserCore.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_3lib_UserCore.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if (__Pyx_SetVtable(__pyx_type_10pyfletcher_3lib_Platform.tp_dict, __pyx_vtabptr_10pyfletcher_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "Platform", (PyObject *)&__pyx_type_10pyfletcher_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_10pyfletcher_3lib_Platform) < 0) __PYX_ERR(4, 17, __pyx_L1_error)
+  __pyx_ptype_10pyfletcher_3lib_Platform = &__pyx_type_10pyfletcher_3lib_Platform;
+  __pyx_vtabptr_10pyfletcher_3lib_UserCore = &__pyx_vtable_10pyfletcher_3lib_UserCore;
+  __pyx_vtable_10pyfletcher_3lib_UserCore.from_pointer = (PyObject *(*)(struct __pyx_obj_10pyfletcher_3lib_UserCore *, std::shared_ptr< fletcher::UserCore>  const &))__pyx_f_10pyfletcher_3lib_8UserCore_from_pointer;
+  if (PyType_Ready(&__pyx_type_10pyfletcher_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
+  __pyx_type_10pyfletcher_3lib_UserCore.tp_print = 0;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_10pyfletcher_3lib_UserCore.tp_dictoffset && __pyx_type_10pyfletcher_3lib_UserCore.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_10pyfletcher_3lib_UserCore.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_3lib_UserCore.tp_dict, __pyx_vtabptr_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
-  if (PyObject_SetAttrString(__pyx_m, "UserCore", (PyObject *)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
-  __pyx_ptype_3lib_UserCore = &__pyx_type_3lib_UserCore;
-  __pyx_vtabptr_3lib_Context = &__pyx_vtable_3lib_Context;
-  __pyx_vtable_3lib_Context.from_pointer = (PyObject *(*)(struct __pyx_obj_3lib_Context *, std::shared_ptr< fletcher::Context> ))__pyx_f_3lib_7Context_from_pointer;
-  if (PyType_Ready(&__pyx_type_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
-  __pyx_type_3lib_Context.tp_print = 0;
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_3lib_Context.tp_dictoffset && __pyx_type_3lib_Context.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_3lib_Context.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if (__Pyx_SetVtable(__pyx_type_10pyfletcher_3lib_UserCore.tp_dict, __pyx_vtabptr_10pyfletcher_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "UserCore", (PyObject *)&__pyx_type_10pyfletcher_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_10pyfletcher_3lib_UserCore) < 0) __PYX_ERR(5, 16, __pyx_L1_error)
+  __pyx_ptype_10pyfletcher_3lib_UserCore = &__pyx_type_10pyfletcher_3lib_UserCore;
+  __pyx_vtabptr_10pyfletcher_3lib_Context = &__pyx_vtable_10pyfletcher_3lib_Context;
+  __pyx_vtable_10pyfletcher_3lib_Context.from_pointer = (PyObject *(*)(struct __pyx_obj_10pyfletcher_3lib_Context *, std::shared_ptr< fletcher::Context> ))__pyx_f_10pyfletcher_3lib_7Context_from_pointer;
+  if (PyType_Ready(&__pyx_type_10pyfletcher_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
+  __pyx_type_10pyfletcher_3lib_Context.tp_print = 0;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_10pyfletcher_3lib_Context.tp_dictoffset && __pyx_type_10pyfletcher_3lib_Context.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_10pyfletcher_3lib_Context.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_3lib_Context.tp_dict, __pyx_vtabptr_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
-  if (PyObject_SetAttrString(__pyx_m, "Context", (PyObject *)&__pyx_type_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
-  __pyx_ptype_3lib_Context = &__pyx_type_3lib_Context;
+  if (__Pyx_SetVtable(__pyx_type_10pyfletcher_3lib_Context.tp_dict, __pyx_vtabptr_10pyfletcher_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "Context", (PyObject *)&__pyx_type_10pyfletcher_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_10pyfletcher_3lib_Context) < 0) __PYX_ERR(6, 17, __pyx_L1_error)
+  __pyx_ptype_10pyfletcher_3lib_Context = &__pyx_type_10pyfletcher_3lib_Context;
   __pyx_vtabptr_array = &__pyx_vtable_array;
   __pyx_vtable_array.get_memview = (PyObject *(*)(struct __pyx_array_obj *))__pyx_array_get_memview;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) __PYX_ERR(0, 104, __pyx_L1_error)
@@ -26873,14 +26873,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(8, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_lib) {
+  if (__pyx_module_is_main_pyfletcher__lib) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(8, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(8, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "lib")) {
-      if (unlikely(PyDict_SetItemString(modules, "lib", __pyx_m) < 0)) __PYX_ERR(8, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "pyfletcher.lib")) {
+      if (unlikely(PyDict_SetItemString(modules, "pyfletcher.lib", __pyx_m) < 0)) __PYX_ERR(8, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -26901,7 +26901,7 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(8, 1, __pyx_L1_error)
   #endif
 
-  /* "lib.pyx":18
+  /* "pyfletcher/lib.pyx":18
  * 
  * import cython
  * import pyarrow             # <<<<<<<<<<<<<<
@@ -26913,7 +26913,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pyarrow, __pyx_t_1) < 0) __PYX_ERR(8, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "lib.pyx":19
+  /* "pyfletcher/lib.pyx":19
  * import cython
  * import pyarrow
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -26925,7 +26925,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(8, 19, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "error.pxi":15
+  /* "pyfletcher/error.pxi":15
  * # limitations under the License.
  * 
  * import sys             # <<<<<<<<<<<<<<
@@ -26937,7 +26937,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_1) < 0) __PYX_ERR(1, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "platform.pxi":15
+  /* "pyfletcher/platform.pxi":15
  * # limitations under the License.
  * 
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -26949,7 +26949,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(4, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "context.pxi":15
+  /* "pyfletcher/context.pxi":15
  * # limitations under the License.
  * 
  * import pyarrow as pa             # <<<<<<<<<<<<<<
@@ -26961,7 +26961,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pa, __pyx_t_1) < 0) __PYX_ERR(6, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "lib.pyx":1
+  /* "pyfletcher/lib.pyx":1
  * # Copyright 2018 Delft University of Technology             # <<<<<<<<<<<<<<
  * #
  * # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27131,11 +27131,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init lib", 0, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init pyfletcher.lib", 0, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init lib");
+    PyErr_SetString(PyExc_ImportError, "init pyfletcher.lib");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

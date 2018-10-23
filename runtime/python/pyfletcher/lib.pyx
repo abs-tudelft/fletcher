@@ -20,7 +20,7 @@ import numpy as np
 cimport numpy as np
 
 # Todo: pyfletcher.includes.libfletcher
-from includes.libfletcher cimport *
+from pyfletcher.includes.libfletcher cimport *
 
 include "error.pxi"
 

@@ -31,12 +31,12 @@ def create_record_batch(num_rows):
     column_field = pa.field("weight", pa.int64(), nullable=False)
     schema = pa.schema([column_field])
 
-    return pa.RecordBatch.from_arrays([num_array], schema=schema)
+    return pa.RecordBatch.from_arrays([num_array], schema)
 
 
 def arrow_column_sum_cpu(batch):
     start_time = timeit.default_timer()
-    sum_cpu = np.sum(batch.column(0).data.chunk(0).to_numpy())
+    sum_cpu = np.sum(batch.column(0).to_numpy())
     stop_time = timeit.default_timer()
 
     print("Sum CPU time: " + str(stop_time - start_time) + " seconds")
@@ -64,7 +64,7 @@ def arrow_column_sum_fpga(batch, platform_type):
     print("FPGA copy time " + str(stop_time - start_time) + " seconds")
 
     # Create UserCore
-    uc = pf.UserCore(platform)
+    uc = pf.UserCore(context)
 
     # Reset it
     uc.reset()
@@ -80,7 +80,7 @@ def arrow_column_sum_fpga(batch, platform_type):
     uc.wait_for_finish(1000)
 
     #Get the sum from UserCore
-    sum_fpga = uc.get_return()
+    sum_fpga = uc.get_return(np.dtype(np.int64))
 
     stop_time = timeit.default_timer()
     print("Sum FPGA time: " + str(stop_time - start_time) + " seconds")
@@ -89,8 +89,8 @@ def arrow_column_sum_fpga(batch, platform_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--platform_type", dest="platform_type", default="echo",
-                        help="Type of FPGA platform. Options: echo")
+    parser.add_argument("--platform_type", dest="platform_type", default="echo", choices=["echo", "aws"],
+                        help="Type of FPGA platform.")
     parser.add_argument("--num_rows", dest="num_rows", default=1024,
                         help="Number of integers in the Arrow array")
     args = parser.parse_args()

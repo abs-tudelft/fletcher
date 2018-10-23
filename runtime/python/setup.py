@@ -12,40 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 from Cython.Build import cythonize
 
 import numpy as np
 import pyarrow as pa
 
-print(np.get_include())
-print(pa.get_include())
-print(pa.get_libraries())
-print(pa.get_library_dirs())
-
 ext_modules = cythonize(Extension(
-    "lib",
-    ["lib.pyx"],
+    "pyfletcher.lib",
+    ["pyfletcher/lib.pyx"],
     language="c++",
     extra_compile_args=["-std=c++11", "-O3"],
     extra_link_args=["-std=c++11"]
 ))
 
 for ext in ext_modules:
-    # The Numpy C headers are currently required
     ext.include_dirs.append(np.get_include())
     ext.include_dirs.append(pa.get_include())
     ext.libraries.extend(pa.get_libraries())
     ext.library_dirs.extend(pa.get_library_dirs())
-    # Todo: fix these two, also had to run ldconfig after fletcher install
-    ext.libraries.extend(["fletcher", "arrow"])
-    ext.library_dirs.extend(["/usr/local/lib"])
-    # Try uncommenting the following line on Linux if you otherwise
-    # get weird linker errors or runtime crashes
+    ext.libraries.extend(["fletcher"])
     ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
 setup(
+    name="pyfletcher",
+    version="0.0.1",
+    author="Lars van Leeuwen",
+    packages=['pyfletcher'],
+    description="A Python wrapper for the Fletcher runtime library",
+    url="https://github.com/johanpel/fletcher",
     ext_modules=ext_modules,
+    install_requires=[
+        'numpy >= 1.14',
+        'pyarrow',
+    ],
+    setup_requires=['setuptools_scm', 'cython >= 0.27'],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Cython",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX :: Linux"
+    ],
+    license='Apache License, Version 2.0',
+    include_package_data=True
 )
 
 #https://github.com/pypa/manylinux
