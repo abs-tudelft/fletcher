@@ -27,6 +27,5 @@ target_link_libraries(${PROJECT_NAME}
   ${REQUIRED}
   ${LIB_ARROW}
   ${LIB_FLETCHER}
-  ${LIB_PLATFORM}
 )
 
