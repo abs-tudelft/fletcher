@@ -15,7 +15,8 @@
 #include <stdio.h>
 #include <memory.h>
 
-#include "fletcher.h"
+#include "../../../../common/cpp/src/fletcher.h"
+
 #include "fletcher_echo.h"
 
 da_t buffer_ptr = 0x0;
@@ -49,7 +50,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
 
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size) {
   printf("[ECHO] Copying from host to device. [host] 0x%016lX --> [dev] 0x%016lX (%lu bytes)\n",
-         (uint64_t)host_source,
+         (uint64_t) host_source,
          device_destination,
          size);
   return FLETCHER_STATUS_OK;
@@ -64,13 +65,13 @@ fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination
 }
 
 fstatus_t platformTerminate(void *arg) {
-  printf("[ECHO] Terminating platform.        Arguments @ [host] 0x%016lX.\n", (uint64_t)arg);
+  printf("[ECHO] Terminating platform.        Arguments @ [host] 0x%016lX.\n", (uint64_t) arg);
   return FLETCHER_STATUS_OK;
 }
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
   *device_address = buffer_ptr;
-  printf("[ECHO] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n", (uint64_t)device_address, size);
+  printf("[ECHO] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n", (uint64_t) device_address, size);
   buffer_ptr += size;
   return FLETCHER_STATUS_OK;
 }

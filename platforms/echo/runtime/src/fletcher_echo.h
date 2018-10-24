@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdint.h>
+#include <unistd.h>
 
-#include <fletcher.h>
+#include "../../../../common/cpp/src/fletcher.h"
 
 #define FLETCHER_PLATFORM_NAME "echo"
 
@@ -35,7 +35,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value);
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size);
 
 /// @brief Copy \p size bytes from device address \p device_source to host address \p host_destination.
-fstatus_t platformCopyDeviceToHost(const da_t device_source, uint8_t *host_destination, int64_t size);
+fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size);
 
 /// @brief Allocate \p size bytes on the device.
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size);

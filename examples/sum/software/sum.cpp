@@ -103,7 +103,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   fletcher::Context::Make(&context, platform);
 
   // Create a UserCore
-  fletcher::UserCore uc(platform);
+  fletcher::UserCore uc(context);
 
   // Initialize the platform.
   platform->init();
@@ -152,10 +152,10 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  */
 int main(int argc, char **argv) {
   fletcher::Timer t;
-  unsigned int num_rows = 1024;
+  uint32_t num_rows = 1024;
 
   if (argc >= 2) {
-    num_rows = std::strtoul(argv[1], nullptr, 10);
+    num_rows = (uint32_t)std::strtoul(argv[1], nullptr, 10);
   }
   if (num_rows > INT_MAX) {
     std::cout << "Too many rows" << std::endl;

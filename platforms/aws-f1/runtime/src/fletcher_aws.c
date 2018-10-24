@@ -20,6 +20,8 @@
 #include <fpga_pci.h>
 #include <fpga_mgmt.h>
 
+#include "../../../../common/cpp/src/fletcher.h"
+
 #include "fletcher_aws.h"
 
 da_t buffer_ptr = 0x0;
@@ -154,7 +156,7 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[AWS] MMIO Write %d : %08lX\n", offset, (uint32_t)value);
+  debug_print("[AWS] MMIO Write %d : %08lX\n", (uint32_t)offset, (uint32_t)value);
   return FLETCHER_STATUS_OK;
 }
 
@@ -167,7 +169,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[AWS] MMIO Read %d : %08lX\n", offset, (uint32_t)(*value));
+  debug_print("[AWS] MMIO Read %d : %08lX\n", (uint32_t)offset, (uint32_t)(*value));
   return FLETCHER_STATUS_OK;
 }
 
