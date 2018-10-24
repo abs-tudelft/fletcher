@@ -14,9 +14,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES
-        src/fletcher/platform.cpp
-        src/fletcher/context.cpp
-        src/fletcher/usercore.cpp)
+        src/fletcher/platform.cc
+        src/fletcher/context.cc
+        src/fletcher/usercore.cc)
 
 set(HEADERS
         ../../common/cpp/src/fletcher.h
@@ -71,8 +71,8 @@ install(FILES ${COMMON_HEADERS}
 # TESTS
 ########################################################################################################################
 
-set(TEST_SOURCES test/test.cpp)
-
-add_executable(test_${PROJECT_NAME} ${TEST_HEADERS} ${TEST_SOURCES})
-
-target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+if (FLETCHER_TESTS)
+    set(TEST_SOURCES test/test.cpp)
+    add_executable(test_${PROJECT_NAME} ${TEST_HEADERS} ${TEST_SOURCES})
+    target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+endif (FLETCHER_TESTS)

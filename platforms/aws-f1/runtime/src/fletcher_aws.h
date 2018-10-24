@@ -13,8 +13,9 @@
 // limitations under the License.
 
 #include <stdint.h>
+#include <unistd.h>
 
-#include <fletcher/fletcher.h>
+#include "../../../../common/cpp/src/fletcher.h"
 
 #ifndef DEBUG
 #define DEBUG 0

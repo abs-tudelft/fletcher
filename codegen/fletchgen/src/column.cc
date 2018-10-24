@@ -426,5 +426,5 @@ std::string genConfigString(arrow::Field *field, int level) {
 
   return ret;
 }
-
+;
 }//namespace fletchgen

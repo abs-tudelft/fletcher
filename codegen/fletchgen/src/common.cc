@@ -26,10 +26,6 @@ std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostr
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
                                                      std::vector<config::Config> &cfgs) {
-  LOGD("Arrow Schemas:");
-  for (const auto &schema : schemas) {
-    LOGD(schema->ToString());
-  }
 
   LOGD("Fletcher Wrapper Generation:");
   auto col_wrapper = std::make_shared<ColumnWrapper>(schemas, wrap_name, acc_name, cfgs);

@@ -1,78 +1,87 @@
 cmake_minimum_required(VERSION 3.5)
 project(fletchgen)
 
-# C++ standard
+include(GNUInstallDirs)
+
 set(CMAKE_CXX_STANDARD 11)
-
-# Compiler
-# set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-
-# Generic flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-
-# Debug flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
-# Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
-
-# Set runtime path
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-set(SOURCE_FILES
+set(HEADERS
         src/logging.h
         src/meta.h
         src/constants.h
-        src/common.h src/common.cc
-        src/arrow-utils.h src/arrow-utils.cc
-        src/printers.h src/printers.cc
-
-        src/vhdl/vhdl.h src/vhdl/vhdl.cc
-        src/stream.h src/stream.cc
-
-        src/column.h src/column.cc
-        src/arbiter.h src/arbiter.cc
-        src/fletcher-streams.h src/fletcher-streams.cc
-        src/fletcher-ports.h src/fletcher-ports.cc
-        src/column-wrapper.h src/column-wrapper.cc
-        src/usercore.h src/usercore.cc
-        src/usercore-controller.h src/usercore-controller.cc
-
-        src/srec/srec.h src/srec/srec.cc
-        src/srec/recordbatch.h src/srec/recordbatch.cc
-
-        src/vhdt/vhdt.h src/vhdt/vhdt.cc
-        src/top/axi.h src/top/axi.cc
-        src/top/sim.h src/top/sim.cc
-
-        src/config.h src/config.cc
+        src/common.h
+        src/arrow-utils.h
+        src/printers.h
+        src/vhdl/vhdl.h
+        src/stream.h
+        src/column.h
+        src/arbiter.h
+        src/fletcher-streams.h
+        src/fletcher-ports.h
+        src/column-wrapper.h
+        src/usercore.h
+        src/usercore-controller.h
+        src/srec/srec.h
+        src/srec/recordbatch.h
+        src/vhdt/vhdt.h
+        src/top/axi.h
+        src/top/sim.h
+        src/config.h
         )
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} src/fletchgen.cc)
+set(SOURCES
+        src/common.cc
+        src/arrow-utils.cc
+        src/printers.cc
+        src/vhdl/vhdl.cc
+        src/stream.cc
+        src/column.cc
+        src/arbiter.cc
+        src/fletcher-streams.cc
+        src/fletcher-ports.cc
+        src/column-wrapper.cc
+        src/usercore.cc
+        src/usercore-controller.cc
+        src/srec/srec.cc
+        src/srec/recordbatch.cc
+        src/vhdt/vhdt.cc
+        src/top/axi.cc
+        src/top/sim.cc
+        src/config.cc
+        )
+
+set(RESOURCES
+        ../../hardware/vhdl/sim/sim_top.vhdt
+        ../../hardware/vhdl/axi/axi_top.vhdt)
+
+add_library(${PROJECT_NAME}-static ${HEADERS} ${SOURCES})
+
+add_executable(${PROJECT_NAME} src/fletchgen.cc)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-static)
 
 find_library(LIB_ARROW arrow)
 find_package(Boost COMPONENTS program_options REQUIRED)
 target_link_libraries(${PROJECT_NAME} ${REQUIRED} Boost::program_options)
 target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
 
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-
-option(ENABLE_TESTS "Enable building of test stuff" ON)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)
 
 ########################################################################################################################
 # TEST SCHEMA/RECORDBATCH GENERATOR
-########################################################################################################################
 
-if (ENABLE_TESTS)
+if (FLETCHER_TESTS)
     set(TEST_NAME ${PROJECT_NAME}-test-generate)
 
-    set(TEST_SOURCE_FILES ${SOURCE_FILES}
+    set(TEST_SOURCES
             test/test_schemas.h test/test_schemas.cc
             test/test_recordbatches.h test/test_recordbatches.cc
             test/test-generate.cc)
 
-    add_executable(${PROJECT_NAME}-test-generate ${TEST_SOURCE_FILES})
-
-    target_link_libraries(${TEST_NAME} ${REQUIRED} Boost::program_options)
-    target_link_libraries(${TEST_NAME} ${REQUIRED} ${LIB_ARROW})
-endif (ENABLE_TESTS)
+    add_executable(${TEST_NAME} ${TEST_SOURCES})
+    target_link_libraries(${TEST_NAME} ${LIB_ARROW})
+    target_link_libraries(${TEST_NAME} ${PROJECT_NAME}-static)
+endif (FLETCHER_TESTS)
