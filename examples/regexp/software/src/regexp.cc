@@ -56,7 +56,7 @@
 #include <fletcher/fletcher.h>
 
 // RegEx FPGA UserCore
-#include "RegExUserCore.h"
+#include "regex-usercore.h"
 
 #ifndef PLATFORM
 #define PLATFORM 0
@@ -90,7 +90,7 @@ inline std::string generate_random_string_with(const vector<vector<string>> &ins
 
   // Determine the length of the resulting string
   auto strlen = static_cast<int>(insert_strings[s][n].length()
-                                 + (dis(gen) % (max_length - insert_strings[s][n].length())));
+      + (dis(gen) % (max_length - insert_strings[s][n].length())));
 
   // Create a string with nulls
   string ret((size_t) strlen, '\0');
@@ -141,11 +141,11 @@ void generate_strings(vector<string> &strings,
 /**
  * Create an Arrow table containing one column of random strings.
  */
-shared_ptr<arrow::Table> create_table(const vector<string> &strings) {
+shared_ptr<arrow::RecordBatch> createRecordBatch(const vector<string> &strings) {
 
   arrow::StringBuilder str_builder(arrow::default_memory_pool());
 
-  for (auto s : strings) {
+  for (const auto &s : strings) {
     str_builder.Append(s);
   }
 
@@ -160,7 +160,7 @@ shared_ptr<arrow::Table> create_table(const vector<string> &strings) {
   str_builder.Finish(&str_array);
 
   // Create and return the table
-  return move(arrow::Table::Make(schema, {str_array}));
+  return arrow::RecordBatch::Make(schema, str_array->length(), {str_array});
 }
 
 vector<re2::RE2 *> compile_regexes(const vector<string> &regexes) {
@@ -258,14 +258,14 @@ void add_matches_omp(const vector<string> &strings,
 /**
  * Match regular expression using Arrow table as a source
  */
-void add_matches_arrow(const shared_ptr<arrow::Column> &column,
+void add_matches_arrow(const shared_ptr<arrow::Array> &array,
                        const vector<string> &regexes,
                        vector<uint32_t> &matches) {
 
   auto programs = compile_regexes(regexes);
 
   // Get the StringArray representation
-  auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+  auto sa = std::static_pointer_cast<arrow::StringArray>(array);
 
   // Iterate over all strings
   for (uint32_t i = 0; i < sa->length(); i++) {
@@ -293,7 +293,7 @@ void add_matches_arrow(const shared_ptr<arrow::Column> &column,
 /**
  * Match regular expression on multiple cores using Arrow table as a source
  */
-void match_regex_arrow_omp(const shared_ptr<arrow::Column> &column,
+void match_regex_arrow_omp(const shared_ptr<arrow::Array> &array,
                            const vector<string> &regexes,
                            vector<uint32_t> &matches,
                            int threads) {
@@ -301,7 +301,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column> &column,
   int nt = threads;
 
   // Prepare some memory to store each thread result
-  uint32_t *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(np * nt));
+  auto *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(np * nt));
 
   omp_set_num_threads(threads);
 
@@ -312,7 +312,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Column> &column,
     auto programs = compile_regexes(regexes);
 
     // Get the StringArray representation
-    auto sa = std::static_pointer_cast<arrow::StringArray>(column->data()->chunk(0));
+    auto sa = std::static_pointer_cast<arrow::StringArray>(array);
 
     // Each thread gets a range of strings to work on
 #pragma omp for
@@ -479,7 +479,7 @@ int main(int argc, char **argv) {
 
   // Make a table with random strings containing some other string effectively serializing the data
   start = omp_get_wtime();
-  shared_ptr<arrow::Table> table = create_table(strings);
+  shared_ptr<arrow::RecordBatch> rb = createRecordBatch(strings);
   stop = omp_get_wtime();
   t_ser = (stop - start);
 
@@ -507,7 +507,7 @@ int main(int argc, char **argv) {
     // Match on CPU using Arrow
     if (emask & 4u) {
       start = omp_get_wtime();
-      add_matches_arrow(table->column(0), regexes, m_acpu[e]);
+      add_matches_arrow(rb->column(0), regexes, m_acpu[e]);
       stop = omp_get_wtime();
       t_acpu[e] = (stop - start);
     }
@@ -515,7 +515,7 @@ int main(int argc, char **argv) {
     // Match on CPU using Arrow and OpenMP
     if (emask & 8u) {
       start = omp_get_wtime();
-      match_regex_arrow_omp(table->column(0), regexes, m_aomp[e], omp_get_max_threads());
+      match_regex_arrow_omp(rb->column(0), regexes, m_aomp[e], omp_get_max_threads());
       stop = omp_get_wtime();
       t_aomp[e] = (stop - start);
     }
@@ -523,40 +523,37 @@ int main(int argc, char **argv) {
     // Match on FPGA
     if (emask & 16u) {
       // Create a platform
-#if(PLATFORM == 0)
-      shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
-#elif(PLATFORM == 1)
-      shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
-#elif(PLATFORM == 2)
-      shared_ptr<fletcher::SNAPPlatform> platform(new fletcher::SNAPPlatform());
-#else
-#error "PLATFORM must be 0, 1 or 2"
-#endif
+      shared_ptr<fletcher::Platform> platform;
+      fletcher::Platform::Create(&platform);
+
+      // Create a context
+      shared_ptr<fletcher::Context> context;
+      fletcher::Context::Make(&context, platform);
 
       // Prepare the colummn buffers
       start = omp_get_wtime();
-      bytes_copied = platform->prepare_column_chunks(table->column(0));
+      context->queueRecordBatch(rb).ewf();
       stop = omp_get_wtime();
       t_copy[e] = (stop - start);
 
       // Create a UserCore
-      RegExUserCore uc(std::static_pointer_cast<fletcher::FPGAPlatform>(platform));
+      RegExCore rc((context));
 
       // Reset it
-      uc.reset();
+      rc.reset();
 
       // Run the example
       start = omp_get_wtime();
-      uc.set_arguments(first_index, last_index);
-      uc.start();
+      rc.setRegExpArguments(first_index, last_index);
+      rc.start();
 #ifdef DEBUG
-      uc.wait_for_finish(1000000);
+      rc.waitForFinish(1000000);
 #else
-      uc.wait_for_finish(10);
+      rc.waitForFinish(10);
 #endif
 
       // Get the number of matches from the UserCore
-      uc.get_matches(m_fpga[e]);
+      rc.getMatches(m_fpga[e]);
 
       stop = omp_get_wtime();
       t_fpga[e] = (stop - start);
