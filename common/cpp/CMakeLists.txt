@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES
-        src/common/arrow-utils.cpp
-        src/common/hex-view.cpp)
+        src/common/arrow-utils.cc
+        src/common/hex-view.cc)
 
 set(HEADERS
         src/common/arrow-utils.h

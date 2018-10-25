@@ -14,8 +14,12 @@
 
 #pragma once
 
-#include "stream.h"
-#include "column-wrapper.h"
+#include <string>
+#include <memory>
+#include <vector>
+
+#include "./stream.h"
+#include "./column-wrapper.h"
 
 namespace fletchgen {
 
@@ -70,4 +74,4 @@ class UserCore : public StreamComponent, public ChildOf<ColumnWrapper> {
   std::shared_ptr<GeneralPort> route_;
 };
 
-}
+}  // namespace fletchgen

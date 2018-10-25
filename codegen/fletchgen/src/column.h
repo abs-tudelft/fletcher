@@ -14,14 +14,16 @@
 
 #pragma once
 
-#include <arrow/type.h>
 #include <utility>
+#include <vector>
 
-#include "vhdl/vhdl.h"
-#include "common.h"
-#include "arrow-utils.h"
+#include <arrow/type.h>
 
-#include "fletcher-streams.h"
+#include "./vhdl/vhdl.h"
+#include "./common.h"
+#include "./arrow-utils.h"
+
+#include "./fletcher-streams.h"
 
 using vhdl::Instantiation;
 using vhdl::nameFrom;
@@ -89,14 +91,13 @@ class Column : public Instantiation {
   std::shared_ptr<ArrowStream> top_stream_;
   std::vector<std::shared_ptr<ArrowStream>> arrow_streams_;
   std::string config_ = "";
-
 };
 
 /**
  * @brief A ColumnReader component
  */
 struct ColumnReader : public StreamComponent, public DerivedFrom<Column> {
-  ColumnReader(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width);
+  ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width);
 
   std::shared_ptr<Stream> stream_cmd_;
   std::shared_ptr<Stream> stream_unl_;

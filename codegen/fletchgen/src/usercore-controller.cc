@@ -16,10 +16,10 @@
 #include <string>
 #include <utility>
 
-#include "fletcher-ports.h"
+#include "./fletcher-ports.h"
 
-#include "usercore-controller.h"
-#include "common.h"
+#include "./usercore-controller.h"
+#include "./common.h"
 
 using vhdl::Dir;
 
@@ -62,4 +62,4 @@ UserCoreController::UserCoreController() : Component("UserCoreController") {
       ->addGeneric(std::make_shared<vhdl::Generic>(ce::REG_WIDTH, "natural", Value(ce::MMIO_DATA_WIDTH_DEFAULT)));
 }
 
-}
+}  // namespace fletchgen

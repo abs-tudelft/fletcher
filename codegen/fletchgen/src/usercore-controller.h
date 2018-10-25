@@ -16,9 +16,11 @@
 
 #include <string>
 
-#include "vhdl/vhdl.h"
+#include "./vhdl/vhdl.h"
+#include "./fletcher-ports.h"
 
 using vhdl::Component;
+using vhdl::Port;
 
 namespace fletchgen {
 
@@ -53,4 +55,4 @@ class UserCoreController : public Component {
   std::shared_ptr<GeneralPort> done_;
 };
 
-}//namespace fletchgen
+}  // namespace fletchgen
