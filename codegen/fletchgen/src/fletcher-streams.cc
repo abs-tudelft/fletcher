@@ -40,6 +40,7 @@ string typeToString(FST type) {
     case FST::WREQ: return "wreq";
     case FST::WDAT: return "wdat";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToLongString(FST type) {
@@ -53,6 +54,7 @@ string typeToLongString(FST type) {
     case FST::WREQ: return "BUS WRITE REQUEST";
     case FST::WDAT: return "BUS WRITE RESPONSE";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 FST modeToArrowType(Mode mode) {

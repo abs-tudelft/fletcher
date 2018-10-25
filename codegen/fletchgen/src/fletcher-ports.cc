@@ -36,6 +36,7 @@ string typeToString(ASP type) {
     case ASP::DVALID: return "dvalid";
     case ASP::COUNT: return "count";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(CSP type) {
@@ -48,6 +49,7 @@ string typeToString(CSP type) {
     case CSP::VALID: return "valid";
     case CSP::READY: return "ready";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(GP type) {
@@ -65,6 +67,7 @@ string typeToString(GP type) {
     case GP::REG_RETURN:return "reg_return";
     case GP::REG_IDX:return "reg_idx";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(RRP type) {
@@ -74,6 +77,7 @@ string typeToString(RRP type) {
     case RRP::ADDRESS: return "addr";
     case RRP::BURSTLEN: return "len";;
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(RDP type) {
@@ -83,6 +87,7 @@ string typeToString(RDP type) {
     case RDP::DATA: return "data";
     case RDP::LAST: return "last";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(WDP type) {
@@ -93,6 +98,7 @@ string typeToString(WDP type) {
     case WDP::STROBE: return "strobe";
     case WDP::LAST: return "last";
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(WRP type) {
@@ -102,6 +108,7 @@ string typeToString(WRP type) {
     case WRP::ADDRESS: return "addr";
     case WRP::BURSTLEN: return "len";;
   }
+  throw std::runtime_error("Unkown type.");
 }
 
 ASP mapUserTypeToColumnType(ASP type) {
