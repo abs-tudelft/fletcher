@@ -42,9 +42,9 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass CPlatform" fletcher::Platform":
         #Renamed create function because overloading of static functions causes errors
         @staticmethod
-        Status createNamed"create"(const cpp_string &name, shared_ptr[CPlatform] *platform, cpp_bool quiet)
+        Status createNamed"Create"(const cpp_string &name, shared_ptr[CPlatform] *platform, cpp_bool quiet)
         @staticmethod
-        Status createUnnamed"create"(shared_ptr[CPlatform] *platform)
+        Status createUnnamed"Create"(shared_ptr[CPlatform] *platform)
 
         cpp_string getName()
         Status init()
