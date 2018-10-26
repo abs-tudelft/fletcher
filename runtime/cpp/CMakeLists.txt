@@ -32,8 +32,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ../../common/cpp/src/fletcher.h)
 
 # Include common functions, build it and link statically
-add_subdirectory(../../common/cpp ${PROJECT_NAME}-common)
-target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-common)
+if (NOT TARGET fletcher-common)
+    add_subdirectory(../../common/cpp fletcher-common)
+endif()
+target_link_libraries(${PROJECT_NAME} fletcher-common)
 include_directories(../../common/cpp/src)
 
 # Dynamically link the dynamically library linking library

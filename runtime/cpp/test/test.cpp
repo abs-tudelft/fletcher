@@ -29,7 +29,7 @@ bool test_platform() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::create(&platform).ewf();
+  fletcher::Platform::Create(&platform).ewf();
 
   // Init
   platform->init().ewf();
@@ -63,7 +63,7 @@ bool test_context() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::create(&platform).ewf();
+  fletcher::Platform::Create(&platform).ewf();
 
   // Init
   platform->init().ewf();

@@ -25,16 +25,16 @@
 #include <arrow/io/api.h>
 #include <iostream>
 
-#include "constants.h"
-#include "meta.h"
-#include "logging.h"
+#include "./constants.h"
+#include "./meta.h"
+#include "./logging.h"
 
 namespace fletchgen {
 
 // Forward decl.
 class ColumnWrapper;
 namespace config {
-class Config;
+struct Config;
 }
 
 /// @brief Mode for things that can either read or write.
@@ -78,9 +78,9 @@ std::shared_ptr<ColumnWrapper> generateColumnWrapper(const std::vector<std::ostr
                                                      const std::vector<std::shared_ptr<arrow::Schema>> &schema,
                                                      const std::string &acc_name,
                                                      const std::string &wrap_name,
-                                                     std::vector<config::Config> &cfgs);
+                                                     const std::vector<config::Config> &cfgs);
 
 /// @brief Split a string \p str by delimeter \p delim and return a vector of strings.
-std::vector<std::string> split(const std::string &str, const char delim = ',');
+std::vector<std::string> split(const std::string &str, char delim = ',');
 
-}//namespace fletchgen
+}  // namespace fletchgen

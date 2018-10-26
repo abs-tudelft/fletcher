@@ -13,9 +13,10 @@
 // limitations under the License.
 
 #include <utility>
+#include <string>
 
-#include "vhdl/vhdl.h"
-#include "usercore.h"
+#include "./vhdl/vhdl.h"
+#include "./usercore.h"
 
 using std::make_shared;
 
@@ -62,29 +63,28 @@ UserCore::UserCore(std::string name, ColumnWrapper *parent, int num_addr_regs, i
   }
 
   setComment(t(1) + "-- Hardware Accelerated Function component.\n" +
-             t(1) + "-- This component should be implemented by the user.\n"
-  );
+      t(1) + "-- This component should be implemented by the user.\n");
 
   /* First and last index registers */
-  auto p_idx_first = make_shared<GeneralPort>(nameFrom({"idx","first"}), GP::REG_IDX, Dir::IN, Value(ce::REG_WIDTH));
-  auto p_idx_last  = make_shared<GeneralPort>(nameFrom({"idx","last"}), GP::REG_IDX, Dir::IN, Value(ce::REG_WIDTH));
+  auto p_idx_first = make_shared<GeneralPort>(nameFrom({"idx", "first"}), GP::REG_IDX, Dir::IN, Value(ce::REG_WIDTH));
+  auto p_idx_last = make_shared<GeneralPort>(nameFrom({"idx", "last"}), GP::REG_IDX, Dir::IN, Value(ce::REG_WIDTH));
   entity()->addPort(p_idx_first, group);
-  entity()->addPort(p_idx_last , group);
+  entity()->addPort(p_idx_last, group);
 
   /* Return registers */
-  auto r0 = make_shared<GeneralPort>(nameFrom({"reg","return0"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
-  auto r1 = make_shared<GeneralPort>(nameFrom({"reg","return1"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
+  auto r0 = make_shared<GeneralPort>(nameFrom({"reg", "return0"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
+  auto r1 = make_shared<GeneralPort>(nameFrom({"reg", "return1"}), GP::REG_RETURN, Dir::OUT, Value(ce::REG_WIDTH));
   entity()->addPort(r0, group);
   entity()->addPort(r1, group);
   group++;
 
   /* Buffer Address registers */
   // Get all buffers
-  for (const auto &c: columns) {
+  for (const auto &c : columns) {
     auto cbufs = c->getBuffers();
     buffers_.insert(buffers_.end(), cbufs.begin(), cbufs.end());
   }
-  for (const auto &b: buffers_) {
+  for (const auto &b : buffers_) {
     auto bufport =
         make_shared<GeneralPort>(nameFrom({"reg", b->name(), "addr"}), GP::REG_ADDR, Dir::IN, Value("BUS_ADDR_WIDTH"));
     entity()->addPort(bufport, group);
@@ -112,7 +112,7 @@ UserCore::UserCore(std::string name, ColumnWrapper *parent, int num_addr_regs, i
 }
 
 void UserCore::addUserStreams(std::vector<std::shared_ptr<fletchgen::Column>> column_instances) {
-  for (const auto &c: column_instances) {
+  for (const auto &c : column_instances) {
     // Only Arrow streams should be copied over to the ColumnWrapper.
     auto uds = c->getArrowStreams();
 
@@ -129,4 +129,4 @@ void UserCore::addUserStreams(std::vector<std::shared_ptr<fletchgen::Column>> co
   }
 }
 
-}
+}  // namespace fletchgen

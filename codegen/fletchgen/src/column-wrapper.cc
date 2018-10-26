@@ -13,8 +13,10 @@
 // limitations under the License.
 
 #include <utility>
-#include "column-wrapper.h"
-#include "arbiter.h"
+#include <vector>
+
+#include "./arbiter.h"
+#include "./column-wrapper.h"
 
 using std::string;
 using std::make_shared;
@@ -117,8 +119,7 @@ void ColumnWrapper::addReadArbiter() {
     rarb_inst->mapGeneric(rarb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
     rarb->mst_rreq()->setSource(rarb_inst.get());
     rarb_inst->setComment(
-        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_read_columns) + " column readers.\n"
-    );
+        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_read_columns) + " column readers.\n");
     for (const auto &p : rarb->mst_rreq()->ports()) {
       rarb_inst->mapPort(p.get(), p.get());
     }
@@ -152,8 +153,7 @@ void ColumnWrapper::addWriteArbiter() {
     warb_inst->mapGeneric(warb->entity()->getGenericByName(ce::BUS_LEN_WIDTH), Value(ce::BUS_LEN_WIDTH));
     warb->mst_wreq()->setSource(rarb_inst.get());
     warb_inst->setComment(
-        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_write_columns) + " column writers.\n"
-    );
+        t(1) + "-- Arbiter instance generated to serve " + std::to_string(num_write_columns) + " column writers.\n");
     for (const auto &p : warb->mst_wreq()->ports()) {
       warb_inst->mapPort(p.get(), p.get());
     }
@@ -238,8 +238,7 @@ std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
         // Generate a comment to place above the instantiation
         column->setComment(
             t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +
-            t(1) + "-- " + field->ToString() + "\n"
-        );
+                t(1) + "-- " + field->ToString() + "\n");
         columns.push_back(column);
       } else {
         LOGD("Ignoring field " + field->name());
@@ -257,7 +256,7 @@ void ColumnWrapper::addColumns(const std::vector<shared_ptr<Column>> &columns) {
 }
 
 void ColumnWrapper::addUserStreams() {
-  for (const auto &c: column_instances()) {
+  for (const auto &c : column_instances()) {
     // Only Arrow streams should be copied over to the ColumnWrapper.
     auto uds = c->getArrowStreams();
     _streams.insert(std::end(_streams), std::begin(uds), std::end(uds));
@@ -332,7 +331,7 @@ int ColumnWrapper::countColumnsOfMode(Mode mode) {
 
 std::vector<FletcherStream *> ColumnWrapper::getFletcherStreams(std::vector<shared_ptr<Stream>> streams) {
   std::vector<FletcherStream *> ret;
-  for (const auto &s: streams) {
+  for (const auto &s : streams) {
     auto fcs = dynamic_cast<FletcherStream *>(s.get());
     if (fcs != nullptr) {
       ret.push_back(fcs);
@@ -345,9 +344,9 @@ void ColumnWrapper::addInternalColumnSignals() {
   LOGD("Adding wrapper internal column signals.");
   // From each column instance
   string comment;
-  for (const auto &i: column_instances()) {
+  for (const auto &i : column_instances()) {
     auto ports = i->component()->entity()->ports();
-    for (const auto &p: ports) {
+    for (const auto &p : ports) {
       shared_ptr<SignalFromPort> sig;
 
       // First make signals for the ArrowPorts.
@@ -409,13 +408,13 @@ int ColumnWrapper::countRegisters() {
   int reg_count = 0;
 
   // Assuming 32-bit registers:
-  reg_count += 1;                  // Status
-  reg_count += 1;                  // Control
-  reg_count += 2;                  // Return value (64 bit to support 64-bit addresses)
-  reg_count += 1;                  // First index
-  reg_count += 1;                  // Last index
-  reg_count += 2 * countBuffers(); // Buffer addresses
-  reg_count += user_regs();        // User registers.
+  reg_count += 1;                   // Status
+  reg_count += 1;                   // Control
+  reg_count += 2;                   // Return value (64 bit to support 64-bit addresses)
+  reg_count += 1;                   // First index
+  reg_count += 1;                   // Last index
+  reg_count += 2 * countBuffers();  // Buffer addresses
+  reg_count += user_regs();         // User registers.
 
   return reg_count;
 }
@@ -583,7 +582,7 @@ void ColumnWrapper::connectUserCoreStreams() {
       LOGD("  Derived from: " + stream->source()->toString());
       LOGD("  Connections : ");
       // For each port on the UserCore stream
-      for (const auto &stream_port: stream->ports()) {
+      for (const auto &stream_port : stream->ports()) {
         // If it's an Arrow port:
         auto arrow_port = dynamic_cast<ArrowPort *>(stream_port.get());
         if (arrow_port != nullptr) {
@@ -661,7 +660,7 @@ void ColumnWrapper::connectGlobalPortsOf(Instantiation *instance) {
 
 void ColumnWrapper::connectGlobalPorts() {
   // Connect each column
-  for (const auto &c: column_instances()) {
+  for (const auto &c : column_instances()) {
     connectGlobalPortsOf(c.get());
   }
   // Connect the rest
@@ -686,7 +685,6 @@ void ColumnWrapper::connectControllerRegs() {
   auto sp = uctrl_->entity()->getPortByName("status");
   range = Range(Value(2) * Value(ce::REG_WIDTH) - Value(1), Value(ce::REG_WIDTH));
   uctrl_inst_->mapPort(sp, rout, range);
-
 }
 
 void ColumnWrapper::addControllerSignals() {
@@ -738,9 +736,9 @@ void ColumnWrapper::implementUserRegs() {
 
   /* First and last index regs */
   auto p_idx_first = usercore_->entity()->getPortByName(nameFrom({"idx", "first"}));
-  auto p_idx_last  = usercore_->entity()->getPortByName(nameFrom({"idx", "last"}));
+  auto p_idx_last = usercore_->entity()->getPortByName(nameFrom({"idx", "last"}));
   Range range_idx_first(Value(5) * Value(ce::REG_WIDTH) - Value(1), Value(4) * Value(ce::REG_WIDTH));
-  Range range_idx_last( Value(6) * Value(ce::REG_WIDTH) - Value(1), Value(5) * Value(ce::REG_WIDTH));
+  Range range_idx_last(Value(6) * Value(ce::REG_WIDTH) - Value(1), Value(5) * Value(ce::REG_WIDTH));
   usercore_inst_->mapPort(p_idx_first, regs_in(), range_idx_first);
   usercore_inst_->mapPort(p_idx_last, regs_in(), range_idx_last);
 
@@ -764,10 +762,10 @@ void ColumnWrapper::implementUserRegs() {
   }
 
   /* Default read regs are always enabled */
-  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(0)", "<=", "'0';")); // control
-  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(1)", "<=", "'1';")); // status
-  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(2)", "<=", "'1';")); // return 0
-  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(3)", "<=", "'1';")); // return 1
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(0)", "<=", "'0';"));  // control
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(1)", "<=", "'1';"));  // status
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(2)", "<=", "'1';"));  // return 0
+  architecture()->addStatement(make_shared<vhdl::Statement>("  regs_out_en(3)", "<=", "'1';"));  // return 1
 }
 
 GeneralPort *ColumnWrapper::regs_in() {
@@ -793,4 +791,4 @@ void ColumnWrapper::mapUserGenerics() {
   usercore_inst_->mapGeneric(ent->getGenericByName(ce::REG_WIDTH), Value(ce::REG_WIDTH));
 }
 
-} //namespace fletchgen
+}  // namespace fletchgen

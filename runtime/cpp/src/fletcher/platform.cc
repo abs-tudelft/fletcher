@@ -30,7 +30,7 @@ std::string Platform::getName() {
   return std::string(buf);
 }
 
-Status Platform::create(const std::string &name, std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
+Status Platform::Create(const std::string &name, std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
   // Attempt to open shared library
   void *handle = nullptr;
   handle = dlopen(("libfletcher_" + name + ".so").c_str(), RTLD_NOW);
@@ -48,6 +48,20 @@ Status Platform::create(const std::string &name, std::shared_ptr<fletcher::Platf
     }
     return Status::ERROR();
   }
+}
+
+Status Platform::Create(std::shared_ptr<fletcher::Platform> *platform) {
+  Status err = Status::ERROR();
+  std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
+  std::string logstr;
+  for (const auto &p : autodetect_platforms) {
+    // Attempt to create platform
+    err = Create(p, platform);
+    if (err.ok()) {
+      return err;
+    }
+  }
+  return err;
 }
 
 Status Platform::link(void *handle, bool quiet) {
@@ -80,24 +94,5 @@ Status Platform::link(void *handle, bool quiet) {
   }
 }
 
-Status Platform::create(std::shared_ptr<fletcher::Platform> *platform) {
-  Status err = Status::ERROR();
-  std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
-  std::string logstr;
-  for (const auto &p : autodetect_platforms) {
-    // Attempt to create platform
-    logstr = "Searching for " + p + ": ";
-    err = create(p, platform);
-    if (err.ok()) {
-      logstr += "Found.";
-      ARROW_LOG(INFO) << logstr;
-      return err;
-    } else {
-      logstr += "Not found.";
-    }
-    ARROW_LOG(INFO) << logstr;
-  }
-  return err;
-}
 
 }  // namespace fletcher

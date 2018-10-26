@@ -1,8 +1,11 @@
 #pragma once
 
+#include <vector>
+#include <memory>
 #include <cstdint>
-#include "constants.h"
-#include "arrow-utils.h"
+
+#include "./constants.h"
+#include "./arrow-utils.h"
 
 namespace fletchgen {
 namespace config {
@@ -62,5 +65,5 @@ constexpr Config default_config;
 /// @brief Derive a configuration from Schema metadata.
 std::vector<Config> fromSchemas(std::vector<std::shared_ptr<arrow::Schema>> schemas);
 
-} // namespace config
-} // namespace fletchgen
+}  // namespace config
+}  // namespace fletchgen

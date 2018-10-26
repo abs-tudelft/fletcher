@@ -12,40 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdint.h>
 #include <unistd.h>
 
-#include <fpga_pci.h>
-#include <fpga_mgmt.h>
+#include "libsnap.h"
 
 #include "../../../../common/cpp/src/fletcher.h"
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
-
 #define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
 
-#define FLETCHER_PLATFORM_NAME "aws"
+#define FLETCHER_PLATFORM_NAME "snap"
 
-#define FLETCHER_AWS_NUM_QUEUES       4
-#define FLETCHER_AWS_DEVICE_ALIGNMENT 4096
-#define FLETCHER_AWS_QUEUE_THRESHOLD (1024*1024*1) // 1 MiB
+#define FLETCHER_SNAP_ACTION_REG_OFFSET 64 // starts at 0x200
+#define FLETCHER_SNAP_DEVICE_ALIGNMENT 4096
 
-typedef struct {
-  int slot_id;
-  int pf_id;
-  int bar_id;
-} AwsConfig;
+struct snap_card;
+struct snap_action;
+struct snap_queue;
 
 typedef struct {
-  AwsConfig config;
-  int xdma_fd[FLETCHER_AWS_NUM_QUEUES];
-  pci_bar_handle_t pci_bar_handle;
-  char device_filename[256];
-  uint64_t alignment;
+
+} SnapConfig;
+
+typedef struct {
+  struct snap_card *card_handle;
+  struct snap_action *action_handle;
+  int card_no; // 0
+  uint32_t action_type; //0x00000001
+  int sim; // = false
   int error;
+  uint64_t alignment;
+  char device[64];
+
 } PlatformState;
+
+PlatformState snap_state ={NULL, NULL, 0, 0x1, 0, 0, 4096, {0}};
 
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.
 fstatus_t platformGetName(char *name, size_t size);
@@ -64,7 +64,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value);
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size);
 
 /// @brief Copy \p size bytes from device address \p device_source to host address \p host_destination.
-fstatus_t platformCopyDeviceToHost(const da_t device_source, uint8_t *host_destination, int64_t size);
+fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size);
 
 /// @brief Allocate \p size bytes on the device.
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size);
@@ -92,7 +92,7 @@ fstatus_t platformDeviceFree(da_t device_address);
  *                              usage (0 = not alloced, 1 = alloced).
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced);
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced);
 
 /**
  * @brief Explicitly cache \p size bytes from \p host_source on device on-board memory.

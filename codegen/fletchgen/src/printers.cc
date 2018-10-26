@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-#include "printers.h"
+#include "./printers.h"
 
 using vhdl::t;
 
@@ -58,71 +58,4 @@ std::string getFieldInfoString(arrow::Field *field, ArrowStream *parent) {
   return ret;
 }
 
-std::string HexView::toString(bool header) {
-  char buf[6] = {0};
-  std::string ret;
-  if (header) {
-    ret = "                  ";
-    for (unsigned int i = 0; i < width; i++) {
-      sprintf(buf, "%02X ", i);
-      ret.append(buf);
-    }
-  }
-  ret.append(str);
-  return ret;
-}
-
-unsigned char convertToReadable(unsigned char c) {
-  if ((c < 32) || (c > 126)) {
-    return '.';
-  }
-  return c;
-}
-
-void HexView::addData(const uint8_t *ptr, size_t size) {
-  char buf[64] = {0};
-  std::string left;
-  std::string right;
-
-  unsigned int i = 0;
-
-  while (i < size) {
-    if (col % width == 0) {
-      str.append(left);
-      str.append(" ");
-      str.append(right);
-      str.append("\n");
-      left = "";
-      right = "";
-      sprintf(buf, "%016lX: ", start + row * width);
-      left.append(buf);
-      row++;
-    }
-
-    sprintf(buf, "%02X", (unsigned char) ptr[i]);
-    left.append(buf);
-
-    sprintf(buf, "%c", convertToReadable((unsigned char) ptr[i]));
-    right.append(buf);
-
-    if (i == size - 1) {
-      left.append("|");
-    } else {
-      left.append(" ");
-    }
-    col++;
-    i++;
-  }
-
-  left.append(std::string(18 + 3 * width - left.length(), ' '));
-
-  str.append(left);
-  str.append(" ");
-  str.append(right);
-  str.append("\n");
-}
-
-HexView::HexView(unsigned long start, std::string str, unsigned long row, unsigned long col, unsigned long width) : str(
-    std::move(str)), row(row), col(col), width(width), start(start) {}
-
-}
+}  // namespace fletchgen

@@ -33,46 +33,91 @@ class Platform {
     }
   }
 
-  static Status create(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
-  static Status create(std::shared_ptr<Platform> *platform);
+  /**
+   * @brief Create a new platform instance.
+   * @param name        The name of the platform.
+   * @param platform    The platform
+   * @param quiet       Whether to surpress any logging messages
+   * @return            Status::OK() if successful, Status::ERROR() otherwise.
+   */
+  static Status Create(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
 
+  /**
+   * @brief Create a new platform by attempting to autodetect the platform driver.
+   * @param platform    The platform
+   * @return            Status::OK() if successful, Status::ERROR() otherwise.
+   */
+  static Status Create(std::shared_ptr<Platform> *platform);
+
+  /// @brief Return the name of the platform
   std::string getName();
 
-  inline Status init() {
-    assert(platformInit != nullptr);
-    return Status(platformInit(init_data));
-  }
+  /// @brief Initialize the platform
+  inline Status init() { return Status(platformInit(init_data)); }
 
-  inline Status writeMMIO(uint64_t offset, uint32_t value) {
-    assert(platformWriteMMIO != nullptr);
-    return Status(platformWriteMMIO(offset, value));
-  }
+  /**
+   * @brief Write to MMIO register
+   * @param offset      Register offset
+   * @param value       Value to write
+   * @return            Status::OK() if successful, Status::ERROR() otherwise.
+   */
+  inline Status writeMMIO(uint64_t offset, uint32_t value) { return Status(platformWriteMMIO(offset, value)); }
 
-  inline Status readMMIO(uint64_t offset, uint32_t *value) {
-    assert(platformReadMMIO != nullptr);
-    return Status(platformReadMMIO(offset, value));
-  }
+  /**
+  * @brief Read from MMIO register
+  * @param offset      Register offset
+  * @param value       Value to read to
+  * @return            Status::OK() if successful, Status::ERROR() otherwise.
+  */
+  inline Status readMMIO(uint64_t offset, uint32_t *value) { return Status(platformReadMMIO(offset, value)); }
 
+  /**
+   * @brief Allocate a region of memory on the device
+   * @param device_address  The resulting device address
+   * @param size            The amount of bytes to allocate
+   * @return                Status::OK() if successful, Status::ERROR() otherwise.
+   */
   inline Status deviceMalloc(da_t *device_address, size_t size) {
-    assert(platformDeviceMalloc != nullptr);
     return Status(platformDeviceMalloc(device_address, size));
   }
 
-  inline Status deviceFree(da_t device_address) {
-    assert(platformDeviceFree != nullptr);
-    return Status(platformDeviceFree(device_address));
-  }
+  /**
+   * @brief Free a previously allocated memory region on the device.
+   * @param device_address  The device address of the memory region.
+   * @return                Status::OK() if successful, Status::ERROR() otherwise.
+   */
+  inline Status deviceFree(da_t device_address) { return Status(platformDeviceFree(device_address)); }
 
+  /**
+   * @brief Copy a memory region from host memory to device memory
+   * @param host_source         Source in host memory
+   * @param device_destination  Destination in device meomry
+   * @param size                The amount of bytes
+   * @return                    Status::OK() if successful, Status::ERROR() otherwise.
+   */
   inline Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size) {
-    assert(platformCopyHostToDevice != nullptr);
     return Status(platformCopyHostToDevice(host_source, device_destination, size));
   }
 
+  /**
+   * @brief Copy a memory region from device memory to host memory
+   * @param device_source       Source in device meomry
+   * @param host_destination    Destination in host memory
+   * @param size                The amount of bytes
+   * @return                    Status::OK() if successful, Status::ERROR() otherwise
+   */
   inline Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size) {
-    assert(platformCopyDeviceToHost != nullptr);
     return Status(platformCopyDeviceToHost(device_source, host_destination, size));
   }
 
+  /**
+   * @brief Prepare a memory region of the host for use by the device. May or may not involve a copy.
+   * @param host_source         Source in host memory
+   * @param device_destination  Pointer to buffer that can be used in device
+   * @param size                Amount of bytes
+   * @param alloced             Whether or not an allocation was made in device memory
+   * @return                    Status::OK() if successful, Status::ERROR() otherwise
+   */
   inline Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) {
     assert(platformPrepareHostBuffer != nullptr);
     int ll_alloced = 0;
@@ -81,11 +126,19 @@ class Platform {
     return Status(stat);
   }
 
+  /**
+  * @brief Cache a memory region of the host for use by the device. Always causes an allocation / copy.
+  * @param host_source         Source in host memory
+  * @param device_destination  Pointer to buffer that can be used in device
+  * @param size                Amount of bytes
+  * @return                    Status::OK() if successful, Status::ERROR() otherwise
+  */
   inline Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
     assert(platformCacheHostBuffer != nullptr);
     return Status(platformCacheHostBuffer(host_source, device_destination, size));
   }
 
+  /// @brief Terminate the platform
   inline Status terminate() {
     assert(platformTerminate != nullptr);
     terminated = true;
@@ -94,6 +147,8 @@ class Platform {
 
   void *terminate_data = nullptr;
   void *init_data = nullptr;
+
+ private:
 
   // Functions to be linked
   fstatus_t (*platformGetName)(char *name, size_t size) = nullptr;
@@ -110,8 +165,6 @@ class Platform {
                                          int *alloced) = nullptr;
   fstatus_t (*platformCacheHostBuffer)(const uint8_t *host_source, da_t *device_destination, int64_t size) = nullptr;
   fstatus_t (*platformTerminate)(void *arg) = nullptr;
-
- private:
 
   /// @brief Attempt to link all functions using a handle obtained by dlopen
   Status link(void *handle, bool quiet = true);

@@ -14,7 +14,8 @@
 
 #include <memory>
 
-#include "recordbatch.h"
+#include "common/hex-view.h"
+#include "./recordbatch.h"
 
 std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   size_t addr = 0;
@@ -122,7 +123,7 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
 
   unsigned int i = 0;
   for (const auto &buf : buffers) {
-    HexView hv(0);
+    fletcher::common::HexView hv(0);
     hv.addData(buf->data(), static_cast<size_t>(buf->size()));
     LOGD("Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
          "Start address: " + std::to_string(offsets[i]) + "\n" +

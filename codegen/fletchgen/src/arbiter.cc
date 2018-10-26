@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "arbiter.h"
+#include "./arbiter.h"
 
 using vhdl::Generic;
 
@@ -23,7 +23,6 @@ namespace fletchgen {
 using vhdl::t;
 
 ReadArbiter::ReadArbiter(int num_slave_ports) : StreamComponent("BusReadArbiterVec") {
-
   // Create the streams for the top level
   slv_rreq_ = std::make_shared<ReadRequestStream>("bsv");
   slv_rdat_ = std::make_shared<ReadDataStream>("bsv");
@@ -88,7 +87,6 @@ ReadArbiter::ReadArbiter(int num_slave_ports) : StreamComponent("BusReadArbiterV
 }
 
 WriteArbiter::WriteArbiter(int num_slave_ports) : StreamComponent("BusWriteArbiterVec") {
-
   // Create the streams for the top level
   slv_wreq_ = std::make_shared<WriteRequestStream>("bsv");
   slv_wdat_ = std::make_shared<WriteDataStream>("bsv");
@@ -156,4 +154,4 @@ WriteArbiter::WriteArbiter(int num_slave_ports) : StreamComponent("BusWriteArbit
   addStreamPorts();
 }
 
-}//namespace fletchgen
+}  // namespace fletchgen
