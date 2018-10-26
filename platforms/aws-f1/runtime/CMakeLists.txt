@@ -19,7 +19,7 @@ add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/fletcher_echo.h)
 
 # Attempt to find AWS FPGA lib
 find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
@@ -37,3 +37,8 @@ target_link_libraries(${PROJECT_NAME} ${LIB_AWS_FPGA_MGMT})
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
+
+# Install headers
+install(FILES ${HEADERS}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+)
