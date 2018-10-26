@@ -14,6 +14,12 @@
 
 
 cdef class UserCore:
+    """Python wrapper for Fletcher UserCore.
+
+    Args:
+        Context on which this UserCore should be based.
+
+    """
     cdef:
         shared_ptr[CUserCore] usercore
 
@@ -24,15 +30,37 @@ cdef class UserCore:
         self.usercore = usercore
 
     def implements_schema(self, schema):
+        """Check if the schema of this UserCore is compatible with another Schema.
+
+        Args:
+            schema: Schema to compare with.
+
+        Returns:
+            True if compatible, False otherwise.
+
+        """
         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
 
     def reset(self):
         check_fletcher_status(self.usercore.get().reset())
 
     def set_range(self, uint32_t first, uint32_t last):
+        """Set the first (inclusive) and last (exclusive) column to process.
+
+        Args:
+            first (int):
+            last (int):
+
+        """
         check_fletcher_status(self.usercore.get().setRange(first, last))
 
     def set_arguments(self, list arguments):
+        """Set the parameters of the UserCore.
+
+        Args:
+            arguments(:obj:`list` of :obj:`int`):
+
+        """
         cdef vector[uint32_t] cpp_arguments
         for argument in arguments:
             cpp_arguments.push_back(argument)
@@ -47,8 +75,16 @@ cdef class UserCore:
         check_fletcher_status(self.usercore.get().getStatus(&status))
         return status
 
-    # Todo: Discuss: Return numpy scalar or python object?
     def get_return(self, np.dtype nptype):
+        """Read the return registers.
+
+        Args:
+            nptype (np.dtype): How the registers should be interpreted.
+
+        Returns:
+            Register contents interpreted as supplied dtype.
+
+        """
         cdef uint32_t hi
         cdef uint32_t lo
         cdef uint64_t ret
@@ -61,11 +97,29 @@ cdef class UserCore:
 
         return cast_scalar.item()
 
-    def wait_for_finish(self, poll_interval_usec=0):
+    def wait_for_finish(self, int poll_interval_usec=0):
+        """A blocking function that waits for the UserCore to finish.
+
+        Args:
+            poll_interval_usec (int): Polling interval in microseconds.
+
+        """
         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
 
     def get_platform(self):
+        """Get associated platform.
+
+        Returns:
+            Platform associated with this UserCore.
+
+        """
         return pyfletcher_wrap_platform(self.usercore.get().platform())
 
     def get_context(self):
+        """Get associated context.
+
+        Returns:
+            Context associated with this UserCore.
+
+        """
         return pyfletcher_wrap_context(self.usercore.get().context())

@@ -14,6 +14,5 @@
 
 name = "pyfletcher"
 
-# Todo: This pyarrow import here should probably change (now only here to enforce correct library importation)
 import pyarrow
 from pyfletcher.lib import Platform, UserCore, Context

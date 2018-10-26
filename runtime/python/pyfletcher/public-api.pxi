@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#Taken from pyarrow and adjusted for pyfletcher
+"""
+For use in getting underlying CPP objects from Python objects, or wrapping CPP objects in Python objects.
+Adapted from code in pyarrow.
+"""
 
 
 cdef public api bint pyfletcher_is_usercore(object usercore):

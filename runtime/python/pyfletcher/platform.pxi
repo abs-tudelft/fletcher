@@ -15,6 +15,14 @@
 import numpy as np
 
 cdef class Platform:
+    """Python wrapper for Fletcher Platforms.
+
+    Most functions are exposed for completeness, but for mose uses cases Context and UserCore are more suited.
+
+    Args:
+        name (:obj:'str', optional): Which platform driver to use. Leave empty to autodetect.
+        quiet (:obj:'bool', optional): Whether to suppress logging messages. Defaults to True.
+    """
     cdef:
         shared_ptr[CPlatform] platform
 
@@ -37,32 +45,79 @@ cdef class Platform:
         check_fletcher_status(self.platform.get().init())
 
     def write_mmio(self, uint64_t offset, uint32_t value):
+        """Write to MMIO register.
+
+        Args:
+            offset (int): Register offset.
+            value (int): Value to write.
+
+        """
         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
 
     def read_mmio(self, uint64_t offset):
+        """Read from MMIO register.
+
+
+        Args:
+            offset (int): Register offset.
+
+        Returns:
+            int: Read value.
+
+        """
         cdef uint32_t value
         check_fletcher_status(self.platform.get().readMMIO(offset, &value))
 
         return value
 
     def device_malloc(self, size_t size):
+        """Allocate a region of memory on the device.
+
+        Args:
+            size (int): Amount of bytes to allocate.
+
+        Returns:
+            int: Device address.
+
+        """
         cdef da_t device_address
         check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
 
         return device_address
 
     def device_free(self, da_t device_address):
+        """Free a previously allocated memory region on the device.
+
+        Args:
+            device_address (int): Device address of the memory region.
+
+        """
         check_fletcher_status(self.platform.get().deviceFree(device_address))
 
     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
-        #Accepts bytes-like objects for host_bytes
+        """Copy a memory region from device memory to host memory.
+
+        Args:
+            host_bytes (bytes, bytearray or ndarray (dtype=np.uint8)): Bytes to copy
+            device_destination (int): Destination in device memory
+            size (int): The amount of bytes
+
+        """
         cdef const uint8_t[:] host_source_view = host_bytes
         cdef const uint8_t *host_source = &host_source_view[0]
 
         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
 
-    # Todo: Discuss if numpy array is the best return type
     def copy_device_to_host(self, da_t device_source, uint64_t size):
+        """Copy a memory region from device memory to host memory.
+
+        Args:
+            device_source (int): Source in device memory
+            size (int): The amount of bytes
+
+        Returns:
+            ndarray: Read bytes
+        """
         buffer = np.zeros((size,), dtype=np.uint8)
         cdef const uint8_t[:] buffer_view = buffer
         cdef const uint8_t *host_destination = &buffer_view[0]
@@ -70,30 +125,6 @@ cdef class Platform:
         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
 
         return buffer
-
-    def prepare_host_buffer(self, host_bytes, int64_t size):
-        #Accepts bytes-like objects for host_bytes
-        cdef const uint8_t[:] host_source_view = host_bytes
-        cdef const uint8_t *host_source = &host_source_view[0]
-
-        cdef da_t device_destination
-        cdef cpp_bool alloced
-
-        check_fletcher_status(self.platform.get().prepareHostBuffer(host_source, &device_destination, size, &alloced))
-
-        return device_destination, alloced
-
-
-    def cache_host_buffer(self, host_bytes, int64_t size):
-        #Accepts bytes-like objects for host_bytes
-        cdef const uint8_t[:] host_source_view = host_bytes
-        cdef const uint8_t *host_source = &host_source_view[0]
-
-        cdef da_t device_destination
-
-        check_fletcher_status(self.platform.get().cacheHostBuffer(host_source, &device_destination, size))
-
-        return device_destination
 
     def terminate(self):
         check_fletcher_status(self.platform.get().terminate())

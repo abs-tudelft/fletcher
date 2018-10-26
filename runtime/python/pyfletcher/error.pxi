@@ -14,8 +14,14 @@
 
 import sys
 
-# Todo: Expand, make neat
+# Todo: Expand.
 cdef check_fletcher_status(Status status):
+    """Handler for status messages returned by the CPP functions. To be expanded.
+    
+    Args:
+        status: 
+
+    """
     if not status.ok():
         print("Fletcher error")
     status.ewf()

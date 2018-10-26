@@ -19,13 +19,12 @@ import pyarrow
 import numpy as np
 cimport numpy as np
 
-# Todo: pyfletcher.includes.libfletcher
 from pyfletcher.includes.libfletcher cimport *
 
+# Fletcher status handler
 include "error.pxi"
 
-include "status.pxi"
-
+# Wrapping and unwrapping CPP/Python objects
 include "public-api.pxi"
 
 include "platform.pxi"
