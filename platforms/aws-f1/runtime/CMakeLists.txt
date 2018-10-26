@@ -12,7 +12,8 @@ set(SOURCES
         src/fletcher_aws.c)
 
 set(HEADERS
-        src/fletcher_aws.h)
+        src/fletcher_aws.h
+        ../../../../common/cpp/src/fletcher.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 

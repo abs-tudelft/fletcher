@@ -12,7 +12,8 @@ set(SOURCES
         src/fletcher_echo.c)
 
 set(HEADERS
-        src/fletcher_echo.h)
+        src/fletcher_echo.h
+        ../../../../common/cpp/src/fletcher.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 

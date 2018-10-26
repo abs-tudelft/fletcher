@@ -46,6 +46,7 @@ setup(
     install_requires=[
         'numpy >= 1.14',
         'pyarrow',
+        'pandas'
     ],
     setup_requires=['setuptools_scm', 'cython >= 0.27'],
     classifiers=[
