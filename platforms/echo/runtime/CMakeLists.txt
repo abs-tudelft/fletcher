@@ -13,11 +13,11 @@ set(SOURCES
 
 set(HEADERS
         src/fletcher_echo.h
-        ../../../../common/cpp/src/fletcher.h)
+        ../../../common/cpp/src/fletcher.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
-include_directories(../../../../common/cpp/src)
+include_directories(../../../common/cpp/src)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
