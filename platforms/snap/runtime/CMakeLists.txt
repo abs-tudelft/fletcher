@@ -39,3 +39,5 @@ include_directories(${INCLUDE_DIRS})
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
+
+message("[FLETCHER] ${PROJECT_NAME} was installed. Please refresh your dynamic library cache (e.g. sudo ldconfig).")

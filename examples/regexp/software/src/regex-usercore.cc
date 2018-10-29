@@ -28,13 +28,13 @@ RegExCore::RegExCore(std::shared_ptr<fletcher::Context> context)
   // Some settings that are different from standard implementation
   // concerning start, reset and status register.
   // TODO: generate this properly
-  if (context->platform->getName() == "aws") {
+  if (UserCore::context()->platform->getName() == "aws") {
     active_units = 16;
     ctrl_start = 0x000000000000FFFF;
     ctrl_reset = 0x00000000FFFF0000;
     done_status = 0x00000000FFFF0000;
     done_status_mask = 0x00000000FFFFFFFF;
-  } else if (context->platform->getName() == "snap") {
+  } else if (UserCore::context()->platform->getName() == "snap") {
     active_units = 8;
     ctrl_start = 0x00000000000000FF;
     ctrl_reset = 0x000000000000FF00;

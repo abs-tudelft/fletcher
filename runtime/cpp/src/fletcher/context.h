@@ -49,8 +49,8 @@ struct DeviceArray {
   const std::shared_ptr<arrow::Array> host_array;
   std::shared_ptr<arrow::Field> field;
   std::vector<DeviceBuffer> buffers;
-  mode_t mode;
-  bool on_device;
+  mode_t mode = CACHE;
+  bool on_device = false;
 };
 
 /**
@@ -74,7 +74,7 @@ class Context {
    * @param platform    The platform to create it on.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Make(std::shared_ptr<Context> *context, std::shared_ptr<Platform> platform);
+  static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform>& platform);
 
   /**
    * @brief Enqueue an arrow::Array for usage preparation on the device.

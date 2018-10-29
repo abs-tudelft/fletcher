@@ -20,15 +20,19 @@
 
 #include "fletcher.h"
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifdef DEBUG
+#define ENABLE_DEBUG_PRINT 1
+#else
+#define ENABLE_DEBUG_PRINT 0
 #endif
 
-#define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#define debug_print(...) do { if (ENABLE_DEBUG_PRINT) fprintf(stderr, __VA_ARGS__); } while (0)
 
 #define FLETCHER_PLATFORM_NAME "aws"
 
-#define FLETCHER_AWS_NUM_QUEUES       4
+// Do not change num_queues to other than 1. This is broken in AWS FPGA at the moment
+// TODO(johanpel): figure out while multiple queues are broken in XDMA driver
+#define FLETCHER_AWS_NUM_QUEUES       1
 #define FLETCHER_AWS_DEVICE_ALIGNMENT 4096
 #define FLETCHER_AWS_QUEUE_THRESHOLD (1024*1024*1) // 1 MiB
 

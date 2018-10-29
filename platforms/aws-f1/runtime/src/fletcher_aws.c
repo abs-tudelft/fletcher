@@ -155,7 +155,7 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[FLETCHER_AWS] MMIO Write %d : %08lX\n", (uint32_t)offset, (uint32_t)value);
+  debug_print("[FLETCHER_AWS] MMIO Write %d : %08X\n", (uint32_t)offset, (uint32_t)value);
   return FLETCHER_STATUS_OK;
 }
 
@@ -168,7 +168,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[FLETCHER_AWS] MMIO Read %d : %08lX\n", (uint32_t)offset, (uint32_t)(*value));
+  debug_print("[FLETCHER_AWS] MMIO Read %d : %08X\n", (uint32_t)offset, (uint32_t)(*value));
   return FLETCHER_STATUS_OK;
 }
 
@@ -238,7 +238,12 @@ fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination
 fstatus_t platformTerminate(void *arg) {
   debug_print("[FLETCHER_AWS] Terminating platform.        Arguments @ [host] 0x%016lX.\n", (uint64_t) arg);
 
-  fpga_pci_detach(aws_state.pci_bar_handle);
+  int rc = fpga_pci_detach(aws_state.pci_bar_handle);
+
+  if (rc != 0) {
+    fprintf(stderr, "[FLETCHER_AWS] Could not detach FPGA PCI\n");
+    return FLETCHER_STATUS_ERROR;
+  }
 
   for (int q = 0; q < FLETCHER_AWS_NUM_QUEUES; q++) {
     close(q);

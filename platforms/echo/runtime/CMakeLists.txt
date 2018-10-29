@@ -31,3 +31,5 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )
+
+message("[FLETCHER] ${PROJECT_NAME} was installed. Please refresh your dynamic library cache (e.g. sudo ldconfig).")

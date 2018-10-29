@@ -537,7 +537,7 @@ int main(int argc, char **argv) {
       t_copy[e] = (stop - start);
 
       // Create a UserCore
-      RegExCore rc((context));
+      RegExCore rc(context);
 
       // Reset it
       rc.reset();
