@@ -49,8 +49,8 @@ struct DeviceArray {
   const std::shared_ptr<arrow::Array> host_array;
   std::shared_ptr<arrow::Field> field;
   std::vector<DeviceBuffer> buffers;
-  mode_t mode;
-  bool on_device;
+  mode_t mode = CACHE;
+  bool on_device = false;
 };
 
 /**
