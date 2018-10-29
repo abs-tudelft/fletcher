@@ -14,6 +14,10 @@ RUN apt-get update && \
     apt-get install -y $BUILD_PACKAGES && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
+      -DFLETCHER_GEN=1 \
+      -DFLETCHER_TESTS=0 \
+      -DFLETCHER_AWS=0 \
+      -DFLETCHER_SNAP=0 \
       .. && \
     make && make install && \
     cd ../.. && rm -rf fletcher && \
