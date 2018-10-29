@@ -12,8 +12,7 @@ set(SOURCES
         src/fletcher_aws.c)
 
 set(HEADERS
-        src/fletcher_aws.h
-        ../../../common/cpp/src/fletcher.h)
+        src/fletcher_aws.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
@@ -39,11 +38,6 @@ target_link_libraries(${PROJECT_NAME} ${LIB_AWS_FPGA_MGMT})
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
-
-# Install headers
-install(FILES ${HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-)
 
 message("[FLETCHER] ${PROJECT_NAME} was installed. Please refresh your dynamic library cache (e.g. sudo ldconfig).")
 

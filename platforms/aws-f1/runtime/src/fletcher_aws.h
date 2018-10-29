@@ -18,7 +18,7 @@
 #include <fpga_pci.h>
 #include <fpga_mgmt.h>
 
-#include "fletcher.h"
+#include "../../../../common/cpp/src/fletcher.h"
 
 #ifdef DEBUG
 #define ENABLE_DEBUG_PRINT 1

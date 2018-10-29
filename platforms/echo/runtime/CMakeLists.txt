@@ -12,8 +12,7 @@ set(SOURCES
         src/fletcher_echo.c)
 
 set(HEADERS
-        src/fletcher_echo.h
-        ../../../common/cpp/src/fletcher.h)
+        src/fletcher_echo.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
@@ -26,10 +25,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/fletcher_echo
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
-
-# Install headers
-install(FILES ${HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-)
 
 message("[FLETCHER] ${PROJECT_NAME} was installed. Please refresh your dynamic library cache (e.g. sudo ldconfig).")
