@@ -74,7 +74,7 @@ class Context {
    * @param platform    The platform to create it on.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Make(std::shared_ptr<Context> *context, std::shared_ptr<Platform> platform);
+  static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform>& platform);
 
   /**
    * @brief Enqueue an arrow::Array for usage preparation on the device.

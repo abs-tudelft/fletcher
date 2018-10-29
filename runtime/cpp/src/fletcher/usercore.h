@@ -77,7 +77,6 @@ class UserCore {
   uint32_t done_status_mask = 1UL << FLETCHER_REG_STATUS_DONE;
 
  private:
-  std::shared_ptr<Platform> _platform;
   std::shared_ptr<Context> _context;
 };
 

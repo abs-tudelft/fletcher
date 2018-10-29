@@ -40,14 +40,14 @@ class Platform {
    * @param quiet       Whether to surpress any logging messages
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Create(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
+  static Status Make(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
 
   /**
    * @brief Create a new platform by attempting to autodetect the platform driver.
    * @param platform    The platform
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Create(std::shared_ptr<Platform> *platform);
+  static Status Make(std::shared_ptr<Platform> *platform);
 
   /// @brief Return the name of the platform
   std::string getName();

@@ -46,8 +46,8 @@ DeviceArray::DeviceArray(const std::shared_ptr<arrow::Array> &array,
   mode = DeviceArray::PREPARE;
 }
 
-Status Context::Make(std::shared_ptr<Context> *context, std::shared_ptr<Platform> platform) {
-  (*context) = std::make_shared<Context>(platform);
+Status Context::Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform> &platform) {
+  *context = std::make_shared<Context>(platform);
   return Status::OK();
 }
 

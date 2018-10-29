@@ -97,7 +97,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   std::shared_ptr<fletcher::Context> context;
 
   // Create a platform
-  fletcher::Platform::Create(&platform).ewf();
+  fletcher::Platform::Make(&platform).ewf();
 
   // Create a context
   fletcher::Context::Make(&context, platform);

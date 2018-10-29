@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +25,7 @@
 
 namespace fletcher {
 
-UserCore::UserCore(std::shared_ptr<Context> context) : _platform(context->platform), _context(context) {}
+UserCore::UserCore(std::shared_ptr<Context> context) : _context(std::move(context)) {}
 
 bool UserCore::implementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
   // TODO(johanpel): Implement checking if the platform implements the same Schema
@@ -32,8 +34,8 @@ bool UserCore::implementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
 }
 
 Status UserCore::reset() {
-  _platform->writeMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
-  return _platform->writeMMIO(FLETCHER_REG_CONTROL, 0);
+  platform()->writeMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
+  return platform()->writeMMIO(FLETCHER_REG_CONTROL, 0);
 }
 
 Status UserCore::setRange(int32_t first, int32_t last) {
@@ -43,10 +45,10 @@ Status UserCore::setRange(int32_t first, int32_t last) {
   }
 
   Status ret;
-  if (!_platform->writeMMIO(FLETCHER_REG_FIRSTIDX, static_cast<uint32_t>(first)).ok()) {
+  if (!platform()->writeMMIO(FLETCHER_REG_FIRSTIDX, static_cast<uint32_t>(first)).ok()) {
     ret = Status::ERROR();
   }
-  if (!_platform->writeMMIO(FLETCHER_REG_LASTIDX, static_cast<uint32_t>(last)).ok()) {
+  if (!platform()->writeMMIO(FLETCHER_REG_LASTIDX, static_cast<uint32_t>(last)).ok()) {
     ret = Status::ERROR();
   }
   return Status::OK();
@@ -54,23 +56,23 @@ Status UserCore::setRange(int32_t first, int32_t last) {
 
 Status UserCore::setArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    _platform->writeMMIO(_context->num_buffers() * 2 + i, arguments[i]);
+    platform()->writeMMIO(_context->num_buffers() * 2 + i, arguments[i]);
   }
 
   return Status::OK();
 }
 
 Status UserCore::start() {
-  return _platform->writeMMIO(FLETCHER_REG_CONTROL, ctrl_start);
+  return platform()->writeMMIO(FLETCHER_REG_CONTROL, ctrl_start);
 }
 
 Status UserCore::getStatus(uint32_t *status) {
-  return _platform->readMMIO(FLETCHER_REG_STATUS, status);
+  return platform()->readMMIO(FLETCHER_REG_STATUS, status);
 }
 
 Status UserCore::getReturn(uint32_t *ret0, uint32_t *ret1) {
-  if (_platform->readMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
-    if (_platform->readMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
+  if (platform()->readMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
+    if (platform()->readMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
       return Status::OK();
     }
   }
@@ -85,19 +87,19 @@ Status UserCore::waitForFinish(unsigned int poll_interval_usec) {
   uint32_t status = 0;
   if (poll_interval_usec == 0) {
     do {
-      _platform->readMMIO(FLETCHER_REG_STATUS, &status);
+      platform()->readMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   } else {
     do {
       usleep(poll_interval_usec);
-      _platform->readMMIO(FLETCHER_REG_STATUS, &status);
+      platform()->readMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   }
   return Status::OK();
 }
 
 std::shared_ptr<Platform> UserCore::platform() {
-  return _platform;
+  return _context->platform;
 }
 
 std::shared_ptr<Context> UserCore::context() {
