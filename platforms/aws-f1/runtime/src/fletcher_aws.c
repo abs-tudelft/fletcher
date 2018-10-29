@@ -169,7 +169,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[FLETCHER_AWS] MMIO Read %d : %08lX\n", (uint32_t)offset, (uint32_t)(*value));
+  debug_print("[FLETCHER_AWS] MMIO Read %d : %08uX\n", (uint32_t)offset, (uint32_t)(*value));
   return FLETCHER_STATUS_OK;
 }
 
