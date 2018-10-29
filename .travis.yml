@@ -11,7 +11,7 @@ services:
 
 env:
   global:
-    - ARROW_VERSION=0.10.0
+    - ARROW_VERSION=0.11.1
 
 cache:
   directories:
@@ -25,18 +25,11 @@ jobs:
 
     - &docker-build
       stage: build
-      name: fletchgen
-      before_script:
-        - export IMG=fletchgen SRC_PATH=codegen/fletchgen
+      name: fletcher
       script:
-        - cd $SRC_PATH && docker build -t $IMG:latest --cache-from $IMG:latest --build-arg ARROW_VERSION=$ARROW_VERSION .
+        - docker build -t $IMG:latest --cache-from $IMG:latest --build-arg ARROW_VERSION=$ARROW_VERSION .
       before_cache:
         - docker save $IMG:latest | gzip -2 > $HOME/docker/$IMG.tar.gz
-
-    - <<: *docker-build
-      name: runtime
-      before_script:
-        - export IMG=runtime SRC_PATH=runtime
 
     - &vhdl
       name: vhdl-93c
