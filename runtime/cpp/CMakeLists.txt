@@ -55,6 +55,7 @@ target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
 # Dynamically link Arrow
 if (FLETCHER_PYTHON)
     find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
+    include_directories(${PYARROW_DIR}/include)
 else()
     find_library(LIB_ARROW arrow)
 endif()
