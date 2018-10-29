@@ -13,6 +13,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 if (FLETCHER_PYTHON)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+    include_directories(${PYARROW_DIR}/include)
     message("Building fletcher-common for Pyfletcher")
 endif()
 
