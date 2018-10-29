@@ -22,6 +22,8 @@
 
 #ifndef DEBUG
 #define DEBUG 0
+else
+#define DEBUG 1
 #endif
 
 #define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
