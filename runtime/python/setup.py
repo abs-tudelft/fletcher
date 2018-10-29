@@ -26,6 +26,11 @@ ext_modules = cythonize(Extension(
     extra_link_args=["-std=c++11"]
 ))
 
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 for ext in ext_modules:
     ext.include_dirs.append(np.get_include())
     ext.include_dirs.append(pa.get_include())
@@ -41,6 +46,8 @@ setup(
     author="Lars van Leeuwen",
     packages=['pyfletcher'],
     description="A Python wrapper for the Fletcher runtime library",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/johanpel/fletcher",
     ext_modules=ext_modules,
     install_requires=[

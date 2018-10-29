@@ -1,7 +1,0 @@
-The pyarrow binary wheels are shipped with .so files compiled with the old CXX ABI. This is probably because pyarrow needs to maintain compatibility with TensorFlow, which is also compiled with the old CXX ABI. This causes problems for pyfletcher, as it is dependent on pyarrow, arrow, and fletcher, so they should all use the same ABI. The current way to get pyfletcher to work is:
-1. Compile fletcher with -D_GLIBCXX_USE_CXX11_ABI=0.
-2. import pyarrow before importing anything fletcher related (this causes pyfletcher to use the libarrow shipped with pyarrow)
-
-Compiling both arrow and fletcher with -D_GLIBCXX_USE_CXX11_ABI=0 should also solve the problem, but for now lets avoid setting requirements on the arrow installation. Should binary wheels of pyfletcher be created eventually, libfletcher.so (old abi) should be shipped with it.
-
-https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html
