@@ -1,17 +1,28 @@
 cmake_minimum_required(VERSION 3.10)
+project(fletcher VERSION 0.0.1 DESCRIPTION "Fletcher C++ runtime library")
 include(GNUInstallDirs)
 include(ExternalProject)
 
 ########################################################################################################################
 # LIBRARY
 ########################################################################################################################
-project(fletcher VERSION 0.0.1 DESCRIPTION "Fletcher C++ runtime library")
+
+option(FLETCHER_PYTHON
+        "Build Fletcher for use in building pyfletcher"
+        OFF)
+
+#Only needed when building for Python
+set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC -D_GLIBCXX_USE_CXX11_ABI=0")
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
+
+if (FLETCHER_PYTHON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+    message("Building for Pyfletcher")
+endif()
 
 set(SOURCES
         src/fletcher/platform.cc
@@ -42,10 +53,14 @@ include_directories(../../common/cpp/src)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
 
 # Dynamically link Arrow
-find_library(LIB_ARROW arrow PATHS /usr/local/lib/python3.6/dist-packages/pyarrow NO_DEFAULT_PATH)
-#find_library(LIB_ARROW arrow)
-target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
+if (FLETCHER_PYTHON)
+    find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
+else()
+    find_library(LIB_ARROW arrow)
+endif()
 message(${LIB_ARROW})
+
+target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/${PROJECT_NAME}/api.h)
 

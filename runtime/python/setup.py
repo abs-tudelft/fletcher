@@ -14,6 +14,7 @@
 
 from setuptools import setup, Extension
 from Cython.Build import cythonize
+import os
 
 import numpy as np
 import pyarrow as pa
@@ -26,11 +27,6 @@ ext_modules = cythonize(Extension(
     extra_link_args=["-std=c++11"]
 ))
 
-from os import path
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
 for ext in ext_modules:
     ext.include_dirs.append(np.get_include())
     ext.include_dirs.append(pa.get_include())
@@ -39,6 +35,10 @@ for ext in ext_modules:
     ext.runtime_library_dirs.extend(pa.get_library_dirs())
     ext.libraries.extend(["fletcher"])
     ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
+
+this_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name="pyfletcher",
