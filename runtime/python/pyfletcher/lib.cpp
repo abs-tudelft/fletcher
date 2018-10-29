@@ -5389,7 +5389,7 @@ static PyObject *__pyx_f_10pyfletcher_3lib_8Platform__create(struct __pyx_obj_10
  *         else:
  *             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
  */
-    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::Create((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 37, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::Make((&__pyx_v_self->platform))); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 37, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
@@ -5416,7 +5416,7 @@ static PyObject *__pyx_f_10pyfletcher_3lib_8Platform__create(struct __pyx_obj_10
     __pyx_t_4 = __pyx_convert_string_from_py_std__in_string(__pyx_t_3); if (unlikely(PyErr_Occurred())) __PYX_ERR(3, 39, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_quiet); if (unlikely((__pyx_t_5 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(3, 39, __pyx_L1_error)
-    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::Create(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 39, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_10pyfletcher_3lib_check_fletcher_status( fletcher::Platform::Make(__pyx_t_4, (&__pyx_v_self->platform), __pyx_t_5)); if (unlikely(!__pyx_t_3)) __PYX_ERR(3, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
