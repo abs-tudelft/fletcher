@@ -21,9 +21,9 @@
 #include "../../../../common/cpp/src/fletcher.h"
 
 #ifdef DEBUG
-#define ENABLE_DEBUG_PRINT 0
-#else
 #define ENABLE_DEBUG_PRINT 1
+#else
+#define ENABLE_DEBUG_PRINT 0
 #endif
 
 #define debug_print(...) do { if (ENABLE_DEBUG_PRINT) fprintf(stderr, __VA_ARGS__); } while (0)
