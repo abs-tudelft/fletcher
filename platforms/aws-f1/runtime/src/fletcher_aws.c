@@ -239,7 +239,7 @@ fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination
 fstatus_t platformTerminate(void *arg) {
   debug_print("[FLETCHER_AWS] Terminating platform.        Arguments @ [host] 0x%016lX.\n", (uint64_t) arg);
 
-  int ret = fpga_pci_detach(aws_state.pci_bar_handle);
+  int rc = fpga_pci_detach(aws_state.pci_bar_handle);
 
   if (rc != 0) {
     fprintf(stderr, "[FLETCHER_AWS] Could not detach FPGA PCI\n");
