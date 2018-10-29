@@ -20,13 +20,13 @@
 
 #include "../../../../common/cpp/src/fletcher.h"
 
-#ifndef DEBUG
-#define DEBUG 0
-else
-#define DEBUG 1
+#ifdef DEBUG
+#define ENABLE_DEBUG_PRINT 0
+#else
+#define ENABLE_DEBUG_PRINT 1
 #endif
 
-#define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#define debug_print(...) do { if (ENABLE_DEBUG_PRINT) fprintf(stderr, __VA_ARGS__); } while (0)
 
 #define FLETCHER_PLATFORM_NAME "aws"
 
