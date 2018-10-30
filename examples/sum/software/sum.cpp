@@ -129,7 +129,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   t.start();
   uc.start();
   uc.waitForFinish(1000);  // Poll every 1 ms
-  uc.getReturn(&ret.hi, &ret.lo);  // Get the sum from the UserCore
+  uc.getReturn(&ret.lo, &ret.hi);  // Get the sum from the UserCore
   t.stop();
 
   std::cout << "Sum FPGA time (s): " << t.seconds() << " seconds" << std::endl;

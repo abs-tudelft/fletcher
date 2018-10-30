@@ -45,6 +45,7 @@
 #include <fstream>
 #include <random>
 #include <omp.h>
+#include <unistd.h>
 
 // RE2 regular expressions library
 #include <re2/re2.h>
@@ -57,10 +58,6 @@
 
 // RegEx FPGA UserCore
 #include "regex-usercore.h"
-
-#ifndef PLATFORM
-#define PLATFORM 0
-#endif
 
 #define PRINT_TIME(X) std::cout << std::setprecision(10) << (X) << ", " << std::flush
 #define PRINT_INT(X) std::cout << std::dec << (X) << ", " << std::flush
@@ -536,7 +533,8 @@ int main(int argc, char **argv) {
       platform->init();
 
       // Reset the UserCore
-      rc.reset();
+      platform->writeMMIO(1, rc.ctrl_reset);
+      platform->writeMMIO(1, 0);
 
       // Prepare the column buffers
       start = omp_get_wtime();
@@ -548,11 +546,34 @@ int main(int argc, char **argv) {
       // Run the example
       start = omp_get_wtime();
       rc.setRegExpArguments(first_index, last_index);
-      rc.start();
+
+      platform->writeMMIO(6, 0x00021000);
+      platform->writeMMIO(7, 0);
+      platform->writeMMIO(8, 0);
+      platform->writeMMIO(9, 0);
+
+
+      // Check registers
 #ifdef DEBUG
-      rc.waitForFinish(1000000);
+      for (int i=0;i<58;i++) {
+        uint32_t val = 0xDEADBEEF;
+        platform->readMMIO(i,&val).ewf();
+      }
+#endif
+
+      platform->writeMMIO(1, rc.ctrl_start);
+
+      uint32_t reg_status = 0;
+#ifdef DEBUG
+      do {
+        usleep(1000000);
+        platform->readMMIO(0, &reg_status).ewf();
+      } while ((reg_status & rc.done_status_mask) != rc.done_status);
 #else
-      rc.waitForFinish(10);
+      do { 
+        usleep(10);
+        platform->readMMIO(0, &reg_status).ewf();
+      } while ((reg_status & rc.done_status_mask) != rc.done_status);
 #endif
 
       // Get the number of matches from the UserCore
