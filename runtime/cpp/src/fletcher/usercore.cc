@@ -56,7 +56,7 @@ Status UserCore::setRange(int32_t first, int32_t last) {
 
 Status UserCore::setArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    platform()->writeMMIO(_context->num_buffers() * 2 + i, arguments[i]);
+    platform()->writeMMIO(FLETCHER_REG_BUFFER_OFFSET + _context->num_buffers() * 2 + i, arguments[i]);
   }
 
   return Status::OK();
