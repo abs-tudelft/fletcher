@@ -522,13 +522,21 @@ int main(int argc, char **argv) {
 
     // Match on FPGA
     if (emask & 16u) {
-      // Create a platform
       shared_ptr<fletcher::Platform> platform;
-      fletcher::Platform::Make(&platform);
-
-      // Create a context
       shared_ptr<fletcher::Context> context;
+
+      // Create a platform
+      fletcher::Platform::Make(&platform);
+      // Create a context
       fletcher::Context::Make(&context, platform);
+      // Create a UserCore
+      RegExCore rc(context);
+
+      // Initialize the platform
+      platform->init();
+
+      // Reset the UserCore
+      rc.reset();
 
       // Prepare the column buffers
       start = omp_get_wtime();
@@ -536,9 +544,6 @@ int main(int argc, char **argv) {
       context->enable().ewf();
       stop = omp_get_wtime();
       t_copy[e] = (stop - start);
-
-      // Create a UserCore
-      RegExCore rc(context);
 
       // Run the example
       start = omp_get_wtime();
