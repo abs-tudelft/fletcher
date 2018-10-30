@@ -30,21 +30,21 @@ RegExCore::RegExCore(std::shared_ptr<fletcher::Context> context)
   // TODO: generate this properly
   if (UserCore::context()->platform->getName() == "aws") {
     active_units = 16;
-    ctrl_start = 0x000000000000FFFF;
-    ctrl_reset = 0x00000000FFFF0000;
-    done_status = 0x00000000FFFF0000;
-    done_status_mask = 0x00000000FFFFFFFF;
+    ctrl_start = 0x0000FFFF;
+    ctrl_reset = 0xFFFF0000;
+    done_status = 0xFFFF0000;
+    done_status_mask = 0xFFFFFFFF;
   } else if (UserCore::context()->platform->getName() == "snap") {
     active_units = 8;
-    ctrl_start = 0x00000000000000FF;
-    ctrl_reset = 0x000000000000FF00;
-    done_status = 0x000000000000FF00;
-    done_status_mask = 0x000000000000FFFF;
+    ctrl_start = 0x000000FF;
+    ctrl_reset = 0x0000FF00;
+    done_status = 0x0000FF00;
+    done_status_mask = 0x0000FFFF;
   }
 }
 
 std::vector<uint32_t> RegExCore::generateUnitArguments(uint32_t first_index,
-                                                           uint32_t last_index) {
+                                                       uint32_t last_index) {
   std::vector<uint32_t> arguments(2 * active_units, 0);
 
   if (first_index >= last_index) {
@@ -67,8 +67,8 @@ void RegExCore::setRegExpArguments(uint32_t first_index, uint32_t last_index) {
   UserCore::setArguments(arguments);
 }
 
-void RegExCore::getMatches(std::vector<uint32_t> &matches) {
-  for (size_t p = 0; p < matches.size(); p++) {
-    platform()->readMMIO(REUC_RESULT_OFFSET + p, &matches[p]);
+void RegExCore::getMatches(std::vector<uint32_t>* matches) {
+  for (size_t p = 0; p < matches->size(); p++) {
+    platform()->readMMIO(REUC_RESULT_OFFSET + p, matches->data() + p);
   }
 }

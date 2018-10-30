@@ -102,8 +102,6 @@ Context::~Context() {
 }
 
 Status Context::enable() {
-  written = true;
-
   for (const auto &array : device_arrays) {
     if (array->mode == DeviceArray::PREPARE) {
       if (!array->on_device) {
@@ -129,7 +127,7 @@ Status Context::enable() {
   }
 
   uint64_t off = FLETCHER_REG_BUFFER_OFFSET;
-  for (const auto &array: device_arrays) {
+  for (const auto &array : device_arrays) {
     for (const auto &buf : array->buffers) {
       dau_t address;
       address.full = buf.device_address;
@@ -139,6 +137,9 @@ Status Context::enable() {
       off++;
     }
   }
+
+  written = true;
+
   return Status::OK();
 }
 

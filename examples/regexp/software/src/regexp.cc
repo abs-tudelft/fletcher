@@ -524,23 +524,21 @@ int main(int argc, char **argv) {
     if (emask & 16u) {
       // Create a platform
       shared_ptr<fletcher::Platform> platform;
-      fletcher::Platform::Create(&platform);
+      fletcher::Platform::Make(&platform);
 
       // Create a context
       shared_ptr<fletcher::Context> context;
       fletcher::Context::Make(&context, platform);
 
-      // Prepare the colummn buffers
+      // Prepare the column buffers
       start = omp_get_wtime();
       context->queueRecordBatch(rb).ewf();
+      context->enable().ewf();
       stop = omp_get_wtime();
       t_copy[e] = (stop - start);
 
       // Create a UserCore
       RegExCore rc(context);
-
-      // Reset it
-      rc.reset();
 
       // Run the example
       start = omp_get_wtime();
@@ -553,7 +551,7 @@ int main(int argc, char **argv) {
 #endif
 
       // Get the number of matches from the UserCore
-      rc.getMatches(m_fpga[e]);
+      rc.getMatches(&m_fpga[e]);
 
       stop = omp_get_wtime();
       t_fpga[e] = (stop - start);
