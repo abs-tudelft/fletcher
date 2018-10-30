@@ -26,14 +26,6 @@
  *   C++ using OpenMP run time, C++ using OpenMP and Arrow run time,
  *   FPGA Copy time, FPGA run time
  *
- * TODO:
- * - Somehow, only on the Amazon instance on CentOS after using dev toolkit 6
- *   the program will end with a segmentation fault. GDB/Valgrind reveal that
- *   it has something to do with the Arrow schema, when the shared_ptr tries
- *   to clean up the last use count. However, at this time I have no idea how
- *   to fix it. I cannot reproduce the error on any other configuration. This
- *   code may be wrong or it may be something in Arrow internally. -johanpel
- *
  */
 #include <cstdint>
 #include <memory>
@@ -57,7 +49,7 @@
 #include <fletcher/fletcher.h>
 
 // RegEx FPGA UserCore
-#include "regex-usercore.h"
+#include "./regex-usercore.h"
 
 #define PRINT_TIME(X) std::cout << std::setprecision(10) << (X) << ", " << std::flush
 #define PRINT_INT(X) std::cout << std::dec << (X) << ", " << std::flush

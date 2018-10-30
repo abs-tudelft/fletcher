@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +14,11 @@
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include <fletcher/context.h>
 
-#include "regex-usercore.h"
-
-using namespace fletcher;
+#include "./regex-usercore.h"
 
 RegExCore::RegExCore(std::shared_ptr<fletcher::Context> context)
     : UserCore(std::move(context)) {
@@ -67,7 +64,7 @@ void RegExCore::setRegExpArguments(uint32_t first_index, uint32_t last_index) {
   UserCore::setArguments(arguments);
 }
 
-void RegExCore::getMatches(std::vector<uint32_t>* matches) {
+void RegExCore::getMatches(std::vector<uint32_t> *matches) {
   for (size_t p = 0; p < matches->size(); p++) {
     platform()->readMMIO(REUC_RESULT_OFFSET + p, matches->data() + p);
   }
