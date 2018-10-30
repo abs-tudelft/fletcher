@@ -266,15 +266,9 @@ fstatus_t platformDeviceFree(da_t device_address) {
 }
 
 fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced) {
-  debug_print("[FLETCHER_AWS] Preparing buffer for device. [host] 0x%016lX --> 0x%016lX (%10lu bytes).\n",
-         (unsigned long) host_source,
-         (unsigned long) *device_destination,
-         size);
-  fstatus_t ret = platformCopyHostToDevice(host_source, buffer_ptr, size);
-  *device_destination = buffer_ptr;
+  debug_print("[FLETCHER_AWS] Prepare is equal to cache on AWS f1.\n");
   *alloced = 1;
-  buffer_ptr += size;
-  return ret;
+  return platformCacheHostBuffer(host_source, device_destination, size);
 }
 
 fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
@@ -285,6 +279,6 @@ fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_desti
          size);
   platformCopyHostToDevice(host_source, buffer_ptr, size);
   *device_destination = buffer_ptr;
-  buffer_ptr += size;
+  buffer_ptr += size + (FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT));
   return FLETCHER_STATUS_OK;
 }
