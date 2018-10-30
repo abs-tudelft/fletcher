@@ -33,8 +33,8 @@ typedef uint32_t freg_t;
 /// Convenience union to convert addresses to a high and low part
 typedef union {
   struct {
-    uint32_t hi;
     uint32_t lo;
+    uint32_t hi;
   };
   da_t full;
 } dau_t;
