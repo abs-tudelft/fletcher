@@ -46,35 +46,38 @@
 #define ACTION_CNT              0x44    /* Count Register or # of 512 Byte Blocks for NVME */
 
 /* No units */
-#define TOTAL_UNITS     16 // fix me
+#define TOTAL_UNITS     16
 #define ACTIVE_UNITS    8
 
 #define SNAP_OFFSET     0x200
 
-/* Registers */
-#define STATUS_REG_HI   SNAP_OFFSET + 0
-#define STATUS_REG_LO   SNAP_OFFSET + 4
-#define   STATUS_MASK   0x0000FFFF
-#define   STATUS_BUSY   0x000000FF
-#define   STATUS_DONE   0x0000FF00
+/* Default registers */
+#define REG_STATUS      	SNAP_OFFSET + 0
+#define REG_STATUS_MASK		0x0000FFFF
+#define REG_STATUS_BUSY 	0x000000FF
+#define REG_STATUS_DONE 	0x0000FF00
 
-#define CONTROL_REG_HI  SNAP_OFFSET + 8
-#define CONTROL_REG_LO  SNAP_OFFSET + 12
-#define   CONTROL_START 0x000000FF
-#define   CONTROL_RESET 0x0000FF00
+#define REG_CONTROL			SNAP_OFFSET + 4
+#define REG_CONTROL_START 	0x000000FF
+#define REG_CONTROL_RESET 	0x0000FF00
 
-#define RETURN_HI       SNAP_OFFSET + 16
-#define RETURN_LO       SNAP_OFFSET + 20
+#define REG_RETURN0         SNAP_OFFSET + 8
+#define REG_RETURN1         SNAP_OFFSET + 12
 
-#define CFG_OFF_HI      SNAP_OFFSET + 24
-#define CFG_OFF_LO      SNAP_OFFSET + 28
+#define REG_FIRSTIDX        SNAP_OFFSET + 16
+#define REG_LASTIDX         SNAP_OFFSET + 20
 
-#define CFG_DATA_HI     SNAP_OFFSET + 32
-#define CFG_DATA_LO     SNAP_OFFSET + 36
+/* Application specific registers */
+#define REG_OFF_ADDR_LO     SNAP_OFFSET + 24
+#define REG_OFF_ADDR_HI     SNAP_OFFSET + 28
 
-#define FIRST_IDX_OFF   SNAP_OFFSET + 40
-#define LAST_IDX_OFF    FIRST_IDX_OFF + 4*TOTAL_UNITS
-#define RESULT_OFF      LAST_IDX_OFF + 4*TOTAL_UNITS
+#define REG_UTF8_ADDR_LO    SNAP_OFFSET + 32
+#define REG_UTF8_ADDR_HI    SNAP_OFFSET + 36
+
+#define REG_CUST_FIRST_IDX  SNAP_OFFSET + 40
+#define REG_CUST_LAST_IDX   REG_CUST_FIRST_IDX + 4*TOTAL_UNITS
+
+#define REG_RESULT      	REG_CUST_LAST_IDX + 4*TOTAL_UNITS
 
 /* Data sizes */
 #define MIN_STR_LEN     6
