@@ -276,4 +276,3 @@ initial begin
 end // initial begin
 
 endmodule // test_regexp
-
