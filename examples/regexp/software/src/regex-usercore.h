@@ -30,8 +30,9 @@ class RegExCore : public fletcher::UserCore {
   /**
    * @brief Get the number of matches from the RegEx units.
    */
-  void getMatches(std::vector<uint32_t> &matches);
+  void getMatches(std::vector<uint32_t>* matches);
   void setRegExpArguments(uint32_t first_index, uint32_t last_index);
+
 
  private:
   /// @brief Generate arguments for each of the RegEx units.
