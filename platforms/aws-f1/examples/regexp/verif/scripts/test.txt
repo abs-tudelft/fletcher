@@ -1,1 +1,1 @@
-../../../../../examples/regexp/hardware/test.txt
+../../../../../../examples/regexp/hardware/test.txt
