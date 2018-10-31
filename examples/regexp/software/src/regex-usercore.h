@@ -19,7 +19,7 @@
 #include <fletcher/platform.h>
 #include <fletcher/usercore.h>
 
-#define REUC_RESULT_OFFSET 21
+#define REUC_RESULT_OFFSET 42
 
 /**
  * A class to provide interaction with the regular expression matching UserCore example.
