@@ -21,7 +21,7 @@ Through Fletcher and Arrow, efficient FPGA acceleration is made available to all
 Given an Arrow Schema (description of a tabular datastructure), Fletcher generates the following:
 
 * An easy-to-use hardware interface for the functional part of the accelerator
-  * You provide a range of table indices (rather than byte address)
+  * You provide a range of RecordBatch indices (rather than byte address)
   * You receive streams of the datatype specified in the schema (rather than bus words)
   * No pointer arithmetic, reordering, parallelizing or serializing, buffering, etc.. required!
 * A template for the functional part of accelerator (to be implemented manually or with HLS)
@@ -45,14 +45,21 @@ following features:
 
 ### Platform support:
 * Our core hardware descriptions are vendor independent; __we don't use any vendor IP__.
-* Amazon's EC2 F1 platform is supported.
-* IBM's POWER8/9 CAPI FPGA platform is supported through the use of SNAP.
-* Our bus interconnect is similar to AXI, so it should be easy to integrate in many existing 
-  platforms.
+* [Amazon's EC2 f1](https://github.com/aws/aws-fpga) platform is supported.
+* POWER8/9 CAPI 1.0/2.0 FPGA platform is supported through the use of [OpenPOWER's CAPI SNAP framework](https://github.com/open-power/snap).
+* Our bus interconnect is similar to AXI, so it should be easy to integrate in many existing platforms.
+* Output streams are AXI compatible as well, so it should be easy to integrate e.g. Vivado HLS with Fletcher 
+output streams through the use of `hls::stream<type>` interfaces.
 
 ## Further reading
   * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator converts Arrow schema's to wrappers around ColumnReaders/ColumnWriters. It also provides instantiation templates for your hardware accelerator implementation.
-  * [How to generate a Column Reader](hardware) - A more flexible but low-level hardware design approach, using ColumnReader/ColumnWriters directly.
-  * [How to use the host-side run-time library](runtime).
-  * [Regular Expression matching example on Amazon EC2 F1](platforms/aws-f1/regexp)
-  * [Regular Expression matching example on CAPI SNAP](platforms/snap/regexp)
+  * [How to use the host-side run-time libraries](runtime).
+  
+## Example projects  
+  * [Simple column sum example](examples/sum).
+  * [How to generate a Column Reader](hardware) - A more flexible but low-level hardware design approach, using ColumnReader/ColumnWriters directly.  
+  * [Regular Expression matching example](examples/regexp).
+  
+## External examples
+  * [Posit BLAS operations using Fletcher](https://github.com/lvandam/posit_blas_hdl)
+  * [Posit PairHMM using Fletcher](https://github.com/lvandam/pairhmm_posit_hdl_arrow)
