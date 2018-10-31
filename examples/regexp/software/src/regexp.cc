@@ -509,6 +509,7 @@ int main(int argc, char **argv) {
       // Prepare the column buffers
       t.start();
       context->queueRecordBatch(rb).ewf();
+      bytes_copied += context->getQueueSize();
       context->enable().ewf();
       t.stop();
       t_copy[e] = t.seconds();

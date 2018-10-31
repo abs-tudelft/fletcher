@@ -120,6 +120,9 @@ class Context {
    */
   Status queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache = false);
 
+  /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
+  size_t getQueueSize();
+
   /// @brief Enable the usage of the enqueued buffers by the device
   Status enable();
 
