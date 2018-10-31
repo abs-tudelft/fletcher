@@ -290,7 +290,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Array> &array,
   int nt = threads;
 
   // Prepare some memory to store each thread result
-  auto *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(np * nt));
+  auto *thread_matches = reinterpret_cast<uint32_t *>(calloc(sizeof(uint32_t), static_cast<size_t>(np) * nt));
 
   omp_set_num_threads(threads);
 
@@ -410,16 +410,16 @@ int main(int argc, char **argv) {
   std::cout.flush();
 
   if (argc >= 2) {
-    sscanf(argv[1], "%u", &num_rows);
+    num_rows = static_cast<uint32_t>(std::strtoul(argv[1], nullptr, 10));
   }
   if (argc >= 3) {
-    sscanf(argv[2], "%u", &ne);
+    ne = static_cast<int>(std::strtoul(argv[2], nullptr, 10));
   }
   if (argc >= 4) {
-    sscanf(argv[3], "%u", &emask);
+    emask = static_cast<uint32_t>(std::strtoul(argv[3], nullptr, 10));
   }
   if (argc >= 5) {
-    sscanf(argv[4], "%u", &num_threads);
+    num_threads = static_cast<int>(std::strtoul(argv[4], nullptr, 10));
   }
 
   // Aggregators
@@ -513,20 +513,20 @@ int main(int argc, char **argv) {
     if (emask & 16u) {
       shared_ptr<fletcher::Platform> platform;
       shared_ptr<fletcher::Context> context;
+      shared_ptr<RegExCore> rc;
 
       // Create a platform
       fletcher::Platform::Make(&platform);
       // Create a context
       fletcher::Context::Make(&context, platform);
-      // Create a UserCore
-      RegExCore rc(context);
+      // Create the UserCore
+      rc = std::make_shared<RegExCore>(context);
 
       // Initialize the platform
       platform->init();
 
       // Reset the UserCore
-      platform->writeMMIO(1, rc.ctrl_reset);
-      platform->writeMMIO(1, 0);
+      rc->reset();
 
       // Prepare the column buffers
       start = omp_get_wtime();
@@ -537,39 +537,23 @@ int main(int argc, char **argv) {
 
       // Run the example
       start = omp_get_wtime();
-      rc.setRegExpArguments(first_index, last_index);
+      rc->setRegExpArguments(first_index, last_index);
 
-      platform->writeMMIO(6, 0x00021000);
-      platform->writeMMIO(7, 0);
-      platform->writeMMIO(8, 0);
-      platform->writeMMIO(9, 0);
-
-
-      // Check registers
 #ifdef DEBUG
-      for (int i=0;i<58;i++) {
-        uint32_t val = 0xDEADBEEF;
-        platform->readMMIO(i,&val).ewf();
-      }
+      // Check registers
+      platform->printMMIO(0,58, true);
 #endif
 
-      platform->writeMMIO(1, rc.ctrl_start);
-
-      uint32_t reg_status = 0;
+      // Start the matchers and poll until completion
+      rc->start();
 #ifdef DEBUG
-      do {
-        usleep(1000000);
-        platform->readMMIO(0, &reg_status).ewf();
-      } while ((reg_status & rc.done_status_mask) != rc.done_status);
+      rc->waitForFinish(100000);
 #else
-      do { 
-        usleep(10);
-        platform->readMMIO(0, &reg_status).ewf();
-      } while ((reg_status & rc.done_status_mask) != rc.done_status);
+      rc->waitForFinish(10);
 #endif
 
       // Get the number of matches from the UserCore
-      rc.getMatches(&m_fpga[e]);
+      rc->getMatches(&m_fpga[e]);
 
       stop = omp_get_wtime();
       t_fpga[e] = (stop - start);
@@ -591,11 +575,6 @@ int main(int argc, char **argv) {
   PRINT_INT(num_threads);
   PRINT_INT(emask);
 
-  // Print insertions
-  //for (int p = 0; p < np; p++) {
-  //  printf("%u,", insertions[p]);
-  //}
-
   // Accumulated matches:
   vector<uint32_t> a_vcpu(np, 0);
   vector<uint32_t> a_vomp(np, 0);
@@ -612,11 +591,6 @@ int main(int argc, char **argv) {
       a_fpga[p] += m_fpga[e][p];
     }
   }
-
-  // Print matches. Not necessarily equal to insertions as lots of random dogs and cats can pop up
-  //for (int p = 0; p < np; p++) {
-  //  printf("%u,%u,%u,%u,%u,", a_vcpu[p], a_vomp[p], a_acpu[p], a_aomp[p], a_fpga[p]);
-  //}
 
   // Check if matches are equal
   if ((a_vcpu == a_vomp) && (a_vomp == a_acpu) && (a_acpu == a_aomp)
