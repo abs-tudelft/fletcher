@@ -19,14 +19,12 @@ use IEEE.numeric_std.all;
 
 library work;
 
-entity kmeans is
+entity accumulator is
     generic(
       TAG_WIDTH                                  : natural;
       BUS_ADDR_WIDTH                             : natural;
       INDEX_WIDTH                                : natural;
-      REG_WIDTH                                  : natural;
-      DIMENSION                                  : natural;
-      DATA_WIDTH                                 : natural
+      REG_WIDTH                                  : natural
     );
     port(
       point_out_ready                            : out std_logic;
@@ -65,61 +63,15 @@ entity kmeans is
       reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
     );
-end entity kmeans;
+end entity accumulator;
 
 
-architecture behavior of kmeans is
-
-  component distance is
-    generic(
-      DIMENSION       : natural;
-      DATA_WIDTH      : natural
-    );
-    port(
-      reset           : in std_logic;
-      clk             : in std_logic;
-      -------------------------------------------------------------------------
-      centroid        : in std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
-      point_data      : in std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
-      point_valid     : in std_logic;
-      point_ready     : out std_logic;
-      point_last      : in std_logic;
-      distance_data   : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      distance_valid  : out std_logic;
-      distance_ready  : in std_logic;
-      distance_last   : out std_logic
-    );
-  end component;
+architecture behavior of accumulator is
 
   type haf_state_t IS (RESET, WAITING, SETUP, RUNNING, DONE);
 	signal state, state_next : haf_state_t;
 
-  signal point_forward_valid, point_forward_ready, point_forward_last : std_logic;
-  signal distance_data : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal distance_valid, distance_ready, distance_last : std_logic;
-
 begin
-
-  dist_i: distance
-    generic map (
-      DIMENSION  => DIMENSION,
-      DATA_WIDTH => DATA_WIDTH
-    )
-    port map (
-      reset           => acc_reset,
-      clk             => acc_clk,
-      -------------------------------------------------------------------------
-      centroid        => std_logic_vector(to_unsigned(0, 64)) & std_logic_vector(to_unsigned(0, 64)),
-      point_data      => point_out_dimension_out_data(DATA_WIDTH * DIMENSION - 1 downto 0),
-      point_valid     => point_forward_valid,
-      point_ready     => point_forward_ready,
-      point_last      => point_forward_last,
-      distance_data   => distance_data,
-      distance_valid  => distance_valid,
-      distance_ready  => distance_ready,
-      distance_last   => distance_last
-    );
-
 
   -- Provide base address to ColumnReader
   point_cmd_point_dimension_values_addr <= reg_point_dimension_values_addr;
@@ -179,11 +131,7 @@ begin
         point_out_dimension_out_ready <= '1';
         if point_out_dimension_out_valid = '1' then
           if point_out_dimension_out_last = '1' then
-            -- Only advance on list when all elements have been read
             point_out_ready <= '1';
-
-            
-
             -- Exit on last element
             if point_out_last = '1' then
               state_next <= DONE;

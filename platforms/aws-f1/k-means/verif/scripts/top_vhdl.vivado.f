@@ -62,4 +62,12 @@ $FLETCHER_EXAMPLES_DIR/k-means/hardware/axi_top.vhd
 # User provided hardware accelerated function
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/kmeans.vhd
 
+$FLETCHER_EXAMPLES_DIR/k-means/hardware/distance.vhd
+$FLETCHER_EXAMPLES_DIR/k-means/hardware/axi_funnel.vhd
+
+# IP simulation files
+${CL_ROOT}/design/ip/floating_point_add_double/sim/floating_point_add_double.vhd
+${CL_ROOT}/design/ip/floating_point_lt_double/sim/floating_point_lt_double.vhd
+${CL_ROOT}/design/ip/floating_point_mult_double/sim/floating_point_mult_double.vhd
+${CL_ROOT}/design/ip/floating_point_sub_double/sim/floating_point_sub_double.vhd
 

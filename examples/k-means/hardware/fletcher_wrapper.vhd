@@ -86,18 +86,21 @@ architecture Implementation of fletcher_wrapper is
       TAG_WIDTH                                  : natural;
       BUS_ADDR_WIDTH                             : natural;
       INDEX_WIDTH                                : natural;
-      REG_WIDTH                                  : natural
+      REG_WIDTH                                  : natural;
+      DIMENSION                                  : natural;
+      DATA_WIDTH                                 : natural
     );
     port(
-      point_out_valid                            : in std_logic;
-      point_out_dimension_out_data               : in std_logic_vector(63 downto 0);
+      point_out_ready                            : out std_logic;
+      point_out_dimension_out_count              : in std_logic_vector(3 downto 0);
+      point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
       point_out_dimension_out_dvalid             : in std_logic;
       point_out_dimension_out_last               : in std_logic;
       point_out_dimension_out_ready              : out std_logic;
       point_out_dimension_out_valid              : in std_logic;
       point_out_length                           : in std_logic_vector(INDEX_WIDTH-1 downto 0);
       point_out_last                             : in std_logic;
-      point_out_ready                            : out std_logic;
+      point_out_valid                            : in std_logic;
       point_cmd_valid                            : out std_logic;
       point_cmd_ready                            : in std_logic;
       point_cmd_firstIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -150,7 +153,7 @@ architecture Implementation of fletcher_wrapper is
   signal s_point_out_valid                     : std_logic_vector(1 downto 0);
   signal s_point_out_ready                     : std_logic_vector(1 downto 0);
   signal s_point_out_last                      : std_logic_vector(1 downto 0);
-  signal s_point_out_data                      : std_logic_vector(INDEX_WIDTH+63 downto 0);
+  signal s_point_out_data                      : std_logic_vector(INDEX_WIDTH+515 downto 0);
   signal s_point_out_dvalid                    : std_logic_vector(1 downto 0);
   signal s_point_bus_rreq_valid                : std_logic;
   signal s_point_bus_rreq_addr                 : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -169,7 +172,7 @@ begin
   -- point: list<dimension: double not null> not null
   point_read_inst: ColumnReader
     generic map (
-      CFG                                      => "list(prim(64))",
+      CFG                                      => "listprim(64;epc=8)",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                            => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
@@ -229,7 +232,9 @@ begin
       TAG_WIDTH                                => TAG_WIDTH,
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       INDEX_WIDTH                              => INDEX_WIDTH,
-      REG_WIDTH                                => REG_WIDTH
+      REG_WIDTH                                => REG_WIDTH,
+      DIMENSION                                => 2,
+      DATA_WIDTH                               => 64
     )
     port map (
       acc_clk                                  => acc_clk,
@@ -248,7 +253,8 @@ begin
       point_out_dimension_out_ready            => s_point_out_ready(1),
       point_out_dimension_out_last             => s_point_out_last(1),
       point_out_dimension_out_dvalid           => s_point_out_dvalid(1),
-      point_out_dimension_out_data             => s_point_out_data(INDEX_WIDTH+63 downto INDEX_WIDTH),
+      point_out_dimension_out_data             => s_point_out_data(INDEX_WIDTH+511 downto INDEX_WIDTH),
+      point_out_dimension_out_count            => s_point_out_data(INDEX_WIDTH+515 downto INDEX_WIDTH+512),
       point_cmd_valid                          => s_point_cmd_valid,
       point_cmd_ready                          => s_point_cmd_ready,
       point_cmd_firstIdx                       => s_point_cmd_firstIdx(INDEX_WIDTH-1 downto 0),
