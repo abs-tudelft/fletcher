@@ -9,13 +9,6 @@ env:
   global:
     - ARROW_VERSION=0.11.1
 
-cache:
-  directories:
-    - $HOME/docker
-
-before_install:
-  - mkdir -p $HOME/docker && ls $HOME/docker/*.tar.gz | xargs -r -I {file} sh -c "zcat {file} | docker load" || true
-
 jobs:
   include:
 
@@ -23,9 +16,7 @@ jobs:
       stage: build
       name: fletcher
       script:
-        - docker build -t $IMG:latest --cache-from $IMG:latest --build-arg ARROW_VERSION=$ARROW_VERSION .
-      before_cache:
-        - docker save $IMG:latest | gzip -2 > $HOME/docker/$IMG.tar.gz
+        - docker build -t fletcher --build-arg ARROW_VERSION=$ARROW_VERSION .
 
     - &vhdl
       name: vhdl-93c
