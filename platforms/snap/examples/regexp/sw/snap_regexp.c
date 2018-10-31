@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  printf("Preparing offset and values buffer.\n", fname);
+  printf("Preparing offset and values buffer.\n");
   int offset = 0;
   off_buf[0] = offset;
   int l=0;
@@ -126,41 +126,41 @@ int main(int argc, char *argv[])
   printf("Values buffer=%016lX\n", val.full);
 
   // Reset the core
-  snap_mmio_write32(dn, CONTROL_REG_LO, CONTROL_RESET);
+  snap_mmio_write32(dn, REG_CONTROL, REG_CONTROL_RESET);
 
   // Write offsets buffer address
-  snap_mmio_write32(dn, CFG_OFF_LO, off.half.lo);
-  snap_mmio_write32(dn, CFG_OFF_HI, off.half.hi);
+  snap_mmio_write32(dn, REG_OFF_ADDR_LO, off.half.lo);
+  snap_mmio_write32(dn, REG_OFF_ADDR_HI, off.half.hi);
 
   // Write values buffer address
-  snap_mmio_write32(dn, CFG_DATA_LO, val.half.lo);
-  snap_mmio_write32(dn, CFG_DATA_HI, val.half.hi);
+  snap_mmio_write32(dn, REG_UTF8_ADDR_LO, val.half.lo);
+  snap_mmio_write32(dn, REG_UTF8_ADDR_HI, val.half.hi);
 
   // Give each regexp unit the range to work on.
   for (int i = 0; i < ACTIVE_UNITS; i++) {
     uint32_t first = i * num_rows / ACTIVE_UNITS;
     uint32_t last = first + num_rows / ACTIVE_UNITS;
     // 4 * for the proper byte address:
-    snap_mmio_write32(dn, FIRST_IDX_OFF + 4*i, first);
-    snap_mmio_write32(dn, LAST_IDX_OFF + 4*i, last);
+    snap_mmio_write32(dn, REG_CUST_FIRST_IDX + 4*i, first);
+    snap_mmio_write32(dn, REG_CUST_LAST_IDX + 4*i, last);
   }
 
   // Start the matchers
-  snap_mmio_write32(dn, CONTROL_REG_LO, CONTROL_START);
+  snap_mmio_write32(dn, REG_CONTROL, REG_CONTROL_START);
 
   // Poll for completion
-  uint32_t status = STATUS_BUSY;
+  uint32_t status = REG_STATUS_BUSY;
   do {
-    snap_mmio_read32(dn, STATUS_REG_LO, &status);
-    printf("Status: %08X\n", status & STATUS_MASK);
+    snap_mmio_read32(dn, REG_STATUS, &status);
+    printf("Status: %08X\n", status & REG_STATUS_MASK);
     sleep(1);
   }
-  while((status & STATUS_MASK) != STATUS_DONE);
+  while((status & REG_STATUS_MASK) != REG_STATUS_DONE);
 
   // Read the results
   for (int i = 0; i < 16; i++) {
     uint32_t result = 0xDEADBEEF;
-    snap_mmio_read32(dn, RESULT_OFF + 4* i, &result);
+    snap_mmio_read32(dn, REG_RESULT + 4* i, &result);
     printf("Matches for RegExp %2d: %d\n", i, result);
   }
 

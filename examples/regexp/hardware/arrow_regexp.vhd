@@ -125,58 +125,66 @@ architecture rtl of arrow_regexp is
   -----------------------------------
   -- Fletcher registers
   ----------------------------------- Default registers
-  --   1 status (uint64)        =  2
-  --   1 control (uint64)       =  2
-  --   1 return (uint64)        =  2
+  --   0   control  (uint32_t)  =  1
+  --   1   status   (uint32_t)  =  1
+  --   2   return0  (uint32_t)  =  1
+  --   3   return1  (uint32_t)  =  1
+  --   4   firstidx (uint32_t)  =  1
+  --   5   lastidx  (uint32_t)  =  1
   ----------------------------------- Buffer addresses
-  --   1 index buf address      =  2
-  --   1 data  buf address      =  2
+  --   6 data  buf address lo   =  1
+  --   7 data  buf address hi   =  1
+  --   8 index buf address lo   =  1
+  --   9 index buf address hi   =  1
   ----------------------------------- Custom registers
-  --  16 first & last idx       = 32
-  --  16 regex results          = 16
+  --  10 custom first idx 16x   = 16
+  --  26 custom last idx 16x    = 16
+  --  42 regex results          = 16
   -----------------------------------
   -- Total:                       58 regs
   constant NUM_FLETCHER_REGS    : natural := 58;
 
   -- The LSB index in the slave address
-  constant SLV_ADDR_LSB        : natural := log2floor(SLV_BUS_DATA_WIDTH/4) - 1;
+  constant SLV_ADDR_LSB         : natural := log2floor(SLV_BUS_DATA_WIDTH/4) - 1;
 
   -- The MSB index in the slave address
   constant SLV_ADDR_MSB         : natural := SLV_ADDR_LSB + log2floor(NUM_FLETCHER_REGS);
 
+
   -- Fletcher register offsets
-  constant REG_STATUS_HI        : natural := 0;
-  constant REG_STATUS_LO        : natural := 1;
+  
+  constant REG_CONTROL          : natural := 0;
+  -- The offsets of the bits to signal start and reset to each of the units
+  constant CONTROL_START_OFFSET : natural := 0;
+  constant CONTROL_RESET_OFFSET : natural := CORES;
 
-    -- The offsets of the bits to signal busy and done for each of the units
-    constant STATUS_BUSY_OFFSET   : natural := 0;
-    constant STATUS_DONE_OFFSET   : natural := CORES;
-
-  constant REG_CONTROL_HI       : natural := 2;
-  constant REG_CONTROL_LO       : natural := 3;
-
-    -- The offsets of the bits to signal start and reset to each of the units
-    constant CONTROL_START_OFFSET : natural := 0;
-    constant CONTROL_RESET_OFFSET : natural := CORES;
+  constant REG_STATUS           : natural := 1;
+  -- The offsets of the bits to signal busy and done for each of the units
+  constant STATUS_BUSY_OFFSET   : natural := 0;
+  constant STATUS_DONE_OFFSET   : natural := CORES;
 
   -- Return register
-  constant REG_RETURN_HI        : natural := 4;
-  constant REG_RETURN_LO        : natural := 5;
+  constant REG_RETURN0          : natural := 2;
+  constant REG_RETURN1          : natural := 3;
+  
+  -- Fixed first and last index
+  constant REG_FIRSTIDX         : natural := 4;
+  constant REG_LASTIDX          : natural := 5;
 
+  -- Values buffer address
+  constant REG_UTF8_ADDR_LO     : natural := 6;
+  constant REG_UTF8_ADDR_HI     : natural := 7;
+  
   -- Offset buffer address
-  constant REG_OFF_ADDR_HI      : natural := 6;
-  constant REG_OFF_ADDR_LO      : natural := 7;
-
-  -- Data buffer address
-  constant REG_UTF8_ADDR_HI     : natural := 8;
-  constant REG_UTF8_ADDR_LO     : natural := 9;
+  constant REG_OFF_ADDR_LO      : natural := 8;
+  constant REG_OFF_ADDR_HI      : natural := 9;
 
   -- Register offsets to indices for each RegExp unit to work on
-  constant REG_FIRST_IDX  		  : natural := 10;
-  constant REG_LAST_IDX   		  : natural := 26;
+  constant REG_CUST_FIRST_IDX   : natural := 10;
+  constant REG_CUST_LAST_IDX    : natural := 26;
 
   -- Register offset for each RegExp unit to put its result
-  constant REG_RESULT       	  : natural := 42;
+  constant REG_RESULT       	: natural := 42;
 
   -- Memory mapped register file
   type mm_regs_t is array (0 to NUM_FLETCHER_REGS-1) of std_logic_vector(SLV_BUS_DATA_WIDTH-1 downto 0);
@@ -205,10 +213,10 @@ architecture rtl of arrow_regexp is
 
   signal reg_array_firstidx     : reg_array_t;
   signal reg_array_lastidx      : reg_array_t;
-  signal reg_array_off_hi       : reg_array_t;
   signal reg_array_off_lo       : reg_array_t;
-  signal reg_array_utf8_hi      : reg_array_t;
+  signal reg_array_off_hi       : reg_array_t;
   signal reg_array_utf8_lo      : reg_array_t;
+  signal reg_array_utf8_hi      : reg_array_t;
 
   signal bit_array_control_reset: std_logic_vector(CORES-1 downto 0);
   signal bit_array_control_start: std_logic_vector(CORES-1 downto 0);
@@ -281,12 +289,7 @@ begin
   end process;
 
   -- Writes
-
-  -- TODO: For registers that are split up over two addresses, this is not
-  -- very pretty. There should probably be some synchronization mechanism
-  -- to only apply the write after both HI and LO addresses have been
-  -- written.
-  -- Also we don't care about byte enables at the moment.
+  -- We don't care about byte enables at the moment.
   write_to_regs: process(clk) is
     variable address            : natural range 0 to NUM_FLETCHER_REGS;
   begin
@@ -299,39 +302,35 @@ begin
 
         case address is
           -- Read only addresses do nothing
-          when REG_STATUS_HI  =>
-          when REG_STATUS_LO  =>
-          when REG_RETURN_HI  =>
-          when REG_RETURN_LO  =>
+          when REG_STATUS  =>
+          when REG_RETURN0 =>
+          when REG_RETURN1 =>
           when REG_RESULT to REG_RESULT + NUM_REGEX - 1 =>
           -- All others are writeable:
-          when others         =>
+          when others =>
             mm_regs(address)  <= s_axi_wdata;
         end case;
       else
         -- Control register is also resettable by individual units
         for I in 0 to CORES-1 loop
           if bit_array_reset_start(I) = '1' then
-            mm_regs(REG_CONTROL_LO)(CONTROL_START_OFFSET + I) <= '0';
+            mm_regs(REG_CONTROL)(CONTROL_START_OFFSET + I) <= '0';
           end if;
         end loop;
       end if;
 
       -- Read only register values:
 
-      -- Status registers
-      mm_regs(REG_STATUS_HI) <= (others => '0');
-
       if CORES /= 16 then
-        mm_regs(REG_STATUS_LO)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
+        mm_regs(REG_STATUS)(SLV_BUS_DATA_WIDTH-1 downto STATUS_DONE_OFFSET + CORES) <= (others => '0');
       end if;
 
-      mm_regs(REG_STATUS_LO)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
-      mm_regs(REG_STATUS_LO)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
+      mm_regs(REG_STATUS)(STATUS_BUSY_OFFSET + CORES - 1 downto STATUS_BUSY_OFFSET) <= bit_array_busy;
+      mm_regs(REG_STATUS)(STATUS_DONE_OFFSET + CORES - 1 downto STATUS_DONE_OFFSET) <= bit_array_done;
 
       -- Return registers
-      mm_regs(REG_RETURN_HI) <= (others => '0');
-      mm_regs(REG_RETURN_LO) <= slv(result_add(0)(0)(0));
+      mm_regs(REG_RETURN0) <= slv(result_add(0)(0)(0));
+      mm_regs(REG_RETURN1) <= (others => '0');
 
       -- Result registers
       for R in 0 to NUM_REGEX-1 loop
@@ -339,8 +338,7 @@ begin
       end loop;
 
       if reset_n = '0' then
-        mm_regs(REG_CONTROL_LO)    <= (others => '0');
-        mm_regs(REG_CONTROL_HI)    <= (others => '0');
+        mm_regs(REG_CONTROL) <= (others => '0');
       end if;
     end if;
   end process;
@@ -366,19 +364,19 @@ begin
   begin
     if rising_edge(clk) then
       -- Control bits
-      bit_array_control_start <= mm_regs(REG_CONTROL_LO)(CONTROL_START_OFFSET + CORES -1 downto CONTROL_START_OFFSET);
-      bit_array_control_reset <= mm_regs(REG_CONTROL_LO)(CONTROL_RESET_OFFSET + CORES -1 downto CONTROL_RESET_OFFSET);
+      bit_array_control_start <= mm_regs(REG_CONTROL)(CONTROL_START_OFFSET + CORES -1 downto CONTROL_START_OFFSET);
+      bit_array_control_reset <= mm_regs(REG_CONTROL)(CONTROL_RESET_OFFSET + CORES -1 downto CONTROL_RESET_OFFSET);
 
       -- Registers
       reg_gen: for I in 0 to CORES-1 loop
         -- Local
-        reg_array_firstidx(I)       <= mm_regs(REG_FIRST_IDX + I);
-        reg_array_lastidx(I)        <= mm_regs(REG_LAST_IDX + I);
+        reg_array_firstidx(I) <= mm_regs(REG_CUST_FIRST_IDX + I);
+        reg_array_lastidx(I) <= mm_regs(REG_CUST_LAST_IDX + I);
         -- Global
-        reg_array_off_hi (I)        <= mm_regs(REG_OFF_ADDR_HI);
-        reg_array_off_lo (I)        <= mm_regs(REG_OFF_ADDR_LO);
-        reg_array_utf8_hi(I)        <= mm_regs(REG_UTF8_ADDR_HI);
-        reg_array_utf8_lo(I)        <= mm_regs(REG_UTF8_ADDR_LO);
+        reg_array_off_lo (I) <= mm_regs(REG_OFF_ADDR_LO);
+        reg_array_off_hi (I) <= mm_regs(REG_OFF_ADDR_HI);
+        reg_array_utf8_lo(I) <= mm_regs(REG_UTF8_ADDR_LO);
+        reg_array_utf8_hi(I) <= mm_regs(REG_UTF8_ADDR_HI);
       end loop;
     end if;
   end process;

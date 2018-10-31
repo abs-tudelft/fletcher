@@ -26,14 +26,6 @@
  *   C++ using OpenMP run time, C++ using OpenMP and Arrow run time,
  *   FPGA Copy time, FPGA run time
  *
- * TODO:
- * - Somehow, only on the Amazon instance on CentOS after using dev toolkit 6
- *   the program will end with a segmentation fault. GDB/Valgrind reveal that
- *   it has something to do with the Arrow schema, when the shared_ptr tries
- *   to clean up the last use count. However, at this time I have no idea how
- *   to fix it. I cannot reproduce the error on any other configuration. This
- *   code may be wrong or it may be something in Arrow internally. -johanpel
- *
  */
 #include <cstdint>
 #include <memory>
@@ -45,6 +37,7 @@
 #include <fstream>
 #include <random>
 #include <omp.h>
+#include <unistd.h>
 
 // RE2 regular expressions library
 #include <re2/re2.h>
@@ -54,13 +47,10 @@
 
 // Fletcher
 #include <fletcher/fletcher.h>
+#include <fletcher/common/timer.h>
 
 // RegEx FPGA UserCore
-#include "regex-usercore.h"
-
-#ifndef PLATFORM
-#define PLATFORM 0
-#endif
+#include "./regex-usercore.h"
 
 #define PRINT_TIME(X) std::cout << std::setprecision(10) << (X) << ", " << std::flush
 #define PRINT_INT(X) std::cout << std::dec << (X) << ", " << std::flush
@@ -69,7 +59,7 @@ using std::vector;
 using std::string;
 using std::endl;
 using std::shared_ptr;
-
+using fletcher::common::Timer;
 /**
  * Generate a random string possibly containing some other string.
  *
@@ -301,7 +291,7 @@ void match_regex_arrow_omp(const shared_ptr<arrow::Array> &array,
   int nt = threads;
 
   // Prepare some memory to store each thread result
-  auto *thread_matches = (uint32_t *) calloc(sizeof(uint32_t), static_cast<size_t>(np * nt));
+  auto *thread_matches = reinterpret_cast<uint32_t *>(calloc(sizeof(uint32_t), static_cast<size_t>(np) * nt));
 
   omp_set_num_threads(threads);
 
@@ -363,8 +353,7 @@ uint32_t calc_sum(const vector<uint32_t> &values) {
  * Main function for the regular expression matching example
  */
 int main(int argc, char **argv) {
-  // For wall clock timers
-  double start, stop;
+  Timer t;
 
   // Number of experiments
   int ne = 1;
@@ -373,41 +362,19 @@ int main(int argc, char **argv) {
 
   // Vector of vector of strings that get randomly inserted
   vector<vector<string>> insert_strings = {
-      {"birD", "BirD", "biRd", "BIRd"},
-      {"BuNNy", "bunNY", "Bunny", "BUnnY"},
-      {"CaT", "CAT", "caT", "cAT"},
-      {"doG", "DoG", "doG", "dOG"},
-      {"FerReT", "fErret", "feRret", "FERrEt"},
-      {"fIsH", "fIsH", "fisH", "fish"},
-      {"geRbil", "GERbIl", "geRBiL", "GerBIL"},
-      {"hAMStER", "haMsTer", "hamstER", "hAMstER"},
-      {"hOrsE", "HoRSE", "HORSe", "horSe"},
-      {"KITTeN", "KiTTEN", "KitteN", "KitTeN"},
-      {"LiZArd", "LIzARd", "lIzArd", "LIzArD"},
-      {"MOusE", "MOUsE", "mOusE", "MouSE"},
-      {"pUpPY", "pUPPy", "PUppY", "pupPY"},
-      {"RaBBIt", "RABBIt", "RaBbit", "RABBIt"},
-      {"Rat", "rAT", "rAT", "rat"},
-      {"tuRtLE", "TURTLE", "tuRtle", "TURTle"}
-  };
+      {"birD", "BirD", "biRd", "BIRd"}, {"BuNNy", "bunNY", "Bunny", "BUnnY"}, {"CaT", "CAT", "caT", "cAT"},
+      {"doG", "DoG", "doG", "dOG"}, {"FerReT", "fErret", "feRret", "FERrEt"}, {"fIsH", "fIsH", "fisH", "fish"},
+      {"geRbil", "GERbIl", "geRBiL", "GerBIL"}, {"hAMStER", "haMsTer", "hamstER", "hAMstER"},
+      {"hOrsE", "HoRSE", "HORSe", "horSe"}, {"KITTeN", "KiTTEN", "KitteN", "KitTeN"},
+      {"LiZArd", "LIzARd", "lIzArd", "LIzArD"}, {"MOusE", "MOUsE", "mOusE", "MouSE"},
+      {"pUpPY", "pUPPy", "PUppY", "pupPY"}, {"RaBBIt", "RABBIt", "RaBbit", "RABBIt"}, {"Rat", "rAT", "rAT", "rat"},
+      {"tuRtLE", "TURTLE", "tuRtle", "TURTle"}};
 
   // Regular expressions to match
-  vector<string> regexes = {".*(?i)bird.*",
-                            ".*(?i)bunny.*",
-                            ".*(?i)cat.*",
-                            ".*(?i)dog.*",
-                            ".*(?i)ferret.*",
-                            ".*(?i)fish.*",
-                            ".*(?i)gerbil.*",
-                            ".*(?i)hamster.*",
-                            ".*(?i)horse.*",
-                            ".*(?i)kitten.*",
-                            ".*(?i)lizard.*",
-                            ".*(?i)mouse.*",
-                            ".*(?i)puppy.*",
-                            ".*(?i)rabbit.*",
-                            ".*(?i)rat.*",
-                            ".*(?i)turtle.*"};
+  vector<string> regexes =
+      {".*(?i)bird.*", ".*(?i)bunny.*", ".*(?i)cat.*", ".*(?i)dog.*", ".*(?i)ferret.*", ".*(?i)fish.*",
+       ".*(?i)gerbil.*", ".*(?i)hamster.*", ".*(?i)horse.*", ".*(?i)kitten.*", ".*(?i)lizard.*", ".*(?i)mouse.*",
+       ".*(?i)puppy.*", ".*(?i)rabbit.*", ".*(?i)rat.*", ".*(?i)turtle.*"};
 
   // Characters to use
   string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890          ";
@@ -421,16 +388,16 @@ int main(int argc, char **argv) {
   std::cout.flush();
 
   if (argc >= 2) {
-    sscanf(argv[1], "%u", &num_rows);
+    num_rows = static_cast<uint32_t>(std::strtoul(argv[1], nullptr, 10));
   }
   if (argc >= 3) {
-    sscanf(argv[2], "%u", &ne);
+    ne = static_cast<int>(std::strtoul(argv[2], nullptr, 10));
   }
   if (argc >= 4) {
-    sscanf(argv[3], "%u", &emask);
+    emask = static_cast<uint32_t>(std::strtoul(argv[3], nullptr, 10));
   }
   if (argc >= 5) {
-    sscanf(argv[4], "%u", &num_threads);
+    num_threads = static_cast<int>(std::strtoul(argv[4], nullptr, 10));
   }
 
   // Aggregators
@@ -460,7 +427,7 @@ int main(int argc, char **argv) {
 
   PRINT_INT(num_rows);
 
-  start = omp_get_wtime();
+  t.start();
   // Generate some strings
   vector<string> strings(num_rows);
 
@@ -472,16 +439,16 @@ int main(int argc, char **argv) {
                    period,
                    true);
 
-  stop = omp_get_wtime();
-  t_create = (stop - start);
+  t.stop();
+  t_create = t.seconds();
 
   PRINT_TIME(t_create);
 
   // Make a table with random strings containing some other string effectively serializing the data
-  start = omp_get_wtime();
+  t.start();
   shared_ptr<arrow::RecordBatch> rb = createRecordBatch(strings);
-  stop = omp_get_wtime();
-  t_ser = (stop - start);
+  t.stop();
+  t_ser = t.seconds();
 
   PRINT_TIME(t_ser);
 
@@ -490,71 +457,85 @@ int main(int argc, char **argv) {
 
     // Match on CPU
     if (emask & 1u) {
-      start = omp_get_wtime();
+      t.start();
       add_matches(strings, regexes, m_vcpu[e]);
-      stop = omp_get_wtime();
-      t_vcpu[e] = (stop - start);
+      t.stop();
+      t_vcpu[e] = t.seconds();
     }
 
     // Match on CPU using OpenMP
     if (emask & 2u) {
-      start = omp_get_wtime();
+      t.start();
       add_matches_omp(strings, regexes, m_vomp[e], omp_get_max_threads());
-      stop = omp_get_wtime();
-      t_vomp[e] = (stop - start);
+      t.stop();
+      t_vomp[e] = t.seconds();
     }
 
     // Match on CPU using Arrow
     if (emask & 4u) {
-      start = omp_get_wtime();
+      t.start();
       add_matches_arrow(rb->column(0), regexes, m_acpu[e]);
-      stop = omp_get_wtime();
-      t_acpu[e] = (stop - start);
+      t.stop();
+      t_acpu[e] = t.seconds();
     }
 
     // Match on CPU using Arrow and OpenMP
     if (emask & 8u) {
-      start = omp_get_wtime();
+      t.start();
       match_regex_arrow_omp(rb->column(0), regexes, m_aomp[e], omp_get_max_threads());
-      stop = omp_get_wtime();
-      t_aomp[e] = (stop - start);
+      t.stop();
+      t_aomp[e] = t.seconds();
     }
 
     // Match on FPGA
     if (emask & 16u) {
-      // Create a platform
       shared_ptr<fletcher::Platform> platform;
-      fletcher::Platform::Make(&platform);
-
-      // Create a context
       shared_ptr<fletcher::Context> context;
+      shared_ptr<RegExCore> rc;
+
+      // Create a platform
+      fletcher::Platform::Make(&platform);
+      // Create a context
       fletcher::Context::Make(&context, platform);
+      // Create the UserCore
+      rc = std::make_shared<RegExCore>(context);
+
+      // Initialize the platform
+      platform->init();
+
+      // Reset the UserCore
+      rc->reset();
 
       // Prepare the column buffers
-      start = omp_get_wtime();
+      t.start();
       context->queueRecordBatch(rb).ewf();
+      bytes_copied += context->getQueueSize();
       context->enable().ewf();
-      stop = omp_get_wtime();
-      t_copy[e] = (stop - start);
-
-      // Create a UserCore
-      RegExCore rc(context);
+      t.stop();
+      t_copy[e] = t.seconds();
 
       // Run the example
-      start = omp_get_wtime();
-      rc.setRegExpArguments(first_index, last_index);
-      rc.start();
+      t.start();
+      rc->setRegExpArguments(first_index, last_index);
+
 #ifdef DEBUG
-      rc.waitForFinish(1000000);
+      // Check registers
+      platform->printMMIO(0, 58, true);
+#endif
+
+      // Start the matchers and poll until completion
+      rc->start();
+#ifdef DEBUG
+      rc->waitForFinish(100000);
 #else
-      rc.waitForFinish(10);
+      rc->waitForFinish(10);
 #endif
 
       // Get the number of matches from the UserCore
-      rc.getMatches(&m_fpga[e]);
+      rc->getMatches(&m_fpga[e]);
 
-      stop = omp_get_wtime();
-      t_fpga[e] = (stop - start);
+      t.stop();
+      t_fpga[e] = t.seconds();
     }
   }
 
@@ -573,11 +554,6 @@ int main(int argc, char **argv) {
   PRINT_INT(num_threads);
   PRINT_INT(emask);
 
-  // Print insertions
-  //for (int p = 0; p < np; p++) {
-  //  printf("%u,", insertions[p]);
-  //}
-
   // Accumulated matches:
   vector<uint32_t> a_vcpu(np, 0);
   vector<uint32_t> a_vomp(np, 0);
@@ -594,11 +570,6 @@ int main(int argc, char **argv) {
       a_fpga[p] += m_fpga[e][p];
     }
   }
-
-  // Print matches. Not necessarily equal to insertions as lots of random dogs and cats can pop up
-  //for (int p = 0; p < np; p++) {
-  //  printf("%u,%u,%u,%u,%u,", a_vcpu[p], a_vomp[p], a_acpu[p], a_aomp[p], a_fpga[p]);
-  //}
 
   // Check if matches are equal
   if ((a_vcpu == a_vomp) && (a_vomp == a_acpu) && (a_acpu == a_aomp)

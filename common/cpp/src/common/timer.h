@@ -21,6 +21,7 @@
 #include <iostream>
 
 namespace fletcher {
+namespace common {
 
 /// @brief A timer using the C++11 high resolution monotonic clock.
 struct Timer {
@@ -61,4 +62,5 @@ struct Timer {
   }
 };
 
+}  // namespace common
 }  // namespace fletcher

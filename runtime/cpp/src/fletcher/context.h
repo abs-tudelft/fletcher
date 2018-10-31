@@ -74,7 +74,7 @@ class Context {
    * @param platform    The platform to create it on.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform>& platform);
+  static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform> &platform);
 
   /**
    * @brief Enqueue an arrow::Array for usage preparation on the device.
@@ -119,6 +119,9 @@ class Context {
    * @return              Status::OK() if successful, Status::ERROR() otherwise.
    */
   Status queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache = false);
+
+  /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
+  size_t getQueueSize();
 
   /// @brief Enable the usage of the enqueued buffers by the device
   Status enable();

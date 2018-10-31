@@ -20,6 +20,7 @@
 #include <arrow/record_batch.h>
 
 #include "./context.h"
+#include "context.h"
 
 namespace fletcher {
 
@@ -170,6 +171,16 @@ uint64_t Context::num_buffers() {
     cnt += arr->buffers.size();
   }
   return cnt;
+}
+
+size_t Context::getQueueSize() {
+  size_t size = 0;
+  for (const auto &arr : device_arrays) {
+    for (const auto &buf : arr->buffers) {
+      size += buf.size;
+    }
+  }
+  return size;
 }
 
 }  // namespace fletcher

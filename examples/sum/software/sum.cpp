@@ -93,8 +93,10 @@ int64_t sumCPU(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  * Calculate the sum of all numbers in the arrow column using an FPGA.
  */
 int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
+  fletcher::common::Timer t;
   std::shared_ptr<fletcher::Platform> platform;
   std::shared_ptr<fletcher::Context> context;
+  dau_t ret;
 
   // Create a platform
   fletcher::Platform::Make(&platform).ewf();
@@ -111,34 +113,25 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
   // Reset it
   uc.reset();
 
-  // Prepare the recordbatch
-  context->queueRecordBatch(recordbatch);
-
-  // Performance time open
-  fletcher::Timer t;
+  // Prepare the RecordBatch
   t.start();
+  context->queueRecordBatch(recordbatch);
   context->enable();
-  // Performance timer close
   t.stop();
-  std::cout << "FPGA copy time (s): " << t.seconds() << std::endl;
+  std::cout << "FPGA dataset prepare time (s): " << t.seconds() << std::endl;
 
 
   // Determine size of table
   auto last_index = (int32_t) recordbatch->num_rows();
   uc.setRange(0, last_index);
 
-  t.start();
-
   // Start the FPGA user function
+  t.start();
   uc.start();
-  uc.waitForFinish(1000); // Poll every 1 ms
-
-  // Get the sum from the UserCore
-  dau_t ret;
-  uc.getReturn(&ret.hi, &ret.lo);
-
-  // Performance timer close
+  uc.waitForFinish(1000);  // Poll every 1 ms
+  uc.getReturn(&ret.lo, &ret.hi);  // Get the sum from the UserCore
   t.stop();
+
   std::cout << "Sum FPGA time (s): " << t.seconds() << " seconds" << std::endl;
   std::cout << "Result: " << ret.full << std::endl;
 
@@ -151,7 +144,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  * Finally compares the results.
  */
 int main(int argc, char **argv) {
-  fletcher::Timer t;
+  fletcher::common::Timer t;
   uint32_t num_rows = 1024;
 
   if (argc >= 2) {

@@ -44,11 +44,13 @@ typedef struct {
 
 typedef struct {
   AwsConfig config;
-  int xdma_fd[FLETCHER_AWS_NUM_QUEUES];
-  pci_bar_handle_t pci_bar_handle;
-  char device_filename[256];
   uint64_t alignment;
+  int xdma_wr_fd[FLETCHER_AWS_NUM_QUEUES];
+  int xdma_rd_fd[FLETCHER_AWS_NUM_QUEUES];
+  pci_bar_handle_t pci_bar_handle;
   int error;
+  char wr_device_filename[256];
+  char rd_device_filename[256];
 } PlatformState;
 
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.

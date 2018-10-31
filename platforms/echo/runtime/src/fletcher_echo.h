@@ -63,7 +63,7 @@ fstatus_t platformDeviceFree(da_t device_address);
  *                              usage (0 = not alloced, 1 = alloced).
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced);
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced);
 
 /**
  * @brief Explicitly cache \p size bytes from \p host_source on device on-board memory.
