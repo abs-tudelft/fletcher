@@ -15,7 +15,8 @@
 #include <stdio.h>
 #include <memory.h>
 
-#include "fletcher.h"
+#include "../../../../common/cpp/src/fletcher.h"
+
 #include "fletcher_echo.h"
 
 da_t buffer_ptr = 0x0;

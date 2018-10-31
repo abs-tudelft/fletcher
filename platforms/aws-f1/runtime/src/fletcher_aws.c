@@ -12,22 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <fpga_pci.h>
 #include <fpga_mgmt.h>
 
-#include "fletcher.h"
+#include "../../../../common/cpp/src/fletcher.h"
+
 #include "fletcher_aws.h"
 
 da_t buffer_ptr = 0x0;
 
 // Dirty globals
 AwsConfig aws_default_config = {0, 0, 1};
-PlatformState aws_state = {{0, 0, 0}, {0}, 0, {0}, 4096, 0};
+PlatformState aws_state = {{0, 0, 0}, 4096, {0}, {0},  0, 0, {0}, {0}};
+
+static fstatus_t check_ddr(const uint8_t *source, da_t offset, size_t size) {
+  uint8_t *check_buffer = (uint8_t *) malloc(size);
+  int rc = pread(aws_state.xdma_rd_fd[0], check_buffer, size, offset);
+  if (rc < 0) {
+    int errsv = errno;
+    fprintf(stderr, "[FLETCHER_AWS] pread() error: %s\n", strerror(errsv));
+  }
+  int ret = memcmp(source, check_buffer, size);
+  free(check_buffer);
+  return (ret == 0) ? FLETCHER_STATUS_OK : FLETCHER_STATUS_ERROR;
+}
 
 static fstatus_t check_slot_config(int slot_id) {
   // Amazon PCI Vendor ID
@@ -110,15 +125,17 @@ fstatus_t platformInit(void *arg) {
   // Open files for all queues
   for (int q = 0; q < FLETCHER_AWS_NUM_QUEUES; q++) {
     // Get the XDMA device filename
-    snprintf(aws_state.device_filename, 256, "/dev/xdma%i_h2c_%i", aws_state.config.slot_id, q);
+    snprintf(aws_state.wr_device_filename, 256, "/dev/xdma%i_h2c_%i", aws_state.config.slot_id, q);
+    snprintf(aws_state.rd_device_filename, 256, "/dev/xdma%i_c2h_%i", aws_state.config.slot_id, q);
 
     // Attempt to open the XDMA file
-    debug_print("[FLETCHER_AWS] Attempting to open device file %s\n", aws_state.device_filename);
-    aws_state.xdma_fd[q] = open(aws_state.device_filename, O_WRONLY);
+    debug_print("[FLETCHER_AWS] Attempting to open device files for queue %d; %s and %s.\n", q, aws_state.wr_device_filename, aws_state.rd_device_filename);
+    aws_state.xdma_wr_fd[q] = open(aws_state.wr_device_filename, O_WRONLY);
+    aws_state.xdma_rd_fd[q] = open(aws_state.rd_device_filename, O_RDONLY);
 
-    if (aws_state.xdma_fd[q] < 0) {
-      fprintf(stderr, "[FLETCHER_AWS] Did not get a valid file descriptor. FD: %ud.\n"
-                      "[FLETCHER_AWS] Is the XDMA driver installed?\n", aws_state.xdma_fd[q]);
+    if ((aws_state.xdma_rd_fd[q] < 0) || (aws_state.xdma_wr_fd[q] < 0)) {
+      fprintf(stderr, "[FLETCHER_AWS] Did not get a valid file descriptor.\n"
+                      "[FLETCHER_AWS] Is the XDMA driver installed?\n");
       aws_state.error = 1;
       return FLETCHER_STATUS_ERROR;
     }
@@ -155,7 +172,7 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[FLETCHER_AWS] MMIO Write %d : %08X\n", (uint32_t)offset, (uint32_t)value);
+  debug_print("[FLETCHER_AWS] MMIO Write %d : %08X\n", (uint32_t) offset, (uint32_t) value);
   return FLETCHER_STATUS_OK;
 }
 
@@ -168,7 +185,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
     aws_state.error = 1;
     return FLETCHER_STATUS_ERROR;
   }
-  debug_print("[FLETCHER_AWS] MMIO Read %d : %08X\n", (uint32_t)offset, (uint32_t)(*value));
+  debug_print("[FLETCHER_AWS] MMIO Read %d : %08X\n", (uint32_t) offset, (uint32_t)(*value));
   return FLETCHER_STATUS_OK;
 }
 
@@ -176,9 +193,9 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
   size_t total = 0;
 
   debug_print("[FLETCHER_AWS] Copying host to device %016lX -> %016lX (%li bytes).\n",
-         (uint64_t) host_source,
-         (uint64_t) device_destination,
-         size);
+              (uint64_t) host_source,
+              (uint64_t) device_destination,
+              size);
 
   size_t written[FLETCHER_AWS_NUM_QUEUES] = {0};
 
@@ -188,7 +205,7 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
   if (size < FLETCHER_AWS_QUEUE_THRESHOLD) {
     queues = 1;
   }
-  size_t qbytes = (size_t) (size / queues);
+  size_t qbytes = (size_t)(size / queues);
 
   for (int q = 0; q < queues; q++) {
     ssize_t rc = 0;
@@ -204,14 +221,15 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
 
     while (written[q] < qtotal) {
       // Write some bytes
-      rc = pwrite(aws_state.xdma_fd[q],
+      rc = pwrite(aws_state.xdma_wr_fd[q],
                   (void *) ((uint64_t) qsource + written[q]),
                   qtotal - written[q],
                   qdest + written[q]);
 
       // If rc is negative there is something else going wrong. Abort the mission
       if (rc < 0) {
-        fprintf(stderr, "[FLETCHER_AWS] Copy host to device failed.\n");
+        int errsv = errno;
+        fprintf(stderr, "[FLETCHER_AWS] Copy host to device failed. Queue: %d. Error: %s\n", q, strerror(errsv));
         aws_state.error = 1;
         return FLETCHER_STATUS_ERROR;
       }
@@ -222,16 +240,25 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
     total += written[q];
 
     // Synchronize the files
-    fsync(aws_state.xdma_fd[q]);
+    fsync(aws_state.xdma_wr_fd[q]);
   }
+
+#ifdef DEBUG
+  fstatus_t ddr_check = check_ddr(host_source, device_destination, size);
+  if (ddr_check != FLETCHER_STATUS_OK) {
+    fprintf(stderr, "[FLETCHER_AWS] Copied buffer in DDR differs from host buffer.\n");
+  }
+  return ddr_check;
+#endif
+
   return FLETCHER_STATUS_OK;
 }
 
 fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size) {
   debug_print("[FLETCHER_AWS] Copying from device to host. [dev] 0x%016lX --> [host] 0x%016lX (%lu bytes)\n",
-         device_source,
-         (uint64_t) host_destination,
-         size);
+              device_source,
+              (uint64_t) host_destination,
+              size);
   return FLETCHER_STATUS_OK;
 }
 
@@ -254,7 +281,9 @@ fstatus_t platformTerminate(void *arg) {
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
   *device_address = buffer_ptr;
-  debug_print("[FLETCHER_AWS] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n", (uint64_t) device_address, size);
+  debug_print("[FLETCHER_AWS] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n",
+              (uint64_t) device_address,
+              size);
   buffer_ptr += size + FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT);
   return FLETCHER_STATUS_OK;
 }
@@ -265,25 +294,19 @@ fstatus_t platformDeviceFree(da_t device_address) {
 }
 
 fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced) {
-  debug_print("[FLETCHER_AWS] Preparing buffer for device. [host] 0x%016lX --> 0x%016lX (%10lu bytes).\n",
-         (unsigned long) host_source,
-         (unsigned long) *device_destination,
-         size);
-  fstatus_t ret = platformCopyHostToDevice(host_source, buffer_ptr, size);
-  *device_destination = buffer_ptr;
+  debug_print("[FLETCHER_AWS] Prepare is equal to cache on AWS f1.\n");
   *alloced = 1;
-  buffer_ptr += size;
-  return ret;
+  return platformCacheHostBuffer(host_source, device_destination, size);
 }
 
 fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
   *device_destination = buffer_ptr;
   debug_print("[FLETCHER_AWS] Caching buffer on device.    [host] 0x%016lX --> 0x%016lX (%10lu bytes).\n",
-         (unsigned long) host_source,
-         (unsigned long) *device_destination,
-         size);
-  platformCopyHostToDevice(host_source, buffer_ptr, size);
+              (unsigned long) host_source,
+              (unsigned long) *device_destination,
+              size);
+  fstatus_t ret = platformCopyHostToDevice(host_source, buffer_ptr, size);
   *device_destination = buffer_ptr;
-  buffer_ptr += size;
-  return FLETCHER_STATUS_OK;
+  buffer_ptr += size + (FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT));
+  return ret;
 }
