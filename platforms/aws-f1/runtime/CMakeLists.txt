@@ -16,11 +16,9 @@ set(HEADERS
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
-include_directories(../../../common/cpp/src)
-
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/fletcher_echo.h)
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
 
 # Attempt to find AWS FPGA lib
 find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
@@ -40,4 +38,3 @@ install(TARGETS ${PROJECT_NAME}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
 
 message("[FLETCHER] ${PROJECT_NAME} was installed. Please refresh your dynamic library cache (e.g. sudo ldconfig).")
-
