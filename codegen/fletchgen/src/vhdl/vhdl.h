@@ -392,7 +392,7 @@ class Connection : public Comment, public Groupable {
   /**
    * Comparison function for sorting of Connections
    */
-  static struct sortFun_ { bool operator()(std::shared_ptr<Connection> &a, std::shared_ptr<Connection> &b); } sortFun;
+  static struct sortFun_ { bool operator()(const std::shared_ptr<Connection> &a, const std::shared_ptr<Connection> &b); } sortFun;
 
  private:
   Signal *source_;
