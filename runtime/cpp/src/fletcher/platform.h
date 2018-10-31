@@ -52,6 +52,9 @@ class Platform {
   /// @brief Return the name of the platform
   std::string getName();
 
+  /// @brief Print the contents of the MMIO registers within some range
+  Status printMMIO(uint64_t start, uint64_t stop, bool quiet=false);
+
   /// @brief Initialize the platform
   inline Status init() { return Status(platformInit(init_data)); }
 

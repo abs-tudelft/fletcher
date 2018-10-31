@@ -17,9 +17,11 @@
 #include <memory>
 
 #include <arrow/util/logging.h>
+#include <iomanip>
 
 #include "./platform.h"
 #include "./status.h"
+#include "platform.h"
 
 namespace fletcher {
 
@@ -94,5 +96,22 @@ Status Platform::link(void *handle, bool quiet) {
   }
 }
 
+Status Platform::printMMIO(uint64_t start, uint64_t stop, bool quiet) {
+  Status stat;
+  for (uint64_t off = start; off < stop; off++) {
+    uint32_t val;
+    stat = readMMIO(off, &val);
+    if (!stat.ok()) {
+      return stat;
+    } else {
+      if (!quiet) {
+        std::cout << "R" << std::uppercase << std::hex << std::setw(3) << std::setfill('0') << off
+                  << ":" << std::uppercase << std::hex << std::setw(8) << std::setfill('0') << val
+                  << std::endl;
+      }
+    }
+  }
+  return Status::OK();
+}
 
 }  // namespace fletcher
