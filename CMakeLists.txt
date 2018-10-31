@@ -5,8 +5,16 @@ add_subdirectory(runtime/cpp)
 # Fletcher wrapper generator
 option(FLETCHER_GEN "Build with Fletchgen - Fletcher's HDL wrapper generator." ON)
 if (FLETCHER_GEN)
-    add_subdirectory(codegen/fletchgen)
-endif()
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
+            message(WARNING "Skipping Fletchgen compilation. This requires a GCC version of 4.9+")
+        else ()
+            add_subdirectory(codegen/fletchgen)
+        endif ()
+    else ()
+        add_subdirectory(codegen/fletchgen)
+    endif ()
+endif ()
 
 # Platforms
 option(FLETCHER_AWS "Build with AWS EC2 f1 support." OFF)
