@@ -32,11 +32,3 @@ jobs:
     - <<: *vhdl
       name: vhdl-08
       env: STD=08
-
-    - stage: test
-      name: stringread
-      script:
-        - docker run --rm -it -v `pwd`/hardware/test/fletchgen/stringread:/src -v `pwd`/hardware:/hardware -e "FLETCHER_HARDWARE_DIR=/hardware" fletchgen -i src/test.fbs -o src/test_wrapper.vhd -n test -w test_wrapper -s src/test.fbs -d src/test.rb --sim src/sim_top.vhd -x src/test.srec
-        # replace the srec path
-        - sed -i -e 's/"src\/test.srec"/"src\/test\/fletchgen\/stringread\/test.srec"/' hardware/test/fletchgen/stringread/sim_top.vhd
-        - docker run --rm -v `pwd`/hardware:/src ghdl/ghdl:ubuntu18-llvm-5.0 bash -c "shopt -s globstar && ghdl -i /src/**/*.vhd && ghdl -m --ieee=synopsys sim_top && ghdl -r -v --ieee=synopsys sim_top --stop-time=1ms"
