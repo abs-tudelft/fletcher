@@ -12,15 +12,22 @@ services:
 env:
   global:
     - ARROW_VERSION=0.11.1
+    - GHDL_IMAGE=ghdl/ghdl:ubuntu18-llvm-5.0
 
 jobs:
   include:
 
-    - &docker-build
-      stage: build
+    - stage: build
       name: fletcher
       script:
+        # build fletcher image
         - docker build -t fletcher --build-arg ARROW_VERSION=$ARROW_VERSION .
+
+        # test fletchgen with stringread example
+        - docker run --rm -it -v `pwd`/hardware/test/fletchgen/stringread:/src -v `pwd`/hardware:/hardware -e "FLETCHER_HARDWARE_DIR=/hardware" fletcher -i src/test.fbs -o src/test_wrapper.vhd -n test -w test_wrapper -s src/test.fbs -d src/test.rb --sim src/sim_top.vhd -x src/test.srec
+        # replace the srec path
+        - sed -i -e 's/"src\/test.srec"/"src\/test\/fletchgen\/stringread\/test.srec"/' hardware/test/fletchgen/stringread/sim_top.vhd
+        - docker run --rm -v `pwd`/hardware:/src $GHDL_IMAGE bash -c "shopt -s globstar && ghdl -i /src/**/*.vhd && ghdl -m --ieee=synopsys sim_top && ghdl -r -v --ieee=synopsys sim_top --stop-time=1ms"
 
     - &vhdl
       name: vhdl-93c
