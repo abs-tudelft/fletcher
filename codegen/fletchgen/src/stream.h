@@ -14,14 +14,16 @@
 
 #pragma once
 
+#include <vector>
 #include <memory>
+#include <string>
 #include <utility>
-#include <arrow/type.h>
-#include <netinet/in.h>
 #include <deque>
 
-#include "vhdl/vhdl.h"
-#include "meta.h"
+#include <arrow/type.h>
+
+#include "./vhdl/vhdl.h"
+#include "./meta.h"
 
 using vhdl::Component;
 using vhdl::Value;
@@ -52,7 +54,7 @@ class WithOffset {
  public:
   WithOffset() = default;
 
-  explicit WithOffset(Value offset) : offset_(std::move(offset)) {};
+  explicit WithOffset(Value offset) : offset_(std::move(offset)) {}
 
   void setOffset(Value offset) { offset_ = std::move(offset); }
 
@@ -67,7 +69,7 @@ class WithOffset {
  */
 class Stream {
  public:
-  ///@brief Construct a stream, optionally from ports.
+  /// @brief Construct a stream, optionally from ports.
   explicit Stream(std::string name, std::vector<std::shared_ptr<StreamPort>> ports = {});
 
   /// @brief Add \p port to this stream.
@@ -100,7 +102,6 @@ class Stream {
  */
 class StreamComponent : public Component {
  public:
-
   /**
    * @brief Construct a component that can contain streams.
    * @param name The name of the component.
@@ -136,64 +137,4 @@ class StreamComponent : public Component {
   std::deque<std::shared_ptr<Stream>> _streams;
 };
 
-/*
-template<class T>
-class TypedSignal: public Signal, public TypedBy<T> {
- public:
-  TypedSignal(std::string name, Value width, bool is_vector, T type) : Signal(name, width, is_vector), TypedBy<T>(type) {}
-};
-
-template<class T>
-class StreamSink;
-
-template<class T>
-class StreamSource {
- public:
- private:
-  std::vector<std::shared_ptr<TypedSignal<T>>> signals_;
-  StreamSink<T>* sink_;
-};
-
-template<class T>
-class StreamSink {
- public:
- private:
-  std::vector<std::shared_ptr<TypedSignal<T>>> signals_;
-  StreamSource<T>* source_;
-};
-
-template<class T>
-class ConcatenatedStreamSource {
- private:
-  std::vector<std::shared_ptr<StreamSource<T>>> sources_;
-  std::vector<StreamSource<T>*> sinks_;
-};
-
-template<class T>
-class ConcatenatedStreamSink {
- private:
-  std::vector<std::shared_ptr<StreamSource<T>>> sinks_;
-  std::vector<StreamSource<T>*> sources_;
-};
-
-template<class T>
-class StreamConnection {
- public:
-  StreamConnection(StreamSource<T>* source, StreamSink<T>* sink) {
-
-  }
-
-  StreamConnection(ConcatenatedStreamSource<T>* source, StreamSink<T>* sink) {
-
-  }
-
-  StreamConnection(StreamSource<T>* source, ConcatenatedStreamSink<T>* sink) {
-
-  }
-
- private:
-
-};
-*/
-
-}//namespace fletchgen
+}  // namespace fletchgen

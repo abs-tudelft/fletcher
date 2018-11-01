@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
   std::ofstream ofs;
   /* Generate wrapper: */
   if (!output_fname.empty()) {
-    ofs = std::ofstream(output_fname);
+    ofs.open(output_fname);
     outputs.push_back(&ofs);
   }
 

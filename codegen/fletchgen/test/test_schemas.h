@@ -14,6 +14,9 @@
 
 #pragma once
 
+#include <memory>
+#include <arrow/api.h>
+
 namespace fletchgen {
 namespace test {
 

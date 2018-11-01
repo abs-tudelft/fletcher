@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <memory>
+#include <vector>
 #include <utility>
 #include <iostream>
 #include <algorithm>
@@ -23,7 +26,6 @@ using vhdl::Value;
 namespace fletchgen {
 
 Value getWidth(arrow::DataType *type) {
-
   // Fixed-width:
   if (type->id() == arrow::Type::BOOL) return Value(1);
   else if (type->id() == arrow::Type::DATE32) return Value(32);
@@ -80,7 +82,6 @@ int getEPC(arrow::Field *field) {
 }
 
 ConfigType getConfigType(arrow::DataType *type) {
-
   ConfigType ret = ConfigType::PRIM;
 
   /* Fixed-width:
@@ -234,4 +235,4 @@ std::shared_ptr<arrow::KeyValueMetadata> metaIgnore() {
   return std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
 }
 
-}//namespace fletchgen
+}  // namespace fletchgen

@@ -736,7 +736,7 @@ void Instantiation::mapGeneric(Generic *generic, Value value) {
   }
 }
 
-bool Connection::sortFun_::operator()(std::shared_ptr<Connection> &a, std::shared_ptr<Connection> &b) {
+bool Connection::sortFun_::operator()(const std::shared_ptr<Connection> &a, const std::shared_ptr<Connection> &b) {
   return a->source_->name() < b->source_->name();
 }
 

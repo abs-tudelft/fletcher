@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <vector>
+
 #include <arrow/type.h>
 
-#include "fletcher-streams.h"
+#include "./fletcher-streams.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -37,7 +40,7 @@ string typeToString(FST type) {
     case FST::WREQ: return "wreq";
     case FST::WDAT: return "wdat";
   }
-  throw std::runtime_error("Unknown stream type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToLongString(FST type) {
@@ -51,7 +54,7 @@ string typeToLongString(FST type) {
     case FST::WREQ: return "BUS WRITE REQUEST";
     case FST::WDAT: return "BUS WRITE RESPONSE";
   }
-  throw std::runtime_error("Unknown stream type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 FST modeToArrowType(Mode mode) {

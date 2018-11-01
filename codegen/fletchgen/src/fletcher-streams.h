@@ -14,13 +14,15 @@
 
 #pragma once
 
-#include "vhdl/vhdl.h"
+#include <utility>
+#include <vector>
+#include <memory>
 
-#include "stream.h"
-#include "arrow-utils.h"
-
-#include "fletcher-ports.h"
-#include "common.h"
+#include "./vhdl/vhdl.h"
+#include "./stream.h"
+#include "./arrow-utils.h"
+#include "./fletcher-ports.h"
+#include "./common.h"
 
 namespace fletchgen {
 
@@ -88,7 +90,6 @@ class CommandStream : public FletcherColumnStream {
                 Column *column,
                 std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherColumnStream(name, FST::CMD, column, std::move(ports)) {}
-
 };
 
 /// @brief A read request stream.
@@ -100,7 +101,6 @@ class ReadRequestStream
                              ReadArbiter *dest = nullptr,
                              std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::RREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A read data stream.
@@ -112,7 +112,6 @@ class ReadDataStream
                           ReadArbiter *dest = nullptr,
                           std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::RDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A write request stream.
@@ -124,7 +123,6 @@ class WriteRequestStream
                              WriteArbiter *dest = nullptr,
                              std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A write data stream.
@@ -136,7 +134,6 @@ class WriteDataStream
                           WriteArbiter *dest = nullptr,
                           std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 
@@ -250,4 +247,4 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
   Value _address_offset;
 };
 
-}
+}  // namespace fletchgen

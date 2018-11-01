@@ -28,39 +28,4 @@ namespace fletchgen {
  */
 std::string getFieldInfoString(arrow::Field *field, ArrowStream *parent);
 
-/**
- * Structure for hex editor style command-line output
- */
-struct HexView {
-  /**
-   * @brief Construct a new HexView object
-   * @param start Start address of the first byte.
-   * @param str Optional string to append any output to.
-   * @param row Starting row
-   * @param col Starting column
-   * @param width Number of bytes per line
-   */
-  explicit HexView(unsigned long start,
-                   std::string str = "",
-                   unsigned long row = 0,
-                   unsigned long col = 0,
-                   unsigned long width = 32);
-
-  ///@brief Return a hex editor style view of the memory that was added to this HexView, optionally with a \p header.
-  std::string toString(bool header = true);
-
-  /**
-   * @brief Add a memory region to be printed to the HexView
-   * @param ptr The memory
-   * @param size The size
-   */
-  void addData(const uint8_t *ptr, size_t size);
-
-  std::string str;
-  unsigned long row;
-  unsigned long col;
-  unsigned long width;
-  unsigned long start;
-};
-
-}//namespace fletchgen
+}  // namespace fletchgen

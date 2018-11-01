@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #pragma once
 
-#include "common.h"
-#include "stream.h"
+#include <memory>
 
-#include "fletcher-streams.h"
+#include "./common.h"
+#include "./stream.h"
+
+#include "./fletcher-streams.h"
 
 namespace fletchgen {
 
@@ -66,4 +67,4 @@ class WriteArbiter : public StreamComponent {
   std::shared_ptr<WriteDataStream> mst_wdat_;
 };
 
-}//namespace fletchgen
+}  // namespace fletchgen

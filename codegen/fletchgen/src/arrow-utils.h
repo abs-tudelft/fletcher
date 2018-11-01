@@ -14,6 +14,10 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+#include <string>
+
 #include <arrow/type.h>
 
 #include "vhdl/vhdl.h"
@@ -108,4 +112,4 @@ std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc);
 /// @brief Generate key-value metadata that tells Fletcher to ignore a specific Arrow field.
 std::shared_ptr<arrow::KeyValueMetadata> metaIgnore();
 
-}//namespace fletchgen
+}  // namespace fletchgen
