@@ -404,6 +404,12 @@ begin
               when to_01(unsigned(stageA_index)) >= to_01(unsigned(cmdOutLast_dataReg))
               else '0';
 
+    --pragma translate off
+    assert unsigned(cmdOutLast_dataReg) > 0
+      report "Last index is 0 for list reader, you might be reading data out of bounds."
+      severity warning;
+    --pragma translate on
+
     -- The first index output stream is enabled when init is set, there is
     -- incoming data, and last > first.
     cmdOutFirst_enable <= stageA_init and stageA_enable and not cmdOut_null;

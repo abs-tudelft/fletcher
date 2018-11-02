@@ -17,6 +17,12 @@ import argparse
 import gc
 import pandas as pd
 import pyarrow as pa
+import pyfletcher as pf
+
+# Add pyre2 to the Python 3 compatibility wall of shame
+__builtins__.basestring = str
+import re2
+
 
 class Timer:
     def __init__(self, gc_disable=True):
@@ -37,12 +43,69 @@ class Timer:
         return self.stoptime - self.starttime
 
 
+class RegExCore(pf.UserCore):
+
+
+def create_record_batch(strings):
+    """
+    Creates an Arrow record batch containing one column of strings.
+
+    Args:
+        strings(sequence, iterable, ndarray or Series): Strings for in the record batch
+
+    Returns:
+        record_batch
+
+    """
+    array = pa.array(strings)
+    column_field = pa.field("tweets", pa.string(), False)
+    schema = pa.schema([column_field])
+    return pa.RecordBatch.from_arrays([array], schema)
+
+
+def add_matches_cpu(strings, regexes):
+    progs = []
+    matches = []
+
+    for regex in regexes:
+        progs.append(re2.compile(regex))
+
+    for prog in progs:
+        result = 0
+        for string in strings:
+            if prog.test_fullmatch(string):
+                result += 1
+        matches.append(result)
+
+    return matches
+
+
+def add_matches_cpu_arrow(strings, regexes):
+    progs = []
+    matches = []
+
+    for regex in regexes:
+        progs.append(re2.compile(regex))
+
+    for prog in progs:
+        result = 0
+        for string in strings:
+            if prog.test_fullmatch(string.as_py()):
+                result += 1
+        matches.append(result)
+
+    return matches
+
+
+def add_matches_fpga(strings, regexes, platform_type):
+    platform = pf.Platform(platform_type)
+    context = pf.Context(platform)
+
+
 if __name__ == "__main__":
     t = Timer()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--num_rows", dest="num_rows", default=1024,
-                        help="Number of integers in the Arrow array")
     parser.add_argument("--num_exp", dest="ne", default=1,
                         help="Number of experiments to perform")
     parser.add_argument("--input_strings", dest="input_file", default="../build/strings1024.dat",
@@ -52,7 +115,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Parsed args
-    num_rows = int(args.num_rows)
     ne = int(args.ne)
     input_file = args.input_file
     platform_type = args.platform_type
@@ -77,20 +139,47 @@ if __name__ == "__main__":
     m_acpu = []
     m_fpga = []
 
-    print("Number of rows: " + str(num_rows))
-
     f = open(input_file, 'r')
     filedata = f.read()
 
     strings_native = filedata.split(sep='\n')
     strings_pandas = pd.Series(strings_native)
 
-
-    # Todo: Create function createRecordBatchFromPandas() and createRecordBatchFromNative()
     t.start()
-    rb = pa.array(strings_native)
+    rb = create_record_batch(strings_native)
     t.stop()
     t_nser = t.seconds()
 
-    print(t_nser)
-    print(rb[5])
+    t.start()
+    rb = create_record_batch(strings_pandas)
+    t.stop()
+    t_pser = t.seconds()
+
+    print("Native to Arrow serialization time: " + str(t_nser))
+    print("Pandas to Arrow serialization time: " + str(t_pser))
+
+    for e in range(ne):
+        # Match Python list on CPU (marginal performance improvement most likely possible with Cython)
+        t.start()
+        m_ncpu.append(add_matches_cpu(strings_native, regexes))
+        t.stop()
+        t_ncpu.append(t.seconds())
+        print(t.seconds())
+
+        # Match Pandas series on CPU (marginal performance improvement most likely possible with Cython)
+        t.start()
+        m_pcpu.append(add_matches_cpu(strings_pandas, regexes))
+        t.stop()
+        t_pcpu.append(t.seconds())
+        print(t.seconds())
+
+        # Match Arrow array on CPU (significant performance improvement most likely possible with Cython)
+        t.start()
+        m_acpu.append(add_matches_cpu_arrow(rb.column(0), regexes, platform_type))
+        t.stop()
+        t_acpu.append(t.seconds())
+        print(t.seconds())
+
+        print(m_pcpu[0])
+        print(m_ncpu[0])
+        print(m_acpu[0])

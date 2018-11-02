@@ -4,8 +4,7 @@ project(sum)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra  -D_GLIBCXX_USE_CXX11_ABI=0")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
@@ -14,8 +13,7 @@ add_executable(${PROJECT_NAME}
 )
 
 find_library(LIB_FLETCHER fletcher)
-#find_library(LIB_ARROW arrow)
-find_library(LIB_ARROW arrow PATHS /usr/local/lib/python3.6/dist-packages/pyarrow NO_DEFAULT_PATH)
+find_library(LIB_ARROW arrow)
 
 option(ENABLE_DEBUG "Enable debugging" OFF)
 

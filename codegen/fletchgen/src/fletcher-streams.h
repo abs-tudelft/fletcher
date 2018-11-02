@@ -180,6 +180,9 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
   /// @brief Return the hierarchical depth of this stream.
   int depth();
 
+  /// @brief Return whether this stream is a primitive type.
+  bool isPrim();
+
   /// @brief Return whether this stream is a list.
   bool isList();
 
