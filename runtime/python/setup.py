@@ -42,7 +42,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="pyfletcher",
-    version="0.0.3",
+    version="0.0.4",
     author="Lars van Leeuwen",
     packages=['pyfletcher'],
     description="A Python wrapper for the Fletcher runtime library",

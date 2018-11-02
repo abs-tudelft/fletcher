@@ -1,3 +1,8 @@
+# 0.0.4 (2018-11-02)
+* Exposed num\_buffers and getQueueSize() in Fletcher::Context
+* Renamed queueRecordBatch() -> queue\_record\_batch()
+* Renamed queueArray() -> queue\_array()
+
 # 0.0.3 (2018-11-02)
 * Exposed control and status data members in UserCore
 * Added explanation for building pyfletcher from source in the README

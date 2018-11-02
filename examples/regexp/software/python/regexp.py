@@ -45,6 +45,51 @@ class Timer:
 
 class RegExCore(pf.UserCore):
 
+    def __init__(self, context):
+        self.reuc_result_offset = 42
+        if self.get_platform().get_name() == "aws":
+            self.active_units = 16
+            self.ctrl_start = 0x0000FFFF
+            self.ctrl_reset = 0xFFFF0000
+            self.done_status = 0xFFFF0000
+            self.done_status_mask = 0xFFFFFFFF
+        elif self.get_platform().get_name() == "echo":
+            self.active_units = 16
+        elif self.get_platform().get_name() == "snap":
+            self.active_units = 8
+            self.ctrl_start = 0x000000FF
+            self.ctrl_reset = 0x0000FF00
+            self.done_status = 0x0000FF00
+            self.done_status_mask = 0x0000FFFF
+
+    def _generate_unit_arguments(self, first_index, last_index):
+        arguments = [0]*2*self.active_units
+
+        if first_index >= last_index:
+            raise RuntimeError("First index cannot be larger than or equal to last index.")
+
+        match_rows = last_index - first_index
+        for i in range(self.active_units):
+            first = first_index + i*match_rows/self.active_units
+            last = first + match_rows/self.active_units
+            arguments[i] = first
+            arguments[self.active_units + i] = last
+
+        return arguments
+
+    def set_reg_exp_arguments(self, first_index, last_index):
+        arguments = self._generate_unit_arguments(first_index, last_index)
+        self.set_arguments(arguments)
+
+    def get_matches(self, num_reads):
+        matches = []
+        for p in range(num_reads):
+            matches.append(self.get_platform().read_mmio(self.reuc_result_offset + p))
+
+        return matches
+
+
+
 
 def create_record_batch(strings):
     """
@@ -97,11 +142,6 @@ def add_matches_cpu_arrow(strings, regexes):
     return matches
 
 
-def add_matches_fpga(strings, regexes, platform_type):
-    platform = pf.Platform(platform_type)
-    context = pf.Context(platform)
-
-
 if __name__ == "__main__":
     t = Timer()
 
@@ -123,6 +163,7 @@ if __name__ == "__main__":
     regexes = [".*(?i)bird.*", ".*(?i)bunny.*", ".*(?i)cat.*", ".*(?i)dog.*", ".*(?i)ferret.*", ".*(?i)fish.*",
                ".*(?i)gerbil.*", ".*(?i)hamster.*", ".*(?i)horse.*", ".*(?i)kitten.*", ".*(?i)lizard.*",
                ".*(?i)mouse.*", ".*(?i)puppy.*", ".*(?i)rabbit.*", ".*(?i)rat.*", ".*(?i)turtle.*"]
+    np = len(regexes)
 
     bytes_copied = 0
 
@@ -158,6 +199,8 @@ if __name__ == "__main__":
     print("Native to Arrow serialization time: " + str(t_nser))
     print("Pandas to Arrow serialization time: " + str(t_pser))
 
+    num_rows = len(strings_native)
+
     for e in range(ne):
         # Match Python list on CPU (marginal performance improvement most likely possible with Cython)
         t.start()
@@ -175,11 +218,67 @@ if __name__ == "__main__":
 
         # Match Arrow array on CPU (significant performance improvement most likely possible with Cython)
         t.start()
-        m_acpu.append(add_matches_cpu_arrow(rb.column(0), regexes, platform_type))
+        m_acpu.append(add_matches_cpu_arrow(rb.column(0), regexes))
         t.stop()
         t_acpu.append(t.seconds())
         print(t.seconds())
 
-        print(m_pcpu[0])
-        print(m_ncpu[0])
-        print(m_acpu[0])
+        # Match Arrow array on FPGA
+        platform = pf.Platform(platform_type)
+        context = pf.Context(platform)
+        rc = RegExCore(context)
+
+        # Initialize the platform
+        platform.init()
+
+        # Reset the UserCore
+        rc.reset()
+
+        # Prepare the column buffers
+        t.start()
+        context.queue_record_batch(rb)
+        bytes_copied += context.get_queue_size()
+        context.enable()
+        t.stop()
+        t_copy.append(t.seconds())
+
+        # Run the example
+        t.start()
+        rc.set_reg_exp_arguments(0, num_rows)
+
+        # Start the matchers and poll until completion
+        rc.start()
+        rc.wait_for_finish(10)
+
+        # Get the number of matches from the UserCore
+        m_fpga.append(rc.get_matches(np))
+        t.stop()
+        t_fpga.append(t.seconds())
+
+
+    print("Bytes copied: " + str(bytes_copied))
+
+    print("Total runtimes for " + str(ne) + "runs:")
+    print("Python list on CPU: " + str(sum(t_ncpu)))
+    print("Pandas series on CPU: " + str(sum(t_pcpu)))
+    print("Arrow array on CPU: " + str(sum(t_acpu)))
+    print("Arrow array on FPGA: " + str(sum(t_fpga)))
+
+    # Accumulated matches
+    a_ncpu = [0] * np
+    a_pcpu = [0] * np
+    a_acpu = [0] * np
+    a_fpga = [0] * np
+
+    for p in range(np):
+        for e in range(ne):
+            a_ncpu[p] += m_ncpu[e][p]
+            a_pcpu[p] += m_pcpu[e][p]
+            a_acpu[p] += m_acpu[e][p]
+            a_fpga[p] += m_fpga[e][p]
+
+    # Check if matches are equal
+    if (a_ncpu == a_pcpu) and (a_pcpu == a_acpu):# and (a_acpu == a_fpga):
+        print("PASS")
+    else:
+        print("ERROR")

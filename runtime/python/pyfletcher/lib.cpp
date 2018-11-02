@@ -4451,11 +4451,13 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_20get_context(struct __pyx
 static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_10pyfletcher_3lib_7Context___cinit__(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_platform); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queue_array(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queue_record_batch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6get_queue_size(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -8150,7 +8152,7 @@ static PyObject *__pyx_f_10pyfletcher_3lib_7Context_from_pointer(struct __pyx_ob
  *     cdef from_pointer(self, shared_ptr[CContext] context):
  *         self.context = context             # <<<<<<<<<<<<<<
  * 
- *     def queueArray(self, array, field=None, cache=False):
+ *     def queue_array(self, array, field=None, cache=False):
  */
   __pyx_v_self->context = __pyx_v_context;
 
@@ -8172,21 +8174,21 @@ static PyObject *__pyx_f_10pyfletcher_3lib_7Context_from_pointer(struct __pyx_ob
 /* "pyfletcher/context.pxi":33
  *         self.context = context
  * 
- *     def queueArray(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
+ *     def queue_array(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
  *         """Enqueue an arrow::Array for usage preparation on the device.
  * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_10pyfletcher_3lib_7Context_2queueArray[] = "Enqueue an arrow::Array for usage preparation on the device.\n\n        This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not\n        contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies\n        between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the\n        field argument.\n\n        Args:\n            array: Arrow Array to queue\n            field: Arrow Schema corresponding to this array.\n            cache (bool): Force caching; i.e. the Array is guaranteed to be copied to on-board memory.\n\n        ";
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queue_array(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_10pyfletcher_3lib_7Context_2queue_array[] = "Enqueue an arrow::Array for usage preparation on the device.\n\n        This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not\n        contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies\n        between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the\n        field argument.\n\n        Args:\n            array: Arrow Array to queue\n            field: Arrow Schema corresponding to this array.\n            cache (bool): Force caching; i.e. the Array is guaranteed to be copied to on-board memory.\n\n        ";
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queue_array(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_array = 0;
   PyObject *__pyx_v_field = 0;
   PyObject *__pyx_v_cache = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("queueArray (wrapper)", 0);
+  __Pyx_RefNannySetupContext("queue_array (wrapper)", 0);
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_array,&__pyx_n_s_field,&__pyx_n_s_cache,0};
     PyObject* values[3] = {0,0,0};
@@ -8224,7 +8226,7 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "queueArray") < 0)) __PYX_ERR(5, 33, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "queue_array") < 0)) __PYX_ERR(5, 33, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -8243,27 +8245,27 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_3queueArray(PyObject *__pyx
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("queueArray", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 33, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("queue_array", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 33, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pyfletcher.lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queue_array", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_2queueArray(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_array, __pyx_v_field, __pyx_v_cache);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_2queue_array(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_array, __pyx_v_field, __pyx_v_cache);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queue_array(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_array, PyObject *__pyx_v_field, PyObject *__pyx_v_cache) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   int __pyx_t_2;
   bool __pyx_t_3;
   PyObject *__pyx_t_4 = NULL;
-  __Pyx_RefNannySetupContext("queueArray", 0);
+  __Pyx_RefNannySetupContext("queue_array", 0);
 
   /* "pyfletcher/context.pxi":47
  * 
@@ -8312,7 +8314,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_ob
  *                                                                 pyarrow_unwrap_field(field),
  *                                                                 cache))             # <<<<<<<<<<<<<<
  * 
- *     def queueRecordBatch(self, record_batch, cache=False):
+ *     def queue_record_batch(self, record_batch, cache=False):
  */
     __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_cache); if (unlikely((__pyx_t_3 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(5, 52, __pyx_L1_error)
 
@@ -8332,7 +8334,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_ob
   /* "pyfletcher/context.pxi":33
  *         self.context = context
  * 
- *     def queueArray(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
+ *     def queue_array(self, array, field=None, cache=False):             # <<<<<<<<<<<<<<
  *         """Enqueue an arrow::Array for usage preparation on the device.
  * 
  */
@@ -8342,7 +8344,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_ob
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("pyfletcher.lib.Context.queueArray", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queue_array", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8353,20 +8355,20 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queueArray(struct __pyx_ob
 /* "pyfletcher/context.pxi":54
  *                                                                 cache))
  * 
- *     def queueRecordBatch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
+ *     def queue_record_batch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
  *         """Enqueue an arrow::RecordBatch for usage preparation on the device.
  * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_10pyfletcher_3lib_7Context_4queueRecordBatch[] = "Enqueue an arrow::RecordBatch for usage preparation on the device.\n\n        Args:\n            record_batch: Arrow RecordBatch to queue\n            cache (bool): Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.\n\n        ";
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queue_record_batch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_10pyfletcher_3lib_7Context_4queue_record_batch[] = "Enqueue an arrow::RecordBatch for usage preparation on the device.\n\n        Args:\n            record_batch: Arrow RecordBatch to queue\n            cache (bool): Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.\n\n        ";
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queue_record_batch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_record_batch = 0;
   PyObject *__pyx_v_cache = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("queueRecordBatch (wrapper)", 0);
+  __Pyx_RefNannySetupContext("queue_record_batch (wrapper)", 0);
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_record_batch,&__pyx_n_s_cache,0};
     PyObject* values[2] = {0,0};
@@ -8395,7 +8397,7 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject 
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "queueRecordBatch") < 0)) __PYX_ERR(5, 54, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "queue_record_batch") < 0)) __PYX_ERR(5, 54, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -8411,32 +8413,32 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch(PyObject 
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("queueRecordBatch", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 54, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("queue_record_batch", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 54, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pyfletcher.lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queue_record_batch", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_record_batch, __pyx_v_cache);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_4queue_record_batch(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_record_batch, __pyx_v_cache);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queue_record_batch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   bool __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
-  __Pyx_RefNannySetupContext("queueRecordBatch", 0);
+  __Pyx_RefNannySetupContext("queue_record_batch", 0);
 
   /* "pyfletcher/context.pxi":62
  * 
  *         """
  *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))             # <<<<<<<<<<<<<<
  * 
- *     def enable(self):
+ *     def get_queue_size(self):
  */
   __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_cache); if (unlikely((__pyx_t_1 == ((bool)-1)) && PyErr_Occurred())) __PYX_ERR(5, 62, __pyx_L1_error)
   __pyx_t_2 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->queueRecordBatch(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_batch(__pyx_v_record_batch), __pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 62, __pyx_L1_error)
@@ -8446,7 +8448,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __
   /* "pyfletcher/context.pxi":54
  *                                                                 cache))
  * 
- *     def queueRecordBatch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
+ *     def queue_record_batch(self, record_batch, cache=False):             # <<<<<<<<<<<<<<
  *         """Enqueue an arrow::RecordBatch for usage preparation on the device.
  * 
  */
@@ -8456,7 +8458,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("pyfletcher.lib.Context.queueRecordBatch", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.queue_record_batch", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8467,40 +8469,162 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queueRecordBatch(struct __
 /* "pyfletcher/context.pxi":64
  *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
  * 
- *     def enable(self):             # <<<<<<<<<<<<<<
- *         check_fletcher_status(self.context.get().enable())
+ *     def get_queue_size(self):             # <<<<<<<<<<<<<<
+ *         """Obtain the size (in bytes) of all buffers currently enqueued.
+ * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7get_queue_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_10pyfletcher_3lib_7Context_6get_queue_size[] = "Obtain the size (in bytes) of all buffers currently enqueued.\n\n        Returns:\n            queue_size\n\n        ";
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_7get_queue_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("enable (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_6enable(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("get_queue_size (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_6get_queue_size(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6get_queue_size(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_queue_size", 0);
+
+  /* "pyfletcher/context.pxi":71
+ * 
+ *         """
+ *         return self.context.get().getQueueSize()             # <<<<<<<<<<<<<<
+ * 
+ *     def num_buffers(self):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_v_self->context.get()->getQueueSize()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 71, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/context.pxi":64
+ *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
+ * 
+ *     def get_queue_size(self):             # <<<<<<<<<<<<<<
+ *         """Obtain the size (in bytes) of all buffers currently enqueued.
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.get_queue_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/context.pxi":73
+ *         return self.context.get().getQueueSize()
+ * 
+ *     def num_buffers(self):             # <<<<<<<<<<<<<<
+ *         """Return the number of buffers in this context.
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9num_buffers(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_10pyfletcher_3lib_7Context_8num_buffers[] = "Return the number of buffers in this context.\n\n        Returns:\n            num_buffers\n\n        ";
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9num_buffers(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("num_buffers (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("num_buffers", 0);
+
+  /* "pyfletcher/context.pxi":80
+ * 
+ *         """
+ *         return self.context.get().num_buffers()             # <<<<<<<<<<<<<<
+ * 
+ *     def enable(self):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_self->context.get()->num_buffers()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 80, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/context.pxi":73
+ *         return self.context.get().getQueueSize()
+ * 
+ *     def num_buffers(self):             # <<<<<<<<<<<<<<
+ *         """Return the number of buffers in this context.
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.num_buffers", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/context.pxi":82
+ *         return self.context.get().num_buffers()
+ * 
+ *     def enable(self):             # <<<<<<<<<<<<<<
+ *         check_fletcher_status(self.context.get().enable())
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("enable (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_10enable(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("enable", 0);
 
-  /* "pyfletcher/context.pxi":65
+  /* "pyfletcher/context.pxi":83
  * 
  *     def enable(self):
  *         check_fletcher_status(self.context.get().enable())             # <<<<<<<<<<<<<<
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 65, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 83, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/context.pxi":64
- *         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
+  /* "pyfletcher/context.pxi":82
+ *         return self.context.get().num_buffers()
  * 
  *     def enable(self):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.context.get().enable())
@@ -8526,19 +8650,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6enable(struct __pyx_obj_10
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8580,19 +8704,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8__reduce_cython__(CYTHON_U
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -24465,11 +24589,13 @@ static void __pyx_tp_dealloc_10pyfletcher_3lib_Context(PyObject *o) {
 }
 
 static PyMethodDef __pyx_methods_10pyfletcher_3lib_Context[] = {
-  {"queueArray", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_3queueArray, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_2queueArray},
-  {"queueRecordBatch", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_5queueRecordBatch, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_4queueRecordBatch},
-  {"enable", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_7enable, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_9__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_11__setstate_cython__, METH_O, 0},
+  {"queue_array", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_3queue_array, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_2queue_array},
+  {"queue_record_batch", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_5queue_record_batch, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_4queue_record_batch},
+  {"get_queue_size", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_7get_queue_size, METH_NOARGS, __pyx_doc_10pyfletcher_3lib_7Context_6get_queue_size},
+  {"num_buffers", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_9num_buffers, METH_NOARGS, __pyx_doc_10pyfletcher_3lib_7Context_8num_buffers},
+  {"enable", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_11enable, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 

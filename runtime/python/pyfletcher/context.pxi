@@ -30,7 +30,7 @@ cdef class Context():
     cdef from_pointer(self, shared_ptr[CContext] context):
         self.context = context
 
-    def queueArray(self, array, field=None, cache=False):
+    def queue_array(self, array, field=None, cache=False):
         """Enqueue an arrow::Array for usage preparation on the device.
 
         This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
@@ -51,7 +51,7 @@ cdef class Context():
                                                                 pyarrow_unwrap_field(field),
                                                                 cache))
 
-    def queueRecordBatch(self, record_batch, cache=False):
+    def queue_record_batch(self, record_batch, cache=False):
         """Enqueue an arrow::RecordBatch for usage preparation on the device.
 
         Args:
@@ -60,6 +60,24 @@ cdef class Context():
 
         """
         check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
+
+    def get_queue_size(self):
+        """Obtain the size (in bytes) of all buffers currently enqueued.
+
+        Returns:
+            queue_size
+
+        """
+        return self.context.get().getQueueSize()
+
+    def num_buffers(self):
+        """Return the number of buffers in this context.
+
+        Returns:
+            num_buffers
+
+        """
+        return self.context.get().num_buffers()
 
     def enable(self):
         check_fletcher_status(self.context.get().enable())

@@ -64,6 +64,8 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status queueArray(const shared_ptr[CArray] &array, cpp_bool cache)
         Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, cpp_bool cache)
         Status queueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
+        size_t getQueueSize()
+        uint64_t num_buffers()
         Status enable()
 
     cdef cppclass CUserCore" fletcher::UserCore":
