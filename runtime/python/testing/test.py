@@ -78,11 +78,11 @@ def test_context():
 
     context = pf.Context(platform)
 
-    context.queueRecordBatch(rb)
+    context.queue_record_batch(rb)
 
-    context.queueArray(f)
+    context.queue_array(f)
 
-    context.queueArray(g, field=pa.field("g", pa.uint32(), False))
+    context.queue_array(g, field=pa.field("g", pa.uint32(), False))
 
     # Write buffers
     context.enable()

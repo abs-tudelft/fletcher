@@ -55,7 +55,7 @@ def arrow_column_sum_fpga(batch, platform_type):
     platform.init()
 
     # Prepare the recordbatch
-    context.queueRecordBatch(batch)
+    context.queue_record_batch(batch)
 
     start_time = timeit.default_timer()
     context.enable()
