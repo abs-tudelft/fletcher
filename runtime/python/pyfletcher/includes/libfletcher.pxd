@@ -67,6 +67,12 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status enable()
 
     cdef cppclass CUserCore" fletcher::UserCore":
+        # Control and status values
+        uint32_t ctrl_start
+        uint32_t ctrl_reset
+        uint32_t done_status
+        uint32_t done_status_mask
+
         CUserCore(shared_ptr[CContext] context)
         cpp_bool implementsSchema(const shared_ptr[CSchema] &schema)
         Status reset()

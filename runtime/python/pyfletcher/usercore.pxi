@@ -29,6 +29,38 @@ cdef class UserCore:
     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
         self.usercore = usercore
 
+    @property
+    def ctrl_start(self):
+        return self.usercore.get().ctrl_start
+
+    @ctrl_start.setter
+    def ctrl_start(self, uint32_t value):
+        self.usercore.get().ctrl_start = value
+
+    @property
+    def ctrl_reset(self):
+        return self.usercore.get().ctrl_reset
+
+    @ctrl_reset.setter
+    def ctrl_reset(self, uint32_t value):
+        self.usercore.get().ctrl_reset = value
+
+    @property
+    def done_status(self):
+        return self.usercore.get().done_status
+
+    @done_status.setter
+    def done_status(self, uint32_t value):
+        self.usercore.get().done_status = value
+
+    @property
+    def done_status_mask(self):
+        return self.usercore.get().done_status_mask
+
+    @done_status_mask.setter
+    def done_status_mask(self, uint32_t value):
+        self.usercore.get().done_status_mask = value
+
     def implements_schema(self, schema):
         """Check if the schema of this UserCore is compatible with another Schema.
 

@@ -4430,6 +4430,14 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18terminate(struct __pyx_o
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_20__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_22__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_10pyfletcher_3lib_8UserCore___cinit__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_context); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_11done_status___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_11done_status_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, PyObject *__pyx_v_schema); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_4reset(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_first, uint32_t __pyx_v_last); /* proto */
@@ -6545,7 +6553,7 @@ static PyObject *__pyx_f_10pyfletcher_3lib_8UserCore_from_pointer(struct __pyx_o
  *     cdef from_pointer(self, const shared_ptr[CUserCore]& usercore):
  *         self.usercore = usercore             # <<<<<<<<<<<<<<
  * 
- *     def implements_schema(self, schema):
+ *     @property
  */
   __pyx_v_self->usercore = __pyx_v_usercore;
 
@@ -6564,8 +6572,484 @@ static PyObject *__pyx_f_10pyfletcher_3lib_8UserCore_from_pointer(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":32
- *         self.usercore = usercore
+/* "pyfletcher/usercore.pxi":33
+ * 
+ *     @property
+ *     def ctrl_start(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().ctrl_start
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_1__get__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start___get__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("__get__", 0);
+
+  /* "pyfletcher/usercore.pxi":34
+ *     @property
+ *     def ctrl_start(self):
+ *         return self.usercore.get().ctrl_start             # <<<<<<<<<<<<<<
+ * 
+ *     @ctrl_start.setter
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_self->usercore.get()->ctrl_start); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 34, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/usercore.pxi":33
+ * 
+ *     @property
+ *     def ctrl_start(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().ctrl_start
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.ctrl_start.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":37
+ * 
+ *     @ctrl_start.setter
+ *     def ctrl_start(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().ctrl_start = value
+ * 
+ */
+
+/* Python wrapper */
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  uint32_t __pyx_v_value;
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __Pyx_PyInt_As_uint32_t(__pyx_arg_value); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 37, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.ctrl_start.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return -1;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start_2__set__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((uint32_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_start_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__", 0);
+
+  /* "pyfletcher/usercore.pxi":38
+ *     @ctrl_start.setter
+ *     def ctrl_start(self, uint32_t value):
+ *         self.usercore.get().ctrl_start = value             # <<<<<<<<<<<<<<
+ * 
+ *     @property
+ */
+  __pyx_v_self->usercore.get()->ctrl_start = __pyx_v_value;
+
+  /* "pyfletcher/usercore.pxi":37
+ * 
+ *     @ctrl_start.setter
+ *     def ctrl_start(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().ctrl_start = value
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":41
+ * 
+ *     @property
+ *     def ctrl_reset(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().ctrl_reset
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_1__get__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset___get__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("__get__", 0);
+
+  /* "pyfletcher/usercore.pxi":42
+ *     @property
+ *     def ctrl_reset(self):
+ *         return self.usercore.get().ctrl_reset             # <<<<<<<<<<<<<<
+ * 
+ *     @ctrl_reset.setter
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_self->usercore.get()->ctrl_reset); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 42, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/usercore.pxi":41
+ * 
+ *     @property
+ *     def ctrl_reset(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().ctrl_reset
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.ctrl_reset.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":45
+ * 
+ *     @ctrl_reset.setter
+ *     def ctrl_reset(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().ctrl_reset = value
+ * 
+ */
+
+/* Python wrapper */
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  uint32_t __pyx_v_value;
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __Pyx_PyInt_As_uint32_t(__pyx_arg_value); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 45, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.ctrl_reset.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return -1;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset_2__set__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((uint32_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_10ctrl_reset_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__", 0);
+
+  /* "pyfletcher/usercore.pxi":46
+ *     @ctrl_reset.setter
+ *     def ctrl_reset(self, uint32_t value):
+ *         self.usercore.get().ctrl_reset = value             # <<<<<<<<<<<<<<
+ * 
+ *     @property
+ */
+  __pyx_v_self->usercore.get()->ctrl_reset = __pyx_v_value;
+
+  /* "pyfletcher/usercore.pxi":45
+ * 
+ *     @ctrl_reset.setter
+ *     def ctrl_reset(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().ctrl_reset = value
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":49
+ * 
+ *     @property
+ *     def done_status(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().done_status
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_1__get__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_11done_status___get__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_11done_status___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("__get__", 0);
+
+  /* "pyfletcher/usercore.pxi":50
+ *     @property
+ *     def done_status(self):
+ *         return self.usercore.get().done_status             # <<<<<<<<<<<<<<
+ * 
+ *     @done_status.setter
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_self->usercore.get()->done_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 50, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/usercore.pxi":49
+ * 
+ *     @property
+ *     def done_status(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().done_status
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.done_status.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":53
+ * 
+ *     @done_status.setter
+ *     def done_status(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().done_status = value
+ * 
+ */
+
+/* Python wrapper */
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  uint32_t __pyx_v_value;
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __Pyx_PyInt_As_uint32_t(__pyx_arg_value); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 53, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.done_status.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return -1;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_11done_status_2__set__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((uint32_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_11done_status_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__", 0);
+
+  /* "pyfletcher/usercore.pxi":54
+ *     @done_status.setter
+ *     def done_status(self, uint32_t value):
+ *         self.usercore.get().done_status = value             # <<<<<<<<<<<<<<
+ * 
+ *     @property
+ */
+  __pyx_v_self->usercore.get()->done_status = __pyx_v_value;
+
+  /* "pyfletcher/usercore.pxi":53
+ * 
+ *     @done_status.setter
+ *     def done_status(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().done_status = value
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":57
+ * 
+ *     @property
+ *     def done_status_mask(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().done_status_mask
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_1__get__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask___get__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask___get__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("__get__", 0);
+
+  /* "pyfletcher/usercore.pxi":58
+ *     @property
+ *     def done_status_mask(self):
+ *         return self.usercore.get().done_status_mask             # <<<<<<<<<<<<<<
+ * 
+ *     @done_status_mask.setter
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_self->usercore.get()->done_status_mask); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 58, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/usercore.pxi":57
+ * 
+ *     @property
+ *     def done_status_mask(self):             # <<<<<<<<<<<<<<
+ *         return self.usercore.get().done_status_mask
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.done_status_mask.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":61
+ * 
+ *     @done_status_mask.setter
+ *     def done_status_mask(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().done_status_mask = value
+ * 
+ */
+
+/* Python wrapper */
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static int __pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  uint32_t __pyx_v_value;
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __Pyx_PyInt_As_uint32_t(__pyx_arg_value); if (unlikely((__pyx_v_value == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 61, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pyfletcher.lib.UserCore.done_status_mask.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return -1;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask_2__set__(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((uint32_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static int __pyx_pf_10pyfletcher_3lib_8UserCore_16done_status_mask_2__set__(struct __pyx_obj_10pyfletcher_3lib_UserCore *__pyx_v_self, uint32_t __pyx_v_value) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__set__", 0);
+
+  /* "pyfletcher/usercore.pxi":62
+ *     @done_status_mask.setter
+ *     def done_status_mask(self, uint32_t value):
+ *         self.usercore.get().done_status_mask = value             # <<<<<<<<<<<<<<
+ * 
+ *     def implements_schema(self, schema):
+ */
+  __pyx_v_self->usercore.get()->done_status_mask = __pyx_v_value;
+
+  /* "pyfletcher/usercore.pxi":61
+ * 
+ *     @done_status_mask.setter
+ *     def done_status_mask(self, uint32_t value):             # <<<<<<<<<<<<<<
+ *         self.usercore.get().done_status_mask = value
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/usercore.pxi":64
+ *         self.usercore.get().done_status_mask = value
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
  *         """Check if the schema of this UserCore is compatible with another Schema.
@@ -6592,7 +7076,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct 
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("implements_schema", 0);
 
-  /* "pyfletcher/usercore.pxi":42
+  /* "pyfletcher/usercore.pxi":74
  * 
  *         """
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))             # <<<<<<<<<<<<<<
@@ -6600,14 +7084,14 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct 
  *     def reset(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->usercore.get()->implementsSchema(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema(__pyx_v_schema))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 42, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->usercore.get()->implementsSchema(__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema(__pyx_v_schema))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 74, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pyfletcher/usercore.pxi":32
- *         self.usercore = usercore
+  /* "pyfletcher/usercore.pxi":64
+ *         self.usercore.get().done_status_mask = value
  * 
  *     def implements_schema(self, schema):             # <<<<<<<<<<<<<<
  *         """Check if the schema of this UserCore is compatible with another Schema.
@@ -6625,7 +7109,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_2implements_schema(struct 
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":44
+/* "pyfletcher/usercore.pxi":76
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -6652,18 +7136,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_4reset(struct __pyx_obj_10
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("reset", 0);
 
-  /* "pyfletcher/usercore.pxi":45
+  /* "pyfletcher/usercore.pxi":77
  * 
  *     def reset(self):
  *         check_fletcher_status(self.usercore.get().reset())             # <<<<<<<<<<<<<<
  * 
  *     def set_range(self, uint32_t first, uint32_t last):
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 45, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->reset()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":44
+  /* "pyfletcher/usercore.pxi":76
  *         return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
  * 
  *     def reset(self):             # <<<<<<<<<<<<<<
@@ -6684,7 +7168,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_4reset(struct __pyx_obj_10
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":47
+/* "pyfletcher/usercore.pxi":79
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -6724,11 +7208,11 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_7set_range(PyObject *__pyx
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_last)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, 1); __PYX_ERR(4, 47, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, 1); __PYX_ERR(4, 79, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "set_range") < 0)) __PYX_ERR(4, 47, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "set_range") < 0)) __PYX_ERR(4, 79, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -6736,12 +7220,12 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_7set_range(PyObject *__pyx
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_first = __Pyx_PyInt_As_uint32_t(values[0]); if (unlikely((__pyx_v_first == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 47, __pyx_L3_error)
-    __pyx_v_last = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_last == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 47, __pyx_L3_error)
+    __pyx_v_first = __Pyx_PyInt_As_uint32_t(values[0]); if (unlikely((__pyx_v_first == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 79, __pyx_L3_error)
+    __pyx_v_last = __Pyx_PyInt_As_uint32_t(values[1]); if (unlikely((__pyx_v_last == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 79, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 47, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("set_range", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 79, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyfletcher.lib.UserCore.set_range", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -6760,18 +7244,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(struct __pyx_ob
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("set_range", 0);
 
-  /* "pyfletcher/usercore.pxi":55
+  /* "pyfletcher/usercore.pxi":87
  * 
  *         """
  *         check_fletcher_status(self.usercore.get().setRange(first, last))             # <<<<<<<<<<<<<<
  * 
  *     def set_arguments(self, list arguments):
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 55, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->setRange(__pyx_v_first, __pyx_v_last)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":47
+  /* "pyfletcher/usercore.pxi":79
  *         check_fletcher_status(self.usercore.get().reset())
  * 
  *     def set_range(self, uint32_t first, uint32_t last):             # <<<<<<<<<<<<<<
@@ -6792,7 +7276,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_6set_range(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":57
+/* "pyfletcher/usercore.pxi":89
  *         check_fletcher_status(self.usercore.get().setRange(first, last))
  * 
  *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
@@ -6807,7 +7291,7 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_9set_arguments(PyObject *_
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_arguments (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_arguments), (&PyList_Type), 1, "arguments", 1))) __PYX_ERR(4, 57, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_arguments), (&PyList_Type), 1, "arguments", 1))) __PYX_ERR(4, 89, __pyx_L1_error)
   __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyObject*)__pyx_v_arguments));
 
   /* function exit code */
@@ -6830,7 +7314,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __py
   uint32_t __pyx_t_4;
   __Pyx_RefNannySetupContext("set_arguments", 0);
 
-  /* "pyfletcher/usercore.pxi":65
+  /* "pyfletcher/usercore.pxi":97
  *         """
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:             # <<<<<<<<<<<<<<
@@ -6839,36 +7323,36 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __py
  */
   if (unlikely(__pyx_v_arguments == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(4, 65, __pyx_L1_error)
+    __PYX_ERR(4, 97, __pyx_L1_error)
   }
   __pyx_t_1 = __pyx_v_arguments; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
     if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(4, 65, __pyx_L1_error)
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(4, 97, __pyx_L1_error)
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 65, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 97, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_argument, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "pyfletcher/usercore.pxi":66
+    /* "pyfletcher/usercore.pxi":98
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:
  *             cpp_arguments.push_back(argument)             # <<<<<<<<<<<<<<
  * 
  *         self.usercore.get().setArguments(cpp_arguments)
  */
-    __pyx_t_4 = __Pyx_PyInt_As_uint32_t(__pyx_v_argument); if (unlikely((__pyx_t_4 == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 66, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_As_uint32_t(__pyx_v_argument); if (unlikely((__pyx_t_4 == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(4, 98, __pyx_L1_error)
     try {
       __pyx_v_cpp_arguments.push_back(__pyx_t_4);
     } catch(...) {
       __Pyx_CppExn2PyErr();
-      __PYX_ERR(4, 66, __pyx_L1_error)
+      __PYX_ERR(4, 98, __pyx_L1_error)
     }
 
-    /* "pyfletcher/usercore.pxi":65
+    /* "pyfletcher/usercore.pxi":97
  *         """
  *         cdef vector[uint32_t] cpp_arguments
  *         for argument in arguments:             # <<<<<<<<<<<<<<
@@ -6878,7 +7362,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __py
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":68
+  /* "pyfletcher/usercore.pxi":100
  *             cpp_arguments.push_back(argument)
  * 
  *         self.usercore.get().setArguments(cpp_arguments)             # <<<<<<<<<<<<<<
@@ -6887,7 +7371,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __py
  */
   (void)(__pyx_v_self->usercore.get()->setArguments(__pyx_v_cpp_arguments));
 
-  /* "pyfletcher/usercore.pxi":57
+  /* "pyfletcher/usercore.pxi":89
  *         check_fletcher_status(self.usercore.get().setRange(first, last))
  * 
  *     def set_arguments(self, list arguments):             # <<<<<<<<<<<<<<
@@ -6910,7 +7394,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_8set_arguments(struct __py
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":70
+/* "pyfletcher/usercore.pxi":102
  *         self.usercore.get().setArguments(cpp_arguments)
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
@@ -6937,18 +7421,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10start(struct __pyx_obj_1
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("start", 0);
 
-  /* "pyfletcher/usercore.pxi":71
+  /* "pyfletcher/usercore.pxi":103
  * 
  *     def start(self):
  *         check_fletcher_status(self.usercore.get().start())             # <<<<<<<<<<<<<<
  * 
  *     def get_status(self):
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 71, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->start()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":70
+  /* "pyfletcher/usercore.pxi":102
  *         self.usercore.get().setArguments(cpp_arguments)
  * 
  *     def start(self):             # <<<<<<<<<<<<<<
@@ -6969,7 +7453,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_10start(struct __pyx_obj_1
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":73
+/* "pyfletcher/usercore.pxi":105
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -6997,18 +7481,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(struct __pyx_
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_status", 0);
 
-  /* "pyfletcher/usercore.pxi":75
+  /* "pyfletcher/usercore.pxi":107
  *     def get_status(self):
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))             # <<<<<<<<<<<<<<
  *         return status
  * 
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 75, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getStatus((&__pyx_v_status))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":76
+  /* "pyfletcher/usercore.pxi":108
  *         cdef uint32_t status
  *         check_fletcher_status(self.usercore.get().getStatus(&status))
  *         return status             # <<<<<<<<<<<<<<
@@ -7016,13 +7500,13 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(struct __pyx_
  *     def get_return(self, np.dtype nptype):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 76, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(__pyx_v_status); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 108, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pyfletcher/usercore.pxi":73
+  /* "pyfletcher/usercore.pxi":105
  *         check_fletcher_status(self.usercore.get().start())
  * 
  *     def get_status(self):             # <<<<<<<<<<<<<<
@@ -7041,7 +7525,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_12get_status(struct __pyx_
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":78
+/* "pyfletcher/usercore.pxi":110
  *         return status
  * 
  *     def get_return(self, np.dtype nptype):             # <<<<<<<<<<<<<<
@@ -7056,7 +7540,7 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_15get_return(PyObject *__p
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_return (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_nptype), __pyx_ptype_5numpy_dtype, 1, "nptype", 0))) __PYX_ERR(4, 78, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_nptype), __pyx_ptype_5numpy_dtype, 1, "nptype", 0))) __PYX_ERR(4, 110, __pyx_L1_error)
   __pyx_r = __pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(((struct __pyx_obj_10pyfletcher_3lib_UserCore *)__pyx_v_self), ((PyArray_Descr *)__pyx_v_nptype));
 
   /* function exit code */
@@ -7082,18 +7566,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("get_return", 0);
 
-  /* "pyfletcher/usercore.pxi":92
+  /* "pyfletcher/usercore.pxi":124
  *         cdef uint64_t ret
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))             # <<<<<<<<<<<<<<
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 92, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->getReturn((&__pyx_v_lo), (&__pyx_v_hi))); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 124, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":93
+  /* "pyfletcher/usercore.pxi":125
  * 
  *         check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))
  *         ret = (<uint64_t>hi << 32) + lo             # <<<<<<<<<<<<<<
@@ -7102,19 +7586,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
  */
   __pyx_v_ret = ((((uint64_t)__pyx_v_hi) << 32) + __pyx_v_lo);
 
-  /* "pyfletcher/usercore.pxi":95
+  /* "pyfletcher/usercore.pxi":127
  *         ret = (<uint64_t>hi << 32) + lo
  * 
  *         scalar = np.uint64(ret)             # <<<<<<<<<<<<<<
  *         cast_scalar = scalar.astype(nptype)
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 95, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_uint64); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 95, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_uint64); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_uint64_t(__pyx_v_ret); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 95, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_uint64_t(__pyx_v_ret); if (unlikely(!__pyx_t_2)) __PYX_ERR(4, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -7129,20 +7613,20 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
   __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_t_2) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2);
   __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 95, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_scalar = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":96
+  /* "pyfletcher/usercore.pxi":128
  * 
  *         scalar = np.uint64(ret)
  *         cast_scalar = scalar.astype(nptype)             # <<<<<<<<<<<<<<
  * 
  *         return cast_scalar.item()
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_scalar, __pyx_n_s_astype); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 96, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_scalar, __pyx_n_s_astype); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 128, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_2 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -7156,13 +7640,13 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
   }
   __pyx_t_1 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_2, ((PyObject *)__pyx_v_nptype)) : __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_nptype));
   __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 96, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 128, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_cast_scalar = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":98
+  /* "pyfletcher/usercore.pxi":130
  *         cast_scalar = scalar.astype(nptype)
  * 
  *         return cast_scalar.item()             # <<<<<<<<<<<<<<
@@ -7170,7 +7654,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
  *     def wait_for_finish(self, int poll_interval_usec=0):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_cast_scalar, __pyx_n_s_item); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 98, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_cast_scalar, __pyx_n_s_item); if (unlikely(!__pyx_t_3)) __PYX_ERR(4, 130, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_2 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -7184,14 +7668,14 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
   }
   __pyx_t_1 = (__pyx_t_2) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 98, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 130, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pyfletcher/usercore.pxi":78
+  /* "pyfletcher/usercore.pxi":110
  *         return status
  * 
  *     def get_return(self, np.dtype nptype):             # <<<<<<<<<<<<<<
@@ -7215,7 +7699,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_14get_return(struct __pyx_
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":100
+/* "pyfletcher/usercore.pxi":132
  *         return cast_scalar.item()
  * 
  *     def wait_for_finish(self, int poll_interval_usec=0):             # <<<<<<<<<<<<<<
@@ -7252,7 +7736,7 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_17wait_for_finish(PyObject
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wait_for_finish") < 0)) __PYX_ERR(4, 100, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wait_for_finish") < 0)) __PYX_ERR(4, 132, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -7263,14 +7747,14 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8UserCore_17wait_for_finish(PyObject
       }
     }
     if (values[0]) {
-      __pyx_v_poll_interval_usec = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_poll_interval_usec == (int)-1) && PyErr_Occurred())) __PYX_ERR(4, 100, __pyx_L3_error)
+      __pyx_v_poll_interval_usec = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_poll_interval_usec == (int)-1) && PyErr_Occurred())) __PYX_ERR(4, 132, __pyx_L3_error)
     } else {
       __pyx_v_poll_interval_usec = ((int)0);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("wait_for_finish", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 100, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("wait_for_finish", 0, 0, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(4, 132, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyfletcher.lib.UserCore.wait_for_finish", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -7289,18 +7773,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16wait_for_finish(struct _
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("wait_for_finish", 0);
 
-  /* "pyfletcher/usercore.pxi":107
+  /* "pyfletcher/usercore.pxi":139
  * 
  *         """
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))             # <<<<<<<<<<<<<<
  * 
  *     def get_platform(self):
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_v_poll_interval_usec)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 107, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->usercore.get()->waitForFinish(__pyx_v_poll_interval_usec)); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 139, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/usercore.pxi":100
+  /* "pyfletcher/usercore.pxi":132
  *         return cast_scalar.item()
  * 
  *     def wait_for_finish(self, int poll_interval_usec=0):             # <<<<<<<<<<<<<<
@@ -7321,7 +7805,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_16wait_for_finish(struct _
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":109
+/* "pyfletcher/usercore.pxi":141
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
@@ -7349,7 +7833,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(struct __py
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_platform", 0);
 
-  /* "pyfletcher/usercore.pxi":116
+  /* "pyfletcher/usercore.pxi":148
  * 
  *         """
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())             # <<<<<<<<<<<<<<
@@ -7357,13 +7841,13 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(struct __py
  *     def get_context(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = pyfletcher_wrap_platform(__pyx_v_self->usercore.get()->platform()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 116, __pyx_L1_error)
+  __pyx_t_1 = pyfletcher_wrap_platform(__pyx_v_self->usercore.get()->platform()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pyfletcher/usercore.pxi":109
+  /* "pyfletcher/usercore.pxi":141
  *         check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
  * 
  *     def get_platform(self):             # <<<<<<<<<<<<<<
@@ -7382,7 +7866,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_18get_platform(struct __py
   return __pyx_r;
 }
 
-/* "pyfletcher/usercore.pxi":118
+/* "pyfletcher/usercore.pxi":150
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
  * 
  *     def get_context(self):             # <<<<<<<<<<<<<<
@@ -7410,19 +7894,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8UserCore_20get_context(struct __pyx
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_context", 0);
 
-  /* "pyfletcher/usercore.pxi":125
+  /* "pyfletcher/usercore.pxi":157
  * 
  *         """
  *         return pyfletcher_wrap_context(self.usercore.get().context())             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = pyfletcher_wrap_context(__pyx_v_self->usercore.get()->context()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 125, __pyx_L1_error)
+  __pyx_t_1 = pyfletcher_wrap_context(__pyx_v_self->usercore.get()->context()); if (unlikely(!__pyx_t_1)) __PYX_ERR(4, 157, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pyfletcher/usercore.pxi":118
+  /* "pyfletcher/usercore.pxi":150
  *         return pyfletcher_wrap_platform(self.usercore.get().platform())
  * 
  *     def get_context(self):             # <<<<<<<<<<<<<<
@@ -23811,6 +24295,62 @@ static void __pyx_tp_dealloc_10pyfletcher_3lib_UserCore(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
+static PyObject *__pyx_getprop_10pyfletcher_3lib_8UserCore_ctrl_start(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_1__get__(o);
+}
+
+static int __pyx_setprop_10pyfletcher_3lib_8UserCore_ctrl_start(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
+  if (v) {
+    return __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_start_3__set__(o, v);
+  }
+  else {
+    PyErr_SetString(PyExc_NotImplementedError, "__del__");
+    return -1;
+  }
+}
+
+static PyObject *__pyx_getprop_10pyfletcher_3lib_8UserCore_ctrl_reset(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_1__get__(o);
+}
+
+static int __pyx_setprop_10pyfletcher_3lib_8UserCore_ctrl_reset(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
+  if (v) {
+    return __pyx_pw_10pyfletcher_3lib_8UserCore_10ctrl_reset_3__set__(o, v);
+  }
+  else {
+    PyErr_SetString(PyExc_NotImplementedError, "__del__");
+    return -1;
+  }
+}
+
+static PyObject *__pyx_getprop_10pyfletcher_3lib_8UserCore_done_status(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_1__get__(o);
+}
+
+static int __pyx_setprop_10pyfletcher_3lib_8UserCore_done_status(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
+  if (v) {
+    return __pyx_pw_10pyfletcher_3lib_8UserCore_11done_status_3__set__(o, v);
+  }
+  else {
+    PyErr_SetString(PyExc_NotImplementedError, "__del__");
+    return -1;
+  }
+}
+
+static PyObject *__pyx_getprop_10pyfletcher_3lib_8UserCore_done_status_mask(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_1__get__(o);
+}
+
+static int __pyx_setprop_10pyfletcher_3lib_8UserCore_done_status_mask(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
+  if (v) {
+    return __pyx_pw_10pyfletcher_3lib_8UserCore_16done_status_mask_3__set__(o, v);
+  }
+  else {
+    PyErr_SetString(PyExc_NotImplementedError, "__del__");
+    return -1;
+  }
+}
+
 static PyMethodDef __pyx_methods_10pyfletcher_3lib_UserCore[] = {
   {"implements_schema", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_3implements_schema, METH_O, __pyx_doc_10pyfletcher_3lib_8UserCore_2implements_schema},
   {"reset", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_5reset, METH_NOARGS, 0},
@@ -23825,6 +24365,14 @@ static PyMethodDef __pyx_methods_10pyfletcher_3lib_UserCore[] = {
   {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_23__reduce_cython__, METH_NOARGS, 0},
   {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_8UserCore_25__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
+};
+
+static struct PyGetSetDef __pyx_getsets_10pyfletcher_3lib_UserCore[] = {
+  {(char *)"ctrl_start", __pyx_getprop_10pyfletcher_3lib_8UserCore_ctrl_start, __pyx_setprop_10pyfletcher_3lib_8UserCore_ctrl_start, (char *)0, 0},
+  {(char *)"ctrl_reset", __pyx_getprop_10pyfletcher_3lib_8UserCore_ctrl_reset, __pyx_setprop_10pyfletcher_3lib_8UserCore_ctrl_reset, (char *)0, 0},
+  {(char *)"done_status", __pyx_getprop_10pyfletcher_3lib_8UserCore_done_status, __pyx_setprop_10pyfletcher_3lib_8UserCore_done_status, (char *)0, 0},
+  {(char *)"done_status_mask", __pyx_getprop_10pyfletcher_3lib_8UserCore_done_status_mask, __pyx_setprop_10pyfletcher_3lib_8UserCore_done_status_mask, (char *)0, 0},
+  {0, 0, 0, 0, 0}
 };
 
 static PyTypeObject __pyx_type_10pyfletcher_3lib_UserCore = {
@@ -23862,7 +24410,7 @@ static PyTypeObject __pyx_type_10pyfletcher_3lib_UserCore = {
   0, /*tp_iternext*/
   __pyx_methods_10pyfletcher_3lib_UserCore, /*tp_methods*/
   0, /*tp_members*/
-  0, /*tp_getset*/
+  __pyx_getsets_10pyfletcher_3lib_UserCore, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
