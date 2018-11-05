@@ -140,4 +140,4 @@ TODO: Generate SREC file and run platform-independent simulation.
 ## Run on hardware
 
 If the tests pass, pick a supported platform to synthesise the design for.
-An [example](../../platforms/aws-f1/sum/) exist for AWS F1 instances.
+An [example](../../platforms/aws-f1/examples/sum) exist for AWS F1 instances.
