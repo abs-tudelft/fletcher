@@ -19,7 +19,7 @@
 #include <arrow/util/logging.h>
 #include <iomanip>
 
-#include "common/status.h"
+#include "fletcher/common/status.h"
 
 #include "./platform.h"
 

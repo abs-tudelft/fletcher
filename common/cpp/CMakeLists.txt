@@ -20,13 +20,13 @@ if (FLETCHER_PYTHON)
 endif()
 
 set(COMMON_SOURCES
-        src/common/arrow-utils.cc
-        src/common/hex-view.cc)
+        src/fletcher/common/arrow-utils.cc
+        src/fletcher/common/hex-view.cc)
 
 set(COMMON_HEADERS
-        src/common/arrow-utils.h
-        src/common/hex-view.h
-        src/common/timer.h)
+        src/fletcher/common/arrow-utils.h
+        src/fletcher/common/hex-view.h
+        src/fletcher/common/timer.h)
 
 add_library(${FLETCHER_COMMON} STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
 target_link_libraries(${FLETCHER_COMMON} ${LIB_ARROW})

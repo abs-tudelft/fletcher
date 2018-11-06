@@ -79,7 +79,7 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
   }
 }
 
-std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow::Field>& field, ArrowStream *parent) {
+std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow::Field> &field, ArrowStream *parent) {
   int epc = fletcher::getEPC(field);
 
   LOGD(getFieldInfoString(field, parent));
@@ -88,14 +88,14 @@ std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow:
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("bytes", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else if (field->type()->id() == arrow::Type::STRING) {
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("chars", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else {
@@ -127,7 +127,8 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
   Value ctrl_offset(0);
 
   // For each buffer address, add a port.
-  for (auto const &buffer : getBuffers()) {
+  auto bufs = getBuffers();
+  for (auto const &buffer : bufs) {
     auto port = make_shared<CommandPort>(
         buffer->name(),
         CSP::ADDRESS,
@@ -163,7 +164,7 @@ std::vector<std::shared_ptr<Buffer>> Column::getBuffers() {
   for (const auto &s : arrow_streams_) {
     auto sbs = std::static_pointer_cast<ArrowStream>(s);
     auto bufs = sbs->getBuffers();
-    buffers.insert(buffers.begin(), bufs.begin(), bufs.end());
+    buffers.insert(buffers.end(), bufs.begin(), bufs.end());
   }
   return buffers;
 }
@@ -188,7 +189,8 @@ std::string Column::toString() {
 /**
  * Generate a ColumnReader
  */
-ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width) :
+ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width)
+    :
     StreamComponent("ColumnReader"), DerivedFrom(column) {
   /* Generics */
   entity()
@@ -358,7 +360,7 @@ std::string Column::getColumnModeString(Mode mode) {
   }
 }
 
-std::string genConfigString(const std::shared_ptr<arrow::Field>& field, int level) {
+std::string genConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
   std::string ret;
   ConfigType ct = getConfigType(field->type().get());
 

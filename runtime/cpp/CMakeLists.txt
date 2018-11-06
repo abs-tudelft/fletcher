@@ -29,7 +29,6 @@ set(SOURCES
         src/fletcher/usercore.cc)
 
 set(HEADERS
-        ../../common/c/src/fletcher.h
         src/fletcher/platform.h
         src/fletcher/context.h
         src/fletcher/usercore.h)
@@ -69,7 +68,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
-# Install headers
+# Install headers from cpp runtime
 install(FILES ${HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
         )
@@ -83,6 +82,11 @@ set(COMMON_HEADERS
 
 install(FILES ${COMMON_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common
+        )
+
+# Install C header
+install(FILES ${GLOBAL_C_HEADER}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
         )
 
 ########################################################################################################################

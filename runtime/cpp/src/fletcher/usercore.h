@@ -23,7 +23,7 @@
 #include "./context.h"
 #include "./platform.h"
 
-#include "fletcher.h"
+#include "fletcher/fletcher.h"
 
 namespace fletcher {
 

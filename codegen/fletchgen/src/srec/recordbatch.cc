@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "common/hex-view.h"
+#include "fletcher/common/hex-view.h"
 #include "./recordbatch.h"
 
 namespace fletchgen {

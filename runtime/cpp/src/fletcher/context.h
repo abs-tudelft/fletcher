@@ -22,8 +22,8 @@
 #include <arrow/array.h>
 #include <arrow/record_batch.h>
 
-#include "common/status.h"
-#include "common/arrow-utils.h"
+#include "fletcher/common/status.h"
+#include "fletcher/common/arrow-utils.h"
 
 #include "./platform.h"
 

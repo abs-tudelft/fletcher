@@ -14,7 +14,7 @@
 
 #include <unistd.h>
 
-#include "../../../../common/c/src/fletcher.h"
+#include "fletcher/fletcher.h"
 
 #define FLETCHER_PLATFORM_NAME "echo"
 

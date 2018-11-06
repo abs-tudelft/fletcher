@@ -19,7 +19,6 @@
 
 #include "./context.h"
 #include "./usercore.h"
-#include "usercore.h"
 
 namespace fletcher {
 
