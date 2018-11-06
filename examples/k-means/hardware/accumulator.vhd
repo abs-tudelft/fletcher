@@ -21,148 +21,160 @@ library work;
 
 entity accumulator is
     generic(
-      TAG_WIDTH                                  : natural;
-      BUS_ADDR_WIDTH                             : natural;
-      INDEX_WIDTH                                : natural;
-      REG_WIDTH                                  : natural
+      DATA_WIDTH        : natural;
+      ACCUMULATOR_WIDTH : natural
     );
     port(
-      point_out_ready                            : out std_logic;
-      point_out_dimension_out_count              : in std_logic_vector(3 downto 0);
-      point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
-      point_out_dimension_out_dvalid             : in std_logic;
-      point_out_dimension_out_last               : in std_logic;
-      point_out_dimension_out_ready              : out std_logic;
-      point_out_dimension_out_valid              : in std_logic;
-      point_out_length                           : in std_logic_vector(INDEX_WIDTH-1 downto 0);
-      point_out_last                             : in std_logic;
-      point_out_valid                            : in std_logic;
-      point_cmd_valid                            : out std_logic;
-      point_cmd_ready                            : in std_logic;
-      point_cmd_firstIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      point_cmd_lastIdx                          : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      point_cmd_tag                              : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      point_cmd_point_dimension_values_addr      : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      point_cmd_point_offsets_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      -------------------------------------------------------------------------
-      acc_reset                                  : in std_logic;
-      acc_clk                                    : in std_logic;
-      -------------------------------------------------------------------------
-      ctrl_done                                  : out std_logic;
-      ctrl_busy                                  : out std_logic;
-      ctrl_idle                                  : out std_logic;
-      ctrl_reset                                 : in std_logic;
-      ctrl_stop                                  : in std_logic;
-      ctrl_start                                 : in std_logic;
-      -------------------------------------------------------------------------
-      idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
-      idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
-      reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-      reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-      -------------------------------------------------------------------------
-      reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
+      reset             : in  std_logic;
+      clk               : in  std_logic;
+      point_data        : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      point_valid       : in  std_logic;
+      point_ready       : out std_logic;
+      point_last        : in  std_logic;
+      sum_data          : out std_logic_vector(ACCUMULATOR_WIDTH-1 downto 0);
+      sum_last          : out std_logic
     );
 end entity accumulator;
 
 
 architecture behavior of accumulator is
+  component adder is
+    generic(
+      DATA_WIDTH           : natural;
+      TUSER_WIDTH          : positive := 1;
+      OPERATION            : string   := "add";
+      SLICES               : natural  := 1
+    );
+    port(
+      clk                  : in  std_logic;
+      reset                : in  std_logic;
+      s_axis_a_tvalid      : in  std_logic;
+      s_axis_a_tready      : out std_logic;
+      s_axis_a_tdata       : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      s_axis_a_tlast       : in  std_logic := '0';
+      s_axis_a_tuser       : in  std_logic_vector(TUSER_WIDTH-1 downto 0) := (others => '0');
+      s_axis_b_tvalid      : in  std_logic;
+      s_axis_b_tready      : out std_logic;
+      s_axis_b_tdata       : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      s_axis_b_tlast       : in  std_logic := '0';
+      m_axis_result_tvalid : out std_logic;
+      m_axis_result_tready : in  std_logic;
+      m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      m_axis_result_tlast  : out std_logic;
+      m_axis_result_tuser  : out std_logic_vector(TUSER_WIDTH-1 downto 0)
+    );
+  end component;
 
-  type haf_state_t IS (RESET, WAITING, SETUP, RUNNING, DONE);
+  type haf_state_t is (ACCUMULATE, WAIT_AB, WAIT_A, WAIT_B);
 	signal state, state_next : haf_state_t;
 
-begin
+  type axi_t is record
+    valid : std_logic;
+    ready : std_logic;
+    last  : std_logic;
+    data  : std_logic_vector(ACCUMULATOR_WIDTH-1 downto 0);
+  end record axi_t;
 
-  -- Provide base address to ColumnReader
-  point_cmd_point_dimension_values_addr <= reg_point_dimension_values_addr;
-  point_cmd_point_offsets_addr <= reg_point_offsets_addr;
-  point_cmd_tag <= (others => '0');
+  signal arg_a,
+         arg_b,
+         result : axi_t;
 
-  -- Set the first and last index on our column
-  point_cmd_firstIdx <= idx_first;
-  point_cmd_lastIdx  <= idx_last;
+begiN
 
-  logic_p: process (state, ctrl_start,
-    point_cmd_ready, point_out_valid, point_out_last, point_out_length,
-    point_out_dimension_out_data, point_out_dimension_out_dvalid,
-    point_out_dimension_out_last, point_out_dimension_out_valid)
+  process (clk)
   begin
-    -- Default values
-    -- No command to ColumnReader
-    point_cmd_valid <= '0';
-    -- Do not accept values from the ColumnReader
-    point_out_ready <= '0';
-    point_out_dimension_out_ready <= '0';
-    -- Stay in same state
-    state_next <= state;
-
-    case state is
-      when RESET =>
-        ctrl_done <= '0';
-        ctrl_busy <= '0';
-        ctrl_idle <= '0';
-        state_next <= WAITING;
-
-      when WAITING =>
-        ctrl_done <= '0';
-        ctrl_busy <= '0';
-        ctrl_idle <= '1';
-        -- Wait for start signal from UserCore (initiated by software)
-        if ctrl_start = '1' then
-          state_next <= SETUP;
-        end if;
-
-      when SETUP =>
-        ctrl_done <= '0';
-        ctrl_busy <= '1';
-        ctrl_idle <= '0';
-        -- Send address and row indices to the ColumnReader
-        point_cmd_valid <= '1';
-        if point_cmd_ready = '1' then
-          -- ColumnReader has received the command
-          state_next <= RUNNING;
-        end if;
-
-      when RUNNING =>
-        ctrl_done <= '0';
-        ctrl_busy <= '1';
-        ctrl_idle <= '0';
-        -- Always ready to accept input
-        point_out_dimension_out_ready <= '1';
-        if point_out_dimension_out_valid = '1' then
-          if point_out_dimension_out_last = '1' then
-            point_out_ready <= '1';
-            -- Exit on last element
-            if point_out_last = '1' then
-              state_next <= DONE;
-            end if;
-          end if;
-        end if;
-
-      when DONE =>
-        ctrl_done <= '1';
-        ctrl_busy <= '0';
-        ctrl_idle <= '1';
-
-      when others =>
-        ctrl_done <= '0';
-        ctrl_busy <= '0';
-        ctrl_idle <= '0';
-    end case;
-  end process;
-
-
-  state_p: process (acc_clk)
-  begin
-    -- Control state machine
-    if rising_edge(acc_clk) then
-      if acc_reset = '1' or ctrl_reset = '1' then
-        state <= RESET;
+    if rising_edge(clk) then
+      if reset = '1' then
+        state <= WAIT_AB;
       else
-        state <= state_next;
+        case state is
+          when WAIT_AB =>
+            if arg_a.ready = '1' and arg_b.ready = '1' then
+              state <= ACCUMULATE;
+            elsif arg_a.ready = '1' then
+              state <= WAIT_B;
+            elsif arg_b.ready = '1' then
+              state <= WAIT_A;
+            end if;
+          when WAIT_A =>
+            if arg_a.ready = '1' then
+              state <= ACCUMULATE;
+            end if;
+          when WAIT_B =>
+            if arg_b.ready = '1' then
+              state <= ACCUMULATE;
+            end if;
+          when others =>
+            state <= ACCUMULATE;
+        end case;
       end if;
     end if;
   end process;
+
+
+  process (state, point_valid, point_data, point_last,
+           result.valid, result.data, result.last,
+           arg_a.ready, arg_b.ready)
+  begin
+    if state = ACCUMULATE then
+      arg_a.valid <= point_valid;
+      point_ready <= arg_a.ready;
+      arg_a.data  <= std_logic_vector(resize(signed(point_data), ACCUMULATOR_WIDTH));
+      arg_a.last  <= point_last;
+
+      arg_b.valid  <= result.valid;
+      result.ready <= arg_b.ready;
+      arg_b.data   <= result.data;
+      arg_b.last   <= result.last;
+
+    else
+      -- Push exactly one zero into each of the arguments
+      if state = WAIT_AB or state = WAIT_A then
+        arg_a.valid <= '1';
+      else
+        arg_a.valid <= '0';
+      end if;
+      -- Cannot accept a point until initialized
+      point_ready <= '0';
+      arg_a.data  <= (others => '0');
+      arg_a.last  <= '0';
+
+      if state = WAIT_AB or state = WAIT_B then
+        arg_b.valid <= '1';
+      else
+        arg_b.valid <= '0';
+      end if;
+      arg_b.data  <= (others => '0');
+      arg_b.last  <= '0';
+
+      -- Don't consume any result
+      result.ready <= '0';
+    end if;
+  end process;
+
+  -- Output
+  sum_data <= result.data;
+  sum_last <= result.last and result.valid;
+
+  add_l: adder generic map (
+    DATA_WIDTH             => ACCUMULATOR_WIDTH,
+    SLICES                 => 1
+  )
+  port map (
+    clk                    => clk,
+    reset                  => reset,
+    s_axis_a_tvalid        => arg_a.valid,
+    s_axis_a_tready        => arg_a.ready,
+    s_axis_a_tdata         => arg_a.data,
+    s_axis_a_tlast         => arg_a.last,
+    s_axis_b_tvalid        => arg_b.valid,
+    s_axis_b_tready        => arg_b.ready,
+    s_axis_b_tdata         => arg_b.data,
+    m_axis_result_tvalid   => result.valid,
+    m_axis_result_tready   => result.ready,
+    m_axis_result_tdata    => result.data,
+    m_axis_result_tlast    => result.last
+  );
 
 end architecture;
 

@@ -25,16 +25,16 @@ entity axi_funnel is
       DATA_WIDTH      : natural
     );
     port(
-      reset           : in std_logic;
-      clk             : in std_logic;
+      reset           : in  std_logic;
+      clk             : in  std_logic;
       -------------------------------------------------------------------------
-      in_data         : in std_logic_vector(DATA_WIDTH-1 downto 0);
-      in_valid        : in std_logic;
+      in_data         : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      in_valid        : in  std_logic;
       in_ready        : out std_logic;
-      in_last         : in std_logic;
+      in_last         : in  std_logic;
       out_data        : out std_logic_vector(DATA_WIDTH-1 downto 0);
       out_valid       : out std_logic_vector(SLAVES-1 downto 0);
-      out_ready       : in std_logic_vector(SLAVES-1 downto 0);
+      out_ready       : in  std_logic_vector(SLAVES-1 downto 0);
       out_last        : out std_logic_vector(SLAVES-1 downto 0)
     );
 end entity axi_funnel;
@@ -47,13 +47,6 @@ architecture behavior of axi_funnel is
   signal slave_read, slave_read_next : std_logic_vector(SLAVES-1 downto 0);
 
 begin
--- in_valid = 1
--- out_valid -> 1
--- in_ready(x) = 1
--- out_valid(x) -> 0
--- out_valid = 0
--- in_ready -> 1
-
   out_data <= in_data;
   out_last <= (others => in_last);
 

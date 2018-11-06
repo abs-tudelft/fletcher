@@ -18,6 +18,7 @@ use ieee.std_logic_misc.all;
 use IEEE.numeric_std.all;
 
 library work;
+use work.Utils.all;
 
 entity kmeans is
     generic(
@@ -25,8 +26,13 @@ entity kmeans is
       BUS_ADDR_WIDTH                             : natural;
       INDEX_WIDTH                                : natural;
       REG_WIDTH                                  : natural;
+      NUM_USER_REGS                              : natural;
       DIMENSION                                  : natural;
-      DATA_WIDTH                                 : natural
+      DATA_WIDTH                                 : natural;
+      ACCUMULATOR_WIDTH                          : natural := DATA_WIDTH;
+      CENTROID_REGS                              : natural;
+      DIMENSION_REGS                             : natural := CENTROID_REGS / DIMENSION; -- TODO: clean up
+      CENTROIDS                                  : natural
     );
     port(
       point_out_ready                            : out std_logic;
@@ -63,63 +69,273 @@ entity kmeans is
       reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
       -------------------------------------------------------------------------
       reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
+      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      user_regs_in                               : in std_logic_vector(NUM_USER_REGS * REG_WIDTH - 1 downto 0);
+      user_regs_out                              : out std_logic_vector(NUM_USER_REGS * REG_WIDTH - 1 downto 0);
+      user_regs_out_en                           : out std_logic_vector(NUM_USER_REGS - 1 downto 0)
     );
 end entity kmeans;
 
 
 architecture behavior of kmeans is
 
-  component distance is
+  component axi_funnel is
     generic(
-      DIMENSION       : natural;
+      SLAVES          : natural;
       DATA_WIDTH      : natural
     );
     port(
-      reset           : in std_logic;
-      clk             : in std_logic;
+      reset           : in  std_logic;
+      clk             : in  std_logic;
       -------------------------------------------------------------------------
-      centroid        : in std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
-      point_data      : in std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
-      point_valid     : in std_logic;
-      point_ready     : out std_logic;
-      point_last      : in std_logic;
-      distance_data   : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      distance_valid  : out std_logic;
-      distance_ready  : in std_logic;
-      distance_last   : out std_logic
+      in_data         : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      in_valid        : in  std_logic;
+      in_ready        : out std_logic;
+      in_last         : in  std_logic;
+      out_data        : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      out_valid       : out std_logic_vector(SLAVES-1 downto 0);
+      out_ready       : in  std_logic_vector(SLAVES-1 downto 0);
+      out_last        : out std_logic_vector(SLAVES-1 downto 0)
     );
   end component;
 
-  type haf_state_t IS (RESET, WAITING, SETUP, RUNNING, DONE);
+  component distance is
+    generic(
+      DIMENSION         : natural;
+      DATA_WIDTH        : natural
+    );
+    port(
+      reset             : in  std_logic;
+      clk               : in  std_logic;
+      -------------------------------------------------------------------------
+      centroid          : in  std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
+      point_data        : in  std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
+      point_valid       : in  std_logic;
+      point_ready       : out std_logic;
+      point_last        : in  std_logic;
+      distance_distance : out std_logic_vector(DATA_WIDTH - 1 downto 0);
+      distance_point    : out std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
+      distance_valid    : out std_logic;
+      distance_ready    : in  std_logic;
+      distance_last     : out std_logic
+    );
+  end component;
+
+  component selector_tree is
+    generic(
+      DATA_WIDTH              : natural;
+      TUSER_WIDTH             : natural := 1;
+      OPERATION               : string := "min";
+      OPERANTS                : natural
+    );
+    port(
+      clk                     : in  std_logic;
+      reset                   : in  std_logic;
+      s_axis_tvalid           : in  std_logic_vector(OPERANTS-1 downto 0);
+      s_axis_tready           : out std_logic_vector(OPERANTS-1 downto 0);
+      s_axis_tdata            : in  std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
+      s_axis_tuser            : in  std_logic_vector(TUSER_WIDTH - 1 downto 0) := (others => '0');
+      s_axis_tlast            : in  std_logic_vector(OPERANTS-1 downto 0)      := (others => '0');
+      m_axis_result_tvalid    : out std_logic;
+      m_axis_result_tready    : in  std_logic;
+      m_axis_result_tdata     : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      m_axis_result_tuser     : out std_logic_vector(TUSER_WIDTH * OPERANTS - 1 downto 0);
+      m_axis_result_tlast     : out std_logic;
+      m_axis_result_tselected : out std_logic_vector(log2ceil(OPERANTS)-1 downto 0)
+    );
+  end component;
+
+  component point_accumulators is
+    generic(
+      DIMENSION         : natural;
+      CENTROIDS         : natural;
+      DATA_WIDTH        : natural;
+      ACCUMULATOR_WIDTH : natural := DATA_WIDTH
+    );
+    port(
+      reset             : in  std_logic;
+      clk               : in  std_logic;
+      -------------------------------------------------------------------------
+      point_data        : in  std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
+      point_centroid    : in  std_logic_vector(log2ceil(CENTROIDS)-1 downto 0);
+      point_valid       : in  std_logic;
+      point_ready       : out std_logic;
+      point_last        : in  std_logic;
+      accum_data        : out std_logic_vector(ACCUMULATOR_WIDTH * DIMENSION * CENTROIDS - 1 downto 0);
+      accum_counters    : out std_logic_vector(ACCUMULATOR_WIDTH * CENTROIDS - 1 downto 0);
+      accum_valid       : out std_logic
+    );
+  end component;
+
+  component divider is
+    generic(
+      IN_WIDTH             : natural;
+      OUT_WIDTH            : natural
+    );
+    port(
+      clk                  : in  std_logic;
+      reset                : in  std_logic;
+      s_in_valid           : in  std_logic;
+      s_in_ready           : out std_logic;
+      s_in_numerator       : in  std_logic_vector(IN_WIDTH-1 downto 0);
+      s_in_denominator     : in  std_logic_vector(IN_WIDTH-1 downto 0);
+      m_result_valid       : out std_logic;
+      m_result_ready       : in  std_logic;
+      m_result_quotient    : out std_logic_vector(OUT_WIDTH-1 downto 0);
+      m_result_remainder   : out std_logic_vector(OUT_WIDTH-1 downto 0)
+    );
+  end component;
+
+  type haf_state_t is (RESET, WAITING, SETUP, ACCUMULATING, MEAN, END_ITERATION, DONE);
 	signal state, state_next : haf_state_t;
 
-  signal point_forward_valid, point_forward_ready, point_forward_last : std_logic;
-  signal distance_data : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal distance_valid, distance_ready, distance_last : std_logic;
+  subtype point_t is std_logic_vector(DIMENSION * DATA_WIDTH - 1 downto 0);
+
+  signal point_forward_valid,
+         point_forward_ready,
+         point_forward_last : std_logic;
+  signal point_forward_data,
+         point_split_data   : point_t;
+  signal point_split_valid,
+         point_split_ready,
+         point_split_last   : std_logic_vector(DIMENSION - 1 downto 0);
+
+  signal distance_data      : std_logic_vector(CENTROIDS * DATA_WIDTH - 1 downto 0);
+  signal distance_valid,
+         distance_ready,
+         distance_last      : std_logic_vector(CENTROIDS - 1 downto 0);
+  type distance_points_t is array (0 to CENTROIDS - 1) of point_t;
+  signal distance_point     : distance_points_t;
+
+  signal centroid_point     : point_t;
+  signal centroid_min       : std_logic_vector(log2ceil(CENTROIDS)-1 downto 0);
+  signal centroid_ready,
+         centroid_valid,
+         centroid_last      : std_logic;
+
+  signal accum_data         : std_logic_vector(ACCUMULATOR_WIDTH * DIMENSION * CENTROIDS - 1 downto 0);
+  signal accum_counters     : std_logic_vector(ACCUMULATOR_WIDTH * CENTROIDS - 1 downto 0);
+  signal accum_valid        : std_logic;
+  signal accumulator_reset  : std_logic;
+
+  signal divi_valid,
+         divi_valid_next,
+         divi_ready,
+         divo_valid,
+         divo_ready         : std_logic;
+  signal div_numerator,
+         div_denominator    : std_logic_vector(ACCUMULATOR_WIDTH - 1 downto 0);
+  signal div_quotient       : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal div_dimension,
+         div_dimension_next : unsigned(log2ceil(DIMENSION) - 1 downto 0);
+  signal div_centroid,
+         div_centroid_next  : unsigned(log2ceil(CENTROIDS) - 1 downto 0);
+
+  signal centroid_moved,
+         centroid_moved_next: std_logic;
 
 begin
 
-  dist_i: distance
+  --TODO: replace with StreamSync
+  distance_sync: axi_funnel
     generic map (
-      DIMENSION  => DIMENSION,
-      DATA_WIDTH => DATA_WIDTH
+      SLAVES                 => CENTROIDS,
+      DATA_WIDTH             => DATA_WIDTH * DIMENSION
     )
     port map (
-      reset           => acc_reset,
-      clk             => acc_clk,
-      -------------------------------------------------------------------------
-      centroid        => std_logic_vector(to_unsigned(0, 64)) & std_logic_vector(to_unsigned(0, 64)),
-      point_data      => point_out_dimension_out_data(DATA_WIDTH * DIMENSION - 1 downto 0),
-      point_valid     => point_forward_valid,
-      point_ready     => point_forward_ready,
-      point_last      => point_forward_last,
-      distance_data   => distance_data,
-      distance_valid  => distance_valid,
-      distance_ready  => distance_ready,
-      distance_last   => distance_last
+      reset                  => acc_reset,
+      clk                    => acc_clk,
+      in_data                => point_forward_data,
+      in_valid               => point_forward_valid,
+      in_ready               => point_forward_ready,
+      in_last                => point_forward_last,
+      out_data               => point_split_data,
+      out_valid              => point_split_valid,
+      out_ready              => point_split_ready,
+      out_last               => point_split_last
     );
 
+  -- Distance to other centroids
+  centroid_g: for c in 0 to CENTROIDS - 1 generate
+    distance_inst: distance
+      generic map (
+        DIMENSION  => DIMENSION,
+        DATA_WIDTH => DATA_WIDTH
+      )
+      port map (
+        reset             => acc_reset,
+        clk               => acc_clk,
+        -------------------------------------------------------------------------
+        centroid          => user_regs_in((c + 1) * CENTROID_REGS * REG_WIDTH - 1 downto c * CENTROID_REGS * REG_WIDTH),
+        point_data        => point_split_data,
+        point_valid       => point_split_valid(c),
+        point_ready       => point_split_ready(c),
+        point_last        => point_split_last(c),
+        distance_distance => distance_data((c + 1) * DATA_WIDTH - 1 downto c * DATA_WIDTH),
+        distance_point    => distance_point(c),
+        distance_valid    => distance_valid(c),
+        distance_ready    => distance_ready(c),
+        distance_last     => distance_last(c)
+      );
+  end generate;
+
+  -- Find nearest centroid
+  selector_tree_inst: selector_tree generic map (
+    DATA_WIDTH              => DATA_WIDTH,
+    TUSER_WIDTH             => DATA_WIDTH * DIMENSION,
+    OPERANTS                => CENTROIDS
+  )
+  port map (
+    clk                     => acc_clk,
+    reset                   => acc_reset,
+    s_axis_tvalid           => distance_valid,
+    s_axis_tready           => distance_ready,
+    s_axis_tdata            => distance_data,
+    s_axis_tuser            => distance_point(0),
+    s_axis_tlast            => distance_last,
+    m_axis_result_tvalid    => centroid_valid,
+    m_axis_result_tready    => centroid_ready,
+    m_axis_result_tdata     => open,
+    m_axis_result_tuser     => centroid_point,
+    m_axis_result_tlast     => centroid_last,
+    m_axis_result_tselected => centroid_min
+  );
+
+  -- Accumulate the points at the nearest centroid
+  point_accumulators_inst: point_accumulators generic map (
+    DIMENSION         => DIMENSION,
+    CENTROIDS         => CENTROIDS,
+    DATA_WIDTH        => DATA_WIDTH,
+    ACCUMULATOR_WIDTH => ACCUMULATOR_WIDTH
+  )
+  port map (
+    reset             => accumulator_reset,
+    clk               => acc_clk,
+    point_data        => centroid_point,
+    point_centroid    => centroid_min,
+    point_valid       => centroid_valid,
+    point_ready       => centroid_ready,
+    point_last        => centroid_last,
+    accum_data        => accum_data,
+    accum_counters    => accum_counters,
+    accum_valid       => accum_valid
+  );
+
+  divider_inst: divider generic map (
+    IN_WIDTH             => ACCUMULATOR_WIDTH,
+    OUT_WIDTH            => DATA_WIDTH
+  )
+  port map (
+    clk                  => acc_clk,
+    reset                => acc_reset,
+    s_in_valid           => divi_valid,
+    s_in_ready           => divi_ready,
+    s_in_numerator       => div_numerator,
+    s_in_denominator     => div_denominator,
+    m_result_valid       => divo_valid,
+    m_result_ready       => divo_ready,
+    m_result_quotient    => div_quotient
+  );
 
   -- Provide base address to ColumnReader
   point_cmd_point_dimension_values_addr <= reg_point_dimension_values_addr;
@@ -130,19 +346,58 @@ begin
   point_cmd_firstIdx <= idx_first;
   point_cmd_lastIdx  <= idx_last;
 
-  logic_p: process (state, ctrl_start,
+  -- Connect centroid data to output of divider
+  centroid_write_g: for C in 0 to CENTROIDS - 1 generate
+    dimension_write_g: for D in 0 to DIMENSION - 1 generate
+      -- TODO: depend on CENTROID_REGS instead of DATA_WIDTH
+      user_regs_out((C * DIMENSION + D + 1) * DATA_WIDTH - 1 downto (C * DIMENSION + D) * DATA_WIDTH) <= div_quotient;
+    end generate;
+  end generate;
+  
+  -- Decrement remaining iterations
+  user_regs_out((CENTROIDS * CENTROID_REGS + 1) * REG_WIDTH - 1 downto CENTROIDS * CENTROID_REGS * REG_WIDTH) <=
+      std_logic_vector(
+          unsigned(user_regs_in((CENTROIDS * CENTROID_REGS + 1) * REG_WIDTH - 1 downto CENTROIDS * CENTROID_REGS * REG_WIDTH)) - 1
+      );
+
+
+  logic_p: process (acc_reset, state, ctrl_start,
     point_cmd_ready, point_out_valid, point_out_last, point_out_length,
     point_out_dimension_out_data, point_out_dimension_out_dvalid,
-    point_out_dimension_out_last, point_out_dimension_out_valid)
+    point_out_dimension_out_last, point_out_dimension_out_valid,
+    point_forward_ready, accum_valid, centroid_moved,
+    divi_ready, divo_valid, divi_valid, div_dimension, div_centroid, div_quotient,
+    accum_data, accum_counters, user_regs_in)
   begin
     -- Default values
+
     -- No command to ColumnReader
     point_cmd_valid <= '0';
+
     -- Do not accept values from the ColumnReader
     point_out_ready <= '0';
     point_out_dimension_out_ready <= '0';
+
+    -- Do not forward a point
+    point_forward_valid <= '0';
+    point_forward_last  <= '0';
+    point_forward_data  <= point_out_dimension_out_data(DIMENSION * DATA_WIDTH - 1 downto 0);
+
+    -- Do not write to user regs
+    user_regs_out_en <= (others => '0');
+
+    accumulator_reset <= acc_reset;
+
     -- Stay in same state
-    state_next <= state;
+    state_next          <= state;
+    div_dimension_next  <= div_dimension;
+    div_centroid_next   <= div_centroid;
+    divi_valid_next     <= divi_valid;
+    centroid_moved_next <= centroid_moved;
+
+    divo_ready      <= '1';
+    div_numerator   <= accum_data((to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * ACCUMULATOR_WIDTH - 1 downto (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * ACCUMULATOR_WIDTH);
+    div_denominator <= accum_counters((to_integer(div_centroid) + 1) * ACCUMULATOR_WIDTH - 1 downto to_integer(div_centroid) * ACCUMULATOR_WIDTH);
 
     case state is
       when RESET =>
@@ -151,6 +406,7 @@ begin
         ctrl_idle <= '0';
         state_next <= WAITING;
 
+      -- Wait for start signal
       when WAITING =>
         ctrl_done <= '0';
         ctrl_busy <= '0';
@@ -160,37 +416,111 @@ begin
           state_next <= SETUP;
         end if;
 
+      -- Set up the ColumnReader
       when SETUP =>
         ctrl_done <= '0';
         ctrl_busy <= '1';
         ctrl_idle <= '0';
-        -- Send address and row indices to the ColumnReader
-        point_cmd_valid <= '1';
-        if point_cmd_ready = '1' then
-          -- ColumnReader has received the command
-          state_next <= RUNNING;
-        end if;
 
-      when RUNNING =>
-        ctrl_done <= '0';
-        ctrl_busy <= '1';
-        ctrl_idle <= '0';
-        -- Always ready to accept input
-        point_out_dimension_out_ready <= '1';
-        if point_out_dimension_out_valid = '1' then
-          if point_out_dimension_out_last = '1' then
-            -- Only advance on list when all elements have been read
-            point_out_ready <= '1';
-
-            
-
-            -- Exit on last element
-            if point_out_last = '1' then
-              state_next <= DONE;
-            end if;
+        if unsigned(user_regs_in((CENTROIDS * CENTROID_REGS + 1) * REG_WIDTH - 1 downto CENTROIDS * CENTROID_REGS * REG_WIDTH)) = 0 then
+          -- Reached iteration limit
+          state_next <= DONE;
+        else
+          -- Send address and row indices to the ColumnReader
+          point_cmd_valid <= '1';
+          if point_cmd_ready = '1' then
+            -- ColumnReader has received the command
+            state_next <= ACCUMULATING;
           end if;
         end if;
 
+      -- Assign point to centroid and accumulate them
+      when ACCUMULATING =>
+        ctrl_done <= '0';
+        ctrl_busy <= '1';
+        ctrl_idle <= '0';
+
+        point_out_dimension_out_ready <= point_forward_ready;
+        point_forward_valid <= point_out_dimension_out_valid;
+        point_forward_last  <= point_out_dimension_out_last and point_out_last;
+
+        if point_out_dimension_out_valid = '1' then
+          if point_out_dimension_out_last = '1' and point_forward_ready = '1' then
+            -- Only advance on list when all elements have been read
+            point_out_ready <= '1';
+          -- TODO: handle case where EPC < number of elements
+          end if;
+        end if;
+
+        -- Exit on last element
+        if accum_valid = '1' then
+          state_next           <= MEAN;
+          div_dimension_next   <= (others => '0');
+          div_centroid_next    <= (others => '0');
+          divi_valid_next      <= '1';
+          centroid_moved_next  <= '0';
+        end if;
+
+      -- Calculate new centroid positions by dividing accumulator values
+      when MEAN =>
+        ctrl_done <= '0';
+        ctrl_busy <= '1';
+        ctrl_idle <= '0';
+
+        -- De-assert valid when input is read
+        if divi_ready = '1' then
+          divi_valid_next <= '0';
+        end if;
+
+        -- Go over each dimension in each centroid
+        if divo_valid = '1' then
+          -- Check whether the centroid has moved
+          -- TODO: depend on CENTROID_REGS instead of DATA_WIDTH
+          if user_regs_in(
+                       (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DATA_WIDTH - 1
+                downto (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DATA_WIDTH)
+              /= div_quotient then
+            centroid_moved_next <= '1';
+          end if;
+          -- Update centroid data
+          user_regs_out_en(
+              (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DIMENSION_REGS - 1 downto
+              (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DIMENSION_REGS) <= (others => '1');
+
+          divi_valid_next <= '1';
+          if div_dimension = DIMENSION - 1 then
+            -- Next centroid
+            div_dimension_next <= (others => '0');
+            div_centroid_next  <= div_centroid + 1;
+            if div_centroid = CENTROIDS - 1 then
+              -- It was the last centroid
+              state_next <= END_ITERATION;
+              divi_valid_next <= '0';
+            end if;
+          else
+            -- Next dimension
+            div_dimension_next <= div_dimension + 1;
+          end if;
+        end if;
+
+      when END_ITERATION =>
+        ctrl_done <= '0';
+        ctrl_busy <= '1';
+        ctrl_idle <= '0';
+
+        accumulator_reset <= '1';
+        -- Decrement remaining iterations
+        user_regs_out_en(CENTROIDS * CENTROID_REGS) <= '1';
+
+        if centroid_moved = '1' then
+          -- Do another iteration
+          state_next <= SETUP;
+        else
+          -- Reached fixed point
+          state_next <= DONE;
+        end if;
+
+      -- Calculation finished
       when DONE =>
         ctrl_done <= '1';
         ctrl_busy <= '0';
@@ -210,8 +540,13 @@ begin
     if rising_edge(acc_clk) then
       if acc_reset = '1' or ctrl_reset = '1' then
         state <= RESET;
+        divi_valid    <= '0';
       else
-        state <= state_next;
+        state          <= state_next;
+        div_dimension  <= div_dimension_next;
+        div_centroid   <= div_centroid_next;
+        divi_valid     <= divi_valid_next;
+        centroid_moved <= centroid_moved_next;
       end if;
     end if;
   end process;

@@ -37,6 +37,9 @@ entity fletcher_wrapper is
     INDEX_WIDTH                                : natural;
     ---------------------------------------------------------------------------
     NUM_ARROW_BUFFERS                          : natural;
+    DIMENSION                                  : natural;
+    CENTROIDS                                  : natural;
+    CENTROID_REGS                              : natural;
     NUM_REGS                                   : natural;
     NUM_USER_REGS                              : natural;
     REG_WIDTH                                  : natural;
@@ -87,8 +90,11 @@ architecture Implementation of fletcher_wrapper is
       BUS_ADDR_WIDTH                             : natural;
       INDEX_WIDTH                                : natural;
       REG_WIDTH                                  : natural;
+      NUM_USER_REGS                              : natural;
       DIMENSION                                  : natural;
-      DATA_WIDTH                                 : natural
+      DATA_WIDTH                                 : natural;
+      CENTROID_REGS                              : natural;
+      CENTROIDS                                  : natural
     );
     port(
       point_out_ready                            : out std_logic;
@@ -125,7 +131,10 @@ architecture Implementation of fletcher_wrapper is
       reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
       -------------------------------------------------------------------------
       reg_point_dimension_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
+      reg_point_offsets_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      user_regs_in                               : in std_logic_vector(NUM_USER_REGS * REG_WIDTH - 1 downto 0);
+      user_regs_out                              : out std_logic_vector(NUM_USER_REGS * REG_WIDTH - 1 downto 0);
+      user_regs_out_en                           : out std_logic_vector(NUM_USER_REGS - 1 downto 0)
     );
   end component;
   -----------------------------------------------------------------------------
@@ -233,8 +242,11 @@ begin
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       INDEX_WIDTH                              => INDEX_WIDTH,
       REG_WIDTH                                => REG_WIDTH,
-      DIMENSION                                => 2,
-      DATA_WIDTH                               => 64
+      NUM_USER_REGS                            => NUM_USER_REGS,
+      DIMENSION                                => DIMENSION,
+      DATA_WIDTH                               => 64,
+      CENTROID_REGS                            => CENTROID_REGS,
+      CENTROIDS                                => CENTROIDS
     )
     port map (
       acc_clk                                  => acc_clk,
@@ -266,8 +278,11 @@ begin
       idx_last                                 => regs_in(6*REG_WIDTH-1 downto 5*REG_WIDTH),
       reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),
       reg_return1                              => regs_out(4*REG_WIDTH-1 downto 3*REG_WIDTH),
-      reg_point_dimension_values_addr          => regs_in(8*REG_WIDTH-1 downto 6*REG_WIDTH),
-      reg_point_offsets_addr                   => regs_in(10*REG_WIDTH-1 downto 8*REG_WIDTH)
+      reg_point_dimension_values_addr          => regs_in(10*REG_WIDTH-1 downto 8*REG_WIDTH),
+      reg_point_offsets_addr                   => regs_in(8*REG_WIDTH-1 downto 6*REG_WIDTH),
+      user_regs_in                             => regs_in(NUM_REGS*REG_WIDTH-1 downto (NUM_REGS-NUM_USER_REGS)*REG_WIDTH),
+      user_regs_out                            => regs_out(NUM_REGS*REG_WIDTH-1 downto (NUM_REGS-NUM_USER_REGS)*REG_WIDTH),
+      user_regs_out_en                         => regs_out_en(NUM_REGS - 1 downto (NUM_REGS-NUM_USER_REGS))
     );
 
   -- Arbiter instance generated to serve 1 column readers.
@@ -312,10 +327,12 @@ begin
   -----------------------------------------------------------------------------
   mst_wdat_valid                               <='0';
   mst_wreq_valid                               <='0';
-  regs_out_en(0)                               <='0';
-  regs_out_en(1)                               <='1';
-  regs_out_en(2)                               <='1';
-  regs_out_en(3)                               <='1';
+  regs_out_en(0)                               <='0';  -- control
+  regs_out_en(1)                               <='1';  -- status
+  regs_out_en(2)                               <='1';  -- ret 0
+  regs_out_en(3)                               <='1';  -- ret 1
+  regs_out_en(5 downto 4) <= (others => '0'); -- first & last
+  regs_out_en(9 downto 6) <= (others => '0'); -- column addresses
 
 end architecture;
 

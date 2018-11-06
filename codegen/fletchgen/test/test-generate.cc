@@ -37,11 +37,17 @@ int main(int argc, char* argv[]) {
   recordbatch = fletchgen::test::getStringRB();
   fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/names.rb");
 
-  /* Number List */
-  schema = fletchgen::test::genNumberListSchema();
-  fletchgen::writeSchemaToFile(schema, "schemas/numberlistread.fbs");
+  /* Float List */
+  schema = fletchgen::test::genFloatListSchema();
+  fletchgen::writeSchemaToFile(schema, "schemas/floatlistread.fbs");
   recordbatch = fletchgen::test::getFloat64ListRB();
-  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/numberlist.rb");
+  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/floatlist.rb");
+
+  /* Number List */
+  schema = fletchgen::test::genIntListSchema();
+  fletchgen::writeSchemaToFile(schema, "schemas/intlistread.fbs");
+  recordbatch = fletchgen::test::getInt64ListRB();
+  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlist.rb");
 
   return EXIT_SUCCESS;
 }

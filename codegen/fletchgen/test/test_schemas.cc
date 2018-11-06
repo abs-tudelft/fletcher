@@ -126,9 +126,19 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genNumberListSchema() {
+std::shared_ptr<arrow::Schema> genFloatListSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
       arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
+  };
+
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+
+  return schema;
+}
+
+std::shared_ptr<arrow::Schema> genIntListSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
   };
 
   auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));

@@ -23,10 +23,13 @@ use work.Interconnect.all;
 entity sim_top is
   generic (
     -- Accelerator properties
+    DIMENSION                   : natural := 2;
+    CENTROID_REGS               : natural := 2 * DIMENSION;
+    CENTROIDS                   : natural := 2;
     INDEX_WIDTH                 : natural := 32;
     NUM_ARROW_BUFFERS           : natural := 2;
-    NUM_USER_REGS               : natural := 0;
-    NUM_REGS                    : natural := 10;
+    NUM_USER_REGS               : natural := CENTROIDS * CENTROID_REGS + 1;
+    NUM_REGS                    : natural := 10 + NUM_USER_REGS;
     REG_WIDTH                   : natural := 32;
     TAG_WIDTH                   : natural := 1;
 
@@ -59,6 +62,9 @@ architecture Behavorial of sim_top is
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       NUM_ARROW_BUFFERS         : natural;
+      DIMENSION                 : natural;
+      CENTROIDS                 : natural;
+      CENTROID_REGS             : natural;
       NUM_REGS                  : natural;
       NUM_USER_REGS             : natural;
       REG_WIDTH                 : natural;
@@ -133,6 +139,7 @@ architecture Behavorial of sim_top is
   signal regs                   : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
   signal regs_out               : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
   signal regs_out_en            : std_logic_vector(NUM_REGS-1 downto 0);
+  signal regs_sim_we            : std_logic_vector(NUM_REGS-1 downto 0);
   
   -- Write to MMIO register by index
   procedure mmio_write(idx  : in  natural;
@@ -185,8 +192,13 @@ begin
 
   -- Typical stimuli process:
   stimuli_proc : process is
-    variable read_data : std_logic_vector(REG_WIDTH-1 downto 0);
+    variable read_data, read_data_b : std_logic_vector(REG_WIDTH-1 downto 0);
   begin
+    regs_sim_we <= (others => '0');
+    regs_sim_we(0) <= '1'; -- control
+    regs_sim_we(9 downto 4) <= (others => '1'); -- addresses
+    regs_sim_we(CENTROIDS * CENTROID_REGS + 10 downto 10) <= (others => '1');
+
     wait until acc_reset = '1' and bus_reset = '1';
     
     -- 1. Reset the user core
@@ -195,13 +207,13 @@ begin
     
     
     -- 2. Write addresses of the arrow buffers in the SREC file.
-    uc_reg_write(4, X"00000000", regs_in);
-    wait until rising_edge(acc_clk);
-    uc_reg_write(5, X"00000000", regs_in);
-    wait until rising_edge(acc_clk);
-    uc_reg_write(2, X"00000040", regs_in);
+    uc_reg_write(2, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
     uc_reg_write(3, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+    uc_reg_write(4, X"00000040", regs_in);
+    wait until rising_edge(acc_clk);
+    uc_reg_write(5, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
 
    
@@ -211,10 +223,28 @@ begin
     -- 
     -- Example:
     -- First index in user reg 0
-    uc_reg_write(0, X"00000000", regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(0, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
     -- Last index in user reg 0
-    uc_reg_write(1, X"00000004", regs_in); wait until rising_edge(acc_clk);
-    
+    uc_reg_write(1, std_logic_vector(to_signed(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Centroid 0: (0, 0)
+    uc_reg_write(6, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(7, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(8, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(9, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Centroid 1: (40, -100)
+    uc_reg_write(10, std_logic_vector(to_signed(  40, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(11, std_logic_vector(to_signed(   0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(12, std_logic_vector(to_signed(-100, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(13, std_logic_vector(to_signed(  -1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Iteration limit
+    uc_reg_write(14, std_logic_vector(to_unsigned(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Disable override
+    regs_sim_we(CENTROIDS * CENTROID_REGS + 10 downto 10) <= (others => '0');
+
     -- 4. Start the user core.    
     uc_start(regs_in);
     wait until rising_edge(acc_clk);
@@ -236,7 +266,27 @@ begin
     
     mmio_read(REG_RETURN0, read_data, regs);
     report "Return register 1: " & integer'image(to_integer(unsigned(read_data)));
-    
+
+    uc_reg_read(6, read_data, regs);
+    uc_reg_read(7, read_data_b, regs);
+    report "C0 D0: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(8, read_data, regs);
+    uc_reg_read(9, read_data_b, regs);
+    report "C0 D1: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(10, read_data, regs);
+    uc_reg_read(11, read_data_b, regs);
+    report "C1 D0: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(12, read_data, regs);
+    uc_reg_read(13, read_data_b, regs);
+    report "C1 D1: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+-- Expecting:
+-- 000D,0003   13,3
+-- 0030,FE02   48,-510
+
     -- 7. Finish and stop simulation
     report "Stimuli done.";
     clock_stop <= true;
@@ -275,6 +325,8 @@ begin
       for I in 0 to NUM_REGS-1 loop
         if regs_out_en(I) = '1' then
           regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_out((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
+        elsif regs_sim_we(I) = '1' then
+          regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_in((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
         end if;
       end loop;
     end if;
@@ -288,7 +340,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "numberlist.srec"
+    SREC_FILE                   => "intlist.srec"
   )
   port map (
     clk                         => bus_clk,
@@ -342,6 +394,9 @@ begin
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       NUM_ARROW_BUFFERS         => NUM_ARROW_BUFFERS,
+      DIMENSION                 => DIMENSION,
+      CENTROIDS                 => CENTROIDS,
+      CENTROID_REGS             => CENTROID_REGS,
       NUM_REGS                  => NUM_REGS,
       NUM_USER_REGS             => NUM_USER_REGS,
       REG_WIDTH                 => REG_WIDTH,
@@ -369,7 +424,7 @@ begin
       mst_wdat_data             => bus_wdat_data,
       mst_wdat_strobe           => bus_wdat_strobe,
       mst_wdat_last             => bus_wdat_last,
-      regs_in                   => regs_in,
+      regs_in                   => regs,
       regs_out                  => regs_out,
       regs_out_en               => regs_out_en
     );

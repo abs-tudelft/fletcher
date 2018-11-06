@@ -25,5 +25,7 @@ std::shared_ptr<arrow::RecordBatch> getUint8RB();
 
 std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
 
+std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
+
 }
 }
