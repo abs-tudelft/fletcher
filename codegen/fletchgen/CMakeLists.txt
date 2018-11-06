@@ -70,9 +70,10 @@ target_link_libraries(${PROJECT_NAME} fletcher-common)
 include_directories(../../common/cpp/src)
 
 find_library(LIB_ARROW arrow)
+target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
+
 find_package(Boost COMPONENTS program_options REQUIRED)
 target_link_libraries(${PROJECT_NAME} ${REQUIRED} Boost::program_options)
-target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)

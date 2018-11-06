@@ -19,8 +19,11 @@ set(COMMON_HEADERS
         src/fletcher/common/timer.h)
 
 add_library(${FLETCHER_COMMON} STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
-target_link_libraries(${FLETCHER_COMMON} ${LIB_ARROW})
+
 include_directories(../c/src)
+
+find_library(LIB_ARROW arrow)
+target_link_libraries(${FLETCHER_COMMON} ${REQUIRED} ${LIB_ARROW})
 
 ########################################################################################################################
 # Tests
