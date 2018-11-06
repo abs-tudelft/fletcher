@@ -33,8 +33,7 @@
 #include <arrow/api.h>
 
 // Fletcher
-#include <fletcher/api.h>
-#include <fletcher/common/timer.h>
+#include "fletcher/api.h"
 
 using std::shared_ptr;
 using std::numeric_limits;
