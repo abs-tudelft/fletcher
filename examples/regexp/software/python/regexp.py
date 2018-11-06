@@ -183,7 +183,7 @@ if __name__ == "__main__":
     f = open(input_file, 'r')
     filedata = f.read()
 
-    strings_native = filedata.split(sep='\n')
+    strings_native = filedata.splitlines()
     strings_pandas = pd.Series(strings_native)
 
     t.start()
@@ -278,7 +278,7 @@ if __name__ == "__main__":
             a_fpga[p] += m_fpga[e][p]
 
     # Check if matches are equal
-    if (a_ncpu == a_pcpu) and (a_pcpu == a_acpu):# and (a_acpu == a_fpga):
+    if (a_ncpu == a_pcpu) and (a_pcpu == a_acpu) and (a_acpu == a_fpga):
         print("PASS")
     else:
         print("ERROR")
