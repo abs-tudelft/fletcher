@@ -20,7 +20,7 @@
 #include <algorithm>
 
 #include "arrow-meta.h"
-#include "common/arrow-utils.h"
+#include "fletcher/common/arrow-utils.h"
 
 using vhdl::Value;
 

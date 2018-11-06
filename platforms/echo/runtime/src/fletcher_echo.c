@@ -16,7 +16,7 @@
 #include <memory.h>
 #include <malloc.h>
 
-#include "../../../../common/c/src/fletcher.h"
+#include "fletcher/fletcher.h"
 
 #include "fletcher_echo.h"
 

@@ -13,11 +13,10 @@
 // limitations under the License.
 
 #include <memory>
-#include <arrow/type.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
 
-#include "../src/common/arrow-utils.h"
+#include <arrow/api.h>
+
+#include "../src/fletcher/common/arrow-utils.h"
 
 #include "test_schemas.h"
 

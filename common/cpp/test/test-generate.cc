@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../src/common/arrow-utils.h"
+#include "../src/fletcher/common/arrow-utils.h"
 
 #include "./test_schemas.h"
 #include "./test_recordbatches.h"

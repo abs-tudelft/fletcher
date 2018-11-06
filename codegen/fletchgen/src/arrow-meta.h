@@ -23,7 +23,7 @@
 #include "./vhdl/vhdl.h"
 #include "./common.h"
 
-#include "common/arrow-utils.h"
+#include "fletcher/common/arrow-utils.h"
 
 namespace fletchgen {
 

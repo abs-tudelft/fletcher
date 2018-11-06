@@ -16,19 +16,31 @@
 #include <string>
 #include <iostream>
 
-#include "common/arrow-utils.h"
+#include "fletcher/common/arrow-utils.h"
 
 #include "test_schemas.h"
 
 namespace fletcher {
 namespace test {
 
-void test_flatten() {
+void testFlattenFromField() {
+  bool pass = true;
+  // List of uint8's
   auto schema = genListUint8Schema();
   std::vector<std::string> bufs;
   appendExpectedBuffersFromField(&bufs, schema->field(0));
-  for (const auto &str : bufs) {
-    std::cout << str << std::endl;
+  pass |= bufs[0] == "list_offsets";
+  pass |= bufs[1] == "uint8_values";
+
+  schema = genStringSchema();
+  // String is essentially a list of non-nullable utf8 bytes
+  std::vector<std::string> bufs2;
+  appendExpectedBuffersFromField(&bufs, schema->field(0));
+  pass |= bufs[0] == "name_offsets";
+  pass |= bufs[1] == "name_values";
+
+  if (!pass) {
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -36,6 +48,6 @@ void test_flatten() {
 }
 
 int main() {
-  fletcher::test::test_flatten();
+  fletcher::test::testFlattenFromField();
   return EXIT_SUCCESS;
 }
