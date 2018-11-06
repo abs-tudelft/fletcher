@@ -81,6 +81,6 @@ install(FILES ${GLOBAL_C_HEADER}
 
 if (FLETCHER_TESTS)
     set(TEST_SOURCES test/test.cpp)
-    add_executable(test_${PROJECT_NAME} ${TEST_HEADERS} ${TEST_SOURCES})
-    target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+    add_executable(${PROJECT_NAME}-test ${TEST_HEADERS} ${TEST_SOURCES})
+    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 endif (FLETCHER_TESTS)
