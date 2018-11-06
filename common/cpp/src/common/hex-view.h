@@ -18,7 +18,6 @@
 #include <cstdint>
 
 namespace fletcher {
-namespace common {
 
 /**
  * Structure for hex editor style command-line output
@@ -32,13 +31,13 @@ struct HexView {
    * @param col Starting column
    * @param width Number of bytes per line
    */
-  explicit HexView(unsigned long start,
+  explicit HexView(uint64_t start,
                    std::string str = "",
-                   unsigned long row = 0,
-                   unsigned long col = 0,
-                   unsigned long width = 32);
+                   uint64_t row = 0,
+                   uint64_t col = 0,
+                   uint64_t width = 32);
 
-  ///@brief Return a hex editor style view of the memory that was added to this HexView, optionally with a \p header.
+  /// @brief Return a hex editor style view of the memory that was added to this HexView, optionally with a \p header.
   std::string toString(bool header = true);
 
   /**
@@ -49,11 +48,10 @@ struct HexView {
   void addData(const uint8_t *ptr, size_t size);
 
   std::string str;
-  unsigned long row;
-  unsigned long col;
-  unsigned long width;
-  unsigned long start;
+  uint64_t row;
+  uint64_t col;
+  uint64_t width;
+  uint64_t start;
 };
 
-}  // namespace common
 }  // namespace fletcher

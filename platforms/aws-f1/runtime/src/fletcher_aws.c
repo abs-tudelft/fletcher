@@ -282,7 +282,7 @@ fstatus_t platformTerminate(void *arg) {
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
   *device_address = buffer_ptr;
   debug_print("[FLETCHER_AWS] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n",
-              (uint64_t) device_address,
+              (uint64_t) *device_address,
               size);
   buffer_ptr += size + FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT);
   return FLETCHER_STATUS_OK;

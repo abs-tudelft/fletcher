@@ -38,11 +38,11 @@
 `define REG_RETURN0         4
 `define REG_RETURN1         5
 
-`define REG_UTF8_ADDR_LO    6
-`define REG_UTF8_ADDR_HI    7
+`define REG_OFF_ADDR_LO     6
+`define REG_OFF_ADDR_HI     7
 
-`define REG_OFF_ADDR_LO     8
-`define REG_OFF_ADDR_HI     9
+`define REG_UTF8_ADDR_LO    8
+`define REG_UTF8_ADDR_HI    9
 
 // Register offset to the first & last indices of each RegExp unit:
 `define REG_CUST_FIRST_IDX  10

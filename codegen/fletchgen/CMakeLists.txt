@@ -13,7 +13,7 @@ set(HEADERS
         src/meta.h
         src/constants.h
         src/common.h
-        src/arrow-utils.h
+        src/arrow-meta.h
         src/printers.h
         src/vhdl/vhdl.h
         src/stream.h
@@ -34,7 +34,7 @@ set(HEADERS
 
 set(SOURCES
         src/common.cc
-        src/arrow-utils.cc
+        src/arrow-meta.cc
         src/printers.cc
         src/vhdl/vhdl.cc
         src/stream.cc
@@ -76,20 +76,3 @@ target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)
-
-########################################################################################################################
-# TEST SCHEMA/RECORDBATCH GENERATOR
-
-if (FLETCHER_TESTS)
-    set(TEST_NAME ${PROJECT_NAME}-test-generate)
-
-    set(TEST_SOURCES
-            test/test_schemas.h test/test_schemas.cc
-            test/test_recordbatches.h test/test_recordbatches.cc
-            test/test-generate.cc)
-
-    add_executable(${TEST_NAME} ${TEST_SOURCES})
-    target_link_libraries(${TEST_NAME} ${LIB_ARROW})
-    target_link_libraries(${TEST_NAME} ${PROJECT_NAME}-static)
-    target_link_libraries(${TEST_NAME} fletcher-common)
-endif (FLETCHER_TESTS)

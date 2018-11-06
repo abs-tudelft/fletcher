@@ -17,7 +17,10 @@
 #include "common/hex-view.h"
 #include "./recordbatch.h"
 
-std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
+namespace fletchgen {
+namespace srec {
+
+std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   size_t addr = 0;
   std::vector<size_t> ret;
 
@@ -32,7 +35,7 @@ std::vector<uint64_t> fletchgen::srec::getBufferOffsets(std::vector<arrow::Buffe
   return ret;
 }
 
-void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::Array *array) {
+void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::Array *array) {
   // Because Arrow buffer order seems to be by convention and not by specification, handle these special cases:
   // This is to reverse the order of offset and value buffer to correspond with the hardware implementation.
   if (array->type() == arrow::binary()) {
@@ -56,7 +59,7 @@ void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow
   }
 }
 
-void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::ArrayData *array_data) {
+void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::ArrayData *array_data) {
   for (const auto &buf: array_data->buffers) {
     auto addr = buf.get();
     if (addr != nullptr) {
@@ -68,42 +71,8 @@ void fletchgen::srec::appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow
   }
 }
 
-void fletchgen::srec::writeRecordBatchToFile(arrow::RecordBatch &recordbatch, const std::string &filename) {
-  std::shared_ptr<arrow::Buffer> buffer;
-  arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0,
-                                 reinterpret_cast<std::shared_ptr<arrow::ResizableBuffer> *>(&buffer));
-
-  if (!arrow::ipc::SerializeRecordBatch(recordbatch, arrow::default_memory_pool(), &buffer).ok()) {
-    throw std::runtime_error("Could not serialize record batch into buffer.");
-  }
-
-  std::shared_ptr<arrow::io::FileOutputStream> fos;
-  if (arrow::io::FileOutputStream::Open(filename, &fos).ok()) {
-    if (!fos->Write(buffer->data(), buffer->size()).ok()) {
-      throw std::runtime_error("Could not write buffer to file output stream.");
-    }
-  } else {
-    throw std::runtime_error("Could not open file for writing: " + filename);
-  }
-}
-
-std::shared_ptr<arrow::RecordBatch> fletchgen::srec::readRecordBatchFromFile(const std::string &file_name,
-                                                                             const std::shared_ptr<arrow::Schema> &schema) {
-  std::shared_ptr<arrow::RecordBatch> recordbatch_to_read;
-  std::shared_ptr<arrow::io::ReadableFile> fis;
-  if (arrow::io::ReadableFile::Open(file_name, &fis).ok()) {
-    if (arrow::ipc::ReadRecordBatch(schema, fis.get(), &recordbatch_to_read).ok()) {
-      return recordbatch_to_read;
-    } else {
-      throw std::runtime_error("Could not read RecordBatch from file input stream.");
-    }
-  } else {
-    throw std::runtime_error("Could not open RecordBatch file for reading: " + file_name);
-  }
-}
-
-std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch *record_batch,
-                                                              const std::string &srec_fname) {
+std::vector<uint64_t> writeRecordBatchToSREC(arrow::RecordBatch *record_batch,
+                                             const std::string &srec_fname) {
 
   std::vector<arrow::Buffer *> buffers;
   for (int c = 0; c < record_batch->num_columns(); c++) {
@@ -123,11 +92,11 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
 
   unsigned int i = 0;
   for (const auto &buf : buffers) {
-    fletcher::common::HexView hv(0);
+    fletcher::HexView hv(0);
     hv.addData(buf->data(), static_cast<size_t>(buf->size()));
     LOGD("Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
-         "Start address: " + std::to_string(offsets[i]) + "\n" +
-         hv.toString());
+        "Start address: " + std::to_string(offsets[i]) + "\n" +
+        hv.toString());
     i++;
   }
 
@@ -144,3 +113,6 @@ std::vector<uint64_t> fletchgen::srec::writeRecordBatchToSREC(arrow::RecordBatch
   free(srecbuf);
   return offsets;
 }
+
+} // namespace srec
+} // namespace fletchgen

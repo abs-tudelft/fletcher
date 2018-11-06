@@ -21,7 +21,7 @@
 
 #include "./vhdl/vhdl.h"
 #include "./common.h"
-#include "./arrow-utils.h"
+#include "arrow-meta.h"
 
 #include "./fletcher-streams.h"
 
@@ -64,7 +64,7 @@ class Column : public Instantiation {
    * @param field The field to generate streams from.
    * @param parent Parent stream used for recursive calls of this function.
    */
-  std::shared_ptr<ArrowStream> getArrowStream(std::shared_ptr<arrow::Field> field,
+  std::shared_ptr<ArrowStream> getArrowStream(const std::shared_ptr<arrow::Field>& field,
                                               ArrowStream *parent = nullptr);
 
   /// @brief Generate the User Command Stream for this column.
@@ -128,6 +128,6 @@ struct ColumnWriter : public StreamComponent, public DerivedFrom<Column> {
  * @param field The DataType.
  * @return The configuration string.
  */
-std::string genConfigString(arrow::Field *field, int level = 0);
+std::string genConfigString(const std::shared_ptr<arrow::Field>& field, int level = 0);
 
 }//namespace fletchgen

@@ -19,7 +19,8 @@
 #include <iostream>
 #include <algorithm>
 
-#include "arrow-utils.h"
+#include "arrow-meta.h"
+#include "common/arrow-utils.h"
 
 using vhdl::Value;
 
@@ -72,15 +73,6 @@ Value getWidth(arrow::DataType *type) {
   return Value(-1);
 }
 
-int getEPC(arrow::Field *field) {
-  int epc = 1;
-  auto strepc = getMeta(field, "epc");
-  if (!strepc.empty()) {
-    epc = stoi(strepc);
-  }
-  return epc;
-}
-
 ConfigType getConfigType(arrow::DataType *type) {
   ConfigType ret = ConfigType::PRIM;
 
@@ -124,115 +116,12 @@ ConfigType getConfigType(arrow::DataType *type) {
   return ret;
 }
 
-std::string getMeta(arrow::Schema *schema, const std::string &key) {
-  if (schema->metadata() != nullptr) {
-    std::unordered_map<std::string, std::string> meta;
-    schema->metadata()->ToUnorderedMap(&meta);
-
-    auto k = meta.find(key);
-    if (k != meta.end()) {
-      return k->second;
-    }
-  }
-  // Return empty string if no metadata
-  return "";
-}
-
-std::string getMeta(arrow::Field *field, const std::string &key) {
-  if (field->metadata() != nullptr) {
-    std::unordered_map<std::string, std::string> meta;
-    field->metadata()->ToUnorderedMap(&meta);
-
-    auto k = meta.find(key);
-    if (k != meta.end()) {
-      return k->second;
-    }
-  }
-  // Return empty string if no metadata
-  return "";
-}
-
-Mode getMode(arrow::Schema *schema) {
-  Mode mode = Mode::READ;
-  if (getMeta(schema, "fletcher_mode") == "write") {
-    mode = Mode::WRITE;
-  }
-  return mode;
-}
-
-bool mustIgnore(arrow::Field *field) {
-  bool ret = false;
-  if (getMeta(field, "fletcher_ignore") == "true") {
-    ret = true;
-  }
-  return ret;
-}
-
 std::string getModeString(Mode mode) {
   if (mode == Mode::READ) {
     return "read";
   } else {
     return "write";
   }
-}
-
-std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names) {
-  std::vector<std::shared_ptr<arrow::Schema>> schemas;
-  for (const auto& file_name : file_names) {
-    std::shared_ptr<arrow::Schema> schema_to_read;
-    std::shared_ptr<arrow::io::ReadableFile> fis;
-    if (arrow::io::ReadableFile::Open(file_name, &fis).ok()) {
-      if (arrow::ipc::ReadSchema(fis.get(), &schema_to_read).ok()) {
-        schemas.push_back(schema_to_read);
-      } else {
-        throw std::runtime_error("Could not read schema " + file_name + " from file input stream.");
-      }
-    } else {
-      throw std::runtime_error("Could not open schema file for reading: " + file_name);
-    }
-  }
-  return schemas;
-}
-
-void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name) {
-  std::shared_ptr<arrow::Buffer> buffer;
-  arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0,
-                                 reinterpret_cast<std::shared_ptr<arrow::ResizableBuffer> *>(&buffer));
-
-  if (!arrow::ipc::SerializeSchema(*schema, arrow::default_memory_pool(), &buffer).ok()) {
-    throw std::runtime_error("Could not serialize schema into buffer.");
-  }
-
-  std::shared_ptr<arrow::io::FileOutputStream> fos;
-  if (arrow::io::FileOutputStream::Open(file_name, &fos).ok()) {
-    if (!fos->Write(buffer->data(), buffer->size()).ok()) {
-      throw std::runtime_error("Could not write schema buffer to file output stream.");
-    }
-  } else {
-    throw std::runtime_error("Could not open schema file for writing: " + file_name);
-  }
-}
-
-std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode) {
-  std::vector<std::string> keys = {"fletcher_mode"};
-  std::vector<std::string> values;
-  if (mode == Mode::READ)
-    values = {"read"};
-  else
-    values = {"write"};
-  return std::make_shared<arrow::KeyValueMetadata>(keys, values);
-}
-
-std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc) {
-  std::vector<std::string> epc_keys = {"epc"};
-  std::vector<std::string> epc_values = {std::to_string(epc)};
-  return std::make_shared<arrow::KeyValueMetadata>(epc_keys, epc_values);
-}
-
-std::shared_ptr<arrow::KeyValueMetadata> metaIgnore() {
-  std::vector<std::string> ignore_key = {"fletcher_ignore"};
-  std::vector<std::string> ignore_value = {"true"};
-  return std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
 }
 
 }  // namespace fletchgen

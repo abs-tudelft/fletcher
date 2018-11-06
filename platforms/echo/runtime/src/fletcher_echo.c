@@ -14,8 +14,9 @@
 
 #include <stdio.h>
 #include <memory.h>
+#include <malloc.h>
 
-#include "../../../../common/cpp/src/fletcher.h"
+#include "../../../../common/c/src/fletcher.h"
 
 #include "fletcher_echo.h"
 
@@ -70,13 +71,14 @@ fstatus_t platformTerminate(void *arg) {
 }
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
-  *device_address = buffer_ptr;
+  *device_address = (da_t) malloc((size_t) size);
   printf("[ECHO] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n", (uint64_t) device_address, size);
   buffer_ptr += size;
   return FLETCHER_STATUS_OK;
 }
 
 fstatus_t platformDeviceFree(da_t device_address) {
+  free((void*)device_address);
   printf("[ECHO] Freeing device memory.       [device] 0x%016lX.\n", device_address);
   return FLETCHER_STATUS_OK;
 }

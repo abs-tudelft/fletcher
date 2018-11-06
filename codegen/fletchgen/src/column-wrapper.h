@@ -21,7 +21,7 @@
 #include "./vhdl/vhdl.h"
 
 #include "./column.h"
-#include "./arrow-utils.h"
+#include "arrow-meta.h"
 #include "./usercore.h"
 #include "./usercore-controller.h"
 #include "./config.h"

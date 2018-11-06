@@ -23,7 +23,7 @@
 #include <arrow/ipc/api.h>
 #include <arrow/io/api.h>
 
-#include "arrow-utils.h"
+#include "arrow-meta.h"
 #include "column.h"
 #include "column-wrapper.h"
 
@@ -132,8 +132,8 @@ int main(int argc, char **argv) {
       auto rbs_fname = vm["recordbatch_schema"].as<std::string>();
       if (vm.count("srec_output")) {
         sro_fname = vm["srec_output"].as<std::string>();
-        auto rbs = fletchgen::readSchemasFromFiles({rbs_fname});
-        auto rbd = fletchgen::srec::readRecordBatchFromFile(rbd_fname, rbs[0]);
+        auto rbs = fletcher::readSchemasFromFiles({rbs_fname});
+        auto rbd = fletcher::readRecordBatchFromFile(rbd_fname, rbs[0]);
         sro_buffers = fletchgen::srec::writeRecordBatchToSREC(rbd.get(), sro_fname);
       }
     }
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
     // Split argument into vector of strings
     auto schema_fnames_str = vm["input"].as<std::string>();
     schema_fnames = fletchgen::split(schema_fnames_str);
-    schemas = fletchgen::readSchemasFromFiles(schema_fnames);
+    schemas = fletcher::readSchemasFromFiles(schema_fnames);
   } else {
     std::cout << "No valid input file specified. Exiting..." << std::endl;
     desc.print(std::cout);

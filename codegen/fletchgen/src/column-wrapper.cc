@@ -232,9 +232,9 @@ std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
   for (const auto &schema : schemas_) {
     for (int f = 0; f < schema->num_fields(); f++) {
       auto field = schema->field(f);
-      if (!mustIgnore(field.get())) {
+      if (!fletcher::mustIgnore(field)) {
         LOGD("Creating column for [FIELD: " + field->ToString() + "]");
-        auto column = make_shared<Column>(field, getMode(schema.get()));
+        auto column = make_shared<Column>(field, fletcher::getMode(schema));
         // Generate a comment to place above the instantiation
         column->setComment(
             t(1) + "-- " + column->component()->entity()->name() + " instance generated from Arrow schema field:\n" +

@@ -23,6 +23,8 @@
 #include "./context.h"
 #include "./platform.h"
 
+#include "../../../../common/c/src/fletcher.h"
+
 namespace fletcher {
 
 /**
