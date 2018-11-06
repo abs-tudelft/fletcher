@@ -71,20 +71,28 @@ proc simulate {top {groups_and_units 0} {duration -all}} {
   
   suppress_warnings
 
-  if {$groups_and_units == 0} {
-    echo "No groups and instances defined."
+  if [batch_mode] {
+    echo "Running in batch mode. Skipping waveforms..."
   } else {
-    config    wave -signalnamewidth 1
-    add_waves $groups_and_units
-    configure wave -namecolwidth    256
-    configure wave -valuecolwidth   192
+    if {$groups_and_units == 0} {
+      echo "No groups and instances defined."
+    } else {
+      configure wave -signalnamewidth 1
+      add_waves $groups_and_units
+      configure wave -namecolwidth    256
+      configure wave -valuecolwidth   192
+    }
   }
 
   run $duration
 
-  if {$groups_and_units == 0} {
-    echo "Cannot zoom to full, no signals added."
+  if [batch_mode] {
+    quit
   } else {
-    wave zoom full
+    if {$groups_and_units == 0} {
+      echo "Cannot zoom to full, no signals added."
+    } else {
+      wave zoom full
+    }
   }
 }
