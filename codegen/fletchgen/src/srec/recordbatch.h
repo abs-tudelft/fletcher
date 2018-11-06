@@ -33,20 +33,6 @@ namespace fletchgen {
 namespace srec {
 
 /**
- * @brief Append all buffers from an Array (including children).
- * @param buffers The buffers to append to.
- * @param array The Arrow array to obtain the buffers from.
- */
-void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::Array *array);
-
-/**
- * @brief Append all buffers from an ArrayData (including children).
- * @param buffers The buffers to append to.
- * @param array_data The Arrow ArrayData to obtain the buffers from.
- */
-void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::ArrayData *array_data);
-
-/**
  * @brief Calculate buffer offsets if all buffers would be stored contiguously.
  * @param buffers The buffers.
  * @return The required size of the contiguous space.
