@@ -17,6 +17,10 @@ set(SOURCES
         src/fletcher/context.cc
         src/fletcher/usercore.cc)
 
+# CPP runtime library uses global C header
+set(GLOBAL_C_HEADER
+        ../../common/c/src/fletcher/fletcher.h)
+
 set(HEADERS
         src/fletcher/platform.h
         src/fletcher/context.h
@@ -26,7 +30,7 @@ add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ../../common/cpp/src/fletcher.h)
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/fletcher/api.h)
 
 # Include common functions, build it and link statically
 if (NOT TARGET fletcher-common)
