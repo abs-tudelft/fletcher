@@ -29,6 +29,11 @@ cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
 
+cdef extern from "fletcher/common/arrow-utils.h" namespace "fletcher" nogil:
+    ctypedef enum Mode:
+        READ "fletcher::Mode::READ",
+        WRITE "fletcher::Mode::WRITE"
+
 cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass Status:
         fstatus_t val
@@ -61,8 +66,8 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass CContext" fletcher::Context":
         @staticmethod
         Status Make(shared_ptr[CContext] *context, const shared_ptr[CPlatform] &platform)
-        Status queueArray(const shared_ptr[CArray] &array, cpp_bool cache)
-        Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, cpp_bool cache)
+        Status queueArray(const shared_ptr[CArray] &array, Mode access_mode, cpp_bool cache)
+        Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, Mode access_mode, cpp_bool cache)
         Status queueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
         size_t getQueueSize()
         uint64_t num_buffers()

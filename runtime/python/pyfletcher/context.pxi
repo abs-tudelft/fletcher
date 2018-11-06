@@ -30,7 +30,7 @@ cdef class Context():
     cdef from_pointer(self, shared_ptr[CContext] context):
         self.context = context
 
-    def queue_array(self, array, field=None, cache=False):
+    def queue_array(self, array, field=None, mode = "read", cache=False):
         """Enqueue an arrow::Array for usage preparation on the device.
 
         This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
@@ -40,15 +40,26 @@ cdef class Context():
 
         Args:
             array: Arrow Array to queue
+            mode ("read" or "write"): Whether to read or write from/to this array. Defaults to read.
             field: Arrow Schema corresponding to this array.
             cache (bool): Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
 
         """
+        cdef Mode queue_mode
+
+        if mode == "read":
+            queue_mode = Mode.READ
+        elif mode == "write":
+            queue_mode = Mode.WRITE
+        else:
+            raise ValueError("mode argument can be only 'read' or 'write'")
+
         if not field:
-            check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), cache))
+            check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), queue_mode, cache))
         else:
             check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),
                                                                 pyarrow_unwrap_field(field),
+                                                                queue_mode,
                                                                 cache))
 
     def queue_record_batch(self, record_batch, cache=False):
