@@ -30,6 +30,7 @@ set(COMMON_HEADERS
 
 add_library(${FLETCHER_COMMON} STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
 target_link_libraries(${FLETCHER_COMMON} ${LIB_ARROW})
+include_directories(../c/src)
 
 ########################################################################################################################
 # Tests
@@ -60,6 +61,7 @@ if (FLETCHER_TESTS)
     add_executable(${TEST_COMMON}
             ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES}
             ${TEST_COMMON_HEADERS} ${TEST_COMMON_SOURCES})
+    target_link_libraries(${TEST_COMMON} ${LIB_ARROW})
     target_link_libraries(${TEST_COMMON} ${FLETCHER_COMMON})
     include_directories(${TEST_COMMON} src)
 

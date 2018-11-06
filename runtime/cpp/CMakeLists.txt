@@ -45,6 +45,7 @@ if (NOT TARGET fletcher-common)
 endif()
 target_link_libraries(${PROJECT_NAME} fletcher-common)
 include_directories(../../common/cpp/src)
+include_directories(../../common/c/src)
 
 # Dynamically link the dynamically library linking library
 target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
