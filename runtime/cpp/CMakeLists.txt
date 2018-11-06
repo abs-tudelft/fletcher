@@ -18,6 +18,7 @@ set(SOURCES
         src/fletcher/usercore.cc)
 
 set(HEADERS
+        ../../common/c/src/fletcher.h
         src/fletcher/platform.h
         src/fletcher/context.h
         src/fletcher/usercore.h)
@@ -57,7 +58,6 @@ install(FILES ${HEADERS}
 
 # Headers from common library
 set(COMMON_HEADERS
-        ../../common/c/src/fletcher.h
         ../../common/cpp/src/common/status.h
         ../../common/cpp/src/common/arrow-utils.h
         ../../common/cpp/src/common/hex-view.h
