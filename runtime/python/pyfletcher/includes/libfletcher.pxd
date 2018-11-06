@@ -24,7 +24,7 @@ from libcpp cimport bool as cpp_bool
 
 from pyarrow.lib cimport *
 
-cdef extern from "fletcher/fletcher.h" nogil:
+cdef extern from "fletcher/common/fletcher.h" nogil:
     ctypedef unsigned long long fstatus_t
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
