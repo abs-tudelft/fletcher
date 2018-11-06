@@ -18,10 +18,8 @@ set(SOURCES
         src/fletcher/usercore.cc)
 
 set(HEADERS
-        ../../common/cpp/src/fletcher.h
         src/fletcher/platform.h
         src/fletcher/context.h
-        src/fletcher/status.h
         src/fletcher/usercore.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
@@ -58,9 +56,11 @@ install(FILES ${HEADERS}
 
 # Headers from common library
 set(COMMON_HEADERS
-        ../../common/cpp/src/common/arrow-utils.h
-        ../../common/cpp/src/common/hex-view.h
-        ../../common/cpp/src/common/timer.h)
+        ../../common/c/src/fletcher.h
+        ../../common/cpp/src/status.h
+        ../../common/cpp/src/arrow-utils.h
+        ../../common/cpp/src/hex-view.h
+        ../../common/cpp/src/timer.h)
 
 install(FILES ${COMMON_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common

@@ -5,7 +5,7 @@
 #include <cstdint>
 
 #include "./constants.h"
-#include "./arrow-utils.h"
+#include "arrow-meta.h"
 
 namespace fletchgen {
 namespace config {

@@ -15,11 +15,10 @@
 #include <arrow/record_batch.h>
 #include <arrow/builder.h>
 
-#include "test_schemas.h"
+#include "./test_schemas.h"
+#include "./test_recordbatches.h"
 
-#include "test_recordbatches.h"
-
-namespace fletchgen {
+namespace fletcher {
 namespace test {
 
 std::shared_ptr<arrow::RecordBatch> getStringRB() {
@@ -76,6 +75,37 @@ std::shared_ptr<arrow::RecordBatch> getUint8RB() {
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(genPrimReadSchema(), numbers.size(), {data_array});
+
+  return record_batch;
+}
+
+std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
+
+  std::vector<std::vector<uint8_t>> numbers = {{1, 3, 3, 7}, {3, 1, 4, 1, 5, 9, 2}, {4, 2}};
+
+  auto vb = std::make_shared<arrow::UInt8Builder>();
+  auto lb = std::make_shared<arrow::ListBuilder>(arrow::default_memory_pool(), vb);
+
+  for (const auto &number : numbers) {
+    if (!lb->Append().ok()) {
+      throw std::runtime_error("Could not append to offsets buffer.");
+    }
+    if (!vb->AppendValues(number).ok()) {
+      throw std::runtime_error("Could not append to values buffer.");
+    }
+  }
+
+  // Array to hold Arrow formatted string data
+  std::shared_ptr<arrow::Array> a;
+
+  // Finish building and create a new data array around the data
+  if (!lb->Finish(&a).ok()) {
+    throw std::runtime_error("Could not finalize list<uint8> builder.");
+  };
+
+  // Create the Record Batch
+  std::shared_ptr<arrow::RecordBatch>
+      record_batch = arrow::RecordBatch::Make(genPrimReadSchema(), numbers.size(), {a});
 
   return record_batch;
 }

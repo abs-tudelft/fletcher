@@ -22,9 +22,9 @@
 #include <arrow/array.h>
 #include <arrow/record_batch.h>
 
+#include "common/status.h"
 #include "common/arrow-utils.h"
 
-#include "./status.h"
 #include "./platform.h"
 
 namespace fletcher {
@@ -33,23 +33,29 @@ namespace fletcher {
  * A buffer on the device
  */
 struct DeviceBuffer {
-  DeviceBuffer(const uint8_t *host_address, int64_t size) : host_address(host_address), size(size) {}
+  DeviceBuffer(const uint8_t *host_address, int64_t size, Mode access_mode)
+      : host_address(host_address), size(size), mode(access_mode) {}
   const uint8_t *host_address = nullptr;
   da_t device_address = D_NULLPTR;
   int64_t size = 0;
   bool was_alloced = false;
+  Mode mode = Mode::READ;
 };
 
 /**
  * An Arrow Array and its corresponding buffers on a device.
  */
 struct DeviceArray {
-  typedef enum { PREPARE, CACHE } mode_t;
-  DeviceArray(const std::shared_ptr<arrow::Array> &array, const std::shared_ptr<arrow::Field> &field, mode_t mode);
+  typedef enum { PREPARE, CACHE } memory_t;
+  DeviceArray(const std::shared_ptr<arrow::Array> &array,
+              const std::shared_ptr<arrow::Field> &field,
+              Mode access_mode,
+              memory_t memory);
   const std::shared_ptr<arrow::Array> host_array;
   std::shared_ptr<arrow::Field> field;
   std::vector<DeviceBuffer> buffers;
-  mode_t mode = CACHE;
+  Mode mode = Mode::READ;
+  memory_t memory = CACHE;
   bool on_device = false;
 };
 
@@ -85,11 +91,12 @@ class Context {
    * field argument.
    *
    * @param array       The arrow::Array to queue
+   * @param access_mode Whether to read or write from/to this array.
    * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  [[deprecated]] Status queueArray(const std::shared_ptr<arrow::Array> &array, bool cache = false) {
-    return queueArray(array, nullptr, cache);
+  [[deprecated]] Status queueArray(const std::shared_ptr<arrow::Array> &array, Mode access_mode, bool cache = false) {
+    return queueArray(array, nullptr, access_mode, cache);
   }
 
   /**
@@ -101,11 +108,13 @@ class Context {
    *
    * @param array       The arrow::Array to queue
    * @param field       Potential arrow::Schema field that corresponds to this array.
+   * @param access_mode Whether to read or write from/to this array.
    * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
   Status queueArray(const std::shared_ptr<arrow::Array> &array,
                     const std::shared_ptr<arrow::Field> &field,
+                    Mode access_mode,
                     bool cache = false);
 
   /**
@@ -138,22 +147,28 @@ class Context {
  *
  * May or may not cause a copy to the platform device on-board memory, depending on the capabilities of the platform.
  *
- * @param array   The arrow::Array to prepare.
-   @param field   Potential schema field that corresponds to this array.
- * @return        Status::OK() if successful, Status::ERROR() otherwise.
+ * @param array         The arrow::Array to prepare.
+ * @param access_mode Whether to read or write from/to this array.
+ * @param field         Potential schema field that corresponds to this array.
+ * @return              Status::OK() if successful, Status::ERROR() otherwise.
  */
-  Status prepareArray(const std::shared_ptr<arrow::Array> &array, const std::shared_ptr<arrow::Field> &field = nullptr);
+  Status prepareArray(const std::shared_ptr<arrow::Array> &array,
+                      Mode access_mode,
+                      const std::shared_ptr<arrow::Field> &field = nullptr);
 
   /**
    * @brief Explicitly cache the buffers of an Arrow Array to the platform device on-board memory.
    *
    * Always creates a copy to the platform device on-board memory.
    *
-   * @param array   The arrow::Array to cache.
-   * @param field   Potential schema field that corresponds to this array.
-   * @return        Status::OK() if successful, Status::ERROR() otherwise.
+   * @param array       The arrow::Array to cache.
+   * @param access_mode Whether to read or write from/to this array.
+   * @param field       Potential schema field that corresponds to this array.
+   * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  Status cacheArray(const std::shared_ptr<arrow::Array> &array, const std::shared_ptr<arrow::Field> &field = nullptr);
+  Status cacheArray(const std::shared_ptr<arrow::Array> &array,
+                    Mode access_mode,
+                    const std::shared_ptr<arrow::Field> &field = nullptr);
 };
 
 }  // namespace fletcher

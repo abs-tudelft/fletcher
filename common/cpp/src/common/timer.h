@@ -15,13 +15,13 @@
 
 #pragma once
 
+#include <string>
 #include <chrono>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
 
 namespace fletcher {
-namespace common {
 
 /// @brief A timer using the C++11 high resolution monotonic clock.
 struct Timer {
@@ -51,7 +51,7 @@ struct Timer {
 
   /// @brief Return the interval in seconds as a formatted string.
   std::string str(int width = 14) {
-    std::stringstream ss;
+    std::stringstream ss();
     ss << std::setprecision(width - 5) << std::setw(width) << std::fixed << seconds();
     return ss.str();
   }
@@ -62,5 +62,4 @@ struct Timer {
   }
 };
 
-}  // namespace common
 }  // namespace fletcher

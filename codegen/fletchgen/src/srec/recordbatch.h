@@ -47,27 +47,11 @@ void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::Array *array);
 void appendBuffers(std::vector<arrow::Buffer *> &buffers, arrow::ArrayData *array_data);
 
 /**
- * @brief Caculate buffer offsets if all buffers would be stored contiguously.
+ * @brief Calculate buffer offsets if all buffers would be stored contiguously.
  * @param buffers The buffers.
  * @return The required size of the contiguous space.
  */
 std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers);
-
-/**
- * @brief Write the data buffers of an arrow::RecordBatch to a file.
- * @param recordbatch The RecordBatch
- * @param filename The output filename.
- */
-void writeRecordBatchToFile(arrow::RecordBatch &recordbatch, const std::string &filename);
-
-/**
- * @brief Read an arrow::RecordBatch from a file.
- * @param file_name The file to read from.
- * @param schema The expected schema of the data.
- * @return A smart pointer to the arrow::RecordBatch. Throws a runtime_error if something goes wrong.
- */
-std::shared_ptr<arrow::RecordBatch> readRecordBatchFromFile(const std::string &file_name,
-                                                            const std::shared_ptr<arrow::Schema> &schema);
 
 /**
  * @brief Write an arrow::RecordBatch to an SREC file.
@@ -77,5 +61,6 @@ std::shared_ptr<arrow::RecordBatch> readRecordBatchFromFile(const std::string &f
  * @return A vector with the buffer offsets in the SREC file.
  */
 std::vector<uint64_t> writeRecordBatchToSREC(arrow::RecordBatch *record_batch, const std::string &srec_fname);
+
 } // namespace srec
 } // namespace fletchgen

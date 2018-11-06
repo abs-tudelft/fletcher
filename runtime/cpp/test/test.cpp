@@ -20,16 +20,16 @@
 #include <arrow/record_batch.h>
 
 #include "common/arrow-utils.h"
+#include "common/status.h"
 
 #include "../src/fletcher/platform.h"
 #include "../src/fletcher/context.h"
-#include "../src/fletcher/status.h"
 
 bool test_platform() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::Create(&platform).ewf();
+  fletcher::Platform::Make(&platform).ewf();
 
   // Init
   platform->init().ewf();
@@ -63,7 +63,7 @@ bool test_context() {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  fletcher::Platform::Create(&platform).ewf();
+  fletcher::Platform::Make(&platform).ewf();
 
   // Init
   platform->init().ewf();

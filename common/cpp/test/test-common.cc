@@ -12,36 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <cstdlib>
+#include <vector>
 #include <string>
 #include <iostream>
 
-#include "./fletcher.h"
+#include "common/arrow-utils.h"
+
+#include "test_schemas.h"
 
 namespace fletcher {
+namespace test {
 
-struct Status {
-  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
-
-  Status() = default;
-
-  explicit Status(fstatus_t val) : val(val) {}
-
-  inline bool ok() { return val == FLETCHER_STATUS_OK; }
-
-  /// @brief Exit when fail
-  inline void ewf(const std::string &msg = "") {
-    if (!ok()) {
-      std::cerr << msg << std::endl;
-      exit(EXIT_FAILURE);
-    }
+void test_flatten() {
+  auto schema = genListUint8Schema();
+  std::vector<std::string> bufs;
+  appendExpectedBuffersFromField(&bufs, schema->field(0));
+  for (const auto &str : bufs) {
+    std::cout << str << std::endl;
   }
+}
 
-  inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
+}
+}
 
-  inline static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
-};
-
+int main() {
+  fletcher::test::test_flatten();
+  return EXIT_SUCCESS;
 }

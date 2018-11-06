@@ -17,12 +17,23 @@
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
 
-#include "../src/arrow-utils.h"
+#include "../src/common/arrow-utils.h"
 
 #include "test_schemas.h"
 
-namespace fletchgen {
+namespace fletcher {
 namespace test {
+
+std::shared_ptr<arrow::Schema> genListUint8Schema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("list", arrow::list(std::make_shared<arrow::Field>("uint8", arrow::uint8(), false)), false)
+  };
+
+  auto schema = std::make_shared<arrow::Schema>(schema_fields,
+                                                metaMode(fletcher::Mode::READ));
+
+  return schema;
+}
 
 std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   // Create a vector of fields that will form the schema.
@@ -31,7 +42,8 @@ std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   };
 
   // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto
+      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -43,7 +55,7 @@ std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
   };
 
   // Create some metadata
-  auto schema_meta = fletchgen::metaMode(fletchgen::Mode::WRITE);
+  auto schema_meta = metaMode(Mode::WRITE);
 
   // Create the schema
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
@@ -54,11 +66,11 @@ std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
 std::shared_ptr<arrow::Schema> genStringSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Name", arrow::utf8(), false, fletchgen::metaEPC(4))
+      arrow::field("Name", arrow::utf8(), false, metaEPC(4))
   };
 
   // Create some metadata
-  auto schema_meta = fletchgen::metaMode(fletchgen::Mode::READ);
+  auto schema_meta = metaMode(Mode::READ);
 
   // Create the schema
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
@@ -76,7 +88,7 @@ std::shared_ptr<arrow::Schema> genStructSchema() {
       arrow::field("Struct", arrow::struct_(struct_fields), false)
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 
@@ -86,7 +98,7 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
   std::vector<std::shared_ptr<arrow::Field>> struct_fields = {
       arrow::field("Prim A", arrow::uint16(), false),
       arrow::field("Prim B", arrow::uint32(), false),
-      arrow::field("String", arrow::utf8(), false, fletchgen::metaEPC(4))
+      arrow::field("String", arrow::utf8(), false, metaEPC(4))
   };
 
   std::vector<std::shared_ptr<arrow::Field>> struct2_fields = {
@@ -95,17 +107,18 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
   };
 
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Prim", arrow::uint8(), false, fletchgen::metaEPC(4)),
+      arrow::field("Prim", arrow::uint8(), false, metaEPC(4)),
       arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
       arrow::field("Binary", arrow::binary(), false),
       arrow::field("FixedSizeBinary", arrow::fixed_size_binary(5)),
       arrow::field("Decimal", arrow::decimal(20, 18)),
-      arrow::field("String", arrow::utf8(), false, fletchgen::metaEPC(8)),
+      arrow::field("String", arrow::utf8(), false, metaEPC(8)),
       arrow::field("Struct", arrow::struct_(struct2_fields), false),
-      arrow::field("IgnoreMe", arrow::utf8(), false, fletchgen::metaIgnore())
+      arrow::field("IgnoreMe", arrow::utf8(), false, metaIgnore())
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto
+      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -122,7 +135,8 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
       arrow::field("Read", arrow::list(arrow::field("Item", strct, false)), false)
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields,
+                                                metaMode(Mode::READ));
 
   return schema;
 }

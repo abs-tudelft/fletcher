@@ -19,9 +19,9 @@
 #include <arrow/util/logging.h>
 #include <iomanip>
 
+#include "common/status.h"
+
 #include "./platform.h"
-#include "./status.h"
-#include "platform.h"
 
 namespace fletcher {
 

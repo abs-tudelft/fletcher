@@ -16,12 +16,12 @@
 
 #include <arrow/record_batch.h>
 
-namespace fletchgen {
+namespace fletcher {
 namespace test {
 
 std::shared_ptr<arrow::RecordBatch> getStringRB();
-
 std::shared_ptr<arrow::RecordBatch> getUint8RB();
+std::shared_ptr<arrow::RecordBatch> getListUint8RB();
 
 }
 }
