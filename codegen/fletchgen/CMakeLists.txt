@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
-project(fletchgen)
+set(FLETCHGEN fletchgen)
+project(${FLETCHGEN})
 
 include(GNUInstallDirs)
 
@@ -57,23 +58,23 @@ set(RESOURCES
         ../../hardware/vhdl/sim/sim_top.vhdt
         ../../hardware/vhdl/axi/axi_top.vhdt)
 
-add_library(${PROJECT_NAME}-static ${HEADERS} ${SOURCES})
+add_library(${FLETCHGEN}-static ${HEADERS} ${SOURCES})
 
-add_executable(${PROJECT_NAME} src/fletchgen.cc)
-target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-static)
+add_executable(${FLETCHGEN} src/fletchgen.cc)
+target_link_libraries(${FLETCHGEN} ${FLETCHGEN}-static)
 
 # Include common functions, build it and link statically
 if (NOT TARGET fletcher-common)
     add_subdirectory(../../common/cpp fletcher-common)
 endif()
-target_link_libraries(${PROJECT_NAME} fletcher-common)
+target_link_libraries(${FLETCHGEN} fletcher-common)
 include_directories(../../common/cpp/src)
 
 find_library(LIB_ARROW arrow)
-target_link_libraries(${PROJECT_NAME} ${REQUIRED} ${LIB_ARROW})
+target_link_libraries(${FLETCHGEN} ${REQUIRED} ${LIB_ARROW})
 
 find_package(Boost COMPONENTS program_options REQUIRED)
-target_link_libraries(${PROJECT_NAME} ${REQUIRED} Boost::program_options)
+target_link_libraries(${FLETCHGEN} ${REQUIRED} Boost::program_options)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${FLETCHGEN} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)

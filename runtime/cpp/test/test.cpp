@@ -19,9 +19,6 @@
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
 
-#include "fletcher/common/arrow-utils.h"
-#include "fletcher/common/status.h"
-
 #include "../src/fletcher/platform.h"
 #include "../src/fletcher/context.h"
 

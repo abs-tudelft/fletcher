@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-add_subdirectory(runtime/cpp)
+# CPP runtime
+option(FLETCHER_CPP "Build Fletcher C++ run-time library" ON)
+if (FLETCHER_CPP)
+    add_subdirectory(runtime/cpp)
+endif()
 
 # Fletcher wrapper generator
 option(FLETCHER_GEN "Build with Fletchgen - Fletcher's HDL wrapper generator." ON)

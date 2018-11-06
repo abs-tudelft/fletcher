@@ -15,9 +15,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iomanip>
 
 #include <arrow/util/logging.h>
-#include <iomanip>
 
 #include "fletcher/common/status.h"
 

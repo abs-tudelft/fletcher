@@ -33,6 +33,8 @@
 #include "top/axi.h"
 #include "top/sim.h"
 
+#include "fletcher/common/arrow-utils.h"
+
 using fletchgen::Mode;
 
 /**
