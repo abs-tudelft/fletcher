@@ -75,10 +75,10 @@ install(FILES ${HEADERS}
 # Headers from common library
 set(COMMON_HEADERS
         ../../common/c/src/fletcher.h
-        ../../common/cpp/src/status.h
-        ../../common/cpp/src/arrow-utils.h
-        ../../common/cpp/src/hex-view.h
-        ../../common/cpp/src/timer.h)
+        ../../common/cpp/src/common/status.h
+        ../../common/cpp/src/common/arrow-utils.h
+        ../../common/cpp/src/common/hex-view.h
+        ../../common/cpp/src/common/timer.h)
 
 install(FILES ${COMMON_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common
