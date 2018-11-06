@@ -18,7 +18,7 @@
 #include <string>
 #include <iostream>
 
-#include "../../../c/src/fletcher.h"
+#include "fletcher.h"
 
 namespace fletcher {
 

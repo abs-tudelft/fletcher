@@ -34,6 +34,7 @@ if (NOT TARGET fletcher-common)
 endif()
 target_link_libraries(${PROJECT_NAME} fletcher-common)
 include_directories(../../common/cpp/src)
+include_directories(../../common/c/src)
 
 # Dynamically link the dynamically library linking library
 target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
@@ -57,10 +58,10 @@ install(FILES ${HEADERS}
 # Headers from common library
 set(COMMON_HEADERS
         ../../common/c/src/fletcher.h
-        ../../common/cpp/src/status.h
-        ../../common/cpp/src/arrow-utils.h
-        ../../common/cpp/src/hex-view.h
-        ../../common/cpp/src/timer.h)
+        ../../common/cpp/src/common/status.h
+        ../../common/cpp/src/common/arrow-utils.h
+        ../../common/cpp/src/common/hex-view.h
+        ../../common/cpp/src/common/timer.h)
 
 install(FILES ${COMMON_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common
