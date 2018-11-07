@@ -1,23 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
-project(fletcher VERSION 0.0.1 DESCRIPTION "Fletcher C++ runtime library")
 include(GNUInstallDirs)
 include(ExternalProject)
 
 ########################################################################################################################
 # LIBRARY
 ########################################################################################################################
-<<<<<<< HEAD
 option(FLETCHER_PYTHON
         "Build Fletcher for use in building pyfletcher"
         OFF)
 
 #Only needed when building for Python
 set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
-=======
+
 set(FLETCHER fletcher)
 
 project(${FLETCHER} VERSION 0.0.1 DESCRIPTION "Fletcher C++ runtime library")
->>>>>>> 11a4d2ec366f656b44de9fa38bd09b12b00e054d
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
