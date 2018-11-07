@@ -14,10 +14,8 @@ set(SOURCES
 set(HEADERS
         src/fletcher_aws.h)
 
-set(GLOBAL_C_HEADER
-        ../../../common/c/src/fletcher/fletcher.h)
-
-add_library(${PROJECT_NAME} SHARED ${GLOBAL_C_HEADER} ${HEADERS} ${SOURCES})
+add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+include_directories(../../../common/c/src)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)

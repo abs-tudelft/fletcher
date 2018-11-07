@@ -18,7 +18,7 @@
 
 #include "fletcher/common/arrow-utils.h"
 
-#include "test_schemas.h"
+#include "./test_schemas.h"
 
 namespace fletcher {
 namespace test {

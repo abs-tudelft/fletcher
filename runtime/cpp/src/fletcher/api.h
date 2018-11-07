@@ -14,9 +14,13 @@
 
 #pragma once
 
-#include "fletcher.h"
+#include "fletcher/fletcher.h"
+
+#include "fletcher/common/status.h"
+#include "fletcher/common/timer.h"
+#include "fletcher/common/arrow-utils.h"
+#include "fletcher/common/hex-view.h"
 
 #include "./context.h"
 #include "./platform.h"
-#include "./common/status.h"
 #include "./usercore.h"

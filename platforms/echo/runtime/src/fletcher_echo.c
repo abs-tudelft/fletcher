@@ -71,7 +71,7 @@ fstatus_t platformTerminate(void *arg) {
 }
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
-  *device_address = (da_t) malloc((size_t) size);
+  *device_address = (uint64_t)malloc((size_t) size);
   printf("[ECHO] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n", (uint64_t) device_address, size);
   buffer_ptr += size;
   return FLETCHER_STATUS_OK;
@@ -85,7 +85,7 @@ fstatus_t platformDeviceFree(da_t device_address) {
 
 fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced) {
   *device_destination = buffer_ptr;
-  *alloced = 1;
+  *alloced = 0;
   printf("[ECHO] Preparing buffer for device. [host] 0x%016lX --> 0x%016lX (%10lu bytes).\n",
          (unsigned long) host_source,
          (unsigned long) *device_destination,

@@ -19,8 +19,10 @@
 #include <arrow/util/logging.h>
 #include <arrow/record_batch.h>
 
+#include "fletcher/common/status.h"
+#include "fletcher/common/arrow-utils.h"
+
 #include "./context.h"
-#include "context.h"
 
 namespace fletcher {
 

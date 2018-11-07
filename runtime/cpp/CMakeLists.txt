@@ -6,12 +6,18 @@ include(ExternalProject)
 ########################################################################################################################
 # LIBRARY
 ########################################################################################################################
+<<<<<<< HEAD
 option(FLETCHER_PYTHON
         "Build Fletcher for use in building pyfletcher"
         OFF)
 
 #Only needed when building for Python
 set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
+=======
+set(FLETCHER fletcher)
+
+project(${FLETCHER} VERSION 0.0.1 DESCRIPTION "Fletcher C++ runtime library")
+>>>>>>> 11a4d2ec366f656b44de9fa38bd09b12b00e054d
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
@@ -37,24 +43,15 @@ set(HEADERS
         src/fletcher/context.h
         src/fletcher/usercore.h)
 
-add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
-
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/fletcher/api.h)
-
-# Include common functions, build it and link statically
-if (NOT TARGET fletcher-common)
-    add_subdirectory(../../common/cpp fletcher-common)
-endif()
-target_link_libraries(${PROJECT_NAME} fletcher-common)
 include_directories(../../common/cpp/src)
 include_directories(../../common/c/src)
 
-# Dynamically link the dynamically library linking library
-target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+add_library(${FLETCHER} SHARED ${COMMON_HEADERS} ${HEADERS} ${SOURCES})
 
-# Dynamically link Arrow
+set_target_properties(${FLETCHER} PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(${FLETCHER} PROPERTIES SOVERSION 1)
+set_target_properties(${FLETCHER} PROPERTIES PUBLIC_HEADER src/fletcher/api.h)
+
 if (FLETCHER_PYTHON)
     find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
     include_directories(${PYARROW_DIR}/include)
@@ -63,18 +60,26 @@ else()
 endif()
 message(${LIB_ARROW})
 
-target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
+# Common library (static), if not already built
+if (NOT TARGET fletcher-common)
+    add_subdirectory(../../common/cpp fletcher-common)
+endif()
+target_link_libraries(${FLETCHER} fletcher-common)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER src/${PROJECT_NAME}/api.h)
+# Dynamically link the dynamically library linking library
+target_link_libraries(${FLETCHER} ${CMAKE_DL_LIBS})
+
+# Dynamically link Arrow
+target_link_libraries(${FLETCHER} ${LIB_ARROW})
 
 # Install .so
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${FLETCHER}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER})
 
 # Install headers from cpp runtime
 install(FILES ${HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
         )
 
 # Headers from common library
@@ -85,20 +90,20 @@ set(COMMON_HEADERS
         ../../common/cpp/src/fletcher/common/timer.h)
 
 install(FILES ${COMMON_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/common
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}/common
         )
 
 # Install C header
 install(FILES ${GLOBAL_C_HEADER}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
         )
 
 ########################################################################################################################
 # TESTS
 ########################################################################################################################
-
 if (FLETCHER_TESTS)
     set(TEST_SOURCES test/test.cpp)
-    add_executable(test_${PROJECT_NAME} ${TEST_HEADERS} ${TEST_SOURCES})
-    target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+    add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
+    target_link_libraries(${FLETCHER}-test ${FLETCHER})
+    target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
 endif (FLETCHER_TESTS)
