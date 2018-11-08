@@ -26,11 +26,11 @@
 `define REG_RETURN_HI       3
 `define REG_RETURN_LO       2
 
-`define REG_OFF_ADDR_HI     4+5
-`define REG_OFF_ADDR_LO     4+4
+`define REG_OFF_ADDR_HI     4+3
+`define REG_OFF_ADDR_LO     4+2
 
-`define REG_DATA_ADDR_HI    4+3
-`define REG_DATA_ADDR_LO    4+2
+`define REG_DATA_ADDR_HI    4+5
+`define REG_DATA_ADDR_LO    4+4
 
 // Registers for first and last (exclusive) row index
 `define REG_FIRST_IDX       4+0
@@ -41,10 +41,12 @@
 // Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000
 `define OFF_ADDR_LO         32'h00000000
+`define DATA_ADDR_HI        32'h00000000
+`define DATA_ADDR_LO        32'h00000040
 // Offset buffer address in host memory
 `define HOST_ADDR           64'h0000000000000000
 
-`define NUM_ROWS            4
+`define NUM_ROWS            5
 
 module test_arrow_kmeans();
 
@@ -58,7 +60,7 @@ logic       ddr_ready;
 int         read_data;
 
 int num_rows = `NUM_ROWS;
-int num_buf_bytes = 128;
+int num_buf_bytes = 192;
 int temp;
 
 union {
@@ -104,7 +106,7 @@ initial begin
     .len(num_buf_bytes)
   );
 
-  `include "numberlist.sv"
+  `include "intlist.sv"
 
   $display("[%t] : Starting host to CL DMA transfers ", $realtime);
 
@@ -137,12 +139,30 @@ initial begin
   tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_RESET));
 
   // Initialize buffer addressess
-  tb.poke_bar1(.addr(4*`REG_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
-  tb.poke_bar1(.addr(4*`REG_OFF_ADDR_LO), .data(`OFF_ADDR_LO));
+  tb.poke_bar1(.addr(4 * (`REG_OFF_ADDR_HI)), .data(`OFF_ADDR_HI));
+  tb.poke_bar1(.addr(4 * (`REG_OFF_ADDR_LO)), .data(`OFF_ADDR_LO));
+
+  tb.poke_bar1(.addr(4 * (`REG_DATA_ADDR_HI)), .data(`DATA_ADDR_HI));
+  tb.poke_bar1(.addr(4 * (`REG_DATA_ADDR_LO)), .data(`DATA_ADDR_LO));
 
   // Set first and last row index
   tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
   tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
+
+  // Set starting centroids
+  tb.poke_bar1(.addr(4*10), .data(0));
+  tb.poke_bar1(.addr(4*11), .data(0));
+  tb.poke_bar1(.addr(4*12), .data(0));
+  tb.poke_bar1(.addr(4*13), .data(0));
+
+  tb.poke_bar1(.addr(4*14), .data(40));
+  tb.poke_bar1(.addr(4*15), .data(0));
+  tb.poke_bar1(.addr(4*16), .data(-100));
+  tb.poke_bar1(.addr(4*17), .data(-1));
+
+  // Set maximum number of iterations
+  tb.poke_bar1(.addr(4*18), .data(4));
+
 
   $display("[%t] : Starting UserCore", $realtime);
 

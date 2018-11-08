@@ -14,9 +14,9 @@ create_project -in_memory -part [DEVICE_TYPE] -force
 
 # Read Fletcher example IP
 vivado_generate_ip axi_interconnect_top
-vivado_generate_ip floating_point_sub_double
-vivado_generate_ip floating_point_add_double
-vivado_generate_ip floating_point_mult_double
-vivado_generate_ip floating_point_lt_double
+#vivado_generate_ip floating_point_sub_double
+#vivado_generate_ip floating_point_add_double
+#vivado_generate_ip floating_point_mult_double
+#vivado_generate_ip floating_point_lt_double
 
 

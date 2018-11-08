@@ -54,26 +54,14 @@ puts "AWS FPGA: Reading IP blocks";
 # Read Fletcher example IP
 read_ip [ list \
   $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci \
-  $CL_DIR/design/ip/floating_point_add_double/floating_point_add_double.xci \
-  $CL_DIR/design/ip/floating_point_lt_double/floating_point_lt_double.xci \
-  $CL_DIR/design/ip/floating_point_mult_double/floating_point_mult_double.xci \
-  $CL_DIR/design/ip/floating_point_sub_double/floating_point_sub_double.xci \
 ]
 
 # Generate the IP used in cl_arrow 
 generate_target all [get_files \
   $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci \
-  $CL_DIR/design/ip/floating_point_add_double/floating_point_add_double.xci \
-  $CL_DIR/design/ip/floating_point_lt_double/floating_point_lt_double.xci \
-  $CL_DIR/design/ip/floating_point_mult_double/floating_point_mult_double.xci \
-  $CL_DIR/design/ip/floating_point_sub_double/floating_point_sub_double.xci
 ]
 synth_ip [get_files \
   $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci \
-  $CL_DIR/design/ip/floating_point_add_double/floating_point_add_double.xci \
-  $CL_DIR/design/ip/floating_point_lt_double/floating_point_lt_double.xci \
-  $CL_DIR/design/ip/floating_point_mult_double/floating_point_mult_double.xci \
-  $CL_DIR/design/ip/floating_point_sub_double/floating_point_sub_double.xci
 ] -force
 
 #Read DDR IP
