@@ -17,7 +17,7 @@
 #include "./test_schemas.h"
 #include "./test_recordbatches.h"
 
-int main(int argc, char *argv[]) {
+int main() {
   std::shared_ptr<arrow::Schema> schema;
   std::shared_ptr<arrow::RecordBatch> recordbatch;
 

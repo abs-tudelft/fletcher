@@ -79,8 +79,16 @@ install(FILES ${GLOBAL_C_HEADER}
 # TESTS
 ########################################################################################################################
 if (FLETCHER_TESTS)
+    # Include GoogleTest CMake functionality
+    include(GoogleTest)
+    find_package(GTest REQUIRED)
+
     set(TEST_SOURCES test/test.cpp)
     add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
     target_link_libraries(${FLETCHER}-test ${FLETCHER})
     target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
+    target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
+    target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
+
+    gtest_discover_tests(${FLETCHER}-test WORKING_DIRECTORY ../../platforms/echo/runtime)
 endif (FLETCHER_TESTS)

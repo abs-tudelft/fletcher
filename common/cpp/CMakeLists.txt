@@ -32,7 +32,7 @@ target_link_libraries(${FLETCHER_COMMON} ${REQUIRED} ${LIB_ARROW})
 
 if (FLETCHER_TESTS)
 
-    # Test Arrow objects; schemas, recordbatches, etc...
+    # File generation for Arrow objects in e.g. fletchgen or other tools. Schemas, recordbatches, etc...
     set(TEST_GEN fletcher-test-generate)
 
     set(TEST_GEN_HEADERS
@@ -47,9 +47,15 @@ if (FLETCHER_TESTS)
     target_link_libraries(${TEST_GEN} ${LIB_ARROW})
     target_link_libraries(${TEST_GEN} ${FLETCHER_COMMON})
 
+    # Common library unit tests
+
+    # Include GoogleTest CMake functionality
+    include(GoogleTest)
+    find_package(GTest REQUIRED)
+
     # Test common library functions
     set(TEST_COMMON fletcher-test-common)
-    set(TEST_COMMON_HEADERS )
+    set(TEST_COMMON_HEADERS)
     set(TEST_COMMON_SOURCES test/test-common.cc)
 
     add_executable(${TEST_COMMON}
@@ -57,6 +63,9 @@ if (FLETCHER_TESTS)
             ${TEST_COMMON_HEADERS} ${TEST_COMMON_SOURCES})
     target_link_libraries(${TEST_COMMON} ${LIB_ARROW})
     target_link_libraries(${TEST_COMMON} ${FLETCHER_COMMON})
+    target_link_libraries(${TEST_COMMON} GTest::GTest GTest::Main)
     include_directories(${TEST_COMMON} src)
+
+    gtest_discover_tests(${TEST_COMMON} WORKING_DIRECTORY ../../platforms/echo/runtime)
 
 endif (FLETCHER_TESTS)

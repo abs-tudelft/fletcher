@@ -16,38 +16,30 @@
 #include <string>
 #include <iostream>
 
+#include "gtest/gtest.h"
+
 #include "fletcher/common/arrow-utils.h"
 
 #include "./test_schemas.h"
 
-namespace fletcher {
-namespace test {
-
-void testFlattenFromField() {
-  bool pass = true;
+TEST(appendExpectedBuffersFromField, Lists) {
   // List of uint8's
-  auto schema = genListUint8Schema();
+  auto schema = fletcher::test::genListUint8Schema();
   std::vector<std::string> bufs;
-  appendExpectedBuffersFromField(&bufs, schema->field(0));
-  pass |= bufs[0] == "list_offsets";
-  pass |= bufs[1] == "uint8_values";
+  fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
+  ASSERT_EQ(bufs[0], "list_offsets");
+  ASSERT_EQ(bufs[1], "uint8_values");
 
-  schema = genStringSchema();
+  schema = fletcher::test::genStringSchema();
   // String is essentially a list of non-nullable utf8 bytes
   std::vector<std::string> bufs2;
-  appendExpectedBuffersFromField(&bufs, schema->field(0));
-  pass |= bufs[0] == "name_offsets";
-  pass |= bufs[1] == "name_values";
-
-  if (!pass) {
-    exit(EXIT_FAILURE);
-  }
+  fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
+  ASSERT_EQ(bufs2[0], "name_offsets");
+  ASSERT_EQ(bufs2[1], "name_values");
 }
 
-}
-}
 
-int main() {
-  fletcher::test::testFlattenFromField();
-  return EXIT_SUCCESS;
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
