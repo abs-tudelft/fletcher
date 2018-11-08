@@ -21,8 +21,9 @@
 #include "fletcher/common/arrow-utils.h"
 
 #include "./test_schemas.h"
+#include "./test_recordbatches.h"
 
-TEST(appendExpectedBuffersFromField, Lists) {
+TEST(common_arrow_utils, appendExpectedBuffersFromField) {
   // List of uint8's
   auto schema = fletcher::test::genListUint8Schema();
   std::vector<std::string> bufs;
@@ -33,11 +34,57 @@ TEST(appendExpectedBuffersFromField, Lists) {
   schema = fletcher::test::genStringSchema();
   // String is essentially a list of non-nullable utf8 bytes
   std::vector<std::string> bufs2;
-  fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
-  ASSERT_EQ(bufs2[0], "name_offsets");
-  ASSERT_EQ(bufs2[1], "name_values");
+  fletcher::appendExpectedBuffersFromField(&bufs2, schema->field(0));
+  ASSERT_EQ(bufs2[0], "Name_offsets");
+  ASSERT_EQ(bufs2[1], "Name_values");
 }
 
+TEST(common_arrow_utils, RecordBatchFileRoundTrip) {
+  auto wrb = fletcher::test::getStringRB();
+  fletcher::writeRecordBatchToFile(wrb, "test-common.rb");
+  auto rrb = fletcher::readRecordBatchFromFile("test-common.rb", wrb->schema());
+  ASSERT_TRUE(wrb->Equals(*rrb));
+}
+
+TEST(common_arrow_utils, flattenArrayBuffers_string) {
+  // Test flattening of array buffers with field
+  auto rb = fletcher::test::getStringRB();
+  auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
+
+  std::vector<arrow::Buffer*> buffers;
+  fletcher::flattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
+  // First buffer should be offsets buffer
+  ASSERT_EQ(buffers[0], sa->value_offsets().get());
+  // Second buffer should be values buffer
+  ASSERT_EQ(buffers[1], sa->value_data().get());
+}
+
+TEST(common_arrow_utils, flattenArrayBuffers_string_noField) {
+  // Test flattening of array buffers without field
+  auto rb = fletcher::test::getStringRB();
+  auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
+
+  std::vector<arrow::Buffer*> buffers;
+  fletcher::flattenArrayBuffers(&buffers, rb->column(0));
+  // First buffer should be offsets buffer
+  ASSERT_EQ(buffers[0], sa->value_offsets().get());
+  // Second buffer should be values buffer
+  ASSERT_EQ(buffers[1], sa->value_data().get());
+}
+
+TEST(common_arrow_utils, flattenArrayBuffers_list) {
+  // Test flattening of array buffers without field
+  auto rb = fletcher::test::getListUint8RB();
+  auto la = std::dynamic_pointer_cast<arrow::ListArray>(rb->column(0));
+  auto va = std::dynamic_pointer_cast<arrow::UInt8Array>(la->values());
+
+  std::vector<arrow::Buffer*> buffers;
+  fletcher::flattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
+  // First buffer should be offsets buffer
+  ASSERT_EQ(buffers[0], la->value_offsets().get());
+  // Second buffer should be values buffer
+  ASSERT_EQ(buffers[1], va->values().get());
+}
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
