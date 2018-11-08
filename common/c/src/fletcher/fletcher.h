@@ -20,6 +20,7 @@
 
 #define FLETCHER_STATUS_OK 0
 #define FLETCHER_STATUS_ERROR 1
+#define FLETCHER_STATUS_NO_PLATFORM 2
 
 /// Status for function return values
 typedef uint64_t fstatus_t;

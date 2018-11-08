@@ -18,6 +18,10 @@
 
 #define FLETCHER_PLATFORM_NAME "echo"
 
+typedef struct {
+  int quiet;
+} InitOptions;
+
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.
 fstatus_t platformGetName(char *name, size_t size);
 

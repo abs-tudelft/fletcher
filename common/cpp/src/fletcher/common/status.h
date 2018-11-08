@@ -40,8 +40,8 @@ struct Status {
   }
 
   inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
-
   inline static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
+  inline static Status NO_PLATFORM() {return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM));}
 };
 
 }

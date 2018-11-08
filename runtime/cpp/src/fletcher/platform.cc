@@ -28,7 +28,11 @@ namespace fletcher {
 std::string Platform::getName() {
   assert(platformGetName != nullptr);
   char buf[64] = {0};
-  platformGetName(buf, 64);
+  if (platformGetName != nullptr) {
+    platformGetName(buf, 64);
+  } else {
+    return "INVALID_PLATFORM";
+  }
   return std::string(buf);
 }
 
@@ -48,12 +52,12 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
     if (!quiet) {
       ARROW_LOG(ERROR) << dlerror();
     }
-    return Status::ERROR();
+    return Status::NO_PLATFORM();
   }
 }
 
 Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform) {
-  Status err = Status::ERROR();
+  Status err = Status::NO_PLATFORM();
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
