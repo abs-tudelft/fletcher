@@ -62,12 +62,12 @@ package ColumnConfig is
   -- for nulls to be supported.
   --
   -- Control vector:
+  --   - <>
   --   - present: 1
   --     Specifies whether the null bitmap is present or not. If it is not, the
   --     BufferReader is disabled and always returns non-null.
   --   - baseAddr: BUS_ADDR_WIDTH
   --     Specifies the base address for the null bitmap.
-  --   - <>
   --
   -- Number of masters: <> + 1
   --
@@ -86,9 +86,9 @@ package ColumnConfig is
   -- type.
   --
   -- Control vector:
+  --   - <>
   --   - baseAddr: BUS_ADDR_WIDTH
   --     Specifies the base address for the offsets buffer.
-  --   - <>
   --
   -- Number of masters: <> + 1
   --
@@ -109,10 +109,10 @@ package ColumnConfig is
   -- per cycle, specified by the epc parameter.
   --
   -- Control vector:
-  --   - indexBaseAddr: BUS_ADDR_WIDTH
-  --     Specifies the base address for the index buffer.
   --   - dataBaseAddr: BUS_ADDR_WIDTH
   --     Specifies the base address for the data buffer.
+  --   - indexBaseAddr: BUS_ADDR_WIDTH
+  --     Specifies the base address for the index/offsets buffer.
   --
   -- Number of masters: 2
   --
