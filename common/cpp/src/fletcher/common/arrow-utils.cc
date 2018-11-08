@@ -42,11 +42,11 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
   // Because Arrow buffer order seems to be by convention and not by specification, handle these special cases:
   // This is to reverse the order of offset and values buffer to correspond with the hardware implementation.
   if (array->type_id() == arrow::BinaryType::type_id) {
-    auto ba = std::dynamic_pointer_cast<arrow::BinaryArray>(array);
+    auto ba = std::static_pointer_cast<arrow::BinaryArray>(array);
     buffers->push_back(ba->value_offsets().get());
     buffers->push_back(ba->value_data().get());
   } else if (array->type_id() == arrow::StringType::type_id) {
-    auto sa = std::dynamic_pointer_cast<arrow::StringArray>(array);
+    auto sa = std::static_pointer_cast<arrow::StringArray>(array);
     buffers->push_back(sa->value_offsets().get());
     buffers->push_back(sa->value_data().get());
   } else {
@@ -90,14 +90,14 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
     throw std::runtime_error("Incompatible schema.");
   }
   if (array->type_id() == arrow::BinaryType::type_id) {
-    auto ba = std::dynamic_pointer_cast<arrow::BinaryArray>(array);
+    auto ba = std::static_pointer_cast<arrow::BinaryArray>(array);
     if (field->nullable() && (ba->null_count() == 0)) {
       buffers->push_back(nullptr);
     }
     buffers->push_back(ba->value_offsets().get());
     buffers->push_back(ba->value_data().get());
   } else if (array->type_id() == arrow::StringType::type_id) {
-    auto sa = std::dynamic_pointer_cast<arrow::StringArray>(array);
+    auto sa = std::static_pointer_cast<arrow::StringArray>(array);
     if (field->nullable() && (sa->null_count() == 0)) {
       buffers->push_back(nullptr);
     }

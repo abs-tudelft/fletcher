@@ -4,10 +4,20 @@ set(FLETCHER_COMMON fletcher-common)
 
 project(${FLETCHER_COMMON})
 
+option(FLETCHER_PYTHON
+        "Build Fletcher for use in building pyfletcher"
+        OFF)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
+
+if (FLETCHER_PYTHON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+    include_directories(${PYARROW_DIR}/include)
+    message("Building fletcher-common for Pyfletcher")
+endif()
 
 set(COMMON_SOURCES
         src/fletcher/common/arrow-utils.cc
