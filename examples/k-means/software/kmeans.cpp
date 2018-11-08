@@ -103,7 +103,9 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
 
   // Define the schema
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
+//      arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
+      arrow::field("ListOfNumber", arrow::list(
+          std::make_shared<arrow::Field>("Numbers", arrow::int64(), false)), false),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
 
