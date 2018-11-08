@@ -105,7 +105,7 @@ std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genPrimReadSchema(), numbers.size(), {a});
+      record_batch = arrow::RecordBatch::Make(genListUint8Schema(), numbers.size(), {a});
 
   return record_batch;
 }
