@@ -68,7 +68,7 @@ architecture behavior of selector_tree is
       m_axis_result_tvalid : out std_logic;
       m_axis_result_tready : in  std_logic;
       m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      m_axis_result_tpath  : out std_logic_vector(PATH_WIDTH downto 0);
+      m_axis_result_tpath  : out std_logic_vector(PATH_WIDTH-1 downto 0);
       m_axis_result_tlast  : out std_logic
     );
   end component;

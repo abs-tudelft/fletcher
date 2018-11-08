@@ -139,7 +139,7 @@ architecture behavior of kmeans is
       m_axis_result_tvalid    : out std_logic;
       m_axis_result_tready    : in  std_logic;
       m_axis_result_tdata     : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      m_axis_result_tuser     : out std_logic_vector(TUSER_WIDTH * OPERANTS - 1 downto 0);
+      m_axis_result_tuser     : out std_logic_vector(TUSER_WIDTH - 1 downto 0);
       m_axis_result_tlast     : out std_logic;
       m_axis_result_tselected : out std_logic_vector(log2ceil(OPERANTS)-1 downto 0)
     );
