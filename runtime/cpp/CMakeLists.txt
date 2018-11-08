@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 include(GNUInstallDirs)
-include(ExternalProject)
 
 ########################################################################################################################
 # LIBRARY
@@ -40,9 +39,6 @@ set(HEADERS
         src/fletcher/context.h
         src/fletcher/usercore.h)
 
-include_directories(../../common/cpp/src)
-include_directories(../../common/c/src)
-
 add_library(${FLETCHER} SHARED ${COMMON_HEADERS} ${HEADERS} ${SOURCES})
 
 set_target_properties(${FLETCHER} PROPERTIES VERSION ${PROJECT_VERSION})
@@ -61,7 +57,12 @@ message(${LIB_ARROW})
 if (NOT TARGET fletcher-common)
     add_subdirectory(../../common/cpp fletcher-common)
 endif()
-target_link_libraries(${FLETCHER} fletcher-common)
+
+# For now, we want to include all symbols from the common static library into the runtime shared library.
+# At some point they should be exposed more programatically (in the api header, for example).
+target_link_libraries(${FLETCHER} -Wl,-whole-archive fletcher-common -Wl,-no-whole-archive)
+include_directories(../../common/cpp/src)
+include_directories(../../common/c/src)
 
 # Dynamically link the dynamically library linking library
 target_link_libraries(${FLETCHER} ${CMAKE_DL_LIBS})
