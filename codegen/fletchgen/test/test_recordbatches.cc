@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "test_recordbatches.h"
+#include "test_schemas.h"
+
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <arrow/record_batch.h>
 #include <arrow/builder.h>
 #include <arrow/memory_pool.h>
 
-#include "test_schemas.h"
-
-#include "test_recordbatches.h"
 
 namespace fletchgen {
 namespace test {
@@ -32,7 +36,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
                                     "Quinn", "Robert", "Sarah", "Travis",
                                     "Uma", "Victor", "Wendy", "Xavier",
                                     "Yasmine", "Zachary"
-  };
+  }
 
   // Make a string builder
   arrow::StringBuilder string_builder;
@@ -40,7 +44,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
   // Append the strings in the string builder
   if (!string_builder.AppendValues(names).ok()) {
     throw std::runtime_error("Could not append strings to string builder.");
-  };
+  }
 
   // Array to hold Arrow formatted string data
   std::shared_ptr<arrow::Array> data_array;
@@ -48,7 +52,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
   // Finish building and create a new data array around the data
   if (!string_builder.Finish(&data_array).ok()) {
     throw std::runtime_error("Could not finalize string builder.");
-  };
+  }
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
@@ -58,7 +62,6 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
 }
 
 std::shared_ptr<arrow::RecordBatch> getUint8RB() {
-
   std::vector<uint8_t> numbers = {1, 3, 3, 7};
 
   // Make a string builder
@@ -72,7 +75,7 @@ std::shared_ptr<arrow::RecordBatch> getUint8RB() {
   // Finish building and create a new data array around the data
   if (!int_builder.Finish(&data_array).ok()) {
     throw std::runtime_error("Could not finalize string builder.");
-  };
+  }
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
@@ -82,7 +85,6 @@ std::shared_ptr<arrow::RecordBatch> getUint8RB() {
 }
 
 std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
-
   std::vector<double> numbers = {
       1.2, 0.6,
       1.4, 0.3,
@@ -96,8 +98,7 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
   // Make a list builder
   arrow::ListBuilder list_builder(
       arrow::default_memory_pool(),
-      float_builder
-    );
+      float_builder);
 
   // Create individual lists of this length
   const unsigned int list_length = 2;
@@ -116,27 +117,25 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
   // Finish building and create a new data array around the data
   if (!list_builder.Finish(&data_array).ok()) {
     throw std::runtime_error("Could not finalize list builder.");
-  };
+  }
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(
           genFloatListSchema(),
           numbers.size() / list_length,
-          {data_array}
-        );
+          {data_array})
 
   // Check whether the Record Batch is alright
   if (!record_batch->Validate().ok()) {
     throw std::runtime_error("Could not create Record Batch.");
-  };
+  }
 
   return record_batch;
 }
 
 std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
-
-  std::vector<long> numbers = {
+  std::vector<int64_t> numbers = {
       12, 6,
       14, 3,
       13, 0,
@@ -150,8 +149,7 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
   // Make a list builder
   arrow::ListBuilder list_builder(
       arrow::default_memory_pool(),
-      int_builder
-  );
+      int_builder);
 
   // Create individual lists of this length
   const unsigned int list_length = 2;
@@ -170,23 +168,22 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
   // Finish building and create a new data array around the data
   if (!list_builder.Finish(&data_array).ok()) {
     throw std::runtime_error("Could not finalize list builder.");
-  };
+  }
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(
       genIntListSchema(),
       numbers.size() / list_length,
-      {data_array}
-  );
+      {data_array});
 
   // Check whether the Record Batch is alright
   if (!record_batch->Validate().ok()) {
     throw std::runtime_error("Could not create Record Batch.");
-  };
+  }
 
   return record_batch;
 }
 
-}
-}
+}  // namespace test
+}  // namespace fletchgen

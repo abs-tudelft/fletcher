@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "test_schemas.h"
+
+#include "../src/arrow-utils.h"
+
 #include <arrow/type.h>
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
 
-#include "../src/arrow-utils.h"
+#include <vector>
+#include <memory>
 
-#include "test_schemas.h"
 
 namespace fletchgen {
 namespace test {
@@ -78,7 +82,6 @@ std::shared_ptr<arrow::Schema> genStructSchema() {
   auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
 
   return schema;
-
 }
 
 std::shared_ptr<arrow::Schema> genBigSchema() {
@@ -110,7 +113,6 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
 }
 
 std::shared_ptr<arrow::Schema> genPairHMMSchema() {
-
   // Create the struct datatype
   auto strct = arrow::struct_({arrow::field("Basepairs", arrow::uint8(), false),
                                arrow::field("Probabilities", arrow::fixed_size_binary(32), false)
@@ -146,5 +148,5 @@ std::shared_ptr<arrow::Schema> genIntListSchema() {
   return schema;
 }
 
-}
-}
+}  // namespace test
+}  // namespace fletchgen
