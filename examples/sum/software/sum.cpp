@@ -92,7 +92,7 @@ int64_t sumCPU(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  * Calculate the sum of all numbers in the arrow column using an FPGA.
  */
 int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
-  fletcher::common::Timer t;
+  fletcher::Timer t;
   std::shared_ptr<fletcher::Platform> platform;
   std::shared_ptr<fletcher::Context> context;
   dau_t ret;
@@ -143,7 +143,7 @@ int64_t sumFPGA(const shared_ptr<arrow::RecordBatch> &recordbatch) {
  * Finally compares the results.
  */
 int main(int argc, char **argv) {
-  fletcher::common::Timer t;
+  fletcher::Timer t;
   uint32_t num_rows = 1024;
 
   if (argc >= 2) {
