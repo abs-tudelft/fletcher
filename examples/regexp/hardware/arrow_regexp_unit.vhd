@@ -57,11 +57,11 @@ entity arrow_regexp_unit is
     firstidx                    : in  std_logic_vector(REG_WIDTH-1 downto 0);
     lastidx                     : in  std_logic_vector(REG_WIDTH-1 downto 0);
 
+	off_lo                      : in  std_logic_vector(REG_WIDTH-1 downto 0);
     off_hi                      : in  std_logic_vector(REG_WIDTH-1 downto 0);
-    off_lo                      : in  std_logic_vector(REG_WIDTH-1 downto 0);
-
-    utf8_hi                     : in  std_logic_vector(REG_WIDTH-1 downto 0);
+    
     utf8_lo                     : in  std_logic_vector(REG_WIDTH-1 downto 0);
+    utf8_hi                     : in  std_logic_vector(REG_WIDTH-1 downto 0);
 
     matches                     : out std_logic_vector(NUM_REGEX*REG_WIDTH-1 downto 0);
 
@@ -353,11 +353,11 @@ begin
       r_firstidx                <= firstidx;
       r_lastidx                 <= lastidx;
 
+	  r_off_lo                  <= off_lo;
       r_off_hi                  <= off_hi;
-      r_off_lo                  <= off_lo;
 
-      r_utf8_hi                 <= utf8_hi;
       r_utf8_lo                 <= utf8_lo;
+      r_utf8_hi                 <= utf8_hi;
       matches                   <= r_matches;
 
       if control_reset = '1' then
@@ -431,11 +431,11 @@ begin
 
         -- First four argument registers are buffer addresses
         -- MSBs are index buffer address
-        v.command.ctrl(127 downto 96) := r_off_hi;
-        v.command.ctrl( 95 downto 64) := r_off_lo;
+        v.command.ctrl(127 downto 96) := r_utf8_hi;
+        v.command.ctrl( 95 downto 64) := r_utf8_lo;
         -- LSBs are data buffer address
-        v.command.ctrl( 63 downto 32) := r_utf8_hi;
-        v.command.ctrl( 31 downto  0) := r_utf8_lo;
+        v.command.ctrl( 63 downto 32) := r_off_hi;
+        v.command.ctrl( 31 downto  0) := r_off_lo;
 
         -- Next two argument registers are first and last index
         v.command.firstIdx      := r_firstIdx;
