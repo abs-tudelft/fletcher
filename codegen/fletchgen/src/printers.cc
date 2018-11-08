@@ -20,10 +20,10 @@ using vhdl::t;
 
 namespace fletchgen {
 
-std::string getFieldInfoString(arrow::Field *field, ArrowStream *parent) {
+std::string getFieldInfoString(const std::shared_ptr<arrow::Field> &field, ArrowStream *parent) {
   std::string ret;
 
-  int epc = getEPC(field);
+  int epc = fletcher::getEPC(field);
 
   int l = 0;
 

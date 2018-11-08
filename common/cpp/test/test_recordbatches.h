@@ -14,34 +14,14 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <string>
-#include <iostream>
-
-#include "./fletcher.h"
+#include <arrow/record_batch.h>
 
 namespace fletcher {
+namespace test {
 
-struct Status {
-  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
+std::shared_ptr<arrow::RecordBatch> getStringRB();
+std::shared_ptr<arrow::RecordBatch> getUint8RB();
+std::shared_ptr<arrow::RecordBatch> getListUint8RB();
 
-  Status() = default;
-
-  explicit Status(fstatus_t val) : val(val) {}
-
-  inline bool ok() { return val == FLETCHER_STATUS_OK; }
-
-  /// @brief Exit when fail
-  inline void ewf(const std::string &msg = "") {
-    if (!ok()) {
-      std::cerr << msg << std::endl;
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
-
-  inline static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
-};
-
+}
 }

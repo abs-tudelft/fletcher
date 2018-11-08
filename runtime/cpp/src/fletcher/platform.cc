@@ -15,13 +15,13 @@
 #include <string>
 #include <vector>
 #include <memory>
-
-#include <arrow/util/logging.h>
 #include <iomanip>
 
+#include <arrow/util/logging.h>
+
+#include "fletcher/common/status.h"
+
 #include "./platform.h"
-#include "./status.h"
-#include "platform.h"
 
 namespace fletcher {
 

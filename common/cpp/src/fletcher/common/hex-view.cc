@@ -18,7 +18,9 @@
 #include "./hex-view.h"
 
 namespace fletcher {
-namespace common {
+
+HexView::HexView(uint64_t start, std::string str, uint64_t row, uint64_t col, uint64_t width)
+    : str(std::move(str)), row(row), col(col), width(width), start(start) {}
 
 std::string HexView::toString(bool header) {
   char buf[6] = {0};
@@ -26,7 +28,7 @@ std::string HexView::toString(bool header) {
   if (header) {
     ret = "                  ";
     for (unsigned int i = 0; i < width; i++) {
-      sprintf(buf, "%02X ", i);
+      snprintf(buf, sizeof(buf), "%02X ", i);
       ret.append(buf);
     }
   }
@@ -84,8 +86,4 @@ void HexView::addData(const uint8_t *ptr, size_t size) {
   str.append("\n");
 }
 
-HexView::HexView(uint64_t start, std::string str, uint64_t row, uint64_t col, uint64_t width) : str(
-    std::move(str)), row(row), col(col), width(width), start(start) {}
-
-}  // namespace common
 }  // namespace fletcher

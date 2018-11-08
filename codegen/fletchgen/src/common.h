@@ -37,12 +37,6 @@ namespace config {
 struct Config;
 }
 
-/// @brief Mode for things that can either read or write.
-enum class Mode {
-  READ, ///< Read mode
-  WRITE ///< Write mode
-};
-
 /// @brief Class to hold names of Arrow buffers
 class Buffer : public ChildOf<Buffer> {
  public:

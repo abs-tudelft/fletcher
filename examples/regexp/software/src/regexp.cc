@@ -59,7 +59,7 @@ using std::vector;
 using std::string;
 using std::endl;
 using std::shared_ptr;
-using fletcher::common::Timer;
+using fletcher::Timer;
 /**
  * Generate a random string possibly containing some other string.
  *

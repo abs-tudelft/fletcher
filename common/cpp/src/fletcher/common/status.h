@@ -14,13 +14,34 @@
 
 #pragma once
 
+#include <cstdlib>
+#include <string>
+#include <iostream>
+
 #include "fletcher/fletcher.h"
 
-#include "fletcher/common/status.h"
-#include "fletcher/common/timer.h"
-#include "fletcher/common/arrow-utils.h"
-#include "fletcher/common/hex-view.h"
+namespace fletcher {
 
-#include "./context.h"
-#include "./platform.h"
-#include "./usercore.h"
+struct Status {
+  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
+
+  Status() = default;
+
+  explicit Status(fstatus_t val) : val(val) {}
+
+  inline bool ok() { return val == FLETCHER_STATUS_OK; }
+
+  /// @brief Exit when fail
+  inline void ewf(const std::string &msg = "") {
+    if (!ok()) {
+      std::cerr << msg << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
+
+  inline static Status ERROR() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR)); }
+};
+
+}

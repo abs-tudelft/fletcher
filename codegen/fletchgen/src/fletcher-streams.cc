@@ -68,6 +68,10 @@ FST modeToArrowType(Mode mode) {
 vector<shared_ptr<Buffer>> ArrowStream::getBuffers() {
   vector<shared_ptr<Buffer>> ret;
   if (basedOnField()) {
+    // If the field is nullable, append a validity buffer
+    if (field()->nullable()) {
+      ret.push_back(make_shared<Buffer>(nameFrom({getSchemaPrefix(), "validity"})));
+    }
     // Lists add an offsets buffer.
     if ((field()->type()->id() == arrow::Type::LIST) || (field()->type()->id() == arrow::Type::BINARY)
         || (field()->type()->id() == arrow::Type::STRING)) {
@@ -76,11 +80,6 @@ vector<shared_ptr<Buffer>> ArrowStream::getBuffers() {
       // If it's not a list, and not a struct, there is always a values buffer.
     else if ((field()->type()->id() != arrow::Type::STRUCT)) {
       ret.push_back(make_shared<Buffer>(nameFrom({getSchemaPrefix(), "values"})));
-    }
-
-    // If the field is nullable, append a validity buffer
-    if (field()->nullable()) {
-      ret.push_back(make_shared<Buffer>(nameFrom({getSchemaPrefix(), "validity"})));
     }
   } else {
     if (hasParent()) {
@@ -226,16 +225,6 @@ int ArrowStream::depth() {
   return d;
 }
 
-bool ArrowStream::isPrim() {
-  if (field_ != nullptr) {
-    if (getConfigType(field_->type().get()) == ConfigType::PRIM)
-      return true;
-    else
-      return false;
-  }
-  return false;
-}
-
 bool ArrowStream::isList() {
   bool ret = false;
   ret |= field_->type()->id() == arrow::Type::LIST;
@@ -266,8 +255,6 @@ bool ArrowStream::isListPrimChild() {
   if (!basedOnField()) {
     return true;
   }
-  if (isListChild() && isPrim())
-    return true;
   return ret;
 }
 
@@ -278,7 +265,7 @@ bool ArrowStream::isStructChild() { return hasParent() ? parent()->isStruct() : 
 shared_ptr<arrow::Field> ArrowStream::field() { return field_; }
 
 void ArrowStream::setEPC(int epc) {
-  if (epc > 0) {
+  if (epc_ > 0) {
     epc_ = epc;
   } else {
     throw std::domain_error("Elements per cycle must be a positive non-zero value.");

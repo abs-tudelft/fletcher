@@ -132,10 +132,10 @@ architecture rtl of arrow_regexp is
   --   4   firstidx (uint32_t)  =  1
   --   5   lastidx  (uint32_t)  =  1
   ----------------------------------- Buffer addresses
-  --   6 data  buf address lo   =  1
-  --   7 data  buf address hi   =  1
-  --   8 index buf address lo   =  1
-  --   9 index buf address hi   =  1
+  --   6 offsets buf address lo =  1
+  --   7 offsets buf address hi =  1
+  --   8 values buf address lo  =  1
+  --   9 values buf address hi  =  1
   ----------------------------------- Custom registers
   --  10 custom first idx 16x   = 16
   --  26 custom last idx 16x    = 16
@@ -171,13 +171,13 @@ architecture rtl of arrow_regexp is
   constant REG_FIRSTIDX         : natural := 4;
   constant REG_LASTIDX          : natural := 5;
 
-  -- Values buffer address
-  constant REG_UTF8_ADDR_LO     : natural := 6;
-  constant REG_UTF8_ADDR_HI     : natural := 7;
-  
   -- Offset buffer address
-  constant REG_OFF_ADDR_LO      : natural := 8;
-  constant REG_OFF_ADDR_HI      : natural := 9;
+  constant REG_OFF_ADDR_LO      : natural := 6;
+  constant REG_OFF_ADDR_HI      : natural := 7;
+
+  -- Values buffer address
+  constant REG_UTF8_ADDR_LO     : natural := 8;
+  constant REG_UTF8_ADDR_HI     : natural := 9;
 
   -- Register offsets to indices for each RegExp unit to work on
   constant REG_CUST_FIRST_IDX   : natural := 10;

@@ -20,8 +20,7 @@
 #include <string>
 #include <cassert>
 
-#include "./status.h"
-#include "./fletcher.h"
+#include "fletcher/common/status.h"
 
 namespace fletcher {
 

@@ -18,6 +18,7 @@
 
 #include <arrow/type.h>
 
+#include "./arrow-meta.h"
 #include "./logging.h"
 #include "./vhdl/vhdl.h"
 #include "./common.h"
@@ -78,23 +79,23 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
   }
 }
 
-std::shared_ptr<ArrowStream> Column::getArrowStream(std::shared_ptr<arrow::Field> field, ArrowStream *parent) {
-  int epc = getEPC(field.get());
+std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow::Field> &field, ArrowStream *parent) {
+  int epc = fletcher::getEPC(field);
 
-  LOGD(getFieldInfoString(field.get(), parent));
+  LOGD(getFieldInfoString(field, parent));
 
   if (field->type()->id() == arrow::Type::BINARY) {
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("bytes", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else if (field->type()->id() == arrow::Type::STRING) {
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("chars", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else {
@@ -126,7 +127,8 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
   Value ctrl_offset(0);
 
   // For each buffer address, add a port.
-  for (auto const &buffer : getBuffers()) {
+  auto bufs = getBuffers();
+  for (auto const &buffer : bufs) {
     auto port = make_shared<CommandPort>(
         buffer->name(),
         CSP::ADDRESS,
@@ -144,7 +146,7 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
 }
 
 std::string Column::configString() {
-  return genConfigString(field_.get());
+  return genConfigString(field_);
 }
 
 int Column::countArrowStreams() {
@@ -162,7 +164,7 @@ std::vector<std::shared_ptr<Buffer>> Column::getBuffers() {
   for (const auto &s : arrow_streams_) {
     auto sbs = std::static_pointer_cast<ArrowStream>(s);
     auto bufs = sbs->getBuffers();
-    buffers.insert(buffers.begin(), bufs.begin(), bufs.end());
+    buffers.insert(buffers.end(), bufs.begin(), bufs.end());
   }
   return buffers;
 }
@@ -187,7 +189,8 @@ std::string Column::toString() {
 /**
  * Generate a ColumnReader
  */
-ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width) :
+ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width)
+    :
     StreamComponent("ColumnReader"), DerivedFrom(column) {
   /* Generics */
   entity()
@@ -357,7 +360,7 @@ std::string Column::getColumnModeString(Mode mode) {
   }
 }
 
-std::string genConfigString(arrow::Field *field, int level) {
+std::string genConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
   std::string ret;
   ConfigType ct = getConfigType(field->type().get());
 
@@ -366,8 +369,7 @@ std::string genConfigString(arrow::Field *field, int level) {
     level++;
   }
 
-  int epc = getEPC(field);
-  bool is_implicit_listprim = false;
+  int epc = fletcher::getEPC(field);
 
   if (ct == ConfigType::PRIM) {
     Value w = getWidth(field->type().get());
@@ -376,35 +378,15 @@ std::string genConfigString(arrow::Field *field, int level) {
     level++;
 
   } else if (ct == ConfigType::LISTPRIM) {
-    // String or binary with 8 bits per element
     ret += "listprim(";
     level++;
 
     Value w = Value(8);
 
     ret += w.toString();
-
   } else if (ct == ConfigType::LIST) {
-    // Convert list(prim(x)) to listprim(x), for epc support on this type
-    arrow::Field *child;
-    // List should always have at least one child, but check anyway
-    is_implicit_listprim = field->type()->num_children() == 1
-      && ( child = field->type()->children()[0].get() )
-      && getConfigType(child->type().get()) == ConfigType::PRIM;
-
-    if (is_implicit_listprim) {
-      epc = getEPC(child);
-      Value w = getWidth(child->type().get());
-
-      ret += "listprim(" + w.toString();
-      level++;
-
-    // Normal, nested list structure
-    } else {
-      ret += "list(";
-      level++;
-    }
-
+    ret += "list(";
+    level++;
   } else if (ct == ConfigType::STRUCT) {
     ret += "struct(";
     level++;
@@ -415,14 +397,11 @@ std::string genConfigString(arrow::Field *field, int level) {
   }
 
   // Append children
-  // Implicit listprim has no children
-  if (!is_implicit_listprim) {
-    for (int c = 0; c < field->type()->num_children(); c++) {
-      auto child = field->type()->children()[c];
-      ret += genConfigString(child.get());
-      if (c != field->type()->num_children() - 1)
-        ret += ",";
-    }
+  for (int c = 0; c < field->type()->num_children(); c++) {
+    auto child = field->type()->children()[c];
+    ret += genConfigString(child);
+    if (c != field->type()->num_children() - 1)
+      ret += ",";
   }
 
   for (; level > 0; level--)

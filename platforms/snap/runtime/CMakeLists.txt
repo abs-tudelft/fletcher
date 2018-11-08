@@ -14,7 +14,10 @@ set(SOURCES
 set(HEADERS
         src/fletcher_snap.h)
 
-add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+set(GLOBAL_C_HEADER
+        ../../../common/c/src/fletcher/fletcher.h)
+
+add_library(${PROJECT_NAME} SHARED ${GLOBAL_C_HEADER} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)

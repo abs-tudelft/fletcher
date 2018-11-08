@@ -15,6 +15,7 @@ set(HEADERS
         src/fletcher_aws.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+include_directories(../../../common/c/src)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)

@@ -17,8 +17,11 @@
 #include <memory>
 #include <arrow/api.h>
 
-namespace fletchgen {
+namespace fletcher {
 namespace test {
+
+/// @brief Generate a schema of a list with uint8 primitives.
+std::shared_ptr<arrow::Schema> genListUint8Schema();
 
 /// @brief Simplest example schema to read a primitive.
 std::shared_ptr<arrow::Schema> genPrimReadSchema();

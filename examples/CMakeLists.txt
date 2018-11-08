@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-find_library(LIB_FLETCHER fletcher)
-if (LIB_FLETCHER)
-    message("[FLETCHER] Building examples.")
-    add_subdirectory(sum/software)
-    add_subdirectory(regexp/software)
-else ()
-    message(WARNING "[FLETCHER] Before building examples, build and install run-time library first. Skipping examples...")
-endif ()
+add_subdirectory(sum/software)
+add_subdirectory(regexp/software)
+
