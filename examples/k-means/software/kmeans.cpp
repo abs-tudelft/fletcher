@@ -96,7 +96,8 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
       // Append number to current list
       int64_t rnd_num = int_dist(rng);
       //std::cout << rnd_num << ", ";
-      int_builder->Append(numbers[row * num_columns + col]);
+      //int_builder->Append(numbers[row * num_columns + col]);
+      int_builder->Append(rnd_num);
     }
   }
   std::cout << std::endl;
