@@ -198,7 +198,7 @@ architecture behavior of kmeans is
          point_split_data   : point_t;
   signal point_split_valid,
          point_split_ready,
-         point_split_last   : std_logic_vector(DIMENSION - 1 downto 0);
+         point_split_last   : std_logic_vector(CENTROIDS - 1 downto 0);
 
   signal distance_data      : std_logic_vector(CENTROIDS * DATA_WIDTH - 1 downto 0);
   signal distance_valid,

@@ -80,7 +80,7 @@ architecture behavior of selector_tree is
     data  : std_logic_vector(DATA_WIDTH-1 downto 0);
   end record axi_t;
 
-  type data_lvl_t is array (0 to OPERANTS-1) of axi_t;
+  type data_lvl_t is array (0 to 2**log2ceil(OPERANTS)-1) of axi_t;
   type data_tree_t is array (0 to log2ceil(OPERANTS)) of data_lvl_t;
   signal data_tree : data_tree_t;
 
@@ -127,23 +127,23 @@ begin
   m_axis_result_tuser     <= intermediate_tuser(0);
 
   select_tree_gen: for lvl in 0 to log2ceil(OPERANTS) - 1 generate
-    constant PATH_WIDTH : positive := log2ceil(OPERANTS) - lvl;
+    --constant PATH_WIDTH : positive := (log2ceil(OPERANTS) - lvl);
   begin
     lvl_gen: for idx in 0 to 2 ** lvl - 1 generate
 
       -- First column passes down the user info
       with_point: if idx = 0 generate
-        signal upstream_path  : std_logic_vector(PATH_WIDTH - 1 downto 0);
-        signal path_a, path_b : std_logic_vector(PATH_WIDTH + TUSER_WIDTH downto 0);
-        signal tmp_path_user  : std_logic_vector(PATH_WIDTH + TUSER_WIDTH downto 0);
+        signal upstream_path  : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
+        signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) + TUSER_WIDTH downto 0);
+        signal tmp_path_user  : std_logic_vector((log2ceil(OPERANTS) - lvl) + TUSER_WIDTH downto 0);
       begin
-        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * PATH_WIDTH - 1 downto idx * PATH_WIDTH);
+        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto idx * (log2ceil(OPERANTS) - lvl));
         path_a <= "0" & upstream_path & intermediate_tuser(lvl + 1);
         path_b <= "1" & upstream_path & intermediate_tuser(lvl + 1);
 
         selector_inst: selector generic map (
           DATA_WIDTH           => DATA_WIDTH,
-          PATH_WIDTH           => PATH_WIDTH + TUSER_WIDTH + 1,
+          PATH_WIDTH           => (log2ceil(OPERANTS) - lvl) + TUSER_WIDTH + 1,
           OPERATION            => OPERATION
         )
         port map (
@@ -165,23 +165,23 @@ begin
           m_axis_result_tdata  => data_tree(lvl)(idx).data,
           m_axis_result_tpath  => tmp_path_user
         );
-        intermediate_path(lvl)( (idx + 1) * (PATH_WIDTH + 1) - 1 downto idx * (PATH_WIDTH + 1))
+        intermediate_path(lvl)( (idx + 1) * ((log2ceil(OPERANTS) - lvl) + 1) - 1 downto idx * ((log2ceil(OPERANTS) - lvl) + 1))
            <= tmp_path_user(tmp_path_user'length-1 downto TUSER_WIDTH);
         intermediate_tuser(lvl) <= tmp_path_user(TUSER_WIDTH - 1 downto 0);
       end generate;
 
       -- Rest of the columns
       without_point: if idx > 0 generate
-        signal upstream_path  : std_logic_vector(PATH_WIDTH - 1 downto 0);
-        signal path_a, path_b : std_logic_vector(PATH_WIDTH downto 0);
+        signal upstream_path  : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
+        signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) downto 0);
       begin
-        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * PATH_WIDTH - 1 downto idx * PATH_WIDTH);
-        path_a <= "0" & upstream_path & intermediate_tuser(lvl + 1);
-        path_b <= "1" & upstream_path & intermediate_tuser(lvl + 1);
+        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto idx * (log2ceil(OPERANTS) - lvl));
+        path_a <= "0" & upstream_path;
+        path_b <= "1" & upstream_path;
 
         selector_inst: selector generic map (
           DATA_WIDTH           => DATA_WIDTH,
-          PATH_WIDTH           => PATH_WIDTH + 1,
+          PATH_WIDTH           => (log2ceil(OPERANTS) - lvl) + 1,
           OPERATION            => OPERATION
         )
         port map (
@@ -201,7 +201,7 @@ begin
           m_axis_result_tready => data_tree(lvl)(idx).ready,
           m_axis_result_tlast  => data_tree(lvl)(idx).last,
           m_axis_result_tdata  => data_tree(lvl)(idx).data,
-          m_axis_result_tpath  => intermediate_path(lvl)( (idx + 1) * (PATH_WIDTH + 1) - 1 downto idx * (PATH_WIDTH + 1))
+          m_axis_result_tpath  => intermediate_path(lvl)( (idx + 1) * ((log2ceil(OPERANTS) - lvl) + 1) - 1 downto idx * ((log2ceil(OPERANTS) - lvl) + 1))
         );
       end generate;
     end generate;

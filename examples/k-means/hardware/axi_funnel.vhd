@@ -50,7 +50,7 @@ begin
   out_data <= in_data;
   out_last <= (others => in_last);
 
-  logic_p: process (in_valid, out_ready, out_last, slave_read_next)
+  logic_p: process (state, in_valid, out_ready, out_last, slave_read_next, slave_read)
   begin
     case state is
       when THROUGH =>

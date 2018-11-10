@@ -23,9 +23,9 @@ use work.Interconnect.all;
 entity sim_top is
   generic (
     -- Accelerator properties
-    DIMENSION                   : natural := 2;
+    DIMENSION                   : natural := 8;
     CENTROID_REGS               : natural := 2 * DIMENSION;
-    CENTROIDS                   : natural := 2;
+    CENTROIDS                   : natural := 3;
     INDEX_WIDTH                 : natural := 32;
     NUM_ARROW_BUFFERS           : natural := 2;
     NUM_USER_REGS               : natural := CENTROIDS * CENTROID_REGS + 1;
