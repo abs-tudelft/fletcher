@@ -34,7 +34,7 @@ entity square is
     s_axis_tuser         : in  std_logic_vector(TUSER_WIDTH-1 downto 0) := (others => '0');
     m_axis_result_tvalid : out std_logic;
     m_axis_result_tready : in  std_logic;
-    m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH*2-1 downto 0);
     m_axis_result_tlast  : out std_logic;
     m_axis_result_tuser  : out std_logic_vector(TUSER_WIDTH-1 downto 0)
   );
@@ -83,27 +83,50 @@ architecture behavior of square is
     );
   end component;
 
-  signal operants_in : std_logic_vector(DATA_WIDTH * DATA_WIDTH - 1 downto 0);
-  signal tree_data : std_logic_vector(DATA_WIDTH * DATA_WIDTH + TUSER_WIDTH - 1 downto 0);
+  signal operants_in : std_logic_vector(DATA_WIDTH * DATA_WIDTH * 2 - 1 downto 0);
+  signal tree_data : std_logic_vector(DATA_WIDTH * DATA_WIDTH * 2 + TUSER_WIDTH - 1 downto 0);
   signal tree_valid, tree_ready, tree_last : std_logic_vector(DATA_WIDTH-1 downto 0);
 begin
 
   -- Define operants for addition
   square_operants: process (s_axis_tdata)
+    variable operant_shifted : std_logic_vector(DATA_WIDTH * 2 - 1 downto 0);
+    variable operants : std_logic_vector(DATA_WIDTH * DATA_WIDTH * 2 - 1 downto 0);
   begin
-    for idx in 0 to DATA_WIDTH - 1 loop
+    operants := (others => '0');
+
+    for idx in 0 to DATA_WIDTH - 2 loop
+      operant_shifted := (others => '0');
+      -- Collapse terms to next bit
       if s_axis_tdata(idx) = '1' then
-        -- Shift the operant
-        operants_in((idx + 1) * DATA_WIDTH - 1 downto idx * DATA_WIDTH) <= std_logic_vector(
+        operant_shifted := std_logic_vector(
           shift_left(
-            signed(s_axis_tdata(DATA_WIDTH-1 downto 0)),
-            idx)
+            resize(unsigned(s_axis_tdata(DATA_WIDTH-1 downto 0)), DATA_WIDTH * 2),
+            idx + 1)
           );
-      else
-        -- Do not add, set to 0
-        operants_in((idx + 1) * DATA_WIDTH - 1 downto idx * DATA_WIDTH) <= (others => '0');
+        operant_shifted(idx * 2 + 1 downto 0) := (others => '0');
+        operant_shifted(idx * 2) := '1';
       end if;
+      -- Modified Baugh-Wooley inversions
+      operant_shifted(DATA_WIDTH + idx) := not operant_shifted(DATA_WIDTH + idx);
+
+      -- Special case for last operant (not x + x = 1)
+      if idx = DATA_WIDTH - 2 then
+        operant_shifted(DATA_WIDTH * 2 - 1 downto DATA_WIDTH * 2 - 2) := "11";
+      end if;
+
+      -- Apply to adder tree input. Collapse non-overlapping operants.
+      operants(( (idx mod DATA_WIDTH) + 1) * DATA_WIDTH * 2 - 1 downto (idx mod DATA_WIDTH) * DATA_WIDTH * 2 + idx * 2) :=
+          operant_shifted(DATA_WIDTH * 2 - 1 downto idx * 2);
     end loop;
+
+    -- Correct some bits because we use DATA_WIDTH / 2 adders
+    -- Column `DATA_WIDTH': add ('1'; not (DATA_WIDTH-1 and 0)
+    -- Operant 0 has space on bit DATA_WIDTH + 1 for carry
+    operants(DATA_WIDTH + 1) := operants(DATA_WIDTH) or  not (s_axis_tdata(DATA_WIDTH - 1) and s_axis_tdata(0));
+    operants(DATA_WIDTH)     := operants(DATA_WIDTH) xor not (s_axis_tdata(DATA_WIDTH - 1) and s_axis_tdata(0));
+
+    operants_in <= operants;
   end process;
 
   -- Split the AXI stream to the adders
@@ -111,7 +134,7 @@ begin
   dim_split: axi_funnel
   generic map (
     SLAVES                 => DATA_WIDTH,
-    DATA_WIDTH             => DATA_WIDTH * DATA_WIDTH + TUSER_WIDTH
+    DATA_WIDTH             => DATA_WIDTH * DATA_WIDTH * 2 + TUSER_WIDTH
   )
   port map (
     reset                  => reset,
@@ -127,7 +150,7 @@ begin
   );
 
   square_tree: adder_tree generic map (
-    DATA_WIDTH  => DATA_WIDTH,
+    DATA_WIDTH  => DATA_WIDTH*2,
     TUSER_WIDTH => TUSER_WIDTH,
     OPERANTS    => DATA_WIDTH
   )

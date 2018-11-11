@@ -87,7 +87,7 @@ architecture behavior of distance is
       s_axis_tuser         : in  std_logic_vector(TUSER_WIDTH-1 downto 0) := (others => '0');
       m_axis_result_tvalid : out std_logic;
       m_axis_result_tready : in  std_logic;
-      m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      m_axis_result_tdata  : out std_logic_vector(DATA_WIDTH*2-1 downto 0);
       m_axis_result_tlast  : out std_logic;
       m_axis_result_tuser  : out std_logic_vector(TUSER_WIDTH-1 downto 0)
     );
@@ -206,7 +206,7 @@ begin
 
     -- Square distances
     l_square: square generic map(
-      DATA_WIDTH           => DATA_WIDTH,
+      DATA_WIDTH           => DATA_WIDTH/2,
       TUSER_WIDTH          => DATA_WIDTH
     )
     port map (
@@ -214,7 +214,7 @@ begin
       reset                => reset,
       s_axis_tvalid        => diff_valid(D),
       s_axis_tready        => diff_ready(D),
-      s_axis_tdata         => diff_data(D),
+      s_axis_tdata         => diff_data(D)(DATA_WIDTH / 2 - 1 downto 0),
       s_axis_tlast         => diff_last(D),
       s_axis_tuser         => diff_point(D),
 
