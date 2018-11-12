@@ -25,7 +25,7 @@ entity sim_top is
     -- Accelerator properties
     DIMENSION                   : natural := 8;
     CENTROID_REGS               : natural := 2 * DIMENSION;
-    CENTROIDS                   : natural := 3;
+    CENTROIDS                   : natural := 2;
     INDEX_WIDTH                 : natural := 32;
     NUM_ARROW_BUFFERS           : natural := 2;
     NUM_USER_REGS               : natural := CENTROIDS * CENTROID_REGS + 1;
@@ -140,7 +140,11 @@ architecture Behavorial of sim_top is
   signal regs_out               : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
   signal regs_out_en            : std_logic_vector(NUM_REGS-1 downto 0);
   signal regs_sim_we            : std_logic_vector(NUM_REGS-1 downto 0);
-  
+
+    -- TODO: use centroid data width
+    type centroid_regs_t is array (0 to CENTROIDS * DIMENSION - 1) of signed(63 downto 0);
+    signal centroid_regs_content : centroid_regs_t;
+
   -- Write to MMIO register by index
   procedure mmio_write(idx  : in  natural;
                        data : in  std_logic_vector(REG_WIDTH-1 downto 0);
@@ -190,6 +194,10 @@ architecture Behavorial of sim_top is
   
 begin
 
+  centroid_regs_g: for r in 0 to CENTROIDS * DIMENSION - 1 generate
+    centroid_regs_content(r) <= signed(regs((r + 1) * 64 + 10 * REG_WIDTH - 1 downto r * 64 + 10 * REG_WIDTH));
+  end generate;
+
   -- Typical stimuli process:
   stimuli_proc : process is
     variable read_data, read_data_b : std_logic_vector(REG_WIDTH-1 downto 0);
@@ -233,14 +241,50 @@ begin
     uc_reg_write(8, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
     uc_reg_write(9, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
 
+    uc_reg_write(10, std_logic_vector(to_signed(110, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(11, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(12, std_logic_vector(to_signed(120, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(13, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(14, std_logic_vector(to_signed(130, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(15, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(16, std_logic_vector(to_signed(140, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(17, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(18, std_logic_vector(to_signed(150, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(19, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(20, std_logic_vector(to_signed(-160, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(21, std_logic_vector(to_signed(-1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
     -- Centroid 1: (40, -100)
-    uc_reg_write(10, std_logic_vector(to_signed(  40, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
-    uc_reg_write(11, std_logic_vector(to_signed(   0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
-    uc_reg_write(12, std_logic_vector(to_signed(-100, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
-    uc_reg_write(13, std_logic_vector(to_signed(  -1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(22, std_logic_vector(to_signed(  40, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(23, std_logic_vector(to_signed(   0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(24, std_logic_vector(to_signed(-400, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(25, std_logic_vector(to_signed(  -1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(26, std_logic_vector(to_signed(210, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(27, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(28, std_logic_vector(to_signed(220, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(29, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(30, std_logic_vector(to_signed(230, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(31, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(32, std_logic_vector(to_signed(240, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(33, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(34, std_logic_vector(to_signed(250, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(35, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(36, std_logic_vector(to_signed(-260, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(37, std_logic_vector(to_signed(-1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
 
     -- Iteration limit
-    uc_reg_write(14, std_logic_vector(to_unsigned(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(38, std_logic_vector(to_unsigned(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
 
     -- Disable override
     regs_sim_we(CENTROIDS * CENTROID_REGS + 10 downto 10) <= (others => '0');
@@ -340,7 +384,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "intlist.srec"
+    SREC_FILE                   => "intlistwide.srec"
   )
   port map (
     clk                         => bus_clk,

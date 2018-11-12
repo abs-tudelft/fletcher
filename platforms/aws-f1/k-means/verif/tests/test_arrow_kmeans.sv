@@ -36,7 +36,7 @@
 `define REG_FIRST_IDX       4+0
 `define REG_LAST_IDX        4+1
 
-`define NUM_REGISTERS       8
+`define NUM_REGISTERS       43
 
 // Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000
@@ -60,7 +60,7 @@ logic       ddr_ready;
 int         read_data;
 
 int num_rows = `NUM_ROWS;
-int num_buf_bytes = 192;
+int num_buf_bytes = 383;
 int temp;
 
 union {
@@ -87,11 +87,6 @@ initial begin
   // Allow memory to initialize
   tb.nsec_delay(27000);
 
-  for (int i=0; i<`NUM_REGISTERS; i++) begin
-//    $display("[DEBUG] : Reading register %d", i);
-    tb.peek_bar1(.addr(i*4), .data(read_data));
-    $display("[DEBUG] : Register %d: %H", i, read_data);
-  end
 
   $display("[%t] : Initializing buffers", $realtime);
 
@@ -106,7 +101,7 @@ initial begin
     .len(num_buf_bytes)
   );
 
-  `include "intlist.sv"
+  `include "intlistwide.sv"
 
   $display("[%t] : Starting host to CL DMA transfers ", $realtime);
 
@@ -155,13 +150,50 @@ initial begin
   tb.poke_bar1(.addr(4*12), .data(0));
   tb.poke_bar1(.addr(4*13), .data(0));
 
-  tb.poke_bar1(.addr(4*14), .data(40));
+  tb.poke_bar1(.addr(4*14), .data(110));
   tb.poke_bar1(.addr(4*15), .data(0));
-  tb.poke_bar1(.addr(4*16), .data(-100));
-  tb.poke_bar1(.addr(4*17), .data(-1));
+
+  tb.poke_bar1(.addr(4*16), .data(120));
+  tb.poke_bar1(.addr(4*17), .data(0));
+
+  tb.poke_bar1(.addr(4*18), .data(130));
+  tb.poke_bar1(.addr(4*19), .data(0));
+
+  tb.poke_bar1(.addr(4*20), .data(140));
+  tb.poke_bar1(.addr(4*21), .data(0));
+
+  tb.poke_bar1(.addr(4*22), .data(150));
+  tb.poke_bar1(.addr(4*23), .data(0));
+
+  tb.poke_bar1(.addr(4*24), .data(-160));
+  tb.poke_bar1(.addr(4*25), .data(-1));
+
+
+  tb.poke_bar1(.addr(4*26), .data(40));
+  tb.poke_bar1(.addr(4*27), .data(0));
+  tb.poke_bar1(.addr(4*28), .data(-100));
+  tb.poke_bar1(.addr(4*29), .data(-1));
+
+  tb.poke_bar1(.addr(4*30), .data(210));
+  tb.poke_bar1(.addr(4*31), .data(0));
+
+  tb.poke_bar1(.addr(4*32), .data(220));
+  tb.poke_bar1(.addr(4*33), .data(0));
+
+  tb.poke_bar1(.addr(4*34), .data(230));
+  tb.poke_bar1(.addr(4*35), .data(0));
+
+  tb.poke_bar1(.addr(4*36), .data(240));
+  tb.poke_bar1(.addr(4*37), .data(0));
+
+  tb.poke_bar1(.addr(4*38), .data(250));
+  tb.poke_bar1(.addr(4*39), .data(0));
+
+  tb.poke_bar1(.addr(4*40), .data(-260));
+  tb.poke_bar1(.addr(4*41), .data(-1));
 
   // Set maximum number of iterations
-  tb.poke_bar1(.addr(4*18), .data(4));
+  tb.poke_bar1(.addr(4*42), .data(4));
 
 
   $display("[%t] : Starting UserCore", $realtime);
@@ -182,6 +214,7 @@ initial begin
 
   $display("[%t] : UserCore completed ", $realtime);
 
+  // TODO: check centroid positions
   // Get the return register value
   tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
   $display("[t] : Return register HI: %d", read_data);
@@ -194,6 +227,13 @@ initial begin
   if (read_data != 7 * (num_rows * (num_rows - 1)) / 2) begin
     $display("[t] : ERROR: Result does not match expected %d", 7 * (num_rows * (num_rows - 1)) / 2);
     fail = 1;
+  end
+
+
+  for (int i=0; i<`NUM_REGISTERS; i++) begin
+//    $display("[DEBUG] : Reading register %d", i);
+    tb.peek_bar1(.addr(i*4), .data(read_data));
+    $display("[DEBUG] : Register %d: %H", i, read_data);
   end
 
   // Power down

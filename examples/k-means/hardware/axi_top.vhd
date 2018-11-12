@@ -42,7 +42,7 @@ entity axi_top is
     TAG_WIDTH                   : natural := 1;
     NUM_ARROW_BUFFERS           : natural := 2;
     DIMENSION                   : natural := 8;
-    CENTROIDS                   : natural := 16;
+    CENTROIDS                   : natural := 2;
     CENTROID_REGS               : natural := 2 * DIMENSION; -- 2*32 bit for 64 bit dimension
     NUM_USER_REGS               : natural := CENTROID_REGS * CENTROIDS + 1;
     NUM_REGS                    : natural := 10 + NUM_USER_REGS;
