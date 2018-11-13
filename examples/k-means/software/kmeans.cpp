@@ -307,10 +307,10 @@ int main(int argc, char ** argv) {
     sscanf(argv[2], "%i", &centroids);
   }
   if (argc >= 4) {
-    sscanf(argv[2], "%i", &dimensionality);
+    sscanf(argv[3], "%i", &dimensionality);
   }
   if (argc >= 5) {
-    sscanf(argv[2], "%i", &iteration_limit);
+    sscanf(argv[4], "%i", &iteration_limit);
   }
 
   // Create table of random numbers
