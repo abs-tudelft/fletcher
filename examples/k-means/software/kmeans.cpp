@@ -298,7 +298,7 @@ int main(int argc, char ** argv) {
   int dimensionality = 2;
   int iteration_limit = 10;
 
-  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit]]]]"
+  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit]]]]" << std::endl;
 
   if (argc >= 2) {
     sscanf(argv[1], "%i", &num_rows);
