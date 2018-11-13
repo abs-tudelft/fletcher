@@ -243,11 +243,13 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
   uc.set_arguments(args);
 
   // Read back registers for debugging
+/*
   for (int i = 0; i < 19; i++) {
     fletcher::fr_t reg;
     platform->read_mmio(i, &reg);
     std::cout << "FPGA register " << i << ": " << std::hex << reg << std::dec << std::endl;
   }
+*/
 
   // Performance timer open
   t1 = perf_clock::now();
@@ -272,11 +274,11 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
       fletcher::fr_t reg;
       // Read high bits
       platform->read_mmio(reg_num+1, &reg);
-      std::cout << "FPGA register " << reg_num+1 << ": " << std::hex << reg << std::dec << std::endl;
+//      std::cout << "FPGA register " << reg_num+1 << ": " << std::hex << reg << std::dec << std::endl;
       int64_t dim_value = ( (int64_t) reg ) << 32;
       // Read low bits
       platform->read_mmio(reg_num, &reg);
-      std::cout << "FPGA register " << reg_num << ": " << std::hex << reg << std::dec << std::endl;
+//      std::cout << "FPGA register " << reg_num << ": " << std::hex << reg << std::dec << std::endl;
       dim_value |= reg;
       // Save position
       centroids_position[c][d] = dim_value;
