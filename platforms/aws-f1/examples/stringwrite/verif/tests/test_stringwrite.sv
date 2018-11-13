@@ -45,7 +45,10 @@
 `define REG_STRING_VAL_ADDR_LO     8
 `define REG_STRING_VAL_ADDR_HI     9
 
-`define NUM_REGISTERS       10
+`define REG_STRLEN_MIN      10
+`define REG_PRNG_MASK       11
+
+`define NUM_REGISTERS       12
 
 // Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000
@@ -124,8 +127,14 @@ initial begin
   tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
   tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_LO), .data(`VAL_ADDR_LO));
   tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_HI), .data(`VAL_ADDR_HI));
+  
+  tb.poke_bar1(.addr(4*`REG_STRLEN_MIN), .data(16));
+  tb.poke_bar1(.addr(4*`REG_PRNG_MASK), .data(255));
 
   // Set first and last row index
+  tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
+  tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
+  
   tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
   tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
 
@@ -183,8 +192,8 @@ initial begin
     .len(num_val_bytes)
   );
   
-    // Start transfers of data to CL DDR
-  tb.start_que_to_cl(.chan(0));
+    // Start transfers of data from CL DDR to host
+  tb.start_que_to_buffer(.chan(0));
 
   // Wait for dma transfers to complete,
   // increase the timeout if you have to transfer a lot of data
@@ -230,4 +239,4 @@ initial begin
   $finish;
 end // initial begin
 
-endmodule // test_arrow_sum
+endmodule // test_stringwrite

@@ -311,5 +311,20 @@ begin
       utf8_last             => ssg_utf8_last,
       utf8_dvalid           => ssg_utf8_dvalid
     );
+    
+  -----------------------------------------------------------------------------
+  -- Connection to interface
+  -----------------------------------------------------------------------------
+  Str_in_values_in_count    <= ssg_utf8_count;
+  Str_in_values_in_data     <= ssg_utf8_data;
+  Str_in_values_in_dvalid   <= ssg_utf8_dvalid;
+  Str_in_values_in_last     <= ssg_utf8_last;
+  Str_in_values_in_valid    <= ssg_utf8_valid;
+  ssg_utf8_ready            <= Str_in_values_in_ready;
+
+  Str_in_length             <= ssg_len_length;
+  Str_in_last               <= ssg_len_last;
+  Str_in_valid              <= ssg_len_valid;
+  ssg_len_ready             <= Str_in_ready;
 
 end architecture;
