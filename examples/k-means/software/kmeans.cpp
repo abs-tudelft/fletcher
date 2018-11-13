@@ -47,11 +47,13 @@ typedef chrono::high_resolution_clock perf_clock;
 
 using fletcher::fr_t;
 
+typedef int64_t kmeans_t;
 
-void print_centroids(std::vector<std::vector<int64_t>> centroids_position) {
+
+void print_centroids(std::vector<std::vector<kmeans_t>> centroids_position) {
   for (auto const &centroid : centroids_position) {
     std::cout << " (";
-    for (int64_t const &dim : centroid) {
+    for (kmeans_t const &dim : centroid) {
       std::cout << dim << "; ";
     }
     std::cout << ")" << std::endl;
@@ -68,8 +70,8 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
 
   // Ensure the sum fits in the return types used by all summing methods.
   // Sum type on FPGA is configurable, sum type on CPU is set as int64_t
-  int64_t element_max = 99;  // std::numeric_limits<int64_t>::max() / num_rows;
-  std::uniform_int_distribution<int64_t> int_dist(-element_max, element_max);
+  kmeans_t element_max = 99;  // std::numeric_limits<int64_t>::max() / num_rows;
+  std::uniform_int_distribution<kmeans_t> int_dist(-element_max, element_max);
 
   // Create arrow builder for appending numbers
   auto int_builder = std::make_shared<arrow::Int64Builder> ();
@@ -79,7 +81,7 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
       arrow::default_memory_pool(),
       int_builder);
 
-  std::vector<int64_t> numbers = {
+  std::vector<kmeans_t> numbers = {
       12, 6,
       14, 3,
       13, 0,
@@ -93,7 +95,7 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
     list_builder.Append();
     for (int col = 0; col < num_columns; col++) {
       // Append number to current list
-      int64_t rnd_num = int_dist(rng);
+      kmeans_t rnd_num = int_dist(rng);
       //int_builder->Append(numbers[row * num_columns + col]);
       int_builder->Append(rnd_num);
     }
@@ -119,8 +121,8 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
 /**
  * Run k-means on the CPU.
  */
-std::vector<std::vector<int64_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table> table,
-                             std::vector<std::vector<int64_t>> centroids_position,
+std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table> table,
+                             std::vector<std::vector<kmeans_t>> centroids_position,
                              int iteration_limit) {
   // Performance timer open
   auto t1 = perf_clock::now();
@@ -130,7 +132,7 @@ std::vector<std::vector<int64_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table>
       table->column(0)->data()->chunk(0));
   auto points = std::static_pointer_cast<arrow::Int64Array>(
       points_list->values());
-  const int64_t * data = points->raw_values();
+  const kmeans_t * data = points->raw_values();
 
   const size_t num_centroids = centroids_position.size();
   const size_t dimensionality = centroids_position[0].size();
@@ -140,20 +142,20 @@ std::vector<std::vector<int64_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table>
   int iteration = 0;
   do {
     // Initialize accumulators
-    std::vector<int64_t> centroid_accumulator(dimensionality, 0);
-    std::vector<std::vector<int64_t>> accumulators(num_centroids, centroid_accumulator);
-    std::vector<int64_t> counters(num_centroids, 0);
+    std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
+    std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
+    std::vector<kmeans_t> counters(num_centroids, 0);
 
     // For each point
     for (int64_t n = 0; n < num_rows; n++) {
       // Determine closest centroid for point
       size_t closest = 0;
-      int64_t min_distance = std::numeric_limits<int64_t>::max();
+      kmeans_t min_distance = std::numeric_limits<kmeans_t>::max();
       for (size_t c = 0; c < num_centroids; c++) {
         // Get distance to current centroid
-        int64_t distance = 0;
+        kmeans_t distance = 0;
         for (size_t d = 0; d < dimensionality; d++) {
-          int64_t dim_distance = data[n * dimensionality + d] - centroids_position[c][d];
+          kmeans_t dim_distance = data[n * dimensionality + d] - centroids_position[c][d];
           distance += dim_distance * dim_distance;
         }
         // Store minimum distance
@@ -191,9 +193,11 @@ std::vector<std::vector<int64_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table>
 /**
  * Run k-means on an FPGA.
  */
-std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table> table,
-                                                    std::vector<std::vector<int64_t>> centroids_position,
-                                                    int iteration_limit) {
+std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table> table,
+                                                    std::vector<std::vector<kmeans_t>> centroids_position,
+                                                    int iteration_limit,
+                                                    int fpga_dim,
+                                                    int fpga_centroids) {
   // Create a platform
 #if(PLATFORM == 0)
   std::shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
@@ -231,11 +235,23 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
   // Set UserCore arguments
   std::vector<fr_t> args;
   for (auto const & centroid : centroids_position) {
-    for (int64_t const & dim : centroid) {
+    for (kmeans_t const & dim : centroid) {
       fr_t lo = (uint32_t) (dim & 0xffffffff);
       fr_t hi = (uint32_t) (dim >> 32);
       args.push_back(lo);
       args.push_back(hi);
+    }
+    for (int d = centroid.size(); d < fpga_dim; d++) {
+      // Unused dimensions
+      args.push_back(0);
+      args.push_back(0);
+    }
+  }
+  // Unused centroids
+  for (int c = centroids_position.size(); c < fpga_centroids; c++) {
+    for (int d = 0; d < fpga_dim; d++) {
+      args.push_back(-1);
+      args.push_back(-1);
     }
   }
   args.push_back(iteration_limit);
@@ -270,7 +286,7 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
   fletcher::fr_t reg;
   for (int c = 0; c < centroids; c++) {
     for (int d = 0; d < dimensionality; d++) {
-      const int reg_num = (c * dimensionality + d) * regs_per_dim + regs_offset;
+      const int reg_num = (c * fpga_dim + d) * regs_per_dim + regs_offset;
       // Read high bits
       platform->read_mmio(reg_num+1, &reg);
 //      std::cout << "FPGA register " << reg_num+1 << ": " << std::hex << reg << std::dec << std::endl;
@@ -284,7 +300,7 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
     }
   }
 
-  platform->read_mmio((centroids * dimensionality) * regs_per_dim + regs_offset, &reg);
+  platform->read_mmio((fpga_dim * fpga_centroids) * regs_per_dim + regs_offset, &reg);
   std::cout << "Iterations: " << (iteration_limit - reg) << std::endl;
 
   return centroids_position;
@@ -301,8 +317,10 @@ int main(int argc, char ** argv) {
   int centroids = 2;
   int dimensionality = 2;
   int iteration_limit = 10;
+  int fpga_dim = 8;
+  int fpga_centroids = 2;
 
-  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit]]]]" << std::endl;
+  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit [fpga_dimensionality [fpga_centroids]]]]]]" << std::endl;
 
   if (argc >= 2) {
     sscanf(argv[1], "%i", &num_rows);
@@ -316,6 +334,12 @@ int main(int argc, char ** argv) {
   if (argc >= 5) {
     sscanf(argv[4], "%i", &iteration_limit);
   }
+  if (argc >= 6) {
+    sscanf(argv[5], "%i", &fpga_dim);
+  }
+  if (argc >= 7) {
+    sscanf(argv[6], "%i", &fpga_centroids);
+  }
 
   // Create table of random numbers
   std::shared_ptr<arrow::Table> table = create_table(num_rows, dimensionality);
@@ -327,10 +351,10 @@ int main(int argc, char ** argv) {
       table->column(0)->data()->chunk(0));
   auto points = std::static_pointer_cast<arrow::Int64Array>(
       points_list->values());
-  const int64_t * points_ptr = points->raw_values();
+  const kmeans_t * points_ptr = points->raw_values();
 
   for (int n = 0; n < centroids; n++) {
-    std::vector<int64_t> centroid_position;
+    std::vector<kmeans_t> centroid_position;
     for (int col = 0; col < dimensionality; col++) {
       centroid_position.push_back(points_ptr[n * dimensionality + col]);
     }
@@ -338,10 +362,10 @@ int main(int argc, char ** argv) {
   }
 
   // Run on CPU
-  std::vector<std::vector<int64_t>> result_cpu = arrow_kmeans_cpu(table, centroids_position, iteration_limit);
+  std::vector<std::vector<kmeans_t>> result_cpu = arrow_kmeans_cpu(table, centroids_position, iteration_limit);
 
   // Run on FPGA
-  std::vector<std::vector<int64_t>> result_fpga = arrow_kmeans_fpga(table, centroids_position, iteration_limit);
+  std::vector<std::vector<kmeans_t>> result_fpga = arrow_kmeans_fpga(table, centroids_position, iteration_limit, fpga_dim, fpga_centroids);
 
   std::cout << "CPU clusters: " << std::endl;
   print_centroids(result_cpu);
