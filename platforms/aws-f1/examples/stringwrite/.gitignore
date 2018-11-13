@@ -1,0 +1,9 @@
+/build/checkpoints
+/build/reports
+/build/constraints/cl_clocks_aws.xdc
+/build/scripts/.Xil/
+/build/scripts/*.log
+/build/scripts/last_log
+/build/scripts/fsm_encoding.os
+/build/scripts/*.nohup.out
+/verif/sim
