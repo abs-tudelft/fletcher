@@ -30,7 +30,9 @@ std::shared_ptr<arrow::Schema> genPrimReadSchema();
 std::shared_ptr<arrow::Schema> genPrimWriteSchema();
 
 /// @brief A schema to read strings.
-std::shared_ptr<arrow::Schema> genStringSchema();
+std::shared_ptr<arrow::Schema> genStringReadSchema();
+/// @brief A schema to write strings.
+std::shared_ptr<arrow::Schema> genStringWriteSchema();
 
 /// @brief  A struct schema.
 std::shared_ptr<arrow::Schema> genStructSchema();
