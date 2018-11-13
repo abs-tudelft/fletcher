@@ -101,7 +101,6 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
       int_builder->Append(rnd_num);
     }
   }
-  std::cout << std::endl;
 
   // Define the schema
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
@@ -213,12 +212,10 @@ template <typename T> void fpga_push_arg(std::vector<fr_t>& args, T arg) {
  * Read an integer that may be wider that one FPGA register.
  */
 template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::AWSPlatform> platform, int reg_idx, T& arg) {
-std::cout << "reading wide reg " << reg_num << std::endl;
   const int regs_num = sizeof(T) / sizeof(fr_t);
   for (size_t arg_idx = 0; arg_idx < regs_num; arg_idx++) {
     fr_t reg;
     platform->read_mmio(reg_idx + regs_num - 1 - arg_idx, &reg);
-    std::cout << "val: " << reg << std::endl;
     arg <<= sizeof(fr_t) * 8;
     arg |= (T) reg;
   }
@@ -289,15 +286,6 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
     std::cout << "arg: " << arg << std::endl;
   }
   uc.set_arguments(args);
-
-  // Read back registers for debugging
-/*
-  for (int i = 0; i < 19; i++) {
-    fletcher::fr_t reg;
-    platform->read_mmio(i, &reg);
-    std::cout << "FPGA register " << i << ": " << std::hex << reg << std::dec << std::endl;
-  }
-*/
 
   // Performance timer open
   t1 = perf_clock::now();
