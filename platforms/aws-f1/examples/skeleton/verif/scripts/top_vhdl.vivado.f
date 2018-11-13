@@ -18,6 +18,7 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamParallelizer.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSerializer.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSlice.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSync.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamElementCounter.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfigParse.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfig.vhd
@@ -31,21 +32,36 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferReaderPost.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferReaderRespCtrl.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferReaderResp.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferReader.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferWriterCmdGenBusReq.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferWriterPreCmdGen.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferWriterPrePadder.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferWriterPre.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/buffers/BufferWriter.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadArbiter.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadArbiterVec.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadBuffer.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusWriteArbiter.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusWriteArbiterVec.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusWriteBuffer.vhd
 
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfigParse.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfig.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderArb.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderLevel.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderList.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListPrim.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListSync.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListSyncDecoder.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListSync.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderList.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderNull.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderStruct.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderUnlockCombine.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReader.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnWriterArb.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnWriterLevel.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnWriterListPrim.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnWriterListSync.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnWriter.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/wrapper/Wrapper.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/wrapper/UserCoreController.vhd
