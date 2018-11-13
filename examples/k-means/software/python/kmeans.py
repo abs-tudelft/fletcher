@@ -19,7 +19,9 @@ import numpy as np
 import copy
 import sys
 import argparse
+import struct
 
+import pyfletcher as pf
 import kmeans
 
 class Timer:
@@ -87,9 +89,67 @@ def kmeans_python(points, centroids, iteration_limit):
     return centroids
 
 
+def arrow_kmeans_fpga(batch, centroids, iteration_limit):
+    t = Timer()
+
+    platform = pf.Platform(platform_type)
+    context = pf.Context(platform)
+    uc = pf.UserCore(context)
+
+    # Initialize the platform
+    platform.init()
+
+    # Reset the UserCore
+    uc.reset()
+
+    # Prepare the column buffers
+    context.queue_record_batch(batch)
+    context.enable()
+
+    # Determine size of table
+    last_index = batch.num_rows
+    uc.set_range(0, last_index)
+
+    print("Setting arguments")
+    # Set UserCore arguments
+    args = []
+    for centroid in centroids:
+        for dim in centroid:
+            lo = dim & 0xFFFFFFFF
+            hi = (dim >> 32) & 0xFFFFFFFF
+            args.append(lo)
+            args.append(hi)
+
+            print(struct.pack('II', lo, hi))
+            print(struct.unpack('q', struct.pack('II', lo, hi)))
+
+    args.append(iteration_limit)
+    uc.set_arguments(args)
+
+    t.start()
+    uc.start()
+    uc.wait_for_finish(10)
+    t.stop()
+    print("Kmeans Arrow FPGA algorithm time: " + str(t.seconds()))
+
+    num_centroids = len(centroids)
+    dimensionality = len(centroids[0])
+    regs_per_dim = 2
+    regs_offset = 10
+
+    for c in range(num_centroids):
+        for d in range(dimensionality):
+            reg_num = (c * dimensionality + d) * regs_per_dim + regs_offset
+            hi = platform.read_mmio(reg_num+1) -1
+            lo = platform.read_mmio(reg_num)
+
+            # Todo: This is messy. Maybe pyfletcher should just output bytes.
+            centroids[c][d] = struct.unpack('>q', struct.pack('>II', hi, lo))[0]
+
 def create_points(num_points, dim, element_max):
     np.random.seed(42)
     return np.random.randint(-element_max, element_max, size=(num_points, dim))
+
 
 def create_record_batch(nparray):
     """Create a recordbatch from a 2D numpy array.
@@ -158,14 +218,6 @@ if __name__ == "__main__":
 
     print(result)
 
-    list_centroids_copy = copy.deepcopy(list_centroids)
-    t.start()
-    result = kmeans.list_kmeans_cython(list_points, list_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans list Cython execution time: " + str(t.seconds()))
-
-    print(result)
-
     numpy_centroids_copy = copy.deepcopy(numpy_centroids)
     t.start()
     result = kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit)
@@ -181,3 +233,17 @@ if __name__ == "__main__":
     print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
 
     print(numpy_centroids_copy)
+
+    numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+    t.start()
+    result = kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit)
+    t.stop()
+    print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
+
+    print(numpy_centroids_copy)
+
+    list_centroids_copy = copy.deepcopy(list_centroids)
+    t.start()
+    result = arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit)
+    t.stop()
+    print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
