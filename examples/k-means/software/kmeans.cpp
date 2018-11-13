@@ -88,7 +88,6 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
   };
 
   // Create individual lists of given length
-  std::cout << "rnd: ";
   for (int row = 0; row < num_rows; row++) {
     // Append single list
     list_builder.Append();
@@ -158,7 +157,7 @@ std::vector<std::vector<int64_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table>
           distance += dim_distance * dim_distance;
         }
         // Store minimum distance
-        if (distance < min_distance) {
+        if (distance <= min_distance) {
           closest = c;
           min_distance = distance;
         }
@@ -285,8 +284,8 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
     }
   }
 
-  platform_read_mmio((centroids * dimensionality) * regs_per_dim + regs_offset, &reg);
-  std::cout << "Iterations: " << (iteration_limit - iterations_left) << std::endl;
+  platform->read_mmio((centroids * dimensionality) * regs_per_dim + regs_offset, &reg);
+  std::cout << "Iterations: " << (iteration_limit - reg) << std::endl;
 
   return centroids_position;
 }
