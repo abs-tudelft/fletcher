@@ -282,9 +282,7 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
     }
   }
   args.push_back(iteration_limit);
-  for (auto arg : args) {
-    std::cout << "arg: " << arg << std::endl;
-  }
+
   uc.set_arguments(args);
 
   // Performance timer open
