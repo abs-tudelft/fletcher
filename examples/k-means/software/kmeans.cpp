@@ -191,6 +191,37 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table
 
 
 /**
+ * Push as many FPGA register values as the argument is wide.
+ */
+template <typename T> void fpga_push_arg(std::vector<fr_t>& args, T arg) {
+  T mask = 0;
+  for (size_t byte = 0; byte < sizeof(fr_t); byte++) {
+    mask = (mask << 8) | 0xff;
+  }
+  for (size_t arg_num = 0; arg_num < sizeof(T) / sizeof(fr_t); arg_num++) {
+    // Mask out LSBs
+    fr_t fletcher_arg = (fr_t) (arg & mask);
+    args.push_back(fletcher_arg);
+    // Shift argument
+    arg >>= sizeof(fr_t) * 8;
+  }
+}
+
+
+/**
+ * Read an integer that may be wider that one FPGA register.
+ */
+template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::AWSPlatform> platform, int reg_num, T& arg) {
+  for (size_t arg_num = 0; arg_num < sizeof(T) / sizeof(fr_t); arg_num++) {
+    fr_t reg;
+    platform->read_mmio(reg_num, &reg);
+    arg <<= sizeof(fr_t) * 8;
+    arg |= reg;
+  }
+}
+
+
+/**
  * Run k-means on an FPGA.
  */
 std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table> table,
@@ -236,22 +267,17 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
   std::vector<fr_t> args;
   for (auto const & centroid : centroids_position) {
     for (kmeans_t const & dim : centroid) {
-      fr_t lo = (uint32_t) (dim & 0xffffffff);
-      fr_t hi = (uint32_t) (dim >> 32);
-      args.push_back(lo);
-      args.push_back(hi);
+      fpga_push_arg(args, dim);
     }
     for (int d = centroid.size(); d < fpga_dim; d++) {
       // Unused dimensions
-      args.push_back(0);
-      args.push_back(0);
+      fpga_push_arg(args, (kmeans_t) 0);
     }
   }
   // Unused centroids
   for (int c = centroids_position.size(); c < fpga_centroids; c++) {
     for (int d = 0; d < fpga_dim; d++) {
-      args.push_back(-1);
-      args.push_back(-1);
+      fpga_push_arg(args, (kmeans_t) std::numeric_limits<kmeans_t>::min());
     }
   }
   args.push_back(iteration_limit);
@@ -286,16 +312,9 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
   fletcher::fr_t reg;
   for (int c = 0; c < centroids; c++) {
     for (int d = 0; d < dimensionality; d++) {
+      kmeans_t dim_value;
       const int reg_num = (c * fpga_dim + d) * regs_per_dim + regs_offset;
-      // Read high bits
-      platform->read_mmio(reg_num+1, &reg);
-//      std::cout << "FPGA register " << reg_num+1 << ": " << std::hex << reg << std::dec << std::endl;
-      int64_t dim_value = ( (int64_t) reg ) << 32;
-      // Read low bits
-      platform->read_mmio(reg_num, &reg);
-//      std::cout << "FPGA register " << reg_num << ": " << std::hex << reg << std::dec << std::endl;
-      dim_value |= reg;
-      // Save position
+      fpga_read_mmio(platform, reg_num, dim_value);
       centroids_position[c][d] = dim_value;
     }
   }
