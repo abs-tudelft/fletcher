@@ -268,10 +268,10 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
   const int dimensionality = centroids_position[0].size();
   const int regs_per_dim = 2;
   const int regs_offset = 10;
+  fletcher::fr_t reg;
   for (int c = 0; c < centroids; c++) {
     for (int d = 0; d < dimensionality; d++) {
       const int reg_num = (c * dimensionality + d) * regs_per_dim + regs_offset;
-      fletcher::fr_t reg;
       // Read high bits
       platform->read_mmio(reg_num+1, &reg);
 //      std::cout << "FPGA register " << reg_num+1 << ": " << std::hex << reg << std::dec << std::endl;
@@ -284,6 +284,9 @@ std::vector<std::vector<int64_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table
       centroids_position[c][d] = dim_value;
     }
   }
+
+  platform_read_mmio((centroids * dimensionality) * regs_per_dim + regs_offset, &reg);
+  std::cout << "Iterations: " << (iteration_limit - iterations_left) << std::endl;
 
   return centroids_position;
 }
