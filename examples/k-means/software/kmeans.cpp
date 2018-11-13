@@ -95,7 +95,6 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
     for (int col = 0; col < num_columns; col++) {
       // Append number to current list
       int64_t rnd_num = int_dist(rng);
-      //std::cout << rnd_num << ", ";
       //int_builder->Append(numbers[row * num_columns + col]);
       int_builder->Append(rnd_num);
     }
@@ -104,7 +103,6 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
 
   // Define the schema
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-//      arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
       arrow::field("ListOfNumber", arrow::list(
           std::make_shared<arrow::Field>("Numbers", arrow::int64(), false)), false),
   };
@@ -299,6 +297,8 @@ int main(int argc, char ** argv) {
   int centroids = 2;
   int dimensionality = 2;
   int iteration_limit = 10;
+
+  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit]]]]"
 
   if (argc >= 2) {
     sscanf(argv[1], "%i", &num_rows);
