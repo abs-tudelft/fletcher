@@ -48,6 +48,7 @@ typedef chrono::high_resolution_clock perf_clock;
 using fletcher::fr_t;
 
 typedef int64_t kmeans_t;
+typedef arrow::Int64Type arrow_t;
 
 
 void print_centroids(std::vector<std::vector<kmeans_t>> centroids_position) {
@@ -74,7 +75,7 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
   std::uniform_int_distribution<kmeans_t> int_dist(-element_max, element_max);
 
   // Create arrow builder for appending numbers
-  auto int_builder = std::make_shared<arrow::Int64Builder> ();
+  auto int_builder = std::make_shared<arrow::NumericBuilder<arrow_t>> ();
 
   // Make a list builder
   arrow::ListBuilder list_builder(
@@ -105,7 +106,7 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
   // Define the schema
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
       arrow::field("ListOfNumber", arrow::list(
-          std::make_shared<arrow::Field>("Numbers", arrow::int64(), false)), false),
+          std::make_shared<arrow::Field>("Numbers", std::make_shared<arrow_t>(), false)), false),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
 
@@ -130,7 +131,7 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table
   // Probe into the Arrow data structures to extract a pointer to the raw data
   auto points_list = std::static_pointer_cast<arrow::ListArray>(
       table->column(0)->data()->chunk(0));
-  auto points = std::static_pointer_cast<arrow::Int64Array>(
+  auto points = std::static_pointer_cast<arrow::NumericArray<arrow_t>>(
       points_list->values());
   const kmeans_t * data = points->raw_values();
 
@@ -364,11 +365,11 @@ int main(int argc, char ** argv) {
   std::shared_ptr<arrow::Table> table = create_table(num_rows, dimensionality);
 
   // Pick starting centroids
-  std::vector<std::vector<int64_t>> centroids_position;
+  std::vector<std::vector<kmeans_t>> centroids_position;
   // Probe into the Arrow data structures to extract a pointer to the raw data
   auto points_list = std::static_pointer_cast<arrow::ListArray>(
       table->column(0)->data()->chunk(0));
-  auto points = std::static_pointer_cast<arrow::Int64Array>(
+  auto points = std::static_pointer_cast<arrow::NumericArray<arrow_t>>(
       points_list->values());
   const kmeans_t * points_ptr = points->raw_values();
 
