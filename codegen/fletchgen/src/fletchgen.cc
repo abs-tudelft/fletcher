@@ -89,8 +89,8 @@ int main(int argc, char **argv) {
        "SREC output file name. If this and recordbatch_in are specified, this tool will convert an Arrow RecordBatch "
        "message stored in a file into an SREC file. The SREC file can be used in the simulation top-level.")
       ("srec_dump,y", po::value<std::string>(),
-          "SREC file name to be filled in in simulation top level. All writes to memory are dumped in this SREC file"
-          "during simulation.")
+       "SREC file name to be filled in in simulation top level. All writes to memory are dumped in this SREC file"
+       "during simulation.")
       ("quiet,q", "Prevent output on stdout.");
 
   /* Positional options: */
@@ -169,8 +169,15 @@ int main(int argc, char **argv) {
   if (vm["name"].as<std::string>() != "<first input file name>") {
     acc_name = vm["name"].as<std::string>();
   } else {
-    size_t lastindex = schema_fnames[0].find_last_of('.');
-    acc_name = schema_fnames[0].substr(0, lastindex);
+    // Figure out the file name without path or file type
+    size_t pathsep = schema_fnames[0].find_last_of('/');
+    if (pathsep == schema_fnames[0].size()) {
+      pathsep = 0;
+    } else {
+      pathsep++;
+    }
+    size_t ftsep = schema_fnames[0].find_last_of('.');
+    acc_name = schema_fnames[0].substr(pathsep, ftsep - pathsep);
   }
 
   // Wrapper name:
