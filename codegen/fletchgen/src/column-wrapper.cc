@@ -263,6 +263,7 @@ void ColumnWrapper::addUserStreams() {
 
     // Append the UserCommandStream for each column
     appendStream(c->generateUserCommandStream());
+    appendStream(c->generateUserUnlockStream());
   }
 }
 
@@ -593,6 +594,11 @@ void ColumnWrapper::connectUserCoreStreams() {
         if (command_port != nullptr) {
           connectCommandPortToSignal(stream, column, command_port);
         }
+        // If it's an Unlock port:
+        auto unlock_port = dynamic_cast<UnlockPort *>(stream_port.get());
+        if (unlock_port != nullptr) {
+          connectUnlockPortToSignal(stream, column, unlock_port);
+        }
       }
       pgroup_++;
     }
@@ -635,6 +641,20 @@ void ColumnWrapper::connectCommandPortToSignal(FletcherColumnStream *stream,
     range = Range(port->offset() + port->width() - Value(1), port->offset());
   }
   usercore_inst_->mapPort(port, signal, range);
+}
+
+void ColumnWrapper::connectUnlockPortToSignal(FletcherColumnStream *stream,
+                                              Column *column,
+                                              UnlockPort *port) {
+  // Derive the name of the signal on this wrapper from the stream port.
+  auto signame = nameFrom(
+      {vhdl::INT_SIG, column->field()->name(), typeToString(stream->type()),
+       typeToString(port->type())}
+  );
+  // Get  the signal
+  auto signal = architecture()->getSignal(signame);
+  Range range;
+  usercore_inst_->mapPort(port, signal, Range());
 }
 
 void ColumnWrapper::connectGlobalPortsOf(Instantiation *instance) {

@@ -41,8 +41,7 @@ std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   };
 
   // Create the schema
-  auto
-      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -116,8 +115,7 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
       arrow::field("IgnoreMe", arrow::utf8(), false, metaIgnore())
   };
 
-  auto
-      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -134,8 +132,7 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
       arrow::field("Read", arrow::list(arrow::field("Item", strct, false)), false)
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields,
-                                                metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }

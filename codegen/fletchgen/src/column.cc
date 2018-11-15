@@ -145,6 +145,23 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
   return command;
 }
 
+std::shared_ptr<FletcherColumnStream> Column::generateUserUnlockStream() {
+  // Create the command stream.
+  auto unlock = make_shared<UnlockStream>(vhdl::makeIdentifier(field_->name()), ptr());
+
+  // Create a vector to hold the ports for this stream.
+  std::vector<std::shared_ptr<StreamPort>> ports;
+
+  // Add command stream ports.
+  ports.push_back(make_shared<UnlockPort>("", USP::VALID, Dir::IN, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::READY, Dir::OUT, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::TAG, Dir::IN, Value(ce::TAG_WIDTH), unlock.get()));
+
+  unlock->addPort(ports);
+
+  return unlock;
+}
+
 std::string Column::configString() {
   return genConfigString(field_);
 }
@@ -204,11 +221,10 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
 
   // Create the streams
   stream_cmd_ = make_shared<CommandStream>("", column);
+  stream_unl_ = make_shared<UnlockStream>("", column);
   stream_rreq_ = make_shared<ReadRequestStream>("bus", column);
   stream_rdat_ = make_shared<ReadDataStream>("bus", column);
   stream_out_ = make_shared<FletcherColumnStream>("", FST::RARROW, column);
-
-  stream_unl_ = make_shared<FletcherColumnStream>("", FST::UNLOCK, column);
 
   // Some port widths are "?". We only make maps to these ports, and their widths depend on the configuration string.
 
@@ -227,13 +243,12 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
        make_shared<CommandPort>("", CSP::TAG, Dir::IN, Value(ce::TAG_WIDTH), stream_cmd_.get())
       });
 
-  // TODO(johanpel): implement unlock stream
-  /*
-  unlock->addPort({make_shared<CommandPort>(Dir::OUT, ASP::VALID, unlock.get()),
-                   make_shared<CommandPort>(Dir::IN, ASP::READY, unlock.get()),
-                   make_shared<CommandPort>(Dir::OUT, Value("TAG_WIDTH"), ASP::TAG, unlock.get())
-                  });
-*/
+  /* Unlock stream */
+  stream_unl_->addPort(
+      {make_shared<UnlockPort>("", USP::VALID, Dir::OUT, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::READY, Dir::IN, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), stream_unl_.get())
+      });
 
   /* Read request channel */
   stream_rreq_->addPort(
@@ -286,11 +301,10 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
 
   // Create the streams
   stream_cmd_ = make_shared<CommandStream>("", column);
+  stream_unl_ = make_shared<UnlockStream>("", column);
   stream_wreq_ = make_shared<WriteRequestStream>("bus", column);
   stream_wdat_ = make_shared<WriteDataStream>("bus", column);
   stream_in_ = make_shared<FletcherColumnStream>("", FST::WARROW, column);
-
-  stream_unl_ = make_shared<FletcherColumnStream>("", FST::UNLOCK, column);
 
   // Some port widths are "?". We only make maps to these ports, and their widths depend on the configuration string.
 
@@ -310,12 +324,14 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
       });
 
   // TODO(johanpel): implement unlock stream
-  /*
-  unlock->addPort({make_shared<CommandPort>(Dir::OUT, ASP::VALID, unlock.get()),
-                   make_shared<CommandPort>(Dir::IN, ASP::READY, unlock.get()),
-                   make_shared<CommandPort>(Dir::OUT, Value("TAG_WIDTH"), ASP::TAG, unlock.get())
-                  });
-*/
+
+  /* Unlock stream */
+  stream_unl_->addPort(
+      {make_shared<UnlockPort>("", USP::VALID, Dir::OUT, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::READY, Dir::IN, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), stream_unl_.get())
+      });
+
 
   /* Write request channel */
   stream_wreq_->addPort(

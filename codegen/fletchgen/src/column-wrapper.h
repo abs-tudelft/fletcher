@@ -183,6 +183,9 @@ class ColumnWrapper : public StreamComponent {
   /// @brief Connect a CommandPort to a wrapper signal.
   void connectCommandPortToSignal(FletcherColumnStream *stream, Column *column, CommandPort *port);
 
+  /// @brief Connect a
+  void connectUnlockPortToSignal(FletcherColumnStream *stream, Column *column, UnlockPort *port);
+
   /// @brief Connect read request channels to arbiter.
   void connectReadRequestChannels();
 

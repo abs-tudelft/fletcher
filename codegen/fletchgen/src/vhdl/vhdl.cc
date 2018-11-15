@@ -68,7 +68,7 @@ std::string alignStat(const std::string &prefix,
   return prefix + std::string((uint64_t) len, ' ') + separator + suffix;
 }
 
-//TODO: use va_arg ?
+//TODO(johanpel): use va_arg ?
 std::string nameFrom(std::vector<std::string> strings) {
   std::string ret;
 
@@ -497,7 +497,7 @@ void Architecture::addInstantiation(const std::shared_ptr<Instantiation> &inst) 
   instances_.push_back(inst);
 }
 
-Signal *Architecture::addSignal(std::shared_ptr<Signal> signal, int group) {
+Signal *Architecture::addSignal(const std::shared_ptr<Signal> &signal, int group) {
   LOGD("Declaring " + signal->toString() + " in " + toString());
   // Check if signal already exists:
   for (const auto &s : signals_) {

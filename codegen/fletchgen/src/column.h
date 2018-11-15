@@ -70,6 +70,9 @@ class Column : public Instantiation {
   /// @brief Generate the User Command Stream for this column.
   std::shared_ptr<FletcherColumnStream> generateUserCommandStream();
 
+  /// @brief Generate the User Unlock Stream for this column.
+  std::shared_ptr<FletcherColumnStream> generateUserUnlockStream();
+
   /// @brief Return the user data streams that result from the field this column must read/write.
   std::vector<std::shared_ptr<ArrowStream>> getArrowStreams() { return arrow_streams_; }
 

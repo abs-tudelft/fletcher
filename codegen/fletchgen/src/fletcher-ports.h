@@ -48,6 +48,15 @@ enum class CSP {
 };
 
 /**
+ * @brief Port type enumerations for unlock stream ports.
+ */
+enum class USP {
+  VALID,         ///< Handshake valid signal.
+  READY,         ///< Handshake ready signal.
+  TAG            ///< Unlock tag.
+};
+
+/**
  * @brief Port type enumerations for read request ports.
  */
 enum class RRP {
@@ -107,6 +116,7 @@ enum class GP {
 };
 
 std::string typeToString(ASP type);
+std::string typeToString(USP type);
 std::string typeToString(CSP type);
 std::string typeToString(GP type);
 std::string typeToString(RDP type);
@@ -135,6 +145,14 @@ class CommandPort : public StreamPort, public TypedBy<CSP>, public WithOffset {
   CommandPort(const std::string &name, CSP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
 
   CommandPort(const std::string &name, CSP type, Dir dir, Stream *stream, Value offset = Value(0));
+};
+
+/// @brief Unlock Stream Port
+class UnlockPort : public StreamPort, public TypedBy<USP> {
+ public:
+  UnlockPort(const std::string &name, USP type, Dir dir, const Value &width, Stream *stream);
+
+  UnlockPort(const std::string &name, USP type, Dir dir, Stream *stream);
 };
 
 /// @brief Read Request Stream Port

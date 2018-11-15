@@ -542,7 +542,7 @@ class Architecture : public Comment {
    * @param signal The signal.
    * @return A pointer to the signal.
    */
-  Signal *addSignal(std::shared_ptr<Signal> signal, int group = 0);
+  Signal *addSignal(const std::shared_ptr<Signal> &signal, int group = 0);
 
   /**
    * @brief Create a signal on the architecture that is derived from a port.
