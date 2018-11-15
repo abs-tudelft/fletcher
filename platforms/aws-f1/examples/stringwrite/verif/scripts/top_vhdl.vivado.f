@@ -19,6 +19,10 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSerializer.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSlice.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSync.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamElementCounter.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamMaximizer.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamPseudoRandomGenerator.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamBarrel.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamAccumulator.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfigParse.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfig.vhd
@@ -77,7 +81,7 @@ $FLETCHER_EXAMPLES_DIR/stringwrite/hardware/axi_top.vhd
 # User provided hardware accelerated function
 $FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite_pkg.vhd
 $FLETCHER_EXAMPLES_DIR/stringwrite/hardware/UTF8StringGen.vhd
-$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite_usercore.vhd
 $FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite_wrapper.vhd
 
 

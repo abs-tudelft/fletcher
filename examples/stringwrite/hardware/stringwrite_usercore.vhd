@@ -50,6 +50,7 @@ entity stringwrite_usercore is
     Str_in_length                              : out std_logic_vector(INDEX_WIDTH-1 downto 0);
     Str_in_last                                : out std_logic;
     Str_in_valid                               : out std_logic;
+    Str_in_dvalid                              : out std_logic;
     Str_in_ready                               : in std_logic;
     -------------------------------------------------------------------------
     Str_cmd_firstIdx                           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -322,9 +323,10 @@ begin
   Str_in_values_in_valid    <= ssg_utf8_valid;
   ssg_utf8_ready            <= Str_in_values_in_ready;
 
-  Str_in_length             <= ssg_len_length;
+  Str_in_length             <= ssg_len_data;
   Str_in_last               <= ssg_len_last;
   Str_in_valid              <= ssg_len_valid;
+  Str_in_dvalid             <= ssg_len_dvalid;
   ssg_len_ready             <= Str_in_ready;
 
 end architecture;

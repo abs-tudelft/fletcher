@@ -25,39 +25,36 @@
 
 // Register offsets & some default values:
 `define REG_STATUS          1
+`define   STATUS_IDLE       32'h00000001
 `define   STATUS_BUSY       32'h00000002
-`define   STATUS_DONE       32'h00000005
+`define   STATUS_DONE       32'h00000004
 
 `define REG_CONTROL         0
 `define   CONTROL_START     32'h00000001
 `define   CONTROL_RESET     32'h00000004
 
-`define REG_RETURN_HI       3
-`define REG_RETURN_LO       2
-
-// Registers for first and last (exclusive) row index
-`define REG_FIRST_IDX       4
-`define REG_LAST_IDX        5
-
-`define REG_STRING_OFF_ADDR_LO     6
-`define REG_STRING_OFF_ADDR_HI     7
-
-`define REG_STRING_VAL_ADDR_LO     8
-`define REG_STRING_VAL_ADDR_HI     9
-
-`define REG_STRLEN_MIN      10
-`define REG_PRNG_MASK       11
+`define REG_RETURN_LO           2
+`define REG_RETURN_HI           3
+`define REG_FIRST_IDX           4
+`define REG_LAST_IDX            5
+`define REG_STRING_OFF_ADDR_LO  6
+`define REG_STRING_OFF_ADDR_HI  7
+`define REG_STRING_VAL_ADDR_LO  8
+`define REG_STRING_VAL_ADDR_HI  9
+`define REG_STRLEN_MIN         10
+`define REG_PRNG_MASK          11
 
 `define NUM_REGISTERS       12
 
-// Offset buffer address for fpga memory (must be 4k aligned)
+// Offset buffer address for fpga memory (must be 4Ki aligned)
+`define OFF_ADDR_LO         32'h00001000
 `define OFF_ADDR_HI         32'h00000000
-`define OFF_ADDR_LO         32'h00000000
-`define VAL_ADDR_HI         32'h00000000
+
 `define VAL_ADDR_LO         32'h00004000
+`define VAL_ADDR_HI         32'h00000000
 
 // Offset buffer address in host memory
-`define HOST_OFF_ADDR       64'h0000000000000000
+`define HOST_OFF_ADDR       64'h0000000000001000
 `define HOST_VAL_ADDR       64'h0000000000004000
 
 `define NUM_ROWS            32
@@ -74,15 +71,19 @@ logic [3:0] status;
 logic       ddr_ready;
 int         read_data;
 
-int num_rows = `NUM_ROWS;
-int num_off_bytes = num_rows * 4;
-int num_val_bytes = num_rows * `MAX_STR_LEN;
+int num_off_bytes = (`NUM_ROWS + 1) * 4;
+int num_val_bytes = (`NUM_ROWS) * `MAX_STR_LEN;
 int temp;
 
 union {
   logic[63:0] i;
   logic[7:0][7:0] bytes;
 } buf_data;
+
+union {
+  logic[31:0] i;
+  logic[3:0][7:0] bytes;
+} off_data;
 
 initial begin
 
@@ -109,72 +110,10 @@ initial begin
   tb.poke_stat(.addr(8'h0c), .ddr_idx(1), .data(32'h0000_0000));
   tb.poke_stat(.addr(8'h0c), .ddr_idx(2), .data(32'h0000_0000));
 
-  // Allow memory to initialize
+  // Allow memory to initialize.
+  // Can be ignored when make TEST=... AXI_MEMORY_MODEL=1
   tb.nsec_delay(27000);
-  
-  /*************************************************************
-  * Initialize UserCore
-  *************************************************************/
-
-  $display("[%t] : Initializing UserCore ", $realtime);
-
-  // Reset
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_RESET));
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
-
-  // Initialize buffer addressess
-  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_LO), .data(`OFF_ADDR_LO));
-  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
-  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_LO), .data(`VAL_ADDR_LO));
-  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_HI), .data(`VAL_ADDR_HI));
-  
-  tb.poke_bar1(.addr(4*`REG_STRLEN_MIN), .data(16));
-  tb.poke_bar1(.addr(4*`REG_PRNG_MASK), .data(255));
-
-  // Set first and last row index
-  tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
-  tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
-  
-  tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
-  tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
-
-  $display("[%t] : Starting UserCore", $realtime);
-
-  // Start UserCore
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
-
-  // Poll status at an interval of 1000 nsec
-  // For the real thing, you should probably increase this to put 
-  // less stress on the PCI interface
-  do
-    begin
-      tb.nsec_delay(1000);
-      tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
-      $display("[%t] : UserCore status: %H", $realtime, read_data);
-    end
-  while(read_data !== `STATUS_DONE);
-
-  $display("[%t] : UserCore completed ", $realtime);
-
-  // Get the return register value
-  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
-  $display("[t] : Return register HI: %d", read_data);
-  if (read_data != 0) begin
-    $display("[t] : ERROR: Expected 0 on return HI");
-    fail = 1;
-  end
-  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
-  $display("[t] : Return register LO: %d", read_data);
-  if (read_data != 7 * (num_rows * (num_rows - 1)) / 2) begin
-    $display("[t] : ERROR: Result does not match expected %d", 7 * (num_rows * (num_rows - 1)) / 2);
-    fail = 1;
-  end
-
-
-  /*************************************************************
-  * TRANSFER BUFFERS FROM DEVICE TO HOST
-  *************************************************************/
-  $display("[%t] : Transfering buffers", $realtime);
+  //tb.nsec_delay(1000);
   
   // Queue offset buffer
   tb.que_cl_to_buffer(
@@ -192,6 +131,56 @@ initial begin
     .len(num_val_bytes)
   );
   
+  /*************************************************************
+  * Initialize UserCore
+  *************************************************************/
+
+  $display("[%t] : Initializing UserCore ", $realtime);
+
+  // Reset
+  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_RESET));
+  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
+
+  // Initialize buffer addressess
+  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_LO), .data(`OFF_ADDR_LO));
+  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
+  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_LO), .data(`VAL_ADDR_LO));
+  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_HI), .data(`VAL_ADDR_HI));
+
+  // Set first and last row index
+  tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
+  tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
+  
+  // Set strlen min and prng mask for strlen
+  tb.poke_bar1(.addr(4*`REG_STRLEN_MIN), .data(128));
+  tb.poke_bar1(.addr(4*`REG_PRNG_MASK), .data(255));
+
+  $display("[%t] : Starting UserCore", $realtime);
+
+  // Start UserCore
+  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
+  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
+
+  // Poll status at an interval of 1000 nsec
+  // For the real thing, you should probably increase this to put 
+  // less stress on the PCI interface
+  do
+    begin
+      tb.nsec_delay(1000);
+      tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
+      $display("[%t] : UserCore status: %H", $realtime, read_data);
+    end
+  while(read_data !== `STATUS_DONE);
+
+  $display("[%t] : UserCore completed ", $realtime);
+
+  tb.nsec_delay(10000);
+
+  /*************************************************************
+  * TRANSFER BUFFERS FROM DEVICE TO HOST
+  *************************************************************/
+  $display("[%t] : Transfering buffers from CL to Host", $realtime);
+    
     // Start transfers of data from CL DDR to host
   tb.start_que_to_buffer(.chan(0));
 
@@ -199,7 +188,7 @@ initial begin
   // increase the timeout if you have to transfer a lot of data
   timeout_count = 0;
   do begin
-    status[0] = tb.is_dma_to_cl_done(.chan(0));
+    status[0] = tb.is_dma_to_buffer_done(.chan(0));
     #10ns;
     timeout_count++;
   end while ((status != 4'hf) && (timeout_count < 4000));
@@ -212,7 +201,23 @@ initial begin
     error_count++;
   end
 
-  tb.nsec_delay(1000);
+  tb.nsec_delay(10000);
+  
+  $display("Offsets: ");
+  for (int i = 0; i <= `NUM_ROWS; i++)
+  begin
+    off_data.bytes[0] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 0));
+    off_data.bytes[1] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 1));
+    off_data.bytes[2] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 2));
+    off_data.bytes[3] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 3));
+    $write("%6d: 0x%08X / %6d\n", i, off_data.i, off_data.i);
+  end
+  
+  $display("Values: ");
+  for (int i = 0; i <  off_data.i && i < 1024; i++)
+  begin
+    $write("%c", tb.hm_get_byte(.addr(host_values_address + i)));
+  end
 
 
   // Power down

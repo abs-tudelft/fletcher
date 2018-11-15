@@ -104,6 +104,7 @@ architecture Implementation of stringwrite_wrapper is
       Str_in_length                              : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       Str_in_last                                : out std_logic;
       Str_in_valid                               : out std_logic;
+      Str_in_dvalid                              : out std_logic;
       Str_in_ready                               : in std_logic;
       -------------------------------------------------------------------------
       Str_cmd_firstIdx                           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -202,7 +203,9 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
-      CFG                                      => "listprim(8;epc=64)"
+      CFG                                      => "listprim(8;epc=64)",
+      CMD_TAG_ENABLE                           => true,
+      CMD_TAG_WIDTH                            => TAG_WIDTH
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -276,6 +279,7 @@ begin
       Str_in_ready                             => s_Str_in_ready(0),
       Str_in_last                              => s_Str_in_last(0),
       Str_in_length                            => s_Str_in_data(INDEX_WIDTH-1 downto 0),
+      Str_in_dvalid                            => s_Str_in_dvalid(0),
       Str_in_values_in_valid                   => s_Str_in_valid(1),
       Str_in_values_in_ready                   => s_Str_in_ready(1),
       Str_in_values_in_last                    => s_Str_in_last(1),
