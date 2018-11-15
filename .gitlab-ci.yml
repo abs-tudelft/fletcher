@@ -1,0 +1,57 @@
+image: docker:latest
+
+stages:
+  - check
+  - test
+  - build
+  - examples
+
+# before_script:
+#   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+
+.env: &env
+  ARROW_VERSION: 0.11.1
+
+  GHDL_IMAGE: ghdl/ghdl
+  GHDL_TAG: ubuntu18-llvm-5.0
+
+  RUST_VERSION: 1.30.1
+  RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
+
+variables:
+  <<: *env
+
+.apt-install: &apt-install |
+  [ "$APT_PACKAGES" ] && apt-get update && apt-get install -y $APT_PACKAGES
+
+.rust-vhdl-parser: &rust-vhdl-parser
+  stage: check
+  image: rust:${RUST_VERSION}-slim-stretch
+  before_script:
+    - cargo install vhdl_parser --version $RUST_VHDL_PARSER_CRATE_VERSION
+  script:
+    - shopt -s globstar
+    - vhdl_parser --show $CI_JOB_NAME/**/*.vhd
+
+hardware/test:
+  <<: *rust-vhdl-parser
+
+hardware/vhdl:
+  <<: *rust-vhdl-parser
+
+.cmake-test-job: &cmake-test-job
+  stage: test
+  image: mbrobbel/libarrow:$ARROW_VERSION
+  before_script:
+    - *apt-install
+    - mkdir -p build
+  script:
+    - pushd build
+    - cmake -DFLETCHER_TESTS=1 ../$CI_JOB_NAME
+    - make -j && make test
+
+runtime/cpp:
+  <<: *cmake-test-job
+
+common/cpp:
+  <<: *cmake-test-job
