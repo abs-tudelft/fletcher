@@ -30,23 +30,24 @@ entity axi_top is
     BUS_LEN_WIDTH               : natural := 8;
     BUS_BURST_MAX_LEN           : natural := 64;
     BUS_BURST_STEP_LEN          : natural := 1;
-    
+
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural := 32;
     SLV_BUS_DATA_WIDTH          : natural := 32;
-  
+
+    REG_WIDTH                   : natural := SLV_BUS_DATA_WIDTH;
+
     -- Arrow properties
     INDEX_WIDTH                 : natural := 32;
-  
+
     -- Accelerator properties
     TAG_WIDTH                   : natural := 1;
     NUM_ARROW_BUFFERS           : natural := 2;
     DIMENSION                   : natural := 8;
-    CENTROIDS                   : natural := 2;
-    CENTROID_REGS               : natural := 2 * DIMENSION; -- 2*32 bit for 64 bit dimension
+    CENTROIDS                   : natural := 3;
+    CENTROID_REGS               : natural := 64/REG_WIDTH * DIMENSION;
     NUM_USER_REGS               : natural := CENTROID_REGS * CENTROIDS + 1;
-    NUM_REGS                    : natural := 10 + NUM_USER_REGS;
-    REG_WIDTH                   : natural := SLV_BUS_DATA_WIDTH
+    NUM_REGS                    : natural := 10 + NUM_USER_REGS
   );
 
   port (

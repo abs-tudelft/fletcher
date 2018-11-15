@@ -79,6 +79,31 @@ end entity kmeans;
 
 architecture behavior of kmeans is
 
+  component filter is
+    generic(
+      DATA_WIDTH         : natural;
+      OPERANTS           : natural;
+      TUSER_WIDTH        : positive := 1;
+      DEFAULT_VALUE      : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
+      SLICES             : natural  := 1
+    );
+    port(
+      clk                : in  std_logic;
+      reset              : in  std_logic;
+      s_axis_tvalid      : in  std_logic;
+      s_axis_tready      : out std_logic;
+      s_axis_tdata       : in  std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
+      s_axis_tlast       : in  std_logic := '0';
+      s_axis_tuser       : in  std_logic_vector(TUSER_WIDTH-1 downto 0) := (others => '0');
+      s_axis_count       : in  std_logic_vector(log2ceil(OPERANTS + 1) - 1 downto 0);
+      m_axis_tvalid      : out std_logic;
+      m_axis_tready      : in  std_logic;
+      m_axis_tdata       : out std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
+      m_axis_tlast       : out std_logic;
+      m_axis_tuser       : out std_logic_vector(TUSER_WIDTH-1 downto 0)
+    );
+  end component;
+
   component axi_funnel is
     generic(
       SLAVES          : natural;
@@ -102,7 +127,8 @@ architecture behavior of kmeans is
   component distance is
     generic(
       DIMENSION         : natural;
-      DATA_WIDTH        : natural
+      DATA_WIDTH        : natural;
+      TUSER_WIDTH       : natural := 1
     );
     port(
       reset             : in  std_logic;
@@ -113,11 +139,38 @@ architecture behavior of kmeans is
       point_valid       : in  std_logic;
       point_ready       : out std_logic;
       point_last        : in  std_logic;
+      point_tuser       : in  std_logic_vector(TUSER_WIDTH - 1 downto 0) := (others => '0');
       distance_distance : out std_logic_vector(DATA_WIDTH - 1 downto 0);
       distance_point    : out std_logic_vector(DATA_WIDTH * DIMENSION - 1 downto 0);
       distance_valid    : out std_logic;
       distance_ready    : in  std_logic;
-      distance_last     : out std_logic
+      distance_last     : out std_logic;
+      distance_tuser    : out std_logic_vector(TUSER_WIDTH - 1 downto 0)
+    );
+  end component;
+
+  component mask is
+    generic(
+      DATA_WIDTH         : natural;
+      OPERANTS           : natural;
+      TUSER_WIDTH        : positive := 1;
+      DEFAULT_VALUE      : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
+      SLICES             : natural  := 1
+    );
+    port(
+      clk                : in  std_logic;
+      reset              : in  std_logic;
+      s_axis_tvalid      : in  std_logic;
+      s_axis_tready      : out std_logic;
+      s_axis_tdata       : in  std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
+      s_axis_tlast       : in  std_logic := '0';
+      s_axis_tuser       : in  std_logic_vector(TUSER_WIDTH-1 downto 0) := (others => '0');
+      s_axis_mask        : in  std_logic_vector(OPERANTS - 1 downto 0);
+      m_axis_tvalid      : out std_logic;
+      m_axis_tready      : in  std_logic;
+      m_axis_tdata       : out std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
+      m_axis_tlast       : out std_logic;
+      m_axis_tuser       : out std_logic_vector(TUSER_WIDTH-1 downto 0)
     );
   end component;
 
@@ -187,14 +240,20 @@ architecture behavior of kmeans is
   end component;
 
   type haf_state_t is (RESET, WAITING, SETUP, ACCUMULATING, MEAN, END_ITERATION, DONE);
-	signal state, state_next : haf_state_t;
+	signal state, state_next  : haf_state_t;
+
+  signal reset_internal     : std_logic;
 
   subtype point_t is std_logic_vector(DIMENSION * DATA_WIDTH - 1 downto 0);
 
   signal point_forward_valid,
          point_forward_ready,
          point_forward_last : std_logic;
+  signal point_filter_valid,
+         point_filter_ready,
+         point_filter_last  : std_logic;
   signal point_forward_data,
+         point_filter_data,
          point_split_data   : point_t;
   signal point_split_valid,
          point_split_ready,
@@ -203,9 +262,16 @@ architecture behavior of kmeans is
   signal distance_data      : std_logic_vector(CENTROIDS * DATA_WIDTH - 1 downto 0);
   signal distance_valid,
          distance_ready,
-         distance_last      : std_logic_vector(CENTROIDS - 1 downto 0);
+         distance_last,
+         distance_mask      : std_logic_vector(CENTROIDS - 1 downto 0);
   type distance_points_t is array (0 to CENTROIDS - 1) of point_t;
   signal distance_point     : distance_points_t;
+
+  signal distance_m_data    : std_logic_vector(CENTROIDS * DATA_WIDTH - 1 downto 0);
+  signal distance_m_valid,
+         distance_m_ready,
+         distance_m_last    : std_logic_vector(CENTROIDS - 1 downto 0);
+  signal distance_m_point   : distance_points_t;
 
   signal centroid_point     : point_t;
   signal centroid_min       : std_logic_vector(log2ceil(CENTROIDS)-1 downto 0);
@@ -236,6 +302,25 @@ architecture behavior of kmeans is
 
 begin
 
+  filter_inst: filter
+    generic map (
+      DATA_WIDTH         => DATA_WIDTH,
+      OPERANTS           => DIMENSION
+    )
+    port map (
+      clk                => acc_clk,
+      reset              => reset_internal,
+      s_axis_tvalid      => point_forward_valid,
+      s_axis_tready      => point_forward_ready,
+      s_axis_tdata       => point_forward_data,
+      s_axis_tlast       => point_forward_last,
+      s_axis_count       => point_out_dimension_out_count,
+      m_axis_tvalid      => point_filter_valid,
+      m_axis_tready      => point_filter_ready,
+      m_axis_tdata       => point_filter_data,
+      m_axis_tlast       => point_filter_last
+    );
+
   --TODO: replace with StreamSync
   distance_sync: axi_funnel
     generic map (
@@ -243,12 +328,12 @@ begin
       DATA_WIDTH             => DATA_WIDTH * DIMENSION
     )
     port map (
-      reset                  => acc_reset,
+      reset                  => reset_internal,
       clk                    => acc_clk,
-      in_data                => point_forward_data,
-      in_valid               => point_forward_valid,
-      in_ready               => point_forward_ready,
-      in_last                => point_forward_last,
+      in_data                => point_filter_data,
+      in_valid               => point_filter_valid,
+      in_ready               => point_filter_ready,
+      in_last                => point_filter_last,
       out_data               => point_split_data,
       out_valid              => point_split_valid,
       out_ready              => point_split_ready,
@@ -257,26 +342,58 @@ begin
 
   -- Distance to other centroids
   centroid_g: for c in 0 to CENTROIDS - 1 generate
+    signal centroid_data : std_logic_vector(CENTROID_REGS * REG_WIDTH - 1 downto 0);
+    signal point_split_enabled : std_logic_vector(0 downto 0);
+  begin
+    centroid_data <= user_regs_in((c + 1) * CENTROID_REGS * REG_WIDTH - 1 downto c * CENTROID_REGS * REG_WIDTH);
+    point_split_enabled <= "0" when centroid_data(centroid_data'length - 1) = '1' and unsigned(centroid_data(centroid_data'length - 2 downto 0)) = 0 else "1";
+
     distance_inst: distance
       generic map (
-        DIMENSION  => DIMENSION,
-        DATA_WIDTH => DATA_WIDTH
+        DIMENSION         => DIMENSION,
+        DATA_WIDTH        => DATA_WIDTH,
+        TUSER_WIDTH       => 1
       )
       port map (
         reset             => acc_reset,
         clk               => acc_clk,
         -------------------------------------------------------------------------
-        centroid          => user_regs_in((c + 1) * CENTROID_REGS * REG_WIDTH - 1 downto c * CENTROID_REGS * REG_WIDTH),
+        centroid          => centroid_data,
         point_data        => point_split_data,
         point_valid       => point_split_valid(c),
         point_ready       => point_split_ready(c),
         point_last        => point_split_last(c),
+        point_tuser       => point_split_enabled,
         distance_distance => distance_data((c + 1) * DATA_WIDTH - 1 downto c * DATA_WIDTH),
         distance_point    => distance_point(c),
         distance_valid    => distance_valid(c),
         distance_ready    => distance_ready(c),
-        distance_last     => distance_last(c)
+        distance_last     => distance_last(c),
+        distance_tuser    => distance_mask(c downto c)
       );
+
+    mask_inst: mask
+    generic map (
+      DATA_WIDTH         => DATA_WIDTH,
+      OPERANTS           => 1,
+      TUSER_WIDTH        => DATA_WIDTH * DIMENSION,
+      DEFAULT_VALUE      => (others => '1')
+    )
+    port map (
+      clk                => acc_clk,
+      reset              => reset_internal,
+      s_axis_tvalid      => distance_valid(c),
+      s_axis_tready      => distance_ready(c),
+      s_axis_tdata       => distance_data((c + 1) * DATA_WIDTH - 1 downto c * DATA_WIDTH),
+      s_axis_tlast       => distance_last(c),
+      s_axis_tuser       => distance_point(c),
+      s_axis_mask        => distance_mask(c downto c),
+      m_axis_tvalid      => distance_m_valid(c),
+      m_axis_tready      => distance_m_ready(c),
+      m_axis_tdata       => distance_m_data((c + 1) * DATA_WIDTH - 1 downto c * DATA_WIDTH),
+      m_axis_tlast       => distance_m_last(c),
+      m_axis_tuser       => distance_m_point(c)
+    );
   end generate;
 
   -- Find nearest centroid
@@ -287,12 +404,12 @@ begin
   )
   port map (
     clk                     => acc_clk,
-    reset                   => acc_reset,
-    s_axis_tvalid           => distance_valid,
-    s_axis_tready           => distance_ready,
-    s_axis_tdata            => distance_data,
-    s_axis_tuser            => distance_point(0),
-    s_axis_tlast            => distance_last,
+    reset                   => reset_internal,
+    s_axis_tvalid           => distance_m_valid,
+    s_axis_tready           => distance_m_ready,
+    s_axis_tdata            => distance_m_data,
+    s_axis_tuser            => distance_m_point(0),
+    s_axis_tlast            => distance_m_last,
     m_axis_result_tvalid    => centroid_valid,
     m_axis_result_tready    => centroid_ready,
     m_axis_result_tdata     => open,
@@ -327,7 +444,7 @@ begin
   )
   port map (
     clk                  => acc_clk,
-    reset                => acc_reset,
+    reset                => reset_internal,
     s_in_valid           => divi_valid,
     s_in_ready           => divi_ready,
     s_in_numerator       => div_numerator,
@@ -367,6 +484,7 @@ begin
     point_out_dimension_out_last, point_out_dimension_out_valid,
     point_forward_ready, accum_valid, centroid_moved,
     divi_ready, divo_valid, divi_valid, div_dimension, div_centroid, div_quotient,
+    div_denominator,
     accum_data, accum_counters, user_regs_in)
   begin
     -- Default values
@@ -386,6 +504,7 @@ begin
     -- Do not write to user regs
     user_regs_out_en <= (others => '0');
 
+    reset_internal    <= acc_reset;
     accumulator_reset <= acc_reset;
 
     -- Stay in same state
@@ -404,7 +523,13 @@ begin
         ctrl_done <= '0';
         ctrl_busy <= '0';
         ctrl_idle <= '0';
-        state_next <= WAITING;
+        reset_internal <= '1';
+        accumulator_reset <= '1';
+        if ctrl_start = '1' then
+          state_next <= SETUP;
+        else
+          state_next <= WAITING;
+        end if;
 
       -- Wait for start signal
       when WAITING =>
@@ -474,32 +599,42 @@ begin
 
         -- Go over each dimension in each centroid
         if divo_valid = '1' then
-          -- Check whether the centroid has moved
-          -- TODO: depend on CENTROID_REGS instead of DATA_WIDTH
-          if user_regs_in(
-                       (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DATA_WIDTH - 1
-                downto (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DATA_WIDTH)
-              /= div_quotient then
-            centroid_moved_next <= '1';
-          end if;
-          -- Update centroid data
-          user_regs_out_en(
-              (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DIMENSION_REGS - 1 downto
-              (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DIMENSION_REGS) <= (others => '1');
+          if unsigned(div_denominator) /= 0 then
+            -- There are point assigned to this centroid
 
-          divi_valid_next <= '1';
-          if div_dimension = DIMENSION - 1 then
-            -- Next centroid
-            div_dimension_next <= (others => '0');
-            div_centroid_next  <= div_centroid + 1;
-            if div_centroid = CENTROIDS - 1 then
-              -- It was the last centroid
-              state_next <= END_ITERATION;
-              divi_valid_next <= '0';
+            -- Check whether the centroid has moved
+            -- TODO: depend on CENTROID_REGS instead of DATA_WIDTH
+            if user_regs_in(
+                         (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DATA_WIDTH - 1
+                  downto (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DATA_WIDTH)
+                /= div_quotient then
+              centroid_moved_next <= '1';
             end if;
+
+            -- Update centroid data
+            user_regs_out_en(
+                (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension) + 1) * DIMENSION_REGS - 1 downto
+                (to_integer(div_centroid) * DIMENSION + to_integer(div_dimension)) * DIMENSION_REGS) <= (others => '1');
+
+            divi_valid_next <= '1';
+            if div_dimension = DIMENSION - 1 then
+              -- Next centroid
+              div_dimension_next <= (others => '0');
+              if div_centroid = CENTROIDS - 1 then
+                -- It was the last centroid
+                state_next <= END_ITERATION;
+                divi_valid_next <= '0';
+              else
+                div_centroid_next  <= div_centroid + 1;
+              end if;
+            else
+              -- Next dimension
+              div_dimension_next <= div_dimension + 1;
+            end if;
+
           else
-            -- Next dimension
-            div_dimension_next <= div_dimension + 1;
+            -- No points assigned; unused centroid
+            state_next <= END_ITERATION;
           end if;
         end if;
 

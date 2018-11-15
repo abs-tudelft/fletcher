@@ -68,6 +68,8 @@ $FLETCHER_EXAMPLES_DIR/k-means/hardware/adder_tree.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/axi_funnel.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/distance.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/divider.vhd
+$FLETCHER_EXAMPLES_DIR/k-means/hardware/filter.vhd
+$FLETCHER_EXAMPLES_DIR/k-means/hardware/mask.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/point_accumulators.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/selector.vhd
 $FLETCHER_EXAMPLES_DIR/k-means/hardware/selector_tree.vhd

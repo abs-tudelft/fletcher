@@ -36,7 +36,10 @@
 `define REG_FIRST_IDX       4+0
 `define REG_LAST_IDX        4+1
 
-`define NUM_REGISTERS       43
+`define K_COLUMNS           8
+`define K_CENTROIDS         3
+
+`define NUM_REGISTERS       11 + 2 * `K_COLUMNS * `K_CENTROIDS
 
 // Offset buffer address for fpga memory (must be 4k aligned)
 `define OFF_ADDR_HI         32'h00000000
@@ -60,8 +63,20 @@ logic       ddr_ready;
 int         read_data;
 
 int num_rows = `NUM_ROWS;
-int num_buf_bytes = 383;
+int num_buf_bytes = 384;
 int temp;
+
+int centroid_ref[`K_CENTROIDS][2 * `K_COLUMNS] =
+    '{'{13,0,    3,0,  111,0, 121,0, 131,0, 141,0, 151,0, -161,-1},
+      '{48,0, -510,-1, 210,0, 220,0, 230,0, 240,0, 200,0, -260,-1},
+      '{0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000,
+        0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000}};
+
+int centroid_init[`K_CENTROIDS][2 * `K_COLUMNS] =
+    '{'{0,0,     0,0,  110,0, 120,0, 130,0, 140,0, 150,0, -160,-1},
+      '{40,0, -100,-1, 210,0, 220,0, 230,0, 240,0, 250,0, -260,-1},
+      '{0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000,
+        0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000, 0,32'h8000_0000}};
 
 union {
   logic[63:0] i;
@@ -127,7 +142,6 @@ initial begin
 
   tb.nsec_delay(1000);
 
-  // Fletcher sum example starts here
   $display("[%t] : Initializing UserCore ", $realtime);
 
   // Reset
@@ -145,68 +159,26 @@ initial begin
   tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
 
   // Set starting centroids
-  tb.poke_bar1(.addr(4*10), .data(0));
-  tb.poke_bar1(.addr(4*11), .data(0));
-  tb.poke_bar1(.addr(4*12), .data(0));
-  tb.poke_bar1(.addr(4*13), .data(0));
-
-  tb.poke_bar1(.addr(4*14), .data(110));
-  tb.poke_bar1(.addr(4*15), .data(0));
-
-  tb.poke_bar1(.addr(4*16), .data(120));
-  tb.poke_bar1(.addr(4*17), .data(0));
-
-  tb.poke_bar1(.addr(4*18), .data(130));
-  tb.poke_bar1(.addr(4*19), .data(0));
-
-  tb.poke_bar1(.addr(4*20), .data(140));
-  tb.poke_bar1(.addr(4*21), .data(0));
-
-  tb.poke_bar1(.addr(4*22), .data(150));
-  tb.poke_bar1(.addr(4*23), .data(0));
-
-  tb.poke_bar1(.addr(4*24), .data(-160));
-  tb.poke_bar1(.addr(4*25), .data(-1));
-
-
-  tb.poke_bar1(.addr(4*26), .data(40));
-  tb.poke_bar1(.addr(4*27), .data(0));
-  tb.poke_bar1(.addr(4*28), .data(-100));
-  tb.poke_bar1(.addr(4*29), .data(-1));
-
-  tb.poke_bar1(.addr(4*30), .data(210));
-  tb.poke_bar1(.addr(4*31), .data(0));
-
-  tb.poke_bar1(.addr(4*32), .data(220));
-  tb.poke_bar1(.addr(4*33), .data(0));
-
-  tb.poke_bar1(.addr(4*34), .data(230));
-  tb.poke_bar1(.addr(4*35), .data(0));
-
-  tb.poke_bar1(.addr(4*36), .data(240));
-  tb.poke_bar1(.addr(4*37), .data(0));
-
-  tb.poke_bar1(.addr(4*38), .data(250));
-  tb.poke_bar1(.addr(4*39), .data(0));
-
-  tb.poke_bar1(.addr(4*40), .data(-260));
-  tb.poke_bar1(.addr(4*41), .data(-1));
+  for (int c=0; c<`K_CENTROIDS; c++) begin
+    for (int d=0; d<`K_COLUMNS; d++) begin
+        tb.poke_bar1(.addr(4 * (10 + 2*(c * `K_COLUMNS + d))),     .data(centroid_init[c][2*d]));
+        tb.poke_bar1(.addr(4 * (10 + 2*(c * `K_COLUMNS + d) + 1)), .data(centroid_init[c][2*d+1]));
+    end
+  end
 
   // Set maximum number of iterations
-  tb.poke_bar1(.addr(4*42), .data(4));
-
-
-  $display("[%t] : Starting UserCore", $realtime);
+  tb.poke_bar1(.addr(4*(`NUM_REGISTERS-1)), .data(4));
 
   // Start UserCore
+  $display("[%t] : Starting UserCore", $realtime);
   tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
 
-  // Poll status at an interval of 1000 nsec
+  // Poll status at an interval of 2000 nsec
   // For the real thing, you should probably increase this to put 
   // less stress on the PCI interface
   do
     begin
-      tb.nsec_delay(1000);
+      tb.nsec_delay(2000);
       tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
       $display("[%t] : UserCore status: %H", $realtime, read_data);
     end
@@ -214,38 +186,41 @@ initial begin
 
   $display("[%t] : UserCore completed ", $realtime);
 
-  // TODO: check centroid positions
-  // Get the return register value
-  tb.peek_bar1(.addr(4*`REG_RETURN_HI), .data(read_data));
-  $display("[t] : Return register HI: %d", read_data);
-  if (read_data != 0) begin
-    $display("[t] : ERROR: Expected 0 on return HI");
-    fail = 1;
-  end
-  tb.peek_bar1(.addr(4*`REG_RETURN_LO), .data(read_data));
-  $display("[t] : Return register LO: %d", read_data);
-  if (read_data != 7 * (num_rows * (num_rows - 1)) / 2) begin
-    $display("[t] : ERROR: Result does not match expected %d", 7 * (num_rows * (num_rows - 1)) / 2);
-    fail = 1;
-  end
 
-
-  for (int i=0; i<`NUM_REGISTERS; i++) begin
-//    $display("[DEBUG] : Reading register %d", i);
-    tb.peek_bar1(.addr(i*4), .data(read_data));
-    $display("[DEBUG] : Register %d: %H", i, read_data);
+  // Check outputs
+  for (int c=0; c<`K_CENTROIDS; c++) begin
+    for (int d=0; d<`K_COLUMNS; d++) begin
+        tb.peek_bar1(.addr(4 * (10 + 2*(c * `K_COLUMNS + d))), .data(read_data));
+        if (read_data != centroid_ref[c][2*d]) begin
+          $display("ERROR: Result incorrect (centroid %d, column %d LO): %H; expected %H", c, d, read_data, centroid_ref[c][2*d]);
+          error_count++;
+        end
+        tb.peek_bar1(.addr(4 * (10 + 2*(c * `K_COLUMNS + d) + 1)), .data(read_data));
+        if (read_data != centroid_ref[c][2*d + 1]) begin
+          $display("ERROR: Result incorrect (centroid %d, column %d HI): %H; expected %H", c, d, read_data, centroid_ref[c][2*d+1]);
+          error_count++;
+        end
+    end
   end
 
-  // Power down
-  #500ns;
-  tb.power_down();
+  tb.peek_bar1(.addr(4*(`NUM_REGISTERS-1)), .data(read_data));
+  if (read_data != 2) begin
+    $display("ERROR: Result incorrect (iterations): %d", read_data);
+    error_count++;
+  end
 
 
   // Report pass/fail status
   $display("[%t] : Checking total error count...", $realtime);
   if (error_count > 0) begin
     fail = 1;
+    // Debug print of all registers
+    for (int i=0; i<`NUM_REGISTERS; i++) begin
+      tb.peek_bar1(.addr(i*4), .data(read_data));
+      $display("[DEBUG] : Register %d: %H", i, read_data);
+    end
   end
+
   $display(
     "[%t] : Detected %3d errors during this test",
     $realtime, error_count
@@ -256,6 +231,11 @@ initial begin
   end else begin
     $display("[%t] : *** TEST PASSED ***", $realtime);
   end
+
+
+  // Power down
+  #500ns;
+  tb.power_down();
 
   $finish;
 end // initial begin
