@@ -145,13 +145,13 @@ std::shared_ptr<arrow::RecordBatch> getFilterRB() {
   if (!ln_builder.Finish(&ln_array).ok()) {
     throw std::runtime_error("Could not finalize last name builder.");
   };
-  if (!ln_builder.Finish(&zip_array).ok()) {
+  if (!zip_builder.Finish(&zip_array).ok()) {
     throw std::runtime_error("Could not finalize zip code builder.");
   };
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genFilterReadSchema(), 4, {fn_array, ln_array, zip_array});
+      record_batch = arrow::RecordBatch::Make(genFilterReadSchema(), fn_array->length(), {fn_array, ln_array, zip_array});
 
   return record_batch;
 }
