@@ -104,10 +104,9 @@ if (FLETCHER_TESTS)
     if (FLETCHER_ECHO)
       set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
     else ()
-      add_subdirectory(../../platforms/echo/runtime echo)
-      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/runtime/cpp/echo)
+      add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
+      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
     endif ()
-
 
     # Include GoogleTest CMake functionality
     include(GoogleTest)
