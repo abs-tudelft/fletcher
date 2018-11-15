@@ -311,7 +311,7 @@ class Signal : public Comment, public Groupable {
    */
   std::string toVHDL() override;
 
-  std::string name() { return name_; }
+  std::string name() const { return name_; }
 
   Value width() { return width_; }
 
