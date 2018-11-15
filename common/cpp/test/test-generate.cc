@@ -49,5 +49,13 @@ int main() {
   recordbatch = fletcher::test::getListUint8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
 
+  /* Filter example */
+  schema = fletcher::test::genFilterReadSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_read.fbs");
+  schema = fletcher::test::genFilterWriteSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
+  recordbatch = fletcher::test::getFilterRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+
   return EXIT_SUCCESS;
 }

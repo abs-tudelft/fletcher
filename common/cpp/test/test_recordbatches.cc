@@ -110,5 +110,52 @@ std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
   return record_batch;
 }
 
+
+std::shared_ptr<arrow::RecordBatch> getFilterRB() {
+  // Some first names
+  std::vector<std::string> first_names = {"Alice", "Bob", "Carol", "David"};
+  std::vector<std::string> last_names = {"Cooper", "Dylan", "Ine", "Boskabouter"};
+  std::vector<uint32_t> zip_codes = {1337, 4242, 1234, 9876};
+
+  // Make a string builder
+  arrow::StringBuilder fn_builder;
+  arrow::StringBuilder ln_builder;
+  arrow::UInt32Builder zip_builder;
+
+  // Append the strings in the string builder
+  if (!fn_builder.AppendValues(first_names).ok()) {
+    throw std::runtime_error("Could not append to first name builder.");
+  };
+  if (!ln_builder.AppendValues(last_names).ok()) {
+    throw std::runtime_error("Could not append to last name builder.");
+  };
+  if (!zip_builder.AppendValues(zip_codes).ok()) {
+    throw std::runtime_error("Could not append zip codes to builder.");
+  };
+
+  // Array to hold Arrow formatted string data
+  std::shared_ptr<arrow::Array> fn_array;
+  std::shared_ptr<arrow::Array> ln_array;
+  std::shared_ptr<arrow::Array> zip_array;
+
+  // Finish building and create a new data array around the data
+  if (!fn_builder.Finish(&fn_array).ok()) {
+    throw std::runtime_error("Could not finalize first name builder.");
+  };
+  if (!ln_builder.Finish(&ln_array).ok()) {
+    throw std::runtime_error("Could not finalize last name builder.");
+  };
+  if (!ln_builder.Finish(&zip_array).ok()) {
+    throw std::runtime_error("Could not finalize zip code builder.");
+  };
+
+  // Create the Record Batch
+  std::shared_ptr<arrow::RecordBatch>
+      record_batch = arrow::RecordBatch::Make(genFilterReadSchema(), 4, {fn_array, ln_array, zip_array});
+
+  return record_batch;
+}
+
+
 }
 }
