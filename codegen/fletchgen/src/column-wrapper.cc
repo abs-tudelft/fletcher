@@ -49,7 +49,7 @@ ColumnWrapper::ColumnWrapper(std::vector<shared_ptr<arrow::Schema>> schemas,
   uctrl_ = make_shared<UserCoreController>();
   uctrl_inst_ = make_shared<Instantiation>(nameFrom({uctrl_->entity()->name(), "inst"}),
                                            std::static_pointer_cast<Component>(uctrl_));
-  //architecture()->addComponent(uctrl_);
+
   architecture()->addInstantiation(uctrl_inst_);
   uctrl_inst_->setComment(t(1) + "-- Controller instance.\n");
 
