@@ -5,14 +5,14 @@ proc run_sim {} {
   simulate work.sim_top {{"Testbench" sim:/sim_top/* }
                          {"Memory" sim:/sim_top/rmem_inst/*}
                          {"Wrapper" sim:/sim_top/filter_wrapper_inst/*}
-                         {"UserCore" sim:/sim_top/filter_wrapper_inst/filter_usercore/*}
+                         {"UserCore" sim:/sim_top/filter_wrapper_inst/filter_usercore_inst/*}
                          }
 }
 
 add_fletcher
 add_fletcher_tb
 
-add_source filter_usercore.vhd
+add_source filter_usercore.vhd -2008
 add_source filter_wrapper.vhd
 add_source sim_top.vhd
 

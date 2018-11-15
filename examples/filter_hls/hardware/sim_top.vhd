@@ -203,29 +203,28 @@ begin
     wait until rising_edge(acc_clk);
     mmio_write(9, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(a, X"00000080", regs_in);
+    mmio_write(10, X"00000080", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(b, X"00000000", regs_in);
+    mmio_write(11, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(c, X"000000c0", regs_in);
+    mmio_write(12, X"000000c0", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(d, X"00000000", regs_in);
+    mmio_write(13, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(e, X"00000100", regs_in);
+    mmio_write(14, X"00000100", regs_in);
     wait until rising_edge(acc_clk);
-    mmio_write(f, X"00000000", regs_in);
+    mmio_write(15, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
 
-   
     -- 3. Writes any user core registers.
     --
     -- Here you can write, for example, the first and last index
     -- 
     -- Example:
     -- First index in user reg 0
-    -- uc_reg_write(0, X"00000000"); wait until rising_edge(acc_clk);
-    -- Last index in user reg 0
-    -- uc_reg_write(1, X"00000010"); wait until rising_edge(acc_clk);
+    uc_reg_write(0, X"00000000", regs_in); wait until rising_edge(acc_clk);
+    -- Last index in user reg 1
+    uc_reg_write(1, X"00000004", regs_in); wait until rising_edge(acc_clk);
     
     -- 4. Start the user core.    
     uc_start(regs_in);

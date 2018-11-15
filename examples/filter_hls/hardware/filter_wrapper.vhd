@@ -89,9 +89,9 @@ architecture Implementation of filter_wrapper is
       REG_WIDTH                                  : natural
     );
     port(
-      write_first_name_unlock_valid              : out std_logic;
-      write_first_name_unlock_tag                : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      write_first_name_unlock_ready              : in std_logic;
+      write_first_name_unlock_valid              : in std_logic;
+      write_first_name_unlock_tag                : in std_logic_vector(TAG_WIDTH-1 downto 0);
+      write_first_name_unlock_ready              : out std_logic;
       write_first_name_in_values_in_valid        : out std_logic;
       write_first_name_in_values_in_ready        : in std_logic;
       write_first_name_in_values_in_last         : out std_logic;
@@ -122,9 +122,9 @@ architecture Implementation of filter_wrapper is
       reg_read_first_name_values_addr            : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       reg_read_first_name_offsets_addr           : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       -------------------------------------------------------------------------
-      read_zipcode_unlock_valid                  : out std_logic;
-      read_zipcode_unlock_tag                    : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      read_zipcode_unlock_ready                  : in std_logic;
+      read_zipcode_unlock_valid                  : in std_logic;
+      read_zipcode_unlock_tag                    : in std_logic_vector(TAG_WIDTH-1 downto 0);
+      read_zipcode_unlock_ready                  : out std_logic;
       read_zipcode_out_valid                     : in std_logic;
       read_zipcode_out_ready                     : out std_logic;
       read_zipcode_out_last                      : in std_logic;
@@ -135,9 +135,9 @@ architecture Implementation of filter_wrapper is
       read_zipcode_cmd_read_zipcode_values_addr  : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       read_zipcode_cmd_lastIdx                   : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       read_zipcode_cmd_firstIdx                  : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      read_last_name_unlock_valid                : out std_logic;
-      read_last_name_unlock_tag                  : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      read_last_name_unlock_ready                : in std_logic;
+      read_last_name_unlock_valid                : in std_logic;
+      read_last_name_unlock_tag                  : in std_logic_vector(TAG_WIDTH-1 downto 0);
+      read_last_name_unlock_ready                : out std_logic;
       read_last_name_out_values_out_valid        : in std_logic;
       read_last_name_out_values_out_ready        : out std_logic;
       read_last_name_out_values_out_last         : in std_logic;
@@ -155,9 +155,9 @@ architecture Implementation of filter_wrapper is
       read_last_name_cmd_read_last_name_offsets_addr: out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       read_last_name_cmd_lastIdx                 : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       read_last_name_cmd_firstIdx                : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      read_first_name_unlock_valid               : out std_logic;
-      read_first_name_unlock_tag                 : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      read_first_name_unlock_ready               : in std_logic;
+      read_first_name_unlock_valid               : in std_logic;
+      read_first_name_unlock_tag                 : in std_logic_vector(TAG_WIDTH-1 downto 0);
+      read_first_name_unlock_ready               : out std_logic;
       read_first_name_out_values_out_valid       : in std_logic;
       read_first_name_out_values_out_ready       : out std_logic;
       read_first_name_out_values_out_last        : in std_logic;
@@ -324,7 +324,8 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH
+      INDEX_WIDTH                              => INDEX_WIDTH,
+      CMD_TAG_ENABLE                           => true
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -365,7 +366,8 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH
+      INDEX_WIDTH                              => INDEX_WIDTH,
+      CMD_TAG_ENABLE                           => true
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -406,7 +408,8 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH
+      INDEX_WIDTH                              => INDEX_WIDTH,
+      CMD_TAG_ENABLE                           => true
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -448,7 +451,8 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
-      CFG                                      => "listprim(8)"
+      CFG                                      => "listprim(8)",
+      CMD_TAG_ENABLE                           => true
     )
     port map (
       bus_clk                                  => bus_clk,
