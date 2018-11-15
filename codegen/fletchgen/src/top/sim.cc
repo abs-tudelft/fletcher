@@ -56,10 +56,10 @@ std::string generateSimTop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_
       auto msb = (uint32_t) (addr >> 32u);
       auto lsb = (uint32_t) (addr & 0xFFFFFFFF);
 
-      bufstr << "    mmio_write(" << 2 * i + fletchgen::ce::NUM_DEFAULT_REGS << ", X\"" << std::setfill('0') << std::setw(8) << std::hex << lsb
+      bufstr << "    mmio_write(" << std::dec << 2 * i + fletchgen::ce::NUM_DEFAULT_REGS << ", X\"" << std::setfill('0') << std::setw(8) << std::hex << lsb
              << "\", regs_in);" << std::endl;
       bufstr << "    wait until rising_edge(acc_clk);" << std::endl;
-      bufstr << "    mmio_write(" << 2 * i + 1 + fletchgen::ce::NUM_DEFAULT_REGS << ", X\"" << std::setfill('0') << std::setw(8) << std::hex << msb
+      bufstr << "    mmio_write(" << std::dec << 2 * i + 1 + fletchgen::ce::NUM_DEFAULT_REGS << ", X\"" << std::setfill('0') << std::setw(8) << std::hex << msb
              << "\", regs_in);" << std::endl;
       bufstr << "    wait until rising_edge(acc_clk);" << std::endl;
     }
