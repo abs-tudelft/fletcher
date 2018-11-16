@@ -41,8 +41,7 @@ std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   };
 
   // Create the schema
-  auto
-      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -62,18 +61,18 @@ std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genStringSchema() {
-  // Create a vector of fields that will form the schema.
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Name", arrow::utf8(), false, metaEPC(4))
-  };
-
-  // Create some metadata
+std::shared_ptr<arrow::Schema> genStringReadSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Name", arrow::utf8(), false, metaEPC(4))};
   auto schema_meta = metaMode(Mode::READ);
-
-  // Create the schema
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
+  return schema;
+}
 
+std::shared_ptr<arrow::Schema> genStringWriteSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Str", arrow::utf8(), false, metaEPC(64))};
+  auto schema_meta = metaMode(Mode::WRITE);
+  schema_meta->Append("fletcher_num_user_regs", "4");
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
   return schema;
 }
 
@@ -116,8 +115,7 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
       arrow::field("IgnoreMe", arrow::utf8(), false, metaIgnore())
   };
 
-  auto
-      schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }
@@ -134,8 +132,7 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
       arrow::field("Read", arrow::list(arrow::field("Item", strct, false)), false)
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields,
-                                                metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
 }

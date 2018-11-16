@@ -35,10 +35,13 @@ int main() {
   fletcher::writeSchemaToFile(schema, "schemas/primwrite.fbs");
 
   /* String */
-  schema = fletcher::test::genStringSchema();
+  schema = fletcher::test::genStringReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/stringread.fbs");
   recordbatch = fletcher::test::getStringRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/names.rb");
+
+  schema = fletcher::test::genStringWriteSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/stringwrite.fbs");
 
   /* List of UInt8 */
   schema = fletcher::test::genListUint8Schema();

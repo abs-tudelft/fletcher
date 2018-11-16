@@ -92,6 +92,15 @@ class CommandStream : public FletcherColumnStream {
       : FletcherColumnStream(name, FST::CMD, column, std::move(ports)) {}
 };
 
+/// @brief A column unlock stream.
+class UnlockStream : public FletcherColumnStream {
+ public:
+  UnlockStream(const std::string &name,
+               Column *column,
+               std::vector<std::shared_ptr<StreamPort>> ports = {})
+      : FletcherColumnStream(name, FST::UNLOCK, column, std::move(ports)) {}
+};
+
 /// @brief A read request stream.
 class ReadRequestStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<ReadArbiter> {
@@ -119,9 +128,9 @@ class WriteRequestStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
  public:
   explicit WriteRequestStream(const std::string &name,
-                             vhdl::Instantiation *source = nullptr,
-                             WriteArbiter *dest = nullptr,
-                             std::vector<std::shared_ptr<StreamPort>> ports = {})
+                              vhdl::Instantiation *source = nullptr,
+                              WriteArbiter *dest = nullptr,
+                              std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
 };
 
@@ -130,12 +139,11 @@ class WriteDataStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
  public:
   explicit WriteDataStream(const std::string &name,
-                          vhdl::Instantiation *source = nullptr,
-                          WriteArbiter *dest = nullptr,
-                          std::vector<std::shared_ptr<StreamPort>> ports = {})
+                           vhdl::Instantiation *source = nullptr,
+                           WriteArbiter *dest = nullptr,
+                           std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
 };
-
 
 /// @brief A stream that delivers Arrow data
 class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, public ParentOf<ArrowStream> {

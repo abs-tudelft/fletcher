@@ -68,7 +68,7 @@ std::string alignStat(const std::string &prefix,
   return prefix + std::string((uint64_t) len, ' ') + separator + suffix;
 }
 
-//TODO: use va_arg ?
+//TODO(johanpel): use va_arg ?
 std::string nameFrom(std::vector<std::string> strings) {
   std::string ret;
 
@@ -497,7 +497,7 @@ void Architecture::addInstantiation(const std::shared_ptr<Instantiation> &inst) 
   instances_.push_back(inst);
 }
 
-Signal *Architecture::addSignal(std::shared_ptr<Signal> signal, int group) {
+Signal *Architecture::addSignal(const std::shared_ptr<Signal> &signal, int group) {
   LOGD("Declaring " + signal->toString() + " in " + toString());
   // Check if signal already exists:
   for (const auto &s : signals_) {
@@ -801,8 +801,14 @@ std::string Component::toVHDL() {
   if (!ports.empty()) {
     ret += t(1) + "  port(\n";
 
+    //TODO(johanpel): this sorting should be the other way around but there is something messy with the group ids
     // Sort ports by group id
     std::sort(ports.begin(), ports.end(), Groupable::compare);
+
+    // Sort ports by name
+    std::sort(ports.begin(), ports.end(), [](const Port* a, const Port* b) {
+      return a->name() > b->name();
+    });
 
     // Get the first group id
     int group = ports.front()->group();

@@ -50,7 +50,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genStringSchema(), names.size(), {data_array});
+      record_batch = arrow::RecordBatch::Make(genStringReadSchema(), names.size(), {data_array});
 
   return record_batch;
 }
