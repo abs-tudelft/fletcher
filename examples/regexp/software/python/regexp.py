@@ -18,6 +18,7 @@ import gc
 import pandas as pd
 import pyarrow as pa
 import pyfletcher as pf
+import re
 
 # Add pyre2 to the Python 3 compatibility wall of shame
 __builtins__.basestring = str
@@ -258,7 +259,7 @@ if __name__ == "__main__":
 
     print("Bytes copied: " + str(bytes_copied))
 
-    print("Total runtimes for " + str(ne) + "runs:")
+    print("Total runtimes for " + str(ne) + " runs:")
     print("Python list on CPU: " + str(sum(t_ncpu)))
     print("Pandas series on CPU: " + str(sum(t_pcpu)))
     print("Arrow array on CPU: " + str(sum(t_acpu)))

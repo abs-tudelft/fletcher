@@ -178,6 +178,8 @@ if __name__ == "__main__":
                         help="Max number of k-means iterations")
     parser.add_argument("--num_centroids", dest="num_centroids", default=2,
                         help="Number of centroids")
+    parser.add_argument("--num_exp", dest="num_exp", default=1,
+                        help="Number of experiments")
     args = parser.parse_args()
 
     num_rows = int(args.num_rows)
@@ -185,6 +187,7 @@ if __name__ == "__main__":
     dimensionality = int(args.dimensionality)
     iteration_limit = int(args.iteration_limit)
     num_centroids = int(args.num_centroids)
+    ne = int(args.num_exp)
 
     t = Timer()
 
@@ -204,42 +207,58 @@ if __name__ == "__main__":
 
     numpy_centroids = np.array(list_centroids)
 
-    numpy_centroids_copy = copy.deepcopy(numpy_centroids)
-    t.start()
-    result = kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans NumPy pure Python execution time: " + str(t.seconds()))
+    # Timers
+    t_nppy = []
+    t_npcy = []
+    t_arcpp = []
+    t_npcpp = []
+    t_fpga = []
 
-    print(result)
+    # Results
+    r_nppy = []
+    r_npcy = []
+    r_arcpp = []
+    r_npcpp = []
+    r_fpga = []
 
-    numpy_centroids_copy = copy.deepcopy(numpy_centroids)
-    t.start()
-    result = kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans NumPy Cython execution time: " + str(t.seconds()))
 
-    print(result)
+    for i in range(ne):
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_nppy.append(kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_nppy.append(t.seconds())
+        # print("Kmeans NumPy pure Python execution time: " + t_nppy[ne])
 
-    numpy_centroids_copy = copy.deepcopy(numpy_centroids)
-    t.start()
-    result = kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_npcy.append(t.seconds())
+        # print("Kmeans NumPy Cython execution time: " + t_npcy[ne])
 
-    print(numpy_centroids_copy)
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_arcpp.append(t.seconds())
+        # print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
 
-    numpy_centroids_copy = copy.deepcopy(numpy_centroids)
-    t.start()
-    result = kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_npcpp.append(t.seconds())
+        # print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
 
-    print(numpy_centroids_copy)
+        list_centroids_copy = copy.deepcopy(list_centroids)
+        t.start()
+        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit))
+        t.stop()
+        t_fpga.append(t.seconds())
+        #print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
 
-    list_centroids_copy = copy.deepcopy(list_centroids)
-    t.start()
-    result = arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit)
-    t.stop()
-    print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
-
-    print(list_centroids_copy)
+    if np.array_equal(r_nppy, r_npcy) and np.array_equal(r_npcy, r_arcpp) and np.array_equal(r_arcpp, r_npcpp):# Does not yet check correct fpga return
+        print("PASS")
+    else:
+        print("ERROR")

@@ -102,6 +102,8 @@ cdef _arrow_kmeans_cpp(batch, centroids_position, iteration_limit):
     # Call C++ k-means algorithm
     arrow_kmeans_cpu(pyarrow_unwrap_batch(batch), centroids, iteration_limit, shape[0], shape[1], batch.num_rows)
 
+    return centroids_position
+
 
 def arrow_kmeans_cpp(batch, centroids_position, iteration_limit):
     return _arrow_kmeans_cpp(batch, centroids_position, iteration_limit)
@@ -117,6 +119,8 @@ cdef _numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
 
     # Call C++ k-means algorithm
     numpy_kmeans_cpu(array_pointer, centroids, iteration_limit, shape[0], shape[1], nparray.shape[0])
+
+    return centroids_position
 
 
 def numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
