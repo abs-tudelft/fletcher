@@ -153,9 +153,9 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserUnlockStream() {
   std::vector<std::shared_ptr<StreamPort>> ports;
 
   // Add command stream ports.
-  ports.push_back(make_shared<UnlockPort>("", USP::VALID, Dir::IN, unlock.get()));
-  ports.push_back(make_shared<UnlockPort>("", USP::READY, Dir::OUT, unlock.get()));
-  ports.push_back(make_shared<UnlockPort>("", USP::TAG, Dir::IN, Value(ce::TAG_WIDTH), unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::VALID, Dir::OUT, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::READY, Dir::IN, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), unlock.get()));
 
   unlock->addPort(ports);
 
