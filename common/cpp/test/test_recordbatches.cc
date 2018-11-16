@@ -114,8 +114,8 @@ std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
 std::shared_ptr<arrow::RecordBatch> getFilterRB() {
   // Some first names
   std::vector<std::string> first_names = {"Alice", "Bob", "Carol", "David"};
-  std::vector<std::string> last_names = {"Cooper", "Dylan", "Ine", "Boskabouter"};
-  std::vector<uint32_t> zip_codes = {1337, 4242, 1234, 9876};
+  std::vector<std::string> last_names = {"Cooper", "Smith", "Smith", "Smith"};
+  std::vector<uint32_t> zip_codes = {1337, 4242, 1337, 1337};
 
   // Make a string builder
   arrow::StringBuilder fn_builder;
