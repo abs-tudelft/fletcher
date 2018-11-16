@@ -14,6 +14,10 @@
 
 import numpy as np
 
+cdef extern from * nogil:
+    float uint32_to_float "reinterpret_cast<float &>"(uint32_t)
+    double uint64_to_double "reinterpret_cast<double &>"(uint64_t)
+
 cdef class Platform:
     """Python wrapper for Fletcher Platforms.
 
@@ -54,21 +58,53 @@ cdef class Platform:
         """
         check_fletcher_status(self.platform.get().writeMMIO(offset, value))
 
-    def read_mmio(self, uint64_t offset):
+    def read_mmio(self, uint64_t offset, str type="uint"):
         """Read from MMIO register.
 
 
         Args:
             offset (int): Register offset.
+            type (str): How to interpret register. Can be "uint" (default), "int" or "float".
 
         Returns:
-            int: Read value.
+            Read value.
 
         """
         cdef uint32_t value
         check_fletcher_status(self.platform.get().readMMIO(offset, &value))
 
-        return value
+        if type == "uint":
+            return value
+        elif type == "int":
+            return <int32_t> value
+        elif type == "float":
+            return uint32_to_float(value)
+        else:
+            raise ValueError("Invalid type in read_mmio(). Options: 'uint' (default), 'int' or 'float'")
+
+    def read_mmio_64(self, uint64_t offset, str type="uint"):
+        """Read 64 bit value from two 32 bit MMIO registers.
+
+
+        Args:
+            offset (int): Register offset.
+            type (str): How to interpret register. Can be "uint" (default), "int" or "double".
+
+        Returns:
+            Read value.
+
+        """
+        cdef uint64_t value
+        check_fletcher_status(self.platform.get().readMMIO64(offset, &value))
+
+        if type == "uint":
+            return value
+        elif type == "int":
+            return <int64_t> value
+        elif type == "double":
+            return uint64_to_double(value)
+        else:
+            raise ValueError("Invalid type in read_mmio_64(). Options: 'uint' (default), 'int' or 'double'")
 
     def device_malloc(self, size_t size):
         """Allocate a region of memory on the device.
