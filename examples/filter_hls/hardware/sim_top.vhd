@@ -215,6 +215,16 @@ begin
     wait until rising_edge(acc_clk);
     mmio_write(15, X"00000000", regs_in);
     wait until rising_edge(acc_clk);
+    
+    mmio_write(16, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+    mmio_write(17, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+    
+    mmio_write(18, X"00000100", regs_in);
+    wait until rising_edge(acc_clk);
+    mmio_write(19, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
 
     -- 3. Writes any user core registers.
     --

@@ -367,6 +367,7 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
+      CMD_TAG_WIDTH                            => TAG_WIDTH,
       CMD_TAG_ENABLE                           => true
     )
     port map (
@@ -409,6 +410,7 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
+      CMD_TAG_WIDTH                            => TAG_WIDTH,
       CMD_TAG_ENABLE                           => true
     )
     port map (
@@ -452,6 +454,7 @@ begin
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
       CFG                                      => "listprim(8)",
+      CMD_TAG_WIDTH                            => TAG_WIDTH,
       CMD_TAG_ENABLE                           => true
     )
     port map (
