@@ -208,29 +208,29 @@ architecture Behavioral of ColumnWriterListPrim is
 
 begin
 
-  ---- Combine the unlock streams.
-  --unlock_inst: ColumnReaderUnlockCombine
-  --  generic map (
-  --    CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
-  --    CMD_TAG_WIDTH             => CMD_TAG_WIDTH
-  --  )
-  --  port map (
-  --    clk                       => bus_clk,
-  --    reset                     => bus_reset,
-  --
-  --    a_unlock_valid            => a_unlock_valid,
-  --    a_unlock_ready            => a_unlock_ready,
-  --    a_unlock_tag              => a_unlock_tag,
-  --    a_unlock_ignoreChild      => a_unlock_ignoreChild,
-  --
-  --    b_unlock_valid            => b_unlock_valid,
-  --    b_unlock_ready            => b_unlock_ready,
-  --    b_unlock_tag              => b_unlock_tag,
-  --
-  --    unlock_valid              => unlock_valid,
-  --    unlock_ready              => unlock_ready,
-  --    unlock_tag                => unlock_tag
-  --  );
+  -- Combine the unlock streams.
+  unlock_inst: ColumnReaderUnlockCombine
+    generic map (
+      CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
+      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
+    )
+    port map (
+      clk                       => bus_clk,
+      reset                     => bus_reset,
+  
+      a_unlock_valid            => a_unlock_valid,
+      a_unlock_ready            => a_unlock_ready,
+      a_unlock_tag              => a_unlock_tag,
+      a_unlock_ignoreChild      => a_unlock_ignoreChild,
+  
+      b_unlock_valid            => b_unlock_valid,
+      b_unlock_ready            => b_unlock_ready,
+      b_unlock_tag              => b_unlock_tag,
+  
+      unlock_valid              => unlock_valid,
+      unlock_ready              => unlock_ready,
+      unlock_tag                => unlock_tag
+    );
 
   -- Instantiate the list synchronizer
   sync_inst: ColumnWriterListSync

@@ -333,7 +333,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => ""
+    SREC_FILE                   => "filter_out.srec"
   )
   port map (
     clk                         => bus_clk,

@@ -32,7 +32,7 @@ entity filter_usercore is
   );
   port(
     write_first_name_unlock_valid              : in std_logic;
-    write_first_name_unlock_tag                : in std_logic_vector(TAG_WIDTH-1 downto 0);
+    write_first_name_unlock_tag                : in std_logic_vector(TAG_WIDTH-1 downto 0) := (others => '0');
     write_first_name_unlock_ready              : out std_logic;
     write_first_name_in_values_in_valid        : out std_logic;
     write_first_name_in_values_in_ready        : in std_logic;
@@ -247,7 +247,7 @@ architecture Implementation of filter_usercore is
   end record;
 
 
-  type state_type is (IDLE, READ_COMMAND, WRITE_COMMAND, BUSY, FINISH, DONE);
+  type state_type is (IDLE, RD_CMD, WR_CMD, BUSY, FINISH_VAL, FINISH_LEN, UNL, DONE);
 
   type reg_record is record
     busy                      : std_logic;
@@ -301,6 +301,9 @@ begin
   write_cmd.firstIdx <= (others => '0');
   write_cmd.lastIdx  <= (others => '0');
 
+  read_cmd.tag                  <= (others => '0');
+  write_cmd.tag                 <= (others => '0');
+
   -- Connect all command streams, combine read commands
   read_first_name_cmd_tag       <= read_cmd.tag;
   read_last_name_cmd_tag        <= read_cmd.tag;
@@ -342,7 +345,7 @@ begin
   -- Synchronize the four unlock streams
   read_unlock_sync : StreamSync
     generic map (
-      NUM_INPUTS => 4,
+      NUM_INPUTS => 3,
       NUM_OUTPUTS => 1
     )
     port map (
@@ -351,19 +354,17 @@ begin
       in_valid(0) => read_first_name_unlock_valid,
       in_valid(1) => read_last_name_unlock_valid,
       in_valid(2) => read_zipcode_unlock_valid,
-      in_valid(3) => write_first_name_unlock_valid,
       in_ready(0) => read_first_name_unlock_ready,
       in_ready(1) => read_last_name_unlock_ready,
       in_ready(2) => read_zipcode_unlock_ready,
-      in_ready(3) => write_first_name_unlock_ready,
+      
       out_valid(0) => unlock.valid,
       out_ready(0) => unlock.ready
     );
-    
+      
   read_first_name_unlock_ready  <= unlock.ready;
   read_last_name_unlock_ready   <= unlock.ready;
   read_zipcode_unlock_ready     <= unlock.ready;
-  write_first_name_unlock_ready <= unlock.ready;
 
 
   seq_proc: process(acc_clk) is
@@ -392,6 +393,8 @@ begin
     write_cmd.valid <= '0';
     unlock.ready    <= '0';
     
+    write_first_name_unlock_ready        <= '0';
+    
     write_first_name_in_values_in_data   <= (others => '1');
     write_first_name_in_values_in_last   <= '0';
     write_first_name_in_values_in_dvalid <= '0';
@@ -414,12 +417,12 @@ begin
 
         if ctrl_start = '1' then
           v.reset_start := '1';
-          v.state := READ_COMMAND;
+          v.state := RD_CMD;
           v.busy := '1';
           v.done := '0';
         end if;
         
-      when READ_COMMAND =>
+      when RD_CMD =>
         ctrl_idle      <= '0';
         ctrl_busy      <= '1';
         ctrl_done      <= '0';
@@ -428,10 +431,10 @@ begin
 
         read_cmd.valid <= '1';
         if read_cmd.ready = '1' then
-          v.state := WRITE_COMMAND;
+          v.state := WR_CMD;
         end if;
         
-      when WRITE_COMMAND =>
+      when WR_CMD =>
         ctrl_idle      <= '0';
         ctrl_busy      <= '1';
         ctrl_done      <= '0';
@@ -464,10 +467,10 @@ begin
            hls_cout.ready = '1'
         then
           unlock.ready <= '1';
-          v.state := FINISH;
+          v.state := FINISH_VAL;
         end if;
         
-      when FINISH =>
+      when FINISH_VAL =>
         ctrl_idle      <= '0';
         ctrl_busy      <= '1';
         ctrl_done      <= '0';
@@ -476,18 +479,38 @@ begin
        
         -- Create a handshake 
         write_first_name_in_values_in_last   <= '1';
-        write_first_name_in_values_in_dvalid <= '1';
         write_first_name_in_values_in_valid  <= '1';
-        write_first_name_in_valid            <= '1';
-        write_first_name_in_last             <= '1';       
         
-        if write_first_name_in_ready = '1' and 
-           write_first_name_in_values_in_ready <= '1'
-        then
-           v.state := DONE;
+        if write_first_name_in_values_in_ready <= '1' then
+           v.state := FINISH_LEN;
+        end if;
+
+      when FINISH_LEN =>
+        ctrl_idle      <= '0';
+        ctrl_busy      <= '1';
+        ctrl_done      <= '0';
+        hls_cin.reset  <= '0';
+        hls_cin.start  <= '0';
+        
+        write_first_name_in_valid            <= '1';
+        write_first_name_in_last             <= '1';
+        
+        if write_first_name_in_ready = '1' then
+           v.state := UNL;
         end if;
         
-
+      when UNL =>
+        ctrl_idle      <= '0';
+        ctrl_busy      <= '1';
+        ctrl_done      <= '0';
+        hls_cin.reset  <= '0';
+        hls_cin.start  <= '0';
+        
+        if write_first_name_unlock_valid = '1' then
+          write_first_name_unlock_ready <= '1';
+          v.state := DONE;
+        end if;
+        
       when DONE =>
         ctrl_idle      <= '0';
         ctrl_busy      <= '0';

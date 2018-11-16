@@ -453,7 +453,7 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
-      CFG                                      => "listprim(8)",
+      CFG                                      => "listprim(8;last_from_length=0)",
       CMD_TAG_WIDTH                            => TAG_WIDTH,
       CMD_TAG_ENABLE                           => true
     )
