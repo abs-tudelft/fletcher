@@ -57,7 +57,7 @@ begin
   process (s_axis_tdata, s_axis_count)
   begin
     for idx in 0 to OPERANTS - 1 loop
-      if unsigned(s_axis_count) >= idx then
+      if unsigned(s_axis_count) > idx then
         intermediate_data((idx + 1) * DATA_WIDTH - 1 downto idx * DATA_WIDTH)
             <= s_axis_tdata((idx + 1) * DATA_WIDTH - 1 downto idx * DATA_WIDTH);
       else

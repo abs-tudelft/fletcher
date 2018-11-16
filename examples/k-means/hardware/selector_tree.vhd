@@ -133,13 +133,14 @@ begin
 
       -- First column passes down the user info
       with_point: if idx = 0 generate
-        signal upstream_path  : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
+        signal upstream_path_a, upstream_path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
         signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) + TUSER_WIDTH downto 0);
         signal tmp_path_user  : std_logic_vector((log2ceil(OPERANTS) - lvl) + TUSER_WIDTH downto 0);
       begin
-        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto idx * (log2ceil(OPERANTS) - lvl));
-        path_a <= "0" & upstream_path & intermediate_tuser(lvl + 1);
-        path_b <= "1" & upstream_path & intermediate_tuser(lvl + 1);
+        upstream_path_a <= intermediate_path(lvl + 1)((idx*2   + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto (idx*2  ) * (log2ceil(OPERANTS) - lvl));
+        upstream_path_b <= intermediate_path(lvl + 1)((idx*2+1 + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto (idx*2+1) * (log2ceil(OPERANTS) - lvl));
+        path_a <= "0" & upstream_path_a & intermediate_tuser(lvl + 1);
+        path_b <= "1" & upstream_path_b & intermediate_tuser(lvl + 1);
 
         selector_inst: selector generic map (
           DATA_WIDTH           => DATA_WIDTH,
@@ -172,12 +173,13 @@ begin
 
       -- Rest of the columns
       without_point: if idx > 0 generate
-        signal upstream_path  : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
+        signal upstream_path_a, upstream_path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
         signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) downto 0);
       begin
-        upstream_path <= intermediate_path(lvl + 1)((idx + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto idx * (log2ceil(OPERANTS) - lvl));
-        path_a <= "0" & upstream_path;
-        path_b <= "1" & upstream_path;
+        upstream_path_a <= intermediate_path(lvl + 1)((idx*2   + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto (idx*2  ) * (log2ceil(OPERANTS) - lvl));
+        upstream_path_b <= intermediate_path(lvl + 1)((idx*2+1 + 1) * (log2ceil(OPERANTS) - lvl) - 1 downto (idx*2+1) * (log2ceil(OPERANTS) - lvl));
+        path_a <= "0" & upstream_path_a;
+        path_b <= "1" & upstream_path_b;
 
         selector_inst: selector generic map (
           DATA_WIDTH           => DATA_WIDTH,

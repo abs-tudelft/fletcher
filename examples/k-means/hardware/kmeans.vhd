@@ -36,7 +36,7 @@ entity kmeans is
     );
     port(
       point_out_ready                            : out std_logic;
-      point_out_dimension_out_count              : in std_logic_vector(3 downto 0);
+      point_out_dimension_out_count              : in std_logic_vector(3 downto 0); -- 3/4 for 64/32 bit
       point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
       point_out_dimension_out_dvalid             : in std_logic;
       point_out_dimension_out_last               : in std_logic;
@@ -314,7 +314,7 @@ begin
       s_axis_tready      => point_forward_ready,
       s_axis_tdata       => point_forward_data,
       s_axis_tlast       => point_forward_last,
-      s_axis_count       => point_out_dimension_out_count,
+      s_axis_count       => point_out_dimension_out_count(log2ceil(DIMENSION+1)-1 downto 0),
       m_axis_tvalid      => point_filter_valid,
       m_axis_tready      => point_filter_ready,
       m_axis_tdata       => point_filter_data,

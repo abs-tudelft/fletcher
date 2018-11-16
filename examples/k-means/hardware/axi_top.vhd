@@ -44,7 +44,7 @@ entity axi_top is
     TAG_WIDTH                   : natural := 1;
     NUM_ARROW_BUFFERS           : natural := 2;
     DIMENSION                   : natural := 8;
-    CENTROIDS                   : natural := 3;
+    CENTROIDS                   : natural := 4;
     CENTROID_REGS               : natural := 64/REG_WIDTH * DIMENSION;
     NUM_USER_REGS               : natural := CENTROID_REGS * CENTROIDS + 1;
     NUM_REGS                    : natural := 10 + NUM_USER_REGS
