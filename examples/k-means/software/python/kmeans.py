@@ -110,7 +110,6 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit):
     last_index = batch.num_rows
     uc.set_range(0, last_index)
 
-    print("Setting arguments")
     # Set UserCore arguments
     args = []
     for centroid in centroids:
@@ -119,9 +118,6 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit):
             hi = (dim >> 32) & 0xFFFFFFFF
             args.append(lo)
             args.append(hi)
-
-            print(struct.pack('II', lo, hi))
-            print(struct.unpack('q', struct.pack('II', lo, hi)))
 
     args.append(iteration_limit)
     uc.set_arguments(args)
@@ -140,11 +136,9 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit):
     for c in range(num_centroids):
         for d in range(dimensionality):
             reg_num = (c * dimensionality + d) * regs_per_dim + regs_offset
-            hi = platform.read_mmio(reg_num+1) -1
-            lo = platform.read_mmio(reg_num)
+            centroids[c][d] = platform.read_mmio_64(reg_num, type="int")
 
-            # Todo: This is messy. Maybe pyfletcher should just output bytes.
-            centroids[c][d] = struct.unpack('>q', struct.pack('>II', hi, lo))[0]
+    return centroids
 
 def create_points(num_points, dim, element_max):
     np.random.seed(42)
@@ -247,3 +241,5 @@ if __name__ == "__main__":
     result = arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit)
     t.stop()
     print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
+
+    print(list_centroids_copy)
