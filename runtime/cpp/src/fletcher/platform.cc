@@ -100,6 +100,27 @@ Status Platform::link(void *handle, bool quiet) {
   }
 }
 
+Status Platform::readMMIO64(uint64_t offset, uint64_t *value){
+  freg_t hi, lo;
+  Status stat;
+
+  // Read high bits
+  stat = readMMIO(offset+1, &hi);
+  if(!stat.ok()){
+    return stat;
+  }
+  *value = ((uint64_t) hi) << 32;
+
+  // Read low bits
+  stat = readMMIO(offset, &lo);
+  if(!stat.ok()){
+    return stat;
+  }
+  *value |= lo;
+
+  return Status::OK();
+}
+
 Status Platform::printMMIO(uint64_t start, uint64_t stop, bool quiet) {
   Status stat;
   for (uint64_t off = start; off < stop; off++) {
