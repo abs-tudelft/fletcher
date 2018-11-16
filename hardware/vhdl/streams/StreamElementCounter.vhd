@@ -144,7 +144,7 @@ begin
     if in_valid = '1' and v.valid = '0' then      
       -- Increase the output count if the data is valid
       if in_dvalid = '1' then
-        v.count                 := v.count + unsigned(resize_count(in_count, IN_COUNT_MAX));
+        v.count                 := v.count + unsigned(resize_count(in_count, COUNT_REG_WIDTH));
       end if;
       
       -- If we passed the max count with this incoming transfer, we need to
