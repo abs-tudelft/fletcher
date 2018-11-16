@@ -275,11 +275,12 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
       fpga_push_arg(args, (kmeans_t) 0);
     }
   }
-  // Unused centroids
+  // Unused centroids; set to magic number to disable on FPGA
   for (int c = centroids_position.size(); c < fpga_centroids; c++) {
-    for (int d = 0; d < fpga_dim; d++) {
-      fpga_push_arg(args, (kmeans_t) std::numeric_limits<kmeans_t>::min());
+    for (int d = 0; d < fpga_dim - 1; d++) {
+      fpga_push_arg(args, (kmeans_t) 0);
     }
+    fpga_push_arg(args, (kmeans_t) std::numeric_limits<kmeans_t>::min());
   }
   args.push_back(iteration_limit);
 
