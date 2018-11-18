@@ -301,7 +301,7 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Tabl
   // Read result
   const int centroids = centroids_position.size();
   const int dimensionality = centroids_position[0].size();
-  const int regs_per_dim = 2;
+  const int regs_per_dim = sizeof(kmeans_t) / sizeof(fr_t);
   const int regs_offset = 10;
   fletcher::fr_t reg;
   for (int c = 0; c < centroids; c++) {
