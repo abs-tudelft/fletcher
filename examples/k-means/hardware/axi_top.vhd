@@ -43,9 +43,10 @@ entity axi_top is
     -- Accelerator properties
     TAG_WIDTH                   : natural := 1;
     NUM_ARROW_BUFFERS           : natural := 2;
-    DIMENSION                   : natural := 8;
-    CENTROIDS                   : natural := 4;
-    CENTROID_REGS               : natural := 64/REG_WIDTH * DIMENSION;
+    DATA_WIDTH                  : natural := 32;
+    DIMENSION                   : natural := 16;
+    CENTROIDS                   : natural := 64;
+    CENTROID_REGS               : natural := DATA_WIDTH/REG_WIDTH * DIMENSION;
     NUM_USER_REGS               : natural := CENTROID_REGS * CENTROIDS + 1;
     NUM_REGS                    : natural := 10 + NUM_USER_REGS
   );
@@ -134,6 +135,7 @@ architecture Behavorial of axi_top is
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       NUM_ARROW_BUFFERS         : natural;
+      DATA_WIDTH                : natural;
       DIMENSION                 : natural;
       CENTROIDS                 : natural;
       CENTROID_REGS             : natural;
@@ -217,6 +219,7 @@ begin
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       NUM_ARROW_BUFFERS         => NUM_ARROW_BUFFERS,
+      DATA_WIDTH                => DATA_WIDTH,
       DIMENSION                 => DIMENSION,
       CENTROIDS                 => CENTROIDS,
       CENTROID_REGS             => CENTROID_REGS,

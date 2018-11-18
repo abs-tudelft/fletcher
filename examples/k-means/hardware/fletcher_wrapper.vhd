@@ -24,6 +24,7 @@ use work.Arrow.all;
 use work.Columns.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
+use work.Utils.all;
 
 entity fletcher_wrapper is
   generic(
@@ -37,9 +38,11 @@ entity fletcher_wrapper is
     INDEX_WIDTH                                : natural;
     ---------------------------------------------------------------------------
     NUM_ARROW_BUFFERS                          : natural;
+    DATA_WIDTH                                 : natural;
     DIMENSION                                  : natural;
     CENTROIDS                                  : natural;
     CENTROID_REGS                              : natural;
+    EPC                                        : natural := 512 / DATA_WIDTH;
     NUM_REGS                                   : natural;
     NUM_USER_REGS                              : natural;
     REG_WIDTH                                  : natural;
@@ -98,7 +101,7 @@ architecture Implementation of fletcher_wrapper is
     );
     port(
       point_out_ready                            : out std_logic;
-      point_out_dimension_out_count              : in std_logic_vector(3 downto 0); -- 3/4 for 64/32 bit
+      point_out_dimension_out_count              : in std_logic_vector(log2ceil(EPC + 1) - 1 downto 0); -- 3/4 for 64/32 bit
       point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
       point_out_dimension_out_dvalid             : in std_logic;
       point_out_dimension_out_last               : in std_logic;
@@ -162,7 +165,7 @@ architecture Implementation of fletcher_wrapper is
   signal s_point_out_valid                     : std_logic_vector(1 downto 0);
   signal s_point_out_ready                     : std_logic_vector(1 downto 0);
   signal s_point_out_last                      : std_logic_vector(1 downto 0);
-  signal s_point_out_data                      : std_logic_vector(INDEX_WIDTH+515 downto 0); -- 515/516 for 64/32 bit
+  signal s_point_out_data                      : std_logic_vector(INDEX_WIDTH+511+log2ceil(EPC+1) downto 0);
   signal s_point_out_dvalid                    : std_logic_vector(1 downto 0);
   signal s_point_bus_rreq_valid                : std_logic;
   signal s_point_bus_rreq_addr                 : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -181,7 +184,7 @@ begin
   -- point: list<dimension: double not null> not null
   point_read_inst: ColumnReader
     generic map (
-      CFG                                      => "listprim(64;epc=8)",
+      CFG                                      => "listprim(" & integer'image(DATA_WIDTH) & ";epc=" & integer'image(EPC) & ")",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                            => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
@@ -244,7 +247,7 @@ begin
       REG_WIDTH                                => REG_WIDTH,
       NUM_USER_REGS                            => NUM_USER_REGS,
       DIMENSION                                => DIMENSION,
-      DATA_WIDTH                               => 64,
+      DATA_WIDTH                               => DATA_WIDTH,
       CENTROID_REGS                            => CENTROID_REGS,
       CENTROIDS                                => CENTROIDS
     )
@@ -266,7 +269,7 @@ begin
       point_out_dimension_out_last             => s_point_out_last(1),
       point_out_dimension_out_dvalid           => s_point_out_dvalid(1),
       point_out_dimension_out_data             => s_point_out_data(INDEX_WIDTH+511 downto INDEX_WIDTH),
-      point_out_dimension_out_count            => s_point_out_data(INDEX_WIDTH+515 downto INDEX_WIDTH+512), -- 515/516 for 64/32 bit
+      point_out_dimension_out_count            => s_point_out_data(s_point_out_data'length-1 downto INDEX_WIDTH+512),
       point_cmd_valid                          => s_point_cmd_valid,
       point_cmd_ready                          => s_point_cmd_ready,
       point_cmd_firstIdx                       => s_point_cmd_firstIdx(INDEX_WIDTH-1 downto 0),

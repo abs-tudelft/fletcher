@@ -36,7 +36,7 @@ entity kmeans is
     );
     port(
       point_out_ready                            : out std_logic;
-      point_out_dimension_out_count              : in std_logic_vector(3 downto 0); -- 3/4 for 64/32 bit
+      point_out_dimension_out_count              : in std_logic_vector(log2ceil(DIMENSION + 1) - 1 downto 0);
       point_out_dimension_out_data               : in std_logic_vector(511 downto 0);
       point_out_dimension_out_dvalid             : in std_logic;
       point_out_dimension_out_last               : in std_logic;

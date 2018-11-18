@@ -23,15 +23,16 @@ use work.Interconnect.all;
 entity sim_top is
   generic (
     -- Accelerator properties
+    REG_WIDTH                   : natural := 32;
+    TAG_WIDTH                   : natural := 1;
+    DATA_WIDTH                  : natural := 64;
     DIMENSION                   : natural := 8;
-    CENTROID_REGS               : natural := 2 * DIMENSION;
     CENTROIDS                   : natural := 2;
+    CENTROID_REGS               : natural := DATA_WIDTH/REG_WIDTH * DIMENSION;
     INDEX_WIDTH                 : natural := 32;
     NUM_ARROW_BUFFERS           : natural := 2;
     NUM_USER_REGS               : natural := CENTROIDS * CENTROID_REGS + 1;
     NUM_REGS                    : natural := 10 + NUM_USER_REGS;
-    REG_WIDTH                   : natural := 32;
-    TAG_WIDTH                   : natural := 1;
 
     -- Host bus properties
     BUS_ADDR_WIDTH              : natural := 64;
@@ -63,6 +64,7 @@ architecture Behavorial of sim_top is
       INDEX_WIDTH               : natural;
       NUM_ARROW_BUFFERS         : natural;
       DIMENSION                 : natural;
+      DATA_WIDTH                : natural;
       CENTROIDS                 : natural;
       CENTROID_REGS             : natural;
       NUM_REGS                  : natural;
@@ -438,6 +440,7 @@ begin
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       NUM_ARROW_BUFFERS         => NUM_ARROW_BUFFERS,
+      DATA_WIDTH                => DATA_WIDTH,
       DIMENSION                 => DIMENSION,
       CENTROIDS                 => CENTROIDS,
       CENTROID_REGS             => CENTROID_REGS,
