@@ -211,19 +211,17 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::R
 
   auto centroids_position_old = centroids_position;
   int iteration = 0;
-  do {
-    centroids_position_old = centroids_position;
 
-    // Initialize accumulators
-    std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
-    std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
-    std::vector<kmeans_t> counters(num_centroids, 0);
-    
-    auto accumulators_l = accumulators;
-    auto counters_l = counters;
+  // Initialize accumulators
+  std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
+  std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
+  std::vector<kmeans_t> counters(num_centroids, 0);
 
-    #pragma omp parallel default(shared) firstprivate(accumulators_l, counters_l)
-    {
+  #pragma omp parallel default(shared)
+  {
+    do {
+      auto accumulators_l = accumulators;
+      auto counters_l = counters;
 
       // For each point
       #pragma omp for schedule(dynamic, 10000)
@@ -254,30 +252,35 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::R
       // Update global counters
 //      #pragma omp critical
       {
-      for (size_t c = 0; c < num_centroids; c++) {
-        #pragma omp atomic
-        counters[c] += counters_l[c];
-        for (size_t d = 0; d < dimensionality; d++) {
+        for (size_t c = 0; c < num_centroids; c++) {
           #pragma omp atomic
-          accumulators[c][d] += accumulators_l[c][d];
+          counters[c] += counters_l[c];
+          for (size_t d = 0; d < dimensionality; d++) {
+            #pragma omp atomic
+            accumulators[c][d] += accumulators_l[c][d];
+          }
         }
-      }
       }
 
       // Calculate new centroid positions
       #pragma omp barrier
       #pragma omp single
       {
-      for (size_t c = 0; c < num_centroids; c++) {
-        for (size_t d = 0; d < dimensionality; d++) {
-          centroids_position[c][d] = accumulators[c][d] / counters[c];
+        centroids_position_old = centroids_position;
+        for (size_t c = 0; c < num_centroids; c++) {
+          for (size_t d = 0; d < dimensionality; d++) {
+            centroids_position[c][d] = accumulators[c][d] / counters[c];
+            accumulators[c][d] = 0;
+          }
+          counters[c] = 0;
         }
-      }
-      }
-    }  // omp parallel
+        iteration++;
+      } // omp single
+      #pragma omp barrier
 
-    iteration++;
-  } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+    } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+
+  }  // omp parallel
 
   return centroids_position;
 }
