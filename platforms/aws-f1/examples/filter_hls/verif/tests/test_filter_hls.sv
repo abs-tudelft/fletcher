@@ -132,13 +132,13 @@ initial begin
   logic[63:0] host_write_first_name_off_addr  = `WRITE_FIRST_NAME_OFF_ADDR;
   logic[63:0] host_write_first_name_val_addr  = `WRITE_FIRST_NAME_VAL_ADDR;
 
-  logic[63:0] cl_read_first_name_off_addr     = {`REG_READ_FIRST_NAME_OFF_ADDR_LO, `REG_READ_FIRST_NAME_OFF_ADDR_HI};
-  logic[63:0] cl_read_first_name_val_addr     = {`REG_READ_FIRST_NAME_VAL_ADDR_LO, `REG_READ_FIRST_NAME_VAL_ADDR_HI};
-  logic[63:0] cl_read_last_name_off_addr      = {`REG_READ_LAST_NAME_OFF_ADDR_LO, `REG_READ_FIRST_NAME_OFF_ADDR_HI};
-  logic[63:0] cl_read_last_name_val_addr      = {`REG_READ_LAST_NAME_VAL_ADDR_LO, `REG_READ_LAST_NAME_VAL_ADDR_HI};
-  logic[63:0] cl_read_zipcode_addr            = {`READ_ZIPCODE_ADDR_LO, `READ_ZIPCODE_ADDR_HI};
-  logic[63:0] cl_write_first_name_off_addr    = {`WRITE_FIRST_NAME_OFF_ADDR_LO, `WRITE_FIRST_NAME_OFF_ADDR_LO};
-  logic[63:0] cl_write_first_name_val_addr    = {`WRITE_FIRST_NAME_VAL_ADDR_LO, `WRITE_FIRST_NAME_VAL_ADDR_LO};
+  logic[63:0] cl_read_first_name_off_addr     = {`READ_FIRST_NAME_OFF_ADDR_HI,  `READ_FIRST_NAME_OFF_ADDR_LO};
+  logic[63:0] cl_read_first_name_val_addr     = {`READ_FIRST_NAME_VAL_ADDR_HI,  `READ_FIRST_NAME_VAL_ADDR_LO};
+  logic[63:0] cl_read_last_name_off_addr      = {`READ_LAST_NAME_OFF_ADDR_HI,   `READ_LAST_NAME_OFF_ADDR_LO};
+  logic[63:0] cl_read_last_name_val_addr      = {`READ_LAST_NAME_VAL_ADDR_HI,   `READ_LAST_NAME_VAL_ADDR_LO};
+  logic[63:0] cl_read_zipcode_addr            = {`READ_ZIPCODE_ADDR_HI,         `READ_ZIPCODE_ADDR_LO};
+  logic[63:0] cl_write_first_name_off_addr    = {`WRITE_FIRST_NAME_OFF_ADDR_HI, `WRITE_FIRST_NAME_OFF_ADDR_LO};
+  logic[63:0] cl_write_first_name_val_addr    = {`WRITE_FIRST_NAME_VAL_ADDR_HI, `WRITE_FIRST_NAME_VAL_ADDR_LO};
 
   // Power up the testbench
   tb.power_up(.clk_recipe_a(ClockRecipe::A1),
@@ -163,13 +163,13 @@ initial begin
   
   // Fill the read buffers
   
-  /********************************************
+  /*****************************************
    * No time to waste
    * I've got to move with haste
    * Sorry baby but I have no time to waste
    * - T-Spoon
-   ********************************************/
-   
+   *****************************************/
+  
   hm_put_uint32(.a(host_read_first_name_off_addr+ 0), .d( 0)); // Alice 5
   hm_put_uint32(.a(host_read_first_name_off_addr+ 4), .d( 5)); // Bob   3
   hm_put_uint32(.a(host_read_first_name_off_addr+ 8), .d( 8)); // Carol 5
@@ -177,7 +177,7 @@ initial begin
   hm_put_uint32(.a(host_read_first_name_off_addr+16), .d(18)); 
   
   hm_put_uint64(.a(host_read_first_name_val_addr+ 0), .d(64'h626f426563696c41)); // boBecilA
-  hm_put_uint64(.a(host_read_first_name_val_addr+ 8), .d(64'h7661446c6f726143)); // CarolDav
+  hm_put_uint64(.a(host_read_first_name_val_addr+ 8), .d(64'h7661446c6f726143)); // vaDloraC
   hm_put_uint64(.a(host_read_first_name_val_addr+16), .d(64'h0000000000006469)); //       di
   
   hm_put_uint32(.a(host_read_last_name_off_addr+ 0), .d( 0)); // Cooper 6
@@ -199,18 +199,20 @@ initial begin
 
   // Start transfers of data to CL DDR
   tb.start_que_to_cl(.chan(0));
+  
+  $display("[%t] : Waiting for timeout ", $realtime);
 
   // Wait for dma transfers to complete, increase the timeout if you
   // have a lot of string or if you have very long strings (if you
   // have to transfer a lot of data in general)
   timeout_count = 0;
   do begin
+    #40ns;
     status[0] = tb.is_dma_to_cl_done(.chan(0));
-    #10ns;
     timeout_count++;
-  end while ((status != 4'hf) && (timeout_count < 4000));
+  end while ((status != 4'hf) && (timeout_count < 2000));
 
-  if (timeout_count >= 4000) begin
+  if (timeout_count >= 2000) begin
     $display("[%t] : *** ERROR *** Timeout waiting for dma transfers from cl", $realtime);
     error_count++;
   end
@@ -297,7 +299,7 @@ initial begin
   end
 
   $display("Offsets: ");
-  for (int i = 0; i <= 4; i++)
+  for (int i = 0; i <= 5; i++)
   begin
     off_data.bytes[0] = tb.hm_get_byte(.addr(host_write_first_name_off_addr + 4 * i + 0));
     off_data.bytes[1] = tb.hm_get_byte(.addr(host_write_first_name_off_addr + 4 * i + 1));
@@ -307,11 +309,10 @@ initial begin
   end
 
   $display("Values: ");
-  for (int i = 0; i <  off_data.i && i < 32; i++)
+  for (int i = 0; i < 32; i++)
   begin
-    $write("%c", tb.hm_get_byte(.addr(cl_write_first_name_val_addr + i)));
+    $write("%c", tb.hm_get_byte(.addr(host_write_first_name_val_addr + i)));
   end
-
 
   // Power down
   #500ns;
