@@ -110,7 +110,6 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
     last_index = batch.num_rows
     uc.set_range(0, last_index)
 
-    print("Setting arguments")
     # Set UserCore arguments
     args = []
     for centroid in centroids:
@@ -134,8 +133,6 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
 
     args.append(iteration_limit)
     uc.set_arguments(args)
-
-    print("Done setting arguments")
 
     t.start()
     uc.start()
@@ -291,11 +288,11 @@ if __name__ == "__main__":
     print("Kmeans Arrow FPGA total time: " + str(sum(t_fpga)))
 
     # Print results (partially)
-    print(r_nppy[0])
-    print(r_npcy[0])
-    print(r_arcpp[0])
-    print(r_npcpp[0])
-    print(r_fpga[0])
+    # print(r_nppy[0])
+    # print(r_npcy[0])
+    # print(r_arcpp[0])
+    # print(r_npcpp[0])
+    # print(r_fpga[0])
 
     # Check correctness of results
     if np.array_equal(r_nppy, r_npcy) \
