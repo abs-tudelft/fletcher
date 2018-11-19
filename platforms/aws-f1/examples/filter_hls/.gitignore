@@ -6,4 +6,6 @@
 /build/scripts/last_log
 /build/scripts/fsm_encoding.os
 /build/scripts/*.nohup.out
+/build/scripts/hd_visual
+/build/src_post_encryption
 /verif/sim
