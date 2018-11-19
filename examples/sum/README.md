@@ -51,7 +51,7 @@ The instantiation template for the accelerated function can be generated
 automatically from an Arrow schema by [fletchgen](../../codegen/fletchgen/).
 
 ### Requirements
-  * C++14 compatible compiler (tested with GCC 5.5)
+  * C++11 compatible compiler (tested with GCC 5.5)
   * Boost development libraries
       * system
       * filesystem
@@ -80,17 +80,15 @@ Clone the Fletcher repository and set up the environment.
 
     $ git clone https://github.com/johanpel/fletcher.git
     $ cd fletcher
-    $ source env.sh
 
 ### Build fletchgen
 
 Build [fletchgen](../../codegen/fletchgen/) as described in its README.
 
-    $ cd "$FLETCHER_CODEGEN_DIR/fletchgen"
+    $ cd codegen/fletchgen
     $ mkdir debug
     $ cd debug
-    $ cmake \
-        ..
+    $ cmake ..
     $ make install
 
 ### Create a schema file
@@ -102,7 +100,7 @@ in [schema.cpp](./hardware-gen/schema.cpp).
 The provided CMake project will create the schema file and the
 hardware skeleton files.
 
-    $ cd "FLETCHER_EXAMPLES_DIR/sum/hardware-gen"
+    $ cd examples/sum/hardware-gen"
     $ mkdir build
     $ cd build
     $ cmake ..
@@ -142,4 +140,4 @@ TODO: Generate SREC file and run platform-independent simulation.
 ## Run on hardware
 
 If the tests pass, pick a supported platform to synthesise the design for.
-An [example](../../platforms/aws-f1/sum/) exist for AWS F1 instances.
+An [example](../../platforms/aws-f1/examples/sum) exist for AWS F1 instances.

@@ -14,14 +14,16 @@
 
 #pragma once
 
-#include <arrow/type.h>
 #include <utility>
+#include <vector>
 
-#include "vhdl/vhdl.h"
-#include "common.h"
-#include "arrow-utils.h"
+#include <arrow/type.h>
 
-#include "fletcher-streams.h"
+#include "./vhdl/vhdl.h"
+#include "./common.h"
+#include "arrow-meta.h"
+
+#include "./fletcher-streams.h"
 
 using vhdl::Instantiation;
 using vhdl::nameFrom;
@@ -62,11 +64,14 @@ class Column : public Instantiation {
    * @param field The field to generate streams from.
    * @param parent Parent stream used for recursive calls of this function.
    */
-  std::shared_ptr<ArrowStream> getArrowStream(std::shared_ptr<arrow::Field> field,
+  std::shared_ptr<ArrowStream> getArrowStream(const std::shared_ptr<arrow::Field>& field,
                                               ArrowStream *parent = nullptr);
 
   /// @brief Generate the User Command Stream for this column.
   std::shared_ptr<FletcherColumnStream> generateUserCommandStream();
+
+  /// @brief Generate the User Unlock Stream for this column.
+  std::shared_ptr<FletcherColumnStream> generateUserUnlockStream();
 
   /// @brief Return the user data streams that result from the field this column must read/write.
   std::vector<std::shared_ptr<ArrowStream>> getArrowStreams() { return arrow_streams_; }
@@ -89,14 +94,13 @@ class Column : public Instantiation {
   std::shared_ptr<ArrowStream> top_stream_;
   std::vector<std::shared_ptr<ArrowStream>> arrow_streams_;
   std::string config_ = "";
-
 };
 
 /**
  * @brief A ColumnReader component
  */
 struct ColumnReader : public StreamComponent, public DerivedFrom<Column> {
-  ColumnReader(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width);
+  ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width);
 
   std::shared_ptr<Stream> stream_cmd_;
   std::shared_ptr<Stream> stream_unl_;
@@ -127,6 +131,6 @@ struct ColumnWriter : public StreamComponent, public DerivedFrom<Column> {
  * @param field The DataType.
  * @return The configuration string.
  */
-std::string genConfigString(arrow::Field *field, int level = 0);
+std::string genConfigString(const std::shared_ptr<arrow::Field>& field, int level = 0);
 
 }//namespace fletchgen

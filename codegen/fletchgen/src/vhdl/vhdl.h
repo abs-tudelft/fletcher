@@ -311,7 +311,7 @@ class Signal : public Comment, public Groupable {
    */
   std::string toVHDL() override;
 
-  std::string name() { return name_; }
+  std::string name() const { return name_; }
 
   Value width() { return width_; }
 
@@ -392,7 +392,7 @@ class Connection : public Comment, public Groupable {
   /**
    * Comparison function for sorting of Connections
    */
-  static struct sortFun_ { bool operator()(std::shared_ptr<Connection> &a, std::shared_ptr<Connection> &b); } sortFun;
+  static struct sortFun_ { bool operator()(const std::shared_ptr<Connection> &a, const std::shared_ptr<Connection> &b); } sortFun;
 
  private:
   Signal *source_;
@@ -542,7 +542,7 @@ class Architecture : public Comment {
    * @param signal The signal.
    * @return A pointer to the signal.
    */
-  Signal *addSignal(std::shared_ptr<Signal> signal, int group = 0);
+  Signal *addSignal(const std::shared_ptr<Signal> &signal, int group = 0);
 
   /**
    * @brief Create a signal on the architecture that is derived from a port.

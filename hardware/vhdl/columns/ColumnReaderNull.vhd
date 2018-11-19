@@ -176,9 +176,9 @@ architecture Behavioral of ColumnReaderNull is
 
   -- Command stream deserialization indices.
   constant CSI : nat_array := cumulative((
-    2 => 1, -- a_cmd_implicit
-    1 => a_cmd_baseAddr'length,
-    0 => b_cmd_ctrl'length
+    2 => b_cmd_ctrl'length,
+    1 => 1, -- a_cmd_implicit
+    0 => a_cmd_baseAddr'length
   ));
 
 begin
@@ -202,9 +202,9 @@ begin
       out_ready(0)              => a_cmd_ready
     );
 
-  a_cmd_implicit <= cmd_ctrl(                CSI(2));
-  a_cmd_baseAddr <= cmd_ctrl(CSI(2)-1 downto CSI(1));
-  b_cmd_ctrl     <= cmd_ctrl(CSI(1)-1 downto CSI(0));
+  b_cmd_ctrl     <= cmd_ctrl(CSI(3)-1 downto CSI(2));
+  a_cmd_implicit <= cmd_ctrl(                CSI(1));
+  a_cmd_baseAddr <= cmd_ctrl(CSI(1)-1 downto CSI(0));
 
   -- Combine the unlock streams.
   unlock_inst: ColumnReaderUnlockCombine

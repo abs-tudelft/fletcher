@@ -13,7 +13,9 @@
 // limitations under the License.
 
 #include <sstream>
-#include "srec.h"
+#include <string>
+
+#include "./srec.h"
 
 namespace fletchgen {
 namespace srec {
@@ -60,21 +62,21 @@ std::string Record::toString() {
   std::stringstream output;
 
   // Byte count
-  snprintf(buf, 64, "%s%2.2X", "S3", (unsigned int) byte_count_);
+  snprintf(buf, sizeof(buf), "%s%2.2X", "S3", (unsigned int) byte_count_);
   output << std::string(buf);
 
   // Address
-  snprintf(buf, 64, "%2.8X", address_);
+  snprintf(buf, sizeof(buf), "%2.8X", address_);
   output << std::string(buf);
 
   // Data
   for (unsigned int i = 0; i < length_; i++) {
-    snprintf(buf, 16, "%2.2X", data_[i]);
+    snprintf(buf, sizeof(buf), "%2.2X", data_[i]);
     output << std::string(buf);
   }
 
   // Checksum
-  snprintf(buf, 64, "%2.2X\r\n", checksum_);
+  snprintf(buf, sizeof(buf), "%2.2X\r\n", checksum_);
   output << std::string(buf);
 
   return output.str();

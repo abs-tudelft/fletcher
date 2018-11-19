@@ -14,13 +14,15 @@
 
 #pragma once
 
-#include "vhdl/vhdl.h"
+#include <utility>
+#include <vector>
+#include <memory>
 
-#include "stream.h"
-#include "arrow-utils.h"
-
-#include "fletcher-ports.h"
-#include "common.h"
+#include "./vhdl/vhdl.h"
+#include "./stream.h"
+#include "arrow-meta.h"
+#include "./fletcher-ports.h"
+#include "./common.h"
 
 namespace fletchgen {
 
@@ -88,7 +90,15 @@ class CommandStream : public FletcherColumnStream {
                 Column *column,
                 std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherColumnStream(name, FST::CMD, column, std::move(ports)) {}
+};
 
+/// @brief A column unlock stream.
+class UnlockStream : public FletcherColumnStream {
+ public:
+  UnlockStream(const std::string &name,
+               Column *column,
+               std::vector<std::shared_ptr<StreamPort>> ports = {})
+      : FletcherColumnStream(name, FST::UNLOCK, column, std::move(ports)) {}
 };
 
 /// @brief A read request stream.
@@ -100,7 +110,6 @@ class ReadRequestStream
                              ReadArbiter *dest = nullptr,
                              std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::RREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A read data stream.
@@ -112,7 +121,6 @@ class ReadDataStream
                           ReadArbiter *dest = nullptr,
                           std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::RDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A write request stream.
@@ -120,11 +128,10 @@ class WriteRequestStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
  public:
   explicit WriteRequestStream(const std::string &name,
-                             vhdl::Instantiation *source = nullptr,
-                             WriteArbiter *dest = nullptr,
-                             std::vector<std::shared_ptr<StreamPort>> ports = {})
+                              vhdl::Instantiation *source = nullptr,
+                              WriteArbiter *dest = nullptr,
+                              std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WREQ, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
 
 /// @brief A write data stream.
@@ -132,13 +139,11 @@ class WriteDataStream
     : public FletcherStream, public DerivedFrom<vhdl::Instantiation>, public Destination<WriteArbiter> {
  public:
   explicit WriteDataStream(const std::string &name,
-                          vhdl::Instantiation *source = nullptr,
-                          WriteArbiter *dest = nullptr,
-                          std::vector<std::shared_ptr<StreamPort>> ports = {})
+                           vhdl::Instantiation *source = nullptr,
+                           WriteArbiter *dest = nullptr,
+                           std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, FST::WDAT, std::move(ports)), DerivedFrom(source), Destination(dest) {}
-
 };
-
 
 /// @brief A stream that delivers Arrow data
 class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, public ParentOf<ArrowStream> {
@@ -182,9 +187,6 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
 
   /// @brief Return the hierarchical depth of this stream.
   int depth();
-
-  /// @brief Return whether this stream is a primitive type.
-  bool isPrim();
 
   /// @brief Return whether this stream is a list.
   bool isList();
@@ -250,4 +252,4 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
   Value _address_offset;
 };
 
-}
+}  // namespace fletchgen

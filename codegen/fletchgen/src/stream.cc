@@ -15,10 +15,12 @@
 #include <sstream>
 #include <iostream>
 #include <utility>
+#include <vector>
+#include <memory>
 
-#include "vhdl/vhdl.h"
-#include "stream.h"
-#include "column.h"
+#include "./vhdl/vhdl.h"
+#include "./stream.h"
+#include "./column.h"
 
 using std::shared_ptr;
 using std::string;
@@ -46,14 +48,14 @@ void Stream::addPort(vector<shared_ptr<StreamPort>> ports) {
 
 vector<shared_ptr<StreamPort>> Stream::ports() {
   vector<shared_ptr<StreamPort>> ret;
-  for (const auto &p: ports_) {
+  for (const auto &p : ports_) {
     ret.push_back(p);
   }
   return ret;
 }
 
 Stream *Stream::invert() {
-  for (const auto &p: ports_) {
+  for (const auto &p : ports_) {
     p->invert();
   }
   return this;
@@ -68,7 +70,7 @@ Stream *Stream::setGroup(int group) {
 
 string StreamComponent::toString() {
   string ret = "[COMPONENT: " + entity()->name() + " | Streams: ";
-  for (const auto &s: _streams) {
+  for (const auto &s : _streams) {
     ret += s->name() + ", ";
   }
   ret += "]";
@@ -77,8 +79,8 @@ string StreamComponent::toString() {
 
 void StreamComponent::addStreamPorts(int *group) {
   // For each stream, at the ports on the entity
-  for (const auto &s: streams()) {
-    for (const auto &p: s->ports()) {
+  for (const auto &s : streams()) {
+    for (const auto &p : s->ports()) {
       if (group != nullptr) {
         entity()->addPort(p, *group);
       } else {
@@ -91,4 +93,4 @@ void StreamComponent::addStreamPorts(int *group) {
   }
 }
 
-}//namespace fletchgen
+}  // namespace fletchgen

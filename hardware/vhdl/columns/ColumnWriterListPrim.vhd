@@ -202,8 +202,8 @@ architecture Behavioral of ColumnWriterListPrim is
 
   -- Command stream deserialization indices.
   constant CSI : nat_array := cumulative((
-    1 => BUS_ADDR_WIDTH, -- base address for index buffer
-    0 => BUS_ADDR_WIDTH  -- base address for data buffer
+    1 => BUS_ADDR_WIDTH, -- base address for data buffer
+    0 => BUS_ADDR_WIDTH  -- base address for index/offsets buffer
   ));
 
 begin
@@ -299,8 +299,8 @@ begin
       cmdIn_ready               => cmd_ready,
       cmdIn_firstIdx            => cmd_firstIdx,
       cmdIn_lastIdx             => cmd_lastIdx,
-      cmdIn_baseAddr            => cmd_ctrl(CSI(2)-1 downto CSI(1)),
-      cmdIn_ctrl                => cmd_ctrl(CSI(1)-1 downto CSI(0)),
+      cmdIn_baseAddr            => cmd_ctrl(CSI(1)-1 downto CSI(0)),
+      cmdIn_ctrl                => cmd_ctrl(CSI(2)-1 downto CSI(1)),
       cmdIn_tag                 => cmd_tag,
       cmdIn_implicit            => '0',
 

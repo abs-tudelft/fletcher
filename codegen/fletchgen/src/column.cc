@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <arrow/type.h>
-#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
-#include "logging.h"
-#include "vhdl/vhdl.h"
-#include "common.h"
-#include "stream.h"
-#include "printers.h"
-#include "column.h"
+#include <arrow/type.h>
+
+#include "./arrow-meta.h"
+#include "./logging.h"
+#include "./vhdl/vhdl.h"
+#include "./common.h"
+#include "./stream.h"
+#include "./printers.h"
+#include "./column.h"
 
 using vhdl::Generic;
 using std::make_shared;
@@ -73,34 +77,30 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
   if (mode == Mode::WRITE) {
     mapGeneric(ent->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
   }
-
 }
 
-std::shared_ptr<ArrowStream> Column::getArrowStream(std::shared_ptr<arrow::Field> field,
-                                                    ArrowStream *parent) {
+std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow::Field> &field, ArrowStream *parent) {
+  int epc = fletcher::getEPC(field);
 
-  int epc = getEPC(field.get());
-
-  LOGD(getFieldInfoString(field.get(), parent));
+  LOGD(getFieldInfoString(field, parent));
 
   if (field->type()->id() == arrow::Type::BINARY) {
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("bytes", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else if (field->type()->id() == arrow::Type::STRING) {
     // Special case: binary type has a length stream and bytes stream.
     // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
     auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("chars", Value(8), master.get(), mode_, ptr(), epc);
+    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
     master->addChild(slave);
     return master;
   } else {
     // Normal case: add a stream
     auto stream = make_shared<ArrowStream>(field, parent, mode_, ptr(), epc);
-    //streams.push_back(stream);
 
     // Append any child streams for list or struct
     for (auto &child : field->type()->children()) {
@@ -111,7 +111,6 @@ std::shared_ptr<ArrowStream> Column::getArrowStream(std::shared_ptr<arrow::Field
 }
 
 std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
-
   // Create the command stream.
   auto command = make_shared<CommandStream>(vhdl::makeIdentifier(field_->name()), ptr());
 
@@ -128,16 +127,15 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
   Value ctrl_offset(0);
 
   // For each buffer address, add a port.
-  for (auto const &buffer: getBuffers()) {
+  auto bufs = getBuffers();
+  for (auto const &buffer : bufs) {
     auto port = make_shared<CommandPort>(
         buffer->name(),
         CSP::ADDRESS,
         Dir::IN,
         Value(ce::BUS_ADDR_WIDTH),
         command.get(),
-        ctrl_offset
-    );
-    //port->comment(t(2) + "-- Input for address of " + buffer + " buffer of field " + command->column()->field()->name() + ".\n");
+        ctrl_offset);
     ports.push_back(port);
     ctrl_offset = ctrl_offset + Value(ce::BUS_ADDR_WIDTH);
   }
@@ -147,13 +145,30 @@ std::shared_ptr<FletcherColumnStream> Column::generateUserCommandStream() {
   return command;
 }
 
+std::shared_ptr<FletcherColumnStream> Column::generateUserUnlockStream() {
+  // Create the command stream.
+  auto unlock = make_shared<UnlockStream>(vhdl::makeIdentifier(field_->name()), ptr());
+
+  // Create a vector to hold the ports for this stream.
+  std::vector<std::shared_ptr<StreamPort>> ports;
+
+  // Add command stream ports.
+  ports.push_back(make_shared<UnlockPort>("", USP::VALID, Dir::OUT, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::READY, Dir::IN, unlock.get()));
+  ports.push_back(make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), unlock.get()));
+
+  unlock->addPort(ports);
+
+  return unlock;
+}
+
 std::string Column::configString() {
-  return genConfigString(field_.get());
+  return genConfigString(field_);
 }
 
 int Column::countArrowStreams() {
   int count = 0;
-  for (const auto &s: arrow_streams_) {
+  for (const auto &s : arrow_streams_) {
     if (!std::static_pointer_cast<ArrowStream>(s)->isStructChild()) {
       count++;
     }
@@ -163,21 +178,21 @@ int Column::countArrowStreams() {
 
 std::vector<std::shared_ptr<Buffer>> Column::getBuffers() {
   std::vector<std::shared_ptr<Buffer>> buffers;
-  for (const auto &s: arrow_streams_) {
+  for (const auto &s : arrow_streams_) {
     auto sbs = std::static_pointer_cast<ArrowStream>(s);
     auto bufs = sbs->getBuffers();
-    buffers.insert(buffers.begin(), bufs.begin(), bufs.end());
+    buffers.insert(buffers.end(), bufs.begin(), bufs.end());
   }
   return buffers;
 }
 
 Value Column::dataWidth() {
   Value ret;
-  for (const auto &s: arrow_streams_) {
+  for (const auto &s : arrow_streams_) {
     auto as = std::static_pointer_cast<ArrowStream>(s);
     // Ports that are concatenated in the out_data port of a Column:
     auto ports = as->getPortsOfTypes({ASP::DATA, ASP::VALIDITY, ASP::LENGTH, ASP::COUNT});
-    for (const auto &p: ports) {
+    for (const auto &p : ports) {
       ret = ret + p->width();
     }
   }
@@ -191,9 +206,9 @@ std::string Column::toString() {
 /**
  * Generate a ColumnReader
  */
-ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width) :
+ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width)
+    :
     StreamComponent("ColumnReader"), DerivedFrom(column) {
-
   /* Generics */
   entity()
       ->addGeneric(make_shared<Generic>(ce::CONFIG_STRING, "string", Value("\"ERROR: CONFIG STRING NOT SET\"")));
@@ -206,11 +221,10 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
 
   // Create the streams
   stream_cmd_ = make_shared<CommandStream>("", column);
+  stream_unl_ = make_shared<UnlockStream>("", column);
   stream_rreq_ = make_shared<ReadRequestStream>("bus", column);
   stream_rdat_ = make_shared<ReadDataStream>("bus", column);
   stream_out_ = make_shared<FletcherColumnStream>("", FST::RARROW, column);
-
-  stream_unl_ = make_shared<FletcherColumnStream>("", FST::UNLOCK, column);
 
   // Some port widths are "?". We only make maps to these ports, and their widths depend on the configuration string.
 
@@ -227,17 +241,14 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
        make_shared<CommandPort>("", CSP::LAST_INDEX, Dir::IN, Value(ce::INDEX_WIDTH), stream_cmd_.get()),
        make_shared<CommandPort>("", CSP::CTRL, Dir::IN, ctrl_width, stream_cmd_.get()),
        make_shared<CommandPort>("", CSP::TAG, Dir::IN, Value(ce::TAG_WIDTH), stream_cmd_.get())
-      }
-  );
+      });
 
-  // TODO: implement this
-  /*
-  unlock->addPort({make_shared<CommandPort>(Dir::OUT, ASP::VALID, unlock.get()),
-                   make_shared<CommandPort>(Dir::IN, ASP::READY, unlock.get()),
-                   make_shared<CommandPort>(Dir::OUT, Value("TAG_WIDTH"), ASP::TAG, unlock.get())
-                  });
-*/
-
+  /* Unlock stream */
+  stream_unl_->addPort(
+      {make_shared<UnlockPort>("", USP::VALID, Dir::OUT, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::READY, Dir::IN, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), stream_unl_.get())
+      });
 
   /* Read request channel */
   stream_rreq_->addPort(
@@ -245,8 +256,7 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
        make_shared<ReadReqPort>("", RRP::READY, Dir::OUT, stream_rreq_.get()),
        make_shared<ReadReqPort>("", RRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_rreq_.get()),
        make_shared<ReadReqPort>("", RRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_rreq_.get())
-      }
-  );
+      });
 
   /* Read data channel */
   stream_rdat_->addPort(
@@ -254,8 +264,7 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
        make_shared<ReadDataPort>("", RDP::READY, Dir::IN, stream_rdat_.get()),
        make_shared<ReadDataPort>("", RDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_rdat_.get()),
        make_shared<ReadDataPort>("", RDP::LAST, Dir::OUT, stream_rdat_.get())
-      }
-  );
+      });
 
   /* Output stream (to user core) */
   stream_out_->addPort(
@@ -264,8 +273,7 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
        make_shared<ArrowPort>("", ASP::LAST, Dir::OUT, user_streams, stream_out_.get()),
        make_shared<ArrowPort>("", ASP::DATA, Dir::OUT, data_width, stream_out_.get()),
        make_shared<ArrowPort>("", ASP::DVALID, Dir::OUT, user_streams, stream_out_.get())
-      }
-  );
+      });
 
   appendStream(stream_cmd_);
   appendStream(stream_unl_);
@@ -281,7 +289,6 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
  */
 ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width) :
     StreamComponent("ColumnWriter"), DerivedFrom(column) {
-
   /* Generics */
   entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH, "natural", Value(ce::BUS_ADDR_WIDTH_DEFAULT)));
   entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(ce::BUS_LEN_WIDTH_DEFAULT)));
@@ -294,11 +301,10 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
 
   // Create the streams
   stream_cmd_ = make_shared<CommandStream>("", column);
+  stream_unl_ = make_shared<UnlockStream>("", column);
   stream_wreq_ = make_shared<WriteRequestStream>("bus", column);
   stream_wdat_ = make_shared<WriteDataStream>("bus", column);
   stream_in_ = make_shared<FletcherColumnStream>("", FST::WARROW, column);
-
-  stream_unl_ = make_shared<FletcherColumnStream>("", FST::UNLOCK, column);
 
   // Some port widths are "?". We only make maps to these ports, and their widths depend on the configuration string.
 
@@ -315,16 +321,16 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
        make_shared<CommandPort>("", CSP::LAST_INDEX, Dir::IN, Value(ce::INDEX_WIDTH), stream_cmd_.get()),
        make_shared<CommandPort>("", CSP::CTRL, Dir::IN, ctrl_width, stream_cmd_.get()),
        make_shared<CommandPort>("", CSP::TAG, Dir::IN, Value(ce::TAG_WIDTH), stream_cmd_.get())
-      }
-  );
+      });
 
-  // TODO: implement this
-  /*
-  unlock->addPort({make_shared<CommandPort>(Dir::OUT, ASP::VALID, unlock.get()),
-                   make_shared<CommandPort>(Dir::IN, ASP::READY, unlock.get()),
-                   make_shared<CommandPort>(Dir::OUT, Value("TAG_WIDTH"), ASP::TAG, unlock.get())
-                  });
-*/
+  // TODO(johanpel): implement unlock stream
+
+  /* Unlock stream */
+  stream_unl_->addPort(
+      {make_shared<UnlockPort>("", USP::VALID, Dir::OUT, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::READY, Dir::IN, stream_unl_.get()),
+       make_shared<UnlockPort>("", USP::TAG, Dir::OUT, Value(ce::TAG_WIDTH), stream_unl_.get())
+      });
 
 
   /* Write request channel */
@@ -333,8 +339,7 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
        make_shared<WriteReqPort>("", WRP::READY, Dir::OUT, stream_wreq_.get()),
        make_shared<WriteReqPort>("", WRP::ADDRESS, Dir::IN, Value(ce::BUS_ADDR_WIDTH), stream_wreq_.get()),
        make_shared<WriteReqPort>("", WRP::BURSTLEN, Dir::IN, Value(ce::BUS_LEN_WIDTH), stream_wreq_.get())
-      }
-  );
+      });
 
   /* Write data channel */
   stream_wdat_->addPort(
@@ -343,8 +348,7 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
        make_shared<WriteDataPort>("", WDP::DATA, Dir::OUT, Value(ce::BUS_DATA_WIDTH), stream_wdat_.get()),
        make_shared<WriteDataPort>("", WDP::STROBE, Dir::OUT, Value(ce::BUS_STROBE_WIDTH), stream_wdat_.get()),
        make_shared<WriteDataPort>("", WDP::LAST, Dir::OUT, stream_wdat_.get())
-      }
-  );
+      });
 
   /* Input stream (from user core) */
   stream_in_->addPort(
@@ -353,8 +357,7 @@ ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Valu
        make_shared<ArrowPort>("", ASP::LAST, Dir::OUT, user_streams, stream_in_.get()),
        make_shared<ArrowPort>("", ASP::DATA, Dir::OUT, data_width, stream_in_.get()),
        make_shared<ArrowPort>("", ASP::DVALID, Dir::OUT, user_streams, stream_in_.get())
-      }
-  );
+      });
 
   appendStream(stream_cmd_);
   appendStream(stream_unl_);
@@ -373,7 +376,7 @@ std::string Column::getColumnModeString(Mode mode) {
   }
 }
 
-std::string genConfigString(arrow::Field *field, int level) {
+std::string genConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
   std::string ret;
   ConfigType ct = getConfigType(field->type().get());
 
@@ -382,12 +385,7 @@ std::string genConfigString(arrow::Field *field, int level) {
     level++;
   }
 
-  int epc = getEPC(field);
-  bool is_implicit_listprim = false;
-
-  //if (ct == ARB) return "arb";
-  //else if (ct == NUL) return "null";
-  //else
+  int epc = fletcher::getEPC(field);
 
   if (ct == ConfigType::PRIM) {
     Value w = getWidth(field->type().get());
@@ -396,35 +394,15 @@ std::string genConfigString(arrow::Field *field, int level) {
     level++;
 
   } else if (ct == ConfigType::LISTPRIM) {
-    // String or binary with 8 bits per element
     ret += "listprim(";
     level++;
 
     Value w = Value(8);
 
     ret += w.toString();
-
   } else if (ct == ConfigType::LIST) {
-    // Convert list(prim(x)) to listprim(x), for epc support on this type
-    arrow::Field *child;
-    // List should always have at least one child, but check anyway
-    is_implicit_listprim = field->type()->num_children() == 1
-      && ( child = field->type()->children()[0].get() )
-      && getConfigType(child->type().get()) == ConfigType::PRIM;
-
-    if (is_implicit_listprim) {
-      epc = getEPC(child);
-      Value w = getWidth(child->type().get());
-
-      ret += "listprim(" + w.toString();
-      level++;
-
-    // Normal, nested list structure
-    } else {
-      ret += "list(";
-      level++;
-    }
-
+    ret += "list(";
+    level++;
   } else if (ct == ConfigType::STRUCT) {
     ret += "struct(";
     level++;
@@ -435,20 +413,17 @@ std::string genConfigString(arrow::Field *field, int level) {
   }
 
   // Append children
-  // Implicit listprim has no children
-  if (!is_implicit_listprim) {
-    for (int c = 0; c < field->type()->num_children(); c++) {
-      auto child = field->type()->children()[c];
-      ret += genConfigString(child.get());
-      if (c != field->type()->num_children() - 1)
-        ret += ",";
-    }
+  for (int c = 0; c < field->type()->num_children(); c++) {
+    auto child = field->type()->children()[c];
+    ret += genConfigString(child);
+    if (c != field->type()->num_children() - 1)
+      ret += ",";
   }
 
   for (; level > 0; level--)
     ret += ")";
 
   return ret;
-}
+};
 
-}//namespace fletchgen
+}  // namespace fletchgen

@@ -14,15 +14,17 @@
 
 #pragma once
 
+#include <memory>
+#include <utility>
 #include <iostream>
 
-#include "vhdl/vhdl.h"
+#include "./vhdl/vhdl.h"
 
-#include "column.h"
-#include "arrow-utils.h"
-#include "usercore.h"
-#include "usercore-controller.h"
-#include "config.h"
+#include "./column.h"
+#include "arrow-meta.h"
+#include "./usercore.h"
+#include "./usercore-controller.h"
+#include "./config.h"
 
 using vhdl::Signal;
 
@@ -84,24 +86,24 @@ class ColumnWrapper : public StreamComponent {
   }
 
   /// @brief Return the configurations for each Schema
-  std::vector<config::Config> configs() { return cfgs_; };
+  std::vector<config::Config> configs() { return cfgs_; }
 
  private:
   std::vector<std::shared_ptr<arrow::Schema>>
-      schemas_ = {}; ///< The schema this wrapper implementation is derived from.
-  std::vector<config::Config> cfgs_; ///< Configurations
+      schemas_ = {};  ///< The schema this wrapper implementation is derived from.
+  std::vector<config::Config> cfgs_;  ///< Configurations
 
-  std::shared_ptr<UserCore> usercore_; ///< UserCore component that has to be implemented by the user.
-  std::shared_ptr<Instantiation> usercore_inst_; ///< UserCore instance.
+  std::shared_ptr<UserCore> usercore_;  ///< UserCore component that has to be implemented by the user.
+  std::shared_ptr<Instantiation> usercore_inst_;  ///< UserCore instance.
 
-  std::shared_ptr<UserCoreController> uctrl_; ///< UserCore controller component
-  std::shared_ptr<Instantiation> uctrl_inst_; ///< UserCore controller instance
+  std::shared_ptr<UserCoreController> uctrl_;  ///< UserCore controller component
+  std::shared_ptr<Instantiation> uctrl_inst_;  ///< UserCore controller instance
 
-  std::shared_ptr<ReadArbiter> rarb; ///< Read Arbiter component.
-  std::shared_ptr<Instantiation> rarb_inst; ///< Read Arbiter instance.
+  std::shared_ptr<ReadArbiter> rarb;  ///< Read Arbiter component.
+  std::shared_ptr<Instantiation> rarb_inst;  ///< Read Arbiter instance.
 
-  std::shared_ptr<WriteArbiter> warb; ///< Write Arbiter component.
-  std::shared_ptr<Instantiation> warb_inst; ///< Write Arbiter instance.
+  std::shared_ptr<WriteArbiter> warb;  ///< Write Arbiter component.
+  std::shared_ptr<Instantiation> warb_inst;  ///< Write Arbiter instance.
 
   GeneralPort *regs_in();;
 
@@ -109,8 +111,8 @@ class ColumnWrapper : public StreamComponent {
 
   GeneralPort *regs_out_en();;
 
-  int pgroup_ = 0; ///< Current port group, useful when adding new port.
-  int sgroup_ = 0; ///< Current signal group, useful when adding new signals.
+  int pgroup_ = 0;  ///< Current port group, useful when adding new port.
+  int sgroup_ = 0;  ///< Current signal group, useful when adding new signals.
 
   /* Generics */
   /// @brief Add all generics to the wrapper entity.
@@ -181,6 +183,9 @@ class ColumnWrapper : public StreamComponent {
   /// @brief Connect a CommandPort to a wrapper signal.
   void connectCommandPortToSignal(FletcherColumnStream *stream, Column *column, CommandPort *port);
 
+  /// @brief Connect a
+  void connectUnlockPortToSignal(FletcherColumnStream *stream, Column *column, UnlockPort *port);
+
   /// @brief Connect read request channels to arbiter.
   void connectReadRequestChannels();
 
@@ -209,8 +214,8 @@ class ColumnWrapper : public StreamComponent {
 
   void mapUserGenerics();
 
-  // TODO: implement validation of config compatibility amongst multiple schemas
+  // TODO(johanpel): implement validation of config compatibility amongst multiple schemas
   void validateConfigs() {};
 };
 
-}//namespace fletchgen
+}  // namespace fletchgen

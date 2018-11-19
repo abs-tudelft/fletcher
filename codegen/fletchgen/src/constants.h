@@ -15,6 +15,7 @@
 #pragma once
 
 namespace fletchgen {
+
 /**
  * @brief Constant expressions.
  *
@@ -87,5 +88,5 @@ constexpr unsigned int INDEX_WIDTH_DEFAULT = 32;
 constexpr unsigned int TAG_WIDTH_DEFAULT = 1;
 constexpr unsigned int REGS_PER_ADDRESS = BUS_ADDR_WIDTH_DEFAULT / MMIO_DATA_WIDTH_DEFAULT;
 
-} //namespace ce
-} //namespace fletchgen
+}  // namespace ce
+}  // namespace fletchgen

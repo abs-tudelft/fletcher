@@ -1,8 +1,23 @@
+// Copyright 2018 Delft University of Technology
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #pragma once
 
 #include <string>
+#include <utility>
 
-#include "stream.h"
+#include "./stream.h"
 
 namespace fletchgen {
 /**
@@ -23,13 +38,22 @@ enum class ASP {
  * @brief Port type enumerations for command stream ports.
  */
 enum class CSP {
-  VALID,       ///< Handshake valid signal.
-  READY,       ///< Handshake ready signal.
-  FIRST_INDEX, ///< First index in a command stream.
-  LAST_INDEX,  ///< Last index in a command stream.
-  TAG,         ///< Tag in a command or unlock stream.
-  ADDRESS,     ///< An address in host memory.
-  CTRL,        ///< Control stream
+  VALID,         ///< Handshake valid signal.
+  READY,         ///< Handshake ready signal.
+  FIRST_INDEX,   ///< First index in a command stream.
+  LAST_INDEX,    ///< Last index in a command stream.
+  TAG,           ///< Tag in a command or unlock stream.
+  ADDRESS,       ///< An address in host memory.
+  CTRL,          ///< Control stream
+};
+
+/**
+ * @brief Port type enumerations for unlock stream ports.
+ */
+enum class USP {
+  VALID,         ///< Handshake valid signal.
+  READY,         ///< Handshake ready signal.
+  TAG            ///< Unlock tag.
 };
 
 /**
@@ -62,7 +86,6 @@ enum class WRP {
   BURSTLEN,    ///< Bus burst length
 };
 
-
 /**
  * @brief Port type enumerations for write data ports.
  */
@@ -78,21 +101,22 @@ enum class WDP {
  * @brief Port type enumeration for generic ports (not stream ports).
  */
 enum class GP {
-  BUS_CLK,     ///< Bus clock
-  BUS_RESET,   ///< Bus reset
-  ACC_CLK,     ///< Accelerator clock
-  ACC_RESET,   ///< Accelerator reset
-  REG,         ///< Generic register
-  REG_STATUS,  ///< Status register
-  REG_CONTROL, ///< Control register
-  REG_ADDR,    ///< Address regiser
-  REG_USER,    ///< User registers
-  REG_RETURN,  ///< Return register
-  REG_IDX,     ///< Row index register
-  SIG,         ///< Other signals
+  BUS_CLK,       ///< Bus clock
+  BUS_RESET,     ///< Bus reset
+  ACC_CLK,       ///< Accelerator clock
+  ACC_RESET,     ///< Accelerator reset
+  REG,           ///< Generic register
+  REG_STATUS,    ///< Status register
+  REG_CONTROL,   ///< Control register
+  REG_ADDR,      ///< Address regiser
+  REG_USER,      ///< User registers
+  REG_RETURN,    ///< Return register
+  REG_IDX,       ///< Row index register
+  SIG,           ///< Other signals
 };
 
 std::string typeToString(ASP type);
+std::string typeToString(USP type);
 std::string typeToString(CSP type);
 std::string typeToString(GP type);
 std::string typeToString(RDP type);
@@ -115,12 +139,20 @@ class ArrowPort : public StreamPort, public TypedBy<ASP>, public WithOffset {
   ArrowPort(const std::string &name, ASP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
 
-///@brief Command Stream Port
+/// @brief Command Stream Port
 class CommandPort : public StreamPort, public TypedBy<CSP>, public WithOffset {
  public:
   CommandPort(const std::string &name, CSP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
 
   CommandPort(const std::string &name, CSP type, Dir dir, Stream *stream, Value offset = Value(0));
+};
+
+/// @brief Unlock Stream Port
+class UnlockPort : public StreamPort, public TypedBy<USP> {
+ public:
+  UnlockPort(const std::string &name, USP type, Dir dir, const Value &width, Stream *stream);
+
+  UnlockPort(const std::string &name, USP type, Dir dir, Stream *stream);
 };
 
 /// @brief Read Request Stream Port
@@ -148,11 +180,11 @@ class ReadDataPort : public StreamPort, public TypedBy<RDP>, public WithOffset {
 class WriteReqPort : public StreamPort, public TypedBy<WRP>, public WithOffset {
  public:
   WriteReqPort(const std::string &name,
-              WRP type,
-              Dir dir,
-              const Value &width,
-              Stream *stream,
-              Value offset = Value(0));
+               WRP type,
+               Dir dir,
+               const Value &width,
+               Stream *stream,
+               Value offset = Value(0));
 
   WriteReqPort(const std::string &name, WRP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
@@ -160,7 +192,12 @@ class WriteReqPort : public StreamPort, public TypedBy<WRP>, public WithOffset {
 /// @brief Read Data Port
 class WriteDataPort : public StreamPort, public TypedBy<WDP>, public WithOffset {
  public:
-  WriteDataPort(const std::string &name, WDP type, Dir dir, const Value &width, Stream *stream, Value offset = Value(0));
+  WriteDataPort(const std::string &name,
+                WDP type,
+                Dir dir,
+                const Value &width,
+                Stream *stream,
+                Value offset = Value(0));
 
   WriteDataPort(const std::string &name, WDP type, Dir dir, Stream *stream, Value offset = Value(0));
 };
@@ -174,10 +211,10 @@ class WriteDataPort : public StreamPort, public TypedBy<WDP>, public WithOffset 
 class GeneralPort : public Port, public TypedBy<GP> {
  public:
   GeneralPort(std::string name, GP type, Dir direction, Value width) :
-      Port(std::move(name), direction, std::move(width)), TypedBy(type) {};
+      Port(std::move(name), direction, std::move(width)), TypedBy(type) {}
 
   GeneralPort(std::string name, GP type, Dir direction) :
-      Port(std::move(name), direction), TypedBy(type) {};
+      Port(std::move(name), direction), TypedBy(type) {}
 };
 
-}
+}  // namespace fletchgen

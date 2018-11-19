@@ -35,45 +35,36 @@ dumping bursts into the ColumnReaders, which are less wide.
 
 | File                            | Description                                                                                                                |
 | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------- |
-| software/regexp.cpp             | The main file for this example |
-| software/RegExUserCore.cpp      | The implementation of the UserCore abstract class |
-| software/RegExUserCore.h        | Header for previous item |
+| software/src/regexp.cc          | The main file for this example |
+| software/src/regex-usercore.cc  | The implementation of some convenience function of this specific application |
+| software/src/regex-usercore.h   | Header for previous item |
 
 
 # Build
 
-### 1. First build and install the [runtime library](../../runtime) on the host machine.
+### 1. First build and install, on the host machine:
+ * The [platform agnostic runtime library](../../runtime).
+ * The [platform-specific run-time library](../../platforms).
 
 ### 2. Build the example on the host machine.
 
-You have to pick a run-time host platform to build the example host-side software for.
-
-Currently you can choose the CMake option RUNTIME_PLATFORM to be:
-
-* 0 : Echo platform: just uses the STDIO to simulate the FPGA
-* 1 : [AWS EC2 F1](../../platforms/aws-f1/)
-* 2 : [CAPI SNAP](../../platforms/snap/)
-
-Make sure to compile the run-time library with support for that platform first.
-
 Proceed to build this application:
 
-    $ cd $FLETCHER_EXAMPLES_DIR/regexp/software
+    $ cd examples/regexp
     $ mkdir build
     $ cd build
-    $ cmake .. -DRUNTIME_PLATFORM=?
+    $ cmake ..
     $ make
     
-Make sure to replace ? with your chosen platform.
-
 ### 3. Run the example:
 
-* Note: you probably need sudo rights for most platforms:
+```
+./regexp
+```
 
-    $ ./regexp 
+* Note: you probably need sudo rights for most platforms: 
     
 Optional parameters:
-
-    $ ./regexp <no. strings> <no. repeats> <experiment mask> <num. threads>
-    
-
+```
+./regexp <no. strings> <no. repeats> <experiment mask> <num. threads>
+```

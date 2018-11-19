@@ -1,8 +1,21 @@
+// Copyright 2018 Delft University of Technology
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <string>
 
-#include "fletcher-ports.h"
-
-#include "common.h"
+#include "./fletcher-ports.h"
+#include "./constants.h"
 
 using std::string;
 using std::move;
@@ -23,7 +36,7 @@ string typeToString(ASP type) {
     case ASP::DVALID: return "dvalid";
     case ASP::COUNT: return "count";
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(CSP type) {
@@ -36,7 +49,16 @@ string typeToString(CSP type) {
     case CSP::VALID: return "valid";
     case CSP::READY: return "ready";
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
+}
+
+string typeToString(USP type) {
+  switch (type) {
+    case USP::VALID: return "valid";
+    case USP::READY: return "ready";
+    case USP::TAG: return "tag";
+  }
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(GP type) {
@@ -54,7 +76,7 @@ string typeToString(GP type) {
     case GP::REG_RETURN:return "reg_return";
     case GP::REG_IDX:return "reg_idx";
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(RRP type) {
@@ -64,7 +86,7 @@ string typeToString(RRP type) {
     case RRP::ADDRESS: return "addr";
     case RRP::BURSTLEN: return "len";;
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(RDP type) {
@@ -74,7 +96,7 @@ string typeToString(RDP type) {
     case RDP::DATA: return "data";
     case RDP::LAST: return "last";
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(WDP type) {
@@ -85,7 +107,7 @@ string typeToString(WDP type) {
     case WDP::STROBE: return "strobe";
     case WDP::LAST: return "last";
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 string typeToString(WRP type) {
@@ -95,11 +117,11 @@ string typeToString(WRP type) {
     case WRP::ADDRESS: return "addr";
     case WRP::BURSTLEN: return "len";;
   }
-  throw std::runtime_error("Unknown port type.");
+  throw std::runtime_error("Unkown type.");
 }
 
 ASP mapUserTypeToColumnType(ASP type) {
-  //todo make some static thing out of this
+  // TODO(johanpel): make some static thing out of this
   std::map<ASP, ASP> mapping({std::pair<ASP, ASP>(ASP::VALID, ASP::VALID),
                               std::pair<ASP, ASP>(ASP::READY, ASP::READY),
                               std::pair<ASP, ASP>(ASP::DATA, ASP::DATA),
@@ -124,7 +146,7 @@ CSP mapUserTypeToColumnType(CSP type) {
   return mapping[type];
 }
 
-//TODO: do all of this in a smarter way:
+// TODO(johanpel): do all of this in a smarter way:
 ArrowPort::ArrowPort(const std::string &name, ASP type, Dir dir, const Value &width, Stream *stream, Value offset)
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),
       TypedBy(type),
@@ -144,6 +166,12 @@ CommandPort::CommandPort(const std::string &name, CSP type, Dir dir, Stream *str
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream),
       TypedBy(type),
       WithOffset(std::move(offset)) {}
+
+UnlockPort::UnlockPort(const std::string &name, USP type, Dir dir, const Value &width, Stream *stream)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream), TypedBy(type) {}
+
+UnlockPort::UnlockPort(const std::string &name, USP type, Dir dir, Stream *stream)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream), TypedBy(type) {}
 
 ReadReqPort::ReadReqPort(const std::string &name, RRP type, Dir dir, const Value &width, Stream *stream, Value offset)
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),
@@ -175,7 +203,12 @@ WriteReqPort::WriteReqPort(const std::string &name, WRP type, Dir dir, Stream *s
       TypedBy(type),
       WithOffset(std::move(offset)) {}
 
-WriteDataPort::WriteDataPort(const std::string &name, WDP type, Dir dir, const Value &width, Stream *stream, Value offset)
+WriteDataPort::WriteDataPort(const std::string &name,
+                             WDP type,
+                             Dir dir,
+                             const Value &width,
+                             Stream *stream,
+                             Value offset)
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),
       TypedBy(type),
       WithOffset(std::move(offset)) {}
@@ -185,4 +218,4 @@ WriteDataPort::WriteDataPort(const std::string &name, WDP type, Dir dir, Stream 
       TypedBy(type),
       WithOffset(std::move(offset)) {}
 
-}//namespace fletchgen
+}  // namespace fletchgen

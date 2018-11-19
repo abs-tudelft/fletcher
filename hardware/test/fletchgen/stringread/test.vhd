@@ -30,12 +30,12 @@ entity test is
     REG_WIDTH                                  : natural
   );
   port(
-    Name_out_chars_out_data                    : in std_logic_vector(31 downto 0);
-    Name_out_chars_out_count                   : in std_logic_vector(2 downto 0);
-    Name_out_chars_out_dvalid                  : in std_logic;
-    Name_out_chars_out_last                    : in std_logic;
-    Name_out_chars_out_ready                   : out std_logic;
-    Name_out_chars_out_valid                   : in std_logic;
+    Name_out_values_out_data                   : in std_logic_vector(31 downto 0);
+    Name_out_values_out_count                  : in std_logic_vector(2 downto 0);
+    Name_out_values_out_dvalid                 : in std_logic;
+    Name_out_values_out_last                   : in std_logic;
+    Name_out_values_out_ready                  : out std_logic;
+    Name_out_values_out_valid                  : in std_logic;
     Name_out_valid                             : in std_logic;
     Name_out_ready                             : out std_logic;
     Name_out_length                            : in std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -47,6 +47,9 @@ entity test is
     Name_cmd_tag                               : out std_logic_vector(TAG_WIDTH-1 downto 0);
     Name_cmd_Name_values_addr                  : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     Name_cmd_Name_offsets_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    Name_unlock_valid                          : in std_logic := '1';
+    Name_unlock_ready                          : out std_logic;
+    Name_unlock_tag                            : in std_logic_vector(TAG_WIDTH-1 downto 0);
     -------------------------------------------------------------------------
     acc_reset                                  : in std_logic;
     acc_clk                                    : in std_logic;
@@ -87,7 +90,7 @@ begin
     ctrl_idle <= '0';
     Name_cmd_valid <= '0';
     Name_out_ready <= '0';
-    Name_out_chars_out_ready <= '0';
+    Name_out_values_out_ready <= '0';
 
     -- Wait for reset to go low and start to go high.
     loop
@@ -145,22 +148,22 @@ begin
       -- Obtain all string characters
       loop
 
-        Name_out_chars_out_ready <= '1';
+        Name_out_values_out_ready <= '1';
 
         -- Wait for handshake
         loop
           wait until rising_edge(acc_clk);
-          exit when Name_out_chars_out_valid = '1';
+          exit when Name_out_values_out_valid = '1';
         end loop;
 
         -- Check the number of characters delivered
-        num_chars := to_integer(unsigned(Name_out_chars_out_count));
+        num_chars := to_integer(unsigned(Name_out_values_out_count));
         --dumpStdOut("Received " & integer'image(num_chars) & " character(s).");
 
         -- For each character in the output
         for I in 0 to num_chars-1 loop
           -- Convert the std_logic_vector part to a character
-          int_char := to_integer(unsigned(Name_out_chars_out_data(8*(i+1)-1 downto 8*i)));
+          int_char := to_integer(unsigned(Name_out_values_out_data(8*(i+1)-1 downto 8*i)));
           char := character'val(int_char);
 
           -- Set the character in the string
@@ -170,12 +173,12 @@ begin
         end loop;
 
         -- check if this is the last (bunch of) characters
-        is_last_char := Name_out_chars_out_last = '1';
+        is_last_char := Name_out_values_out_last = '1';
 
         exit when is_last_char;
       end loop;
 
-      Name_out_chars_out_ready <= '0';
+      Name_out_values_out_ready <= '0';
 
       -- Check if the string length and the number of characters received is
       -- correct
