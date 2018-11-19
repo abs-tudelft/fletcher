@@ -89,7 +89,7 @@ def kmeans_python(points, centroids, iteration_limit):
     return centroids
 
 
-def arrow_kmeans_fpga(batch, centroids, iteration_limit):
+def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_centroids):
     t = Timer()
 
     platform = pf.Platform(platform_type)
@@ -118,6 +118,18 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit):
             hi = (dim >> 32) & 0xFFFFFFFF
             args.append(lo)
             args.append(hi)
+
+        for dim in range(max_hw_dim - len(centroid)):
+            args.append(0)
+            args.append(0)
+
+    for centroid in range(max_hw_centroids - len(centroids)):
+        for dim in range(max_hw_dim - 1):
+            args.append(0)
+            args.append(0)
+
+        args.append(0x80000000)
+        args.append(0)
 
     args.append(iteration_limit)
     uc.set_arguments(args)
@@ -180,6 +192,10 @@ if __name__ == "__main__":
                         help="Number of centroids")
     parser.add_argument("--num_exp", dest="num_exp", default=1,
                         help="Number of experiments")
+    parser.add_argument("--max_hw_dim", dest="max_hw_dim", default=8,
+                        help="Hardware property. Maximum dimension allowed for K-means.")
+    parser.add_argument("--max_hw_centroids", dest="max_hw_centroids", default=16,
+                        help="Hardware property. Maximum amount of centroids allowed for K-means.")
     args = parser.parse_args()
 
     num_rows = int(args.num_rows)
@@ -188,6 +204,8 @@ if __name__ == "__main__":
     iteration_limit = int(args.iteration_limit)
     num_centroids = int(args.num_centroids)
     ne = int(args.num_exp)
+    max_hw_dim = int(args.max_hw_dim)
+    max_hw_centroids = int(args.max_hw_centroids)
 
     t = Timer()
 
@@ -253,10 +271,16 @@ if __name__ == "__main__":
 
         list_centroids_copy = copy.deepcopy(list_centroids)
         t.start()
-        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit))
+        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
         t.stop()
         t_fpga.append(t.seconds())
         #print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
+
+    print(r_nppy[0])
+    print(r_npcy[0])
+    print(r_arcpp[0])
+    print(r_npcpp[0])
+    print(r_fpga[0])
 
     if np.array_equal(r_nppy, r_npcy) and np.array_equal(r_npcy, r_arcpp) and np.array_equal(r_arcpp, r_npcpp):# Does not yet check correct fpga return
         print("PASS")
