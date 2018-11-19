@@ -49,5 +49,11 @@ int main(int argc, char* argv[]) {
   recordbatch = fletchgen::test::getInt64ListRB();
   fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlist.rb");
 
+  /* Number List Widde */
+  schema = fletchgen::test::genIntListSchema();
+  fletchgen::writeSchemaToFile(schema, "schemas/intlistread.fbs");
+  recordbatch = fletchgen::test::getInt64ListWideRB();
+  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlistwide.rb");
+
   return EXIT_SUCCESS;
 }

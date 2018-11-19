@@ -14,6 +14,12 @@
 
 #pragma once
 
+#include <arrow/type.h>
+#include <arrow/builder.h>
+#include <arrow/record_batch.h>
+
+#include <memory>
+
 namespace fletchgen {
 namespace test {
 

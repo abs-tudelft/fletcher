@@ -16,6 +16,8 @@
 
 #include <arrow/record_batch.h>
 
+#include <memory>
+
 namespace fletchgen {
 namespace test {
 
@@ -27,5 +29,7 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
 
 std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
 
-}
-}
+std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB();
+
+}  // namespace test
+}  // namespace fletchgen

@@ -36,7 +36,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
                                     "Quinn", "Robert", "Sarah", "Travis",
                                     "Uma", "Victor", "Wendy", "Xavier",
                                     "Yasmine", "Zachary"
-  }
+  };
 
   // Make a string builder
   arrow::StringBuilder string_builder;
@@ -124,7 +124,7 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
       record_batch = arrow::RecordBatch::Make(
           genFloatListSchema(),
           numbers.size() / list_length,
-          {data_array})
+          {data_array});
 
   // Check whether the Record Batch is alright
   if (!record_batch->Validate().ok()) {
@@ -153,6 +153,57 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
 
   // Create individual lists of this length
   const unsigned int list_length = 2;
+  for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
+    // Append single list
+    list_builder.Append();
+    for (unsigned int index = list_start; index < list_start + list_length; index++) {
+      // Append number to current list
+      int_builder->Append(numbers[index]);
+    }
+  }
+
+  // Array to hold Arrow formatted data
+  std::shared_ptr<arrow::Array> data_array;
+
+  // Finish building and create a new data array around the data
+  if (!list_builder.Finish(&data_array).ok()) {
+    throw std::runtime_error("Could not finalize list builder.");
+  }
+
+  // Create the Record Batch
+  std::shared_ptr<arrow::RecordBatch>
+      record_batch = arrow::RecordBatch::Make(
+      genIntListSchema(),
+      numbers.size() / list_length,
+      {data_array});
+
+  // Check whether the Record Batch is alright
+  if (!record_batch->Validate().ok()) {
+    throw std::runtime_error("Could not create Record Batch.");
+  }
+
+  return record_batch;
+}
+
+std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB() {
+  std::vector<int64_t> numbers = {
+      12,    6, 110, 120, 130, 140, 150, -160,
+      14,    3, 111, 121, 131, 141, 151, -161,
+      13,    0, 112, 122, 132, 142, 152, -162,
+      45, -500, 210, 220, 230, 240, 250, -260,
+      51, -520, 211, 221, 231, 241, 151, -261,
+  };
+
+  // Make an int builder
+  auto int_builder = std::make_shared<arrow::Int64Builder> ();
+
+  // Make a list builder
+  arrow::ListBuilder list_builder(
+      arrow::default_memory_pool(),
+      int_builder);
+
+  // Create individual lists of this length
+  const unsigned int list_length = 8;
   for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
     list_builder.Append();
