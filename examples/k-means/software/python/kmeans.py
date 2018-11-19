@@ -110,6 +110,7 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
     last_index = batch.num_rows
     uc.set_range(0, last_index)
 
+    print("Setting arguments")
     # Set UserCore arguments
     args = []
     for centroid in centroids:
@@ -134,6 +135,8 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
     args.append(iteration_limit)
     uc.set_arguments(args)
 
+    print("Done setting arguments")
+
     t.start()
     uc.start()
     uc.wait_for_finish(10)
@@ -147,7 +150,7 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
 
     for c in range(num_centroids):
         for d in range(dimensionality):
-            reg_num = (c * dimensionality + d) * regs_per_dim + regs_offset
+            reg_num = (c * max_hw_dim + d) * regs_per_dim + regs_offset
             centroids[c][d] = platform.read_mmio_64(reg_num, type="int")
 
     return centroids
@@ -157,20 +160,16 @@ def create_points(num_points, dim, element_max):
     return np.random.randint(-element_max, element_max, size=(num_points, dim))
 
 
-def create_record_batch(nparray):
-    """Create a recordbatch from a 2D numpy array.
-
-    Unfortunately, pyarrow can't cast the Numpy array because it is 2 dimensional. Therefore, it first has to be
-    transformed into a Python list. It is possible to make a more efficient version with some C magic.
-
-    Args:
-        nparray: 2 dimensional numpy array
-
-    Returns:
-        Arrow RecordBatch with type <list<int64>>
-
-    """
+def create_record_batch_from_np(nparray):
     arpoints = pa.array(nparray.tolist(), type=pa.list_(pa.int64()))
+
+    field = pa.field("points", pa.list_(pa.field("coord", pa.int64(), False)), False)
+    schema = pa.schema([field])
+
+    return pa.RecordBatch.from_arrays([arpoints], schema)
+
+def create_record_batch_from_list(list_points):
+    arpoints = pa.array(list_points, type=pa.list_(pa.int64()))
 
     field = pa.field("points", pa.list_(pa.field("coord", pa.int64(), False)), False)
     schema = pa.schema([field])
@@ -207,25 +206,10 @@ if __name__ == "__main__":
     max_hw_dim = int(args.max_hw_dim)
     max_hw_centroids = int(args.max_hw_centroids)
 
-    t = Timer()
-
-    numpy_points = create_points(num_rows, dimensionality, 99)
-    list_points = numpy_points.tolist()
-
-    t.start()
-    batch_points = create_record_batch(numpy_points)
-    t.stop()
-    print("Numpy to arrow serialization time: " + str(t.seconds()))
-
-    list_centroids = []
-
-    for i in range(num_centroids):
-        list_centroids.append(list_points[np.random.randint(0, len(list_points))])
-    print(list_centroids)
-
-    numpy_centroids = np.array(list_centroids)
-
     # Timers
+    t = Timer()
+    t_naser = []
+    t_npser = []
     t_nppy = []
     t_npcy = []
     t_arcpp = []
@@ -239,6 +223,31 @@ if __name__ == "__main__":
     r_npcpp = []
     r_fpga = []
 
+    numpy_points = create_points(num_rows, dimensionality, 99)
+    list_points = numpy_points.tolist()
+
+    for i in range(ne):
+        t.start()
+        batch_points_from_list = create_record_batch_from_list(list_points)
+        t.stop()
+        t_naser.append(t.seconds())
+
+        t.start()
+        batch_points = kmeans.create_record_batch_from_numpy(numpy_points)
+        t.stop()
+        t_npser.append(t.seconds())
+
+    print("Native to arrow serialization time: " + str(sum(t_naser)))
+    print("Numpy to arrow serialization time: " + str(sum(t_npser)))
+
+    list_centroids = []
+
+    for i in range(num_centroids):
+        list_centroids.append(list_points[np.random.randint(0, len(list_points))])
+    print(list_centroids)
+
+    numpy_centroids = np.array(list_centroids)
+
 
     for i in range(ne):
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
@@ -246,43 +255,46 @@ if __name__ == "__main__":
         r_nppy.append(kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_nppy.append(t.seconds())
-        # print("Kmeans NumPy pure Python execution time: " + t_nppy[ne])
+        print("Kmeans NumPy pure Python execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcy.append(t.seconds())
-        # print("Kmeans NumPy Cython execution time: " + t_npcy[ne])
+        print("Kmeans NumPy Cython execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_arcpp.append(t.seconds())
-        # print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
+        print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp.append(t.seconds())
-        # print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
+        print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
 
         list_centroids_copy = copy.deepcopy(list_centroids)
         t.start()
-        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
+        # r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
         t.stop()
         t_fpga.append(t.seconds())
-        #print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
+        print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
 
     print(r_nppy[0])
     print(r_npcy[0])
     print(r_arcpp[0])
     print(r_npcpp[0])
-    print(r_fpga[0])
+    #print(r_fpga[0])
 
-    if np.array_equal(r_nppy, r_npcy) and np.array_equal(r_npcy, r_arcpp) and np.array_equal(r_arcpp, r_npcpp):# Does not yet check correct fpga return
+    if np.array_equal(r_nppy, r_npcy) \
+            and np.array_equal(r_npcy, r_arcpp) \
+            and np.array_equal(r_arcpp, r_npcpp) \
+            and np.array_equal(r_npcpp, [np.array(a) for a in r_fpga]):
         print("PASS")
     else:
         print("ERROR")

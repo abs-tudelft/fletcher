@@ -14,11 +14,14 @@
 
 import cython
 from libcpp.memory cimport shared_ptr
+from libc.string cimport memcpy
 from libc.stdint cimport *
 from libcpp.vector cimport vector
 from libcpp.limits cimport numeric_limits
+
 import numpy as np
 cimport numpy as np
+import pyarrow as pa
 from pyarrow.lib cimport *
 
 
@@ -125,3 +128,67 @@ cdef _numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
 
 def numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
     return _numpy_kmeans_cpp(nparray, centroids_position, iteration_limit)
+
+cdef _create_list_array_buffers(int64_t *points_buffer, int num_points, int dim,
+                                     shared_ptr[CBuffer] *values_buffer, shared_ptr[CBuffer] *offsets_buffer):
+    """Create buffers necessary for building an Arrow ListArray with constant sized lists.
+    
+    Args:
+        points_buffer: Pointer to values data (Numpy buffer in these benchmarks)
+        num_points: Amount of lists in ListArray
+        dim: Length of the lists in the ListArray
+        values_buffer: Pointer to shared_ptr of the resulting values_buffer
+        offsets_buffer: Pointer to shared_ptr of the resulting offsets_buffer
+
+    Returns:
+
+    """
+    cdef int64_t length = num_points * dim
+    values_buffer.reset(new CBuffer(<const uint8_t*> points_buffer, length*sizeof(int64_t)))
+
+    AllocateBuffer(c_get_memory_pool(), (num_points+1)*sizeof(int32_t), offsets_buffer)
+
+    cdef int i
+    cdef int offset_counter = 0
+    cdef int32_t offset = 0
+
+    for i in range(num_points + 1):
+        offset = i*dim
+        memcpy(offsets_buffer.get().mutable_data() + offset_counter, &offset, sizeof(int32_t))
+        offset_counter += sizeof(int32_t)
+
+
+
+def create_record_batch_from_numpy(nparray):
+    """Create record batch from n dimensional np array without copying data.
+
+    Because of similar memory layouts for Arrow and Numpy, the data in the Numpy PEP 3118 buffer can be used for
+    creating an Arrow ListArray without copying the data. An offsets buffer still needs to be manually created.
+
+    Args:
+        nparray: any dimensional numpy array
+
+    Returns:
+        Arrow record batch
+
+    """
+    shape = nparray.shape
+    cdef int64_t[:] array_view = nparray.ravel()
+    cdef int64_t *array_pointer = &array_view[0]
+
+    cdef shared_ptr[CBuffer] values_buffer
+    cdef shared_ptr[CBuffer] offsets_buffer
+
+    _create_list_array_buffers(array_pointer, shape[0], shape[1], &values_buffer, &offsets_buffer)
+
+    offsets_py_buffer = pyarrow_wrap_buffer(offsets_buffer)
+    values_py_buffer = pyarrow_wrap_buffer(values_buffer)
+
+    values_array = pa.Array.from_buffers(pa.int64(), nparray.size, [None, values_py_buffer], null_count=0)
+    offsets_array = pa.Array.from_buffers(pa.int32(), shape[0]+1, [None, offsets_py_buffer], null_count=0)
+    list_array = pa.ListArray.from_arrays(offsets_array, values_array)
+
+    field = pa.field("points", pa.list_(pa.field("coord", pa.int64(), False)), False)
+    schema = pa.schema([field])
+
+    return pa.RecordBatch.from_arrays([list_array], schema)
