@@ -5,6 +5,10 @@ proc run_sim {} {
   simulate work.sim_top {
     {"Testbench" sim:/sim_top/* }
     {"UserCore" sim:/sim_top/filter_wrapper_inst/filter_usercore_inst/*}
+    {"Writer Offsets" sim:/sim_top/filter_wrapper_inst/write_first_name_write_inst/arb_inst/a_inst/listprim_gen/listprim_inst/a_inst/*}
+    {"Writer Values" sim:/sim_top/filter_wrapper_inst/write_first_name_write_inst/arb_inst/a_inst/listprim_gen/listprim_inst/b_inst/*}
+    {"Writer ListPrim" sim:/sim_top/filter_wrapper_inst/write_first_name_write_inst/arb_inst/a_inst/listprim_gen/listprim_inst/*}
+    
   }
 }
 

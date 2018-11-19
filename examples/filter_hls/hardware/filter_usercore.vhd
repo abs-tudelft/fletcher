@@ -399,6 +399,7 @@ begin
     write_first_name_in_values_in_last   <= '0';
     write_first_name_in_values_in_dvalid <= '0';
     write_first_name_in_values_in_valid  <= '0';
+    write_first_name_in_values_in_count  <= "1"; -- epc=1 so always 1 element
     
     write_first_name_in_length           <= (others => '0'); 
     write_first_name_in_last             <= '0';

@@ -174,7 +174,7 @@ architecture Behavioral of ColumnWriterListPrim is
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  signal a_unlock_ignoreChild   : std_logic := '1'; -- TODO: fix unlock streams
+  signal a_unlock_ignoreChild   : std_logic := '0';
 
   signal a_valid                : std_logic;
   signal a_ready                : std_logic;
