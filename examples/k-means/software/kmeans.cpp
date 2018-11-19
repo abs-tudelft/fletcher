@@ -199,9 +199,151 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu(const std::shared_ptr<arrow::Recor
 
 
 /**
+ * Run k-means on the CPU. (Arrow version, multithreaded)
+ */
+std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::RecordBatch> &rb,
+                                              std::vector<std::vector<kmeans_t>> centroids_position,
+                                              int iteration_limit) {
+  const kmeans_t * data = get_arrow_pointer(rb->column(0));
+  size_t num_centroids = centroids_position.size();
+  size_t dimensionality = centroids_position[0].size();
+  int64_t num_rows = rb->num_rows();
+
+  auto centroids_position_old = centroids_position;
+  int iteration = 0;
+  do {
+    centroids_position_old = centroids_position;
+
+    // Initialize accumulators
+    std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
+    std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
+    std::vector<kmeans_t> counters(num_centroids, 0);
+    
+    auto accumulators_l = accumulators;
+    auto counters_l = counters;
+
+    #pragma omp parallel default(shared) firstprivate(accumulators_l, counters_l)
+    {
+
+      // For each point
+      #pragma omp for schedule(dynamic, 10000)
+      for (int64_t n = 0; n < num_rows; n++) {
+        // Determine closest centroid for point
+        size_t closest = 0;
+        kmeans_t min_distance = std::numeric_limits<kmeans_t>::max();
+        for (size_t c = 0; c < num_centroids; c++) {
+          // Get distance to current centroid
+          kmeans_t distance = 0;
+          for (size_t d = 0; d < dimensionality; d++) {
+            kmeans_t dim_distance = data[n * dimensionality + d] - centroids_position[c][d];
+            distance += dim_distance * dim_distance;
+          }
+          // Store minimum distance
+          if (distance <= min_distance) {
+            closest = c;
+            min_distance = distance;
+          }
+        }
+        // Update counters of closest centroid
+        counters_l[closest]++;
+        for (size_t d = 0; d < dimensionality; d++) {
+          accumulators_l[closest][d] += data[n * dimensionality + d];
+        }
+      }  // omp for
+
+      // Update global counters
+//      #pragma omp critical
+      {
+      for (size_t c = 0; c < num_centroids; c++) {
+        #pragma omp atomic
+        counters[c] += counters_l[c];
+        for (size_t d = 0; d < dimensionality; d++) {
+          #pragma omp atomic
+          accumulators[c][d] += accumulators_l[c][d];
+        }
+      }
+      }
+
+      // Calculate new centroid positions
+      #pragma omp barrier
+      #pragma omp single
+      {
+      for (size_t c = 0; c < num_centroids; c++) {
+        for (size_t d = 0; d < dimensionality; d++) {
+          centroids_position[c][d] = accumulators[c][d] / counters[c];
+        }
+      }
+      }
+    }  // omp parallel
+
+    iteration++;
+  } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+
+  return centroids_position;
+}
+
+
+/**
  * Run k-means on the CPU. (std::vector version)
  */
 std::vector<std::vector<kmeans_t>> kmeans_cpu(const std::vector<std::vector<kmeans_t>> &dataset,
+                                              std::vector<std::vector<kmeans_t>> centroids_position,
+                                              int iteration_limit) {
+  size_t num_centroids = centroids_position.size();
+  size_t dimensionality = centroids_position[0].size();
+
+  auto centroids_position_old = centroids_position;
+  int iteration = 0;
+  do {
+    // Initialize accumulators
+    std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
+    std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
+    std::vector<kmeans_t> counters(num_centroids, 0);
+
+    // For each point
+    for (auto row : dataset) {
+      // Determine closest centroid for point
+      size_t closest = 0;
+      kmeans_t min_distance = std::numeric_limits<kmeans_t>::max();
+      for (size_t c = 0; c < num_centroids; c++) {
+        // Get distance to current centroid
+        kmeans_t distance = 0;
+        for (size_t d = 0; d < dimensionality; d++) {
+          kmeans_t dim_distance = row[d] - centroids_position[c][d];
+          distance += dim_distance * dim_distance;
+        }
+        // Store minimum distance
+        if (distance <= min_distance) {
+          closest = c;
+          min_distance = distance;
+        }
+      }
+      // Update counters of closest centroid
+      counters[closest]++;
+      for (size_t d = 0; d < dimensionality; d++) {
+        accumulators[closest][d] += row[d];
+      }
+    }
+
+    centroids_position_old = centroids_position;
+    // Calculate new centroid positions
+    for (size_t c = 0; c < num_centroids; c++) {
+      for (size_t d = 0; d < dimensionality; d++) {
+        centroids_position[c][d] = accumulators[c][d] / counters[c];
+      }
+    }
+
+    iteration++;
+  } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+
+  return centroids_position;
+}
+
+
+/**
+ * Run k-means on the CPU. (std::vector version, multithreaded)
+ */
+std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::vector<std::vector<kmeans_t>> &dataset,
                                               std::vector<std::vector<kmeans_t>> centroids_position,
                                               int iteration_limit) {
   size_t num_centroids = centroids_position.size();
@@ -279,6 +421,7 @@ template <typename T> void fpga_push_arg(std::vector<freg_t> *args, T arg) {
  * Use this to read 64-bit values from the FPGA.
  */
 template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::Platform> platform, int reg_idx, T *arg) {
+  *arg = 0;
   const int regs_num = sizeof(T) / sizeof(freg_t);
   for (size_t arg_idx = 0; arg_idx < regs_num; arg_idx++) {
     freg_t reg;
@@ -401,7 +544,7 @@ int main(int argc, char ** argv) {
   int fpga_dim = 8;
   int fpga_centroids = 16;
   // Number of experiments
-  int ne = 1;
+  int ne = 10;
 
   std::cerr << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit "
                "[fpga_dimensionality [fpga_centroids]]]]]]" << std::endl;
@@ -427,7 +570,7 @@ int main(int argc, char ** argv) {
 
   Timer t;
 
-  int bytes_copied;
+  int bytes_copied = 0;
 
   // Times
   std::vector<double> t_ser(ne, 0.0);
@@ -458,6 +601,7 @@ int main(int argc, char ** argv) {
     centroids_position.push_back(centroid_position);
   }
 
+  // Run the mesurements
   for (int e = 0; e < ne; e++) {
     // Serialize to RecordBatch
     t.start();
@@ -479,11 +623,25 @@ int main(int argc, char ** argv) {
     t.stop();
     t_acpu[e] = t.seconds();
 
+    // Run on CPU (vector, OpenMP)
+    t.start();
+    auto result_vomp = kmeans_cpu_omp(
+        dataset, centroids_position, iteration_limit);
+    t.stop();
+    t_vomp[e] = t.seconds();
+
+    // Run on CPU (Arrow, OpenMP)
+    t.start();
+    auto result_aomp = kmeans_cpu_omp(
+        rb, centroids_position, iteration_limit);
+    t.stop();
+    t_aomp[e] = t.seconds();
+
     // Run on FPGA
-    auto result_fpga = kmeans_fpga(
+/*    auto result_fpga = kmeans_fpga(
         rb, centroids_position, iteration_limit, fpga_dim, fpga_centroids,
         &t_copy[e], &t_fpga[e], &bytes_copied);
-
+*/
 
     // Print the clusters
     if (e == 0) {
@@ -498,6 +656,19 @@ int main(int argc, char ** argv) {
       std::cout << "ERROR" << std::endl;
       return EXIT_FAILURE;
     }
+    if (result_vcpu != result_vomp) {
+      std::cout << "vOMP clusters: " << std::endl;
+      print_centroids(result_vomp);
+      std::cout << "ERROR" << std::endl;
+      return EXIT_FAILURE;
+    }
+    if (result_vcpu != result_aomp) {
+      std::cout << "aOMP clusters: " << std::endl;
+      print_centroids(result_aomp);
+      std::cout << "ERROR" << std::endl;
+      return EXIT_FAILURE;
+    }
+
 /*    if (result_vcpu != result_fpga) {
       std::cout << "FPGA clusters: " << std::endl;
       print_centroids(result_fpga);
