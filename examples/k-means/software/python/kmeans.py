@@ -155,18 +155,22 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
 
     return centroids
 
+
 def create_points(num_points, dim, element_max):
+    """Create the points for use in k-means algorithm
+
+    Args:
+        num_points: Number of points
+        dim: Dimension of k-means
+        element_max: Max value of the coordinates of the points (-element_max is the min value)
+
+    Returns:
+        numpy array with the randomly generated points
+
+    """
     np.random.seed(42)
     return np.random.randint(-element_max, element_max, size=(num_points, dim))
 
-
-def create_record_batch_from_np(nparray):
-    arpoints = pa.array(nparray.tolist(), type=pa.list_(pa.int64()))
-
-    field = pa.field("points", pa.list_(pa.field("coord", pa.int64(), False)), False)
-    schema = pa.schema([field])
-
-    return pa.RecordBatch.from_arrays([arpoints], schema)
 
 def create_record_batch_from_list(list_points):
     arpoints = pa.array(list_points, type=pa.list_(pa.int64()))
@@ -189,7 +193,7 @@ if __name__ == "__main__":
                         help="Max number of k-means iterations")
     parser.add_argument("--num_centroids", dest="num_centroids", default=2,
                         help="Number of centroids")
-    parser.add_argument("--num_exp", dest="num_exp", default=1,
+    parser.add_argument("--num_exp", dest="num_exp", default=10,
                         help="Number of experiments")
     parser.add_argument("--max_hw_dim", dest="max_hw_dim", default=8,
                         help="Hardware property. Maximum dimension allowed for K-means.")
@@ -240,57 +244,60 @@ if __name__ == "__main__":
     print("Native to arrow serialization time: " + str(sum(t_naser)))
     print("Numpy to arrow serialization time: " + str(sum(t_npser)))
 
+    # Determine starting centroids
     list_centroids = []
-
     for i in range(num_centroids):
         list_centroids.append(list_points[np.random.randint(0, len(list_points))])
     print(list_centroids)
 
     numpy_centroids = np.array(list_centroids)
 
-
+    # Benchmarking
     for i in range(ne):
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_nppy.append(kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_nppy.append(t.seconds())
-        print("Kmeans NumPy pure Python execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcy.append(t.seconds())
-        print("Kmeans NumPy Cython execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_arcpp.append(t.seconds())
-        print("Kmeans Arrow Cython/CPP execution time: " + str(t.seconds()))
 
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp.append(t.seconds())
-        print("Kmeans Numpy Cython/CPP execution time: " + str(t.seconds()))
 
         list_centroids_copy = copy.deepcopy(list_centroids)
         t.start()
-        # r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
+        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
         t.stop()
         t_fpga.append(t.seconds())
-        print("Kmeans Arrow FPGA total time: " + str(t.seconds()))
 
+    print("Kmeans NumPy pure Python execution time: " + str(sum(t_nppy)))
+    print("Kmeans NumPy Cython execution time: " + str(sum(t_npcy)))
+    print("Kmeans Arrow Cython/CPP execution time: " + str(sum(t_arcpp)))
+    print("Kmeans Numpy Cython/CPP execution time: " + str(sum(t_npcpp)))
+    print("Kmeans Arrow FPGA total time: " + str(sum(t_fpga)))
+
+    # Print results (partially)
     print(r_nppy[0])
     print(r_npcy[0])
     print(r_arcpp[0])
     print(r_npcpp[0])
-    #print(r_fpga[0])
+    print(r_fpga[0])
 
+    # Check correctness of results
     if np.array_equal(r_nppy, r_npcy) \
             and np.array_equal(r_npcy, r_arcpp) \
             and np.array_equal(r_arcpp, r_npcpp) \
