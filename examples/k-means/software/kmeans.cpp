@@ -35,23 +35,19 @@
 
 // Fletcher
 #include <fletcher/fletcher.h>
+#include <fletcher/platform.h>
+#include <fletcher/context.h>
+#include <fletcher/usercore.h>
+#include <fletcher/common/timer.h>
 
-// Default to `echo' platform
-#ifndef PLATFORM
-  #define PLATFORM 0
-#endif
 
-
-namespace chrono = std::chrono;
-typedef chrono::high_resolution_clock perf_clock;
-
-using fletcher::fr_t;
+using fletcher::Timer;
 
 typedef int64_t kmeans_t;
 typedef arrow::Int64Type arrow_t;
 
 
-void print_centroids(std::vector<std::vector<kmeans_t>> centroids_position) {
+void print_centroids(const std::vector<std::vector<kmeans_t>> &centroids_position) {
   for (auto const &centroid : centroids_position) {
     std::cout << " (";
     for (kmeans_t const &dim : centroid) {
@@ -61,10 +57,8 @@ void print_centroids(std::vector<std::vector<kmeans_t>> centroids_position) {
   }
 }
 
-/**
- * Create an Arrow table containing n columns of random 64-bit numbers.
- */
-std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
+
+std::vector<std::vector<kmeans_t>> create_data(int num_rows, int num_columns) {
   // Set up random number generator
   std::mt19937 rng;
   rng.seed(31415926535);
@@ -74,6 +68,26 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
   kmeans_t element_max = 99;  // std::numeric_limits<int64_t>::max() / num_rows;
   std::uniform_int_distribution<kmeans_t> int_dist(-element_max, element_max);
 
+  std::vector<std::vector<kmeans_t>> dataset;
+
+  for (int row_idx = 0; row_idx < num_rows; row_idx++) {
+    std::vector<kmeans_t> row;
+    for (int col_idx = 0; col_idx < num_columns; col_idx++) {
+      // Append number to current list
+      kmeans_t rnd_num = int_dist(rng);
+      row.push_back(rnd_num);
+    }
+    dataset.push_back(std::move(row));
+  }
+
+  return dataset;
+}
+
+
+/**
+ * Convert the dataset into Arrow format.
+ */
+std::shared_ptr<arrow::RecordBatch> create_recordbatch(const std::vector<std::vector<kmeans_t>> &dataset) {
   // Create arrow builder for appending numbers
   auto int_builder = std::make_shared<arrow::NumericBuilder<arrow_t>> ();
 
@@ -82,23 +96,11 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
       arrow::default_memory_pool(),
       int_builder);
 
-  std::vector<kmeans_t> numbers = {
-      12, 6,
-      14, 3,
-      13, 0,
-      45, -500,
-      51, -520,
-  };
-
-  // Create individual lists of given length
-  for (int row = 0; row < num_rows; row++) {
+  for (auto const &row : dataset) {
     // Append single list
     list_builder.Append();
-    for (int col = 0; col < num_columns; col++) {
-      // Append number to current list
-      kmeans_t rnd_num = int_dist(rng);
-      //int_builder->Append(numbers[row * num_columns + col]);
-      int_builder->Append(rnd_num);
+    for (kmeans_t const &dim : row) {
+      int_builder->Append(dim);
     }
   }
 
@@ -114,29 +116,30 @@ std::shared_ptr<arrow::Table> create_table(int num_rows, int num_columns) {
   list_builder.Finish(&num_array);
 
   // Create and return the table
-  return std::move(arrow::Table::Make(schema, { num_array }));
+  return arrow::RecordBatch::Make(schema, dataset.size(), { num_array });
+}
+
+
+const kmeans_t * get_arrow_pointer(const std::shared_ptr<arrow::Array> &array) {
+  // Probe into the Arrow data structures to extract a pointer to the raw data
+  auto points_list = std::static_pointer_cast<arrow::ListArray>(array);
+  auto points = std::static_pointer_cast<arrow::NumericArray<arrow_t>>(
+      points_list->values());
+  const kmeans_t * data = points->raw_values();
+  return data;
 }
 
 
 /**
  * Run k-means on the CPU.
  */
-std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table> table,
-                             std::vector<std::vector<kmeans_t>> centroids_position,
-                             int iteration_limit) {
-  // Performance timer open
-  auto t1 = perf_clock::now();
-
-  // Probe into the Arrow data structures to extract a pointer to the raw data
-  auto points_list = std::static_pointer_cast<arrow::ListArray>(
-      table->column(0)->data()->chunk(0));
-  auto points = std::static_pointer_cast<arrow::NumericArray<arrow_t>>(
-      points_list->values());
-  const kmeans_t * data = points->raw_values();
-
-  const size_t num_centroids = centroids_position.size();
-  const size_t dimensionality = centroids_position[0].size();
-  const int64_t num_rows = table->num_rows();
+std::vector<std::vector<kmeans_t>> kmeans_cpu(const std::shared_ptr<arrow::RecordBatch> &rb,
+                                              std::vector<std::vector<kmeans_t>> centroids_position,
+                                              int iteration_limit) {
+  const kmeans_t * data = get_arrow_pointer(rb->column(0));
+  size_t num_centroids = centroids_position.size();
+  size_t dimensionality = centroids_position[0].size();
+  int64_t num_rows = rb->num_rows();
 
   auto centroids_position_old = centroids_position;
   int iteration = 0;
@@ -182,10 +185,6 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table
     iteration++;
   } while (centroids_position != centroids_position_old && iteration < iteration_limit);
 
-  // Performance timer close
-  auto t2 = perf_clock::now();
-  chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double> >(t2 - t1);
-  std::cout << "CPU algorithm time: " << time_span.count() << " seconds" << std::endl;
   return centroids_position;
 }
 
@@ -193,17 +192,17 @@ std::vector<std::vector<kmeans_t>> arrow_kmeans_cpu(std::shared_ptr<arrow::Table
 /**
  * Push as many FPGA register values as the argument is wide.
  */
-template <typename T> void fpga_push_arg(std::vector<fr_t>& args, T arg) {
+template <typename T> void fpga_push_arg(std::vector<freg_t> *args, T arg) {
   T mask = 0;
-  for (size_t byte = 0; byte < sizeof(fr_t); byte++) {
+  for (size_t byte = 0; byte < sizeof(freg_t); byte++) {
     mask = (mask << 8) | 0xff;
   }
-  for (size_t arg_num = 0; arg_num < sizeof(T) / sizeof(fr_t); arg_num++) {
+  for (size_t arg_num = 0; arg_num < sizeof(T) / sizeof(freg_t); arg_num++) {
     // Mask out LSBs
-    fr_t fletcher_arg = (fr_t) (arg & mask);
-    args.push_back(fletcher_arg);
+    freg_t fletcher_arg = (freg_t) (arg & mask);
+    args->push_back(fletcher_arg);
     // Shift argument
-    arg >>= sizeof(fr_t) * 8;
+    arg >>= sizeof(freg_t) * 8;
   }
 }
 
@@ -211,13 +210,13 @@ template <typename T> void fpga_push_arg(std::vector<fr_t>& args, T arg) {
 /**
  * Read an integer that may be wider that one FPGA register.
  */
-template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::AWSPlatform> platform, int reg_idx, T& arg) {
-  const int regs_num = sizeof(T) / sizeof(fr_t);
+template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::Platform> platform, int reg_idx, T *arg) {
+  const int regs_num = sizeof(T) / sizeof(freg_t);
   for (size_t arg_idx = 0; arg_idx < regs_num; arg_idx++) {
-    fr_t reg;
-    platform->read_mmio(reg_idx + regs_num - 1 - arg_idx, &reg);
-    arg <<= sizeof(fr_t) * 8;
-    arg |= (T) reg;
+    freg_t reg;
+    platform->readMMIO(reg_idx + regs_num - 1 - arg_idx, &reg);
+    *arg <<= sizeof(freg_t) * 8;
+    *arg |= (T) reg;
   }
 }
 
@@ -225,95 +224,78 @@ template <typename T> void fpga_read_mmio(std::shared_ptr<fletcher::AWSPlatform>
 /**
  * Run k-means on an FPGA.
  */
-std::vector<std::vector<kmeans_t>> arrow_kmeans_fpga(std::shared_ptr<arrow::Table> table,
-                                                    std::vector<std::vector<kmeans_t>> centroids_position,
-                                                    int iteration_limit,
-                                                    int fpga_dim,
-                                                    int fpga_centroids) {
-  // Create a platform
-#if(PLATFORM == 0)
-  std::shared_ptr<fletcher::EchoPlatform> platform(new fletcher::EchoPlatform());
-#elif(PLATFORM == 1)
-  std::shared_ptr<fletcher::AWSPlatform> platform(new fletcher::AWSPlatform());
-#elif(PLATFORM == 2)
-  std::shared_ptr<fletcher::SNAPPlatform> platform(new fletcher::SNAPPlatform());
-#else
-  #error "PLATFORM must be 0, 1 or 2"
-#endif
+std::vector<std::vector<kmeans_t>> kmeans_fpga(std::shared_ptr<arrow::RecordBatch> rb,
+                                               std::vector<std::vector<kmeans_t>> centroids_position,
+                                               int iteration_limit,
+                                               int fpga_dim,
+                                               int fpga_centroids) {
+  std::shared_ptr<fletcher::Platform> platform;
+  std::shared_ptr<fletcher::Context> context;
+  std::shared_ptr<fletcher::UserCore> uc;
 
-  // Performance time open
-  auto t1 = perf_clock::now();
+  // Create a platform
+  fletcher::Platform::Make(&platform);
+  // Create a context
+  fletcher::Context::Make(&context, platform);
+  // Create the UserCore
+  uc = std::make_shared<fletcher::UserCore>(context);
+
+  // Initialize the platform
+  platform->init();
+
+  // Reset the UserCore
+  uc->reset();
 
   // Prepare the column buffers
-  platform->prepare_column_chunks(table->column(0));
-
-  // Performance timer close
-  auto t2 = perf_clock::now();
-  chrono::duration<double> time_span = chrono::duration_cast<
-                                          chrono::duration<double> >(t2 - t1);
-  std::cout << "FPGA copy time: " << time_span.count() << " seconds" << std::endl;
-
-
-  // Create a UserCore
-  fletcher::UserCore uc(std::static_pointer_cast<fletcher::FPGAPlatform>(platform));
-
-  // Reset it
-  uc.reset();
+  context->queueRecordBatch(rb).ewf("Error queuing RecordBatch");
+  context->enable().ewf("Error preparing data");
 
   // Determine size of table
-  fletcher::fr_t last_index = table->num_rows();
-  uc.set_range(0, last_index);
+  freg_t last_index = rb->num_rows();
+  uc->setRange(0, last_index).ewf("Error setting range");
 
   // Set UserCore arguments
-  std::vector<fr_t> args;
+  std::vector<freg_t> args;
   for (auto const & centroid : centroids_position) {
     for (kmeans_t const & dim : centroid) {
-      fpga_push_arg(args, dim);
+      fpga_push_arg(&args, dim);
     }
     for (int d = centroid.size(); d < fpga_dim; d++) {
       // Unused dimensions
-      fpga_push_arg(args, (kmeans_t) 0);
+      fpga_push_arg(&args, (kmeans_t) 0);
     }
   }
   // Unused centroids; set to magic number to disable on FPGA
   for (int c = centroids_position.size(); c < fpga_centroids; c++) {
     for (int d = 0; d < fpga_dim - 1; d++) {
-      fpga_push_arg(args, (kmeans_t) 0);
+      fpga_push_arg(&args, (kmeans_t) 0);
     }
-    fpga_push_arg(args, (kmeans_t) std::numeric_limits<kmeans_t>::min());
+    fpga_push_arg(&args, (kmeans_t) std::numeric_limits<kmeans_t>::min());
   }
   args.push_back(iteration_limit);
 
-  uc.set_arguments(args);
-
-  // Performance timer open
-  t1 = perf_clock::now();
+  uc->setArguments(args);
 
   // Start the FPGA user function
-  uc.start();
-  uc.wait_for_finish(1000);  // Poll every 1 ms
-
-  // Performance timer close
-  t2 = perf_clock::now();
-  time_span = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
-  std::cout << "FPGA algorithm time: " << time_span.count() << " seconds" << std::endl;
+  uc->start();
+  uc->waitForFinish(1000);  // Poll every 1 ms
 
   // Read result
   const int centroids = centroids_position.size();
   const int dimensionality = centroids_position[0].size();
-  const int regs_per_dim = sizeof(kmeans_t) / sizeof(fr_t);
+  const int regs_per_dim = sizeof(kmeans_t) / sizeof(freg_t);
   const int regs_offset = 10;
-  fletcher::fr_t reg;
+  freg_t reg;
   for (int c = 0; c < centroids; c++) {
     for (int d = 0; d < dimensionality; d++) {
       kmeans_t dim_value;
       const int reg_num = (c * fpga_dim + d) * regs_per_dim + regs_offset;
-      fpga_read_mmio(platform, reg_num, dim_value);
+      fpga_read_mmio(platform, reg_num, &dim_value);
       centroids_position[c][d] = dim_value;
     }
   }
 
-  platform->read_mmio((fpga_dim * fpga_centroids) * regs_per_dim + regs_offset, &reg);
+  platform->readMMIO((fpga_dim * fpga_centroids) * regs_per_dim + regs_offset, &reg);
   std::cout << "Iterations: " << (iteration_limit - reg) << std::endl;
 
   return centroids_position;
@@ -333,7 +315,8 @@ int main(int argc, char ** argv) {
   int fpga_dim = 8;
   int fpga_centroids = 2;
 
-  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit [fpga_dimensionality [fpga_centroids]]]]]]" << std::endl;
+  std::cout << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit "
+               "[fpga_dimensionality [fpga_centroids]]]]]]" << std::endl;
 
   if (argc >= 2) {
     sscanf(argv[1], "%i", &num_rows);
@@ -355,17 +338,12 @@ int main(int argc, char ** argv) {
   }
 
   // Create table of random numbers
-  std::shared_ptr<arrow::Table> table = create_table(num_rows, dimensionality);
+  auto dataset = create_data(num_rows, dimensionality);
+  auto rb = create_recordbatch(dataset);
 
   // Pick starting centroids
   std::vector<std::vector<kmeans_t>> centroids_position;
-  // Probe into the Arrow data structures to extract a pointer to the raw data
-  auto points_list = std::static_pointer_cast<arrow::ListArray>(
-      table->column(0)->data()->chunk(0));
-  auto points = std::static_pointer_cast<arrow::NumericArray<arrow_t>>(
-      points_list->values());
-  const kmeans_t * points_ptr = points->raw_values();
-
+  const kmeans_t * points_ptr = get_arrow_pointer(rb->column(0));
   for (int n = 0; n < centroids; n++) {
     std::vector<kmeans_t> centroid_position;
     for (int col = 0; col < dimensionality; col++) {
@@ -375,10 +353,12 @@ int main(int argc, char ** argv) {
   }
 
   // Run on CPU
-  std::vector<std::vector<kmeans_t>> result_cpu = arrow_kmeans_cpu(table, centroids_position, iteration_limit);
+  auto result_cpu = kmeans_cpu(
+      rb, centroids_position, iteration_limit);
 
   // Run on FPGA
-  std::vector<std::vector<kmeans_t>> result_fpga = arrow_kmeans_fpga(table, centroids_position, iteration_limit, fpga_dim, fpga_centroids);
+  auto result_fpga = kmeans_fpga(
+      rb, centroids_position, iteration_limit, fpga_dim, fpga_centroids);
 
   std::cout << "CPU clusters: " << std::endl;
   print_centroids(result_cpu);
