@@ -219,12 +219,16 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::R
 
   #pragma omp parallel default(shared)
   {
-    do {
-      auto accumulators_l = accumulators;
-      auto counters_l = counters;
+    auto accumulators_l = accumulators;
+    auto counters_l = counters;
+
+    // Make sure accumulators is not changed before copying to local variable
+    #pragma omp barrier
+
+    do { // k-means iteration
 
       // For each point
-      #pragma omp for schedule(dynamic, 10000)
+      #pragma omp for nowait,schedule(static)
       for (int64_t n = 0; n < num_rows; n++) {
         // Determine closest centroid for point
         size_t closest = 0;
@@ -250,19 +254,19 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::R
       }  // omp for
 
       // Update global counters
-//      #pragma omp critical
-      {
-        for (size_t c = 0; c < num_centroids; c++) {
+      for (size_t c = 0; c < num_centroids; c++) {
+        #pragma omp atomic
+        counters[c] += counters_l[c];
+        counters_l[c] = 0;
+        for (size_t d = 0; d < dimensionality; d++) {
           #pragma omp atomic
-          counters[c] += counters_l[c];
-          for (size_t d = 0; d < dimensionality; d++) {
-            #pragma omp atomic
-            accumulators[c][d] += accumulators_l[c][d];
-          }
+          accumulators[c][d] += accumulators_l[c][d];
+          accumulators_l[c][d] = 0;
         }
       }
 
       // Calculate new centroid positions
+      // Barrier, so that all threads are finished adding their counts
       #pragma omp barrier
       #pragma omp single
       {
@@ -276,7 +280,7 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::shared_ptr<arrow::R
         }
         iteration++;
       } // omp single
-      #pragma omp barrier
+      // implicit barrier
 
     } while (centroids_position != centroids_position_old && iteration < iteration_limit);
 
@@ -351,50 +355,84 @@ std::vector<std::vector<kmeans_t>> kmeans_cpu_omp(const std::vector<std::vector<
                                               int iteration_limit) {
   size_t num_centroids = centroids_position.size();
   size_t dimensionality = centroids_position[0].size();
+  size_t num_rows = dataset.size();
 
   auto centroids_position_old = centroids_position;
   int iteration = 0;
-  do {
-    // Initialize accumulators
-    std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
-    std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
-    std::vector<kmeans_t> counters(num_centroids, 0);
 
-    // For each point
-    for (auto row : dataset) {
-      // Determine closest centroid for point
-      size_t closest = 0;
-      kmeans_t min_distance = std::numeric_limits<kmeans_t>::max();
-      for (size_t c = 0; c < num_centroids; c++) {
-        // Get distance to current centroid
-        kmeans_t distance = 0;
+  // Initialize accumulators
+  std::vector<kmeans_t> centroid_accumulator(dimensionality, 0);
+  std::vector<std::vector<kmeans_t>> accumulators(num_centroids, centroid_accumulator);
+  std::vector<kmeans_t> counters(num_centroids, 0);
+
+  #pragma omp parallel default(shared)
+  {
+    auto accumulators_l = accumulators;
+    auto counters_l = counters;
+
+    // Make sure accumulators is not changed before copying to local variable
+    #pragma omp barrier
+
+    do { // k-means iteration
+
+      // For each point
+      #pragma omp for nowait,schedule(static)
+      for (size_t n = 0; n < num_rows; n++) {
+        // Determine closest centroid for point
+        size_t closest = 0;
+        kmeans_t min_distance = std::numeric_limits<kmeans_t>::max();
+        for (size_t c = 0; c < num_centroids; c++) {
+          // Get distance to current centroid
+          kmeans_t distance = 0;
+          for (size_t d = 0; d < dimensionality; d++) {
+            kmeans_t dim_distance = dataset[n][d] - centroids_position[c][d];
+            distance += dim_distance * dim_distance;
+          }
+          // Store minimum distance
+          if (distance <= min_distance) {
+            closest = c;
+            min_distance = distance;
+          }
+        }
+        // Update counters of closest centroid
+        counters_l[closest]++;
         for (size_t d = 0; d < dimensionality; d++) {
-          kmeans_t dim_distance = row[d] - centroids_position[c][d];
-          distance += dim_distance * dim_distance;
+          accumulators_l[closest][d] += dataset[n][d];
         }
-        // Store minimum distance
-        if (distance <= min_distance) {
-          closest = c;
-          min_distance = distance;
+      } // omp for
+
+      // Update global counters
+      for (size_t c = 0; c < num_centroids; c++) {
+        #pragma omp atomic
+        counters[c] += counters_l[c];
+        counters_l[c] = 0;
+        for (size_t d = 0; d < dimensionality; d++) {
+          #pragma omp atomic
+          accumulators[c][d] += accumulators_l[c][d];
+          accumulators_l[c][d] = 0;
         }
       }
-      // Update counters of closest centroid
-      counters[closest]++;
-      for (size_t d = 0; d < dimensionality; d++) {
-        accumulators[closest][d] += row[d];
-      }
-    }
 
-    centroids_position_old = centroids_position;
-    // Calculate new centroid positions
-    for (size_t c = 0; c < num_centroids; c++) {
-      for (size_t d = 0; d < dimensionality; d++) {
-        centroids_position[c][d] = accumulators[c][d] / counters[c];
-      }
-    }
+      // Calculate new centroid positions
+      // Barrier, so that all threads are finished adding their counts
+      #pragma omp barrier
+      #pragma omp single
+      {
+        centroids_position_old = centroids_position;
+        for (size_t c = 0; c < num_centroids; c++) {
+          for (size_t d = 0; d < dimensionality; d++) {
+            centroids_position[c][d] = accumulators[c][d] / counters[c];
+            accumulators[c][d] = 0;
+          }
+          counters[c] = 0;
+        }
+        iteration++;
+      } // omp single
+      // implicit barrier
 
-    iteration++;
-  } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+    } while (centroids_position != centroids_position_old && iteration < iteration_limit);
+
+  }  // omp parallel
 
   return centroids_position;
 }
