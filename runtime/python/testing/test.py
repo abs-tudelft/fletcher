@@ -33,6 +33,7 @@ def test_platform():
     # MMIO
     platform.write_mmio(0, 0)
     val = platform.read_mmio(0)
+    val64 = platform.read_mmio_64(0)
 
     # Buffers
     size = 7

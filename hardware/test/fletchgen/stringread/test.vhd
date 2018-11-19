@@ -47,9 +47,9 @@ entity test is
     Name_cmd_tag                               : out std_logic_vector(TAG_WIDTH-1 downto 0);
     Name_cmd_Name_values_addr                  : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     Name_cmd_Name_offsets_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    Name_unlock_valid                          : out std_logic := '1';
-    Name_unlock_ready                          : in std_logic;
-    Name_unlock_tag                            : out std_logic_vector(TAG_WIDTH-1 downto 0);
+    Name_unlock_valid                          : in std_logic := '1';
+    Name_unlock_ready                          : out std_logic;
+    Name_unlock_tag                            : in std_logic_vector(TAG_WIDTH-1 downto 0);
     -------------------------------------------------------------------------
     acc_reset                                  : in std_logic;
     acc_clk                                    : in std_logic;
