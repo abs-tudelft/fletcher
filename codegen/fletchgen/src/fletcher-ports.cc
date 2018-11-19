@@ -52,6 +52,15 @@ string typeToString(CSP type) {
   throw std::runtime_error("Unkown type.");
 }
 
+string typeToString(USP type) {
+  switch (type) {
+    case USP::VALID: return "valid";
+    case USP::READY: return "ready";
+    case USP::TAG: return "tag";
+  }
+  throw std::runtime_error("Unkown type.");
+}
+
 string typeToString(GP type) {
   switch (type) {
     case GP::BUS_CLK:return ce::BUS_CLK;
@@ -157,6 +166,12 @@ CommandPort::CommandPort(const std::string &name, CSP type, Dir dir, Stream *str
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream),
       TypedBy(type),
       WithOffset(std::move(offset)) {}
+
+UnlockPort::UnlockPort(const std::string &name, USP type, Dir dir, const Value &width, Stream *stream)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream), TypedBy(type) {}
+
+UnlockPort::UnlockPort(const std::string &name, USP type, Dir dir, Stream *stream)
+    : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, stream), TypedBy(type) {}
 
 ReadReqPort::ReadReqPort(const std::string &name, RRP type, Dir dir, const Value &width, Stream *stream, Value offset)
     : StreamPort(nameFrom({stream->name(), name, typeToString(type)}), dir, width, stream),

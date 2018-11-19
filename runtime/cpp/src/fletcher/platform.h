@@ -74,6 +74,14 @@ class Platform {
   inline Status readMMIO(uint64_t offset, uint32_t *value) { return Status(platformReadMMIO(offset, value)); }
 
   /**
+  * @brief Read 64 bit value from two successive 32 bit MMIO registers.
+  * @param offset      Register offset
+  * @param value       Value to read to
+  * @return            Status::OK() if successful, Status::ERROR() otherwise.
+  */
+  Status readMMIO64(uint64_t offset, uint64_t *value);
+
+  /**
    * @brief Allocate a region of memory on the device
    * @param device_address  The resulting device address
    * @param size            The amount of bytes to allocate

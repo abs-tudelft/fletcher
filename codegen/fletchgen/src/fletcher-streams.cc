@@ -34,7 +34,7 @@ string typeToString(FST type) {
     case FST::CMD: return "cmd";
     case FST::RARROW: return "out";
     case FST::WARROW: return "in";
-    case FST::UNLOCK: return "unl";
+    case FST::UNLOCK: return "unlock";
     case FST::RREQ: return "rreq";
     case FST::RDAT: return "rdat";
     case FST::WREQ: return "wreq";

@@ -126,6 +126,10 @@ void UserCore::addUserStreams(std::vector<std::shared_ptr<fletchgen::Column>> co
     auto cmds = c->generateUserCommandStream();
     cmds->invert();
     appendStream(cmds);
+
+    auto us = c->generateUserUnlockStream();
+    us->invert();
+    appendStream(us);
   }
 }
 
