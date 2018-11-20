@@ -17,26 +17,65 @@ package nl.tudelft.ewi.ce.abs.kmeans;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Kmeans {
 	int num_columns = 8;
 	int num_centroids = 16;
-	int iteration_limit = 10;
+	int iteration_limit = 25;
+	int chunk_size = 8192;
 
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		Timer t = new Timer();
+		
 		Kmeans kmeans = new Kmeans();
 		
 		Random rng = new Random();
-		List<List<Long>> data = kmeans.createData(rng, 1000);
+		List<List<Long>> data = kmeans.createData(rng, 1000000);
 		
 		List<List<Long>> start_centroids = kmeans.getStartingCentroids(data);
 		
+		t.start();
 		List<List<Long>> result_vcpu = kmeans.kmeansCPU(data, start_centroids);
+		t.stop();
 		System.out.println("vCPU clusters: ");
 		for (List<Long> centroid : result_vcpu) {
 			System.out.println(centroid);
 		}
+		System.out.println("vcpu " + t.seconds());
+		
+		t.start();
+		List<List<Long>> result_vcpu2 = kmeans.kmeansCPU(data, start_centroids);
+		t.stop();
+		System.out.println("vcpu " + t.seconds());
+		if (!result_vcpu2.equals(result_vcpu)) {
+			System.out.println("ERROR");
+			System.exit(1);
+		}
+		
+		t.start();
+		List<List<Long>> result_vomp = kmeans.kmeansCPUThreaded(data, start_centroids);
+		t.stop();
+		System.out.println("vomp " + t.seconds());
+		if (!result_vomp.equals(result_vcpu)) {
+			System.out.println("ERROR");
+			System.exit(1);
+		}
+		t.start();
+		List<List<Long>> result_vomp2 = kmeans.kmeansCPUThreaded(data, start_centroids);
+		t.stop();
+		System.out.println("vomp " + t.seconds());
+		if (!result_vomp2.equals(result_vcpu)) {
+			System.out.println("ERROR");
+			System.exit(1);
+		}
+		
+		System.out.println("PASS");
+		System.exit(0);
 	}
 
 	
@@ -102,6 +141,54 @@ public class Kmeans {
 				counters[closest]++;
 				for (int d = 0; d < num_columns; d++) {
 					accumulators[closest][d] += row.get(d);
+				}
+			}
+			
+			// Calculate new centroid positions
+			for (int c = 0; c < num_centroids; c++) {
+				List<Long> centroid = new_centroids.get(c);
+				for (int d = 0; d < num_columns; d++) {
+					centroid.set(d, accumulators[c][d] / counters[c]);
+					accumulators[c][d] = 0;
+				}
+				counters[c] = 0;
+			}
+
+			iteration++;
+		} while (!old_centroids.equals(new_centroids) && iteration < iteration_limit);
+
+		return new_centroids;
+	}
+	
+	
+	private List<List<Long>> kmeansCPUThreaded(List<List<Long>> data, List<List<Long>> centroids) throws InterruptedException, ExecutionException {
+		ExecutorService es = Executors.newWorkStealingPool();
+		
+		long[] counters = new long[num_centroids];
+		long[][] accumulators = new long[num_centroids][num_columns];
+		
+		List<List<Long>> old_centroids;
+		List<List<Long>> new_centroids = centroidsCopy(centroids);
+		int iteration = 0;
+		do {
+			old_centroids = centroidsCopy(new_centroids);
+
+			// Split points over work units
+			List<Future<KmeansPartialResult>> results = new ArrayList<Future<KmeansPartialResult>>();
+			int n = 0;
+			for (; n < data.size() - chunk_size; n += chunk_size) {
+				results.add(es.submit(new KmeansAssigner(this, new_centroids, data.subList(n, n + chunk_size))));
+			}
+			results.add(es.submit(new KmeansAssigner(this, new_centroids, data.subList(n, data.size()))));
+			
+			// Add all results together
+			for (Future<KmeansPartialResult> result : results) {
+				KmeansPartialResult vals = result.get();
+				for (int c = 0; c < num_centroids; c++) {
+					for (int d = 0; d < num_columns; d++) {
+						accumulators[c][d] += vals.accumulators[c][d];
+					}
+					counters[c] += vals.counters[c];
 				}
 			}
 			
