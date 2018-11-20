@@ -12,6 +12,8 @@ add_executable(${PROJECT_NAME}
         src/stringwrite.cc
         )
 
+find_library(LIB_ARROW arrow)
+
 target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
 
 find_library(LIB_FLETCHER fletcher)

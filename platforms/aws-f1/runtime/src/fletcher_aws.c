@@ -26,11 +26,9 @@
 
 #include "fletcher_aws.h"
 
-da_t buffer_ptr = 0x0;
-
 // Dirty globals
 AwsConfig aws_default_config = {0, 0, 1};
-PlatformState aws_state = {{0, 0, 0}, 4096, {0}, {0},  0, 0, {0}, {0}};
+PlatformState aws_state = {{0, 0, 0}, 4096, {0}, {0},  0, 0, {0}, {0}, 0x0};
 
 static fstatus_t check_ddr(const uint8_t *source, da_t offset, size_t size) {
   uint8_t *check_buffer = (uint8_t *) malloc(size);
@@ -259,6 +257,12 @@ fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination
               device_source,
               (uint64_t) host_destination,
               size);
+  int rc = pread(aws_state.xdma_rd_fd[0], host_destination, size, device_source);
+  fsync(aws_state.xdma_rd_fd[0]);
+  if (rc < 0) {
+    int errsv = errno;
+    fprintf(stderr, "[FLETCHER_AWS] pread() error: %s\n", strerror(errsv));
+  }  
   return FLETCHER_STATUS_OK;
 }
 
@@ -280,11 +284,11 @@ fstatus_t platformTerminate(void *arg) {
 }
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
-  *device_address = buffer_ptr;
+  *device_address = aws_state.buffer_ptr;
   debug_print("[FLETCHER_AWS] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n",
-              (uint64_t) *device_address,
+              (uint64_t) aws_state.buffer_ptr,
               size);
-  buffer_ptr += size + FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT);
+  aws_state.buffer_ptr += size + FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT);
   return FLETCHER_STATUS_OK;
 }
 
@@ -300,13 +304,13 @@ fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_des
 }
 
 fstatus_t platformCacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
-  *device_destination = buffer_ptr;
+  *device_destination = aws_state.buffer_ptr;
   debug_print("[FLETCHER_AWS] Caching buffer on device.    [host] 0x%016lX --> 0x%016lX (%10lu bytes).\n",
               (unsigned long) host_source,
               (unsigned long) *device_destination,
               size);
-  fstatus_t ret = platformCopyHostToDevice(host_source, buffer_ptr, size);
-  *device_destination = buffer_ptr;
-  buffer_ptr += size + (FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT));
+  fstatus_t ret = platformCopyHostToDevice(host_source, aws_state.buffer_ptr, size);
+  *device_destination = aws_state.buffer_ptr;
+  aws_state.buffer_ptr += size + (FLETCHER_AWS_DEVICE_ALIGNMENT - (size % FLETCHER_AWS_DEVICE_ALIGNMENT));
   return ret;
 }

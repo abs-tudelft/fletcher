@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <random>
 #include <stdlib.h>
+#include <unistd.h>
 
 // Apache Arrow
 #include <arrow/api.h>
@@ -37,7 +38,7 @@ std::shared_ptr<arrow::RecordBatch> getRecordBatch(int32_t num_strings, int32_t 
   std::shared_ptr<arrow::Buffer> offsets;
   std::shared_ptr<arrow::Buffer> values;
 
-  if (!arrow::AllocateBuffer(arrow::default_memory_pool(), num_strings + 1, &offsets).ok()) {
+  if (!arrow::AllocateBuffer(arrow::default_memory_pool(), sizeof(int32_t) * (num_strings + 1), &offsets).ok()) {
     std::cerr << "Could not allocate offsets buffer." << std::endl;
     std::exit(-1);
   }
@@ -55,10 +56,10 @@ std::shared_ptr<arrow::RecordBatch> getRecordBatch(int32_t num_strings, int32_t 
 
 int main(int argc, char **argv) {
 
-  constexpr int32_t num_str = 4;
-  constexpr int32_t num_chars = num_str * 512;
+  constexpr int32_t num_str = 32;
+  constexpr int32_t num_chars = num_str * 256;
 
-  auto rb = getRecordBatch(num_str, 1024);
+  auto rb = getRecordBatch(num_str, num_chars);
 
   std::shared_ptr<fletcher::Platform> platform;
   std::shared_ptr<fletcher::Context> context;
@@ -80,12 +81,14 @@ int main(int argc, char **argv) {
 
   uc->setRange(0, num_str);
 
-  uc->setArguments({128,   // Minimum string length
-                    255}); // PRNG mask
+  uc->setArguments({ (uint32_t)std::strtoul(argv[1], NULL, 10),   // Minimum string length
+                     (uint32_t)std::strtoul(argv[2], NULL, 10)}); // PRNG mask
 
   uc->start();
-
-  uc->waitForFinish(1000);
+  platform->writeMMIO(0,0);
+  
+  usleep(100);
+  //uc->waitForFinish(1000000);
 
   // Get raw pointers to host-side Arrow buffers
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
@@ -96,6 +99,10 @@ int main(int argc, char **argv) {
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[0].device_address, raw_offsets, sizeof(int32_t) * (num_str+1));
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[1].device_address, raw_values, (uint64_t) num_chars);
 
+  //fletcher::HexView hv(0);
+  //hv.addData(raw_offsets, sizeof(int32_t) * (num_str+1));
+  //hv.addData(raw_values, num_chars);
+  //std::cout << hv.toString() << std::endl;
+  std::cout << "Recordbatch:" << std::endl;
   std::cout << sa->ToString() << std::endl;
-
 }

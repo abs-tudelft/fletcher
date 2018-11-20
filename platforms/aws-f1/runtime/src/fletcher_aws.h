@@ -51,6 +51,7 @@ typedef struct {
   int error;
   char wr_device_filename[256];
   char rd_device_filename[256];
+  da_t buffer_ptr;
 } PlatformState;
 
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.
