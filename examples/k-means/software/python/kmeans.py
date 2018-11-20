@@ -43,7 +43,7 @@ class Timer:
         return self.stoptime - self.starttime
 
 
-def kmeans_python(points, centroids, iteration_limit):
+def numpy_kmeans_python(points, centroids, iteration_limit):
     num_centroids = len(centroids)
     dimensionality = len(centroids[0])
     num_rows = len(points)
@@ -66,7 +66,7 @@ def kmeans_python(points, centroids, iteration_limit):
                     dim_distance = points[n][d] - centroids[c][d]
                     distance += dim_distance * dim_distance
 
-                if distance < min_distance:
+                if distance <= min_distance:
                     closest = c
                     min_distance = distance
 
@@ -87,6 +87,53 @@ def kmeans_python(points, centroids, iteration_limit):
         iteration += 1
 
     return centroids
+
+def arrow_kmeans_python(batch, centroids, iteration_limit):
+    num_centroids = len(centroids)
+    dimensionality = len(centroids[0])
+    num_rows = batch.num_rows
+    points = batch.column(0)
+
+    centroids_old = []
+    iteration = 0
+
+    while not np.array_equal(centroids_old, centroids) and iteration < iteration_limit:
+        accumulators = [[0 for i in range(dimensionality)] for j in range(num_centroids)]
+        counters = [0] * num_centroids
+
+        for n in range(num_rows):
+            # Determine closest centroid for point
+            closest = 0
+            min_distance = sys.maxsize
+            for c in range(num_centroids):
+                # Get distance to current centroid
+                distance = 0
+                for d in range(dimensionality):
+                    dim_distance = points[n][d].as_py() - centroids[c][d]
+                    distance += dim_distance * dim_distance
+
+                if distance <= min_distance:
+                    closest = c
+                    min_distance = distance
+
+            # Update counters of closest centroid
+            counters[closest] += 1
+            for d in range(dimensionality):
+                accumulators[closest][d] += points[n][d].as_py()
+
+        centroids_old = copy.deepcopy(centroids)
+        # Calculate new centroids
+        for c in range(num_centroids):
+            for d in range(dimensionality):
+                if accumulators[c][d] >= 0:
+                    centroids[c][d] = accumulators[c][d] // counters[c]
+                else:
+                    centroids[c][d] = -(abs(accumulators[c][d]) // counters[c])
+
+        iteration += 1
+
+    return centroids
+
 
 
 def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_centroids):
@@ -165,7 +212,7 @@ def create_points(num_points, dim, element_max):
         numpy array with the randomly generated points
 
     """
-    np.random.seed(0)
+    np.random.seed(42)
     return np.random.randint(-element_max, element_max, size=(num_points, dim))
 
 
@@ -184,13 +231,13 @@ if __name__ == "__main__":
                         help="Type of FPGA platform.")
     parser.add_argument("--num_rows", dest="num_rows", default=1024,
                         help="Number of points in coordinate system")
-    parser.add_argument("--dim", dest="dimensionality", default=2,
+    parser.add_argument("--dim", dest="dimensionality", default=8,
                         help="Dimension of coordinate system")
     parser.add_argument("--iteration_limit", dest="iteration_limit", default=30,
                         help="Max number of k-means iterations")
-    parser.add_argument("--num_centroids", dest="num_centroids", default=2,
+    parser.add_argument("--num_centroids", dest="num_centroids", default=16,
                         help="Number of centroids")
-    parser.add_argument("--num_exp", dest="num_exp", default=10,
+    parser.add_argument("--num_exp", dest="num_exp", default=5,
                         help="Number of experiments")
     parser.add_argument("--max_hw_dim", dest="max_hw_dim", default=8,
                         help="Hardware property. Maximum dimension allowed for K-means.")
@@ -211,7 +258,9 @@ if __name__ == "__main__":
     t = Timer()
     t_naser = []
     t_npser = []
+    t_napy = []
     t_nppy = []
+    t_arpy = []
     t_npcy = []
     t_arcpp = []
     t_arcpp_omp = []
@@ -220,7 +269,9 @@ if __name__ == "__main__":
     t_fpga = []
 
     # Results
+    r_napy = []
     r_nppy = []
+    r_arpy = []
     r_npcy = []
     r_arcpp = []
     r_arcpp_omp = []
@@ -255,42 +306,63 @@ if __name__ == "__main__":
 
     # Benchmarking
     for i in range(ne):
+        # Native list k-means in pure Python
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_nppy.append(kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit))
+        r_napy.append(numpy_kmeans_python(list_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_napy.append(t.seconds())
+
+        # Numpy k-means in pure Python
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_nppy.append(numpy_kmeans_python(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_nppy.append(t.seconds())
 
+        # Arrow k-means in pure Python (immensely slow)
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_arpy.append(arrow_kmeans_python(batch_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_arpy.append(t.seconds())
+
+        # Numpy k-means with the algorithm implemented in Cython
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcy.append(t.seconds())
 
+        # Arrow k-means using Cython wrapped C++
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_arcpp.append(t.seconds())
 
+        # Numpy k-means using Cython wrapped C++
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp.append(t.seconds())
 
+        # Arrow k-means using Cython wrapped C++ (multi core)
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_arcpp_omp.append(kmeans.arrow_kmeans_cpp_omp(batch_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_arcpp_omp.append(t.seconds())
 
+        # Arrow k-means using Cython wrapped C+ (multi core)
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcpp_omp.append(kmeans.numpy_kmeans_cpp_omp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp_omp.append(t.seconds())
 
+        # Arrow k-means on the FPGA
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_fpga.append(arrow_kmeans_fpga(batch_points, numpy_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
@@ -298,7 +370,9 @@ if __name__ == "__main__":
         t_fpga.append(t.seconds())
 
     print("Total runtimes for " + str(ne) + " runs:")
+    print("Kmeans native list pure Python execution time: " + str(sum(t_napy)))
     print("Kmeans NumPy pure Python execution time: " + str(sum(t_nppy)))
+    print("Kmeans Arrow pure Python execution time: " + str(sum(t_arpy)))
     print("Kmeans NumPy Cython execution time: " + str(sum(t_npcy)))
     print("Kmeans Arrow Cython/CPP execution time: " + str(sum(t_arcpp)))
     print("Kmeans Numpy Cython/CPP execution time: " + str(sum(t_npcpp)))
@@ -310,6 +384,7 @@ if __name__ == "__main__":
     # print(r_nppy[0])
     # print(r_npcy[0])
     # print(r_arcpp[0])
+    # print(r_arcpp_omp[0])
     # print(r_npcpp[0])
     # print(r_fpga[0])
 
@@ -318,8 +393,10 @@ if __name__ == "__main__":
             and np.array_equal(r_npcy, r_arcpp) \
             and np.array_equal(r_arcpp, r_npcpp) \
             and np.array_equal(r_npcpp, r_arcpp_omp) \
-            and np.array_equal(r_arcpp_omp, r_npcpp_omp):# \
-            #and np.array_equal(r_npcpp, r_fpga):
+            and np.array_equal(r_arcpp_omp, r_npcpp_omp) \
+            and np.array_equal(r_npcpp_omp, r_arpy) \
+            and np.array_equal(r_arpy, r_napy) \
+            and np.array_equal(r_napy, r_fpga):
         print("PASS")
     else:
         print("ERROR")

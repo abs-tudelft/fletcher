@@ -85,7 +85,7 @@ cdef _np_kmeans_cython(np.ndarray[np.int64_t, ndim=1] points, np.ndarray[np.int6
                     dim_distance = points[n*dimensionality + d] - centroids[c*dimensionality + d]
                     distance += dim_distance * dim_distance
 
-                if distance < min_distance:
+                if distance <= min_distance:
                     closest = c
                     min_distance = distance
 

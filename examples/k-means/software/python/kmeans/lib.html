@@ -772,8 +772,8 @@ body.cython { font-family: courier; font-size: 12; }
 <pre class='cython code score-0 '>          __pyx_v_distance = (__pyx_v_distance + (__pyx_v_dim_distance * __pyx_v_dim_distance));
         }
 </pre><pre class="cython line score-0">&#xA0;<span class="">087</span>: </pre>
-<pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">088</span>:                 <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">min_distance</span><span class="p">:</span></pre>
-<pre class='cython code score-0 '>        __pyx_t_7 = ((__pyx_v_distance &lt; __pyx_v_min_distance) != 0);
+<pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">088</span>:                 <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="n">min_distance</span><span class="p">:</span></pre>
+<pre class='cython code score-0 '>        __pyx_t_7 = ((__pyx_v_distance &lt;= __pyx_v_min_distance) != 0);
         if (__pyx_t_7) {
 /* … */
         }

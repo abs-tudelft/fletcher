@@ -4750,7 +4750,7 @@ static PyObject *__pyx_f_6kmeans_3lib__np_kmeans_cython(PyArrayObject *__pyx_v_p
  *                     dim_distance = points[n*dimensionality + d] - centroids[c*dimensionality + d]
  *                     distance += dim_distance * dim_distance             # <<<<<<<<<<<<<<
  * 
- *                 if distance < min_distance:
+ *                 if distance <= min_distance:
  */
           __pyx_v_distance = (__pyx_v_distance + (__pyx_v_dim_distance * __pyx_v_dim_distance));
         }
@@ -4758,16 +4758,16 @@ static PyObject *__pyx_f_6kmeans_3lib__np_kmeans_cython(PyArrayObject *__pyx_v_p
         /* "kmeans/lib.pyx":88
  *                     distance += dim_distance * dim_distance
  * 
- *                 if distance < min_distance:             # <<<<<<<<<<<<<<
+ *                 if distance <= min_distance:             # <<<<<<<<<<<<<<
  *                     closest = c
  *                     min_distance = distance
  */
-        __pyx_t_7 = ((__pyx_v_distance < __pyx_v_min_distance) != 0);
+        __pyx_t_7 = ((__pyx_v_distance <= __pyx_v_min_distance) != 0);
         if (__pyx_t_7) {
 
           /* "kmeans/lib.pyx":89
  * 
- *                 if distance < min_distance:
+ *                 if distance <= min_distance:
  *                     closest = c             # <<<<<<<<<<<<<<
  *                     min_distance = distance
  * 
@@ -4775,7 +4775,7 @@ static PyObject *__pyx_f_6kmeans_3lib__np_kmeans_cython(PyArrayObject *__pyx_v_p
           __pyx_v_closest = __pyx_v_c;
 
           /* "kmeans/lib.pyx":90
- *                 if distance < min_distance:
+ *                 if distance <= min_distance:
  *                     closest = c
  *                     min_distance = distance             # <<<<<<<<<<<<<<
  * 
@@ -4786,7 +4786,7 @@ static PyObject *__pyx_f_6kmeans_3lib__np_kmeans_cython(PyArrayObject *__pyx_v_p
           /* "kmeans/lib.pyx":88
  *                     distance += dim_distance * dim_distance
  * 
- *                 if distance < min_distance:             # <<<<<<<<<<<<<<
+ *                 if distance <= min_distance:             # <<<<<<<<<<<<<<
  *                     closest = c
  *                     min_distance = distance
  */

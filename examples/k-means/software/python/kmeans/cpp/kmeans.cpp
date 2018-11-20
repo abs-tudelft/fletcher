@@ -252,7 +252,7 @@ int64_t* arrow_kmeans_cpu(std::shared_ptr<arrow::RecordBatch> batch,
           distance += dim_distance * dim_distance;
         }
         // Store minimum distance
-        if (distance < min_distance) {
+        if (distance <= min_distance) {
           closest = c;
           min_distance = distance;
         }
@@ -310,7 +310,7 @@ int64_t* numpy_kmeans_cpu(int64_t* data,
           distance += dim_distance * dim_distance;
         }
         // Store minimum distance
-        if (distance < min_distance) {
+        if (distance <= min_distance) {
           closest = c;
           min_distance = distance;
         }
