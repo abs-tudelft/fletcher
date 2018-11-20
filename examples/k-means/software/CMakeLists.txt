@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 add_executable(${PROJECT_NAME}
-        kmeans.cpp
+        src/kmeans.cpp
         )
 
 find_library(LIB_ARROW arrow)
