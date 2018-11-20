@@ -159,7 +159,6 @@ initial begin
 
   // Start UserCore
   tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
 
   // Poll status at an interval of 1000 nsec
   // For the real thing, you should probably increase this to put 
