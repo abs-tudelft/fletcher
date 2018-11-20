@@ -22,8 +22,8 @@ ext_modules = cythonize(Extension(
     "kmeans.lib",
     ["kmeans/lib.pyx", "kmeans/cpp/kmeans.cpp"],
     language="c++",
-    extra_compile_args=["-std=c++11", "-O3"],
-    extra_link_args=["-std=c++11"]
+    extra_compile_args=["-std=c++11", "-Ofast", "-fopenmp", "-march=native"],
+    extra_link_args=["-std=c++11", "-fopenmp"]
 ))
 
 for ext in ext_modules:

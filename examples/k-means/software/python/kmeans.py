@@ -165,7 +165,7 @@ def create_points(num_points, dim, element_max):
         numpy array with the randomly generated points
 
     """
-    np.random.seed(42)
+    np.random.seed(0)
     return np.random.randint(-element_max, element_max, size=(num_points, dim))
 
 

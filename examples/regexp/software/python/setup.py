@@ -20,20 +20,21 @@ import pyarrow as pa
 
 ext_modules = cythonize(Extension(
     "re2_arrow.lib",
-    ["re2_arrow/lib.pyx"],
+    ["re2_arrow/lib.pyx", "re2_arrow/cpp/re2_arrow.cpp"],
     language="c++",
-    extra_compile_args=["-std=c++11", "-O3"],
-    extra_link_args=["-std=c++11"]
+    extra_compile_args=["-std=c++11", "-Ofast", "-fopenmp", "-march=native"],
+    extra_link_args=["-std=c++11", "-fopenmp"]
 ))
 
 for ext in ext_modules:
     ext.include_dirs.append(np.get_include())
     ext.include_dirs.append(pa.get_include())
+    ext.include_dirs.append("./re2_arrow/cpp")
     ext.libraries.extend(pa.get_libraries())
     ext.libraries.extend(["arrow", "re2"])
     ext.library_dirs.extend(pa.get_library_dirs())
     ext.runtime_library_dirs.extend(pa.get_library_dirs())
-    ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
+    # ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
 setup(ext_modules=ext_modules)
 

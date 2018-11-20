@@ -13,30 +13,56 @@
 # limitations under the License.
 
 from libcpp.memory cimport shared_ptr
+from libc.stdlib cimport malloc, free
 from libc.stdint cimport *
 from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector
 from libcpp cimport bool as cpp_bool
 
+import numpy as np
+cimport numpy as np
 from pyarrow.lib cimport *
 
-cdef extern from "re2/re2.h" namespace "re2" nogil:
-    cdef cppclass StringPiece:
-        StringPiece(const cpp_string& str)
+cdef extern from "cpp/re2_arrow.h" nogil:
+    void add_matches_arrow(const shared_ptr[CArray] &array, const vector[cpp_string] &regexes, uint32_t* matches)
 
-    cdef cppclass RE2:
-        RE2(const cpp_string pattern)
-        cpp_bool FullMatch(const StringPiece& text, const RE2& re)
+    void add_matches_arrow_omp(const shared_ptr[CArray] &array,
+                               const vector[cpp_string] &regexes,
+                               uint32_t* matches)
 
-
-cdef _add_matches_cython_arrow(shared_ptr[CArray] array, list regexes, int num_regexes):
-    cdef vector[RE2*] programs
+# Single core efficient regex matching for Arrow
+cpdef add_matches_cpp_arrow(strings, list regexes):
     cdef int i
-    cdef int num_strings = array.get().length()
+    cdef int num_regexes = len(regexes)
+    cdef vector[cpp_string] cpp_regexes
 
     for i in range(num_regexes):
-        programs.push_back(new RE2(regexes[i]))
+        cpp_regexes.push_back(regexes[i].encode('utf-8'))
+
+    # Use numpy array as container for match results
+    npmatches = np.zeros(num_regexes, dtype=np.dtype('u4'))
+    cdef uint32_t[:] matches_view = npmatches
+    cdef uint32_t* matches_pointer = &matches_view[0]
+
+    add_matches_arrow(pyarrow_unwrap_array(strings), cpp_regexes, matches_pointer)
+
+    return npmatches.tolist()
 
 
-def add_matches_cython_arrow(array, regexes):
-    return _add_matches_cython_arrow(pyarrow_unwrap_array(array), regexes, len(regexes))
+# Multi core efficient regex matching for Arrow
+cpdef add_matches_cpp_arrow_omp(strings, list regexes):
+    cdef int i
+    cdef int num_regexes = len(regexes)
+    cdef vector[cpp_string] cpp_regexes
+
+    for i in range(num_regexes):
+        cpp_regexes.push_back(regexes[i].encode('utf-8'))
+
+    # Use numpy array as container for match results
+    npmatches = np.zeros(num_regexes, dtype=np.dtype('u4'))
+    cdef uint32_t[:] matches_view = npmatches
+    cdef uint32_t* matches_pointer = &matches_view[0]
+
+    add_matches_arrow_omp(pyarrow_unwrap_array(strings), cpp_regexes, matches_pointer)
+
+    return npmatches.tolist()
