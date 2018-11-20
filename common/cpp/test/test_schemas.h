@@ -49,8 +49,5 @@ std::shared_ptr<arrow::Schema> genFilterReadSchema();
 /// #brief An write schema for the filter example
 std::shared_ptr<arrow::Schema> genFilterWriteSchema();
 
-/// #brief An example schema for the filter example
-std::shared_ptr<arrow::Schema> genFilterWriteSchema();
-
 }
 }
