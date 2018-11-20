@@ -80,14 +80,18 @@ int main(int argc, char **argv) {
   context->enable();
 
   uc->setRange(0, num_str);
-
+  
+  if (argc > 2) {
   uc->setArguments({ (uint32_t)std::strtoul(argv[1], NULL, 10),   // Minimum string length
                      (uint32_t)std::strtoul(argv[2], NULL, 10)}); // PRNG mask
+  } else {
+    std::cerr << "Usage: stringwrite <min str len> <prng mask>" << std::endl;
+    std:exit(-1);
+  }
 
   uc->start();
-  platform->writeMMIO(0,0);
   
-  usleep(100);
+  usleep(100000);
   //uc->waitForFinish(1000000);
 
   // Get raw pointers to host-side Arrow buffers
