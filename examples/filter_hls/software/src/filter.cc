@@ -91,11 +91,15 @@ std::shared_ptr<arrow::RecordBatch> getFilterInputRB(int32_t num_entries) {
 }
 
 std::shared_ptr<arrow::RecordBatch> getFilterOutputRB(int32_t num_entries, int32_t num_chars) {
-  std::shared_ptr<arrow::Buffer> offsets;
-  std::shared_ptr<arrow::Buffer> values;
-  arrow::AllocateBuffer(num_entries + 1, &offsets);
-  arrow::AllocateBuffer(num_chars, &values);
-  auto sa = std::make_shared<arrow::StringArray>(2, offsets, values);
+  std::shared_ptr<arrow::MutableBuffer> offsets;
+  std::shared_ptr<arrow::MutableBuffer> values;
+  
+  std::shared_ptr<arrow::Buffer> off_b = std::dynamic_pointer_cast<arrow::Buffer>(offsets);
+  std::shared_ptr<arrow::Buffer> val_b = std::dynamic_pointer_cast<arrow::Buffer>(values);
+
+  arrow::AllocateBuffer(sizeof(int32_t) * (num_entries + 1), &off_b);
+  arrow::AllocateBuffer(num_chars, &val_b);
+  auto sa = std::make_shared<arrow::StringArray>(2, off_b, val_b);
   std::shared_ptr<arrow::RecordBatch> record_batch = arrow::RecordBatch::Make(getFilterWriteSchema(), 2, {sa});
   return record_batch;
 }
@@ -105,7 +109,7 @@ int main(int argc, char **argv) {
   constexpr int32_t num_entries = 4;
 
   auto rb_in = getFilterInputRB(num_entries);
-  auto rb_out = getFilterOutputRB(4096, 4096);
+  auto rb_out = getFilterOutputRB(2, 10);
 
   std::cout << "RecordBatch in: " << std::endl;
   for (int i = 0; i < rb_in->num_columns(); i++) {
@@ -144,13 +148,16 @@ int main(int argc, char **argv) {
   auto raw_offsets = sa->value_offsets()->mutable_data();
   auto raw_values = sa->value_data()->mutable_data();
 
-  platform->copyDeviceToHost(context->device_arrays[5]->buffers[0].device_address, raw_offsets, 4096);
-  platform->copyDeviceToHost(context->device_arrays[5]->buffers[1].device_address, raw_values, 4096);
+  platform->copyDeviceToHost(context->device_arrays[3]->buffers[0].device_address, raw_offsets, sa->value_offsets()->size());
+  platform->copyDeviceToHost(context->device_arrays[3]->buffers[1].device_address, raw_values, sa->value_data()->size());
 
-  //fletcher::HexView hv(0);
-  //hv.addData(raw_offsets, sizeof(int32_t) * (num_str+1));
-  //hv.addData(raw_values, num_chars);
-  //std::cout << hv.toString() << std::endl;
+  fletcher::HexView hvo((uint64_t)raw_offsets);
+  hvo.addData(raw_offsets, sizeof(int32_t) * (num_entries + 1));
+  fletcher::HexView hvv((uint64_t)raw_values);
+  hvv.addData(raw_values, 10);
+  std::cout << hvo.toString() << std::endl;
+  std::cout << hvv.toString() << std::endl;
+  
   std::cout << "RecordBatch out:" << std::endl;
   std::cout << sa->ToString() << std::endl;
 }
