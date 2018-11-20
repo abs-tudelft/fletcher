@@ -105,10 +105,16 @@ file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_read_converter.vhd         
 file copy -force $FLETCHER_HARDWARE_DIR/vhdl/axi/axi_write_converter.vhd             $TARGET_DIR
 
 # Copy all project files
-set cl_filelist [glob -nocomplain -dir $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/ *]
-foreach cl_file $cl_filelist {
-  file copy -force $cl_file $TARGET_DIR
-}
+file copy -force $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/filter_hls_fletcher.vhd   $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/filter_usercore.vhd       $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/filter_wrapper.vhd        $TARGET_DIR
+file copy -force $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/axi_top.vhd               $TARGET_DIR
+
+# Create a directory for VHDL 93 abominations
+file mkdir $TARGET_DIR/vhdl93
+
+# Copy the vivado HLS output that can only be compiled in vhdl 93 mode
+file copy -force $FLETCHER_EXAMPLES_DIR/filter_hls/hardware/filter_hls_fletchbkb.vhd  $TARGET_DIR/vhdl93
 
 # AWS EC2 F1 files:
 file copy -force $CL_DIR/design/cl_arrow_defines.vh                   $TARGET_DIR

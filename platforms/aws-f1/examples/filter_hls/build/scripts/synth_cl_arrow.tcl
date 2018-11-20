@@ -29,7 +29,8 @@ puts "AWS FPGA: ([clock format [clock seconds] -format %T]) Reading developer's 
 # reading .v, .vh, nor .inc files
 
 read_verilog -sv [glob $ENC_SRC_DIR/*.?v]
-read_vhdl -vhdl2008 [ glob $ENC_SRC_DIR/*.vhd ]
+read_vhdl -vhdl2008 [glob $ENC_SRC_DIR/*.vhd]
+read_vhdl [glob $ENC_SRC_DIR/vhdl93/*.vhd ]
 
 #---- End of section replaced by User ----
 
@@ -58,7 +59,7 @@ read_ip [ list \
 
 # Generate the IP used in cl_arrow 
 generate_target all [get_files $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci]
-synth_ip [get_files $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci]
+synth_ip [get_files $CL_DIR/design/ip/axi_interconnect_top/axi_interconnect_top.xci] -force
 
 #Read DDR IP
 read_ip [ list \

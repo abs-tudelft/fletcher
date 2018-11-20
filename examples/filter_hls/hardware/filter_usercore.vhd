@@ -351,9 +351,11 @@ begin
     port map (
       clk   => acc_clk,
       reset => acc_reset,
+      
       in_valid(0) => read_first_name_unlock_valid,
       in_valid(1) => read_last_name_unlock_valid,
       in_valid(2) => read_zipcode_unlock_valid,
+      
       in_ready(0) => read_first_name_unlock_ready,
       in_ready(1) => read_last_name_unlock_ready,
       in_ready(2) => read_zipcode_unlock_ready,
@@ -361,11 +363,6 @@ begin
       out_valid(0) => unlock.valid,
       out_ready(0) => unlock.ready
     );
-      
-  read_first_name_unlock_ready  <= unlock.ready;
-  read_last_name_unlock_ready   <= unlock.ready;
-  read_zipcode_unlock_ready     <= unlock.ready;
-
 
   seq_proc: process(acc_clk) is
   begin
