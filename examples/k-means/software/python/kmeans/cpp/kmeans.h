@@ -29,3 +29,12 @@ int64_t* arrow_kmeans_cpu(std::shared_ptr<arrow::RecordBatch> batch,
                                                    int64_t num_rows);
 
 int64_t* numpy_kmeans_cpu(int64_t* data, int64_t* centroids_position, int iteration_limit, size_t num_centroids, size_t dimensionality, int64_t num_rows);
+
+int64_t* arrow_kmeans_cpu_omp(std::shared_ptr<arrow::RecordBatch> batch,
+                                                   int64_t* centroids_position,
+                                                   int iteration_limit,
+                                                   size_t num_centroids,
+                                                   size_t dimensionality,
+                                                   int64_t num_rows);
+
+int64_t* numpy_kmeans_cpu_omp(int64_t* data, int64_t* centroids_position, int iteration_limit, size_t num_centroids, size_t dimensionality, int64_t num_rows);

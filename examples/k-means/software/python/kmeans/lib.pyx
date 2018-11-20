@@ -40,6 +40,20 @@ cdef extern from "cpp/kmeans.h" nogil:
                               size_t dimensionality,
                               int64_t num_rows)
 
+    int64_t* arrow_kmeans_cpu_omp(shared_ptr[CRecordBatch] batch,
+                                  int64_t* centroids_position,
+                                  int iteration_limit,
+                                  size_t num_centroids,
+                                  size_t dimensionality,
+                                  int64_t num_rows)
+
+    int64_t* numpy_kmeans_cpu_omp(int64_t* data,
+                                  int64_t* centroids_position,
+                                  int iteration_limit,
+                                  size_t num_centroids,
+                                  size_t dimensionality,
+                                  int64_t num_rows)
+
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -128,6 +142,40 @@ cdef _numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
 
 def numpy_kmeans_cpp(nparray, centroids_position, iteration_limit):
     return _numpy_kmeans_cpp(nparray, centroids_position, iteration_limit)
+
+
+cdef _arrow_kmeans_cpp_omp(batch, centroids_position, iteration_limit):
+    shape = centroids_position.shape
+    cdef int64_t[:] centroids_view = centroids_position.ravel()
+    cdef int64_t *centroids = &centroids_view[0]
+
+    # Call C++ k-means algorithm
+    arrow_kmeans_cpu_omp(pyarrow_unwrap_batch(batch), centroids, iteration_limit, shape[0], shape[1], batch.num_rows)
+
+    return centroids_position
+
+
+def arrow_kmeans_cpp_omp(batch, centroids_position, iteration_limit):
+    return _arrow_kmeans_cpp_omp(batch, centroids_position, iteration_limit)
+
+
+cdef _numpy_kmeans_cpp_omp(nparray, centroids_position, iteration_limit):
+    shape = centroids_position.shape
+    cdef int64_t[:] centroids_view = centroids_position.ravel()
+    cdef int64_t *centroids = &centroids_view[0]
+
+    cdef int64_t[:] array_view = nparray.ravel()
+    cdef int64_t *array_pointer = &array_view[0]
+
+    # Call C++ k-means algorithm
+    numpy_kmeans_cpu_omp(array_pointer, centroids, iteration_limit, shape[0], shape[1], nparray.shape[0])
+
+    return centroids_position
+
+
+def numpy_kmeans_cpp_omp(nparray, centroids_position, iteration_limit):
+    return _numpy_kmeans_cpp_omp(nparray, centroids_position, iteration_limit)
+
 
 cdef _create_list_array_buffers(int64_t *points_buffer, int num_points, int dim,
                                      shared_ptr[CBuffer] *values_buffer, shared_ptr[CBuffer] *offsets_buffer):

@@ -214,14 +214,18 @@ if __name__ == "__main__":
     t_nppy = []
     t_npcy = []
     t_arcpp = []
+    t_arcpp_omp = []
     t_npcpp = []
+    t_npcpp_omp = []
     t_fpga = []
 
     # Results
     r_nppy = []
     r_npcy = []
     r_arcpp = []
+    r_arcpp_omp = []
     r_npcpp = []
+    r_npcpp_omp = []
     r_fpga = []
 
     numpy_points = create_points(num_rows, dimensionality, 99)
@@ -275,16 +279,31 @@ if __name__ == "__main__":
         t.stop()
         t_npcpp.append(t.seconds())
 
-        list_centroids_copy = copy.deepcopy(list_centroids)
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_fpga.append(arrow_kmeans_fpga(batch_points, list_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
+        r_arcpp_omp.append(kmeans.arrow_kmeans_cpp_omp(batch_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_arcpp_omp.append(t.seconds())
+
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_npcpp_omp.append(kmeans.numpy_kmeans_cpp_omp(numpy_points, numpy_centroids_copy, iteration_limit))
+        t.stop()
+        t_npcpp_omp.append(t.seconds())
+
+        numpy_centroids_copy = copy.deepcopy(numpy_centroids)
+        t.start()
+        r_fpga.append(arrow_kmeans_fpga(batch_points, numpy_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
         t.stop()
         t_fpga.append(t.seconds())
 
+    print("Total runtimes for " + str(ne) + " runs:")
     print("Kmeans NumPy pure Python execution time: " + str(sum(t_nppy)))
     print("Kmeans NumPy Cython execution time: " + str(sum(t_npcy)))
     print("Kmeans Arrow Cython/CPP execution time: " + str(sum(t_arcpp)))
     print("Kmeans Numpy Cython/CPP execution time: " + str(sum(t_npcpp)))
+    print("Kmeans Arrow Cython/CPP OMP execution time: " + str(sum(t_arcpp_omp)))
+    print("Kmeans Numpy Cython/CPP OMP execution time: " + str(sum(t_npcpp_omp)))
     print("Kmeans Arrow FPGA total time: " + str(sum(t_fpga)))
 
     # Print results (partially)
@@ -298,7 +317,9 @@ if __name__ == "__main__":
     if np.array_equal(r_nppy, r_npcy) \
             and np.array_equal(r_npcy, r_arcpp) \
             and np.array_equal(r_arcpp, r_npcpp) \
-            and np.array_equal(r_npcpp, [np.array(a) for a in r_fpga]):
+            and np.array_equal(r_npcpp, r_arcpp_omp) \
+            and np.array_equal(r_arcpp_omp, r_npcpp_omp):# \
+            #and np.array_equal(r_npcpp, r_fpga):
         print("PASS")
     else:
         print("ERROR")
