@@ -47,44 +47,45 @@ std::shared_ptr<std::vector<int32_t>> genRandomLengths(int32_t amount, uint32_t 
   return lengths;
 }
 
-std::shared_ptr<std::vector<char>> genRandomValues(const std::shared_ptr<std::vector<int32_t>>& lengths, int32_t amount, char min=32, char max=127) {
-  std::array<LFSRRandomizer,64> lfsrs;
+std::shared_ptr<std::vector<char>> genRandomValues(const std::shared_ptr<std::vector<int32_t>> &lengths,
+                                                   int32_t amount) {
+  std::array<LFSRRandomizer, 64> lfsrs;
 
   // initialize the lfsrs as in hardware
-  for (int i=0;i<64;i++) {
-    lfsrs[i].lfsr = (uint8_t)i;
+  for (int i = 0; i < 64; i++) {
+    lfsrs[i].lfsr = (uint8_t) i;
   }
 
   // reserve all characters in a vector
   auto values = std::make_shared<std::vector<char>>();
   values->reserve(static_cast<unsigned long>(amount));
 
-  // based on the lenghts,
-  for (const auto& len : *lengths) {
+  // For every string length
+  for (const auto &len : *lengths) {
     uint32_t strpos = 0;
+    // First generate a new "line" of random characters, even if it's zero length
     do {
       uint32_t bufpos = 0;
-      // Generate a new "cacheline" of random characters
       char buffer[64] = {0};
       for (int c = 0; c < 64; c++) {
-        auto val = lfsrs[c].next() & 127;
+        auto val = lfsrs[c].next() & (uint8_t) 127;
         if (val < 32) val = '.';
         if (val == 127) val = '.';
         buffer[c] = val;
       }
       // Fill the cacheline
-      for (bufpos = 0; bufpos < 64 && strpos < (uint32_t)len;bufpos++) {
+      for (bufpos = 0; bufpos < 64 && strpos < (uint32_t) len; bufpos++) {
         values->push_back(buffer[bufpos]);
         strpos++;
       }
-    } while(strpos < (uint32_t)len);
+    } while (strpos < (uint32_t) len);
   }
 
   return values;
 }
 
-std::shared_ptr<std::vector<std::string>> deserializeToVector(const std::shared_ptr<std::vector<int32_t>>& lengths,
-                                                              const std::shared_ptr<std::vector<char>>& values) {
+std::shared_ptr<std::vector<std::string>> deserializeToVector(const std::shared_ptr<std::vector<int32_t>> &lengths,
+                                                              const std::shared_ptr<std::vector<char>> &values) {
   auto vec = std::make_shared<std::vector<std::string>>();
   vec->reserve(lengths->size());
 
@@ -99,6 +100,35 @@ std::shared_ptr<std::vector<std::string>> deserializeToVector(const std::shared_
   return vec;
 }
 
+std::shared_ptr<arrow::StringArray> deserializeToArrow(const std::shared_ptr<std::vector<int32_t>> &lengths,
+                                                       const std::shared_ptr<std::vector<char>> &values) {
+  // Simply wrap the values buffer
+  std::shared_ptr<arrow::Buffer> val_buffer;
+  val_buffer = arrow::Buffer::Wrap(*values);
+
+  // Allocate space for offsets buffer
+  std::shared_ptr<arrow::Buffer> off_buffer;
+  if (!arrow::AllocateBuffer((lengths->size() + 1) * sizeof(int32_t), &off_buffer).ok()) {
+    throw std::runtime_error("Could not allocate offsets buffer.");
+  }
+
+  // Lengths need to be converted into offsets
+
+  // Get the raw mutable buffer
+  auto raw_ints = (int32_t *) off_buffer->mutable_data();
+  int32_t offset = 0;
+
+  for (size_t i = 0; i < lengths->size(); i++) {
+    raw_ints[i] = offset;
+    offset += lengths->at(i);
+  }
+
+  // Fill in last offset
+  raw_ints[lengths->size()] = offset;
+
+  return std::make_shared<arrow::StringArray>(lengths->size(), off_buffer, val_buffer);
+}
+
 std::shared_ptr<arrow::Schema> getSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("str", arrow::utf8(), false)};
   auto schema_meta = metaMode(fletcher::Mode::WRITE);
@@ -106,7 +136,7 @@ std::shared_ptr<arrow::Schema> getSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::RecordBatch> getRecordBatch(int32_t num_strings, int32_t num_chars) {
+std::shared_ptr<arrow::RecordBatch> prepareRecordBatch(int32_t num_strings, int32_t num_chars) {
   std::shared_ptr<arrow::Buffer> offsets;
   std::shared_ptr<arrow::Buffer> values;
 
@@ -128,56 +158,76 @@ std::shared_ptr<arrow::RecordBatch> getRecordBatch(int32_t num_strings, int32_t 
 
 int main(int argc, char **argv) {
 
-  constexpr int32_t num_str = 32;
-  constexpr int32_t min_str = 0;
-  constexpr int32_t len_msk = 255;
-
-  int32_t num_values = 0;
-  auto rand_lens = genRandomLengths(num_str, min_str, len_msk, &num_values);
-  auto rand_vals = genRandomValues(rand_lens, num_values, ' ', '~');
-  auto dataset_stl = deserializeToVector(rand_lens, rand_vals);
-
-  std::cout << "Data size: " << num_str * sizeof(int32_t) + num_values << std::endl;
-
-  for (size_t i=0;i<num_str;i++) {
-    std::cout << std::setw(3) << dataset_stl->at(i).size() << " : " << dataset_stl->at(i) << std::endl;
-  }
-
-  auto rb = getRecordBatch(num_str, num_values);
-
   std::shared_ptr<fletcher::Platform> platform;
   std::shared_ptr<fletcher::Context> context;
   std::shared_ptr<fletcher::UserCore> uc;
 
-  fletcher::Platform::Make(&platform);
+  fletcher::Timer t;
 
-  platform->init();
+  int32_t num_str = 4;
+  uint32_t min_len = 0;
+  uint32_t len_msk = 255;
 
-  fletcher::Context::Make(&context, platform);
-
-  uc = std::make_shared<fletcher::UserCore>(context);
-
-  context->queueRecordBatch(rb);
-
-  uc->reset();
-
-  context->enable();
-
-  uc->setRange(0, num_str);
-
-  if (argc > 2) {
-    uc->setArguments({(uint32_t) std::strtoul(argv[1], NULL, 10),   // Minimum string length
-                      (uint32_t) std::strtoul(argv[2], NULL, 10)}); // PRNG mask
+  if (argc > 3) {
+    num_str = (uint32_t) std::strtoul(argv[1], nullptr, 10);
+    min_len = (uint32_t) std::strtoul(argv[2], nullptr, 10);
+    len_msk = (uint32_t) std::strtoul(argv[3], nullptr, 10);
   } else {
     std::cerr << "Usage: stringwrite <min str len> <prng mask>" << std::endl;
     exit(-1);
   }
 
+  int32_t num_values = 0;
+
+  std::cout << num_str << ", ";
+
+  t.start();
+  auto rand_lens = genRandomLengths(num_str, min_len, len_msk, &num_values);
+  t.stop();
+  t.report();
+
+  t.start();
+  auto rand_vals = genRandomValues(rand_lens, num_values);
+  t.stop();
+  t.report();
+
+  std::cout << num_str * sizeof(int32_t) + num_values << ", ";
+
+  t.start();
+  auto dataset_stl = deserializeToVector(rand_lens, rand_vals);
+  t.stop();
+  t.report();
+
+  t.start();
+  auto dataset_arrow = deserializeToArrow(rand_lens, rand_vals);
+  t.stop();
+  t.report();
+
+  t.start();
+  auto rb = prepareRecordBatch(num_str, num_values);
+  t.stop();
+  t.report();
+
+  t.start();
+  fletcher::Platform::Make(&platform);
+  platform->init();
+  fletcher::Context::Make(&context, platform);
+  uc = std::make_shared<fletcher::UserCore>(context);
+  uc->reset();
+  context->queueRecordBatch(rb);
+  context->enable();
+  uc->setRange(0, num_str);
+  uc->setArguments({min_len, len_msk});
+  t.stop();
+  t.report();
+
+  t.start();
   uc->start();
+  uc->waitForFinish(100);
+  t.stop();
+  t.report();
 
-  usleep(100000);
-  //uc->waitForFinish(1000000);
-
+  t.start();
   // Get raw pointers to host-side Arrow buffers
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
@@ -188,12 +238,9 @@ int main(int argc, char **argv) {
                              raw_offsets,
                              sizeof(int32_t) * (num_str + 1));
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[1].device_address, raw_values, (uint64_t) num_values);
+  t.stop();
+  t.report();
 
-  //fletcher::HexView hv(0);
-  //hv.addData(raw_offsets, sizeof(int32_t) * (num_str+1));
-  //hv.addData(raw_values, num_chars);
-  //std::cout << hv.toString() << std::endl;
-  std::cout << "Recordbatch:" << std::endl;
-  std::cout << sa->ToString() << std::endl;
+  // TODO(johanpel): pass/fail condition
 
 }
