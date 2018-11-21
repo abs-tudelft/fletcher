@@ -38,9 +38,8 @@ hardware:
 .ghdl-check-job: &ghdl-check-job
   stage: check
   image: $GHDL_IMAGE:$GHDL_TAG
-  before_script:
-    - shopt -s globstar
   script:
+    - shopt -s globstar
     - ghdl -i -v --std=${STD:-08} ${SOURCE_PATH:-harware/vhdl}/**/*.vhd |
       grep entity |
       sed -e 's/entity //' |
@@ -66,6 +65,7 @@ hardware/test-08:
   <<: *ghdl-check-job
   stage: test
   script:
+    - shopt -s globstar
     - ghdl -i -v --std=${STD:-08} ${SOURCE_PATH:-hardware}/**/*.vhd |
       grep entity |
       grep _tb |
