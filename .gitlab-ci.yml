@@ -65,7 +65,7 @@ hardware/test-08:
   <<: *ghdl-check-job
   stage: test
   script:
-    - find ${SOURCE_PATH:-hardware}/**/*.vhd -name "*.vhd*" |
+    - find ${SOURCE_PATH:-hardware} -name "*.vhd*" |
       xargs ghdl -i -v --std=${STD:-08} |
       grep entity |
       grep _tb |
