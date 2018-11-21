@@ -27,11 +27,11 @@ RUN apt-get update && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DFLETCHER_GEN=1 \
-      -DFLETCHER_TESTS=0 \
+      -DFLETCHER_TESTS=1 \
       -DFLETCHER_AWS=1 \
       -DFLETCHER_SNAP=0 \
       .. && \
-    make && make install && \
+    make && make test && make install && \
     cd ../.. && rm -rf fletcher && \
     apt-get remove -y --purge $BUILD_PACKAGES && \
     apt-get install -y $RUNTIME_PACKAGES && \
