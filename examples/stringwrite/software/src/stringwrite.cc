@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
   t.report();
 
   t.start();
-  auto rb = prepareRecordBatch(num_str, num_values);
+  auto dataset_fpga = prepareRecordBatch(num_str, num_values);
   t.stop();
   t.report();
 
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
   fletcher::Context::Make(&context, platform);
   uc = std::make_shared<fletcher::UserCore>(context);
   uc->reset();
-  context->queueRecordBatch(rb);
+  context->queueRecordBatch(dataset_fpga);
   context->enable();
   uc->setRange(0, num_str);
   uc->setArguments({min_len, len_msk});
@@ -233,16 +233,24 @@ int main(int argc, char **argv) {
 
   t.start();
   // Get raw pointers to host-side Arrow buffers
-  auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
+  auto sa = std::dynamic_pointer_cast<arrow::StringArray>(dataset_fpga->column(0));
 
   auto raw_offsets = sa->value_offsets()->mutable_data();
   auto raw_values = sa->value_data()->mutable_data();
 
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[0].device_address,
-                             raw_offsets,
-                             sizeof(int32_t) * (num_str + 1));
+                               raw_offsets,
+                               sizeof(int32_t) * (num_str + 1));
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[1].device_address, raw_values, (uint64_t) num_values);
   t.stop();
   t.report();
+
+  std::cout << std::endl;
+
+  std::cout << dataset_arrow->ToString() << std::endl;
+  std::cout << sa->ToString() << std::endl;
+  
+
+  return 0;
 
 }
