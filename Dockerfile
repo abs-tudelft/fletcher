@@ -5,7 +5,7 @@ LABEL fletcher=
 
 ARG AWS_FPGA_VERSION=1.4.2
 
-ENV BUILD_PACKAGES git make cmake g++
+ENV BUILD_PACKAGES git make cmake g++ libgtest-dev
 
 WORKDIR fletcher
 ADD . .
@@ -34,7 +34,6 @@ RUN apt-get update && \
     make && make test && make install && \
     cd ../.. && rm -rf fletcher && \
     apt-get remove -y --purge $BUILD_PACKAGES && \
-    apt-get install -y $RUNTIME_PACKAGES && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
