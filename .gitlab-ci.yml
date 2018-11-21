@@ -75,7 +75,7 @@ hardware/test-08:
       ghdl -m --std=${STD:-08} --ieee=synopsys {};
       ghdl -r --std=${STD:-08} --ieee=synopsys {} --stop-time=100ns'
 
-.cmake-build-job: &cmake-bulid-job
+.cmake-build-job: &cmake-build-job
   stage: build
   image: mbrobbel/libarrow:$ARROW_VERSION
   variables:
