@@ -44,7 +44,7 @@ hardware/vhdl:
   image: mbrobbel/libarrow:$ARROW_VERSION
   variables:
     <<: *env
-    APT_PACKAGES: cmake g++ libboost-all-dev
+    APT_PACKAGES: cmake g++ libgtest-dev
   before_script:
     - *apt-install
     - mkdir -p build
