@@ -18,40 +18,88 @@ stages:
   RUST_VERSION: 1.30.1
   RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
 
+  FLETCHER_APT_PACKAGES: cmake g++
+
 variables:
   <<: *env
 
 .apt-install: &apt-install |
   [ "$APT_PACKAGES" ] && apt-get update && apt-get install -y $APT_PACKAGES
 
-.rust-vhdl-parser: &rust-vhdl-parser
+hardware:
   stage: check
   image: rust:${RUST_VERSION}-slim-stretch
   before_script:
     - cargo install vhdl_parser --version $RUST_VHDL_PARSER_CRATE_VERSION
-  script:
     - shopt -s globstar
-    - vhdl_parser --show $CI_JOB_NAME/**/*.vhd
+  script:
+    - vhdl_parser --show hardware/**/*.vhd
 
-hardware/test:
-  <<: *rust-vhdl-parser
+.ghdl-check-job: &ghdl-check-job
+  stage: check
+  image: $GHDL_IMAGE:$GHDL_TAG
+  before_script:
+    - shopt -s globstar
+  script:
+    - ghdl -i -v --std=${STD:-08} ${SOURCE_PATH:-harware/vhdl}/**/*.vhd |
+      grep entity |
+      sed -e 's/entity //' |
+      sed -e 's/ \*\*//' |
+      xargs -L 1 ghdl -m --std=${STD:-08} --ieee=synopsys
 
-hardware/vhdl:
-  <<: *rust-vhdl-parser
+hardware/vhdl-93c:
+  <<: *ghdl-check-job
+  variables:
+    <<: *env
+    STD: 93c
 
-.cmake-test-job: &cmake-test-job
+hardware/vhdl-08:
+  <<: *ghdl-check-job
+
+hardware/test-08:
+  <<: *ghdl-check-job
+  variables:
+    <<: *env
+    SOURCE_PATH: hardware/test
+
+hardware/test-08:
+  <<: *ghdl-check-job
   stage: test
+  script:
+    - ghdl -i -v --std=${STD:-08} ${SOURCE_PATH:-hardware}/**/*.vhd |
+      grep entity |
+      grep _tb |
+      sed -e 's/entity //' |
+      sed -e 's/ \*\*//' |
+      xargs -i -t bash -c '
+      ghdl -m --std=${STD:-08} --ieee=synopsys {};
+      ghdl -r --std=${STD:-08} --ieee=synopsys {} --stop-time=100ns'
+
+.cmake-build-job: &cmake-bulid-job
+  stage: build
   image: mbrobbel/libarrow:$ARROW_VERSION
   variables:
     <<: *env
-    APT_PACKAGES: cmake g++ libgtest-dev
+    APT_PACKAGES: $FLETCHER_APT_PACKAGES
   before_script:
     - *apt-install
     - mkdir -p build
   script:
+    - pusdh build
+    - cmake ../$CI_JOB_NAME
+    - make -j
+
+.cmake-test-job: &cmake-test-job
+  <<: *cmake-build-job
+  stage: test
+  variables:
+    <<: *env
+    APT_PACKAGES: $FLETCHER_APT_PACKAGES libgtest-dev
+  script:
     - pushd build
     - cmake -DFLETCHER_TESTS=1 ../$CI_JOB_NAME
-    - make -j && make test
+    - make -j
+    - make test
 
 runtime/cpp:
   <<: *cmake-test-job

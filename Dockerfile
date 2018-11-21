@@ -5,8 +5,7 @@ LABEL fletcher=
 
 ARG AWS_FPGA_VERSION=1.4.2
 
-ENV BUILD_PACKAGES git make cmake g++ libboost-all-dev
-ENV RUNTIME_PACKAGES libboost-all-dev
+ENV BUILD_PACKAGES git make cmake g++
 
 WORKDIR fletcher
 ADD . .
