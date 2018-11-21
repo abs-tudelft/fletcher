@@ -102,9 +102,15 @@ std::shared_ptr<std::vector<std::string>> deserializeToVector(const std::shared_
 
 std::shared_ptr<arrow::StringArray> deserializeToArrow(const std::shared_ptr<std::vector<int32_t>> &lengths,
                                                        const std::shared_ptr<std::vector<char>> &values) {
-  // Simply wrap the values buffer
+
+  // Allocate space for values buffer
   std::shared_ptr<arrow::Buffer> val_buffer;
-  val_buffer = arrow::Buffer::Wrap(*values);
+  if (!arrow::AllocateBuffer(values->size(), &val_buffer).ok()) {
+    throw std::runtime_error("Could not allocate values buffer.");
+  }
+
+  // Copy the values buffer
+  memcpy(val_buffer->mutable_data(), values->data(), values->size());
 
   // Allocate space for offsets buffer
   std::shared_ptr<arrow::Buffer> off_buffer;
@@ -141,12 +147,10 @@ std::shared_ptr<arrow::RecordBatch> prepareRecordBatch(int32_t num_strings, int3
   std::shared_ptr<arrow::Buffer> values;
 
   if (!arrow::AllocateBuffer(arrow::default_memory_pool(), sizeof(int32_t) * (num_strings + 1), &offsets).ok()) {
-    std::cerr << "Could not allocate offsets buffer." << std::endl;
-    std::exit(-1);
+    throw std::runtime_error("Could not allocate offsets buffer.");
   }
   if (!arrow::AllocateBuffer(arrow::default_memory_pool(), num_chars, &values).ok()) {
-    std::cerr << "Could not allocate offsets buffer." << std::endl;
-    std::exit(-1);
+    throw std::runtime_error("Could not allocate values buffer.");
   }
 
   auto array = std::make_shared<arrow::StringArray>(num_strings, offsets, values);
@@ -179,7 +183,7 @@ int main(int argc, char **argv) {
 
   int32_t num_values = 0;
 
-  std::cout << num_str << ", ";
+  std::cout << std::setw(10) << num_str << ", ";
 
   t.start();
   auto rand_lens = genRandomLengths(num_str, min_len, len_msk, &num_values);
@@ -191,7 +195,7 @@ int main(int argc, char **argv) {
   t.stop();
   t.report();
 
-  std::cout << num_str * sizeof(int32_t) + num_values << ", ";
+  std::cout << std::setw(10) << num_str * sizeof(int32_t) + num_values << ", ";
 
   t.start();
   auto dataset_stl = deserializeToVector(rand_lens, rand_vals);
@@ -240,7 +244,5 @@ int main(int argc, char **argv) {
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[1].device_address, raw_values, (uint64_t) num_values);
   t.stop();
   t.report();
-
-  // TODO(johanpel): pass/fail condition
 
 }

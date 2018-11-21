@@ -21,12 +21,10 @@ struct LFSRRandomizer {
 
   // taps at: (6,5,4,0,0),
   // shbould output # 1 3 7 15 30 61 122
-  uint8_t next() {
+  inline uint8_t next() {
     uint8_t tap = ~((lfsr >> 5) ^ (lfsr >> 4) ^ (lfsr >> 3)) & (uint8_t)1;
     lfsr = (lfsr << 1) | (tap);
     return lfsr;
   }
-
-
 
 };
