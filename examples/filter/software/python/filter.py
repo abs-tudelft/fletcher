@@ -18,6 +18,7 @@ import pandas as pd
 import pyarrow as pa
 import argparse
 import numpy as np
+import pyfletcher as pf
 
 import filter_custom
 
@@ -41,6 +42,19 @@ class Timer:
         return self.stoptime - self.starttime
 
 
+def get_filter_read_schema():
+    fields = [pa.field("First", pa.string(), False),
+              pa.field("Last", pa.string(), False),
+              pa.field("Zip", pa.uint32(), False)]
+
+    return pa.schema(fields)
+
+
+def get_filter_write_schema():
+    field = pa.field("First", pa.string(), False)
+    return pa.schema([field])
+
+
 def create_batch_from_frame_basic(frame):
     """Converts Pandas dataframe to Arrow batch using the basic from_arrays() function
     Args:
@@ -50,11 +64,7 @@ def create_batch_from_frame_basic(frame):
         Arrow RecordBatch
 
     """
-    fields = [pa.field("First", pa.string(), False),
-              pa.field("Last", pa.string(), False),
-              pa.field("Zip", pa.uint16(), False)]
-
-    schema = pa.schema(fields)
+    schema = get_filter_read_schema()
 
     first_names = pa.array(frame["First"])
     last_names = pa.array(frame["Last"])
@@ -76,7 +86,7 @@ def create_batch_from_frame_fast(frame, nthreads=None):
     """
     fields = [pa.field("First", pa.string(), False),
               pa.field("Last", pa.string(), False),
-              pa.field("Zip", pa.uint16(), False)]
+              pa.field("Zip", pa.uint32(), False)]
 
     schema = pa.schema(fields)
 
@@ -97,7 +107,7 @@ def filter_dataframe_python(frame, zip_code):
         are filtered out.
 
     """
-    return frame.loc[(frame["Last"]!="Smith") | (frame["Zip"]!=zip_code), ["First"]]
+    return frame.loc[(frame["Last"] == "Smith") & (frame["Zip"] == zip_code), ["First"]]
 
 
 def filter_record_batch_python(batch, zip_code):
@@ -117,13 +127,56 @@ def filter_record_batch_python(batch, zip_code):
     first_names = []
 
     for i in range(batch.num_rows):
-        if not (batch.column(1)[i] == "Smith" and batch.column(2)[i] == zip_code):
+        if batch.column(1)[i] == "Smith" and batch.column(2)[i] == zip_code:
             first_names.append(batch.column(0)[i].as_py())
 
-    field = pa.field("First", pa.string(), False)
-    schema = pa.schema([field])
+    schema = get_filter_write_schema()
 
     return pa.RecordBatch.from_arrays([pa.array(first_names, type=pa.string())], schema)
+
+
+def get_filter_output_rb(offsets_buffer_size, values_buffer_size):
+    string_array_length = offsets_buffer_size/4 - 1
+    offsets_buffer = pa.allocate_buffer(offsets_buffer_size)
+    values_buffer = pa.allocate_buffer(values_buffer_size)
+
+    array =  pa.StringArray.from_buffers(string_array_length, offsets_buffer, values_buffer)
+
+    return pa.RecordBatch.from_arrays([array], get_filter_write_schema())
+
+
+def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_out_size, values_buffer_out_size):
+    platform = pf.Platform(platform_type)
+    context = pf.Context(platform)
+    uc = pf.UserCore(context)
+
+    batch_out = get_filter_output_rb(offsets_buffer_out_size, values_buffer_out_size)
+
+    platform.init()
+
+    context.queue_record_batch(batch_in)
+    context.queue_record_batch(batch_out)
+
+    uc.reset()
+    context.enable()
+    uc.set_range(0, batch_in.num_rows)
+    uc.set_arguments([zip_code])
+
+    uc.start()
+    uc.wait_for_finish()
+
+    # Todo: Finish
+    """
+    def test_foreign_buffer():
+    obj = np.array([1, 2], dtype=np.int32)
+    addr = obj.__array_interface__["data"][0]
+    size = obj.nbytes
+    buf = pa.foreign_buffer(addr, size, obj)
+    """
+
+
+
+    return 0
 
 
 if __name__ == "__main__":
@@ -149,7 +202,7 @@ if __name__ == "__main__":
     ser_threads = int(args.ser_threads)
     special_zip_code = int(args.special_zip_code)
 
-    frame = pd.read_csv(input_file, header=None, dtype={0: np.str, 1: np.str, 2: np.int16})
+    frame = pd.read_csv(input_file, header=None, dtype={0: np.str, 1: np.str, 2: np.uint32}, keep_default_na=False)
     frame.columns = ["First", "Last", "Zip"]
 
     # Timers
@@ -158,11 +211,13 @@ if __name__ == "__main__":
     t_pd_py = []
     t_pa_py = []
     t_pa_cpp = []
+    t_fpga = []
 
     # Results
     r_pd_py = []
     r_pa_py = []
     r_pa_cpp = []
+    r_fpga = []
 
     for i in range(ne):
         t.start()
@@ -198,13 +253,30 @@ if __name__ == "__main__":
         t.stop()
         t_pa_cpp.append(t.seconds())
 
+        # Filter an Arrow record batch using the FPGA. Creates copy.
+        # Currently requires prior knowledge on the size of the output batch.
+        # Todo: implement timer for algorithm time
+        t.start()
+        r_fpga.append(filter_record_batch_fpga(batch_basic, special_zip_code, platform_type,
+                                               r_pa_cpp[0].column(0).buffers()[1].size,
+                                               r_pa_cpp[0].column(0).buffers()[2].size))
+        t.stop()
+        t_fpga.append(t.seconds())
+
     print("Total execution times for " + str(ne) + " runs:")
     print("Pandas pure Python filtering: " + str(sum(t_pd_py)))
     print("Arrow pure Python filtering: " + str(sum(t_pa_py)))
+    print("Arrow CPP filtering: " + str(sum(t_pa_cpp)))
 
-    first_name_schema = pa.schema([pa.field("First", pa.string(), False)])
+    # Check if results are equal.
+    # Todo: currently does not check if results between different experiment iterations are the same.
+    pass_counter = 0
+    for i in range(ne):
+        if r_pa_py[0].equals(pa.RecordBatch.from_pandas(r_pd_py[0], get_filter_write_schema(), preserve_index=False)) \
+                and r_pa_py[0].equals(r_pa_cpp[0]):
+            pass_counter += 1
 
-    if r_pa_py[0].equals(pa.RecordBatch.from_pandas(r_pd_py[0], first_name_schema, preserve_index=False)):
+    if pass_counter == ne:
         print("PASS")
     else:
-        print("ERROR")
+        print("ERROR ({error_counter} errors)".format(error_counter=ne - pass_counter))

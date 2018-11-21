@@ -34,7 +34,7 @@ for ext in ext_modules:
     ext.libraries.extend(["arrow"])
     ext.library_dirs.extend(pa.get_library_dirs())
     ext.runtime_library_dirs.extend(pa.get_library_dirs())
-    # ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
+    ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
 setup(ext_modules=ext_modules)
 

@@ -22,4 +22,4 @@
 // Apache Arrow
 #include <arrow/api.h>
 
-std::shared_ptr<arrow::RecordBatch> filter_record_batch(std::shared_ptr<arrow::RecordBatch> batch, int16_t zip_code);
+std::shared_ptr<arrow::RecordBatch> filter_record_batch(std::shared_ptr<arrow::RecordBatch> batch, uint32_t special_zip_code);

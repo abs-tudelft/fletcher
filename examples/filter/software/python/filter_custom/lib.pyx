@@ -24,9 +24,8 @@ cimport numpy as np
 from pyarrow.lib cimport *
 
 cdef extern from "cpp/filter_custom.h" nogil:
-    shared_ptr[CRecordBatch] filter_record_batch(shared_ptr[CRecordBatch] batch, int16_t zip_code)
+    shared_ptr[CRecordBatch] filter_record_batch(shared_ptr[CRecordBatch] batch, uint32_t special_zip_code)
 
 
 cpdef filter_record_batch_cpp(batch, zip_code):
-    filter_record_batch(pyarrow_unwrap_batch(batch), zip_code)
-    return 0
+    return pyarrow_wrap_batch(filter_record_batch(pyarrow_unwrap_batch(batch), zip_code))
