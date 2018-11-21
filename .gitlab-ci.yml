@@ -42,6 +42,9 @@ hardware/vhdl:
 .cmake-test-job: &cmake-test-job
   stage: test
   image: mbrobbel/libarrow:$ARROW_VERSION
+  variables:
+    <<: *env
+    APT_PACKAGES: cmake g++ libboost-all-dev
   before_script:
     - *apt-install
     - mkdir -p build
