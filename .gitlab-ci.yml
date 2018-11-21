@@ -64,6 +64,7 @@ hardware/test-08:
 hardware/test-08:
   <<: *ghdl-check-job
   stage: test
+  allow_failure: true
   script:
     - find ${SOURCE_PATH:-hardware} -name "*.vhd" |
       xargs ghdl -i -v --std=${STD:-08} |
