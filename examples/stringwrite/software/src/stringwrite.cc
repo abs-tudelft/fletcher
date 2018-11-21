@@ -40,6 +40,7 @@ std::shared_ptr<std::vector<int32_t>> genRandomLengths(int32_t amount, uint32_t 
     int len = min + (lfsr.next() & mask);
     total_length += len;
     lengths->push_back(len);
+    std::cout << len << std::endl;
   }
 
   *total = total_length;
