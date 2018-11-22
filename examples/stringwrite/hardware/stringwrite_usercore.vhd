@@ -185,7 +185,7 @@ begin
     end if;
   end process;
 
-  comb_proc: process(all) 
+  comb_proc: process(r, idx_first, idx_last, reg_str_len_min, reg_str_utf8_mask) 
   is
     variable v : reg_record;
     variable o : out_record;
