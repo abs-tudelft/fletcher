@@ -13,7 +13,7 @@ stages:
   ARROW_VERSION: 0.11.1
   AWS_FPGA_VERSION: 1.4.4
   CAPI_SNAP_VERSION: 1.5.1
-  CAPI_PSLSE_VERSION: 4.1
+  CAPI_PSLSE_VERSION: "4.1"
 
   GHDL_IMAGE: ghdl/ghdl
   GHDL_TAG: ubuntu18-llvm-5.0
@@ -29,6 +29,7 @@ stages:
   FLETCHER_CPP: 0
   FLETCHER_ECHO: 0
   FLETCHER_AWS: 0
+  FLETCHER_SNAP: 0
   FLETCHER_GEN: 0
   FLETCHER_PYTHON: 0
   FLETCHER_TESTS: 1
@@ -101,7 +102,7 @@ test-vhdl-08:
         export APT_PACKAGES="$APT_PACKAGES git"
       fi
       if [ "$FLETCHER_SNAP" -ne 0 ]; then
-        export APT_PACKAGES="$APT_PACKAGES curl"
+        export APT_PACKAGES="$APT_PACKAGES git curl"
       fi
     - *apt-install
     - |
@@ -118,7 +119,7 @@ test-vhdl-08:
         git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
         export SNAP_ROOT=/snap
         pushd snap
-        PSL_VER=9 BUILD_SIMCODE=1 make software
+        PSL_VER=8 BUILD_SIMCODE=1 make software
         popd
       fi
     - mkdir -p build
