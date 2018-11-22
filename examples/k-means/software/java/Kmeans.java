@@ -14,6 +14,10 @@
 
 package nl.tudelft.ewi.ce.abs.kmeans;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -42,17 +46,23 @@ public class Kmeans {
 		List<List<Long>> start_centroids = kmeans.getStartingCentroids(data);
 		
 		
+		double t_ser = 0;
 		double t_vcpu = 0;
 		double t_vomp = 0;
 		for (int experiment = 0; experiment < ne; experiment++) {
-		
+			
+			t.start();
+			toArrow(data);
+			t.stop();
+			t_ser += t.seconds();
+			
 			t.start();
 			List<List<Long>> result_vcpu = kmeans.kmeansCPU(data, start_centroids);
 			t.stop();
 			t_vcpu += t.seconds();
 			
-			System.out.println("vCPU clusters: ");
 			if (experiment == 0) {
+				System.out.println("vCPU clusters: ");
 				for (List<Long> centroid : result_vcpu) {
 					System.out.println(centroid);
 				}
@@ -68,6 +78,7 @@ public class Kmeans {
 			}
 		}
 		
+		System.out.println(t_ser + " ser");
 		System.out.println(t_vcpu + " vCPU");
 		System.out.println(t_vomp + " vOMP");
 		
@@ -91,6 +102,29 @@ public class Kmeans {
 			new_centroids.add(new ArrayList<Long>(row));
 		}
 		return new_centroids;
+	}
+	
+	
+	private static List<Buffer> toArrow(List<List<Long>> data) {
+		int num_rows = data.size();
+		int num_cols = data.get(0).size();
+		LongBuffer points = ByteBuffer.allocateDirect((64/8) * num_rows * num_cols).asLongBuffer();
+		IntBuffer offsets = ByteBuffer.allocateDirect((32/8) * num_rows).asIntBuffer();
+		
+		int offset = 0;
+		for (List<Long> row : data) {
+			offsets.put(offset);
+			for (Long element : row) {
+				points.put(element);
+			}
+			offset += num_cols;
+		}
+		offsets.put(offset);
+		
+		List<Buffer> buffers = new ArrayList<Buffer>();
+		buffers.add(points);
+		buffers.add(offsets);
+		return buffers;
 	}
 	
 	
