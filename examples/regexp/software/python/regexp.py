@@ -252,22 +252,29 @@ if __name__ == "__main__":
     strings_native = filedata.splitlines()
     strings_pandas = pd.Series(strings_native)
 
-    t.start()
-    rb = create_record_batch(strings_native)
-    t.stop()
-    t_nser = t.seconds()
+    for i in range(ne):
+        t.start()
+        rb_n = create_record_batch(strings_native)
+        t.stop()
+        t_nser = t.seconds()
 
-    t.start()
-    rb = create_record_batch(strings_pandas)
-    t.stop()
-    t_pser = t.seconds()
+        t.start()
+        rb = create_record_batch(strings_pandas)
+        t.stop()
+        t_pser = t.seconds()
 
+    print("Total serialization time for {ne} runs:".format(ne=ne))
     print("Native to Arrow serialization time: " + str(t_nser))
     print("Pandas to Arrow serialization time: " + str(t_pser))
+    print()
+    print("Average serialization time:".format(ne=ne))
+    print("Native to Arrow serialization time: " + str(t_nser)/ne)
+    print("Pandas to Arrow serialization time: " + str(t_pser)/ne)
 
     num_rows = len(strings_native)
 
     for e in range(ne):
+        print("Starting experiment {i}".format(i=e))
         # Match Python list on CPU using re (marginal performance improvement most likely possible with Cython)
         t.start()
         m_py_pyre.append(add_matches_cpu_re(strings_native, regexes))
@@ -340,6 +347,31 @@ if __name__ == "__main__":
     print("Arrow array to FPGA copy: " + str(sum(t_copy)/ne))
     print("Arrow array on FPGA algorithm time: " + str(sum(t_fpga)/ne))
     print("Arrow array on FPGA total: " + str(sum(t_ftot)/ne))
+
+    with open("Output.txt", "w") as text_file:
+        text_file.write("Total runtimes for " + str(ne) + " runs:")
+        text_file.write("\nPython list on CPU (re): " + str(sum(t_py_pyre)))
+        text_file.write("\nPandas series on CPU (re): " + str(sum(t_pa_pyre)))
+        text_file.write("\nPython list on CPU (Pyre2): " + str(sum(t_py_pyre2)))
+        text_file.write("\nPandas series on CPU (Pyre2): " + str(sum(t_pa_pyre2)))
+        text_file.write("\nArrow array on CPU (Pyre2): " + str(sum(t_ar_pyre2)))
+        text_file.write("\nArrow array on CPU (CPP Re2): " + str(sum(t_ar_cppre)))
+        text_file.write("\nArrow array on CPU (CPP Re2 OMP): " + str(sum(t_ar_cppre_omp)))
+        text_file.write("\nArrow array to FPGA copy: " + str(sum(t_copy)))
+        text_file.write("\nArrow array on FPGA algorithm time: " + str(sum(t_fpga)))
+        text_file.write("\nArrow array on FPGA total: " + str(sum(t_ftot)))
+        text_file.write("\n")
+        text_file.write("\nAverage runtimes:")
+        text_file.write("\nPython list on CPU (re): " + str(sum(t_py_pyre) / ne))
+        text_file.write("\nPandas series on CPU (re): " + str(sum(t_pa_pyre) / ne))
+        text_file.write("\nPython list on CPU (Pyre2): " + str(sum(t_py_pyre2) / ne))
+        text_file.write("\nPandas series on CPU (Pyre2): " + str(sum(t_pa_pyre2) / ne))
+        text_file.write("\nArrow array on CPU (Pyre2): " + str(sum(t_ar_pyre2) / ne))
+        text_file.write("\nArrow array on CPU (CPP Re2): " + str(sum(t_ar_cppre) / ne))
+        text_file.write("\nArrow array on CPU (CPP Re2 OMP): " + str(sum(t_ar_cppre_omp) / ne))
+        text_file.write("\nArrow array to FPGA copy: " + str(sum(t_copy) / ne))
+        text_file.write("\nArrow array on FPGA algorithm time: " + str(sum(t_fpga) / ne))
+        text_file.write("\nArrow array on FPGA total: " + str(sum(t_ftot) / ne))
 
     # Accumulated matches
     a_py_pyre = [0] * np
