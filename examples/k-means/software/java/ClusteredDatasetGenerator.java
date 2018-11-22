@@ -20,9 +20,9 @@ public class ClusteredDatasetGenerator extends DatasetGenerator {
 	
 	public static void main(String[] args) throws IOException {
 
-		ClusteredDatasetGenerator generator = new ClusteredDatasetGenerator(8, 16, 1024*1024*1024/(64/8)/8);
+		ClusteredDatasetGenerator generator = new ClusteredDatasetGenerator(8, 16, 1024*1024*1024/((64/8)*8+4));
 		
-		OutputStream target = new FileOutputStream("k-means-64-16-8-1G.csv");
+		OutputStream target = new FileOutputStream("k-means-64-16-8-1Glist.csv");
 		generator.getCSV(target);
 		
 

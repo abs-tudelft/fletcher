@@ -31,7 +31,7 @@ public class Kmeans {
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		Timer t = new Timer();
 		
-		long num_rows = 1024*1024*1024/(64/8)/8;  // For 1 GiB of data
+		long num_rows = 1024*1024*1024/((64/8)*8+4);  // For 1 GiB of data
 		int ne = 10;  // Number of experiments
 		
 		Kmeans kmeans = new Kmeans();
