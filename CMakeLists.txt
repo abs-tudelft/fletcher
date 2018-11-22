@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 # Tests for any subproject
 option(FLETCHER_TESTS "Build tests." OFF)
 
+if (FLETCHER_TESTS)
+  enable_testing()
+endif()
+
 ########################################################################################################################
 # Runtimes
 ########################################################################################################################

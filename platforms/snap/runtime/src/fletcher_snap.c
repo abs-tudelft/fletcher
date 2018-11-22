@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <memory.h>
 
-#include "../../../../common/cpp/src/fletcher.h"
+#include "../../../../common/c/src/fletcher/fletcher.h"
 
 #include "fletcher_snap.h"
 
