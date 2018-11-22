@@ -32,6 +32,7 @@ public class Kmeans {
 		Timer t = new Timer();
 		
 		long num_rows = 1024*1024*1024/(64/8)/8;  // For 1 GiB of data
+		int ne = 10;  // Number of experiments
 		
 		Kmeans kmeans = new Kmeans();
 		
@@ -40,40 +41,35 @@ public class Kmeans {
 		
 		List<List<Long>> start_centroids = kmeans.getStartingCentroids(data);
 		
-		t.start();
-		List<List<Long>> result_vcpu = kmeans.kmeansCPU(data, start_centroids);
-		t.stop();
-		System.out.println("vCPU clusters: ");
-		for (List<Long> centroid : result_vcpu) {
-			System.out.println(centroid);
-		}
-		System.out.println("vcpu " + t.seconds());
 		
-		t.start();
-		List<List<Long>> result_vcpu2 = kmeans.kmeansCPU(data, start_centroids);
-		t.stop();
-		System.out.println("vcpu " + t.seconds());
-		if (!result_vcpu2.equals(result_vcpu)) {
-			System.out.println("ERROR");
-			System.exit(1);
+		double t_vcpu = 0;
+		double t_vomp = 0;
+		for (int experiment = 0; experiment < ne; experiment++) {
+		
+			t.start();
+			List<List<Long>> result_vcpu = kmeans.kmeansCPU(data, start_centroids);
+			t.stop();
+			t_vcpu += t.seconds();
+			
+			System.out.println("vCPU clusters: ");
+			if (experiment == 0) {
+				for (List<Long> centroid : result_vcpu) {
+					System.out.println(centroid);
+				}
+			}
+			
+			t.start();
+			List<List<Long>> result_vomp = kmeans.kmeansCPUThreaded(data, start_centroids);
+			t.stop();
+			t_vomp += t.seconds();
+			if (!result_vomp.equals(result_vcpu)) {
+				System.out.println("ERROR");
+				System.exit(1);
+			}
 		}
 		
-		t.start();
-		List<List<Long>> result_vomp = kmeans.kmeansCPUThreaded(data, start_centroids);
-		t.stop();
-		System.out.println("vomp " + t.seconds());
-		if (!result_vomp.equals(result_vcpu)) {
-			System.out.println("ERROR");
-			System.exit(1);
-		}
-		t.start();
-		List<List<Long>> result_vomp2 = kmeans.kmeansCPUThreaded(data, start_centroids);
-		t.stop();
-		System.out.println("vomp " + t.seconds());
-		if (!result_vomp2.equals(result_vcpu)) {
-			System.out.println("ERROR");
-			System.exit(1);
-		}
+		System.out.println(t_vcpu + " vCPU");
+		System.out.println(t_vomp + " vOMP");
 		
 		System.out.println("PASS");
 		System.exit(0);
