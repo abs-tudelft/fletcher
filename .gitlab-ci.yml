@@ -56,16 +56,16 @@ vhdl-syntax:
       sed -e 's/ \*\*//' |
       xargs -L 1 ghdl -m --std=${STD:-08} --ieee=synopsys
 
-vhdl-93c:
+check-vhdl-93c:
   <<: *ghdl-check-job
   variables:
     <<: *env
     STD: 93c
 
-vhdl-08:
+check-vhdl-08:
   <<: *ghdl-check-job
 
-vhdl-08:
+test-vhdl-08:
   <<: *ghdl-check-job
   stage: test
   allow_failure: true
@@ -110,19 +110,19 @@ vhdl-08:
   variables:
     <<: *cmake-build-env
 
-cpp-runtime:
+test-cpp-runtime:
   <<: *cmake-test-job
   variables:
     <<: *cmake-env
     SOURCE_PATH: runtime/cpp
 
-cpp-common:
+test-cpp-common:
   <<: *cmake-test-job
   variables:
     <<: *cmake-env
     SOURCE_PATH: common/cpp
 
-cpp-all:
+test-cpp-all:
   <<: *cmake-test-job
   variables:
     <<: *cmake-env
@@ -130,19 +130,19 @@ cpp-all:
     FLETCHER_GEN: 1
     FLETCHER_ECHO: 1
 
-cpp-echo-runtime:
+build-cpp-echo-runtime:
   <<: *cmake-build-job
   variables:
     <<: *cmake-build-env
     SOURCE_PATH: platforms/echo/runtime
 
-cpp-fletchgen:
+build-cpp-fletchgen:
   <<: *cmake-build-job
   variables:
     <<: *cmake-build-env
     SOURCE_PATH: codegen/fletchgen
 
-cpp-all:
+build-cpp-all:
   <<: *cmake-build-job
   variables:
     <<: *cmake-build-env
