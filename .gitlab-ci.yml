@@ -115,7 +115,9 @@ test-vhdl-08:
         ../$SOURCE_PATH
     - make -j
     - |
-      [ "$FLETCHER_TESTS" -ne 0 ] && make test
+      if [ "$FLETCHER_TESTS" -ne 0 ]; then
+        make test
+      fi
 
 .cmake-test-job: &cmake-test-job
   <<: *cmake-job
