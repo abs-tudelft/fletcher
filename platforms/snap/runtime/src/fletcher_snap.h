@@ -16,9 +16,13 @@
 
 #include "libsnap.h"
 
-#include "../../../../common/cpp/src/fletcher.h"
+#include "../../../../common/c/src/fletcher/fletcher.h"
 
+#ifdef DEBUG
 #define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#define debug_print(...)
+#endif
 
 #define FLETCHER_PLATFORM_NAME "snap"
 

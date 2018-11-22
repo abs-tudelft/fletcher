@@ -12,6 +12,8 @@ stages:
 .env: &env
   ARROW_VERSION: 0.11.1
   AWS_FPGA_VERSION: 1.4.4
+  CAPI_SNAP_VERSION: 1.5.1
+  CAPI_PSLSE_VERSION: 4.1
 
   GHDL_IMAGE: ghdl/ghdl
   GHDL_TAG: ubuntu18-llvm-5.0
@@ -92,14 +94,31 @@ test-vhdl-08:
     <<: *cmake-env
   before_script:
     - |
-      [ "$FLETCHER_TESTS" -ne 0 ] && export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
-      [ "$FLETCHER_AWS" -ne 0 ] && export APT_PACKAGES="$APT_PACKAGES git"
+      if [ "$FLETCHER_TESTS" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
+      fi
+      if [ "$FLETCHER_AWS" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES git"
+      fi
+      if [ "$FLETCHER_SNAP" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES curl"
+      fi
     - *apt-install
     - |
       if [ "$FLETCHER_AWS" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
         pushd aws-fpga
         source sdk_setup.sh
+        popd
+      fi
+    - |
+      if [ "$FLETCHER_SNAP" -ne 0 ]; then
+        git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
+        export PSLSE_ROOT=/pslse
+        git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
+        export SNAP_ROOT=/snap
+        pushd snap
+        PSL_VER=9 BUILD_SIMCODE=1 make software
         popd
       fi
     - mkdir -p build
@@ -109,6 +128,8 @@ test-vhdl-08:
         -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
         -DFLETCHER_CPP=$FLETCHER_CPP
         -DFLETCHER_ECHO=$FLETCHER_ECHO
+        -DFLETCHER_AWS=$FLETCHER_AWS
+        -DFLETCHER_SNAP=$FLETCHER_SNAP
         -DFLETCHER_GEN=$FLETCHER_GEN
         -DFLETCHER_PYTHON=$FLETCHER_PYTHON
         -DFLETCHER_TESTS=$FLETCHER_TESTS
@@ -161,6 +182,13 @@ build-cpp-aws-platform:
     <<: *cmake-build-env
     FLETCHER_AWS: 1
     SOURCE_PATH: platforms/aws-f1/runtime
+
+build-cpp-snap-platform:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_SNAP: 1
+    SOURCE_PATH: platforms/snap/runtime
 
 build-cpp-fletchgen:
   <<: *cmake-build-job
