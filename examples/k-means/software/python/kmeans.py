@@ -297,8 +297,13 @@ if __name__ == "__main__":
         t.stop()
         t_npser.append(t.seconds())
 
+    print("Total serialization time for {ne} runs".format(ne=ne))
     print("Native to arrow serialization time: " + str(sum(t_naser)))
     print("Numpy to arrow serialization time: " + str(sum(t_npser)))
+    print()
+    print("Average serialization times:")
+    print("Native to arrow serialization time: " + str(sum(t_naser)/ne))
+    print("Numpy to arrow serialization time: " + str(sum(t_npser)/ne))
 
     # Determine starting centroids
     list_centroids = []
