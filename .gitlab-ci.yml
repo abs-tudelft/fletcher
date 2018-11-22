@@ -136,7 +136,7 @@ test-vhdl-08:
         git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
         pushd snap
         export SNAP_ROOT=`pwd`
-        PSL_VER=8 BUILD_SIMCODE=1 make software
+        PSLVER=8 BUILD_SIMCODE=1 make software
         popd
       fi
     - mkdir -p build
