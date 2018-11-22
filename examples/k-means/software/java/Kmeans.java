@@ -16,7 +16,6 @@ package nl.tudelft.ewi.ce.abs.kmeans;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,10 +31,12 @@ public class Kmeans {
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 		Timer t = new Timer();
 		
+		long num_rows = 1024*1024*1024/(64/8)/8;  // For 1 GiB of data
+		
 		Kmeans kmeans = new Kmeans();
 		
-		Random rng = new Random();
-		List<List<Long>> data = kmeans.createData(rng, 1000000);
+		DatasetGenerator generator = new ClusteredDatasetGenerator(kmeans.num_columns, kmeans.num_centroids, num_rows);
+		List<List<Long>> data = generator.getDataset();
 		
 		List<List<Long>> start_centroids = kmeans.getStartingCentroids(data);
 		
@@ -85,19 +86,6 @@ public class Kmeans {
 			centroids.add(data.get(c));
 		}
 		return centroidsCopy(centroids);
-	}
-	
-	
-	private List<List<Long>> createData(Random rng, int num_rows) {
-		List<List<Long>> data = new ArrayList<List<Long>>(num_rows);
-		for (int n = 0; n < num_rows; n++) {
-			List<Long> row = new ArrayList<Long>(num_columns);
-			for (int d = 0; d < num_columns; d++) {
-				row.add((long) (rng.nextInt(199)-99)); // range: [-99,99]
-			}
-			data.add(row);
-		}
-		return data;
 	}
 	
 	
@@ -153,7 +141,7 @@ public class Kmeans {
 				}
 				counters[c] = 0;
 			}
-
+			System.err.println("iteration " + iteration);
 			iteration++;
 		} while (!old_centroids.equals(new_centroids) && iteration < iteration_limit);
 

@@ -90,6 +90,35 @@ std::vector<std::vector<kmeans_t>> create_data(int num_rows, int num_columns, st
 
 
 /**
+ * Create an example dataset from a CSV stream.
+ */
+std::vector<std::vector<kmeans_t>> create_data(std::istream& input) {
+  std::vector<std::vector<kmeans_t>> dataset;
+
+  long line_num = 0;
+  std::string line;
+  while (std::getline(input, line)) {
+    std::stringstream lines(line);
+    std::vector<kmeans_t> row;
+    std::string element;
+    while (std::getline(lines, element, ',')) {
+      kmeans_t num = std::stoll(element);
+      row.push_back(num);
+    }
+    dataset.push_back(row);
+    
+    if (line_num % 1000000 == 0) {
+      std::cerr << ".";
+      line_num = 0;
+    }
+    line_num++;
+  }
+  std::cerr << std::endl;
+  return dataset;
+}
+
+
+/**
  * Convert the dataset into Arrow format.
  * Uses a list to represent the different dimensions in the data.
  */
@@ -581,7 +610,7 @@ int main(int argc, char ** argv) {
   int num_rows = 100;
   int centroids = 16;
   int dimensionality = 8;
-  int iteration_limit = 10;
+  int iteration_limit = 25;
   int fpga_dim = 8;
   int fpga_centroids = 16;
   // Number of experiments
@@ -628,7 +657,10 @@ int main(int argc, char ** argv) {
 
   // Create table of random numbers
   t.start();
-  auto dataset = create_data(num_rows, dimensionality, rng);
+  //auto dataset = create_data(num_rows, dimensionality, rng);
+  auto dataset = create_data(std::cin);
+  num_rows = dataset.size();
+  dimensionality = dataset.at(0).size();
   t.stop();
   PRINT_TIME(t.seconds(), "create");
 
@@ -644,6 +676,8 @@ int main(int argc, char ** argv) {
 
   // Run the mesurements
   for (int e = 0; e < ne; e++) {
+    std::cerr << "Starting iteration" << std::endl;
+
     // Serialize to RecordBatch
     t.start();
     auto rb = create_recordbatch(dataset);
@@ -656,6 +690,12 @@ int main(int argc, char ** argv) {
         dataset, centroids_position, iteration_limit);
     t.stop();
     t_vcpu[e] = t.seconds();
+
+    // Print the clusters
+    if (e == 0) {
+      std::cerr << "vCPU clusters: " << std::endl;
+      print_centroids(result_vcpu);
+    }
 
     // Run on CPU (Arrow)
     t.start();
@@ -677,18 +717,13 @@ int main(int argc, char ** argv) {
         rb, centroids_position, iteration_limit);
     t.stop();
     t_aomp[e] = t.seconds();
-
+    
     // Run on FPGA
-/*    auto result_fpga = kmeans_fpga(
+    std::cerr << "Starting FPGA" << std::endl;
+    auto result_fpga = kmeans_fpga(
         rb, centroids_position, iteration_limit, fpga_dim, fpga_centroids,
         &t_copy[e], &t_fpga[e], &bytes_copied);
-*/
 
-    // Print the clusters
-    if (e == 0) {
-      std::cout << "vCPU clusters: " << std::endl;
-      print_centroids(result_vcpu);
-    }
 
     // Check whether results are the same
     if (result_vcpu != result_acpu) {
@@ -710,12 +745,12 @@ int main(int argc, char ** argv) {
       return EXIT_FAILURE;
     }
 
-/*    if (result_vcpu != result_fpga) {
+    if (result_vcpu != result_fpga) {
       std::cout << "FPGA clusters: " << std::endl;
       print_centroids(result_fpga);
       std::cout << "ERROR" << std::endl;
       return EXIT_FAILURE;
-    }*/
+    }
   }
 
   // Report the run times:
