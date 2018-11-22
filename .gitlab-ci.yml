@@ -206,6 +206,8 @@ test-python-runtime:
   <<: *cmake-test-job
   variables:
     <<: *cmake-env
+    FLETCHER_TESTS: 0
+    FLETCHER_CPP: 1
     FLETCHER_PYTHON: 1
 
 build-cpp-echo-platform:
