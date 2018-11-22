@@ -11,6 +11,7 @@ stages:
 
 .env: &env
   ARROW_VERSION: 0.11.1
+  AWS_FPGA_VERSION: 1.4.4
 
   GHDL_IMAGE: ghdl/ghdl
   GHDL_TAG: ubuntu18-llvm-5.0
@@ -25,6 +26,7 @@ stages:
   CTEST_OUTPUT_ON_FAILURE: 1
   FLETCHER_CPP: 0
   FLETCHER_ECHO: 0
+  FLETCHER_AWS: 0
   FLETCHER_GEN: 0
   FLETCHER_PYTHON: 0
   FLETCHER_TESTS: 1
@@ -90,8 +92,16 @@ test-vhdl-08:
     <<: *cmake-env
   before_script:
     - |
-      [ "$FLETCHER_TESTS" ] && export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
+      [ "$FLETCHER_TESTS" -ne 0 ] && export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
+      [ "$FLETCHER_AWS" -ne 0 ] && export APT_PACKAGES="$APT_PACKAGES git"
     - *apt-install
+    - |
+      if [ "$FLETCHER_AWS" -ne 0 ] then
+        git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
+        pushd aws-fpga
+        source sdk_setup.sh
+        popd
+      fi
     - mkdir -p build
   script:
     - pushd build
@@ -105,7 +115,7 @@ test-vhdl-08:
         ../$SOURCE_PATH
     - make -j
     - |
-      [ "$FLETCHER_TESTS" ] && make test
+      [ "$FLETCHER_TESTS" -ne 0 ] && make test
 
 .cmake-test-job: &cmake-test-job
   <<: *cmake-job
@@ -142,6 +152,13 @@ build-cpp-echo-platform:
   variables:
     <<: *cmake-build-env
     SOURCE_PATH: platforms/echo/runtime
+
+build-cpp-aws-platform:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_AWS: 1
+    SOURCE_PATH: platforms/aws-f1/runtime
 
 build-cpp-fletchgen:
   <<: *cmake-build-job
