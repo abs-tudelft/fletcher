@@ -400,7 +400,8 @@ if __name__ == "__main__":
             and (a_ar_pyre2 == a_py_pyre) \
             and (a_py_pyre == a_pa_pyre) \
             and (a_pa_pyre == a_ar_cppre)\
-            and (a_ar_cppre == a_ar_cppre_omp):# and (a_ar_cppre_omp == a_fpga):
+            and (a_ar_cppre == a_ar_cppre_omp)\
+            and (a_ar_cppre_omp == a_fpga):
         print("PASS")
     else:
         print("ERROR")
