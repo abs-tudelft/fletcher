@@ -80,8 +80,9 @@ vhdl-tests:
     <<: *env
     APT_PACKAGES: $FLETCHER_APT_PACKAGES
   before_script:
+    - |
+      [ "$FLETCHER_TESTS" ] && export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
     - *apt-install
-    - [ "$FLETCHER_TESTS" ] && apt-get install -y libgtest-dev
     - mkdir -p build
   script:
     - pushd build
@@ -89,7 +90,8 @@ vhdl-tests:
         -DFLETCHER_TESTS=$FLETCHER_TESTS
         ../$CI_JOB_NAME
     - make -j
-    - [ "$FLETCHER_TESTS" ] && make test
+    - |
+      [ "$FLETCHER_TESTS" ] && make test
 
 runtime/cpp:
   <<: *cmake-job
