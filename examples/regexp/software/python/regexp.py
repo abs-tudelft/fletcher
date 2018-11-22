@@ -236,6 +236,9 @@ if __name__ == "__main__":
     t_fpga = []
     t_ftot = []
 
+    t_nser = []
+    t_pser = []
+
     # Matches
     m_pa_pyre = []
     m_py_pyre = []
@@ -256,20 +259,20 @@ if __name__ == "__main__":
         t.start()
         rb_n = create_record_batch(strings_native)
         t.stop()
-        t_nser = t.seconds()
+        t_nser.append(t.seconds())
 
         t.start()
         rb = create_record_batch(strings_pandas)
         t.stop()
-        t_pser = t.seconds()
+        t_pser.append(t.seconds())
 
     print("Total serialization time for {ne} runs:".format(ne=ne))
-    print("Native to Arrow serialization time: " + str(t_nser))
-    print("Pandas to Arrow serialization time: " + str(t_pser))
+    print("Native to Arrow serialization time: " + str(sum(t_nser)))
+    print("Pandas to Arrow serialization time: " + str(sum(t_pser)))
     print()
     print("Average serialization time:".format(ne=ne))
-    print("Native to Arrow serialization time: " + str(t_nser)/ne)
-    print("Pandas to Arrow serialization time: " + str(t_pser)/ne)
+    print("Native to Arrow serialization time: " + str(sum(t_nser)/ne))
+    print("Pandas to Arrow serialization time: " + str(sum(t_pser)/ne))
 
     num_rows = len(strings_native)
 
