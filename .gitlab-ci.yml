@@ -96,7 +96,7 @@ test-vhdl-08:
       [ "$FLETCHER_AWS" -ne 0 ] && export APT_PACKAGES="$APT_PACKAGES git"
     - *apt-install
     - |
-      if [ "$FLETCHER_AWS" -ne 0 ] then
+      if [ "$FLETCHER_AWS" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
         pushd aws-fpga
         source sdk_setup.sh
