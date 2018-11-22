@@ -115,107 +115,109 @@ initial begin
   tb.nsec_delay(27000);
   //tb.nsec_delay(1000);
   
-  // Queue offset buffer
-  tb.que_cl_to_buffer(
-    .chan(0),
-    .dst_addr(host_offsets_address),
-    .cl_addr(cl_offsets_address),
-    .len(num_off_bytes)
-  );
-  
-  // Queue values buffer
-  tb.que_cl_to_buffer(
-    .chan(0),
-    .dst_addr(host_values_address),
-    .cl_addr(cl_values_address),
-    .len(num_val_bytes)
-  );
-  
-  /*************************************************************
-  * Initialize UserCore
-  *************************************************************/
-
-  $display("[%t] : Initializing UserCore ", $realtime);
-
-  // Reset
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_RESET));
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
-
-  // Initialize buffer addressess
-  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_LO), .data(`OFF_ADDR_LO));
-  tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
-  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_LO), .data(`VAL_ADDR_LO));
-  tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_HI), .data(`VAL_ADDR_HI));
-
-  // Set first and last row index
-  tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
-  tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
-  
-  // Set strlen min and prng mask for strlen
-  tb.poke_bar1(.addr(4*`REG_STRLEN_MIN), .data(128));
-  tb.poke_bar1(.addr(4*`REG_PRNG_MASK), .data(255));
-
-  $display("[%t] : Starting UserCore", $realtime);
-
-  // Start UserCore
-  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
-
-  // Poll status at an interval of 1000 nsec
-  // For the real thing, you should probably increase this to put 
-  // less stress on the PCI interface
-  do
-    begin
-      tb.nsec_delay(1000);
-      tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
-      $display("[%t] : UserCore status: %H", $realtime, read_data);
-    end
-  while(read_data !== `STATUS_DONE);
-
-  $display("[%t] : UserCore completed ", $realtime);
-
-  tb.nsec_delay(10000);
-
-  /*************************************************************
-  * TRANSFER BUFFERS FROM DEVICE TO HOST
-  *************************************************************/
-  $display("[%t] : Transfering buffers from CL to Host", $realtime);
-    
-    // Start transfers of data from CL DDR to host
-  tb.start_que_to_buffer(.chan(0));
-
-  // Wait for dma transfers to complete,
-  // increase the timeout if you have to transfer a lot of data
-  timeout_count = 0;
-  do begin
-    status[0] = tb.is_dma_to_buffer_done(.chan(0));
-    #10ns;
-    timeout_count++;
-  end while ((status != 4'hf) && (timeout_count < 4000));
-
-  if (timeout_count >= 4000) begin
-    $display(
-      "[%t] : *** ERROR *** Timeout waiting for dma transfers from cl",
-      $realtime
+  for (int i = 0; i < 2; i++) begin
+    // Queue offset buffer
+    tb.que_cl_to_buffer(
+      .chan(0),
+      .dst_addr(host_offsets_address),
+      .cl_addr(cl_offsets_address),
+      .len(num_off_bytes)
     );
-    error_count++;
-  end
+    
+    // Queue values buffer
+    tb.que_cl_to_buffer(
+      .chan(0),
+      .dst_addr(host_values_address),
+      .cl_addr(cl_values_address),
+      .len(num_val_bytes)
+    );
+    
+    /*************************************************************
+    * Initialize UserCore
+    *************************************************************/
 
-  tb.nsec_delay(10000);
-  
-  $display("Offsets: ");
-  for (int i = 0; i <= `NUM_ROWS; i++)
-  begin
-    off_data.bytes[0] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 0));
-    off_data.bytes[1] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 1));
-    off_data.bytes[2] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 2));
-    off_data.bytes[3] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 3));
-    $write("%6d: 0x%08X / %6d\n", i, off_data.i, off_data.i);
-  end
-  
-  $display("Values: ");
-  for (int i = 0; i <  off_data.i && i < 1024; i++)
-  begin
-    $write("%c", tb.hm_get_byte(.addr(host_values_address + i)));
+    $display("[%t] : Initializing UserCore ", $realtime);
+
+    // Reset
+    tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_RESET));
+    tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
+
+    // Initialize buffer addressess
+    tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_LO), .data(`OFF_ADDR_LO));
+    tb.poke_bar1(.addr(4*`REG_STRING_OFF_ADDR_HI), .data(`OFF_ADDR_HI));
+    tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_LO), .data(`VAL_ADDR_LO));
+    tb.poke_bar1(.addr(4*`REG_STRING_VAL_ADDR_HI), .data(`VAL_ADDR_HI));
+
+    // Set first and last row index
+    tb.poke_bar1(.addr(4 * (`REG_FIRST_IDX)), .data(0));
+    tb.poke_bar1(.addr(4 * (`REG_LAST_IDX)), .data(`NUM_ROWS));
+    
+    // Set strlen min and prng mask for strlen
+    tb.poke_bar1(.addr(4*`REG_STRLEN_MIN), .data(0));
+    tb.poke_bar1(.addr(4*`REG_PRNG_MASK), .data(255));
+
+    $display("[%t] : Starting UserCore", $realtime);
+
+    // Start UserCore
+    tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
+
+    // Poll status at an interval of 1000 nsec
+    // For the real thing, you should probably increase this to put 
+    // less stress on the PCI interface
+    do
+      begin
+        tb.nsec_delay(1000);
+        tb.peek_bar1(.addr(4*`REG_STATUS), .data(read_data));
+        $display("[%t] : UserCore status: %H", $realtime, read_data);
+      end
+    while(read_data !== `STATUS_DONE);
+
+    $display("[%t] : UserCore completed ", $realtime);
+
+    tb.nsec_delay(10000);
+
+    /*************************************************************
+    * TRANSFER BUFFERS FROM DEVICE TO HOST
+    *************************************************************/
+    $display("[%t] : Transfering buffers from CL to Host", $realtime);
+      
+      // Start transfers of data from CL DDR to host
+    tb.start_que_to_buffer(.chan(0));
+
+    // Wait for dma transfers to complete,
+    // increase the timeout if you have to transfer a lot of data
+    timeout_count = 0;
+    do begin
+      status[0] = tb.is_dma_to_buffer_done(.chan(0));
+      #10ns;
+      timeout_count++;
+    end while ((status != 4'hf) && (timeout_count < 4000));
+
+    if (timeout_count >= 4000) begin
+      $display(
+        "[%t] : *** ERROR *** Timeout waiting for dma transfers from cl",
+        $realtime
+      );
+      error_count++;
+    end
+
+    tb.nsec_delay(10000);
+    
+    $display("Offsets: ");
+    for (int i = 0; i <= `NUM_ROWS; i++)
+    begin
+      off_data.bytes[0] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 0));
+      off_data.bytes[1] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 1));
+      off_data.bytes[2] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 2));
+      off_data.bytes[3] = tb.hm_get_byte(.addr(host_offsets_address + 4 * i + 3));
+      $write("%6d: 0x%08X / %6d\n", i, off_data.i, off_data.i);
+    end
+    
+    $display("Values: ");
+    for (int i = 0; i <  off_data.i && i < 1024; i++)
+    begin
+      $write("%c", tb.hm_get_byte(.addr(host_values_address + i)));
+    end
   end
 
 
