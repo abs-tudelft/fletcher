@@ -315,6 +315,7 @@ if __name__ == "__main__":
 
     # Benchmarking
     for i in range(ne):
+        print("Starting experiment {i}".format(i=i))
         # Native list k-means in pure Python
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
