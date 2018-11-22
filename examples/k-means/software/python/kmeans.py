@@ -135,8 +135,7 @@ def arrow_kmeans_python(batch, centroids, iteration_limit):
     return centroids
 
 
-
-def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_centroids):
+def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_centroids, t_copy, t_fpga):
     t = Timer()
 
     platform = pf.Platform(platform_type)
@@ -151,7 +150,10 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
 
     # Prepare the column buffers
     context.queue_record_batch(batch)
+    t.start()
     context.enable()
+    t.stop()
+    t_copy.append(t.seconds())
 
     # Determine size of table
     last_index = batch.num_rows
@@ -185,7 +187,7 @@ def arrow_kmeans_fpga(batch, centroids, iteration_limit, max_hw_dim, max_hw_cent
     uc.start()
     uc.wait_for_finish(10)
     t.stop()
-    print("Kmeans Arrow FPGA algorithm time: " + str(t.seconds()))
+    t_fpga.append(t.seconds())
 
     num_centroids = len(centroids)
     dimensionality = len(centroids[0])
@@ -267,6 +269,8 @@ if __name__ == "__main__":
     t_npcpp = []
     t_npcpp_omp = []
     t_fpga = []
+    t_ftot = []
+    t_copy = []
 
     # Results
     r_napy = []
@@ -365,9 +369,9 @@ if __name__ == "__main__":
         # Arrow k-means on the FPGA
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_fpga.append(arrow_kmeans_fpga(batch_points, numpy_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids))
+        r_fpga.append(arrow_kmeans_fpga(batch_points, numpy_centroids_copy, iteration_limit, max_hw_dim, max_hw_centroids, t_copy, t_fpga))
         t.stop()
-        t_fpga.append(t.seconds())
+        t_ftot.append(t.seconds())
 
     print("Total runtimes for " + str(ne) + " runs:")
     print("Kmeans native list pure Python execution time: " + str(sum(t_napy)))
@@ -378,7 +382,22 @@ if __name__ == "__main__":
     print("Kmeans Numpy Cython/CPP execution time: " + str(sum(t_npcpp)))
     print("Kmeans Arrow Cython/CPP OMP execution time: " + str(sum(t_arcpp_omp)))
     print("Kmeans Numpy Cython/CPP OMP execution time: " + str(sum(t_npcpp_omp)))
-    print("Kmeans Arrow FPGA total time: " + str(sum(t_fpga)))
+    print("Kmeans Arrow FPGA copy time: " + str(sum(t_copy)))
+    print("Kmeans Arrow FPGA algorithm time: " + str(sum(t_fpga)))
+    print("Kmeans Arrow FPGA total time: " + str(sum(t_ftot)))
+    print()
+    print("Average runtimes:")
+    print("Kmeans native list pure Python execution time: " + str(sum(t_napy)/ne))
+    print("Kmeans NumPy pure Python execution time: " + str(sum(t_nppy)/ne))
+    print("Kmeans Arrow pure Python execution time: " + str(sum(t_arpy)/ne))
+    print("Kmeans NumPy Cython execution time: " + str(sum(t_npcy)/ne))
+    print("Kmeans Arrow Cython/CPP execution time: " + str(sum(t_arcpp)/ne))
+    print("Kmeans Numpy Cython/CPP execution time: " + str(sum(t_npcpp)/ne))
+    print("Kmeans Arrow Cython/CPP OMP execution time: " + str(sum(t_arcpp_omp)/ne))
+    print("Kmeans Numpy Cython/CPP OMP execution time: " + str(sum(t_npcpp_omp)/ne))
+    print("Kmeans Arrow FPGA copy time: " + str(sum(t_copy)/ne))
+    print("Kmeans Arrow FPGA algorithm time: " + str(sum(t_fpga)/ne))
+    print("Kmeans Arrow FPGA total time: " + str(sum(t_ftot)/ne))
 
     # Print results (partially)
     # print(r_nppy[0])

@@ -177,25 +177,25 @@ def add_matches_fpga_arrow(strings, regexes, platform_type, t_copy, t_fpga):
     rc.reset()
 
     # Prepare the column buffers
-    t.start()
     context.queue_record_batch(rb)
+    t.start()
     context.enable()
     t.stop()
     t_copy.append(t.seconds())
 
     # Run the example
-    t.start()
     rc.set_reg_exp_arguments(0, num_rows)
 
     # Start the matchers and poll until completion
+    t.start()
     rc.start()
     rc.wait_for_finish(10)
-
-    # Get the number of matches from the UserCore
-    matches = rc.get_matches(np)
     t.stop()
     t_fpga.append(t.seconds())
 
+
+    # Get the number of matches from the UserCore
+    matches = rc.get_matches(np)
     return matches
 
 
@@ -325,7 +325,21 @@ if __name__ == "__main__":
     print("Arrow array on CPU (Pyre2): " + str(sum(t_ar_pyre2)))
     print("Arrow array on CPU (CPP Re2): " + str(sum(t_ar_cppre)))
     print("Arrow array on CPU (CPP Re2 OMP): " + str(sum(t_ar_cppre_omp)))
-    print("Arrow array on FPGA: " + str(sum(t_fpga)))
+    print("Arrow array to FPGA copy: " + str(sum(t_copy)))
+    print("Arrow array on FPGA algorithm time: " + str(sum(t_fpga)))
+    print("Arrow array on FPGA total: " + str(sum(t_ftot)))
+    print()
+    print("Average runtimes:")
+    print("Python list on CPU (re): " + str(sum(t_py_pyre)/ne))
+    print("Pandas series on CPU (re): " + str(sum(t_pa_pyre)/ne))
+    print("Python list on CPU (Pyre2): " + str(sum(t_py_pyre2)/ne))
+    print("Pandas series on CPU (Pyre2): " + str(sum(t_pa_pyre2)/ne))
+    print("Arrow array on CPU (Pyre2): " + str(sum(t_ar_pyre2)/ne))
+    print("Arrow array on CPU (CPP Re2): " + str(sum(t_ar_cppre)/ne))
+    print("Arrow array on CPU (CPP Re2 OMP): " + str(sum(t_ar_cppre_omp)/ne))
+    print("Arrow array to FPGA copy: " + str(sum(t_copy)/ne))
+    print("Arrow array on FPGA algorithm time: " + str(sum(t_fpga)/ne))
+    print("Arrow array on FPGA total: " + str(sum(t_ftot)/ne))
 
     # Accumulated matches
     a_py_pyre = [0] * np
