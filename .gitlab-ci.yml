@@ -21,6 +21,8 @@ stages:
   RUST_VERSION: 1.30.1
   RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
 
+  PYTHON_VERSION: 3.7-stretch
+
 .cmake-env: &cmake-env
   <<: *env
   APT_PACKAGES: cmake g++
@@ -43,7 +45,15 @@ variables:
   <<: *env
 
 .apt-install: &apt-install |
-  [ "$APT_PACKAGES" ] && apt-get update && apt-get install -y $APT_PACKAGES
+  if [ "$APT_PACKAGES" -ne 0 ]; then
+    apt-get update && apt-get install -y $APT_PACKAGES
+  fi
+
+.pip-install: &pip-install |
+  if [ "$PIP_PACKAGES" -ne 0 ]; then
+    pip3 || curl "https://bootstrap.pypa.io/get-pip.py" | python3
+    pip3 install -U $PIP_PACKAGES
+  fi
 
 check-vhdl-syntax:
   stage: check
@@ -104,7 +114,13 @@ test-vhdl-08:
       if [ "$FLETCHER_SNAP" -ne 0 ]; then
         export APT_PACKAGES="$APT_PACKAGES git curl"
       fi
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES curl"
+        export PIP_PACKAGES="$PIP_PACKAGES cython numpy pyarrow==$ARROW_VERSION"
+        export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
+      fi
     - *apt-install
+    - *pip-install
     - |
       if [ "$FLETCHER_AWS" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
@@ -115,10 +131,12 @@ test-vhdl-08:
     - |
       if [ "$FLETCHER_SNAP" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
-        export PSLSE_ROOT=/pslse
+        pushd pslse
+        export PSLSE_ROOT=`pwd`
+        popd
         git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
-        export SNAP_ROOT=/snap
         pushd snap
+        export SNAP_ROOT=`pwd`
         PSL_VER=8 BUILD_SIMCODE=1 make software
         popd
       fi
@@ -133,12 +151,24 @@ test-vhdl-08:
         -DFLETCHER_SNAP=$FLETCHER_SNAP
         -DFLETCHER_GEN=$FLETCHER_GEN
         -DFLETCHER_PYTHON=$FLETCHER_PYTHON
+        -DPYARROW_DIR=$PYARROW_DIR
         -DFLETCHER_TESTS=$FLETCHER_TESTS
         ../$SOURCE_PATH
     - make -j
     - |
       if [ "$FLETCHER_TESTS" -ne 0 ]; then
         make test
+      fi
+    - popd
+    - |
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        pushd build
+        make install
+        popd
+        pushd runtime/python
+        python3 setup.py install
+        python3 testing/test.py
+        popd
       fi
 
 .cmake-test-job: &cmake-test-job
@@ -170,6 +200,12 @@ test-cpp-all:
     FLETCHER_CPP: 1
     FLETCHER_GEN: 1
     FLETCHER_ECHO: 1
+
+test-python-runtime:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    FLETCHER_PYTHON: 1
 
 build-cpp-echo-platform:
   <<: *cmake-build-job
