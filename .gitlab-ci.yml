@@ -22,8 +22,12 @@ stages:
   <<: *env
   APT_PACKAGES: cmake g++
   CMAKE_BUILD_TYPE: Debug
-  FLETCHER_TESTS: 1
+  CTEST_OUTPUT_ON_FAILURE: 1
+  FLETCHER_CPP: 0
+  FLETCHER_ECHO: 0
+  FLETCHER_GEN: 0
   FLETCHER_PYTHON: 0
+  FLETCHER_TESTS: 1
 
 .cmake-build-env: &cmake-build-env
   <<: *cmake-env
@@ -36,7 +40,7 @@ variables:
 .apt-install: &apt-install |
   [ "$APT_PACKAGES" ] && apt-get update && apt-get install -y $APT_PACKAGES
 
-vhdl-syntax:
+check-vhdl-syntax:
   stage: check
   image: rust:${RUST_VERSION}-slim-stretch
   before_script:
@@ -93,6 +97,9 @@ test-vhdl-08:
     - pushd build
     - cmake
         -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+        -DFLETCHER_CPP=$FLETCHER_CPP
+        -DFLETCHER_ECHO=$FLETCHER_ECHO
+        -DFLETCHER_GEN=$FLETCHER_GEN
         -DFLETCHER_PYTHON=$FLETCHER_PYTHON
         -DFLETCHER_TESTS=$FLETCHER_TESTS
         ../$SOURCE_PATH
@@ -130,7 +137,7 @@ test-cpp-all:
     FLETCHER_GEN: 1
     FLETCHER_ECHO: 1
 
-build-cpp-echo-runtime:
+build-cpp-echo-platform:
   <<: *cmake-build-job
   variables:
     <<: *cmake-build-env
