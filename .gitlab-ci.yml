@@ -18,10 +18,17 @@ stages:
   RUST_VERSION: 1.30.1
   RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
 
-  FLETCHER_APT_PACKAGES: cmake g++
-
-  # cmake
+.cmake-env: &cmake-env
+  <<: *env
+  APT_PACKAGES: cmake g++
+  CMAKE_BUILD_TYPE: Debug
   FLETCHER_TESTS: 1
+  FLETCHER_PYTHON: 0
+
+.cmake-build-env: &cmake-build-env
+  <<: *cmake-env
+  FLETCHER_TESTS: 0
+  CMAKE_BUILD_TYPE: Release
 
 variables:
   <<: *env
@@ -58,7 +65,7 @@ vhdl-93c:
 vhdl-08:
   <<: *ghdl-check-job
 
-vhdl-tests:
+vhdl-08:
   <<: *ghdl-check-job
   stage: test
   allow_failure: true
@@ -74,11 +81,9 @@ vhdl-tests:
       ghdl -r --std=${STD:-08} --ieee=synopsys {} --stop-time=100ns'
 
 .cmake-job: &cmake-job
-  stage: test
   image: mbrobbel/libarrow:$ARROW_VERSION
   variables:
-    <<: *env
-    APT_PACKAGES: $FLETCHER_APT_PACKAGES
+    <<: *cmake-env
   before_script:
     - |
       [ "$FLETCHER_TESTS" ] && export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
@@ -87,14 +92,60 @@ vhdl-tests:
   script:
     - pushd build
     - cmake
+        -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+        -DFLETCHER_PYTHON=$FLETCHER_PYTHON
         -DFLETCHER_TESTS=$FLETCHER_TESTS
-        ../$CI_JOB_NAME
+        ../$SOURCE_PATH
     - make -j
     - |
       [ "$FLETCHER_TESTS" ] && make test
 
-runtime/cpp:
+.cmake-test-job: &cmake-test-job
   <<: *cmake-job
+  stage: test
 
-common/cpp:
+.cmake-build-job: &cmake-build-job
   <<: *cmake-job
+  stage: build
+  variables:
+    <<: *cmake-build-env
+
+cpp-runtime:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    SOURCE_PATH: runtime/cpp
+
+cpp-common:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    SOURCE_PATH: common/cpp
+
+cpp-all:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    FLETCHER_CPP: 1
+    FLETCHER_GEN: 1
+    FLETCHER_ECHO: 1
+
+cpp-echo-runtime:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    SOURCE_PATH: platforms/echo/runtime
+
+cpp-fletchgen:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    SOURCE_PATH: codegen/fletchgen
+
+cpp-all:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_CPP: 1
+    FLETCHER_GEN: 1
+    FLETCHER_ECHO: 1
