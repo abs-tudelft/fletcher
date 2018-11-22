@@ -53,7 +53,7 @@ begin
   
   out_ready <= '1';
   
-  prng_inst : StreamPseudoRandomGenerator
+  uut : StreamPseudoRandomGenerator
     generic map (
       DATA_WIDTH => DATA_WIDTH
     )

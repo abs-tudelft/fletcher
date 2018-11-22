@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 add_executable(${PROJECT_NAME}
+        src/randomizer.h
         src/stringwrite.cc
         )
 

@@ -253,16 +253,59 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
 }
 
 fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size) {
-  debug_print("[FLETCHER_AWS] Copying from device to host. [dev] 0x%016lX --> [host] 0x%016lX (%lu bytes)\n",
-              device_source,
+  size_t total = 0;
+
+  debug_print("[FLETCHER_AWS] Copying device to host %016lX -> %016lX (%li bytes).\n",
+              (uint64_t) device_source,
               (uint64_t) host_destination,
               size);
-  int rc = pread(aws_state.xdma_rd_fd[0], host_destination, size, device_source);
-  fsync(aws_state.xdma_rd_fd[0]);
-  if (rc < 0) {
-    int errsv = errno;
-    fprintf(stderr, "[FLETCHER_AWS] pread() error: %s\n", strerror(errsv));
-  }  
+
+  size_t read[FLETCHER_AWS_NUM_QUEUES] = {0};
+
+  int queues = FLETCHER_AWS_NUM_QUEUES;
+
+  // Only use more queues if the data to copy is larger than the queue threshold
+  if (size < FLETCHER_AWS_QUEUE_THRESHOLD) {
+    queues = 1;
+  }
+  size_t qbytes = (size_t)(size / queues);
+
+  for (int q = 0; q < queues; q++) {
+    ssize_t rc = 0;
+    // Determine number of bytes for the whole transfer
+    size_t qtotal = qbytes;
+    const uint8_t *qdest = host_destination + q * qbytes;
+    da_t qsource = device_source + qbytes * q;
+
+    // For the last queue check how many extra bytes we must copy
+    if (q == queues - 1) {
+      qtotal = qbytes + (size % queues);
+    }
+
+    while (read[q] < qtotal) {
+      // Write some bytes
+      rc = pread(aws_state.xdma_rd_fd[q],
+                 (void *) ((uint64_t) qdest + read[q]),
+                 qtotal - read[q],
+                 qsource + read[q]);
+
+      // If rc is negative there is something else going wrong. Abort the mission
+      if (rc < 0) {
+        int errsv = errno;
+        fprintf(stderr, "[FLETCHER_AWS] Copy device to host failed. Queue: %d. Error: %s\n", q, strerror(errsv));
+        aws_state.error = 1;
+        return FLETCHER_STATUS_ERROR;
+      }
+      read[q] += rc;
+    }
+  }
+  for (int q = 0; q < queues; q++) {
+    total += read[q];
+
+    // Synchronize the files
+    fsync(aws_state.xdma_rd_fd[q]);
+  }
+
   return FLETCHER_STATUS_OK;
 }
 
