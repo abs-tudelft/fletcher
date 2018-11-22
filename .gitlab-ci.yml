@@ -45,12 +45,12 @@ variables:
   <<: *env
 
 .apt-install: &apt-install |
-  if [ "$APT_PACKAGES" -ne 0 ]; then
+  if [ "$APT_PACKAGES" ]; then
     apt-get update && apt-get install -y $APT_PACKAGES
   fi
 
 .pip-install: &pip-install |
-  if [ "$PIP_PACKAGES" -ne 0 ]; then
+  if [ "$PIP_PACKAGES" ]; then
     pip3 || curl "https://bootstrap.pypa.io/get-pip.py" | python3
     pip3 install -U $PIP_PACKAGES
   fi
@@ -117,18 +117,19 @@ test-vhdl-08:
       if [ "$FLETCHER_PYTHON" -ne 0 ]; then
         export APT_PACKAGES="$APT_PACKAGES curl"
         export PIP_PACKAGES="$PIP_PACKAGES cython numpy pyarrow==$ARROW_VERSION"
-        export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
       fi
     - *apt-install
     - *pip-install
     - |
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
+      fi
       if [ "$FLETCHER_AWS" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
         pushd aws-fpga
         source sdk_setup.sh
         popd
       fi
-    - |
       if [ "$FLETCHER_SNAP" -ne 0 ]; then
         git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
         pushd pslse
