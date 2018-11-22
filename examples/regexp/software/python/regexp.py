@@ -280,7 +280,7 @@ if __name__ == "__main__":
         print("Starting experiment {i}".format(i=e))
         # Match Python list on CPU using re (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_py_pyre.append(add_matches_cpu_re(strings_native, regexes))
+        #m_py_pyre.append(add_matches_cpu_re(strings_native, regexes))
         t.stop()
         t_py_pyre.append(t.seconds())
 
@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
         # Match Python list on CPU using Pyre2 (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
+        #m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
         t.stop()
         t_py_pyre2.append(t.seconds())
 
@@ -302,15 +302,17 @@ if __name__ == "__main__":
         t.stop()
         t_pa_pyre2.append(t.seconds())
 
+        print("Finished pa pyre2")
+
         # Match Arrow array on CPU (significant performance improvement most likely possible with Cython)
         t.start()
-        m_ar_pyre2.append(add_matches_cpu_arrow(rb.column(0), regexes))
+        #m_ar_pyre2.append(add_matches_cpu_arrow(rb.column(0), regexes))
         t.stop()
         t_ar_pyre2.append(t.seconds())
 
         # Match Arrow array on CPU (with Cython wrapped CPP functions)
         t.start()
-        m_ar_cppre.append(re2_arrow.add_matches_cpp_arrow(rb.column(0), regexes))
+        #m_ar_cppre.append(re2_arrow.add_matches_cpp_arrow(rb.column(0), regexes))
         t.stop()
         t_ar_cppre.append(t.seconds())
 
@@ -320,11 +322,15 @@ if __name__ == "__main__":
         t.stop()
         t_ar_cppre_omp.append(t.seconds())
 
+        print("Finished arrow omp")
+
         # Match Arrow array on FPGA
         t.start()
         m_fpga.append(add_matches_fpga_arrow(rb, regexes, platform_type, t_copy, t_fpga))
         t.stop()
         t_ftot.append(t.seconds())
+
+        print("Finished FPGA")
 
 
     print("Total runtimes for " + str(ne) + " runs:")
@@ -375,6 +381,13 @@ if __name__ == "__main__":
         text_file.write("\nArrow array to FPGA copy: " + str(sum(t_copy) / ne))
         text_file.write("\nArrow array on FPGA algorithm time: " + str(sum(t_fpga) / ne))
         text_file.write("\nArrow array on FPGA total: " + str(sum(t_ftot) / ne))
+
+    # Todo: Temporary shortcut
+    m_py_pyre = m_pa_pyre2
+    m_pa_pyre = m_pa_pyre2
+    m_py_pyre2 =m_pa_pyre2
+    m_ar_pyre2 =m_pa_pyre2
+    m_ar_cppre =m_pa_pyre2
 
     # Accumulated matches
     a_py_pyre = [0] * np
