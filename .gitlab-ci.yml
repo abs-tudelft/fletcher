@@ -43,7 +43,7 @@ vhdl-syntax:
   image: $GHDL_IMAGE:$GHDL_TAG
   script:
     - find hardware/vhdl -name "*.vhd" |
-      xargs ghdl -i --std=${STD:-08} |
+      xargs ghdl -i -v --std=${STD:-08} |
       grep entity |
       sed -e 's/entity //' |
       sed -e 's/ \*\*//' |
@@ -64,7 +64,7 @@ vhdl-tests:
   allow_failure: true
   script:
     - find hardware -name "*.vhd" |
-      xargs ghdl -i --std=${STD:-08} |
+      xargs ghdl -i -v --std=${STD:-08} |
       grep entity |
       grep _tb |
       sed -e 's/entity //' |
