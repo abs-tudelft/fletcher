@@ -280,37 +280,37 @@ if __name__ == "__main__":
         print("Starting experiment {i}".format(i=e))
         # Match Python list on CPU using re (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_py_pyre.append(add_matches_cpu_re(strings_native, regexes))
+        #m_py_pyre.append(add_matches_cpu_re(strings_native, regexes))
         t.stop()
         t_py_pyre.append(t.seconds())
 
         # Match Pandas series on CPU using re (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_pa_pyre.append(add_matches_cpu_re(strings_pandas, regexes))
+        #m_pa_pyre.append(add_matches_cpu_re(strings_pandas, regexes))
         t.stop()
         t_pa_pyre.append(t.seconds())
 
         # Match Python list on CPU using Pyre2 (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
+        #m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
         t.stop()
         t_py_pyre2.append(t.seconds())
 
         # Match Pandas series on CPU using Pyre2 (marginal performance improvement most likely possible with Cython)
         t.start()
-        m_pa_pyre2.append(add_matches_cpu_re2(strings_pandas, regexes))
+        #m_pa_pyre2.append(add_matches_cpu_re2(strings_pandas, regexes))
         t.stop()
         t_pa_pyre2.append(t.seconds())
 
         # Match Arrow array on CPU (significant performance improvement most likely possible with Cython)
         t.start()
-        m_ar_pyre2.append(add_matches_cpu_arrow(rb.column(0), regexes))
+        #m_ar_pyre2.append(add_matches_cpu_arrow(rb.column(0), regexes))
         t.stop()
         t_ar_pyre2.append(t.seconds())
 
         # Match Arrow array on CPU (with Cython wrapped CPP functions)
         t.start()
-        m_ar_cppre.append(re2_arrow.add_matches_cpp_arrow(rb.column(0), regexes))
+        #m_ar_cppre.append(re2_arrow.add_matches_cpp_arrow(rb.column(0), regexes))
         t.stop()
         t_ar_cppre.append(t.seconds())
 
@@ -385,6 +385,13 @@ if __name__ == "__main__":
     a_ar_cppre = [0] * np
     a_ar_cppre_omp = [0] * np
     a_fpga = [0] * np
+
+    # Todo: Temporary shortcut
+    a_py_pyre = a_pa_pyre2
+    a_pa_pyre = a_pa_pyre2
+    a_py_pyre2 = a_pa_pyre2
+    a_ar_pyre2 = a_pa_pyre2
+    a_ar_cppre = a_pa_pyre2
 
     for p in range(np):
         for e in range(ne):
