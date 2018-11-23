@@ -281,12 +281,18 @@ if __name__ == "__main__":
         print("Pandas Cython (?) filtering: " + str(sum(t_pd_cy)))
         print("Arrow pure Python filtering: " + str(sum(t_pa_py)))
         print("Arrow CPP filtering: " + str(sum(t_pa_cpp)))
+        print("Filter Arrow FPGA copy time: " + str(sum(t_copy)))
+        print("Filter Arrow FPGA algorithm time: " + str(sum(t_fpga)))
+        print("Filter Arrow FPGA total time: " + str(sum(t_ftot)))
         print()
         print("Average execution times:")
         print("Pandas pure Python filtering: " + str(sum(t_pd_py) / (i + 1)))
         print("Pandas Cython (?) filtering: " + str(sum(t_pd_cy) / (i + 1)))
         print("Arrow pure Python filtering: " + str(sum(t_pa_py) / (i + 1)))
         print("Arrow CPP filtering: " + str(sum(t_pa_cpp) / (i + 1)))
+        print("Filter Arrow FPGA copy time: " + str(sum(t_copy)/(i+1)))
+        print("Filter Arrow FPGA algorithm time: " + str(sum(t_fpga)/(i+1)))
+        print("Filter Arrow FPGA total time: " + str(sum(t_ftot)/(i+1)))
 
     with open("Output.txt", "w") as textfile:
         textfile.write("\nTotal execution times for " + str(ne) + " runs:")
@@ -294,15 +300,20 @@ if __name__ == "__main__":
         textfile.write("\nPandas Cython (?) filtering: " + str(sum(t_pd_cy)))
         textfile.write("\nArrow pure Python filtering: " + str(sum(t_pa_py)))
         textfile.write("\nArrow CPP filtering: " + str(sum(t_pa_cpp)))
+        textfile.write("Filter Arrow FPGA copy time: " + str(sum(t_copy)))
+        textfile.write("Filter Arrow FPGA algorithm time: " + str(sum(t_fpga)))
+        textfile.write("Filter Arrow FPGA total time: " + str(sum(t_ftot)))
         textfile.write("\n")
         textfile.write("\nAverage execution times:")
         textfile.write("\nPandas pure Python filtering: " + str(sum(t_pd_py) / ne))
         textfile.write("\nPandas Cython (?) filtering: " + str(sum(t_pd_cy) / ne))
         textfile.write("\nArrow pure Python filtering: " + str(sum(t_pa_py) / ne))
         textfile.write("\nArrow CPP filtering: " + str(sum(t_pa_cpp) / ne))
+        textfile.write("Filter Arrow FPGA copy time: " + str(sum(t_copy)/(i+1)))
+        textfile.write("Filter Arrow FPGA algorithm time: " + str(sum(t_fpga)/(i+1)))
+        textfile.write("Filter Arrow FPGA total time: " + str(sum(t_ftot)/(i+1)))
 
     # Check if results are equal.
-    # Todo: currently does not check if results between different experiment iterations are the same.
     pass_counter = 0
     cross_exp_pass_counter = 0
     for i in range(ne):
