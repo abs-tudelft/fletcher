@@ -122,8 +122,13 @@ Status Context::enable() {
                                         &buffer.was_alloced).ewf();
           } else {
             // TODO(johanpel): Solve this for platforms such as SNAP
-            platform->deviceMalloc(&buffer.device_address, static_cast<size_t>(buffer.size)).ewf();
-            buffer.was_alloced = true;
+            if (platform->getName() == "snap") {
+              buffer.device_address = (da_t)buffer.host_address;
+              buffer.was_alloced = false;
+            } else {
+              platform->deviceMalloc(&buffer.device_address, static_cast<size_t>(buffer.size)).ewf();
+              buffer.was_alloced = true;
+            }
           }
         }
       }

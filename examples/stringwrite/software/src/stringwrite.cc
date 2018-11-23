@@ -40,7 +40,6 @@ std::shared_ptr<std::vector<int32_t>> genRandomLengths(int32_t amount, uint32_t 
     int len = min + (lfsr.next() & mask);
     total_length += len;
     lengths->push_back(len);
-    std::cout << len << std::endl;
   }
 
   *total = total_length;
@@ -178,8 +177,10 @@ int main(int argc, char **argv) {
     min_len = (uint32_t) std::strtoul(argv[2], nullptr, 10);
     len_msk = (uint32_t) std::strtoul(argv[3], nullptr, 10);
   } else {
-    std::cerr << "Usage: stringwrite <min str len> <prng mask>" << std::endl;
-    exit(-1);
+    num_str = 4;
+    min_len = 0;
+    len_msk = 255;
+    std::cerr << "Usage: stringwrite <num str> <min str len> <prng mask>" << std::endl;
   }
 
   int32_t num_values = 0;
@@ -214,7 +215,7 @@ int main(int argc, char **argv) {
   t.report();
 
   t.start();
-  fletcher::Platform::Make(&platform);
+  fletcher::Platform::Make(&platform).ewf("Could not create platform.");
   platform->init();
   fletcher::Context::Make(&context, platform);
   uc = std::make_shared<fletcher::UserCore>(context);
@@ -248,8 +249,14 @@ int main(int argc, char **argv) {
 
   std::cout << std::endl;
 
-  std::cout << dataset_arrow->ToString() << std::endl;
+  fletcher::HexView hv(0);
+  hv.addData(raw_offsets, sizeof(int32_t) * (num_str+1));
+  hv.addData(raw_values, num_values);
+  std::cout << hv.toString() << std::endl;
+
   std::cout << sa->ToString() << std::endl;
+  std::cout << dataset_arrow->ToString() << std::endl;
+  
   
 
   return 0;

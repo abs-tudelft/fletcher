@@ -525,9 +525,9 @@ begin
       SLV_BUS_DATA_WIDTH        => 32,
       INDEX_WIDTH               => 32,
       TAG_WIDTH                 => 1,
-      NUM_ARROW_BUFFERS         => 2,
-      NUM_USER_REGS             => 4,
-      NUM_REGS                  => 14,
+      NUM_ARROW_BUFFERS         => 7,
+      NUM_USER_REGS             => 0,
+      NUM_REGS                  => 20,
       REG_WIDTH                 => 32
     )
     port map (

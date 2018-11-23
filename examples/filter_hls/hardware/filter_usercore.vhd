@@ -379,7 +379,17 @@ begin
     end if;
   end process;
 
-  comb_proc: process(all) is
+  comb_proc: process(r,
+    ctrl_start, 
+    read_cmd,
+    write_cmd,
+    hls_dout,
+    hls_cout,
+    unlock,
+    idx_first, idx_last,
+    write_first_name_in_ready, write_first_name_in_values_in_ready,
+    write_first_name_unlock_valid    
+  ) is
     variable v : reg_record;
   begin
     -- Default registered outputs:
