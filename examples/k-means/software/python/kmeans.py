@@ -341,23 +341,25 @@ if __name__ == "__main__":
         # Numpy k-means with the algorithm implemented in Cython
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
+        #r_npcy.append(kmeans.np_kmeans_cython(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcy.append(t.seconds())
 
         # Arrow k-means using Cython wrapped C++
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
+        #r_arcpp.append(kmeans.arrow_kmeans_cpp(batch_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_arcpp.append(t.seconds())
 
         # Numpy k-means using Cython wrapped C++
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
-        r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
+        #r_npcpp.append(kmeans.numpy_kmeans_cpp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp.append(t.seconds())
+
+        print("Starting arcpp_omp")
 
         # Arrow k-means using Cython wrapped C++ (multi core)
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
@@ -366,12 +368,16 @@ if __name__ == "__main__":
         t.stop()
         t_arcpp_omp.append(t.seconds())
 
+        print("Starting npcpp_omp")
+
         # Arrow k-means using Cython wrapped C+ (multi core)
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
         t.start()
         r_npcpp_omp.append(kmeans.numpy_kmeans_cpp_omp(numpy_points, numpy_centroids_copy, iteration_limit))
         t.stop()
         t_npcpp_omp.append(t.seconds())
+
+        print("Starting fpga")
 
         # Arrow k-means on the FPGA
         numpy_centroids_copy = copy.deepcopy(numpy_centroids)
@@ -440,6 +446,14 @@ if __name__ == "__main__":
     # print(r_arcpp_omp[0])
     # print(r_npcpp[0])
     # print(r_fpga[0])
+
+    # Todo: Temporary shortcut
+    r_nppy = r_arcpp_omp
+    r_arpy = r_arcpp_omp
+    r_napy = r_arcpp_omp
+    r_arcpp = r_arcpp_omp
+    r_npcpp = r_arcpp_omp
+    r_npcy = r_arcpp_omp
 
     # Check correctness of results
     if np.array_equal(r_nppy, r_npcy) \
