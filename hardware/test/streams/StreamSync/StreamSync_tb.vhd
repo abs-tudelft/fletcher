@@ -17,17 +17,20 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.streams.all;
+use work.Streams.all;
+use work.StreamSim.all;
 
 entity StreamSync_tb is
+  generic (
+    DATA_WIDTH                  : natural := 4
+  );
+  port (
+    clk                         : in  std_logic;
+    reset                       : in  std_logic
+  );
 end StreamSync_tb;
 
-architecture Behavioral of StreamSync_tb is
-
-  constant DATA_WIDTH           : natural := 4;
-
-  signal clk                    : std_logic := '1';
-  signal reset                  : std_logic := '1';
+architecture TestBench of StreamSync_tb is
 
   signal valid_a                : std_logic;
   signal ready_a                : std_logic;
@@ -49,27 +52,9 @@ architecture Behavioral of StreamSync_tb is
 
 begin
 
-  clk_proc: process is
-  begin
-    clk <= '1';
-    wait for 5 ns;
-    clk <= '0';
-    wait for 5 ns;
-  end process;
-
-  reset_proc: process is
-  begin
-    reset <= '1';
-    wait for 50 ns;
-    wait until rising_edge(clk);
-    reset <= '0';
-    wait for 100 us;
-    wait until rising_edge(clk);
-  end process;
-
   prod_a: StreamTbProd
     generic map (
-      DATA_WIDTH                => 4,
+      DATA_WIDTH                => DATA_WIDTH,
       SEED                      => 1
     )
     port map (
@@ -82,7 +67,7 @@ begin
 
   prod_b: StreamTbProd
     generic map (
-      DATA_WIDTH                => 4,
+      DATA_WIDTH                => DATA_WIDTH,
       SEED                      => 2
     )
     port map (
@@ -153,7 +138,9 @@ begin
         0 => data(0)
       );
 
-      assert monitor_c = check report "Stream data integrity check failed" severity failure;
+      if monitor_c /= check then
+        stream_tb_fail("got unexpected data on stream c");
+      end if;
       data := data + 1;
 
     end loop;
@@ -194,11 +181,13 @@ begin
         0 => data(0)
       );
 
-      assert monitor_d = check report "Stream data integrity check failed" severity failure;
+      if monitor_d /= check then
+        stream_tb_fail("got unexpected data on stream d");
+      end if;
       data := data + 1;
 
     end loop;
   end process;
 
-end Behavioral;
+end TestBench;
 

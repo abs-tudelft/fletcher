@@ -19,17 +19,19 @@ use ieee.math_real.all;
 
 library work;
 use work.Streams.all;
+use work.StreamSim.all;
 use work.Utils.all;
 
 entity StreamNormalizer_tb is
+  generic (
+    ELEMENT_WIDTH               : natural := 4;
+    COUNT_MAX                   : natural := 4;
+    COUNT_WIDTH                 : natural := 2;
+    REQ_COUNT_WIDTH             : natural := 3
+  );
 end StreamNormalizer_tb;
 
-architecture Behavioral of StreamNormalizer_tb is
-
-  constant ELEMENT_WIDTH        : natural := 4;
-  constant COUNT_MAX            : natural := 4;
-  constant COUNT_WIDTH          : natural := 2;
-  constant REQ_COUNT_WIDTH      : natural := 3;
+architecture TestBench of StreamNormalizer_tb is
 
   signal clk                    : std_logic := '1';
   signal reset                  : std_logic;
@@ -59,10 +61,8 @@ begin
 
   clk_proc: process is
   begin
-    clk <= '1';
-    wait for 5 ns;
-    clk <= '0';
-    wait for 5 ns;
+    stream_tb_gen_clock(clk, 10 ns);
+    wait;
   end process;
 
   reset_proc: process is
@@ -73,6 +73,8 @@ begin
     reset <= '0';
     wait for 100 us;
     wait until rising_edge(clk);
+    wait for 3 ms;
+    stream_tb_complete;
   end process;
 
   prod_handshake_inst: StreamTbProd
@@ -231,23 +233,26 @@ begin
 
       -- Check the data.
       for i in 0 to count-1 loop
-        assert out_data((i+1)*ELEMENT_WIDTH-1 downto i*ELEMENT_WIDTH) = std_logic_vector(data)
-          report "Stream data integrity check failed (data not in sequence)" severity failure;
+        if out_data((i+1)*ELEMENT_WIDTH-1 downto i*ELEMENT_WIDTH) /= std_logic_vector(data) then
+          stream_tb_fail("Stream data integrity check failed (data not in sequence)");
+        end if;
         data := data + 1;
       end loop;
 
       -- Check the count. It must equal the requested count if last = '0', and
       -- must be less than or equal to the requested count if last = '1'.
       if out_last = '1' then
-        assert count <= to_integer(unsigned(req_count))
-          report "Stream data integrity check failed (too many elements returned)" severity failure;
+        if count > to_integer(unsigned(req_count)) then
+          stream_tb_fail("stream data integrity check failed (too many elements returned)");
+        end if;
       else
-        assert count = to_integer(unsigned(req_count))
-          report "Stream data integrity check failed (incorrect amount of elements returned)" severity failure;
+        if count /= to_integer(unsigned(req_count)) then
+          stream_tb_fail("stream data integrity check failed (incorrect amount of elements returned)");
+        end if;
       end if;
 
     end loop;
   end process;
 
-end Behavioral;
+end TestBench;
 

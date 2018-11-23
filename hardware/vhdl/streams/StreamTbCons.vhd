@@ -17,6 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+library work;
+use work.StreamSim.all;
+
 -- This simulation-only unit generates a random ready signal for consuming a
 -- stream. It checks, among other things, that valid is asserted irrespective
 -- of whether ready is asserted, a property which is necessary to conform to
@@ -31,7 +34,13 @@ entity StreamTbCons is
     DATA_WIDTH                  : natural := 4;
 
     -- Random seed. This should be different for every instantiation.
-    SEED                        : positive
+    SEED                        : positive;
+
+    -- If specified, this unit will push received data into the simulation data
+    -- queue with that name, allowing other actors to easily monitor the
+    -- received data. If not specified, this unit just sends the data to the
+    -- monitor signal and does nothing else with it.
+    NAME                        : string := ""
 
   );
   port (
@@ -162,7 +171,7 @@ begin
       and to_X01(in_valid) = '0'
       and to_X01(reset_prev) = '0'
     then
-      report "Valid released while ready low" severity FAILURE;
+      stream_tb_fail("valid released while ready low for stream " & NAME);
     end if;
 
     valid_prev := in_valid;
@@ -175,6 +184,17 @@ begin
   monitor <= in_data
         when to_X01(in_valid) = '1' and to_X01(in_ready_s) = '1'
         else (others => 'Z');
+
+  monitor_proc: process (clk) is
+  begin
+    if rising_edge(clk) then
+      if NAME /= "" then
+        if to_X01(in_valid) = '1' and to_X01(in_ready_s) = '1' then
+          stream_tb_push(NAME, in_data);
+        end if;
+      end if;
+    end if;
+  end process;
 
 end Behavioral;
 

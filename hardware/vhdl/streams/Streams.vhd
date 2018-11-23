@@ -264,60 +264,7 @@ package Streams is
 
     );
   end component;
-    
-  component StreamBarrel is
-    generic (
-      ELEMENT_WIDTH               : natural;
-      COUNT_MAX                   : natural;
-      AMOUNT_WIDTH                : natural;
-      AMOUNT_MAX                  : natural;
-      DIRECTION                   : string  := "left";
-      OPERATION                   : string  := "rotate";
-      STAGES                      : natural;
-      BACKPRESSURE                : boolean := true;
-      CTRL_WIDTH                  : natural := 1
-    );
-    port (
-      clk                         : in  std_logic;
-      reset                       : in  std_logic;
-      in_valid                    : in  std_logic;
-      in_ready                    : out std_logic;
-      in_rotate                   : in  std_logic_vector(AMOUNT_WIDTH-1 downto 0);
-      in_data                     : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      in_ctrl                     : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => '0');
-      out_valid                   : out std_logic;
-      out_ready                   : in  std_logic;
-      out_data                    : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      out_ctrl                    : out std_logic_vector(CTRL_WIDTH-1 downto 0)
-    );
-  end component;
-  
-  component StreamMaximizer is
-    generic (
-      ELEMENT_WIDTH               : natural;
-      COUNT_MAX                   : natural;
-      COUNT_WIDTH                 : natural;
-      USE_FIFO                    : boolean := false;
-      BARREL_BACKPRESSURE         : boolean := true
-    );
-    port (
-      clk                         : in  std_logic;
-      reset                       : in  std_logic;
-      in_valid                    : in  std_logic;
-      in_ready                    : out std_logic;
-      in_dvalid                   : in  std_logic := '1';
-      in_data                     : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      in_count                    : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
-      in_last                     : in  std_logic := '0';
-      out_valid                   : out std_logic;
-      out_ready                   : in  std_logic;
-      out_has_space               : in  std_logic := '0';
-      out_data                    : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      out_count                   : out std_logic_vector(COUNT_WIDTH-1 downto 0);
-      out_last                    : out std_logic
-    );
-  end component;
-  
+
   component StreamPseudoRandomGenerator is
     generic (
       DATA_WIDTH                : positive
@@ -332,6 +279,93 @@ package Streams is
     );
   end component;
   
+  component StreamPipelineControl is
+    generic (
+      IN_DATA_WIDTH               : natural;
+      OUT_DATA_WIDTH              : natural;
+      NUM_PIPE_REGS               : natural;
+      MIN_CYCLES_PER_TRANSFER     : positive := 1;
+      INPUT_SLICE                 : boolean := false;
+      RAM_CONFIG                  : string := ""
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      in_valid                    : in  std_logic;
+      in_ready                    : out std_logic;
+      in_data                     : in  std_logic_vector(IN_DATA_WIDTH-1 downto 0);
+      out_valid                   : out std_logic;
+      out_ready                   : in  std_logic;
+      out_data                    : out std_logic_vector(OUT_DATA_WIDTH-1 downto 0);
+      pipe_stall                  : in  std_logic := '0';
+      pipe_insert                 : in  std_logic := '0';
+      pipe_delete                 : in  std_logic := '0';
+      pipe_valid                  : out std_logic_vector(0 to NUM_PIPE_REGS);
+      pipe_input                  : out std_logic_vector(IN_DATA_WIDTH-1 downto 0);
+      pipe_output                 : in  std_logic_vector(OUT_DATA_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component StreamPipelineBarrel is
+    generic (
+      ELEMENT_WIDTH               : natural := 1;
+      ELEMENT_COUNT               : natural;
+      AMOUNT_WIDTH                : natural;
+      DIRECTION                   : string := "left";
+      OPERATION                   : string := "rotate";
+      NUM_STAGES                  : positive;
+      CTRL_WIDTH                  : natural := 1
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      in_data                     : in  std_logic_vector(ELEMENT_COUNT*ELEMENT_WIDTH-1 downto 0);
+      in_ctrl                     : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => '0');
+      in_amount                   : in  std_logic_vector(AMOUNT_WIDTH-1 downto 0);
+      out_data                    : out std_logic_vector(ELEMENT_COUNT*ELEMENT_WIDTH-1 downto 0);
+      out_ctrl                    : out std_logic_vector(CTRL_WIDTH-1 downto 0)
+    );
+  end component;
+
+  component StreamReshaper is
+    generic (
+      ELEMENT_WIDTH               : natural;
+      IN_COUNT_MAX                : natural := 1;
+      IN_COUNT_WIDTH              : natural := 1;
+      OUT_COUNT_MAX               : natural := 1;
+      OUT_COUNT_WIDTH             : natural := 1;
+      DIN_BUFFER_DEPTH            : natural := 2;
+      CIN_BUFFER_DEPTH            : natural := 2;
+      CTRL_WIDTH                  : natural := 1;
+      RAM_CONFIG                  : string := "";
+      SHIFTS_PER_STAGE            : natural := 3
+    );
+    port (
+      clk                         : in  std_logic;
+      reset                       : in  std_logic;
+      din_valid                   : in  std_logic;
+      din_ready                   : out std_logic;
+      din_dvalid                  : in  std_logic := '1';
+      din_data                    : in  std_logic_vector(IN_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      din_count                   : in  std_logic_vector(IN_COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(IN_COUNT_MAX, IN_COUNT_WIDTH));
+      din_last                    : in  std_logic := '0';
+      cin_valid                   : in  std_logic := '1';
+      cin_ready                   : out std_logic;
+      cin_dvalid                  : in  std_logic := '1';
+      cin_count                   : in  std_logic_vector(OUT_COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(OUT_COUNT_MAX, OUT_COUNT_WIDTH));
+      cin_last                    : in  std_logic := '0';
+      cin_ctrl                    : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => '0');
+      error_strobe                : out std_logic;
+      out_valid                   : out std_logic;
+      out_ready                   : in  std_logic;
+      out_dvalid                  : out std_logic;
+      out_data                    : out std_logic_vector(OUT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      out_count                   : out std_logic_vector(OUT_COUNT_WIDTH-1 downto 0);
+      out_last                    : out std_logic;
+      out_ctrl                    : out std_logic_vector(CTRL_WIDTH-1 downto 0)
+    );
+  end component;
+
   -----------------------------------------------------------------------------
   -- Component declarations for entities used internally by StreamFIFO
   -----------------------------------------------------------------------------
@@ -350,40 +384,6 @@ package Streams is
       b_counter                 : out std_logic_vector(DEPTH_LOG2 downto 0)
     );
   end component;
-
-  -----------------------------------------------------------------------------
-  -- Component declarations for simulation-only helper units
-  -----------------------------------------------------------------------------
-  -- pragma translate_off
-  component StreamTbProd is
-    generic (
-      DATA_WIDTH                : natural := 4;
-      SEED                      : positive
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      out_valid                 : out std_logic;
-      out_ready                 : in  std_logic;
-      out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0)
-    );
-  end component;
-
-  component StreamTbCons is
-    generic (
-      DATA_WIDTH                : natural := 4;
-      SEED                      : positive
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_data                   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      monitor                   : out std_logic_vector(DATA_WIDTH-1 downto 0)
-    );
-  end component;
-  -- pragma translate_on
 
   -----------------------------------------------------------------------------
   -- Helper functions

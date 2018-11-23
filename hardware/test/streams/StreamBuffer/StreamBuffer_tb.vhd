@@ -17,17 +17,22 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.streams.all;
+use work.Streams.all;
+use work.StreamSim.all;
 
-entity StreamSlice_tb is
-end StreamSlice_tb;
+entity StreamBuffer_tb is
+  generic (
+    MIN_DEPTH                   : natural
+  );
+  port (
+    clk                         : in  std_logic;
+    reset                       : in  std_logic
+  );
+end StreamBuffer_tb;
 
-architecture Behavioral of StreamSlice_tb is
+architecture TestBench of StreamBuffer_tb is
 
-  constant DATA_WIDTH           : natural := 4;
-
-  signal clk                    : std_logic := '1';
-  signal reset                  : std_logic;
+  constant DATA_WIDTH           : natural := 8;
 
   signal valid_a                : std_logic;
   signal ready_a                : std_logic;
@@ -36,32 +41,14 @@ architecture Behavioral of StreamSlice_tb is
   signal valid_b                : std_logic;
   signal ready_b                : std_logic;
   signal data_b                 : std_logic_vector(DATA_WIDTH-1 downto 0);
-  signal monitor_b              : std_logic_vector(DATA_WIDTH-1 downto 0);
 
 begin
 
-  clk_proc: process is
-  begin
-    clk <= '1';
-    wait for 5 ns;
-    clk <= '0';
-    wait for 5 ns;
-  end process;
-
-  reset_proc: process is
-  begin
-    reset <= '1';
-    wait for 50 ns;
-    wait until rising_edge(clk);
-    reset <= '0';
-    wait for 100 us;
-    wait until rising_edge(clk);
-  end process;
-
   prod_a: StreamTbProd
     generic map (
-      DATA_WIDTH                => 4,
-      SEED                      => 1
+      DATA_WIDTH                => DATA_WIDTH,
+      SEED                      => 1,
+      NAME                      => "a"
     )
     port map (
       clk                       => clk,
@@ -71,8 +58,9 @@ begin
       out_data                  => data_a
     );
 
-  uut: StreamSlice
+  uut: StreamBuffer
     generic map (
+      MIN_DEPTH                 => MIN_DEPTH,
       DATA_WIDTH                => DATA_WIDTH
     )
     port map (
@@ -89,31 +77,16 @@ begin
   cons_b: StreamTbCons
     generic map (
       DATA_WIDTH                => DATA_WIDTH,
-      SEED                      => 2
+      SEED                      => 2,
+      NAME                      => "b"
     )
     port map (
       clk                       => clk,
       reset                     => reset,
       in_valid                  => valid_b,
       in_ready                  => ready_b,
-      in_data                   => data_b,
-      monitor                   => monitor_b
+      in_data                   => data_b
     );
 
-  check_b: process is
-    variable data               : unsigned(DATA_WIDTH-1 downto 0);
-  begin
-    data := (others => '0');
-    loop
-      wait until rising_edge(clk);
-      exit when reset = '1';
-      next when monitor_b(0) = 'Z';
-
-      assert monitor_b = std_logic_vector(data) report "Stream data integrity check failed" severity failure;
-      data := data + 1;
-
-    end loop;
-  end process;
-
-end Behavioral;
+end TestBench;
 

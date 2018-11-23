@@ -18,66 +18,54 @@ use ieee.numeric_std.all;
 
 library work;
 use work.Streams.all;
-use work.SimUtils.all;
+use work.StreamSim.all;
 
 entity StreamPseudoRandomGenerator_tb is
+  generic (
+    DATA_WIDTH                  : natural := 8
+  );
+  port (
+    clk                         : in  std_logic;
+    reset                       : in  std_logic
+  );
 end StreamPseudoRandomGenerator_tb;
 
-architecture Behavioral of StreamPseudoRandomGenerator_tb is
-  constant DATA_WIDTH           : natural := 8;
-  signal clk                    : std_logic;
-  signal reset                  : std_logic;
+architecture TestBench of StreamPseudoRandomGenerator_tb is
+
   signal seed                   : std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
+
   signal out_valid              : std_logic;
   signal out_ready              : std_logic;
   signal out_data               : std_logic_vector(DATA_WIDTH-1 downto 0);
-begin
-  -- Clock
-  clk_proc: process is
-  begin
-    clk                   <= '1';
-    wait for 2 ns;
-    clk                   <= '0';
-    wait for 2 ns;
-  end process;
 
-  -- Reset
-  reset_proc: process is
-  begin
-    reset                   <= '1';
-    wait for 8 ns;
-    wait until rising_edge(clk);
-    reset                   <= '0';
-    wait;
-  end process;
-  
-  out_ready <= '1';
-  
-  prng_inst : StreamPseudoRandomGenerator
+begin
+
+  uut: StreamPseudoRandomGenerator
     generic map (
-      DATA_WIDTH => DATA_WIDTH
+      DATA_WIDTH                => DATA_WIDTH
     )
     port map (
-      clk       => clk       ,
-      reset     => reset     ,
-      seed      => seed      ,
-      out_valid => out_valid ,
-      out_ready => out_ready ,
-      out_data  => out_data  
+      clk                       => clk,
+      reset                     => reset,
+      seed                      => seed,
+      out_valid                 => out_valid,
+      out_ready                 => out_ready,
+      out_data                  => out_data
     );
-    
-  print_proc: process 
-  begin
-  
-    loop
-      wait until rising_edge(clk);
-      exit when out_valid = '1' and out_ready = '1';
-    end loop;
-    
-    dumpStdOut(ii(unsigned(out_data)));
-    
-  end process;
-  
-  
-end Behavioral;
+
+  cons: StreamTbCons
+    generic map (
+      DATA_WIDTH                => DATA_WIDTH,
+      SEED                      => 1,
+      NAME                      => "out"
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_valid                  => out_valid,
+      in_ready                  => out_ready,
+      in_data                   => out_data
+    );
+
+end TestBench;
 

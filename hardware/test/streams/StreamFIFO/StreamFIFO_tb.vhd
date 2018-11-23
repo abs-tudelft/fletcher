@@ -17,68 +17,37 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.streams.all;
+use work.Streams.all;
+use work.StreamSim.all;
 
 entity StreamFIFO_tb is
+  port (
+    in_clk                      : in  std_logic;
+    in_reset                    : in  std_logic;
+    out_clk                     : in  std_logic;
+    out_reset                   : in  std_logic
+  );
 end StreamFIFO_tb;
 
-architecture Behavioral of StreamFIFO_tb is
+architecture TestBench of StreamFIFO_tb is
 
-  constant DATA_WIDTH           : natural := 4;
-
-  signal in_clk                 : std_logic := '1';
-  signal in_reset               : std_logic := '1';
+  constant DATA_WIDTH           : natural := 8;
 
   signal valid_a                : std_logic;
   signal ready_a                : std_logic;
   signal data_a                 : std_logic_vector(DATA_WIDTH-1 downto 0);
 
-  signal out_clk                : std_logic := '1';
-  signal out_reset              : std_logic := '1';
-
   signal valid_b                : std_logic;
   signal ready_b                : std_logic;
   signal data_b                 : std_logic_vector(DATA_WIDTH-1 downto 0);
-  signal monitor_b              : std_logic_vector(DATA_WIDTH-1 downto 0);
 
 begin
 
-  in_clk_proc: process is
-  begin
-    in_clk <= '1';
-    wait for 5 ns;
-    in_clk <= '0';
-    wait for 5 ns;
-  end process;
-
-  out_clk_proc: process is
-  begin
-    out_clk <= '1';
-    wait for 5 ns;
-    out_clk <= '0';
-    wait for 5 ns;
-  end process;
-
-  reset_proc: process is
-  begin
-    in_reset <= '1';
-    out_reset <= '1';
-    wait for 50 ns;
-    wait until rising_edge(out_clk);
-    out_reset <= '0';
-    wait until rising_edge(in_clk);
-    in_reset <= '0';
-    wait for 10 us;
-    wait until rising_edge(out_clk);
-    out_reset <= '1';
-    wait until rising_edge(in_clk);
-    in_reset <= '1';
-  end process;
-
   prod_a: StreamTbProd
     generic map (
-      DATA_WIDTH                => 4,
-      SEED                      => 1
+      DATA_WIDTH                => DATA_WIDTH,
+      SEED                      => 1,
+      NAME                      => "a"
     )
     port map (
       clk                       => in_clk,
@@ -91,7 +60,7 @@ begin
   uut: StreamFIFO
     generic map (
       DATA_WIDTH                => DATA_WIDTH,
-      DEPTH_LOG2                => 4,
+      DEPTH_LOG2                => 5,
       XCLK_STAGES               => 2
     )
     port map (
@@ -110,31 +79,16 @@ begin
   cons_b: StreamTbCons
     generic map (
       DATA_WIDTH                => DATA_WIDTH,
-      SEED                      => 2
+      SEED                      => 2,
+      NAME                      => "b"
     )
     port map (
       clk                       => out_clk,
       reset                     => out_reset,
       in_valid                  => valid_b,
       in_ready                  => ready_b,
-      in_data                   => data_b,
-      monitor                   => monitor_b
+      in_data                   => data_b
     );
 
-  check_b: process is
-    variable data               : unsigned(DATA_WIDTH-1 downto 0);
-  begin
-    data := (others => '0');
-    loop
-      wait until rising_edge(out_clk);
-      exit when out_reset = '1';
-      next when monitor_b(0) = 'Z';
-
-      assert monitor_b = std_logic_vector(data) report "Stream data integrity check failed" severity failure;
-      data := data + 1;
-
-    end loop;
-  end process;
-
-end Behavioral;
+end TestBench;
 
