@@ -200,7 +200,7 @@ def add_matches_fpga_arrow(strings, regexes, platform_type, t_copy, t_fpga):
 
 
 if __name__ == "__main__":
-    t = Timer()
+    t = Timer(gc_disable=False)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_exp", dest="ne", default=1,
