@@ -29,9 +29,9 @@ entity kmeans is
       NUM_USER_REGS                              : natural;
       DIMENSION                                  : natural;
       DATA_WIDTH                                 : natural;
-      ACCUMULATOR_WIDTH                          : natural := DATA_WIDTH;
+      ACCUMULATOR_WIDTH                          : natural := 64;
       CENTROID_REGS                              : natural;
-      DIMENSION_REGS                             : natural := CENTROID_REGS / DIMENSION; -- TODO: clean up
+      DIMENSION_REGS                             : natural := 2; -- TODO: clean up
       CENTROIDS                                  : natural
     );
     port(
@@ -84,7 +84,6 @@ architecture behavior of kmeans is
       DATA_WIDTH         : natural;
       OPERANTS           : natural;
       TUSER_WIDTH        : positive := 1;
-      DEFAULT_VALUE      : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
       SLICES             : natural  := 1
     );
     port(
@@ -154,7 +153,6 @@ architecture behavior of kmeans is
       DATA_WIDTH         : natural;
       OPERANTS           : natural;
       TUSER_WIDTH        : positive := 1;
-      DEFAULT_VALUE      : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
       SLICES             : natural  := 1
     );
     port(
@@ -203,7 +201,7 @@ architecture behavior of kmeans is
       DIMENSION         : natural;
       CENTROIDS         : natural;
       DATA_WIDTH        : natural;
-      ACCUMULATOR_WIDTH : natural := DATA_WIDTH
+      ACCUMULATOR_WIDTH : natural := 64
     );
     port(
       reset             : in  std_logic;
@@ -376,8 +374,7 @@ begin
     generic map (
       DATA_WIDTH         => DATA_WIDTH,
       OPERANTS           => 1,
-      TUSER_WIDTH        => DATA_WIDTH * DIMENSION,
-      DEFAULT_VALUE      => (others => '1')
+      TUSER_WIDTH        => DATA_WIDTH * DIMENSION
     )
     port map (
       clk                => acc_clk,

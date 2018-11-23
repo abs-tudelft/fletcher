@@ -42,7 +42,7 @@ entity fletcher_wrapper is
     DIMENSION                                  : natural;
     CENTROIDS                                  : natural;
     CENTROID_REGS                              : natural;
-    EPC                                        : natural := 512 / DATA_WIDTH;
+    EPC                                        : natural := 512 / 64;
     NUM_REGS                                   : natural;
     NUM_USER_REGS                              : natural;
     REG_WIDTH                                  : natural;
@@ -275,8 +275,8 @@ begin
       point_cmd_firstIdx                       => s_point_cmd_firstIdx(INDEX_WIDTH-1 downto 0),
       point_cmd_lastIdx                        => s_point_cmd_lastIdx(INDEX_WIDTH-1 downto 0),
       point_cmd_tag                            => s_point_cmd_tag(TAG_WIDTH-1 downto 0),
-      point_cmd_point_dimension_values_addr    => s_point_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
-      point_cmd_point_offsets_addr             => s_point_cmd_ctrl(BUS_ADDR_WIDTH+BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
+      point_cmd_point_offsets_addr             => s_point_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
+      point_cmd_point_dimension_values_addr    => s_point_cmd_ctrl(BUS_ADDR_WIDTH+BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
       idx_first                                => regs_in(5*REG_WIDTH-1 downto 4*REG_WIDTH),
       idx_last                                 => regs_in(6*REG_WIDTH-1 downto 5*REG_WIDTH),
       reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),
