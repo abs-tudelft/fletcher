@@ -19,6 +19,7 @@ from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector
 from libcpp cimport bool as cpp_bool
 
+import pandas as pa
 import numpy as np
 cimport numpy as np
 from pyarrow.lib cimport *
@@ -29,3 +30,19 @@ cdef extern from "cpp/filter_custom.h" nogil:
 
 cpdef filter_record_batch_cpp(batch, zip_code):
     return pyarrow_wrap_batch(filter_record_batch(pyarrow_unwrap_batch(batch), zip_code))
+
+cpdef filter_dataframe_python(frame, zip_code):
+    """Filter a dataframe using standard Pandas syntax.
+
+    The filter removes rows that contain last_name="Smith" and zip_code as selected.
+
+    Args:
+        frame: Frame to be filtered
+        zip_code: Special zip_code to filter on.
+
+    Returns:
+        Pandas dataframe containing only the column "First". All rows containing last_name="Smith" & zip_code=zip_code
+        are filtered out.
+
+    """
+    return frame.loc[(frame["Last"] == "Smith") & (frame["Zip"] == zip_code), ["First"]]

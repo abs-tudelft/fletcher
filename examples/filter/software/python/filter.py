@@ -136,16 +136,18 @@ def filter_record_batch_python(batch, zip_code):
 
 
 def get_filter_output_rb(offsets_buffer_size, values_buffer_size):
-    string_array_length = offsets_buffer_size/4 - 1
+    string_array_length = offsets_buffer_size / 4 - 1
     offsets_buffer = pa.allocate_buffer(offsets_buffer_size)
     values_buffer = pa.allocate_buffer(values_buffer_size)
 
-    array =  pa.StringArray.from_buffers(string_array_length, offsets_buffer, values_buffer)
+    array = pa.StringArray.from_buffers(string_array_length, offsets_buffer, values_buffer)
 
     return pa.RecordBatch.from_arrays([array], get_filter_write_schema())
 
 
-def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_out_size, values_buffer_out_size):
+def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_out_size, values_buffer_out_size, t_copy,
+                             t_fpga):
+    t = Timer()
     platform = pf.Platform(platform_type)
     context = pf.Context(platform)
     uc = pf.UserCore(context)
@@ -158,23 +160,23 @@ def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_o
     context.queue_record_batch(batch_out)
 
     uc.reset()
+    t.start()
     context.enable()
+    t.stop()
+    t_copy.append(t.seconds())
     uc.set_range(0, batch_in.num_rows)
     uc.set_arguments([zip_code])
 
+    t.start()
     uc.start()
-    uc.wait_for_finish()
+    uc.wait_for_finish(10)
+    t.stop()
+    t_fpga.append(t.seconds())
 
-    # Todo: Finish
-    """
-    def test_foreign_buffer():
-    obj = np.array([1, 2], dtype=np.int32)
-    addr = obj.__array_interface__["data"][0]
-    size = obj.nbytes
-    buf = pa.foreign_buffer(addr, size, obj)
-    """
-
-
+    platform.copy_device_to_host(context.get_buffer_device_address(3, 0), offsets_buffer_out_size,
+                           batch_out.column(0).buffers()[1])
+    platform.copy_device_to_host(context.get_buffer_device_address(3, 1), values_buffer_out_size,
+                                 batch_out.column(0).buffers()[2])
 
     return 0
 
@@ -209,12 +211,16 @@ if __name__ == "__main__":
     t_ser_basic = []
     t_ser_fast = []
     t_pd_py = []
+    t_pd_cy = []
     t_pa_py = []
     t_pa_cpp = []
     t_fpga = []
+    t_copy = []
+    t_ftot = []
 
     # Results
     r_pd_py = []
+    r_pd_cy = []
     r_pa_py = []
     r_pa_cpp = []
     r_fpga = []
@@ -241,6 +247,12 @@ if __name__ == "__main__":
         t.stop()
         t_pd_py.append(t.seconds())
 
+        # Normal Pandas filtering. Creates copy.
+        t.start()
+        r_pd_cy.append(filter_custom.filter_dataframe_python(frame, special_zip_code))
+        t.stop()
+        t_pd_cy.append(t.seconds())
+
         # Filter an Arrow record batch using only pure Python. Creates copy.
         t.start()
         r_pa_py.append(filter_record_batch_python(batch_basic, special_zip_code))
@@ -255,28 +267,55 @@ if __name__ == "__main__":
 
         # Filter an Arrow record batch using the FPGA. Creates copy.
         # Currently requires prior knowledge on the size of the output batch.
-        # Todo: implement timer for algorithm time
         t.start()
         r_fpga.append(filter_record_batch_fpga(batch_basic, special_zip_code, platform_type,
                                                r_pa_cpp[0].column(0).buffers()[1].size,
-                                               r_pa_cpp[0].column(0).buffers()[2].size))
+                                               r_pa_cpp[0].column(0).buffers()[2].size,
+                                               t_copy,
+                                               t_fpga))
         t.stop()
-        t_fpga.append(t.seconds())
+        t_ftot.append(t.seconds())
 
-    print("Total execution times for " + str(ne) + " runs:")
-    print("Pandas pure Python filtering: " + str(sum(t_pd_py)))
-    print("Arrow pure Python filtering: " + str(sum(t_pa_py)))
-    print("Arrow CPP filtering: " + str(sum(t_pa_cpp)))
+        print("Total execution times for " + str(ne) + " runs:")
+        print("Pandas pure Python filtering: " + str(sum(t_pd_py)))
+        print("Pandas Cython (?) filtering: " + str(sum(t_pd_cy)))
+        print("Arrow pure Python filtering: " + str(sum(t_pa_py)))
+        print("Arrow CPP filtering: " + str(sum(t_pa_cpp)))
+        print()
+        print("Average execution times:")
+        print("Pandas pure Python filtering: " + str(sum(t_pd_py) / (i + 1)))
+        print("Pandas Cython (?) filtering: " + str(sum(t_pd_cy) / (i + 1)))
+        print("Arrow pure Python filtering: " + str(sum(t_pa_py) / (i + 1)))
+        print("Arrow CPP filtering: " + str(sum(t_pa_cpp) / (i + 1)))
+
+    with open("Output.txt", "w") as textfile:
+        textfile.write("\nTotal execution times for " + str(ne) + " runs:")
+        textfile.write("\nPandas pure Python filtering: " + str(sum(t_pd_py)))
+        textfile.write("\nPandas Cython (?) filtering: " + str(sum(t_pd_cy)))
+        textfile.write("\nArrow pure Python filtering: " + str(sum(t_pa_py)))
+        textfile.write("\nArrow CPP filtering: " + str(sum(t_pa_cpp)))
+        textfile.write("\n")
+        textfile.write("\nAverage execution times:")
+        textfile.write("\nPandas pure Python filtering: " + str(sum(t_pd_py) / ne))
+        textfile.write("\nPandas Cython (?) filtering: " + str(sum(t_pd_cy) / ne))
+        textfile.write("\nArrow pure Python filtering: " + str(sum(t_pa_py) / ne))
+        textfile.write("\nArrow CPP filtering: " + str(sum(t_pa_cpp) / ne))
 
     # Check if results are equal.
     # Todo: currently does not check if results between different experiment iterations are the same.
     pass_counter = 0
+    cross_exp_pass_counter = 0
     for i in range(ne):
-        if r_pa_py[0].equals(pa.RecordBatch.from_pandas(r_pd_py[0], get_filter_write_schema(), preserve_index=False)) \
-                and r_pa_py[0].equals(r_pa_cpp[0]):
+        if r_pa_py[i].equals(pa.RecordBatch.from_pandas(r_pd_py[i], get_filter_write_schema(), preserve_index=False)) \
+                and r_pa_py[i].equals(r_pa_cpp[i]) \
+                and r_pa_py[i].equals(pa.RecordBatch.from_pandas(r_pd_cy[i], get_filter_write_schema(), preserve_index=False)) \
+                and r_pa_py[i].equals(r_fpga[i]):
             pass_counter += 1
 
-    if pass_counter == ne:
+        if r_pa_py[0].equals(r_pa_py[i]):
+            cross_exp_pass_counter += 1
+
+    if pass_counter == ne and cross_exp_pass_counter == ne:
         print("PASS")
     else:
         print("ERROR ({error_counter} errors)".format(error_counter=ne - pass_counter))

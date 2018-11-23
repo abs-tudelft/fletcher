@@ -90,5 +90,18 @@ cdef class Context():
         """
         return self.context.get().num_buffers()
 
+    def get_buffer_device_address(self, int array_index, int buffer_index):
+        """Get device address of a buffer
+
+        Args:
+            array_index: Index of the device array
+            buffer_index: Index of the buffer in the device array
+
+        Returns:
+
+        """
+
+        return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address
+
     def enable(self):
         check_fletcher_status(self.context.get().enable())
