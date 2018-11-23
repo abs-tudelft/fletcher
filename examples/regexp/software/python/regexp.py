@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
         # Match Python list on CPU using Pyre2 (marginal performance improvement most likely possible with Cython)
         t.start()
-        #m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
+        m_py_pyre2.append(add_matches_cpu_re2(strings_native, regexes))
         t.stop()
         t_py_pyre2.append(t.seconds())
 
@@ -394,7 +394,6 @@ if __name__ == "__main__":
     # Todo: Temporary shortcut
     m_py_pyre = m_pa_pyre2
     m_pa_pyre = m_pa_pyre2
-    m_py_pyre2 = m_pa_pyre2
     m_ar_pyre2 = m_pa_pyre2
     m_ar_cppre = m_pa_pyre2
 
