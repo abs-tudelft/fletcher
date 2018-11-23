@@ -144,19 +144,26 @@ cdef class Platform:
 
         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
 
-    def copy_device_to_host(self, da_t device_source, uint64_t size):
+    def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):
         """Copy a memory region from device memory to host memory.
 
         Args:
             device_source (int): Source in device memory
             size (int): The amount of bytes
+            buffer: Pyarrow buffer to copy bytes to
 
         Returns:
             ndarray: Read bytes
         """
-        buffer = np.zeros((size,), dtype=np.uint8)
-        cdef const uint8_t[:] buffer_view = buffer
-        cdef const uint8_t *host_destination = &buffer_view[0]
+        cdef const uint8_t[:] buffer_view
+        cdef const uint8_t *host_destination
+
+        if buffer is None:
+            buffer = np.zeros((size,), dtype=np.uint8)
+            buffer_view = buffer
+            host_destination = &buffer_view[0]
+        else:
+            host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()
 
         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
 
