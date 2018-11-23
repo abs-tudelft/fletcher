@@ -59,7 +59,7 @@ entity axi_mmio is
     -- Register: 0 1 2 3 4 5 6 7
     -- String  : Y Y Y Y N N N N -> "YYYYNNNN"
     --
-    -- Leave blank to reset no registers.    
+    -- Leave blank to reset all registers.    
     REG_RESET                   : string := ""
     
   );
@@ -162,9 +162,13 @@ begin
         -- Check for each register if it needs to be reset
         if (REG_RESET /= "") then
           for I in 0 to NUM_REGS-1 loop
-              if (REG_RESET(i) = 'Y') then
+              if (REG_RESET(i) /= 'Y') then
                 r.regs(i) <= (others => '0');
               end if;
+          end loop;
+        else
+          for I in 0 to NUM_REGS-1 loop
+            r.regs(i) <= (others => '0');
           end loop;
         end if;
       end if;

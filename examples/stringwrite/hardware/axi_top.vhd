@@ -43,7 +43,7 @@ entity axi_top is
     NUM_ARROW_BUFFERS           : natural := 2;
     NUM_USER_REGS               : natural := 4;
     NUM_REGS                    : natural := 14;
-    REG_WIDTH                   : natural := SLV_BUS_DATA_WIDTH
+    REG_WIDTH                   : natural := 32
   );
 
   port (
