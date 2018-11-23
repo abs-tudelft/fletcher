@@ -155,5 +155,24 @@ std::shared_ptr<arrow::Schema> genIntListSchema() {
   return schema;
 }
 
+std::shared_ptr<arrow::Schema> genFilterReadSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("read_first_name", arrow::utf8(), false),
+      arrow::field("read_last_name", arrow::utf8(), false),
+      arrow::field("read_zipcode", arrow::uint32(), false)
+  };
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  return schema;
+}
+
+std::shared_ptr<arrow::Schema> genFilterWriteSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("write_first_name", arrow::utf8(), false),
+  };
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::WRITE));
+  return schema;
+}
+
+
 }  // namespace test
 }  // namespace fletcher

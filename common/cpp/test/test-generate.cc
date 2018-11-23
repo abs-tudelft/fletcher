@@ -67,5 +67,13 @@ int main() {
   recordbatch = fletchgen::test::getInt64ListWideRB();
   fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlistwide.rb");
 
+  /* Filter example */
+  schema = fletcher::test::genFilterReadSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_read.fbs");
+  schema = fletcher::test::genFilterWriteSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
+  recordbatch = fletcher::test::getFilterRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+
   return EXIT_SUCCESS;
 }

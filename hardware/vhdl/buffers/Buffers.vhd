@@ -427,7 +427,8 @@ package Buffers is
       out_clear                 : out std_logic;
       out_implicit              : out std_logic;
       out_ctrl                  : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      out_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+      out_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+      out_last_npad             : out std_logic
     );
   end component;
 

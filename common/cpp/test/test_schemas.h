@@ -49,5 +49,11 @@ std::shared_ptr<arrow::Schema> genFloatListSchema();
 /// @brief An example schema with lists of int(64) numbers
 std::shared_ptr<arrow::Schema> genIntListSchema();
 
+/// #brief An read schema for the filter example
+std::shared_ptr<arrow::Schema> genFilterReadSchema();
+
+/// #brief An write schema for the filter example
+std::shared_ptr<arrow::Schema> genFilterWriteSchema();
+
 }
 }
