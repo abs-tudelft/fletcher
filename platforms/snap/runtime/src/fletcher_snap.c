@@ -96,6 +96,10 @@ fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
 
 fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
   *value = 0xDEADBEEF;
+  // Sleep a few seconds in simulation mode to prevent status register polling spam
+  if (snap_state.sim && offset == FLETCHER_REG_STATUS) {
+    sleep(2);
+  }
   snap_mmio_read32(snap_state.card_handle, FLETCHER_SNAP_ACTION_REG_OFFSET + 4*offset, value);
   debug_print("[FLETCHER_SNAP] Reading MMIO register.       %04lu => 0x%08X\n", offset, *value);
   return FLETCHER_STATUS_OK;
