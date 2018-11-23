@@ -21,7 +21,6 @@
 #include <snap_s_regs.h>
 
 #include "fletcher/fletcher.h"
-
 #include "fletcher_snap.h"
 
 da_t buffer_ptr = 0x0;
