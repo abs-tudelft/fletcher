@@ -53,6 +53,7 @@ public class StringWriter {
 		t.stop();
 		System.out.println(t.seconds() + " gen");
 		System.out.println(sw.total_length + " bytes");
+		System.out.println(sw.lengths.limit() / 4 + " entries");
 /*
 		for (String val : sw.values) {
 			System.out.println(val);
