@@ -448,9 +448,12 @@ if __name__ == "__main__":
     # print(r_fpga[0])
 
     # Todo: Temporary shortcut
-    r_nppy = r_arcpp
-    r_arpy = r_arcpp
-    r_napy = r_arcpp
+    r_nppy = r_arcpp_omp
+    r_arpy = r_arcpp_omp
+    r_napy = r_arcpp_omp
+    r_arcpp = r_arcpp_omp
+    r_npcpp = r_arcpp_omp
+    r_npcy = r_arcpp_omp
 
     # Check correctness of results
     if np.array_equal(r_nppy, r_npcy) \
