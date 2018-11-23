@@ -1,4 +1,4 @@
-package nl.tudelft.ewi.ce.abs.kmeans;
+
 
 import java.util.ArrayList;
 import java.util.List;

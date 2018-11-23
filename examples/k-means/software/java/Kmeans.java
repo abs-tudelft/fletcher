@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package nl.tudelft.ewi.ce.abs.kmeans;
+
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -109,7 +109,7 @@ public class Kmeans {
 		int num_rows = data.size();
 		int num_cols = data.get(0).size();
 		LongBuffer points = ByteBuffer.allocateDirect((64/8) * num_rows * num_cols).asLongBuffer();
-		IntBuffer offsets = ByteBuffer.allocateDirect((32/8) * num_rows).asIntBuffer();
+		IntBuffer offsets = ByteBuffer.allocateDirect((32/8) * (num_rows + 1)).asIntBuffer();
 		
 		int offset = 0;
 		for (List<Long> row : data) {
@@ -171,7 +171,7 @@ public class Kmeans {
 				}
 				counters[c] = 0;
 			}
-			System.err.println("iteration " + iteration);
+			System.err.println("k-means iteration " + iteration + " finished for single core");
 			iteration++;
 		} while (!old_centroids.equals(new_centroids) && iteration < iteration_limit);
 

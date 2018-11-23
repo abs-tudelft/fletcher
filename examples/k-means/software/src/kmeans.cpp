@@ -55,11 +55,11 @@ typedef arrow::Int64Type arrow_t;
  */
 void print_centroids(const std::vector<std::vector<kmeans_t>> &centroids_position) {
   for (auto const &centroid : centroids_position) {
-    std::cout << " (";
+    std::cerr << " (";
     for (kmeans_t const &dim : centroid) {
-      std::cout << dim << "; ";
+      std::cerr << dim << "; ";
     }
-    std::cout << ")" << std::endl;
+    std::cerr << ")" << std::endl;
   }
 }
 
@@ -512,7 +512,7 @@ std::vector<std::vector<kmeans_t>> kmeans_fpga(std::shared_ptr<arrow::RecordBatc
                                                int fpga_centroids,
                                                double *copy_time,
                                                double *run_time,
-                                               int *bytes_copied) {
+                                               long *bytes_copied) {
   Timer t;
 
   std::shared_ptr<fletcher::Platform> platform;
@@ -607,7 +607,7 @@ uint32_t calc_sum(const std::vector<uint32_t> &values) {
  * Finally compares the results.
  */
 int main(int argc, char ** argv) {
-  int num_rows = 100;
+  int num_rows = 15790320;
   int centroids = 16;
   int dimensionality = 8;
   int iteration_limit = 25;
@@ -640,7 +640,7 @@ int main(int argc, char ** argv) {
 
   Timer t;
 
-  int bytes_copied = 0;
+  long bytes_copied = 0;
 
   // Times
   std::vector<double> t_ser(ne, 0.0);
@@ -657,10 +657,16 @@ int main(int argc, char ** argv) {
 
   // Create table of random numbers
   t.start();
-  //auto dataset = create_data(num_rows, dimensionality, rng);
-  auto dataset = create_data(std::cin);
-  num_rows = dataset.size();
-  dimensionality = dataset.at(0).size();
+  std::vector<std::vector<kmeans_t>> dataset;
+  if (num_rows > 0) {
+    std::cerr << "Generating dataset" << std::endl;
+    dataset = create_data(num_rows, dimensionality, rng);
+  } else {
+    std::cerr << "Reading dataset from stdin" << std::endl;
+    dataset = create_data(std::cin);
+    num_rows = dataset.size();
+    dimensionality = dataset.at(0).size();
+  }
   t.stop();
   PRINT_TIME(t.seconds(), "create");
 
@@ -675,8 +681,9 @@ int main(int argc, char ** argv) {
   }
 
   // Run the mesurements
+  int status = EXIT_SUCCESS;
   for (int e = 0; e < ne; e++) {
-    std::cerr << "Starting iteration" << std::endl;
+    std::cerr << "Running iteration " << (e+1) << " of " << ne << std::endl;
 
     // Serialize to RecordBatch
     t.start();
@@ -727,29 +734,29 @@ int main(int argc, char ** argv) {
 
     // Check whether results are the same
     if (result_vcpu != result_acpu) {
-      std::cout << "aCPU clusters: " << std::endl;
+      std::cerr << "aCPU clusters: " << std::endl;
       print_centroids(result_acpu);
-      std::cout << "ERROR" << std::endl;
-      return EXIT_FAILURE;
+      std::cout << "ERROR Arrow single" << std::endl;
+      status = EXIT_FAILURE;
     }
     if (result_vcpu != result_vomp) {
-      std::cout << "vOMP clusters: " << std::endl;
+      std::cerr << "vOMP clusters: " << std::endl;
       print_centroids(result_vomp);
-      std::cout << "ERROR" << std::endl;
-      return EXIT_FAILURE;
+      std::cout << "ERROR vector OpenMP" << std::endl;
+      status = EXIT_FAILURE;
     }
     if (result_vcpu != result_aomp) {
-      std::cout << "aOMP clusters: " << std::endl;
+      std::cerr << "aOMP clusters: " << std::endl;
       print_centroids(result_aomp);
-      std::cout << "ERROR" << std::endl;
-      return EXIT_FAILURE;
+      std::cout << "ERROR Arrow OpenMP" << std::endl;
+      status = EXIT_FAILURE;
     }
 
     if (result_vcpu != result_fpga) {
-      std::cout << "FPGA clusters: " << std::endl;
+      std::cerr << "FPGA clusters: " << std::endl;
       print_centroids(result_fpga);
-      std::cout << "ERROR" << std::endl;
-      return EXIT_FAILURE;
+      std::cout << "ERROR FPGA" << std::endl;
+      status = EXIT_FAILURE;
     }
   }
 
@@ -763,7 +770,11 @@ int main(int argc, char ** argv) {
   PRINT_TIME(calc_sum(t_fpga), "FPGA");
   PRINT_INT(bytes_copied, "bytes copied");
 
-  std::cout << "PASS" << std::endl;
-  return EXIT_SUCCESS;
+  if (status == EXIT_SUCCESS) {
+    std::cout << "PASS" << std::endl;
+  } else {
+    std::cout << "ERROR" << std::endl;
+  }
+  return status;
 }
 

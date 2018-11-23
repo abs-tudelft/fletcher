@@ -1,4 +1,4 @@
-package nl.tudelft.ewi.ce.abs.kmeans;
+
 
 import java.io.FileOutputStream;
 import java.io.IOException;

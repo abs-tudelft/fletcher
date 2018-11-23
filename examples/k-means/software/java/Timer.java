@@ -1,4 +1,4 @@
-package nl.tudelft.ewi.ce.abs.kmeans;
+
 
 public class Timer {
 	long startTime;
