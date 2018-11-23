@@ -55,6 +55,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status init()
         Status writeMMIO(uint64_t offset, uint32_t value)
         Status readMMIO(uint64_t offset, uint32_t *value)
+        Status readMMIO64(uint64_t offset, uint64_t *value)
         Status deviceMalloc(da_t *device_address, size_t size)
         Status deviceFree(da_t device_address)
         Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
