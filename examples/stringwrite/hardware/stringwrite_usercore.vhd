@@ -106,6 +106,7 @@ architecture Implementation of stringwrite_usercore is
   type state_type is (IDLE, STRINGGEN, INTERFACE, UNLOCK);
 
   type reg_record is record
+    idle                      : std_logic;
     busy                      : std_logic;
     done                      : std_logic;
     reset_start               : std_logic;
@@ -167,6 +168,7 @@ begin
   reg_str_len_min   <= regs_in(0 * REG_WIDTH + LEN_WIDTH     - 1 downto 0 * REG_WIDTH);
   reg_str_utf8_mask <= regs_in(1 * REG_WIDTH + ELEMENT_WIDTH - 1 downto 1 * REG_WIDTH);  
   
+  ctrl_idle <= r.idle;
   ctrl_busy <= r.busy;
   ctrl_done <= r.done;
   
@@ -185,7 +187,13 @@ begin
     end if;
   end process;
 
-  comb_proc: process(r, idx_first, idx_last, reg_str_len_min, reg_str_utf8_mask) 
+  comb_proc: process(r, 
+    idx_first, idx_last, 
+    reg_str_len_min, reg_str_utf8_mask, 
+    reg_Str_offsets_addr, reg_Str_values_addr,
+    ctrl_start,
+    Str_unl_valid, Str_cmd_ready, 
+    ssg_cmd_ready)
   is
     variable v : reg_record;
     variable o : out_record;
@@ -215,11 +223,14 @@ begin
 
     case r.state is
       when IDLE =>
+        v.idle := '1';
+        
         if ctrl_start = '1' then
           v.reset_start := '1';
           v.state := STRINGGEN;
           v.busy := '1';
           v.done := '0';
+          v.idle := '0';
         end if;
 
       when STRINGGEN =>
