@@ -52,27 +52,26 @@
 #define SNAP_OFFSET     0x200
 
 /* Registers */
-#define REG_STATUS_HI    SNAP_OFFSET + 4*0
-#define REG_STATUS_LO    SNAP_OFFSET + 4*1
+#define REG_CONTROL      SNAP_OFFSET + 4*0
+#define   CONTROL_START    1
+#define   CONTROL_STOP     2
+#define   CONTROL_RESET    4
+
+#define REG_STATUS    SNAP_OFFSET + 4*1
 #define   STATUS_BUSY      1
 #define   STATUS_DONE      2
 #define   STATUS_MASK      3
 
-#define REG_CONTROL_HI   SNAP_OFFSET + 4*2
-#define REG_CONTROL_LO   SNAP_OFFSET + 4*3
-#define   CONTROL_START    1
-#define   CONTROL_RESET    2
-
-#define REG_RETURN_HI    SNAP_OFFSET + 4*4
-#define REG_RETURN_LO    SNAP_OFFSET + 4*5
-#define REG_OFF_ADDR_HI  SNAP_OFFSET + 4*6
-#define REG_OFF_ADDR_LO  SNAP_OFFSET + 4*7
-#define REG_UTF8_ADDR_HI SNAP_OFFSET + 4*8
-#define REG_UTF8_ADDR_LO SNAP_OFFSET + 4*9
-#define REG_FIRST_IDX    SNAP_OFFSET + 4*10
-#define REG_LAST_IDX     SNAP_OFFSET + 4*11
-#define REG_STRLEN_MIN   SNAP_OFFSET + 4*12
-#define REG_PRNG_MASK    SNAP_OFFSET + 4*13
+#define REG_RETURN1      SNAP_OFFSET + 4*2
+#define REG_RETURN0      SNAP_OFFSET + 4*3
+#define REG_FIRST_IDX    SNAP_OFFSET + 4*4
+#define REG_LAST_IDX     SNAP_OFFSET + 4*5
+#define REG_OFF_ADDR_LO  SNAP_OFFSET + 4*6
+#define REG_OFF_ADDR_HI  SNAP_OFFSET + 4*7
+#define REG_UTF8_ADDR_LO SNAP_OFFSET + 4*8
+#define REG_UTF8_ADDR_HI SNAP_OFFSET + 4*9
+#define REG_STRLEN_MIN   SNAP_OFFSET + 4*10
+#define REG_PRNG_MASK    SNAP_OFFSET + 4*11
 
 /* Burst step length in bytes */
 #define BURST_LENGTH    64

@@ -136,91 +136,59 @@ architecture Behavorial of action_fletcher is
 
   component axi_top is
     generic (
-      -- Host bus properties
-      BUS_ADDR_WIDTH              : natural := 64;
-      BUS_DATA_WIDTH              : natural := 512;
-      BUS_STROBE_WIDTH            : natural := 64;
-      BUS_LEN_WIDTH               : natural := 8;
-      BUS_BURST_MAX_LEN           : natural := 64;
-      BUS_BURST_STEP_LEN          : natural := 1;
-      
-      -- MMIO bus properties
-      SLV_BUS_ADDR_WIDTH          : natural := 32;
-      SLV_BUS_DATA_WIDTH          : natural := 32;
-    
-      -- Arrow properties
-      INDEX_WIDTH                 : natural := 32;
-    
-      -- Accelerator properties
-      TAG_WIDTH                   : natural := 1;
-      NUM_ARROW_BUFFERS           : natural := 2;
-      NUM_USER_REGS               : natural := 4;
-      NUM_REGS                    : natural := 14;
-      REG_WIDTH                   : natural := 32
+      BUS_ADDR_WIDTH              : natural;
+      BUS_DATA_WIDTH              : natural;
+      BUS_STROBE_WIDTH            : natural;
+      BUS_LEN_WIDTH               : natural;
+      BUS_BURST_MAX_LEN           : natural;
+      BUS_BURST_STEP_LEN          : natural;
+      SLV_BUS_ADDR_WIDTH          : natural;
+      SLV_BUS_DATA_WIDTH          : natural;
+      INDEX_WIDTH                 : natural;
+      TAG_WIDTH                   : natural;
+      NUM_ARROW_BUFFERS           : natural;
+      NUM_USER_REGS               : natural;
+      NUM_REGS                    : natural;
+      REG_WIDTH                   : natural
     );
-
     port (
       acc_clk                     : in  std_logic;
       acc_reset                   : in  std_logic;
       bus_clk                     : in  std_logic;
       bus_reset_n                 : in  std_logic;
-
-      ---------------------------------------------------------------------------
-      -- AXI4 master as Host Memory Interface
-      ---------------------------------------------------------------------------
-      -- Read address channel
       m_axi_araddr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       m_axi_arlen                 : out std_logic_vector(7 downto 0);
       m_axi_arvalid               : out std_logic;
       m_axi_arready               : in  std_logic;
       m_axi_arsize                : out std_logic_vector(2 downto 0);
-
-      -- Read data channel
       m_axi_rdata                 : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       m_axi_rresp                 : in  std_logic_vector(1 downto 0);
       m_axi_rlast                 : in  std_logic;
       m_axi_rvalid                : in  std_logic;
       m_axi_rready                : out std_logic;
-
-      -- Write address channel
       m_axi_awvalid               : out std_logic;
       m_axi_awready               : in  std_logic;
       m_axi_awaddr                : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       m_axi_awlen                 : out std_logic_vector(7 downto 0);
       m_axi_awsize                : out std_logic_vector(2 downto 0);
-
-      -- Write data channel
       m_axi_wvalid                : out std_logic;
       m_axi_wready                : in  std_logic;
       m_axi_wdata                 : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       m_axi_wlast                 : out std_logic;
       m_axi_wstrb                 : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-
-      ---------------------------------------------------------------------------
-      -- AXI4-lite Slave as MMIO interface
-      ---------------------------------------------------------------------------
-      -- Write adress channel
       s_axi_awvalid               : in std_logic;
       s_axi_awready               : out std_logic;
       s_axi_awaddr                : in std_logic_vector(SLV_BUS_ADDR_WIDTH-1 downto 0);
-
-      -- Write data channel
       s_axi_wvalid                : in std_logic;
       s_axi_wready                : out std_logic;
       s_axi_wdata                 : in std_logic_vector(SLV_BUS_DATA_WIDTH-1 downto 0);
       s_axi_wstrb                 : in std_logic_vector((SLV_BUS_DATA_WIDTH/8)-1 downto 0);
-
-      -- Write response channel
       s_axi_bvalid                : out std_logic;
       s_axi_bready                : in std_logic;
       s_axi_bresp                 : out std_logic_vector(1 downto 0);
-
-      -- Read address channel
       s_axi_arvalid               : in std_logic;
       s_axi_arready               : out std_logic;
       s_axi_araddr                : in std_logic_vector(SLV_BUS_ADDR_WIDTH-1 downto 0);
-
-      -- Read data channel
       s_axi_rvalid                : out std_logic;
       s_axi_rready                : in std_logic;
       s_axi_rdata                 : out std_logic_vector(SLV_BUS_DATA_WIDTH-1 downto 0);
@@ -519,20 +487,9 @@ begin
   -- AXI Host Memory
   ----------------------------------------------------------------------
   -- Read channel defaults:
+  -- ARSIZE must be set to 512 bits
   s_axi_host_mem_arsize           <= "110"; -- 512 bit beats
   s_axi_host_mem_arburst          <= "01"; -- incremental
-  
-  -- Write channel defaults:
-  s_axi_host_mem_awsize           <= "110"; -- 512 bit beats
-  s_axi_host_mem_awburst          <= "01"; -- incremental
-
-  -- Not using any of these:
-  s_axi_host_mem_awid             <= (others => '0');
-  s_axi_host_mem_awlock           <= (others => '0');
-  s_axi_host_mem_awcache          <= "0010";
-  s_axi_host_mem_awprot           <= "000";
-  s_axi_host_mem_awqos            <= x"0";
-  s_axi_host_mem_awuser           <= (others => '0');
   
   s_axi_host_mem_arid             <= (others => '0');
   s_axi_host_mem_arlock           <= (others => '0');
@@ -540,18 +497,38 @@ begin
   s_axi_host_mem_arprot           <= "000";
   s_axi_host_mem_arqos            <= x"0";
   s_axi_host_mem_aruser           <= (others => '0');
-
+  
+  -- Write channel defaults:
+  -- AWSIZE must be set to 512 bits
+  s_axi_host_mem_awsize           <= "110"; -- 512 bit beats
+  s_axi_host_mem_awburst          <= "01"; -- incremental
+  
+  s_axi_host_mem_awid             <= (others => '0');
+  s_axi_host_mem_awlock           <= (others => '0');
+  s_axi_host_mem_awcache          <= "0010";
+  s_axi_host_mem_awprot           <= "000";
+  s_axi_host_mem_awqos            <= x"0";
+  s_axi_host_mem_awuser           <= (others => '0');
 
   ----------------------------------------------------------------------
   -- Fletcher top level
   ----------------------------------------------------------------------
   fletcher_axi_top_inst : axi_top
     generic map (
-      BUS_ADDR_WIDTH            => C_AXI_HOST_MEM_ADDR_WIDTH,
-      BUS_DATA_WIDTH            => C_AXI_HOST_MEM_DATA_WIDTH,
+      BUS_ADDR_WIDTH            => 64,
+      BUS_DATA_WIDTH            => 512,
       BUS_STROBE_WIDTH          => 64,
+      BUS_LEN_WIDTH             => 8,
+      BUS_BURST_MAX_LEN         => 64,
+      BUS_BURST_STEP_LEN        => 1,
       SLV_BUS_ADDR_WIDTH        => 9,
-      SLV_BUS_DATA_WIDTH        => C_AXI_CTRL_REG_DATA_WIDTH
+      SLV_BUS_DATA_WIDTH        => 32,
+      INDEX_WIDTH               => 32,
+      TAG_WIDTH                 => 1,
+      NUM_ARROW_BUFFERS         => 2,
+      NUM_USER_REGS             => 4,
+      NUM_REGS                  => 14,
+      REG_WIDTH                 => 32
     )
     port map (
       acc_clk                   => action_clk,
@@ -563,7 +540,7 @@ begin
       m_axi_arlen               => s_axi_host_mem_arlen,
       m_axi_arvalid             => s_axi_host_mem_arvalid,
       m_axi_arready             => s_axi_host_mem_arready,
-      m_axi_arsize              => s_axi_host_mem_arsize,
+      m_axi_arsize              => open,
       m_axi_rdata               => s_axi_host_mem_rdata,
       m_axi_rresp               => s_axi_host_mem_rresp,
       m_axi_rlast               => s_axi_host_mem_rlast,
