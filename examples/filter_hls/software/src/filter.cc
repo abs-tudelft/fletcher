@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
   context->enable();
 
   uc->setRange(0, num_entries);
-  uc->setArguments({1337}); // zip code
+  //uc->setArguments({1337}); // zip code
 
   uc->start();
 
@@ -155,9 +155,10 @@ int main(int argc, char **argv) {
   hvo.addData(raw_offsets, sizeof(int32_t) * (num_entries + 1));
   fletcher::HexView hvv((uint64_t)raw_values);
   hvv.addData(raw_values, 10);
+  
   std::cout << hvo.toString() << std::endl;
   std::cout << hvv.toString() << std::endl;
   
-  std::cout << "RecordBatch out:" << std::endl;
-  std::cout << sa->ToString() << std::endl;
+  //std::cout << "RecordBatch out:" << std::endl;
+  //std::cout << sa->ToString() << std::endl;
 }
