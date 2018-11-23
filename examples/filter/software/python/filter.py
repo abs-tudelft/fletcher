@@ -178,7 +178,7 @@ def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_o
     platform.copy_device_to_host(context.get_buffer_device_address(3, 1), values_buffer_out_size,
                                  batch_out.column(0).buffers()[2])
 
-    return 0
+    return batch_out
 
 
 if __name__ == "__main__":
