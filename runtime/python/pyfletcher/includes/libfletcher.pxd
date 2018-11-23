@@ -44,6 +44,12 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status OK()
         Status ERROR()
 
+    cdef cppclass CDeviceArray" fletcher::DeviceArray":
+        vector[CDeviceBuffer] buffers
+
+    cdef cppclass CDeviceBuffer" fletcher::DeviceBuffer":
+        da_t device_address
+
     cdef cppclass CPlatform" fletcher::Platform":
         #Renamed create function because overloading of static functions causes errors
         @staticmethod
@@ -55,6 +61,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status init()
         Status writeMMIO(uint64_t offset, uint32_t value)
         Status readMMIO(uint64_t offset, uint32_t *value)
+        Status readMMIO64(uint64_t offset, uint64_t *value)
         Status deviceMalloc(da_t *device_address, size_t size)
         Status deviceFree(da_t device_address)
         Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
@@ -72,6 +79,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         size_t getQueueSize()
         uint64_t num_buffers()
         Status enable()
+        vector[shared_ptr[CDeviceArray]] device_arrays
 
     cdef cppclass CUserCore" fletcher::UserCore":
         # Control and status values

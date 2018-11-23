@@ -107,8 +107,11 @@ entity BufferWriterPrePadder is
     ---------------------------------------------------------------------------
     -- Output stream
     ---------------------------------------------------------------------------
-    -- out_clear is used to clear the accumulator ahead in the stream when this
-    -- is an index buffer.
+    -- If this is an index buffer;
+    -- * out_clear is used to clear the accumulator ahead in the stream 
+    -- * out_last_npad (last not padded) is used to assert the cmd_last signal
+    --   of the command stream generator
+    
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
     out_data                    : out std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
@@ -118,7 +121,8 @@ entity BufferWriterPrePadder is
     out_clear                   : out std_logic;
     out_implicit                : out std_logic;
     out_ctrl                    : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-    out_tag                     : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
+    out_tag                     : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+    out_last_npad               : out std_logic
   );
 end BufferWriterPrePadder;
 
@@ -135,9 +139,11 @@ architecture rtl of BufferWriterPrePadder is
   signal int_out_implicit       : std_logic;
   signal int_out_ctrl           : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
   signal int_out_tag            : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  signal int_out_last_npad      : std_logic;
   
   -- Output stream serialization indices.
   constant OSI : nat_array := cumulative((
+    8 => 1,
     7 => ELEMENT_COUNT_MAX*ELEMENT_WIDTH,
     6 => ELEMENT_COUNT_WIDTH,
     5 => ELEMENT_COUNT_MAX,
@@ -148,8 +154,8 @@ architecture rtl of BufferWriterPrePadder is
     0 => CMD_TAG_WIDTH
   ));
   
-  signal out_all                : std_logic_vector(OSI(8)-1 downto 0);
-  signal int_out_all            : std_logic_vector(OSI(8)-1 downto 0);
+  signal out_all                : std_logic_vector(OSI(9)-1 downto 0);
+  signal int_out_all            : std_logic_vector(OSI(9)-1 downto 0);
   
   -- Helper constants
   constant ELEM_PER_BURST_STEP  : natural := (BUS_BURST_STEP_LEN * BUS_DATA_WIDTH) / ELEMENT_WIDTH;
@@ -200,6 +206,7 @@ architecture rtl of BufferWriterPrePadder is
     out_strobe                  : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
     out_last                    : std_logic;
     out_clear                   : std_logic;
+    out_last_npad               : std_logic;
   end record;
 
 begin
@@ -239,6 +246,7 @@ begin
     vo.out_strobe               := STROBE_ALL;
     vo.out_count                := COUNT_ALL;
     vo.out_data                 := in_data;
+    vo.out_last_npad            := '0';
 
     -- In simulation, make data, count and strobe unkown by default
     --pragma translate off
@@ -331,6 +339,7 @@ begin
         vo.out_data             := in_data;
         vo.out_last             := '0';
         vo.out_count            := in_count;
+        vo.out_last_npad        := in_last;
         -- All strobes are enabled since count will cause the normalizer to 
         -- drop invalid elements.
         vo.out_strobe           := STROBE_ALL; 
@@ -428,6 +437,7 @@ begin
     int_out_strobe              <= vo.out_strobe;
     int_out_last                <= vo.out_last;
     int_out_clear               <= vo.out_clear;
+    int_out_last_npad           <= vo.out_last_npad;
     
     -- The tags can be taken from the register as they are determined only in
     -- idle, when the output is not valid
@@ -439,6 +449,7 @@ begin
   
   -- Insert a register slice
   
+  int_out_all(                OSI(8)) <= int_out_last_npad;
   int_out_all(OSI(8)-1 downto OSI(7)) <= int_out_data;
   int_out_all(OSI(7)-1 downto OSI(6)) <= int_out_count;
   int_out_all(OSI(6)-1 downto OSI(5)) <= int_out_strobe;
@@ -451,7 +462,7 @@ begin
   out_slice_inst : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(OUT_SLICE, 2, 0),
-      DATA_WIDTH                => OSI(8)
+      DATA_WIDTH                => OSI(9)
     )
     port map (
       clk                       => clk,
@@ -463,7 +474,7 @@ begin
       out_ready                 => out_ready,
       out_data                  => out_all
     );
-      
+  out_last_npad                 <= out_all(                OSI(8));
   out_data                      <= out_all(OSI(8)-1 downto OSI(7));
   out_count                     <= out_all(OSI(7)-1 downto OSI(6));
   out_strobe                    <= out_all(OSI(6)-1 downto OSI(5));

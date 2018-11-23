@@ -53,6 +53,8 @@ TEST(Platform, EchoPlatform) {
   ASSERT_TRUE(platform->writeMMIO(0, 0).ok());
   uint32_t val;
   ASSERT_TRUE(platform->readMMIO(0, &val).ok());
+  uint64_t val64;
+  ASSERT_TRUE(platform->readMMIO64(0, &val64).ok());
 
   // Buffers:
   char buffer[128];

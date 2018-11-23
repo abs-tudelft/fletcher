@@ -1,0 +1,480 @@
+-- Copyright 2018 Delft University of Technology
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_misc.all;
+
+library work;
+use work.Interconnect.all;
+
+entity sim_top is
+  generic (
+    -- Accelerator properties
+    REG_WIDTH                   : natural := 32;
+    TAG_WIDTH                   : natural := 1;
+    DATA_WIDTH                  : natural := 64;
+    DIMENSION                   : natural := 8;
+    CENTROIDS                   : natural := 2;
+    CENTROID_REGS               : natural := DATA_WIDTH/REG_WIDTH * DIMENSION;
+    INDEX_WIDTH                 : natural := 32;
+    NUM_ARROW_BUFFERS           : natural := 2;
+    NUM_USER_REGS               : natural := CENTROIDS * CENTROID_REGS + 1;
+    NUM_REGS                    : natural := 10 + NUM_USER_REGS;
+
+    -- Host bus properties
+    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_DATA_WIDTH              : natural := 512;
+    BUS_STROBE_WIDTH            : natural := 64;
+    BUS_LEN_WIDTH               : natural := 8;
+    BUS_BURST_MAX_LEN           : natural := 64;
+    BUS_BURST_STEP_LEN          : natural := 1;
+
+    -- MMIO bus properties
+    SLV_BUS_ADDR_WIDTH          : natural := 32;
+    SLV_BUS_DATA_WIDTH          : natural := 32
+  );
+end sim_top;
+
+architecture Behavorial of sim_top is
+
+  -----------------------------------------------------------------------------
+  -- Default wrapper component.
+  -----------------------------------------------------------------------------
+  component fletcher_wrapper is
+    generic(
+      BUS_ADDR_WIDTH            : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_STROBE_WIDTH          : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      NUM_ARROW_BUFFERS         : natural;
+      DIMENSION                 : natural;
+      DATA_WIDTH                : natural;
+      CENTROIDS                 : natural;
+      CENTROID_REGS             : natural;
+      NUM_REGS                  : natural;
+      NUM_USER_REGS             : natural;
+      REG_WIDTH                 : natural;
+      TAG_WIDTH                 : natural
+    );
+    port(
+      acc_clk                   : in std_logic;
+      acc_reset                 : in std_logic;
+      bus_clk                   : in std_logic;
+      bus_reset                 : in std_logic;
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in std_logic;
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic;
+      regs_in                   : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+      regs_out                  : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+      regs_out_en               : out std_logic_vector(NUM_REGS-1 downto 0)
+    );
+  end component;
+  -----------------------------------------------------------------------------
+
+  -- Sim constants
+  constant REG_CONTROL          : natural := 0;
+  constant REG_STATUS           : natural := 1;
+  constant REG_RETURN0          : natural := 2;
+  constant REG_RETURN1          : natural := 3;
+
+  -- Sim signals
+  signal clock_stop             : boolean := false;
+
+  -- Accelerator signals
+  signal acc_clk                : std_logic;
+  signal acc_reset              : std_logic;
+
+  -- Fletcher bus signals
+  signal bus_clk                : std_logic;
+  signal bus_reset              : std_logic;
+  
+  signal bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_rreq_valid         : std_logic;
+  signal bus_rreq_ready         : std_logic;
+  signal bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bus_rdat_last          : std_logic;
+  signal bus_rdat_valid         : std_logic;
+  signal bus_rdat_ready         : std_logic;
+  signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_wreq_valid         : std_logic;
+  signal bus_wreq_ready         : std_logic;
+  signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bus_wdat_last          : std_logic;
+  signal bus_wdat_valid         : std_logic;
+  signal bus_wdat_ready         : std_logic;
+
+  -- MMIO registers
+  signal regs_in                : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+  signal regs                   : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+  signal regs_out               : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
+  signal regs_out_en            : std_logic_vector(NUM_REGS-1 downto 0);
+  signal regs_sim_we            : std_logic_vector(NUM_REGS-1 downto 0);
+
+    -- TODO: use centroid data width
+    type centroid_regs_t is array (0 to CENTROIDS * DIMENSION - 1) of signed(63 downto 0);
+    signal centroid_regs_content : centroid_regs_t;
+
+  -- Write to MMIO register by index
+  procedure mmio_write(idx  : in  natural;
+                       data : in  std_logic_vector(REG_WIDTH-1 downto 0);
+                       signal regs : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH) <= data;
+  end mmio_write;
+  
+  -- Procedure to easily write to a user register
+  procedure uc_reg_write(idx  : in  natural;
+                         data : in  std_logic_vector(REG_WIDTH-1 downto 0);
+                         signal regs : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    mmio_write(4+idx, data, regs);
+  end uc_reg_write;
+  
+  -- Read from MMIO register by index
+  procedure mmio_read(idx  : in  natural;
+                      data : out std_logic_vector(REG_WIDTH-1 downto 0);
+                      signal regs : in  std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    data := regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH);
+  end mmio_read;  
+  
+  -- Procedure to easily read from a user register
+  procedure uc_reg_read(idx  : in  natural;
+                        data : out std_logic_vector(REG_WIDTH-1 downto 0);
+                        signal regs : in  std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
+  is begin
+    mmio_read(4+idx, data, regs);
+  end uc_reg_read;
+  
+  procedure uc_start(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
+  begin 
+    mmio_write(REG_CONTROL, X"00000001", regs); 
+  end uc_start;
+  
+  procedure uc_stop (signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is
+  begin 
+    mmio_write(REG_CONTROL, X"00000002", regs); 
+  end uc_stop;
+  
+  procedure uc_reset(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
+  begin 
+    mmio_write(REG_CONTROL, X"00000004", regs); 
+  end uc_reset;
+  
+begin
+
+  centroid_regs_g: for r in 0 to CENTROIDS * DIMENSION - 1 generate
+    centroid_regs_content(r) <= signed(regs((r + 1) * 64 + 10 * REG_WIDTH - 1 downto r * 64 + 10 * REG_WIDTH));
+  end generate;
+
+  -- Typical stimuli process:
+  stimuli_proc : process is
+    variable read_data, read_data_b : std_logic_vector(REG_WIDTH-1 downto 0);
+  begin
+    regs_sim_we <= (others => '0');
+    regs_sim_we(0) <= '1'; -- control
+    regs_sim_we(9 downto 4) <= (others => '1'); -- addresses
+    regs_sim_we(CENTROIDS * CENTROID_REGS + 10 downto 10) <= (others => '1');
+
+    wait until acc_reset = '1' and bus_reset = '1';
+    
+    -- 1. Reset the user core
+    uc_reset(regs_in);
+    wait until rising_edge(acc_clk);
+    
+    
+    -- 2. Write addresses of the arrow buffers in the SREC file.
+    uc_reg_write(2, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+    uc_reg_write(3, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+    uc_reg_write(4, X"00000040", regs_in);
+    wait until rising_edge(acc_clk);
+    uc_reg_write(5, X"00000000", regs_in);
+    wait until rising_edge(acc_clk);
+
+   
+    -- 3. Writes any user core registers.
+    --
+    -- Here you can write, for example, the first and last index
+    -- 
+    -- Example:
+    -- First index in user reg 0
+    uc_reg_write(0, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    -- Last index in user reg 0
+    uc_reg_write(1, std_logic_vector(to_signed(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Centroid 0: (0, 0)
+    uc_reg_write(6, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(7, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(8, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(9, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(10, std_logic_vector(to_signed(110, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(11, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(12, std_logic_vector(to_signed(120, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(13, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(14, std_logic_vector(to_signed(130, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(15, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(16, std_logic_vector(to_signed(140, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(17, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(18, std_logic_vector(to_signed(150, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(19, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(20, std_logic_vector(to_signed(-160, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(21, std_logic_vector(to_signed(-1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Centroid 1: (40, -100)
+    uc_reg_write(22, std_logic_vector(to_signed(  40, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(23, std_logic_vector(to_signed(   0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(24, std_logic_vector(to_signed(-400, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(25, std_logic_vector(to_signed(  -1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(26, std_logic_vector(to_signed(210, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(27, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(28, std_logic_vector(to_signed(220, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(29, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(30, std_logic_vector(to_signed(230, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(31, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(32, std_logic_vector(to_signed(240, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(33, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(34, std_logic_vector(to_signed(250, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(35, std_logic_vector(to_signed(0, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    uc_reg_write(36, std_logic_vector(to_signed(-260, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+    uc_reg_write(37, std_logic_vector(to_signed(-1, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Iteration limit
+    uc_reg_write(38, std_logic_vector(to_unsigned(5, REG_WIDTH)), regs_in); wait until rising_edge(acc_clk);
+
+    -- Disable override
+    regs_sim_we(CENTROIDS * CENTROID_REGS + 10 downto 10) <= (others => '0');
+
+    -- 4. Start the user core.    
+    uc_start(regs_in);
+    wait until rising_edge(acc_clk);
+    
+    -- 5. Poll for completion
+    loop
+      wait until rising_edge(acc_clk);
+      
+      -- Read from the status register.
+      mmio_read(REG_STATUS, read_data, regs);
+      
+      -- Stop polling when done bit is asserted.
+      exit when read_data(2) = '1';
+    end loop;
+    
+    -- 6. Read return register
+    mmio_read(REG_RETURN0, read_data, regs);
+    report "Return register 0: " & integer'image(to_integer(unsigned(read_data)));
+    
+    mmio_read(REG_RETURN0, read_data, regs);
+    report "Return register 1: " & integer'image(to_integer(unsigned(read_data)));
+
+    uc_reg_read(6, read_data, regs);
+    uc_reg_read(7, read_data_b, regs);
+    report "C0 D0: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(8, read_data, regs);
+    uc_reg_read(9, read_data_b, regs);
+    report "C0 D1: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(10, read_data, regs);
+    uc_reg_read(11, read_data_b, regs);
+    report "C1 D0: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+    uc_reg_read(12, read_data, regs);
+    uc_reg_read(13, read_data_b, regs);
+    report "C1 D1: " & integer'image(to_integer(signed(read_data_b & read_data)));
+
+-- Expecting:
+-- 000D,0003   13,3
+-- 0030,FE02   48,-510
+
+    -- 7. Finish and stop simulation
+    report "Stimuli done.";
+    clock_stop <= true;
+    
+    wait;
+  end process;
+
+  clk_proc: process is
+  begin
+    if not clock_stop then
+      acc_clk <= '1';
+      bus_clk <= '1';
+      wait for 5 ns;
+      acc_clk <= '0';
+      bus_clk <= '0';
+      wait for 5 ns;
+    else
+      wait;
+    end if;
+  end process;
+
+  reset_proc: process is
+  begin
+    acc_reset <= '1';
+    bus_reset <= '1';
+    wait for 50 ns;
+    wait until rising_edge(acc_clk);
+    acc_reset <= '0';
+    bus_reset <= '0';
+    wait;
+  end process;
+  
+  regs_out_proc: process(acc_clk) is
+  begin
+    if rising_edge(acc_clk) then
+      for I in 0 to NUM_REGS-1 loop
+        if regs_out_en(I) = '1' then
+          regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_out((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
+        elsif regs_sim_we(I) = '1' then
+          regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_in((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
+        end if;
+      end loop;
+    end if;
+  end process;
+  
+  rmem_inst: BusReadSlaveMock
+  generic map (
+    BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
+    BUS_LEN_WIDTH               => BUS_LEN_WIDTH,
+    BUS_DATA_WIDTH              => BUS_DATA_WIDTH,
+    SEED                        => 1337,
+    RANDOM_REQUEST_TIMING       => false,
+    RANDOM_RESPONSE_TIMING      => false,
+    SREC_FILE                   => "intlistwide.srec"
+  )
+  port map (
+    clk                         => bus_clk,
+    reset                       => bus_reset,
+    rreq_valid                  => bus_rreq_valid,
+    rreq_ready                  => bus_rreq_ready,
+    rreq_addr                   => bus_rreq_addr,
+    rreq_len                    => bus_rreq_len,
+    rdat_valid                  => bus_rdat_valid,
+    rdat_ready                  => bus_rdat_ready,
+    rdat_data                   => bus_rdat_data,
+    rdat_last                   => bus_rdat_last
+  );
+  
+  wmem_inst: BusWriteSlaveMock
+  generic map (
+    BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
+    BUS_LEN_WIDTH               => BUS_LEN_WIDTH,
+    BUS_DATA_WIDTH              => BUS_DATA_WIDTH,
+    BUS_STROBE_WIDTH            => BUS_STROBE_WIDTH,
+    SEED                        => 1337,
+    RANDOM_REQUEST_TIMING       => false,
+    RANDOM_RESPONSE_TIMING      => false,
+    SREC_FILE                   => ""
+  )
+  port map (
+    clk                         => bus_clk,
+    reset                       => bus_reset,
+    wreq_valid                  => bus_wreq_valid,
+    wreq_ready                  => bus_wreq_ready,
+    wreq_addr                   => bus_wreq_addr,
+    wreq_len                    => bus_wreq_len,
+    wdat_valid                  => bus_wdat_valid,
+    wdat_ready                  => bus_wdat_ready,
+    wdat_data                   => bus_wdat_data,
+    wdat_strobe                 => bus_wdat_strobe,
+    wdat_last                   => bus_wdat_last
+  );
+
+
+  -----------------------------------------------------------------------------
+  -- Fletcher generated wrapper
+  -----------------------------------------------------------------------------
+  fletcher_wrapper_inst : fletcher_wrapper
+    generic map (
+      BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
+      BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
+      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
+      BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
+      BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
+      INDEX_WIDTH               => INDEX_WIDTH,
+      NUM_ARROW_BUFFERS         => NUM_ARROW_BUFFERS,
+      DATA_WIDTH                => DATA_WIDTH,
+      DIMENSION                 => DIMENSION,
+      CENTROIDS                 => CENTROIDS,
+      CENTROID_REGS             => CENTROID_REGS,
+      NUM_REGS                  => NUM_REGS,
+      NUM_USER_REGS             => NUM_USER_REGS,
+      REG_WIDTH                 => REG_WIDTH,
+      TAG_WIDTH                 => TAG_WIDTH
+    )
+    port map (
+      acc_clk                   => acc_clk,
+      acc_reset                 => acc_reset,
+      bus_clk                   => bus_clk,
+      bus_reset                 => bus_reset,
+      mst_rreq_valid            => bus_rreq_valid,
+      mst_rreq_ready            => bus_rreq_ready,
+      mst_rreq_addr             => bus_rreq_addr,
+      mst_rreq_len              => bus_rreq_len,
+      mst_rdat_valid            => bus_rdat_valid,
+      mst_rdat_ready            => bus_rdat_ready,
+      mst_rdat_data             => bus_rdat_data,
+      mst_rdat_last             => bus_rdat_last,
+      mst_wreq_valid            => bus_wreq_valid,
+      mst_wreq_ready            => bus_wreq_ready,
+      mst_wreq_addr             => bus_wreq_addr,
+      mst_wreq_len              => bus_wreq_len,
+      mst_wdat_valid            => bus_wdat_valid,
+      mst_wdat_ready            => bus_wdat_ready,
+      mst_wdat_data             => bus_wdat_data,
+      mst_wdat_strobe           => bus_wdat_strobe,
+      mst_wdat_last             => bus_wdat_last,
+      regs_in                   => regs,
+      regs_out                  => regs_out,
+      regs_out_en               => regs_out_en
+    );
+
+end architecture;
+

@@ -1,3 +1,7 @@
+# 0.0.6 (2018-11-16)
+* read\_mmio() now takes a type argument for easy casting of register contents to different types
+* Added read\_mmio_64()
+
 # 0.0.5 (2018-11-06)
 * Fixed bug that caused string arrays to be incorrectly written to FPGA
 * Updated queue\_array() to include "mode" argument

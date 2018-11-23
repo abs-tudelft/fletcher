@@ -130,6 +130,7 @@ architecture Behavioral of BufferWriterPre is
   signal pad_implicit           : std_logic;
   signal pad_ctrl               : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
   signal pad_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  signal pad_last_npad          : std_logic;
 
   -- Optional Index buffer length value Accumulation stream
   signal oia_valid              : std_logic;
@@ -142,6 +143,7 @@ architecture Behavioral of BufferWriterPre is
   signal oia_implicit           : std_logic;
   signal oia_ctrl               : std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
   signal oia_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  signal oia_last_npad          : std_logic;
 
   -- Signals to split the OIA stream
   signal oia_data_ready         : std_logic;
@@ -271,7 +273,8 @@ begin
       out_clear                 => pad_clear,
       out_implicit              => pad_implicit,
       out_ctrl                  => pad_ctrl,
-      out_tag                   => pad_tag
+      out_tag                   => pad_tag,
+      out_last_npad             => pad_last_npad
     );
 
   -----------------------------------------------------------------------------
@@ -284,6 +287,7 @@ begin
 
     -- Length stream serialization indices
     constant LSI : nat_array := cumulative((
+      7 => 1,
       6 => ELEMENT_COUNT_WIDTH,
       5 => ELEMENT_COUNT_MAX,
       4 => 1,
@@ -293,12 +297,12 @@ begin
       0 => ELEMENT_WIDTH
     ));
 
-    signal pad_acc_all          : std_logic_vector(LSI(7)-1 downto 0);
+    signal pad_acc_all          : std_logic_vector(LSI(8)-1 downto 0);
     signal pad_acc_skip         : std_logic;
 
     signal oia_acc_valid        : std_logic;
     signal oia_acc_ready        : std_logic;
-    signal oia_acc_all          : std_logic_vector(LSI(7)-1 downto 0);
+    signal oia_acc_all          : std_logic_vector(LSI(8)-1 downto 0);
 
     signal cmd_valid            : std_logic;
     signal cmd_ready            : std_logic;
@@ -312,6 +316,7 @@ begin
 
     pad_acc_skip                <= not(pad_strobe(0));
 
+    pad_acc_all(                LSI(7)) <= pad_last_npad;
     pad_acc_all(LSI(7)-1 downto LSI(6)) <= pad_count;
     pad_acc_all(LSI(6)-1 downto LSI(5)) <= pad_strobe;
     pad_acc_all(                LSI(4)) <= pad_last;
@@ -327,7 +332,7 @@ begin
     accumulator_inst: StreamAccumulator
       generic map (
         DATA_WIDTH              => ELEMENT_WIDTH,
-        CTRL_WIDTH              => LSI(7) - ELEMENT_WIDTH,
+        CTRL_WIDTH              => LSI(8) - ELEMENT_WIDTH,
         IS_SIGNED               => false
       )
       port map (
@@ -343,6 +348,7 @@ begin
         out_data                => oia_acc_all
       );
 
+    oia_last_npad               <= oia_acc_all(                LSI(7));
     oia_count                   <= oia_acc_all(LSI(7)-1 downto LSI(6));
     oia_strobe                  <= oia_acc_all(LSI(6)-1 downto LSI(5));
     oia_last                    <= oia_acc_all(                LSI(4));
@@ -381,7 +387,7 @@ begin
     cmd_firstIdx                <= oia_data;
     cmd_ctrl                    <= oia_ctrl;
     cmd_tag                     <= oia_tag;
-    cmd_last                    <= oia_last;
+    cmd_last                    <= oia_last_npad;
 
     -- Generate the command output stream
     out_cmd_gen: BufferWriterPreCmdGen

@@ -18,6 +18,7 @@ use ieee.numeric_std.all;
 
 library work;
 use work.Streams.all;
+use work.Utils.all;
 
 -- This unit counts the number of elements that have been handshaked. If the
 -- last signal is asserted or the maixmum output count has been reached, the
@@ -36,7 +37,9 @@ entity StreamElementCounter is
     -- Width of the count output.
     OUT_COUNT_WIDTH             : positive := 8;
     
-    -- Maximum output count. Must be a power of 2
+    -- Maximum output count. If this is larger than what is representable with
+    -- an unsigned integer of size OUT_COUNT_WIDTH this value is ignored and
+    -- 2**OUT_COUNT_WIDTH - 1 is used instead.
     OUT_COUNT_MAX               : positive := 256
   );
   port (
@@ -65,9 +68,14 @@ end StreamElementCounter;
 
 architecture Behavioral of StreamElementCounter is
 
+  constant OUT_COUNT_MAX_CLAMP  : natural := work.utils.min(OUT_COUNT_MAX, 2**OUT_COUNT_WIDTH - 1);
+  constant COUNT_REG_WIDTH      : natural := log2ceil(IN_COUNT_MAX + OUT_COUNT_MAX_CLAMP + 1);
+
   type reg_type is record
-    count                       : unsigned(OUT_COUNT_WIDTH downto 0);
+    count                       : unsigned(COUNT_REG_WIDTH - 1 downto 0);
+    result                      : unsigned(OUT_COUNT_WIDTH - 1 downto 0);
     last                        : std_logic;
+    last_pending                : std_logic;
     valid                       : std_logic;
   end record;
 
@@ -87,14 +95,16 @@ begin
 
       if reset = '1' then
         r.last                  <= '0';
+        r.last_pending          <= '0';
         r.valid                 <= '0';
         r.count                 <= (others => '0');
+        r.result                <= (others => '0');
       end if;
     end if;
   end process;
 
   comb_proc: process(r,
-    in_valid, in_last, in_count,
+    in_valid, in_last, in_count, in_dvalid,
     out_ready
   ) is
     variable v: reg_type;
@@ -109,16 +119,24 @@ begin
 
     -- If the output is valid, but not handshaked, the input must be stalled
     -- immediately
-    if v.valid = '1' and out_ready = '0' then
+    if v.valid = '1' and (out_ready = '0' or v.last_pending = '1') then
       i.ready                   := '0';
     end if;
    
-    -- If the output is handshaked, reset the count
+    -- Handle handshaked output
     if v.valid = '1' and out_ready = '1' then
-      -- Invalidate the output and last, and reset the count
-      v.count                   := (others => '0');
-      v.valid                   := '0';
-      v.last                    := '0';
+      if v.last_pending = '1' then
+        -- If a last was pending, send it out now.
+        v.valid                 := '1';
+        v.result                := resize(v.count, OUT_COUNT_WIDTH);
+        v.count                 := (others => '0');
+        v.last                  := '1';
+        v.last_pending          := '0';
+      else
+        -- Invalidate the output and clear the last flag
+        v.valid                 := '0';
+        v.last                  := '0';
+      end if;
     end if;
 
     -- If the input is valid, and the output has no data or was handshaked
@@ -129,19 +147,37 @@ begin
         v.count                 := v.count + unsigned(resize_count(in_count, IN_COUNT_MAX));
       end if;
       
-      -- If the frontmost bit flipped, we reached OUT_COUNT_MAX. Validate the
-      -- output.
-      if v.count(OUT_COUNT_WIDTH) /= r.count(OUT_COUNT_WIDTH) then
+      -- If we passed the max count with this incoming transfer, we need to
+      -- output the max count without last flag. The counter register gets the
+      -- remainder, so the sum of the reported counts up to the last flag
+      -- remains consistent
+      if v.count >= OUT_COUNT_MAX_CLAMP then
         v.valid                 := '1';
-        -- Set the bit to 0 again.
-        v.count(OUT_COUNT_WIDTH):= '0';
-      end if;
+
+        -- If the last flag is also set, we need to output two transfers if the
+        -- incoming transfer went over the max count: first the max count
+        -- without last flag and then the remainder with the last flag. If the
+        -- total transfer count for the packet happened to be (a multiple of)
+        -- the max count we can immediately set the last flag
+        if v.count = OUT_COUNT_MAX_CLAMP then
+          v.last                := in_last;
+          v.last_pending        := '0';
+        else
+          v.last                := '0';
+          v.last_pending        := in_last;
+        end if;
+
+        v.result                := to_unsigned(OUT_COUNT_MAX_CLAMP, OUT_COUNT_WIDTH);
+        v.count                 := v.count - OUT_COUNT_MAX_CLAMP;
       
-      -- If the last signal is asserted, validate the output. Only in this case,
-      -- the output last signal is asserted as well.
-      if in_last = '1' then
+      -- If we haven't reached max count yet but find a last flag, send the
+      -- current count value with last.
+      elsif in_last = '1' then
         v.valid                 := '1';
         v.last                  := '1';
+        v.last_pending          := '0';
+        v.result                := resize(v.count, OUT_COUNT_WIDTH);
+        v.count                 := (others => '0');
       end if;
 
     end if;
@@ -157,7 +193,7 @@ begin
   -- Connect the outputs
   out_valid                     <= r.valid;
   out_last                      <= r.last;
-  out_count                     <= std_logic_vector(resize(r.count, OUT_COUNT_WIDTH));
+  out_count                     <= std_logic_vector(r.result);
 
 end Behavioral;
 
