@@ -257,7 +257,7 @@ if __name__ == "__main__":
     max_hw_centroids = int(args.max_hw_centroids)
 
     # Timers
-    t = Timer()
+    t = Timer(gc_disable=False)
     t_naser = []
     t_npser = []
     t_napy = []
