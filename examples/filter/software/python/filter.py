@@ -182,7 +182,7 @@ def filter_record_batch_fpga(batch_in, zip_code, platform_type, offsets_buffer_o
 
 
 if __name__ == "__main__":
-    t = Timer()
+    t = Timer(gc_disable=False)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_exp", dest="ne", default=1,
