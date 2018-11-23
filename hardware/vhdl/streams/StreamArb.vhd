@@ -132,17 +132,13 @@ begin
 
       index_r <= index;
 
-      -- Unlocked by default.
-      locked <= '0';
-
-      -- As soon as we validate our output, we can no longer change master,
-      -- because index has to remain stable after validation like any other
-      -- stream signal.
+      -- As soon as we validate our output, we can't change master until we do
+      -- a "last" transfer.
       if out_valid_s = '1' then
         locked <= '1';
       end if;
 
-      -- Unlock if we just acknowledged a transfer.
+      -- Unlock if we just acknowledged the last transfer.
       if out_valid_s = '1' and out_ready = '1' then
         locked <= not out_last_s;
       end if;

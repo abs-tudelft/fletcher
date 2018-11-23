@@ -108,6 +108,11 @@ architecture Behavioral of StreamSerializer is
   -- '1' bit in front, i.e. all subwords are valid.
   signal count_r                : std_logic_vector(IN_COUNT_WIDTH-1 downto 0);
 
+  -- Indicates that the current "data" in the holding register is a null
+  -- packet, i.e. one of size zero. This requires a special case because
+  -- count_r can't represent zero.
+  signal null_r                 : std_logic;
+
   -- Whether the data holding/shift register is valid at all.
   signal reg_valid              : std_logic;
   
@@ -132,7 +137,7 @@ begin
   last_subword <= '1'
              when count_r >= IN_COUNT_ONE_VAL
               and count_r <= OU_COUNT_MAX_IN_VAL
-             else '0';
+             else null_r;
 
   -- Generate the registers.
   reg_proc: process (clk) is
@@ -145,6 +150,11 @@ begin
         data_r <= in_data;
         last_r <= in_last;
         count_r <= in_count;
+        if unsigned(in_count) = 0 and IN_COUNT_MAX < 2**IN_COUNT_WIDTH then
+          null_r <= '1';
+        else
+          null_r <= '0';
+        end if;
 
         -- Validate the shift register contents.
         reg_valid <= '1';

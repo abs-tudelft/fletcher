@@ -19,6 +19,10 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSerializer.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSlice.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSync.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamElementCounter.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamMaximizer.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamPseudoRandomGenerator.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamBarrel.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamAccumulator.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfigParse.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfig.vhd
