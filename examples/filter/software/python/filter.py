@@ -52,7 +52,7 @@ def get_filter_read_schema():
 
 def get_filter_write_schema():
     field = pa.field("First", pa.string(), False)
-    return pa.schema([field])
+    return pa.schema([field], metadata={"fletcher_mode": "write"})
 
 
 def create_batch_from_frame_basic(frame):
