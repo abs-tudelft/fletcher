@@ -29,10 +29,10 @@ int main(int argc, char **argv) {
   const std::string special_last_name = "Smith";
   const zip_t special_zip_code = 1337;
   const uint32_t min_str_len = 3;
-  const uint32_t max_str_len = 32;
-  const int32_t num_rows = 1024*1024;
-  const uint32_t zip_period = 10;
-  const uint32_t ln_period = 100;
+  const uint32_t max_str_len = 40;
+  const int32_t num_rows = 1024*1024*8;
+  const uint32_t zip_period = 32;
+  const uint32_t ln_period = 32;
 
   // Generate an input dataset
   t.start();
@@ -82,31 +82,40 @@ int main(int argc, char **argv) {
 
   context->queueRecordBatch(dataset_in_rb);
   context->queueRecordBatch(dataset_out_fpga);
+  std::cout << "Number of bytes: " << context->getQueueSize() << std::endl;
 
   uc->reset();
-
+  t.start();
   context->enable();
+  t.stop();
+  std::cout << "FPGA Copy H2D: " << t.seconds() << std::endl;
 
   uc->setRange(0, num_rows);
   //uc->setArguments({1337}); // zip code
-
+  t.start();
   uc->start();
+  uc->waitForFinish(100);
+  t.stop();
+  std::cout << "FPGA Compute: " << t.seconds() << std::endl;
 
-  uc->waitForFinish(10);
-
+  
   // Get raw pointers to host-side Arrow buffers
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(dataset_out_fpga->column(0));
 
   auto raw_offsets = sa->value_offsets()->mutable_data();
   auto raw_values = sa->value_data()->mutable_data();
-
+  
+  t.start();
   platform->copyDeviceToHost(context->device_arrays[3]->buffers[0].device_address,
                              raw_offsets,
                              sa->value_offsets()->size());
   platform->copyDeviceToHost(context->device_arrays[3]->buffers[1].device_address,
                              raw_values,
                              sa->value_data()->size());
-
+  t.stop();
+  std::cout << "FPGA Copy D2H: " << t.seconds() << std::endl;
+  std::cout << "Number of bytes: " << dataset_out_arr->value_offsets()->size() + dataset_out_arr->value_data()->size() << std::endl;
+/*
   fletcher::HexView hvo((uint64_t) raw_offsets);
   hvo.addData(raw_offsets, sizeof(int32_t) * (num_rows + 1));
   fletcher::HexView hvv((uint64_t) raw_values);
@@ -114,6 +123,11 @@ int main(int argc, char **argv) {
 
   std::cout << hvo.toString() << std::endl;
   std::cout << hvv.toString() << std::endl;
+*/
+
+  std::cout << dataset_out_arr->ToString() << std::endl;
+  std::cout << sa->ToString() << std::endl;
+
 
   return 0;
 }

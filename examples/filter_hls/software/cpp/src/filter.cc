@@ -80,8 +80,8 @@ std::shared_ptr<arrow::RecordBatch> getOutputRB(int32_t num_entries, int32_t num
 
   arrow::AllocateBuffer(sizeof(int32_t) * (num_entries + 1), &off_b);
   arrow::AllocateBuffer(num_chars, &val_b);
-  auto sa = std::make_shared<arrow::StringArray>(2, off_b, val_b);
-  std::shared_ptr<arrow::RecordBatch> record_batch = arrow::RecordBatch::Make(getWriteSchema(), 2, {sa});
+  auto sa = std::make_shared<arrow::StringArray>(num_entries, off_b, val_b);
+  std::shared_ptr<arrow::RecordBatch> record_batch = arrow::RecordBatch::Make(getWriteSchema(), num_entries, {sa});
   return record_batch;
 }
 
