@@ -320,7 +320,8 @@ fstatus_t platformTerminate(void *arg) {
   }
 
   for (int q = 0; q < FLETCHER_AWS_NUM_QUEUES; q++) {
-    close(q);
+    close(aws_state.xdma_rd_fd[q]);
+    close(aws_state.xdma_wr_fd[q]);
   }
 
   return FLETCHER_STATUS_OK;
