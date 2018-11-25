@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
 
   fletcher::Timer t;
 
-  int32_t num_str = 4;
+  int32_t num_str = 1024;
   uint32_t min_len = 0;
   uint32_t len_msk = 255;
 
@@ -185,34 +185,36 @@ int main(int argc, char **argv) {
 
   int32_t num_values = 0;
 
-  std::cout << std::setw(10) << num_str << ", ";
+  std::cout << "Number of strings                : "
+            << num_str << std::endl;
 
   t.start();
   auto rand_lens = genRandomLengths(num_str, min_len, len_msk, &num_values);
-  t.stop();
-  t.report();
-
-  t.start();
   auto rand_vals = genRandomValues(rand_lens, num_values);
   t.stop();
-  t.report();
+  std::cout << "Generate                         : "
+            << t.seconds() << std::endl;
 
-  std::cout << std::setw(10) << num_str * sizeof(int32_t) + num_values << ", ";
+  std::cout << "Dataset size                     : "
+            << num_str * sizeof(int32_t) + num_values << std::endl;
 
   t.start();
   auto dataset_stl = deserializeToVector(rand_lens, rand_vals);
   t.stop();
-  t.report();
+  std::cout << "Deserialize to C++ STL Vector    : "
+            << t.seconds() << std::endl;
 
   t.start();
   auto dataset_arrow = deserializeToArrow(rand_lens, rand_vals);
   t.stop();
-  t.report();
+  std::cout << "Deserialize to Arrow StringArray : "
+            << t.seconds() << std::endl;
 
   t.start();
   auto dataset_fpga = prepareRecordBatch(num_str, num_values);
   t.stop();
-  t.report();
+  std::cout << "Prepare FPGA RecordBatch         : "
+            << t.seconds() << std::endl;
 
   t.start();
   fletcher::Platform::Make(&platform).ewf("Could not create platform.");
@@ -225,39 +227,38 @@ int main(int argc, char **argv) {
   uc->setRange(0, num_str);
   uc->setArguments({min_len, len_msk});
   t.stop();
-  t.report();
+  std::cout << "FPGA Initialize                  : "
+            << t.seconds() << std::endl;
 
   t.start();
   uc->start();
   uc->waitForFinish(100);
   t.stop();
-  t.report();
+  std::cout << "FPGA Process stream              : "
+            << t.seconds() << std::endl;
 
   t.start();
   // Get raw pointers to host-side Arrow buffers
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(dataset_fpga->column(0));
-
   auto raw_offsets = sa->value_offsets()->mutable_data();
   auto raw_values = sa->value_data()->mutable_data();
-
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[0].device_address,
-                               raw_offsets,
-                               sizeof(int32_t) * (num_str + 1));
+                             raw_offsets,
+                             sizeof(int32_t) * (num_str + 1));
   platform->copyDeviceToHost(context->device_arrays[0]->buffers[1].device_address, raw_values, (uint64_t) num_values);
   t.stop();
-  t.report();
+  std::cout << "FPGA Device-to-Host              : "
+            << t.seconds() << std::endl;
 
-  std::cout << std::endl;
-
+  /*
   fletcher::HexView hv(0);
   hv.addData(raw_offsets, sizeof(int32_t) * (num_str+1));
   hv.addData(raw_values, num_values);
   std::cout << hv.toString() << std::endl;
+  */
 
   std::cout << sa->ToString() << std::endl;
   std::cout << dataset_arrow->ToString() << std::endl;
-  
-  
 
   return 0;
 
