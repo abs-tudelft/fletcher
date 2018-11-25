@@ -25,7 +25,7 @@ entity point_accumulators is
     DIMENSION         : natural;
     CENTROIDS         : natural;
     DATA_WIDTH        : natural;
-    ACCUMULATOR_WIDTH : natural := DATA_WIDTH
+    ACCUMULATOR_WIDTH : natural := 64
   );
   port(
     reset             : in  std_logic;

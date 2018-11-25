@@ -614,7 +614,7 @@ int main(int argc, char ** argv) {
   int fpga_dim = 8;
   int fpga_centroids = 16;
   // Number of experiments
-  int ne = 10;
+  int ne = 1;
 
   std::cerr << "Usage: kmeans [num_rows [centroids [dimensionality [iteration_limit "
                "[fpga_dimensionality [fpga_centroids]]]]]]" << std::endl;

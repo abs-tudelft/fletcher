@@ -26,7 +26,6 @@ entity filter is
     DATA_WIDTH         : natural;
     OPERANTS           : natural;
     TUSER_WIDTH        : positive := 1;
-    DEFAULT_VALUE      : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
     SLICES             : natural  := 1
   );
   port(
@@ -47,6 +46,8 @@ entity filter is
 end filter;
 
 architecture behavior of filter is
+  constant DEFAULT_VALUE    : std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
+  
   signal intermediate_valid : std_logic;
   signal intermediate_ready : std_logic;
   signal intermediate_data  : std_logic_vector(DATA_WIDTH * OPERANTS - 1 downto 0);
