@@ -19,8 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StringWriter {
-	List<Integer> lengths;
-	List<String> values;
+	ByteBuffer lengths;
+	ByteBuffer values;
+	ByteBuffer offsets;
+	ByteBuffer avalues;
+	List<String> strings;
 	int total_length;
 
 	List<String> values_old;
@@ -50,46 +53,39 @@ public class StringWriter {
 		t.stop();
 		System.out.println(t.seconds() + " gen");
 		System.out.println(sw.total_length + " bytes");
+		System.out.println(sw.lengths.limit() / 4 + " entries");
 /*
 		for (String val : sw.values) {
 			System.out.println(val);
 		}
 */
 		t.start();
-		List<ByteBuffer> arrow = sw.deserializeToArrow();
+		sw.deserializeToArrow();
 		t.stop();
 		System.out.println(t.seconds() + " deser_to_arrow");
 		
 		t.start();
-		sw.serializeFromArrow(arrow.get(0), arrow.get(1));
+		sw.deserializeToString();
 		t.stop();
-		System.out.println(t.seconds() + " ser_from_arrow");
-		
-		if (sw.values.equals(sw.values_old)) {
-			System.out.println("PASS");
-			System.exit(0);
-		} else {
-			System.out.println("ERROR");
-			System.exit(1);
-		}
+		System.out.println(t.seconds() + " deser_to_native");
 	}
 
 	
-	public List<Integer> genRandomLengths(int amount, int min, int mask) {
+	public ByteBuffer genRandomLengths(int amount, int min, int mask) {
 		LFSRRandomizer lfsr = new LFSRRandomizer();
-		lengths = new ArrayList<Integer>(amount);
+		lengths = ByteBuffer.allocateDirect(amount * 4);
 		
 		total_length = 0;
 		for (int i = 0; i < amount; i++) {
 			int len = min + (lfsr.next() & mask);
 			total_length += len;
-			lengths.add(len);
+			lengths.putInt(len);
 		}
 		return lengths;
 	}
 	
 	
-	public List<String> genRandomValues() {
+	public ByteBuffer genRandomValues() {
 		List<LFSRRandomizer> lfsrs = new ArrayList<LFSRRandomizer>(64);
 		
 		// initialize the lfsrs as in hardware
@@ -98,68 +94,62 @@ public class StringWriter {
 			lfsrs.get(i).lfsr = i;
 		}
 		
-		values = new ArrayList<String>(lengths.size());
-		StringBuilder buffer = new StringBuilder(255);
+		values = ByteBuffer.allocateDirect(total_length);
 		// For every string length
-		for (int len : lengths) {
-			int strpos = 0;
-			// First generate a new "line" of random characters, even if it's zero length
-			do {
-				buffer.setLength(0);
-				for (int c = 0; c < 64; c++) {
-					int val = lfsrs.get(c).next() & 127;
-					if (val < 32)
-						val = '.';
-					if (val == 127)
-						val = '.';
-					if (c < len)
-						buffer.append((char) val);
-				}
-				strpos += 64;
-			} while (strpos < len);
-			buffer.setLength(len);
-			values.add(buffer.toString());
-		}
+		try {
+			while (true) {
+				int len = lengths.getInt();
+				int strpos = 0;
+				// First generate a new "line" of random characters, even if it's zero length
+				do {
+					for (int c = 0; c < 64; c++) {
+						int val = lfsrs.get(c).next() & 127;
+						if (val < 32)
+							val = '.';
+						if (val == 127)
+							val = '.';
+						if (c < len)
+							values.put((byte) val);
+					}
+					strpos += 64;
+				} while (strpos < len);
+			}
+		} catch (BufferUnderflowException e) { }
 		return values;
 	}
 	
 	
-	public List<ByteBuffer> deserializeToArrow() {
-		ByteBuffer valuesBuf = ByteBuffer.allocateDirect(total_length);
-		ByteBuffer offsetsBuf = ByteBuffer.allocateDirect((values.size() + 1) * 4);
+	public void deserializeToArrow() {
+		lengths.rewind();
+		values.rewind();
+		avalues = ByteBuffer.allocateDirect(values.remaining());
+		offsets = ByteBuffer.allocateDirect(lengths.remaining() + 4);
 		
-		int offset = 0;
-		for (String str : values) {
-			offsetsBuf.putInt(offset);
-			valuesBuf.put(str.getBytes(StandardCharsets.US_ASCII));
-			offset += str.length();
-		}
-		offsetsBuf.putInt(offset);
-		offsetsBuf.rewind();
-		valuesBuf.rewind();
-		
-		List<ByteBuffer> arrow = new ArrayList<ByteBuffer>();
-		arrow.add(offsetsBuf);
-		arrow.add(valuesBuf);
-		return arrow;
+		avalues.put(values);
+		try {
+			int offset = 0;
+			offsets.putInt(offset);
+			while (true) {
+				int length = lengths.getInt();
+				offset += length;
+				offsets.putInt(offset);
+			}
+		} catch (BufferUnderflowException e) { }
 	}
 	
 	
-	public void serializeFromArrow(ByteBuffer offsetsBuf, ByteBuffer valuesBuf) {
-		values_old = values;
-		
-		values = new ArrayList<String>(offsetsBuf.remaining() / 4 - 1);
+	public void deserializeToString() {
+		lengths.rewind();
+		values.rewind();
+		strings = new ArrayList<String>(lengths.remaining() / 4);
 		
 		try {
 			byte[] valueBuf = new byte[255];
-			int offset = offsetsBuf.getInt();
 			while (true) {
-				int nextOffset = offsetsBuf.getInt();
-				int length = nextOffset - offset;
-				valuesBuf.get(valueBuf, 0, length);
+				int length = lengths.getInt();
+				values.get(valueBuf, 0, length);
 				String str = new String(valueBuf, 0, length, StandardCharsets.US_ASCII);
-				values.add(str);
-				offset = nextOffset;
+				strings.add(str);
 			}
 		} catch (BufferUnderflowException e) { }
 	}
