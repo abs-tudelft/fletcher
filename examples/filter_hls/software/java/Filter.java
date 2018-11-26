@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -7,7 +10,7 @@ import java.util.Random;
 
 public class Filter {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		String special_last_name = "Smith";
 		int special_zip_code = 1337;
 		int min_str_len = 3;
@@ -20,11 +23,23 @@ public class Filter {
 		
 		// Generate native data
 		System.err.println("Generating dataset");
+		List<Person> persons;
 		t.start();
-		Random rng = new Random();
-		List<Person> persons = new ArrayList<Person>(num_rows);
-		for (int n = 0; n < num_rows; n++) {
-			persons.add(Person.generateRandomPerson(rng, min_str_len, max_str_len, ln_period, zip_period, special_last_name, special_zip_code));
+		if (args.length > 0 && args[0].equals("-")) {
+			persons = new ArrayList<Person>(num_rows);
+			BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+			String line = input.readLine();
+			while (line != null) {
+				String[] fields = line.split(",");
+				persons.add(new Person(fields[0], fields[1], Integer.parseInt(fields[2])));
+				line = input.readLine();
+			}
+		} else {
+			Random rng = new Random();
+			persons = new ArrayList<Person>(num_rows);
+			for (int n = 0; n < num_rows; n++) {
+				persons.add(Person.generateRandomPerson(rng, min_str_len, max_str_len, ln_period, zip_period, special_last_name, special_zip_code));
+			}
 		}
 		t.stop();
 		System.out.println(t.seconds() + " generate");
