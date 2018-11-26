@@ -13,9 +13,9 @@
 -- limitations under the License.
 
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.std_logic_misc.all;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use ieee.std_logic_misc.all;
 
 package AXI is
 
@@ -154,7 +154,9 @@ package AXI is
       BUS_DATA_WIDTH            : natural;   
       NUM_REGS                  : natural;
       REG_CONFIG                : string := "";
-      REG_RESET                 : string := ""
+      REG_RESET                 : string := "";
+      SLV_R_SLICE_DEPTH         : natural := 2;
+      SLV_W_SLICE_DEPTH         : natural := 2
     );
     port (
       clk                       : in  std_logic;

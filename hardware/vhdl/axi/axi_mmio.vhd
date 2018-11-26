@@ -18,8 +18,9 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.axi.all;
+  use work.Utils.all;
+  use work.AXI.all;
+  use work.Streams.all;
 
 -- Provides an AXI4-lite slave MMIO to a serialized std_logic_vector compatible
 -- for use as Fletcher MMIO.
@@ -60,7 +61,13 @@ entity axi_mmio is
     -- String  : Y Y Y Y N N N N -> "YYYYNNNN"
     --
     -- Leave blank to reset all registers.    
-    REG_RESET                   : string := ""
+    REG_RESET                   : string := "";
+    
+    -- Read channels slice depth
+    SLV_R_SLICE_DEPTH           : natural := 2;
+    
+    -- Write channels slice depths
+    SLV_W_SLICE_DEPTH           : natural := 2
     
   );
   port (
@@ -102,6 +109,40 @@ entity axi_mmio is
 end axi_mmio;
 
 architecture Behavioral of axi_mmio is
+
+  constant ARDCI : nat_array := cumulative((
+    1 => s_axi_rdata'length,
+    0 => s_axi_rresp'length
+  ));  
+
+  constant AWDCI : nat_array := cumulative((
+    1 => s_axi_wdata'length,
+    0 => s_axi_wstrb'length
+  ));
+  
+  signal int_s_axi_wall         : std_logic_vector(AWDCI(2)-1 downto 0);
+  signal int_s_axi_rall         : std_logic_vector(ARDCI(2)-1 downto 0);
+  signal s_axi_wall             : std_logic_vector(AWDCI(2)-1 downto 0);
+  signal s_axi_rall             : std_logic_vector(ARDCI(2)-1 downto 0);
+  
+  signal int_s_axi_awvalid      : std_logic;
+  signal int_s_axi_awready      : std_logic;
+  signal int_s_axi_awaddr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal int_s_axi_wvalid       : std_logic;
+  signal int_s_axi_wready       : std_logic;
+  signal int_s_axi_wdata        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal int_s_axi_wstrb        : std_logic_vector((BUS_DATA_WIDTH/8)-1 downto 0);
+  signal int_s_axi_bvalid       : std_logic;
+  signal int_s_axi_bready       : std_logic;
+  signal int_s_axi_bresp        : std_logic_vector(1 downto 0);
+  signal int_s_axi_arvalid      : std_logic;
+  signal int_s_axi_arready      : std_logic;
+  signal int_s_axi_araddr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal int_s_axi_rvalid       : std_logic;
+  signal int_s_axi_rready       : std_logic;
+  signal int_s_axi_rdata        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal int_s_axi_rresp        : std_logic_vector(1 downto 0);
+
   
   constant RESP_OK : std_logic_vector(1 downto 0) := "00";
   
@@ -146,8 +187,12 @@ architecture Behavioral of axi_mmio is
   
   signal r : reg_type;
   signal d : reg_type;
+  
+  signal reset : std_logic;
     
 begin
+
+  reset <= not(reset_n);
 
   -- Sequential part of state machine
   seq: process(clk) is
@@ -177,11 +222,11 @@ begin
   
   -- Combinatorial part of state machine
   comb: process(r,
-    s_axi_awvalid, s_axi_awaddr,              -- Write Address Channel
-    s_axi_wvalid, s_axi_wdata, s_axi_wstrb,   -- Write Data Channel
-    s_axi_bready,                             -- Write Response Channel
-    s_axi_arvalid, s_axi_araddr,              -- Read Address Channel
-    s_axi_rready,                             -- Read Data Channel
+    int_s_axi_awvalid, int_s_axi_awaddr,                  -- Write Address Channel
+    int_s_axi_wvalid, int_s_axi_wdata, int_s_axi_wstrb,   -- Write Data Channel
+    int_s_axi_bready,                                     -- Write Response Channel
+    int_s_axi_arvalid, int_s_axi_araddr,                  -- Read Address Channel
+    int_s_axi_rready,                                     -- Read Data Channel
     regs_in, regs_in_en
   ) is
     variable widx : natural := 0;
@@ -203,15 +248,15 @@ begin
 
     case (r.state) is
       when IDLE =>
-        if s_axi_awvalid = '1' then
+        if int_s_axi_awvalid = '1' then
           -- Write request
           v.state := WR;
-          v.waddr := s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
+          v.waddr := int_s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.awready := '1';
-        elsif s_axi_arvalid = '1' then
+        elsif int_s_axi_arvalid = '1' then
           -- Read request
           v.state := RD;
-          v.raddr := s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
+          v.raddr := int_s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.arready := '1';
         end if;
 
@@ -219,7 +264,7 @@ begin
       when WR =>
         widx := to_integer(unsigned(r.waddr));
         
-        if s_axi_wvalid = '1' then
+        if int_s_axi_wvalid = '1' then
           -- Acknowledge write
           o.wready := '1';
           v.state := BR;
@@ -230,7 +275,7 @@ begin
           
           -- Write only if register is writeable
           if (REG_CONFIG = "") or (REG_CONFIG(widx) = 'W') or (REG_CONFIG(widx) = 'B') then
-            v.regs(widx) := s_axi_wdata;
+            v.regs(widx) := int_s_axi_wdata;
           else
             -- If not writable, generate a warning in simulation            
             report "[AXI MMIO] Attempted to write to read-only register " & 
@@ -239,7 +284,7 @@ begin
           end if;
           
           -- Go to idle if write response was already ready.
-          if s_axi_bready = '1' then 
+          if int_s_axi_bready = '1' then 
               v.state := IDLE;
             end if;
                     
@@ -249,7 +294,7 @@ begin
       when BR =>        
         o.bvalid := '1'; 
         o.bresp := RESP_OK;
-        if s_axi_bready = '1' then
+        if int_s_axi_bready = '1' then
           v.state := IDLE;
         end if;
 
@@ -275,7 +320,7 @@ begin
         end if;
         
         -- Go back to idle if the read data was accepted.
-        if s_axi_rready = '1' then
+        if int_s_axi_rready = '1' then
           v.state := IDLE;
         end if;
 
@@ -285,14 +330,14 @@ begin
     d <= v;
     
     -- Combinatorial outputs
-    s_axi_awready <= o.awready;
-    s_axi_wready  <= o.wready;
-    s_axi_bvalid  <= o.bvalid;
-    s_axi_bresp   <= o.bresp;
-    s_axi_arready <= o.arready;
-    s_axi_rvalid  <= o.rvalid;
-    s_axi_rdata   <= o.rdata;
-    s_axi_rresp   <= o.rresp;
+    int_s_axi_awready <= o.awready;
+    int_s_axi_wready  <= o.wready;
+    int_s_axi_bvalid  <= o.bvalid;
+    int_s_axi_bresp   <= o.bresp;
+    int_s_axi_arready <= o.arready;
+    int_s_axi_rvalid  <= o.rvalid;
+    int_s_axi_rdata   <= o.rdata;
+    int_s_axi_rresp   <= o.rresp;
     
   end process;
   
@@ -301,5 +346,103 @@ begin
   begin
     regs_out((I+1) * BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH) <= r.regs(I);
   end generate;
+  
+  
+  -----------------------------------------------------------------------------
+  -- Slices
+  
+  -- AXI read address channel slice -------------------------------------------
+  arac_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_R_SLICE_DEPTH,
+      DATA_WIDTH                => s_axi_araddr'length
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => s_axi_arready,
+      in_valid                  => s_axi_arvalid,
+      in_data                   => s_axi_araddr,
+      out_ready                 => int_s_axi_arready,
+      out_valid                 => int_s_axi_arvalid,
+      out_data                  => int_s_axi_araddr
+    );
+    
+  -- AXI read data channel slice ----------------------------------------------
+  int_s_axi_rall                <= int_s_axi_rdata & int_s_axi_rresp;
+  ardc_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_R_SLICE_DEPTH,
+      DATA_WIDTH                => ARDCI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => int_s_axi_rready,
+      in_valid                  => int_s_axi_rvalid,
+      in_data                   => int_s_axi_rall,
+      out_ready                 => s_axi_rready,
+      out_valid                 => s_axi_rvalid,
+      out_data                  => s_axi_rall
+    );
+    
+  s_axi_rdata                   <= s_axi_rall(ARDCI(2)-1 downto ARDCI(1));
+  s_axi_rresp                   <= s_axi_rall(ARDCI(1)-1 downto ARDCI(0));
+    
+  -- AXI write address channel slice ------------------------------------------
+  awac_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_R_SLICE_DEPTH,
+      DATA_WIDTH                => s_axi_awaddr'length
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => s_axi_awready,
+      in_valid                  => s_axi_awvalid,
+      in_data                   => s_axi_awaddr,
+      out_ready                 => int_s_axi_awready,
+      out_valid                 => int_s_axi_awvalid,
+      out_data                  => int_s_axi_awaddr
+    );
+  
+  -- AXI write data channel slice ---------------------------------------------
+  s_axi_wall                    <= s_axi_wdata & s_axi_wstrb;
+  
+  awdc_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_R_SLICE_DEPTH,
+      DATA_WIDTH                => AWDCI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => s_axi_wready,
+      in_valid                  => s_axi_wvalid,
+      in_data                   => s_axi_wall,
+      out_ready                 => int_s_axi_wready,
+      out_valid                 => int_s_axi_wvalid,
+      out_data                  => int_s_axi_wall
+    );
+    
+  int_s_axi_wdata               <= s_axi_wall(AWDCI(2)-1 downto AWDCI(1));
+  int_s_axi_wstrb               <= s_axi_wall(AWDCI(1)-1 downto AWDCI(0));
+  
+  -- AXI write response channel slice -----------------------------------------
+  awbc_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_R_SLICE_DEPTH,
+      DATA_WIDTH                => s_axi_bresp'length
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => int_s_axi_bready,
+      in_valid                  => int_s_axi_bvalid,
+      in_data                   => int_s_axi_bresp,
+      out_ready                 => s_axi_bready,
+      out_valid                 => s_axi_bvalid,
+      out_data                  => s_axi_bresp
+    ); 
   
 end Behavioral;
