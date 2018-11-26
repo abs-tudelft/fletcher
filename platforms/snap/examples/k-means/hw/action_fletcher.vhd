@@ -268,10 +268,7 @@ architecture Behavorial of action_fletcher is
 		  NUM_ARROW_BUFFERS           : natural;
 		  DATA_WIDTH                  : natural;
 		  DIMENSION                   : natural;
-		  CENTROIDS                   : natural;
-		  CENTROID_REGS               : natural;
-		  NUM_USER_REGS               : natural;
-		  NUM_REGS                    : natural
+		  CENTROIDS                   : natural
     );
     port (
       acc_clk                     : in  std_logic;
@@ -534,12 +531,9 @@ begin
 		  INDEX_WIDTH               => 32,
 		  TAG_WIDTH                 => 1,
 		  NUM_ARROW_BUFFERS         => 2,
-		  DATA_WIDTH                => 64,
-		  DIMENSION                 => 8,
-		  CENTROIDS                 => 16,
-		  CENTROID_REGS             => 2 * 8, --DATA_WIDTH/REG_WIDTH * DIMENSION,
-		  NUM_USER_REGS             => 2 * 8 * 16 + 1, --CENTROID_REGS * CENTROIDS + 1,
-		  NUM_REGS                  => 10 + 2 * 8 * 16 + 1 -- NUM_USER_REGS
+		  DATA_WIDTH                => 32,
+		  DIMENSION                 => 16,
+		  CENTROIDS                 => 4
     )
     port map (
       acc_clk                   => action_clk,

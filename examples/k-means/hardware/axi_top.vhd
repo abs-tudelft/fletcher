@@ -44,7 +44,7 @@ entity axi_top is
     NUM_ARROW_BUFFERS           : natural := 2;
     DATA_WIDTH                  : natural := 32;
     DIMENSION                   : natural := 16;
-    CENTROIDS                   : natural := 4;
+    CENTROIDS                   : natural := 4
   );
 
   port (

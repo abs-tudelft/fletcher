@@ -116,7 +116,7 @@ architecture rtl of arrow_regexp is
   constant BB                   : natural := 16;
 
   -- Number of regexes
-  constant NUM_REGEX            : natural := 16;
+  constant NUM_REGEX            : natural := 8;
 
   -----------------------------------------------------------------------------
   -- Memory Mapped Input/Output
