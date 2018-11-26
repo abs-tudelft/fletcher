@@ -8,6 +8,14 @@ public class Person {
 	private static final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	private static StringBuilder builder = new StringBuilder(40);
 	
+	public Person() { }
+	
+	public Person(String first_name, String last_name, int zip_code) {
+		this.first_name = first_name;
+		this.last_name = last_name;
+		this.zip_code = zip_code;
+	}
+	
 	public static Person generateRandomPerson(
 			Random rng, int min_length, int max_length,
 			int last_name_period, int zip_code_period,
