@@ -47,29 +47,48 @@ proc add_arrow {{source_dir ""}} {
 proc add_streams {{source_dir ""}} {
   echo "- Streams library."
   set source_dir [source_dir_or_default $source_dir]
+
+  # Synthesis package
   add_source $source_dir/streams/Streams.vhd
-  add_source $source_dir/streams/StreamArb.vhd
-  add_source $source_dir/streams/StreamBuffer.vhd
+
+  # Buffers
+  add_source $source_dir/streams/StreamSlice.vhd
   add_source $source_dir/streams/StreamFIFOCounter.vhd
   add_source $source_dir/streams/StreamFIFO.vhd
+  add_source $source_dir/streams/StreamBuffer.vhd
+
+  # Split & merge
+  add_source $source_dir/streams/StreamSync.vhd
+  add_source $source_dir/streams/StreamArb.vhd
+
+  # Pipelines
+  add_source $source_dir/streams/StreamPipelineControl.vhd
+  add_source $source_dir/streams/StreamPipelineBarrel.vhd
+
+  # Reshapers
+  add_source $source_dir/streams/StreamSerializer.vhd
+  add_source $source_dir/streams/StreamParallelizer.vhd
   add_source $source_dir/streams/StreamGearbox.vhd
   add_source $source_dir/streams/StreamNormalizer.vhd
-  add_source $source_dir/streams/StreamMaximizer.vhd
-  add_source $source_dir/streams/StreamParallelizer.vhd
-  add_source $source_dir/streams/StreamSerializer.vhd
-  add_source $source_dir/streams/StreamSlice.vhd
-  add_source $source_dir/streams/StreamSync.vhd
+  add_source $source_dir/streams/StreamReshaper.vhd
+
+  # Arithmetic
   add_source $source_dir/streams/StreamAccumulator.vhd
   add_source $source_dir/streams/StreamElementCounter.vhd
-  add_source $source_dir/streams/StreamBarrel.vhd
   add_source $source_dir/streams/StreamPseudoRandomGenerator.vhd
 }
 
 proc add_streams_tb {{source_dir ""}} {
   echo "- Streams library simulation support."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/streams/StreamTbCons.vhd -2008
+
+  # Simulation package
+  add_source $source_dir/streams/StreamSim.vhd -2008
+
+  # Stream endpoint models
   add_source $source_dir/streams/StreamTbProd.vhd -2008
+  add_source $source_dir/streams/StreamTbMon.vhd -2008
+  add_source $source_dir/streams/StreamTbCons.vhd -2008
 }
 
 proc add_interconnect {{source_dir ""}} {

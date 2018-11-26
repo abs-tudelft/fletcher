@@ -185,7 +185,7 @@ begin
     wait for 50 us;
     wait until rising_edge(clk);
 
-    for i in 1 to 300 loop
+    for i in 1 to 100 loop
       uniform(seed1, seed2, rand);
       send_packet(natural(rand * real(work.utils.max(IN_COUNT_MAX, OUT_COUNT_MAX) * 20)));
     end loop;
