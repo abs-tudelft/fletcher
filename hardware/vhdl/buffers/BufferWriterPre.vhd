@@ -69,7 +69,7 @@ entity BufferWriterPre is
     -- Optional synchronizer for the data and write strobe streams
     --SYNC_OUTPUT                 : boolean
 
-    -- Optional register slice after normalizers
+    -- Optional register slice in the normalizers
     NORM_SLICE                  : boolean := true
 
   );
@@ -174,26 +174,6 @@ architecture Behavioral of BufferWriterPre is
   signal norm_data              : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal norm_count             : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
   signal norm_last              : std_logic;
-
-    -- Normalized data stream serialization indices & slice signals
-  constant NDSI : nat_array := cumulative((
-    4 => 1, --dvalid
-    3 => 1, --last
-    2 => ELEMENT_COUNT_MAX,
-    1 => ELEMENT_COUNT_WIDTH,
-    0 => ELEMENT_COUNT_MAX*ELEMENT_WIDTH
-  ));
-
-  signal s_norm_valid           : std_logic;
-  signal s_norm_ready           : std_logic;
-  signal s_norm_dvalid          : std_logic;
-  signal s_norm_strobe          : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
-  signal s_norm_data            : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-  signal s_norm_count           : std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
-  signal s_norm_last            : std_logic;
-
-  signal s_norm_all             : std_logic_vector(NDSI(5)-1 downto 0);
-  signal norm_all               : std_logic_vector(NDSI(5)-1 downto 0);
 
   -- Gearbox input
   signal gb_in_valid            : std_logic;
@@ -447,68 +427,42 @@ begin
     -- Data stream maximizer; maximizes the elements per cycle on the output.
     -- count is always ELEMENT_COUNT_MAX unless last is asserted.
 
-    data_normalizer_inst: StreamMaximizer
+    data_normalizer_inst: StreamReshaper
       generic map (
         ELEMENT_WIDTH           => ELEMENT_WIDTH+1,
-        COUNT_MAX               => ELEMENT_COUNT_MAX,
-        COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
-        BARREL_BACKPRESSURE     => false,
-        USE_FIFO                => true
+        IN_COUNT_MAX            => ELEMENT_COUNT_MAX,
+        IN_COUNT_WIDTH          => ELEMENT_COUNT_WIDTH,
+        OUT_COUNT_MAX           => ELEMENT_COUNT_MAX,
+        OUT_COUNT_WIDTH         => ELEMENT_COUNT_WIDTH,
+        DIN_BUFFER_DEPTH        => sel(NORM_SLICE, 2, 0)
       )
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid                => norm_in_valid,
-        in_ready                => norm_in_ready,
-        in_dvalid               => '1',
-        in_data                 => norm_in_data,
-        in_count                => norm_in_count,
-        in_last                 => norm_in_last,
+        din_valid               => norm_in_valid,
+        din_ready               => norm_in_ready,
+        din_dvalid              => norm_in_dvalid,
+        din_data                => norm_in_data,
+        din_count               => norm_in_count,
+        din_last                => norm_in_last,
         out_valid               => norm_out_valid,
         out_ready               => norm_out_ready,
+        out_dvalid              => norm_out_dvalid,
         out_data                => norm_out_data,
         out_count               => norm_out_count,
         out_last                => norm_out_last
       );
-    
-    s_norm_valid    <= norm_out_valid;
-    norm_out_ready  <= s_norm_ready;
-    s_norm_count    <= norm_out_count;
-    s_norm_last     <= norm_out_last;
-    
+
+    norm_valid      <= norm_out_valid;
+    norm_out_ready  <= norm_ready;
+    norm_count      <= norm_out_count;
+    norm_last       <= norm_out_last;
+    norm_dvalid     <= norm_out_dvalid;
+
     norm_out_connect: for e in 0 to ELEMENT_COUNT_MAX-1 generate
-      s_norm_strobe(e) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-1);
-      s_norm_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1));
+      norm_strobe(e) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-1);
+      norm_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <= norm_out_data((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1));
     end generate;
-
-    s_norm_all(                 NDSI(4)) <= '1'; --s_norm_dvalid
-    s_norm_all(                 NDSI(3)) <= s_norm_last;
-    s_norm_all(NDSI(3)-1 downto NDSI(2)) <= s_norm_strobe;
-    s_norm_all(NDSI(2)-1 downto NDSI(1)) <= s_norm_count;
-    s_norm_all(NDSI(1)-1 downto NDSI(0)) <= s_norm_data;
-
-    -- Insert optional register slices after the normalizers
-    norm_slice_inst : StreamBuffer
-      generic map (
-        MIN_DEPTH               => sel(NORM_SLICE, 2, 0),
-        DATA_WIDTH              => NDSI(5)
-      )
-      port map (
-        clk                     => clk,
-        reset                   => reset,
-        in_valid                => s_norm_valid,
-        in_ready                => s_norm_ready,
-        in_data                 => s_norm_all,
-        out_valid               => norm_valid,
-        out_ready               => norm_ready,
-        out_data                => norm_all
-      );
-
-    norm_dvalid <= norm_all(                 NDSI(4));
-    norm_last   <= norm_all(                 NDSI(3));
-    norm_strobe <= norm_all(NDSI(3)-1 downto NDSI(2));
-    norm_count  <= norm_all(NDSI(2)-1 downto NDSI(1));
-    norm_data   <= norm_all(NDSI(1)-1 downto NDSI(0));
 
   end generate;
 
