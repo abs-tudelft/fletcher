@@ -115,7 +115,7 @@ architecture Behavioral of StreamSerializer is
 
   -- Whether the data holding/shift register is valid at all.
   signal reg_valid              : std_logic;
-  
+
   -- Set default values as constants to prevent simulation truncate warning
   -- overflow.
   constant IN_COUNT_ONE_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)

@@ -209,7 +209,8 @@ begin
   end process;
 
   -- Generate the FIFO reservation counter. This counts how many items are in
-  -- the FIFO AND in the pipeline. This value is not allowed to 
+  -- the buffer AND in the pipeline. As long as this value stays less than or
+  -- equal to the buffer size, backpressure can never result in data loss.
   fifo_reservation_proc: process (clk) is
     variable fifo_reserved_v    : unsigned(FIFO_DEPTH_LOG2 downto 0);
   begin
