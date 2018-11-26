@@ -36,7 +36,7 @@ public class Kmeans {
 		Timer t = new Timer();
 		
 		long num_rows = 1024*1024*1024/((64/8)*8+4);  // For 1 GiB of data
-		int ne = 10;  // Number of experiments
+		int ne = 1;  // Number of experiments
 		
 		Kmeans kmeans = new Kmeans();
 		
