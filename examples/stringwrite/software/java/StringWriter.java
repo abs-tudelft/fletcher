@@ -29,7 +29,7 @@ public class StringWriter {
 	List<String> values_old;
 
 	public static void main(String[] args) {
-		int num_str = 8454660;
+		int num_str = 8*1024*1024;
 		int min_len = 0;
 		int len_msk = 255;
 		
