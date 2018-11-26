@@ -34,7 +34,6 @@ entity axi_top is
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural := 32;
     SLV_BUS_DATA_WIDTH          : natural := 32;
-
     REG_WIDTH                   : natural := 32;
 
     -- Arrow properties
@@ -44,11 +43,8 @@ entity axi_top is
     TAG_WIDTH                   : natural := 1;
     NUM_ARROW_BUFFERS           : natural := 2;
     DATA_WIDTH                  : natural := 32;
-    DIMENSION                   : natural := 8;
-    CENTROIDS                   : natural := 16;
-    CENTROID_REGS               : natural := 2 * 8; --DATA_WIDTH/REG_WIDTH * DIMENSION,
-    NUM_USER_REGS               : natural := 2 * 8 * 16 + 1; --CENTROID_REGS * CENTROIDS + 1,
-    NUM_REGS                    : natural := 10 + 10 + 2 * 8 * 16 + 1
+    DIMENSION                   : natural := 16;
+    CENTROIDS                   : natural := 4;
   );
 
   port (
@@ -121,6 +117,11 @@ entity axi_top is
 end axi_top;
 
 architecture Behavorial of axi_top is
+
+	constant CENTROID_REGS        : natural := DATA_WIDTH / SLV_BUS_DATA_WIDTH * DIMENSION;
+  constant NUM_USER_REGS        : natural := CENTROID_REGS * CENTROIDS + 1;
+  constant NUM_REGS             : natural := 10 + NUM_USER_REGS;
+
 
   -----------------------------------------------------------------------------
   -- Default wrapper component.

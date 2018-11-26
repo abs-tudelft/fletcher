@@ -42,7 +42,6 @@ entity fletcher_wrapper is
     DIMENSION                                  : natural;
     CENTROIDS                                  : natural;
     CENTROID_REGS                              : natural;
-    EPC                                        : natural := 512 / 64;
     NUM_REGS                                   : natural;
     NUM_USER_REGS                              : natural;
     REG_WIDTH                                  : natural;
@@ -83,6 +82,8 @@ entity fletcher_wrapper is
 end fletcher_wrapper;
 
 architecture Implementation of fletcher_wrapper is
+
+	constant EPC                                 : natural := BUS_DATA_WIDTH / DATA_WIDTH;
 
   -----------------------------------------------------------------------------
   -- Hardware Accelerated Function component.

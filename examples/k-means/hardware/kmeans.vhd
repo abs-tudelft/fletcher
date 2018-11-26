@@ -29,9 +29,7 @@ entity kmeans is
       NUM_USER_REGS                              : natural;
       DIMENSION                                  : natural;
       DATA_WIDTH                                 : natural;
-      ACCUMULATOR_WIDTH                          : natural := 64;
       CENTROID_REGS                              : natural;
-      DIMENSION_REGS                             : natural := 2; -- TODO: clean up
       CENTROIDS                                  : natural
     );
     port(
@@ -78,6 +76,9 @@ end entity kmeans;
 
 
 architecture behavior of kmeans is
+
+  constant ACCUMULATOR_WIDTH                     : natural := DATA_WIDTH;
+  constant DIMENSION_REGS                        : natural := CENTROID_REGS / DIMENSION;
 
   component filter is
     generic(
@@ -201,7 +202,7 @@ architecture behavior of kmeans is
       DIMENSION         : natural;
       CENTROIDS         : natural;
       DATA_WIDTH        : natural;
-      ACCUMULATOR_WIDTH : natural := 64
+      ACCUMULATOR_WIDTH : natural
     );
     port(
       reset             : in  std_logic;
