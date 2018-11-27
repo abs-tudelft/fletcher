@@ -123,7 +123,7 @@ begin
 
       loop
         -- Set address and validate
-        s_axi_araddr <= std_logic_vector(to_unsigned(raddr, BUS_ADDR_WIDTH));
+        s_axi_araddr <= std_logic_vector(to_unsigned(raddr * 4, BUS_ADDR_WIDTH));
         s_axi_arvalid <= '1';
         
         -- Wait for handshake
@@ -182,7 +182,7 @@ begin
     wait until bus_write_start;
 
     loop
-      s_axi_awaddr <= std_logic_vector(to_unsigned(waddr, BUS_ADDR_WIDTH));
+      s_axi_awaddr <= std_logic_vector(to_unsigned(waddr * 4, BUS_ADDR_WIDTH));
       s_axi_awvalid <= '1';
       s_axi_bready <= '0';
 

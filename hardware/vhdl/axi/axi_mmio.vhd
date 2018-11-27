@@ -117,8 +117,7 @@ architecture Behavioral of axi_mmio is
   
   type reg_type is record
     state : state_type;
-    waddr : std_logic_vector(SLV_ADDR_MSB - SLV_ADDR_LSB downto 0);
-    raddr : std_logic_vector(SLV_ADDR_MSB - SLV_ADDR_LSB downto 0);
+    addr  : std_logic_vector(SLV_ADDR_MSB - SLV_ADDR_LSB downto 0);
     regs  : regs_array_type;
   end record;
   
@@ -180,8 +179,7 @@ begin
     s_axi_rready,                             -- Read Data Channel
     regs_in, regs_in_en
   ) is
-    variable widx : natural := 0;
-    variable ridx : natural := 0;
+    variable idx : natural := 0;
   
     variable v : reg_type;
     variable o : comb_type;
@@ -202,18 +200,18 @@ begin
         if s_axi_awvalid = '1' then
           -- Write request
           v.state := WR;
-          v.waddr := s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
+          v.addr := s_axi_awaddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.awready := '1';
         elsif s_axi_arvalid = '1' then
           -- Read request
           v.state := RD;
-          v.raddr := s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
+          v.addr := s_axi_araddr(SLV_ADDR_MSB downto SLV_ADDR_LSB);
           o.arready := '1';
         end if;
 
       -- Write data
       when WR =>
-        widx := to_integer(unsigned(r.waddr));
+        idx := to_integer(unsigned(r.addr));
         
         if s_axi_wvalid = '1' then
           -- Acknowledge write
@@ -225,12 +223,12 @@ begin
           o.bresp := RESP_OK;
           
           -- Write only if register is writeable
-          if (REG_CONFIG = "") or (REG_CONFIG(widx) = 'W') or (REG_CONFIG(widx) = 'B') then
-            v.regs(widx) := s_axi_wdata;
+          if (REG_CONFIG = "") or (REG_CONFIG(idx) = 'W') or (REG_CONFIG(idx) = 'B') then
+            v.regs(idx) := s_axi_wdata;
           else
             -- If not writable, generate a warning in simulation            
             report "[AXI MMIO] Attempted to write to read-only register " & 
-              integer'image(ridx) & "."
+              integer'image(idx) & "."
               severity warning;
           end if;
           
@@ -251,22 +249,22 @@ begin
 
       -- Read response
       when RD => 
-        ridx := to_integer(unsigned(r.raddr));
+        idx := to_integer(unsigned(r.addr));
 
         -- Accept the read
         o.rvalid := '1';
         o.rresp := RESP_OK;
                 
         -- Check if register is readable
-        if (REG_CONFIG = "") or (REG_CONFIG(widx) = 'R') or (REG_CONFIG(widx) = 'B') then
-          o.rdata := r.regs(ridx);
+        if (REG_CONFIG = "") or (REG_CONFIG(idx) = 'R') or (REG_CONFIG(idx) = 'B') then
+          o.rdata := r.regs(idx);
         else
           -- Respond with DEADBEEF if not readable
           o.rdata := X"DEADBEEF";
           
           -- Generate a warning in simulation.
           report "[AXI MMIO] Attempted to read from write-only register " & 
-            integer'image(ridx) & "."
+            integer'image(idx) & "."
             severity warning;
         end if;
         
