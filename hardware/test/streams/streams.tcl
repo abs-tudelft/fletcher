@@ -24,7 +24,9 @@ proc simtest {{unit_name "*"} {tc_name "*"}} {
     set siglist [list $tbsig $uutsig]
 
     # Add UUT and testbench to sources to compile.
-    add_source $::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/${unit_name}_tb.vhd
+    foreach testbench [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/*_tb.vhd"] {
+      add_source $testbench
+    }
     foreach test_vector [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/*_tv.vhd"] {
       add_source $test_vector
     }

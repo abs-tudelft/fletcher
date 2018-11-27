@@ -20,7 +20,7 @@ library work;
 use work.Streams.all;
 use work.StreamSim.all;
 
-entity StreamArb_tb is
+entity StreamArb_Func_tb is
   generic (
     ARB_METHOD                  : string
   );
@@ -28,9 +28,9 @@ entity StreamArb_tb is
     clk                         : in  std_logic;
     reset                       : in  std_logic
   );
-end StreamArb_tb;
+end StreamArb_Func_tb;
 
-architecture TestBench of StreamArb_tb is
+architecture TestBench of StreamArb_Func_tb is
 
   signal data_a                 : std_logic_vector(7 downto 0);
   signal last_a                 : std_logic;
