@@ -1,0 +1,119 @@
+dist: xenial
+
+language: cpp
+
+branches:
+  only:
+    - master
+    - develop
+
+# cache: ccache
+
+# sudo: required
+# services:
+#   - docker
+
+env:
+  global:
+    # versions
+    - ARROW_VERSION=0.11.1
+    - AWS_FPGA_VERSION=1.4.4
+    - CAPI_SNAP_VERSION=1.5.1
+    - CAPI_PSLSE_VERSION=4.1
+    - PSLVER=8
+    # fletcher
+    - FLETCHER_CPP=0
+    - FLETCHER_ECHO=0
+    - FLETCHER_AWS=0
+    - FLETCHER_SNAP=0
+    - FLETCHER_GEN=0
+    - FLETCHER_PYTHON=0
+    - FLETCHER_TESTS=0
+    - SOURCE_PATH=
+    # cmake
+    - CTEST_OUTPUT_ON_FAILURE=1
+
+matrix:
+  include:
+    # all
+    - env: FLETCHER_CPP=1 FLETCHER_ECHO=1 FLETCHER_AWS=1 FLETCHER_SNAP=1 FLETCHER_GEN=1
+    # common
+    - env: SOURCE_PATH=common/cpp FLETCHER_TESTS=1
+    # runtime
+    - env: SOURCE_PATH=runtime/cpp FLETCHER_TESTS=1
+    - env: SOURCE_PATH=runtime/cpp FLETCHER_PYTHON=1
+    # codegen
+    - env: SOURCE_PATH=codegen/fletchgen
+    # snap platform
+    - env: SOURCE_PATH=platforms/snap/runtime FLETCHER_SNAP=1
+    # aws platform
+    - env: SOURCE_PATH=platforms/aws-f1/runtime FLETCHER_AWS=1
+    # echo platform
+    - env: SOURCE_PATH=platforms/echo/runtime
+
+before_install:
+  - curl -sSL "https://packages.red-data-tools.org/ubuntu/red-data-tools-keyring.gpg" | sudo -E apt-key add -
+  - echo "deb https://packages.red-data-tools.org/ubuntu/ xenial universe" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update -qq
+  - sudo apt-get install -yq libarrow-dev=${ARROW_VERSION}-1
+
+addons:
+  apt:
+    packages:
+      - libboost-all-dev
+
+script:
+  - |
+    if [ $FLETCHER_PYTHON -eq 1 ]; then
+      curl "https://bootstrap.pypa.io/get-pip.py" | sudo python3
+      sudo pip install cython numpy pyarrow==$ARROW_VERSION
+      export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
+    fi
+  - |
+    if [ $FLETCHER_AWS -eq 1 ]; then
+      git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
+      pushd aws-fpga
+      source sdk_setup.sh
+      popd
+    fi
+  - |
+    if [ $FLETCHER_SNAP -eq 1 ]; then
+      git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
+      pushd pslse
+      export PSLSE_ROOT=`pwd`
+      popd
+      git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
+      pushd snap
+      export SNAP_ROOT=`pwd`
+      BUILD_SIMCODE=1 make software
+      popd
+      fi
+  - mkdir -p build
+  - pushd build
+  - cmake
+    -DFLETCHER_CPP=$FLETCHER_CPP
+    -DFLETCHER_ECHO=$FLETCHER_ECHO
+    -DFLETCHER_AWS=$FLETCHER_AWS
+    -DFLETCHER_SNAP=$FLETCHER_SNAP
+    -DFLETCHER_GEN=$FLETCHER_GEN
+    -DFLETCHER_PYTHON=$FLETCHER_PYTHON
+    -DPYARROW_DIR=$PYARROW_DIR
+    -DFLETCHER_TESTS=$FLETCHER_TESTS
+    ../$SOURCE_PATH
+  - make -j
+  - |
+    if [ $FLETCHER_TESTS -eq 1 ]; then
+      make test
+    fi
+  - popd
+  - |
+    if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+      pushd build
+      make install
+      popd
+      pushd runtime/python
+      sudo python3 setup.py install
+      sudo ldconfig
+      python3 testing/test.py
+      popd
+    fi

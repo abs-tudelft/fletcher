@@ -108,16 +108,15 @@ if (FLETCHER_TESTS)
       set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
     endif ()
 
-    # Include GoogleTest CMake functionality
-    include(GoogleTest)
-    find_package(GTest REQUIRED)
+    include(../../BuildGTest.cmake)
 
     set(TEST_SOURCES test/test.cpp)
     add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
     target_link_libraries(${FLETCHER}-test ${FLETCHER})
     target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
-    target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
+    target_link_libraries(${FLETCHER}-test gtest gtest_main)
     target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
 
+    include(GoogleTest)
     gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHER_TESTS)

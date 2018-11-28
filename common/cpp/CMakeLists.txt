@@ -59,11 +59,7 @@ if (FLETCHER_TESTS)
     target_link_libraries(${TEST_GEN} ${LIB_ARROW})
     target_link_libraries(${TEST_GEN} ${FLETCHER_COMMON})
 
-    # Common library unit tests
-
-    # Include GoogleTest CMake functionality
-    include(GoogleTest)
-    find_package(GTest REQUIRED)
+    include(../../BuildGTest.cmake)
 
     # Test common library functions
     set(TEST_COMMON fletcher-test-common)
@@ -75,9 +71,10 @@ if (FLETCHER_TESTS)
             ${TEST_COMMON_HEADERS} ${TEST_COMMON_SOURCES})
     target_link_libraries(${TEST_COMMON} ${LIB_ARROW})
     target_link_libraries(${TEST_COMMON} ${FLETCHER_COMMON})
-    target_link_libraries(${TEST_COMMON} GTest::GTest GTest::Main)
+    target_link_libraries(${TEST_COMMON} gtest gtest_main)
     include_directories(${TEST_COMMON} src)
 
+    include(GoogleTest)
     gtest_discover_tests(${TEST_COMMON})
 
 endif (FLETCHER_TESTS)

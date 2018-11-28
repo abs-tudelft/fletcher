@@ -3,7 +3,7 @@ FROM mbrobbel/libarrow:$ARROW_VERSION
 
 LABEL fletcher=
 
-ENV BUILD_PACKAGES cmake g++
+ENV BUILD_PACKAGES cmake g++ git
 
 WORKDIR fletcher
 ADD . .
