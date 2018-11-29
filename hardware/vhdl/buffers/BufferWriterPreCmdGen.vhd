@@ -165,13 +165,14 @@ begin
       v.implicit := cmdIn_implicit;
       v.ctrl := cmdIn_ctrl;
       v.tag := cmdIn_tag;
+      v.first := '1';
 
       if MODE = "continuous" then
         -- We are in continuous mode, pass through the first index and validate
         -- a single command with lastIdx = 0. In this case, the child buffer
         -- will finish the command based on the last signal of the input stream
         -- and not the lastIdx.
-        if v.first = '0' then
+        if r.first = '0' then
           v.firstIdx := cmdIn_firstIdx;
           v.lastIdx := (others => '0');
           v.valid := '1';
@@ -185,14 +186,12 @@ begin
       else
         -- Validate the output if this is not the first element, we first need
         -- two valid indices to determine the first range.
-        if v.first = '1' then          
+        if r.first = '1' then          
           v.firstIdx := r.lastIdx;
           v.lastIdx := cmdIn_firstIdx;
           v.valid := '1';
         end if;
       end if;
-      
-      v.first := '1';
     end if;
 
     -- Registered output

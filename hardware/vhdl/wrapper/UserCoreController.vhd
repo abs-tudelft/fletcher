@@ -37,28 +37,85 @@ entity UserCoreController is
 end UserCoreController;
 
 architecture Behavioral of UserCoreController is
+
+  constant CONTROL_START : natural := 0;
+  constant CONTROL_STOP  : natural := 1;
+  constant CONTROL_RESET : natural := 2;
+  
+  constant STATUS_IDLE : natural := 0;
+  constant STATUS_BUSY : natural := 1;
+  constant STATUS_DONE : natural := 2;
+
+  type state_type is record
+    start         : std_logic;
+    start_lowered : std_logic;
+    stop          : std_logic;
+    reset         : std_logic;
+  end record;
+  
+  constant state_init : state_type := ('0', '1', '0', '0');
+  
+  signal r : state_type;
+  signal d : state_type;
   
 begin
   --TODO: implement clock crossings
-  ctrl_proc: process(bus_clk) is
+  ctrl_seq_proc: process(bus_clk) is
   begin
     if rising_edge(bus_clk) then
-    
-      start <= control(0);
-      stop  <= control(1);
-      reset <= control(2);
+      r <= d;
+      if acc_reset = '1' then
+        r <= state_init;
+      end if;
+    end if;
+  end process;
+  
+  ctrl_comb_proc: process(r, control, idle, busy, done) is
+    variable v : state_type;
+  begin
+      v := r;
       
-      if bus_reset = '1' then
-        start <= '0';
-        stop  <= '0';
-        reset <= '1';
+      ----------------------------------------------------------
+      -- Start:
+      ----------------------------------------------------------
+      -- One cycle start assertion. Host must lower start after
+      -- asserting before the usercore can start again.
+      if control(CONTROL_START) = '1' and r.start_lowered = '1' then
+        v.start := '1';
+        v.start_lowered := '0';
+      end if;
+      if r.start = '1' and r.start_lowered = '0' then
+        v.start := '0';
+      end if;
+      if control(CONTROL_START) = '0' then
+        v.start_lowered := '1';
       end if;
       
-      status(0) <= idle;
-      status(1) <= busy;
-      status(2) <= done;
-    end if;
-    
+      ----------------------------------------------------------      
+      -- Stop:
+      ----------------------------------------------------------
+      v.stop := control(CONTROL_STOP);
+      
+      ----------------------------------------------------------
+      -- Reset:
+      ----------------------------------------------------------
+      v.reset := control(CONTROL_RESET);
+      
+      ----------------------------------------------------------
+      -- Outputs:
+      ----------------------------------------------------------
+      -- Registered outputs:
+      d <= v;
+      
+      -- Combinatorial outputs:
+      status(STATUS_IDLE) <= idle;
+      status(STATUS_BUSY) <= busy;
+      status(STATUS_DONE) <= done;
+      
   end process;
+  
+  start <= r.start;
+  stop <= r.stop;
+  reset <= r.reset;
   
 end Behavioral;

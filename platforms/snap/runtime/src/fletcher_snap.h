@@ -16,13 +16,26 @@
 
 #include "libsnap.h"
 
-#include "../../../../common/cpp/src/fletcher.h"
+#include "fletcher/fletcher.h"
 
-#define debug_print(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#ifdef DEBUG
+#define SIM
+#define ENABLE_DEBUG_PRINT 1
+#else
+#define ENABLE_DEBUG_PRINT 0
+#endif
+
+#ifdef SIM
+#define SNAP_SIM 1
+#else
+#define SNAP_SIM 0
+#endif
+
+#define debug_print(...) do { if (ENABLE_DEBUG_PRINT) fprintf(stderr, __VA_ARGS__); } while (0)
 
 #define FLETCHER_PLATFORM_NAME "snap"
 
-#define FLETCHER_SNAP_ACTION_REG_OFFSET 64 // starts at 0x200
+#define FLETCHER_SNAP_ACTION_REG_OFFSET 0x200
 #define FLETCHER_SNAP_DEVICE_ALIGNMENT 4096
 
 struct snap_card;
@@ -45,7 +58,7 @@ typedef struct {
 
 } PlatformState;
 
-PlatformState snap_state ={NULL, NULL, 0, 0x1, 0, 0, 4096, {0}};
+PlatformState snap_state ={NULL, NULL, 0, 0x1, SNAP_SIM, 0, 4096, {0}};
 
 /// @brief Store the platform name in a buffer of size /p size pointed to by /p name.
 fstatus_t platformGetName(char *name, size_t size);
@@ -64,7 +77,7 @@ fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value);
 fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_destination, int64_t size);
 
 /// @brief Copy \p size bytes from device address \p device_source to host address \p host_destination.
-fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size);
+fstatus_t platformCopyDeviceToHost(const da_t device_source, uint8_t *host_destination, int64_t size);
 
 /// @brief Allocate \p size bytes on the device.
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size);
@@ -92,7 +105,7 @@ fstatus_t platformDeviceFree(da_t device_address);
  *                              usage (0 = not alloced, 1 = alloced).
  * @return                      FLETCHER_STATUS_OK if successful, FLETCHER_STATUS_ERROR otherwise.
  */
-fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int* alloced);
+fstatus_t platformPrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, int *alloced);
 
 /**
  * @brief Explicitly cache \p size bytes from \p host_source on device on-board memory.

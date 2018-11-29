@@ -42,6 +42,8 @@ target_link_libraries(${FLETCHER_COMMON} ${REQUIRED} ${LIB_ARROW})
 
 if (FLETCHER_TESTS)
 
+    enable_testing()
+
     # File generation for Arrow objects in e.g. fletchgen or other tools. Schemas, recordbatches, etc...
     set(TEST_GEN fletcher-test-generate)
 
@@ -76,6 +78,6 @@ if (FLETCHER_TESTS)
     target_link_libraries(${TEST_COMMON} GTest::GTest GTest::Main)
     include_directories(${TEST_COMMON} src)
 
-    gtest_discover_tests(${TEST_COMMON} WORKING_DIRECTORY ../../platforms/echo/runtime)
+    gtest_discover_tests(${TEST_COMMON})
 
 endif (FLETCHER_TESTS)

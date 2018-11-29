@@ -4212,6 +4212,7 @@ static const char __pyx_k_value[] = "value";
 static const char __pyx_k_write[] = "write";
 static const char __pyx_k_zeros[] = "zeros";
 static const char __pyx_k_astype[] = "astype";
+static const char __pyx_k_buffer[] = "buffer";
 static const char __pyx_k_double[] = "double";
 static const char __pyx_k_encode[] = "encode";
 static const char __pyx_k_format[] = "format";
@@ -4249,7 +4250,9 @@ static const char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_MemoryError[] = "MemoryError";
 static const char __pyx_k_PickleError[] = "PickleError";
+static const char __pyx_k_array_index[] = "array_index";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
+static const char __pyx_k_buffer_index[] = "buffer_index";
 static const char __pyx_k_pyx_checksum[] = "__pyx_checksum";
 static const char __pyx_k_record_batch[] = "record_batch";
 static const char __pyx_k_stringsource[] = "stringsource";
@@ -4339,8 +4342,11 @@ static PyObject *__pyx_n_s_ValueError;
 static PyObject *__pyx_n_s_View_MemoryView;
 static PyObject *__pyx_n_s_allocate_buffer;
 static PyObject *__pyx_n_s_array;
+static PyObject *__pyx_n_s_array_index;
 static PyObject *__pyx_n_s_astype;
 static PyObject *__pyx_n_s_base;
+static PyObject *__pyx_n_s_buffer;
+static PyObject *__pyx_n_s_buffer_index;
 static PyObject *__pyx_n_s_c;
 static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_cache;
@@ -4453,7 +4459,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_10read_mmio_64(struct __py
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_12device_malloc(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, size_t __pyx_v_size); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_14device_free(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_address); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_16copy_host_to_device(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, PyObject *__pyx_v_host_bytes, da_t __pyx_v_device_destination, uint64_t __pyx_v_size); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size, PyObject *__pyx_v_buffer); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_20terminate(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_22__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_24__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
@@ -4483,9 +4489,10 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_2queue_array(struct __pyx_o
 static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_4queue_record_batch(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, PyObject *__pyx_v_record_batch, PyObject *__pyx_v_cache); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_6get_queue_size(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10get_buffer_device_address(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, int __pyx_v_array_index, int __pyx_v_buffer_index); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_16__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -6462,7 +6469,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_16copy_host_to_device(stru
  * 
  *         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))             # <<<<<<<<<<<<<<
  * 
- *     def copy_device_to_host(self, da_t device_source, uint64_t size):
+ *     def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):
  */
   __pyx_t_4 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyHostToDevice(((uint8_t *)__pyx_v_host_source), __pyx_v_device_destination, __pyx_v_size)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 145, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
@@ -6494,27 +6501,31 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_16copy_host_to_device(stru
 /* "pyfletcher/platform.pxi":147
  *         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
  * 
- *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
+ *     def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):             # <<<<<<<<<<<<<<
  *         """Copy a memory region from device memory to host memory.
  * 
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_19copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_10pyfletcher_3lib_8Platform_18copy_device_to_host[] = "Copy a memory region from device memory to host memory.\n\n        Args:\n            device_source (int): Source in device memory\n            size (int): The amount of bytes\n\n        Returns:\n            ndarray: Read bytes\n        ";
+static char __pyx_doc_10pyfletcher_3lib_8Platform_18copy_device_to_host[] = "Copy a memory region from device memory to host memory.\n\n        Args:\n            device_source (int): Source in device memory\n            size (int): The amount of bytes\n            buffer: Pyarrow buffer to copy bytes to\n\n        Returns:\n            ndarray: Read bytes\n        ";
 static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_19copy_device_to_host(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   da_t __pyx_v_device_source;
   uint64_t __pyx_v_size;
+  PyObject *__pyx_v_buffer = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("copy_device_to_host (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_device_source,&__pyx_n_s_size,0};
-    PyObject* values[2] = {0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_device_source,&__pyx_n_s_size,&__pyx_n_s_buffer,0};
+    PyObject* values[3] = {0,0,0};
+    values[2] = ((PyObject *)Py_None);
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         CYTHON_FALLTHROUGH;
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -6531,136 +6542,182 @@ static PyObject *__pyx_pw_10pyfletcher_3lib_8Platform_19copy_device_to_host(PyOb
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, 1); __PYX_ERR(0, 147, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 0, 2, 3, 1); __PYX_ERR(0, 147, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_buffer);
+          if (value) { values[2] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "copy_device_to_host") < 0)) __PYX_ERR(0, 147, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
-      goto __pyx_L5_argtuple_error;
     } else {
-      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
     }
     __pyx_v_device_source = __Pyx_PyInt_As_da_t(values[0]); if (unlikely((__pyx_v_device_source == ((da_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 147, __pyx_L3_error)
     __pyx_v_size = __Pyx_PyInt_As_uint64_t(values[1]); if (unlikely((__pyx_v_size == ((uint64_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 147, __pyx_L3_error)
+    __pyx_v_buffer = values[2];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 147, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("copy_device_to_host", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 147, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_device_source, __pyx_v_size);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(((struct __pyx_obj_10pyfletcher_3lib_Platform *)__pyx_v_self), __pyx_v_device_source, __pyx_v_size, __pyx_v_buffer);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size) {
-  PyObject *__pyx_v_buffer = NULL;
+static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(struct __pyx_obj_10pyfletcher_3lib_Platform *__pyx_v_self, da_t __pyx_v_device_source, uint64_t __pyx_v_size, PyObject *__pyx_v_buffer) {
   __Pyx_memviewslice __pyx_v_buffer_view = { 0, 0, { 0 }, { 0 }, { 0 } };
   uint8_t const *__pyx_v_host_destination;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
+  int __pyx_t_1;
+  int __pyx_t_2;
   PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
-  __Pyx_memviewslice __pyx_t_6 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  Py_ssize_t __pyx_t_7;
-  int __pyx_t_8;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  __Pyx_memviewslice __pyx_t_8 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  Py_ssize_t __pyx_t_9;
+  int __pyx_t_10;
   __Pyx_RefNannySetupContext("copy_device_to_host", 0);
+  __Pyx_INCREF(__pyx_v_buffer);
 
-  /* "pyfletcher/platform.pxi":157
- *             ndarray: Read bytes
- *         """
- *         buffer = np.zeros((size,), dtype=np.uint8)             # <<<<<<<<<<<<<<
- *         cdef const uint8_t[:] buffer_view = buffer
- *         cdef const uint8_t *host_destination = &buffer_view[0]
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_3);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
-  __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_uint8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_5) < 0) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 157, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_v_buffer = __pyx_t_5;
-  __pyx_t_5 = 0;
-
-  /* "pyfletcher/platform.pxi":158
- *         """
- *         buffer = np.zeros((size,), dtype=np.uint8)
- *         cdef const uint8_t[:] buffer_view = buffer             # <<<<<<<<<<<<<<
- *         cdef const uint8_t *host_destination = &buffer_view[0]
+  /* "pyfletcher/platform.pxi":161
+ *         cdef const uint8_t *host_destination
  * 
+ *         if buffer is None:             # <<<<<<<<<<<<<<
+ *             buffer = np.zeros((size,), dtype=np.uint8)
+ *             buffer_view = buffer
  */
-  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_buffer, 0); if (unlikely(!__pyx_t_6.memview)) __PYX_ERR(0, 158, __pyx_L1_error)
-  __pyx_v_buffer_view = __pyx_t_6;
-  __pyx_t_6.memview = NULL;
-  __pyx_t_6.data = NULL;
+  __pyx_t_1 = (__pyx_v_buffer == Py_None);
+  __pyx_t_2 = (__pyx_t_1 != 0);
+  if (__pyx_t_2) {
 
-  /* "pyfletcher/platform.pxi":159
- *         buffer = np.zeros((size,), dtype=np.uint8)
- *         cdef const uint8_t[:] buffer_view = buffer
- *         cdef const uint8_t *host_destination = &buffer_view[0]             # <<<<<<<<<<<<<<
+    /* "pyfletcher/platform.pxi":162
+ * 
+ *         if buffer is None:
+ *             buffer = np.zeros((size,), dtype=np.uint8)             # <<<<<<<<<<<<<<
+ *             buffer_view = buffer
+ *             host_destination = &buffer_view[0]
+ */
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_zeros); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyInt_From_uint64_t(__pyx_v_size); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_GIVEREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_5);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
+    __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_uint8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_7) < 0) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 162, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF_SET(__pyx_v_buffer, __pyx_t_7);
+    __pyx_t_7 = 0;
+
+    /* "pyfletcher/platform.pxi":163
+ *         if buffer is None:
+ *             buffer = np.zeros((size,), dtype=np.uint8)
+ *             buffer_view = buffer             # <<<<<<<<<<<<<<
+ *             host_destination = &buffer_view[0]
+ *         else:
+ */
+    __pyx_t_8 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_uint8_t__const__(__pyx_v_buffer, 0); if (unlikely(!__pyx_t_8.memview)) __PYX_ERR(0, 163, __pyx_L1_error)
+    __pyx_v_buffer_view = __pyx_t_8;
+    __pyx_t_8.memview = NULL;
+    __pyx_t_8.data = NULL;
+
+    /* "pyfletcher/platform.pxi":164
+ *             buffer = np.zeros((size,), dtype=np.uint8)
+ *             buffer_view = buffer
+ *             host_destination = &buffer_view[0]             # <<<<<<<<<<<<<<
+ *         else:
+ *             host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()
+ */
+    __pyx_t_9 = 0;
+    __pyx_t_10 = -1;
+    if (__pyx_t_9 < 0) {
+      __pyx_t_9 += __pyx_v_buffer_view.shape[0];
+      if (unlikely(__pyx_t_9 < 0)) __pyx_t_10 = 0;
+    } else if (unlikely(__pyx_t_9 >= __pyx_v_buffer_view.shape[0])) __pyx_t_10 = 0;
+    if (unlikely(__pyx_t_10 != -1)) {
+      __Pyx_RaiseBufferIndexError(__pyx_t_10);
+      __PYX_ERR(0, 164, __pyx_L1_error)
+    }
+    __pyx_v_host_destination = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_buffer_view.data + __pyx_t_9 * __pyx_v_buffer_view.strides[0]) ))));
+
+    /* "pyfletcher/platform.pxi":161
+ *         cdef const uint8_t *host_destination
+ * 
+ *         if buffer is None:             # <<<<<<<<<<<<<<
+ *             buffer = np.zeros((size,), dtype=np.uint8)
+ *             buffer_view = buffer
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pyfletcher/platform.pxi":166
+ *             host_destination = &buffer_view[0]
+ *         else:
+ *             host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()             # <<<<<<<<<<<<<<
  * 
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
  */
-  __pyx_t_7 = 0;
-  __pyx_t_8 = -1;
-  if (__pyx_t_7 < 0) {
-    __pyx_t_7 += __pyx_v_buffer_view.shape[0];
-    if (unlikely(__pyx_t_7 < 0)) __pyx_t_8 = 0;
-  } else if (unlikely(__pyx_t_7 >= __pyx_v_buffer_view.shape[0])) __pyx_t_8 = 0;
-  if (unlikely(__pyx_t_8 != -1)) {
-    __Pyx_RaiseBufferIndexError(__pyx_t_8);
-    __PYX_ERR(0, 159, __pyx_L1_error)
+  /*else*/ {
+    __pyx_v_host_destination = __pyx_f_7pyarrow_3lib_pyarrow_unwrap_buffer(__pyx_v_buffer).get()->mutable_data();
   }
-  __pyx_v_host_destination = (&(*((uint8_t const  *) ( /* dim=0 */ (__pyx_v_buffer_view.data + __pyx_t_7 * __pyx_v_buffer_view.strides[0]) ))));
+  __pyx_L3:;
 
-  /* "pyfletcher/platform.pxi":161
- *         cdef const uint8_t *host_destination = &buffer_view[0]
+  /* "pyfletcher/platform.pxi":168
+ *             host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()
  * 
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))             # <<<<<<<<<<<<<<
  * 
  *         return buffer
  */
-  __pyx_t_5 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 161, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_7 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->copyDeviceToHost(__pyx_v_device_source, ((uint8_t *)__pyx_v_host_destination), __pyx_v_size)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pyfletcher/platform.pxi":163
+  /* "pyfletcher/platform.pxi":170
  *         check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
  * 
  *         return buffer             # <<<<<<<<<<<<<<
@@ -6675,30 +6732,30 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_18copy_device_to_host(stru
   /* "pyfletcher/platform.pxi":147
  *         check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
  * 
- *     def copy_device_to_host(self, da_t device_source, uint64_t size):             # <<<<<<<<<<<<<<
+ *     def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):             # <<<<<<<<<<<<<<
  *         """Copy a memory region from device memory to host memory.
  * 
  */
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_6, 1);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_8, 1);
   __Pyx_AddTraceback("pyfletcher.lib.Platform.copy_device_to_host", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_buffer);
   __PYX_XDEC_MEMVIEW(&__pyx_v_buffer_view, 1);
+  __Pyx_XDECREF(__pyx_v_buffer);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "pyfletcher/platform.pxi":165
+/* "pyfletcher/platform.pxi":172
  *         return buffer
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -6725,18 +6782,18 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_8Platform_20terminate(struct __pyx_o
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("terminate", 0);
 
-  /* "pyfletcher/platform.pxi":166
+  /* "pyfletcher/platform.pxi":173
  * 
  *     def terminate(self):
  *         check_fletcher_status(self.platform.get().terminate())             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 166, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->platform.get()->terminate()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 173, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/platform.pxi":165
+  /* "pyfletcher/platform.pxi":172
  *         return buffer
  * 
  *     def terminate(self):             # <<<<<<<<<<<<<<
@@ -9066,7 +9123,7 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(struct __pyx_o
  *         """
  *         return self.context.get().num_buffers()             # <<<<<<<<<<<<<<
  * 
- *     def enable(self):
+ *     def get_buffer_device_address(self, int array_index, int buffer_index):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyInt_From_uint64_t(__pyx_v_self->context.get()->num_buffers()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 91, __pyx_L1_error)
@@ -9097,40 +9154,149 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_8num_buffers(struct __pyx_o
 /* "pyfletcher/context.pxi":93
  *         return self.context.get().num_buffers()
  * 
- *     def enable(self):             # <<<<<<<<<<<<<<
- *         check_fletcher_status(self.context.get().enable())
+ *     def get_buffer_device_address(self, int array_index, int buffer_index):             # <<<<<<<<<<<<<<
+ *         """Get device address of a buffer
+ * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11get_buffer_device_address(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_10pyfletcher_3lib_7Context_10get_buffer_device_address[] = "Get device address of a buffer\n\n        Args:\n            array_index: Index of the device array\n            buffer_index: Index of the buffer in the device array\n\n        Returns:\n\n        ";
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_11get_buffer_device_address(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  int __pyx_v_array_index;
+  int __pyx_v_buffer_index;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("enable (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_10enable(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("get_buffer_device_address (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_array_index,&__pyx_n_s_buffer_index,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_array_index)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_buffer_index)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("get_buffer_device_address", 1, 2, 2, 1); __PYX_ERR(5, 93, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "get_buffer_device_address") < 0)) __PYX_ERR(5, 93, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+    }
+    __pyx_v_array_index = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_array_index == (int)-1) && PyErr_Occurred())) __PYX_ERR(5, 93, __pyx_L3_error)
+    __pyx_v_buffer_index = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_buffer_index == (int)-1) && PyErr_Occurred())) __PYX_ERR(5, 93, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("get_buffer_device_address", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(5, 93, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pyfletcher.lib.Context.get_buffer_device_address", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_10get_buffer_device_address(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), __pyx_v_array_index, __pyx_v_buffer_index);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10get_buffer_device_address(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, int __pyx_v_array_index, int __pyx_v_buffer_index) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_buffer_device_address", 0);
+
+  /* "pyfletcher/context.pxi":104
+ *         """
+ * 
+ *         return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address             # <<<<<<<<<<<<<<
+ * 
+ *     def enable(self):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_da_t(((__pyx_v_self->context.get()->device_arrays[__pyx_v_array_index]).get()->buffers[__pyx_v_buffer_index]).device_address); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 104, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "pyfletcher/context.pxi":93
+ *         return self.context.get().num_buffers()
+ * 
+ *     def get_buffer_device_address(self, int array_index, int buffer_index):             # <<<<<<<<<<<<<<
+ *         """Get device address of a buffer
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("pyfletcher.lib.Context.get_buffer_device_address", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pyfletcher/context.pxi":106
+ *         return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address
+ * 
+ *     def enable(self):             # <<<<<<<<<<<<<<
+ *         check_fletcher_status(self.context.get().enable())
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13enable(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("enable (wrapper)", 0);
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_12enable(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12enable(struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("enable", 0);
 
-  /* "pyfletcher/context.pxi":94
+  /* "pyfletcher/context.pxi":107
  * 
  *     def enable(self):
  *         check_fletcher_status(self.context.get().enable())             # <<<<<<<<<<<<<<
  */
-  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 94, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10pyfletcher_3lib_check_fletcher_status(__pyx_v_self->context.get()->enable()); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyfletcher/context.pxi":93
- *         return self.context.get().num_buffers()
+  /* "pyfletcher/context.pxi":106
+ *         return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address
  * 
  *     def enable(self):             # <<<<<<<<<<<<<<
  *         check_fletcher_status(self.context.get().enable())
@@ -9156,19 +9322,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_10enable(struct __pyx_obj_1
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_14__reduce_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9210,19 +9376,19 @@ static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_12__reduce_cython__(CYTHON_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_17__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_10pyfletcher_3lib_7Context_17__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_10pyfletcher_3lib_7Context_16__setstate_cython__(((struct __pyx_obj_10pyfletcher_3lib_Context *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_10pyfletcher_3lib_7Context_16__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10pyfletcher_3lib_Context *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -25100,9 +25266,10 @@ static PyMethodDef __pyx_methods_10pyfletcher_3lib_Context[] = {
   {"queue_record_batch", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_5queue_record_batch, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_4queue_record_batch},
   {"get_queue_size", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_7get_queue_size, METH_NOARGS, __pyx_doc_10pyfletcher_3lib_7Context_6get_queue_size},
   {"num_buffers", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_9num_buffers, METH_NOARGS, __pyx_doc_10pyfletcher_3lib_7Context_8num_buffers},
-  {"enable", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_11enable, METH_NOARGS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_13__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_15__setstate_cython__, METH_O, 0},
+  {"get_buffer_device_address", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10pyfletcher_3lib_7Context_11get_buffer_device_address, METH_VARARGS|METH_KEYWORDS, __pyx_doc_10pyfletcher_3lib_7Context_10get_buffer_device_address},
+  {"enable", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_13enable, METH_NOARGS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_15__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_10pyfletcher_3lib_7Context_17__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -25918,8 +26085,11 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_View_MemoryView, __pyx_k_View_MemoryView, sizeof(__pyx_k_View_MemoryView), 0, 0, 1, 1},
   {&__pyx_n_s_allocate_buffer, __pyx_k_allocate_buffer, sizeof(__pyx_k_allocate_buffer), 0, 0, 1, 1},
   {&__pyx_n_s_array, __pyx_k_array, sizeof(__pyx_k_array), 0, 0, 1, 1},
+  {&__pyx_n_s_array_index, __pyx_k_array_index, sizeof(__pyx_k_array_index), 0, 0, 1, 1},
   {&__pyx_n_s_astype, __pyx_k_astype, sizeof(__pyx_k_astype), 0, 0, 1, 1},
   {&__pyx_n_s_base, __pyx_k_base, sizeof(__pyx_k_base), 0, 0, 1, 1},
+  {&__pyx_n_s_buffer, __pyx_k_buffer, sizeof(__pyx_k_buffer), 0, 0, 1, 1},
+  {&__pyx_n_s_buffer_index, __pyx_k_buffer_index, sizeof(__pyx_k_buffer_index), 0, 0, 1, 1},
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
   {&__pyx_n_u_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 1, 0, 1},
   {&__pyx_n_s_cache, __pyx_k_cache, sizeof(__pyx_k_cache), 0, 0, 1, 1},
@@ -26894,6 +27064,7 @@ static int __Pyx_modinit_function_import_code(void) {
   __pyx_t_1 = PyImport_ImportModule("pyarrow.lib"); if (!__pyx_t_1) __PYX_ERR(7, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_array", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_array, "std::shared_ptr< arrow::Array>  (PyObject *)") < 0) __PYX_ERR(7, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_batch", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_batch, "std::shared_ptr< arrow::RecordBatch>  (PyObject *)") < 0) __PYX_ERR(7, 1, __pyx_L1_error)
+  if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_buffer", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_buffer, "std::shared_ptr< arrow::Buffer>  (PyObject *)") < 0) __PYX_ERR(7, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_field", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_field, "std::shared_ptr< arrow::Field>  (PyObject *)") < 0) __PYX_ERR(7, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_1, "pyarrow_unwrap_schema", (void (**)(void))&__pyx_f_7pyarrow_3lib_pyarrow_unwrap_schema, "std::shared_ptr< arrow::Schema>  (PyObject *)") < 0) __PYX_ERR(7, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_1); __pyx_t_1 = 0;

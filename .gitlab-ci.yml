@@ -1,0 +1,257 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - check
+  - test
+  - build
+  - examples
+
+# before_script:
+#   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+
+.env: &env
+  ARROW_VERSION: 0.11.1
+  AWS_FPGA_VERSION: 1.4.4
+  CAPI_SNAP_VERSION: 1.5.1
+  CAPI_PSLSE_VERSION: "4.1"
+
+  GHDL_IMAGE: ghdl/ghdl
+  GHDL_TAG: ubuntu18-llvm-5.0
+
+  RUST_VERSION: 1.30.1
+  RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
+
+.cmake-env: &cmake-env
+  <<: *env
+  APT_PACKAGES: cmake g++
+  CMAKE_BUILD_TYPE: Debug
+  CTEST_OUTPUT_ON_FAILURE: 1
+  FLETCHER_CPP: 0
+  FLETCHER_ECHO: 0
+  FLETCHER_AWS: 0
+  FLETCHER_SNAP: 0
+  FLETCHER_GEN: 0
+  FLETCHER_PYTHON: 0
+  FLETCHER_TESTS: 1
+
+.cmake-build-env: &cmake-build-env
+  <<: *cmake-env
+  FLETCHER_TESTS: 0
+  CMAKE_BUILD_TYPE: Release
+
+variables:
+  <<: *env
+
+.apt-install: &apt-install |
+  if [ "$APT_PACKAGES" ]; then
+    apt-get update && apt-get install -y $APT_PACKAGES
+  fi
+
+.pip-install: &pip-install |
+  if [ "$PIP_PACKAGES" ]; then
+    pip3 || curl "https://bootstrap.pypa.io/get-pip.py" | python3
+    pip3 install -U $PIP_PACKAGES
+  fi
+
+check-vhdl-syntax:
+  stage: check
+  image: rust:${RUST_VERSION}-slim-stretch
+  before_script:
+    - cargo install vhdl_parser --version $RUST_VHDL_PARSER_CRATE_VERSION
+  script:
+    - find hardware -name "*.vhd" |
+      xargs vhdl_parser --show
+
+.ghdl-check-job: &ghdl-check-job
+  stage: check
+  image: $GHDL_IMAGE:$GHDL_TAG
+  script:
+    - find hardware/vhdl -name "*.vhd" |
+      xargs ghdl -i -v --std=${STD:-08} |
+      grep entity |
+      sed -e 's/entity //' |
+      sed -e 's/ \*\*//' |
+      xargs -L 1 ghdl -m --std=${STD:-08} --ieee=synopsys
+
+check-vhdl-93c:
+  <<: *ghdl-check-job
+  variables:
+    <<: *env
+    STD: 93c
+
+check-vhdl-08:
+  <<: *ghdl-check-job
+
+test-vhdl-08:
+  <<: *ghdl-check-job
+  stage: test
+  allow_failure: true
+  script:
+    - find hardware -name "*.vhd" |
+      xargs ghdl -i -v --std=${STD:-08} |
+      grep entity |
+      grep _tb |
+      sed -e 's/entity //' |
+      sed -e 's/ \*\*//' |
+      xargs -i -t bash -c '
+      ghdl -m --std=${STD:-08} --ieee=synopsys {};
+      ghdl -r --std=${STD:-08} --ieee=synopsys {} --stop-time=100ns'
+
+.cmake-job: &cmake-job
+  image: mbrobbel/libarrow:$ARROW_VERSION
+  variables:
+    <<: *cmake-env
+  before_script:
+    - |
+      if [ "$FLETCHER_TESTS" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES libgtest-dev"
+      fi
+      if [ "$FLETCHER_AWS" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES git"
+      fi
+      if [ "$FLETCHER_SNAP" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES git curl"
+      fi
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        export APT_PACKAGES="$APT_PACKAGES curl"
+        export PIP_PACKAGES="$PIP_PACKAGES cython numpy pyarrow==$ARROW_VERSION"
+      fi
+    - *apt-install
+    - *pip-install
+    - |
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
+      fi
+      if [ "$FLETCHER_AWS" -ne 0 ]; then
+        git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
+        pushd aws-fpga
+        source sdk_setup.sh
+        popd
+      fi
+      if [ "$FLETCHER_SNAP" -ne 0 ]; then
+        git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
+        pushd pslse
+        export PSLSE_ROOT=`pwd`
+        popd
+        git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
+        pushd snap
+        export SNAP_ROOT=`pwd`
+        PSLVER=8 BUILD_SIMCODE=1 make software
+        popd
+      fi
+    - mkdir -p build
+  script:
+    - pushd build
+    - cmake
+      -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+      -DFLETCHER_CPP=$FLETCHER_CPP
+      -DFLETCHER_ECHO=$FLETCHER_ECHO
+      -DFLETCHER_AWS=$FLETCHER_AWS
+      -DFLETCHER_SNAP=$FLETCHER_SNAP
+      -DFLETCHER_GEN=$FLETCHER_GEN
+      -DFLETCHER_PYTHON=$FLETCHER_PYTHON
+      -DPYARROW_DIR=$PYARROW_DIR
+      -DFLETCHER_TESTS=$FLETCHER_TESTS
+      ../$SOURCE_PATH
+    - make -j
+    - |
+      if [ "$FLETCHER_TESTS" -ne 0 ]; then
+        make test
+      fi
+    - popd
+    - |
+      if [ "$FLETCHER_PYTHON" -ne 0 ]; then
+        pushd build
+        make install
+        popd
+        pushd runtime/python
+        python3 setup.py install
+        ldconfig
+        python3 testing/test.py
+        popd
+      fi
+
+.cmake-test-job: &cmake-test-job
+  <<: *cmake-job
+  stage: test
+
+.cmake-build-job: &cmake-build-job
+  <<: *cmake-job
+  stage: build
+  variables:
+    <<: *cmake-build-env
+
+test-cpp-runtime:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    SOURCE_PATH: runtime/cpp
+
+test-cpp-common:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    SOURCE_PATH: common/cpp
+
+test-cpp-all:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    FLETCHER_CPP: 1
+    FLETCHER_GEN: 1
+    FLETCHER_ECHO: 1
+
+test-python-runtime:
+  <<: *cmake-test-job
+  variables:
+    <<: *cmake-env
+    FLETCHER_ECHO: 1
+    FLETCHER_TESTS: 0
+    FLETCHER_CPP: 1
+    FLETCHER_PYTHON: 1
+
+build-cpp-echo-platform:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    SOURCE_PATH: platforms/echo/runtime
+
+build-cpp-aws-platform:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_AWS: 1
+    SOURCE_PATH: platforms/aws-f1/runtime
+
+build-cpp-snap-platform:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_SNAP: 1
+    SOURCE_PATH: platforms/snap/runtime
+
+build-cpp-fletchgen:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    SOURCE_PATH: codegen/fletchgen
+
+build-cpp-all:
+  <<: *cmake-build-job
+  variables:
+    <<: *cmake-build-env
+    FLETCHER_CPP: 1
+    FLETCHER_GEN: 1
+    FLETCHER_ECHO: 1
+
+examples-fletchgen-stringread:
+  image: docker:latest
+  stage: examples
+  script:
+    - docker build -t fletchgen .
+    - docker run -v `pwd`/hardware/test/fletchgen/stringread:/src -v `pwd`/hardware:/hardware -e "FLETCHER_HARDWARE_DIR=/hardware" fletchgen -i src/test.fbs -o src/test_wrapper.vhd -n test -w test_wrapper -s src/test.fbs -d src/test.rb --sim src/sim_top.vhd -x src/test.srec
+    - sed -i -e 's/"src\/test.srec"/"src\/test\/fletchgen\/stringread\/test.srec"/' hardware/test/fletchgen/stringread/sim_top.vhd
+    - docker run -v `pwd`/hardware:/src $GHDL_IMAGE:$GHDL_TAG bash -c "shopt -s globstar && ghdl -i /src/**/*.vhd && ghdl -m --ieee=synopsys sim_top && ghdl -r -v --ieee=synopsys sim_top --stop-time=1ms"

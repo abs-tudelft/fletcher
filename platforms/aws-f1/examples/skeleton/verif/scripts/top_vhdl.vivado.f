@@ -76,10 +76,12 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_read_converter.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/axi/axi_write_converter.vhd
 
 # Fletcher to AWS glue
-$FLETCHER_EXAMPLES_DIR/sum/hardware/fletcher_wrapper.vhd
-$FLETCHER_EXAMPLES_DIR/sum/hardware/axi_top.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite_wrapper.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/axi_top.vhd
 
 # User provided hardware accelerated function
-$FLETCHER_EXAMPLES_DIR/sum/hardware/sum.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite_pkg.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/stringwrite.vhd
+$FLETCHER_EXAMPLES_DIR/stringwrite/hardware/UTF8StringGen.vhd
 
 

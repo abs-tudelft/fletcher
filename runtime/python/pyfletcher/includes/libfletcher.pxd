@@ -44,6 +44,12 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status OK()
         Status ERROR()
 
+    cdef cppclass CDeviceArray" fletcher::DeviceArray":
+        vector[CDeviceBuffer] buffers
+
+    cdef cppclass CDeviceBuffer" fletcher::DeviceBuffer":
+        da_t device_address
+
     cdef cppclass CPlatform" fletcher::Platform":
         #Renamed create function because overloading of static functions causes errors
         @staticmethod
@@ -73,6 +79,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         size_t getQueueSize()
         uint64_t num_buffers()
         Status enable()
+        vector[shared_ptr[CDeviceArray]] device_arrays
 
     cdef cppclass CUserCore" fletcher::UserCore":
         # Control and status values

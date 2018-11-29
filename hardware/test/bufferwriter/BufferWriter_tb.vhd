@@ -41,7 +41,7 @@ entity BufferWriter_tb is
 
     INDEX_WIDTH                 : natural  := 32;
     IS_INDEX_BUFFER             : boolean  := true;
-    
+
     ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, INDEX_WIDTH, 32);
     ELEMENT_COUNT_MAX           : natural  := 1;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
@@ -85,7 +85,7 @@ architecture tb of BufferWriter_tb is
   signal cmdIn_baseAddr         : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal cmdIn_implicit         : std_logic;
   signal cmdIn_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  
+
   signal cmdOut_valid           : std_logic;
   signal cmdOut_ready           : std_logic := '1';
   signal cmdOut_firstIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -112,7 +112,7 @@ architecture tb of BufferWriter_tb is
   signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wdat_last          : std_logic;
-  
+
   signal cycle                  : unsigned(63 downto 0) := (others => '0');
 
   function gen_elem_val(rand: real) return unsigned is
@@ -133,7 +133,7 @@ architecture tb of BufferWriter_tb is
   begin
     dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
   end print_elem_check;
-  
+
   procedure generate_command(
     first_index     : out unsigned(INDEX_WIDTH-1 downto 0);
     last_index      : out unsigned(INDEX_WIDTH-1 downto 0);
@@ -144,8 +144,8 @@ architecture tb of BufferWriter_tb is
     -- For index buffers, first_index should start at zero
     first_index             := (others => '0');
     last_index              := (others => '0');
-    
-    -- Otherwise  
+
+    -- Otherwise
     if not IS_INDEX_BUFFER then
       first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
       if KNOWN_LAST_INDEX then
@@ -224,8 +224,8 @@ begin
       -- Determine the first index and last index
       uniform(seed1, seed2, rand);
       uniform(seed1_last, seed2_last, rand_last);
-      generate_command(first_index, last_index, rand, rand_last);      
-      
+      generate_command(first_index, last_index, rand, rand_last);
+
       -- Set first and last index
       cmdIn_firstIdx            <= slv(first_index);
       cmdIn_lastIdx             <= slv(last_index);
@@ -272,7 +272,7 @@ begin
     variable last_seed1         : positive := SEED;
     variable last_seed2         : positive := 1;
     variable last_rand          : real;
-    
+
     variable cmd_seed1          : positive := SEED;
     variable cmd_seed2          : positive := 1;
     variable cmd_rand           : real;
@@ -280,7 +280,7 @@ begin
     variable cmd_seed1_last     : positive := SEED;
     variable cmd_seed2_last     : positive := 1;
     variable cmd_rand_last      : real;
-    
+
     variable command            : integer  := 0;
 
     variable true_count         : integer  := 0;
@@ -303,7 +303,7 @@ begin
       uniform(cmd_seed1_last, cmd_seed2_last, cmd_rand_last);
       generate_command(first_index, last_index, cmd_rand, cmd_rand_last);
       command                   := command + 1;
-            
+
       current_index             := first_index;
 
       -- Index buffers automatically get a zero padded
@@ -385,7 +385,7 @@ begin
 
         -- Validate input stream
         in_valid                <= '1';
-        
+
         -- Wait until handshake
         wait until rising_edge(acc_clk) and (in_ready = '1');
 
@@ -397,13 +397,13 @@ begin
           exit;
         end if;
       end loop;
-      
+
       -- Exit when this was the last command
       if command = NUM_COMMANDS then
         input_done              <= true;
         exit;
       end if;
-      
+
     end loop;
 
     wait;
@@ -549,35 +549,35 @@ begin
     end loop;
     wait;
   end process;
-    
+
   avg_bandwidth_proc: process is
     variable transfers : unsigned(63 downto 0) := (others => '0');
   begin
     -- Wait for reset
     wait until rising_edge(acc_clk) and acc_reset = '0';
-    
+
     -- Start counting
     loop
       wait until rising_edge(acc_clk) or sim_done;
-      
+
       if bus_wdat_valid = '1' and bus_wdat_ready = '1' then
         transfers               := transfers + 1;
       end if;
-      
+
       -- Exit when all done
       if sim_done then
         exit;
       end if;
-      
+
     end loop;
-    
+
     dumpStdOut(TEST_NAME & " :" & "Transfers: " & ii(transfers));
     dumpStdOut(TEST_NAME & " :" & "Cycles: " & ii(cycle));
     dumpStdOut(TEST_NAME & " :" & "Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
-            
+
     wait;
   end process;
-  
+
   -- BufferWriter instantiation
   uut : BufferWriter
     generic map (
@@ -610,11 +610,12 @@ begin
       cmdIn_baseAddr            => cmdIn_baseAddr,
       cmdIn_implicit            => cmdIn_implicit,
       cmdIn_tag                 => cmdIn_tag,
+      cmdIn_ctrl                => "0",
 
       unlock_valid              => unlock_valid,
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag,
-      
+
       cmdOut_valid              => cmdOut_valid,
       cmdOut_ready              => cmdOut_ready,
       cmdOut_firstIdx           => cmdOut_firstIdx,
