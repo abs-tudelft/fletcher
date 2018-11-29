@@ -558,21 +558,69 @@ begin
   end process;
 
   -- May we be forgiven for our sins:
-  r00 : bird    generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 0).valid,in_mask=>regex_input( 0).mask,in_data=>regex_input( 0).data,in_last=>regex_input( 0).last,out_valid=>regex_output_r.valid( 0),out_match=>regex_output_r.match( 0 downto  0),out_error=>regex_output_r.error( 0));
-  r01 : bunny   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 1).valid,in_mask=>regex_input( 1).mask,in_data=>regex_input( 1).data,in_last=>regex_input( 1).last,out_valid=>regex_output_r.valid( 1),out_match=>regex_output_r.match( 1 downto  1),out_error=>regex_output_r.error( 1));
-  r02 : cat     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 2).valid,in_mask=>regex_input( 2).mask,in_data=>regex_input( 2).data,in_last=>regex_input( 2).last,out_valid=>regex_output_r.valid( 2),out_match=>regex_output_r.match( 2 downto  2),out_error=>regex_output_r.error( 2));
-  r03 : dog     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 3).valid,in_mask=>regex_input( 3).mask,in_data=>regex_input( 3).data,in_last=>regex_input( 3).last,out_valid=>regex_output_r.valid( 3),out_match=>regex_output_r.match( 3 downto  3),out_error=>regex_output_r.error( 3));
-  r04 : ferret  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 4).valid,in_mask=>regex_input( 4).mask,in_data=>regex_input( 4).data,in_last=>regex_input( 4).last,out_valid=>regex_output_r.valid( 4),out_match=>regex_output_r.match( 4 downto  4),out_error=>regex_output_r.error( 4));
-  r05 : fish    generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 5).valid,in_mask=>regex_input( 5).mask,in_data=>regex_input( 5).data,in_last=>regex_input( 5).last,out_valid=>regex_output_r.valid( 5),out_match=>regex_output_r.match( 5 downto  5),out_error=>regex_output_r.error( 5));
-  r06 : gerbil  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 6).valid,in_mask=>regex_input( 6).mask,in_data=>regex_input( 6).data,in_last=>regex_input( 6).last,out_valid=>regex_output_r.valid( 6),out_match=>regex_output_r.match( 6 downto  6),out_error=>regex_output_r.error( 6));
-  r07 : hamster generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 7).valid,in_mask=>regex_input( 7).mask,in_data=>regex_input( 7).data,in_last=>regex_input( 7).last,out_valid=>regex_output_r.valid( 7),out_match=>regex_output_r.match( 7 downto  7),out_error=>regex_output_r.error( 7));
-  r08 : horse   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 8).valid,in_mask=>regex_input( 8).mask,in_data=>regex_input( 8).data,in_last=>regex_input( 8).last,out_valid=>regex_output_r.valid( 8),out_match=>regex_output_r.match( 8 downto  8),out_error=>regex_output_r.error( 8));
-  r09 : kitten  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 9).valid,in_mask=>regex_input( 9).mask,in_data=>regex_input( 9).data,in_last=>regex_input( 9).last,out_valid=>regex_output_r.valid( 9),out_match=>regex_output_r.match( 9 downto  9),out_error=>regex_output_r.error( 9));
-  r10 : lizard  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(10).valid,in_mask=>regex_input(10).mask,in_data=>regex_input(10).data,in_last=>regex_input(10).last,out_valid=>regex_output_r.valid(10),out_match=>regex_output_r.match(10 downto 10),out_error=>regex_output_r.error(10));
-  r11 : mouse   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(11).valid,in_mask=>regex_input(11).mask,in_data=>regex_input(11).data,in_last=>regex_input(11).last,out_valid=>regex_output_r.valid(11),out_match=>regex_output_r.match(11 downto 11),out_error=>regex_output_r.error(11));
-  r12 : puppy   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(12).valid,in_mask=>regex_input(12).mask,in_data=>regex_input(12).data,in_last=>regex_input(12).last,out_valid=>regex_output_r.valid(12),out_match=>regex_output_r.match(12 downto 12),out_error=>regex_output_r.error(12));
-  r13 : rabbit  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(13).valid,in_mask=>regex_input(13).mask,in_data=>regex_input(13).data,in_last=>regex_input(13).last,out_valid=>regex_output_r.valid(13),out_match=>regex_output_r.match(13 downto 13),out_error=>regex_output_r.error(13));
-  r14 : rat     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(14).valid,in_mask=>regex_input(14).mask,in_data=>regex_input(14).data,in_last=>regex_input(14).last,out_valid=>regex_output_r.valid(14),out_match=>regex_output_r.match(14 downto 14),out_error=>regex_output_r.error(14));
-  r15 : turtle  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(15).valid,in_mask=>regex_input(15).mask,in_data=>regex_input(15).data,in_last=>regex_input(15).last,out_valid=>regex_output_r.valid(15),out_match=>regex_output_r.match(15 downto 15),out_error=>regex_output_r.error(15));
+  r00_gen : if NUM_REGEX > 0 generate
+    r00 : bird    generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 0).valid,in_mask=>regex_input( 0).mask,in_data=>regex_input( 0).data,in_last=>regex_input( 0).last,out_valid=>regex_output_r.valid( 0),out_match=>regex_output_r.match( 0 downto  0),out_error=>regex_output_r.error( 0));
+  end generate;
+
+  r01_gen : if NUM_REGEX > 1 generate
+    r01 : bunny   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 1).valid,in_mask=>regex_input( 1).mask,in_data=>regex_input( 1).data,in_last=>regex_input( 1).last,out_valid=>regex_output_r.valid( 1),out_match=>regex_output_r.match( 1 downto  1),out_error=>regex_output_r.error( 1));
+  end generate;
+
+  r02_gen : if NUM_REGEX > 2 generate
+    r02 : cat     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 2).valid,in_mask=>regex_input( 2).mask,in_data=>regex_input( 2).data,in_last=>regex_input( 2).last,out_valid=>regex_output_r.valid( 2),out_match=>regex_output_r.match( 2 downto  2),out_error=>regex_output_r.error( 2));
+  end generate;
+
+  r03_gen : if NUM_REGEX > 3 generate
+    r03 : dog     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 3).valid,in_mask=>regex_input( 3).mask,in_data=>regex_input( 3).data,in_last=>regex_input( 3).last,out_valid=>regex_output_r.valid( 3),out_match=>regex_output_r.match( 3 downto  3),out_error=>regex_output_r.error( 3));
+  end generate;
+
+  r04_gen : if NUM_REGEX > 4 generate
+    r04 : ferret  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 4).valid,in_mask=>regex_input( 4).mask,in_data=>regex_input( 4).data,in_last=>regex_input( 4).last,out_valid=>regex_output_r.valid( 4),out_match=>regex_output_r.match( 4 downto  4),out_error=>regex_output_r.error( 4));
+  end generate;
+
+  r05_gen : if NUM_REGEX > 5 generate
+    r05 : fish    generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 5).valid,in_mask=>regex_input( 5).mask,in_data=>regex_input( 5).data,in_last=>regex_input( 5).last,out_valid=>regex_output_r.valid( 5),out_match=>regex_output_r.match( 5 downto  5),out_error=>regex_output_r.error( 5));
+  end generate;
+
+  r06_gen : if NUM_REGEX > 6 generate
+    r06 : gerbil  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 6).valid,in_mask=>regex_input( 6).mask,in_data=>regex_input( 6).data,in_last=>regex_input( 6).last,out_valid=>regex_output_r.valid( 6),out_match=>regex_output_r.match( 6 downto  6),out_error=>regex_output_r.error( 6));
+  end generate;
+
+  r07_gen : if NUM_REGEX > 7 generate
+    r07 : hamster generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 7).valid,in_mask=>regex_input( 7).mask,in_data=>regex_input( 7).data,in_last=>regex_input( 7).last,out_valid=>regex_output_r.valid( 7),out_match=>regex_output_r.match( 7 downto  7),out_error=>regex_output_r.error( 7));
+  end generate;
+
+  r08_gen : if NUM_REGEX > 8 generate
+    r08 : horse   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 8).valid,in_mask=>regex_input( 8).mask,in_data=>regex_input( 8).data,in_last=>regex_input( 8).last,out_valid=>regex_output_r.valid( 8),out_match=>regex_output_r.match( 8 downto  8),out_error=>regex_output_r.error( 8));
+  end generate;
+
+  r09_gen : if NUM_REGEX > 9 generate
+    r09 : kitten  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input( 9).valid,in_mask=>regex_input( 9).mask,in_data=>regex_input( 9).data,in_last=>regex_input( 9).last,out_valid=>regex_output_r.valid( 9),out_match=>regex_output_r.match( 9 downto  9),out_error=>regex_output_r.error( 9));
+  end generate;
+
+  r10_gen : if NUM_REGEX > 10 generate
+    r10 : lizard  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(10).valid,in_mask=>regex_input(10).mask,in_data=>regex_input(10).data,in_last=>regex_input(10).last,out_valid=>regex_output_r.valid(10),out_match=>regex_output_r.match(10 downto 10),out_error=>regex_output_r.error(10));
+  end generate;
+
+  r11_gen : if NUM_REGEX > 11 generate
+    r11 : mouse   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(11).valid,in_mask=>regex_input(11).mask,in_data=>regex_input(11).data,in_last=>regex_input(11).last,out_valid=>regex_output_r.valid(11),out_match=>regex_output_r.match(11 downto 11),out_error=>regex_output_r.error(11));
+  end generate;
+
+  r12_gen : if NUM_REGEX > 12 generate
+    r12 : puppy   generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(12).valid,in_mask=>regex_input(12).mask,in_data=>regex_input(12).data,in_last=>regex_input(12).last,out_valid=>regex_output_r.valid(12),out_match=>regex_output_r.match(12 downto 12),out_error=>regex_output_r.error(12));
+  end generate;
+
+  r13_gen : if NUM_REGEX > 13 generate
+    r13 : rabbit  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(13).valid,in_mask=>regex_input(13).mask,in_data=>regex_input(13).data,in_last=>regex_input(13).last,out_valid=>regex_output_r.valid(13),out_match=>regex_output_r.match(13 downto 13),out_error=>regex_output_r.error(13));
+  end generate;
+
+  r14_gen : if NUM_REGEX > 14 generate
+    r14 : rat     generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(14).valid,in_mask=>regex_input(14).mask,in_data=>regex_input(14).data,in_last=>regex_input(14).last,out_valid=>regex_output_r.valid(14),out_match=>regex_output_r.match(14 downto 14),out_error=>regex_output_r.error(14));
+  end generate;
+
+  r15_gen : if NUM_REGEX > 15 generate
+    r15 : turtle  generic map (BPC=>VALUES_PER_CYCLE) port map (clk=>clk,reset=>r.reset_units,in_valid=>regex_input(15).valid,in_mask=>regex_input(15).mask,in_data=>regex_input(15).data,in_last=>regex_input(15).last,out_valid=>regex_output_r.valid(15),out_match=>regex_output_r.match(15 downto 15),out_error=>regex_output_r.error(15));
+  end generate;
+
 
 end architecture;

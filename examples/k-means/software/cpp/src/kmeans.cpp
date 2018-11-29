@@ -46,8 +46,8 @@
 
 using fletcher::Timer;
 
-typedef int64_t kmeans_t;
-typedef arrow::Int64Type arrow_t;
+typedef int32_t kmeans_t;
+typedef arrow::Int32Type arrow_t;
 
 
 /**
@@ -607,12 +607,12 @@ uint32_t calc_sum(const std::vector<uint32_t> &values) {
  * Finally compares the results.
  */
 int main(int argc, char ** argv) {
-  int num_rows = 15790320;
-  int centroids = 16;
-  int dimensionality = 8;
-  int iteration_limit = 25;
-  int fpga_dim = 8;
-  int fpga_centroids = 16;
+  int num_rows = 32;
+  int centroids = 4;
+  int dimensionality = 16;
+  int iteration_limit = 1;
+  int fpga_dim = 16;
+  int fpga_centroids = 4;
   // Number of experiments
   int ne = 1;
 
