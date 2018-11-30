@@ -140,7 +140,7 @@ std::shared_ptr<arrow::Schema> genFloatListSchema() {
       arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::metaMode(fletcher::Mode::READ));
 
   return schema;
 }
@@ -150,7 +150,7 @@ std::shared_ptr<arrow::Schema> genIntListSchema() {
       arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletchgen::metaMode(fletchgen::Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::metaMode(fletcher::Mode::READ));
 
   return schema;
 }

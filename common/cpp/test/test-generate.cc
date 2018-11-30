@@ -50,22 +50,22 @@ int main() {
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
 
   /* List of Float64 */
-  schema = fletchgen::test::genFloatListSchema();
-  fletchgen::writeSchemaToFile(schema, "schemas/listfloat64.fbs");
-  recordbatch = fletchgen::test::getFloat64ListRB();
-  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/floatlist.rb");
+  schema = fletcher::test::genFloatListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listfloat64.fbs");
+  recordbatch = fletcher::test::getFloat64ListRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
 
   /* List of Int64 (length 2) */
-  schema = fletchgen::test::genIntListSchema();
-  fletchgen::writeSchemaToFile(schema, "schemas/listint64short.fbs");
-  recordbatch = fletchgen::test::getInt64ListRB();
-  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlist.rb");
+  schema = fletcher::test::genIntListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listint64short.fbs");
+  recordbatch = fletcher::test::getInt64ListRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
 
   /* List of Int64 (length 8) */
-  schema = fletchgen::test::genIntListSchema();
-  fletchgen::writeSchemaToFile(schema, "schemas/listint64long.fbs");
-  recordbatch = fletchgen::test::getInt64ListWideRB();
-  fletchgen::srec::writeRecordBatchToFile(*recordbatch, "recordbatches/intlistwide.rb");
+  schema = fletcher::test::genIntListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listint64long.fbs");
+  recordbatch = fletcher::test::getInt64ListWideRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
 
   /* Filter example */
   schema = fletcher::test::genFilterReadSchema();
