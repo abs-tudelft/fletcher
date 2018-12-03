@@ -20,6 +20,8 @@ library work;
 use work.StreamSim.all;
 use work.Utils.all;
 
+--pragma simulation timeout 1 ms
+
 entity StreamArb_FuncRRSticky_tc is
 end StreamArb_FuncRRSticky_tc;
 

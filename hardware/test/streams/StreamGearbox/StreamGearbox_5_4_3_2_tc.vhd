@@ -20,6 +20,8 @@ use ieee.math_real.all;
 library work;
 use work.StreamSim.all;
 
+--pragma simulation timeout 1 ms
+
 entity StreamGearbox_5_4_3_2_tc is
 end StreamGearbox_5_4_3_2_tc;
 

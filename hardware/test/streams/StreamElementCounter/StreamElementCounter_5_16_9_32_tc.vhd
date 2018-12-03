@@ -21,6 +21,8 @@ library work;
 use work.StreamSim.all;
 use work.Utils.all;
 
+--pragma simulation timeout 1 ms
+
 entity StreamElementCounter_5_16_9_32_tc is
 end StreamElementCounter_5_16_9_32_tc;
 

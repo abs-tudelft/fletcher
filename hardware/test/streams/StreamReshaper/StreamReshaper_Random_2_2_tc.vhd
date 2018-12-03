@@ -20,6 +20,8 @@ use ieee.math_real.all;
 library work;
 use work.StreamSim.all;
 
+--pragma simulation timeout 1 ms
+
 entity StreamReshaper_Random_2_2_tc is
 end StreamReshaper_Random_2_2_tc;
 

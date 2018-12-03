@@ -20,6 +20,8 @@ use ieee.math_real.all;
 library work;
 use work.StreamSim.all;
 
+--pragma simulation timeout 5 ms
+
 entity StreamPseudoRandomGenerator_16_tc is
 end StreamPseudoRandomGenerator_16_tc;
 

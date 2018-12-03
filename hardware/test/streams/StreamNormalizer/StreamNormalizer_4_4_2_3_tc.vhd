@@ -22,6 +22,8 @@ use work.Streams.all;
 use work.StreamSim.all;
 use work.Utils.all;
 
+--pragma simulation timeout 5 ms
+
 entity StreamNormalizer_4_4_2_3_tc is
 end StreamNormalizer_4_4_2_3_tc;
 

@@ -19,6 +19,8 @@ use ieee.numeric_std.all;
 library work;
 use work.StreamSim.all;
 
+--pragma simulation timeout 1 ms
+
 entity StreamFIFO_Reduce_tc is
 end StreamFIFO_Reduce_tc;
 
