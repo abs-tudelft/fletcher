@@ -100,6 +100,14 @@ install(FILES ${GLOBAL_C_HEADER}
 # TESTS
 ########################################################################################################################
 if (FLETCHER_TESTS)
+    enable_testing()
+    if (FLETCHER_ECHO)
+      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
+    else ()
+      add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
+      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
+    endif ()
+
     # Include GoogleTest CMake functionality
     include(GoogleTest)
     find_package(GTest REQUIRED)
@@ -111,5 +119,5 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
     target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
 
-    gtest_discover_tests(${FLETCHER}-test WORKING_DIRECTORY ../../platforms/echo/runtime)
+    gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHER_TESTS)

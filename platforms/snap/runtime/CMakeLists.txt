@@ -14,18 +14,12 @@ set(SOURCES
 set(HEADERS
         src/fletcher_snap.h)
 
-set(GLOBAL_C_HEADER
-        ../../../common/c/src/fletcher/fletcher.h)
-
-add_library(${PROJECT_NAME} SHARED ${GLOBAL_C_HEADER} ${HEADERS} ${SOURCES})
+add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+include_directories(../../../common/c/src)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
-
-install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
 
 # Attempt to find SNAP lib and link it
 if (NOT EXISTS "$ENV{SNAP_ROOT}")

@@ -14,9 +14,13 @@
 
 #include <stdio.h>
 #include <memory.h>
+#include <malloc.h>
 
-#include "../../../../common/cpp/src/fletcher.h"
+#include <libsnap.h>
+#include <snap_tools.h>
+#include <snap_s_regs.h>
 
+#include "fletcher/fletcher.h"
 #include "fletcher_snap.h"
 
 da_t buffer_ptr = 0x0;
@@ -34,18 +38,20 @@ fstatus_t platformGetName(char *name, size_t size) {
 
 fstatus_t platformInit(void *arg) {
   debug_print("[FLETCHER_SNAP] Initializing platform.       Arguments @ [host] %016lX.\n", (unsigned long) arg);
-
   // Check psl_server.dat is present
 
   if (snap_state.sim) {
+    debug_print("[FLETCHER_SNAP] Simulation mode.\n");
     if (access("pslse_server.dat", F_OK) == -1) {
       debug_print("[FLETCHER_SNAP] No pslse_server.dat file present in working directory. Entering error state.\n");
       snap_state.error = 1;
       return FLETCHER_STATUS_ERROR;
     }
+    debug_print("FLETCHER_SNAP] pslse_server.dat present.\n");
   }
 
-  debug_print(snap_state.device, "/dev/cxl/afu%d.0s", snap_state.card_no);
+  sprintf(snap_state.device, "/dev/cxl/afu%d.0s", snap_state.card_no);
+  
   snap_state.card_handle = snap_card_alloc_dev(snap_state.device, SNAP_VENDOR_ID_IBM, SNAP_DEVICE_ID_SNAP);
 
   if (snap_state.card_handle == NULL) {
@@ -58,36 +64,43 @@ fstatus_t platformInit(void *arg) {
 
   snap_card_ioctl(snap_state.card_handle, GET_CARD_TYPE, (unsigned long) &ioctl_data);
 
+  debug_print("[FLETCHER_SNAP] Card: ");
   switch (ioctl_data) {
-    case 0:debug_print("ADKU3");
+    case 0:debug_print("ADKU3\n");
       break;
-    case 1:debug_print("N250S");
+    case 1:debug_print("N250S\n");
       break;
-    case 16:debug_print("N250SP");
+    case 16:debug_print("N250SP\n");
       break;
-    default:debug_print("Unknown");
+    default:debug_print("Other / Unkown\n");
       break;
   }
 
   snap_card_ioctl(snap_state.card_handle, GET_SDRAM_SIZE, (unsigned long) &ioctl_data);
-  debug_print("Available card RAM: %d\n", (int) ioctl_data);
+  debug_print("[FLETCHER_SNAP] Available card RAM: %d\n", (int) ioctl_data);
 
   snap_action_flag_t attach_flags = (snap_action_flag_t) 0;
 
   snap_state.action_handle = snap_attach_action(snap_state.card_handle, snap_state.action_type, attach_flags, 100);
+  
+  debug_print("[FLETCHER_SNAP] Action attached.\n");
 
   return FLETCHER_STATUS_OK;
 }
 
 fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value) {
-  snap_mmio_write32(snap_state.card_handle, 4 * (2 * (FLETCHER_SNAP_ACTION_REG_OFFSET + offset)), value);
+  snap_mmio_write32(snap_state.card_handle, FLETCHER_SNAP_ACTION_REG_OFFSET + 4*offset, value);
   debug_print("[FLETCHER_SNAP] Writing MMIO register.       %04lu <= 0x%08X\n", offset, value);
   return FLETCHER_STATUS_OK;
 }
 
 fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value) {
   *value = 0xDEADBEEF;
-  snap_mmio_read32(snap_state.card_handle, 4 * (2 * (FLETCHER_SNAP_ACTION_REG_OFFSET + offset)), value);
+  // Sleep a few seconds in simulation mode to prevent status register polling spam
+  if (snap_state.sim && offset == FLETCHER_REG_STATUS) {
+    sleep(2);
+  }
+  snap_mmio_read32(snap_state.card_handle, FLETCHER_SNAP_ACTION_REG_OFFSET + 4*offset, value);
   debug_print("[FLETCHER_SNAP] Reading MMIO register.       %04lu => 0x%08X\n", offset, *value);
   return FLETCHER_STATUS_OK;
 }
@@ -118,11 +131,12 @@ fstatus_t platformTerminate(void *arg) {
 }
 
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size) {
-  *device_address = buffer_ptr;
-  debug_print("[FLETCHER_SNAP] Allocating device memory.    [device] 0x%016lX (%10lu bytes). (NOT IMPLEMENTED)\n",
-              (uint64_t) device_address,
-              size);
-  buffer_ptr += size;
+  da_t ptr;
+  posix_memalign((void**)(&ptr), FLETCHER_SNAP_DEVICE_ALIGNMENT, size);
+  debug_print("[FLETCHER_SNAP] Allocating device memory.    [device] 0x%016lX (%10lu bytes).\n",
+               ptr,
+               size);
+  *device_address = ptr;
   return FLETCHER_STATUS_OK;
 }
 

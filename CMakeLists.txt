@@ -1,16 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Tests for any subproject
-option(FLETCHER_TESTS "Build tests." OFF)
+option(FLETCHER_TESTS "Build tests." ON)
 
-########################################################################################################################
-# Runtimes
-########################################################################################################################
-
-# CPP runtime
-option(FLETCHER_CPP "Build Fletcher C++ run-time library" ON)
-if (FLETCHER_CPP)
-    add_subdirectory(runtime/cpp)
+if (FLETCHER_TESTS)
+  enable_testing()
 endif()
 
 ########################################################################################################################
@@ -37,6 +31,16 @@ if (FLETCHER_SNAP)
     message("[FLETCHER] Building with SNAP support...")
     add_subdirectory(platforms/snap/runtime)
 endif ()
+
+########################################################################################################################
+# Runtimes
+########################################################################################################################
+
+# CPP runtime
+option(FLETCHER_CPP "Build Fletcher C++ run-time library" ON)
+if (FLETCHER_CPP)
+    add_subdirectory(runtime/cpp)
+endif()
 
 ########################################################################################################################
 # Tools

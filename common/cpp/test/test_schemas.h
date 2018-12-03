@@ -43,5 +43,17 @@ std::shared_ptr<arrow::Schema> genBigSchema();
 /// @brief An example schema from a genomics pipeline application.
 std::shared_ptr<arrow::Schema> genPairHMMSchema();
 
+/// @brief An example schema with lists of float(64) numbers
+std::shared_ptr<arrow::Schema> genFloatListSchema();
+
+/// @brief An example schema with lists of int(64) numbers
+std::shared_ptr<arrow::Schema> genIntListSchema();
+
+/// #brief An read schema for the filter example
+std::shared_ptr<arrow::Schema> genFilterReadSchema();
+
+/// #brief An write schema for the filter example
+std::shared_ptr<arrow::Schema> genFilterWriteSchema();
+
 }
 }

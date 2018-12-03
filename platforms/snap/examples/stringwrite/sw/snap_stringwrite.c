@@ -33,9 +33,9 @@ addr_lohi;
 int main(int argc, char * argv[]) {
   FILE * fp = fopen("swlog.log", "w");
 
-  uint32_t num_rows = 1;
+  uint32_t num_rows = 16;
   uint32_t strlen_min = 0;
-  uint32_t strlen_mask = 127;
+  uint32_t strlen_mask = 255;
   uint32_t alloc_reserve;
 
   if (argc > 3) {
@@ -128,16 +128,6 @@ int main(int argc, char * argv[]) {
   off.full = (uint64_t) off_buf;
   val.full = (uint64_t) val_buf;
 
-  // Print initial contents:
-  // print offsets buffer
-  /*for (uint32_t i=0;i<num_rows+1;i++) {
-  fprintf(fp, "%5u: %u\n", i, off_buf[i]);
-  }
-
-  // print values buffer
-  for (uint32_t i=0;i<max_num_chars;i++) {
-  fprintf(fp, "%5u: %8X ... %c\n", i, (int)val_buf[i], val_buf[i]);
-  }*/
   fprintf(fp, "-----------------------------------------------------------------\n");
 
   fprintf(fp, "Buffers allocated. Setting registers.\n");
@@ -147,7 +137,8 @@ int main(int argc, char * argv[]) {
   fprintf(fp, "Values buffer @ %016lX\n", val.full);
   fflush(stdout);
 
-  snap_mmio_write32(dn, REG_CONTROL_LO, CONTROL_RESET);
+  snap_mmio_write32(dn, REG_CONTROL, CONTROL_RESET);
+  snap_mmio_write32(dn, REG_CONTROL, 0);
 
   snap_mmio_write32(dn, REG_OFF_ADDR_LO, off.half.lo);
   snap_mmio_write32(dn, REG_OFF_ADDR_HI, off.half.hi);
@@ -166,27 +157,27 @@ int main(int argc, char * argv[]) {
 
   double start = omp_get_wtime();
 
-  snap_mmio_write32(dn, REG_CONTROL_LO, CONTROL_START);
+  snap_mmio_write32(dn, REG_CONTROL, CONTROL_START);
 
-  //uint32_t status = STATUS_BUSY;
+  uint32_t status = STATUS_BUSY;
   uint32_t last_off = 0xDEADBEEF;
   int i = 0;
   do {
-    //snap_mmio_read32(dn, REG_STATUS_LO, &status);
+    snap_mmio_read32(dn, REG_STATUS, &status);
     last_off = off_buf[num_rows];
-    //fprintf(fp, "S: %08X\n", status);
-    //fprintf(fp, "O[%d] = : %08X\n", num_rows, last_off);
-    //fflush(stdout);
-    usleep(10);
+    fprintf(fp, "S: %08X\n", status);
+    fprintf(fp, "O[%d] = : %08X\n", num_rows, last_off);
+    fflush(stdout);
+    sleep(1);
     i++;
   }
   while ((last_off == 0xDEADBEEF));
 
   i = 0;
   do {
-    //fprintf(fp, "V[%d]=%c\n", last_off, val_buf[last_off-1]);
-    //sleep(1);
-    usleep(10);
+    fprintf(fp, "V[%d]=%c\n", last_off, val_buf[last_off-1]);
+    sleep(1);
+    //usleep(10);
     i++;
   }
   while ((val_buf[last_off - 1] == '\0') && (i < 16));
@@ -206,7 +197,13 @@ int main(int argc, char * argv[]) {
   fprintf(fp, "%f GB/s\n", gbps);
   fprintf(fp, "Last char: %2X ... %c\n", (int) val_buf[last_off - 1], val_buf[last_off - 1]);
 
-  if (0) {
+  fprintf(fp, "Detaching action.\n"); fflush(fp);
+  snap_detach_action(act);
+
+  fprintf(fp, "Detaching freeing card.\n"); fflush(fp);
+  snap_card_free(dn);
+
+  if (1) {
     // print offsets buffer
     for (uint32_t i = 0; i < num_rows + 1; i++) {
       fprintf(fp, "%8u: %u\n", i, off_buf[i]);
@@ -234,10 +231,6 @@ int main(int argc, char * argv[]) {
 
   free(off_buf);
   free(val_buf);
-
-  snap_detach_action(act);
-
-  snap_card_free(dn);
 
   fprintf(fp, "rc=%d\n", rc);
 
