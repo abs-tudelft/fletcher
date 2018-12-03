@@ -34,7 +34,7 @@ proc batch_sim_cr {} {
     suppress_warnings
     vcom -quiet -work work -93 ColumnReader_tb.vhd
     suppress_warnings
-    vsim -quiet -suppress 8684,3813 work.columnreader_tb
+    vsim -quiet -suppress 8684,3813 -novopt work.columnreader_tb
     suppress_warnings
     run -all
     set ok [examine sim_complete]
