@@ -23,6 +23,8 @@ use work.Buffers.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
 
+--pragma simulation timeout 1 ms
+
 -- This testbench is used to check the functionality of the BufferReader.
 -- TODO: it does not always return TEST_SUCCESSFUL even though it may be 
 -- successful. But currently, it's used to generally mess around with
@@ -31,7 +33,7 @@ use work.Wrapper.all;
 -- elements it returns. Whether they are the right elements can be tested using
 -- the columnreader test bench, or by setting the element size equal to the 
 -- word size, but that is not a guarantee of proper functioning.
-entity BufferReader_tb is
+entity BufferReader_tc is
   generic (
     ---------------------------------------------------------------------------
     -- TEST BENCH
@@ -93,9 +95,9 @@ entity BufferReader_tb is
     FIFO2POST_SLICE             : boolean := false;
     OUT_SLICE                   : boolean := false
   );
-end BufferReader_tb;
+end BufferReader_tc;
 
-architecture tb of BufferReader_tb is
+architecture tb of BufferReader_tc is
   signal bus_clk                : std_logic                                               := '0';
   signal bus_reset              : std_logic                                               := '0';
   signal acc_clk                : std_logic                                               := '0';
@@ -295,18 +297,18 @@ begin
     TbSimEnded                  <= '1';
 
     if user_timeout = '1' then
-      report "USER CORE TIMEOUT";
+      report "USER CORE TIMEOUT" severity failure;
     end if;
 
     if user_req_resp_error = '1' then
-      report "NO. REQUESTS AND RESPONSES NOT EQUAL";
+      report "NO. REQUESTS AND RESPONSES NOT EQUAL" severity failure;
     end if;
 
     if user_incorrect = '1' then
-      report "RESULT INCORRECT";
+      report "RESULT INCORRECT" severity failure;
     end if;
 
-    report "END OF TEST";
+    report "END OF TEST"  severity note;
 
     wait;
 
