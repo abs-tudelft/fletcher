@@ -392,7 +392,7 @@ begin
       generic map (
         IN_COUNT_WIDTH              => 1,
         IN_COUNT_MAX                => 1,
-        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_STEP_LEN),
+        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_STEP_LEN+1),
         OUT_COUNT_MAX               => BUS_BURST_STEP_LEN
       )
       port map (
@@ -429,7 +429,7 @@ begin
       generic map (
         IN_COUNT_WIDTH              => 1,
         IN_COUNT_MAX                => 1,
-        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN),
+        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN+1),
         OUT_COUNT_MAX               => BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN
       )
       port map (
