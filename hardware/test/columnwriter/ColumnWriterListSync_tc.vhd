@@ -22,10 +22,12 @@ use work.Streams.all;
 use work.Columns.all;
 use work.SimUtils.all;
 
-entity ColumnWriterListSync_tb is
-end ColumnWriterListSync_tb;
+--pragma simulation timeout 1 ms
 
-architecture Behavioral of ColumnWriterListSync_tb is
+entity ColumnWriterListSync_tc is
+end ColumnWriterListSync_tc;
+
+architecture Behavioral of ColumnWriterListSync_tc is
 
   constant LEN_SEED             : positive := 16#BEE15#;
   constant ELEM_SEED            : positive := 16#F00D#;

@@ -27,10 +27,12 @@ use work.ColumnConfigParse.all;
 use work.Interconnect.all;
 use work.BusChecking.all;
 
-entity prim32_tb is
-end prim32_tb;
+--pragma simulation timeout 1 ms
 
-architecture tb of prim32_tb is
+entity prim32_tc is
+end prim32_tc;
+
+architecture tb of prim32_tc is
 
   constant BUS_ADDR_WIDTH       : natural := 64;
   constant BUS_DATA_WIDTH       : natural := 512;

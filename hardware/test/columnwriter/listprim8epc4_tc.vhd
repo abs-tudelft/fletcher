@@ -26,10 +26,12 @@ use work.Columns.all;
 use work.ColumnConfig.all;
 use work.ColumnConfigParse.all;
 
-entity listprim8epc4_tb is
-end listprim8epc4_tb;
+-- pragma simulation timeout 1 ms
 
-architecture tb of listprim8epc4_tb is
+entity listprim8epc4_tc is
+end listprim8epc4_tc;
+
+architecture tb of listprim8epc4_tc is
 
   constant BUS_ADDR_WIDTH     : natural := 32;
   constant BUS_LEN_WIDTH      : natural := 8;
