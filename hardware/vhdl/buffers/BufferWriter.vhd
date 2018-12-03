@@ -217,7 +217,7 @@ architecture Behavioral of BufferWriter is
   signal step_last              : std_logic;
   signal step_dvalid            : std_logic := '1';
   
-  constant STEPS_COUNT_WIDTH    : natural := max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN));
+  constant STEPS_COUNT_WIDTH    : natural := max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN+1));
   
   signal steps_valid            : std_logic;
   signal steps_ready            : std_logic;
@@ -429,7 +429,7 @@ begin
       generic map (
         IN_COUNT_WIDTH              => 1,
         IN_COUNT_MAX                => 1,
-        OUT_COUNT_WIDTH             => log2ceil(BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN+1),
+        OUT_COUNT_WIDTH             => STEPS_COUNT_WIDTH,
         OUT_COUNT_MAX               => BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN
       )
       port map (
@@ -465,7 +465,7 @@ begin
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
-      STEPS_COUNT_WIDTH         => max(1, log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN)),
+      STEPS_COUNT_WIDTH         => STEPS_COUNT_WIDTH,
       STEPS_COUNT_MAX           => BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
