@@ -1,3 +1,7 @@
+# 0.0.7 (2018-11-23)
+* copy\_device\_to\_host() can now copy into Arrow buffers
+* Added function in Context for getting device addresses of buffers
+
 # 0.0.6 (2018-11-16)
 * read\_mmio() now takes a type argument for easy casting of register contents to different types
 * Added read\_mmio_64()
