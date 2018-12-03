@@ -116,7 +116,7 @@ architecture rtl of arrow_regexp is
   constant BB                   : natural := 16;
 
   -- Number of regexes
-  constant NUM_REGEX            : natural := 16;
+  constant NUM_REGEX            : natural := 8;
 
   -----------------------------------------------------------------------------
   -- Memory Mapped Input/Output
@@ -181,7 +181,7 @@ architecture rtl of arrow_regexp is
 
   -- Register offsets to indices for each RegExp unit to work on
   constant REG_CUST_FIRST_IDX   : natural := 10;
-  constant REG_CUST_LAST_IDX    : natural := 26;
+  constant REG_CUST_LAST_IDX    : natural := REG_CUST_FIRST_IDX + CORES;
 
   -- Register offset for each RegExp unit to put its result
   constant REG_RESULT       	: natural := 42;

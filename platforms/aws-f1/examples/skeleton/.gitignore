@@ -7,3 +7,5 @@
 /build/scripts/fsm_encoding.os
 /build/scripts/*.nohup.out
 /verif/sim
+/design/ip/axi_interconnect_top/*
+!/design/ip/axi_interconnect_top/axi_interconnect_top\.xci

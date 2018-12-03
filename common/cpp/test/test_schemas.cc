@@ -89,7 +89,6 @@ std::shared_ptr<arrow::Schema> genStructSchema() {
   auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
 
   return schema;
-
 }
 
 std::shared_ptr<arrow::Schema> genBigSchema() {
@@ -121,7 +120,6 @@ std::shared_ptr<arrow::Schema> genBigSchema() {
 }
 
 std::shared_ptr<arrow::Schema> genPairHMMSchema() {
-
   // Create the struct datatype
   auto strct = arrow::struct_({arrow::field("Basepairs", arrow::uint8(), false),
                                arrow::field("Probabilities", arrow::fixed_size_binary(32), false)
@@ -137,5 +135,44 @@ std::shared_ptr<arrow::Schema> genPairHMMSchema() {
   return schema;
 }
 
+std::shared_ptr<arrow::Schema> genFloatListSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
+  };
+
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::metaMode(fletcher::Mode::READ));
+
+  return schema;
 }
+
+std::shared_ptr<arrow::Schema> genIntListSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
+  };
+
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::metaMode(fletcher::Mode::READ));
+
+  return schema;
 }
+
+std::shared_ptr<arrow::Schema> genFilterReadSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("read_first_name", arrow::utf8(), false),
+      arrow::field("read_last_name", arrow::utf8(), false),
+      arrow::field("read_zipcode", arrow::uint32(), false)
+  };
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  return schema;
+}
+
+std::shared_ptr<arrow::Schema> genFilterWriteSchema() {
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("write_first_name", arrow::utf8(), false),
+  };
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::WRITE));
+  return schema;
+}
+
+
+}  // namespace test
+}  // namespace fletcher

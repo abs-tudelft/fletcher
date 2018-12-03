@@ -49,5 +49,31 @@ int main() {
   recordbatch = fletcher::test::getListUint8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
 
+  /* List of Float64 */
+  schema = fletcher::test::genFloatListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listfloat64.fbs");
+  recordbatch = fletcher::test::getFloat64ListRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
+
+  /* List of Int64 (length 2) */
+  schema = fletcher::test::genIntListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listint64short.fbs");
+  recordbatch = fletcher::test::getInt64ListRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
+
+  /* List of Int64 (length 8) */
+  schema = fletcher::test::genIntListSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/listint64long.fbs");
+  recordbatch = fletcher::test::getInt64ListWideRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
+
+  /* Filter example */
+  schema = fletcher::test::genFilterReadSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_read.fbs");
+  schema = fletcher::test::genFilterWriteSchema();
+  fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
+  recordbatch = fletcher::test::getFilterRB();
+  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+
   return EXIT_SUCCESS;
 }

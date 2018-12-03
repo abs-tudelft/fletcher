@@ -22,6 +22,10 @@ namespace test {
 std::shared_ptr<arrow::RecordBatch> getStringRB();
 std::shared_ptr<arrow::RecordBatch> getUint8RB();
 std::shared_ptr<arrow::RecordBatch> getListUint8RB();
+std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
+std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
+std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB();
+std::shared_ptr<arrow::RecordBatch> getFilterRB();
 
-}
-}
+}  // namespace test
+}  // namespace fletcher

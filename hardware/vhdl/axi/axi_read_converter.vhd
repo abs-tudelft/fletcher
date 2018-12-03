@@ -44,8 +44,13 @@ entity axi_read_converter is
     -- If the master bus already contains an output FIFO, this
     -- should be set to false to prevent redundant buffering
     -- of the master bus response channel
-    ENABLE_FIFO                 : boolean := true
-
+    ENABLE_FIFO                 : boolean := true;
+    
+    -- Slice depth on each channel
+    SLV_REQ_SLICE_DEPTH         : natural := 2;
+    SLV_DAT_SLICE_DEPTH         : natural := 2;
+    MST_REQ_SLICE_DEPTH         : natural := 2;
+    MST_DAT_SLICE_DEPTH         : natural := 2
   );
 
   port (
@@ -82,6 +87,7 @@ entity axi_read_converter is
 end entity axi_read_converter;
 
 architecture rtl of axi_read_converter is
+
   -- The ratio between the master and slave
   constant RATIO                : natural := MASTER_DATA_WIDTH / SLAVE_DATA_WIDTH;
 
@@ -127,54 +133,109 @@ architecture rtl of axi_read_converter is
   signal ser_out_last           : std_logic;
 
   signal reset                  : std_logic;
+
+  -- Internal signals for slicing/buffering:
+
+  -- Fletcher Read Address Channel Indices
+  constant FRACI : nat_array := cumulative((
+    1 => slv_bus_rreq_addr'length,
+    0 => slv_bus_rreq_len'length
+  ));
+
+  -- Fletcher Read Data Channel Indices
+  constant FRDCI : nat_array := cumulative((
+    1 => slv_bus_rdat_data'length,
+    0 => 1
+  ));
+
+  -- AXI Read Address Channel Indices
+  constant ARACI : nat_array := cumulative((
+    1 => m_axi_araddr'length,
+    0 => m_axi_arlen'length
+  ));
+
+  -- AXI Read Data Channel Indices
+  constant ARDCI : nat_array := cumulative((
+    1 => m_axi_rdata'length,
+    0 => 1
+  ));
+
+  signal int_slv_bus_rreq_addr  : std_logic_vector(ADDR_WIDTH-1 downto 0);
+  signal int_slv_bus_rreq_len   : std_logic_vector(SLAVE_LEN_WIDTH-1 downto 0);
+  signal int_slv_bus_rreq_valid : std_logic;
+  signal int_slv_bus_rreq_ready : std_logic;
+  signal int_slv_bus_rdat_data  : std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
+  signal int_slv_bus_rdat_last  : std_logic;
+  signal int_slv_bus_rdat_valid : std_logic;
+  signal int_slv_bus_rdat_ready : std_logic;
+  signal int_m_axi_araddr       : std_logic_vector(ADDR_WIDTH-1 downto 0);
+  signal int_m_axi_arlen        : std_logic_vector(MASTER_LEN_WIDTH-1 downto 0);
+  signal int_m_axi_arvalid      : std_logic;
+  signal int_m_axi_arready      : std_logic;
+  signal int_m_axi_arsize       : std_logic_vector(2 downto 0);
+  signal int_m_axi_rdata        : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
+  signal int_m_axi_rlast        : std_logic;
+  signal int_m_axi_rvalid       : std_logic;
+  signal int_m_axi_rready       : std_logic;
+
+  signal int_slv_bus_rreq_all   : std_logic_vector(FRACI(2)-1 downto 0);
+  signal int_slv_bus_rdat_all   : std_logic_vector(FRDCI(2)-1 downto 0);
+  signal int_m_axi_arall        : std_logic_vector(ARACI(2)-1 downto 0);
+  signal int_m_axi_rall         : std_logic_vector(ARDCI(2)-1 downto 0);
+  signal slv_bus_rreq_all       : std_logic_vector(FRACI(2)-1 downto 0);
+  signal slv_bus_rdat_all       : std_logic_vector(FRDCI(2)-1 downto 0);
+  signal m_axi_arall            : std_logic_vector(ARACI(2)-1 downto 0);
+  signal m_axi_rall             : std_logic_vector(ARDCI(2)-1 downto 0);
+
 begin
 
   -- Active high reset
   reset                         <= '1' when reset_n = '0' else '0';
 
+  -- Master ARSIZE is constant
+  m_axi_arsize                  <= MASTER_SIZE;
+
   -- If the ratio is 1, simply pass through, but convert to AXI len
   pass_through_gen: if RATIO = 1 generate
-    slv_bus_rreq_ready             <=  m_axi_arready;
-    m_axi_araddr                <=  slv_bus_rreq_addr;
-    m_axi_arlen                 <=  slv(resize(u(slv_bus_rreq_len) - 1, MASTER_LEN_WIDTH));
-    m_axi_arvalid               <=  slv_bus_rreq_valid;
-    m_axi_arsize                <=  MASTER_SIZE;
+    int_slv_bus_rreq_ready      <= int_m_axi_arready;
+    int_m_axi_araddr            <= int_slv_bus_rreq_addr;
+    int_m_axi_arlen             <= slv(resize(u(int_slv_bus_rreq_len) - 1, MASTER_LEN_WIDTH));
+    int_m_axi_arvalid           <= int_slv_bus_rreq_valid;
 
-    m_axi_rready                <=  slv_bus_rdat_ready;
-    slv_bus_rdat_data           <=  m_axi_rdata;
-    slv_bus_rdat_last           <=  m_axi_rlast;
-    slv_bus_rdat_valid          <=  m_axi_rvalid;
+    int_m_axi_rready            <= int_slv_bus_rdat_ready;
+    int_slv_bus_rdat_data       <= int_m_axi_rdata;
+    int_slv_bus_rdat_last       <= int_m_axi_rlast;
+    int_slv_bus_rdat_valid      <= int_m_axi_rvalid;
   end generate;
 
   -- If the ratio is larger than 1, instantiate the serializer, etc..
   serialize_gen: if RATIO > 1 generate
-    -----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     -- Read Request channels
-    -----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     -- From slave port to BusBuffer
-    slv_bus_rreq_ready          <= buf_mst_req_ready;
-    buf_mst_req_valid           <= slv_bus_rreq_valid;
-    buf_mst_req_addr            <= slv_bus_rreq_addr;
+    int_slv_bus_rreq_ready      <= buf_mst_req_ready;
+    buf_mst_req_valid           <= int_slv_bus_rreq_valid;
+    buf_mst_req_addr            <= int_slv_bus_rreq_addr;
     -- Length conversion; get the number of full words on the master
     -- Thus we have to shift with the log2ceil of the ratio, but round up
     -- in case its not an integer multiple of the ratio.
-    buf_mst_req_len             <= slv(resize(shift_right_round_up(u(slv_bus_rreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
+    buf_mst_req_len             <= slv(resize(shift_right_round_up(u(int_slv_bus_rreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
 
     -- From BusBuffer to AXI master port
-    buf_slv_req_ready           <= m_axi_arready;
-    m_axi_araddr                <= buf_slv_req_addr;
-    m_axi_arvalid               <= buf_slv_req_valid;
+    buf_slv_req_ready           <= int_m_axi_arready;
+    int_m_axi_araddr            <= buf_slv_req_addr;
+    int_m_axi_arvalid           <= buf_slv_req_valid;
     -- Convert to AXI spec:
-    m_axi_arlen                 <= slv(resize(u(buf_slv_req_len) - 1, MASTER_LEN_WIDTH));
-    m_axi_arsize                <= MASTER_SIZE;
-    -----------------------------------------------------------------------------
+    int_m_axi_arlen             <= slv(resize(u(buf_slv_req_len) - 1, MASTER_LEN_WIDTH));
+    ---------------------------------------------------------------------------
     -- Read Response channels
-    -----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     -- From AXI master port to BusBuffer
-    m_axi_rready                <= buf_slv_resp_ready;
-    buf_slv_resp_data           <= m_axi_rdata;
-    buf_slv_resp_last           <= m_axi_rlast;
-    buf_slv_resp_valid          <= m_axi_rvalid;
+    int_m_axi_rready            <= buf_slv_resp_ready;
+    buf_slv_resp_data           <= int_m_axi_rdata;
+    buf_slv_resp_last           <= int_m_axi_rlast;
+    buf_slv_resp_valid          <= int_m_axi_rvalid;
 
     -- From BusBuffer to StreamSerializer
     buf_mst_resp_ready          <= ser_in_ready;
@@ -183,12 +244,12 @@ begin
     ser_in_last                 <= buf_mst_resp_last;
 
     -- From StreamSerializer to slave port
-    ser_out_ready               <= slv_bus_rdat_ready;
-    slv_bus_rdat_valid          <= ser_out_valid;
-    slv_bus_rdat_data           <= ser_out_data;
-    slv_bus_rdat_last           <= ser_out_last;
+    ser_out_ready               <= int_slv_bus_rdat_ready;
+    int_slv_bus_rdat_valid      <= ser_out_valid;
+    int_slv_bus_rdat_data       <= ser_out_data;
+    int_slv_bus_rdat_last       <= ser_out_last;
 
-    -----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     fifo_gen: if ENABLE_FIFO = true generate
     BusBuffer_inst : BusReadBuffer
     generic map (
@@ -235,8 +296,7 @@ begin
       buf_slv_resp_data         <= buf_mst_resp_data;
       buf_slv_resp_last         <= buf_mst_resp_last;
     end generate;
-
-    -----------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     serializer: StreamSerializer
       generic map (
         DATA_WIDTH              => SLAVE_DATA_WIDTH,
@@ -261,6 +321,95 @@ begin
         out_last                => ser_out_last
       );
   end generate;
+  -----------------------------------------------------------------------------
+
+  -- Fletcher read request slice ----------------------------------------------
+  slv_bus_rreq_all              <= slv_bus_rreq_addr & slv_bus_rreq_len;
+
+  frac_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_REQ_SLICE_DEPTH,
+      DATA_WIDTH                => FRACI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => slv_bus_rreq_ready,
+      in_valid                  => slv_bus_rreq_valid,
+      in_data                   => slv_bus_rreq_all,
+      out_ready                 => int_slv_bus_rreq_ready,
+      out_valid                 => int_slv_bus_rreq_valid,
+      out_data                  => int_slv_bus_rreq_all
+    );
+
+  int_slv_bus_rreq_addr         <= int_slv_bus_rreq_all(FRACI(2)-1 downto FRACI(1));
+  int_slv_bus_rreq_len          <= int_slv_bus_rreq_all(FRACI(1)-1 downto FRACI(0));
+
+  -- Fletcher read data slice -------------------------------------------------
+  int_slv_bus_rdat_all          <= int_slv_bus_rdat_data & int_slv_bus_rdat_last;
+
+  frdc_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => SLV_DAT_SLICE_DEPTH,
+      DATA_WIDTH                => FRDCI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => int_slv_bus_rdat_ready,
+      in_valid                  => int_slv_bus_rdat_valid,
+      in_data                   => int_slv_bus_rdat_all,
+      out_ready                 => slv_bus_rdat_ready,
+      out_valid                 => slv_bus_rdat_valid,
+      out_data                  => slv_bus_rdat_all
+    );
+
+  slv_bus_rdat_data             <= slv_bus_rdat_all(FRDCI(2)-1 downto FRDCI(1));
+  slv_bus_rdat_last             <= slv_bus_rdat_all(                  FRDCI(0));
+
+  -- AXI read address slice ---------------------------------------------------
+  int_m_axi_arall               <= int_m_axi_araddr & int_m_axi_arlen;
+
+  arac_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => MST_REQ_SLICE_DEPTH,
+      DATA_WIDTH                => ARACI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => int_m_axi_arready,
+      in_valid                  => int_m_axi_arvalid,
+      in_data                   => int_m_axi_arall,
+      out_ready                 => m_axi_arready,
+      out_valid                 => m_axi_arvalid,
+      out_data                  => m_axi_arall
+    );
+
+  m_axi_araddr                  <= m_axi_arall(ARACI(2)-1 downto ARACI(1));
+  m_axi_arlen                   <= m_axi_arall(ARACI(1)-1 downto ARACI(0));
+
+  -- AXI read data slice ------------------------------------------------------
+  m_axi_rall                    <= m_axi_rdata & m_axi_rlast;
+
+  ardc_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => MST_DAT_SLICE_DEPTH,
+      DATA_WIDTH                => ARDCI(2)
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+      in_ready                  => m_axi_rready,
+      in_valid                  => m_axi_rvalid,
+      in_data                   => m_axi_rall,
+      out_ready                 => int_m_axi_rready,
+      out_valid                 => int_m_axi_rvalid,
+      out_data                  => int_m_axi_rall
+    );
+
+  int_m_axi_rdata               <= int_m_axi_rall(ARDCI(2)-1 downto ARDCI(1));
+  int_m_axi_rlast               <= int_m_axi_rall(                  ARDCI(0));
 
 end architecture rtl;
 

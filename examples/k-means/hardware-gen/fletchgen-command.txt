@@ -1,0 +1,1 @@
+fletchgen --quiet --name kmeans --input ~/fletcher/codegen/fletchgen/build/schemas/intlistread.fbs --output fletcher_wrapper.vhd --axi axi_top.vhd --recordbatch_data ~/fletcher/codegen/fletchgen/build/recordbatches/intlist.rb --recordbatch_schema ~/fletcher/codegen/fletchgen/build/schemas/intlistread.fbs --sim kmeans_sim.vhd --srec_output intlist.srec
