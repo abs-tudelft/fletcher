@@ -675,8 +675,8 @@ def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
     """Internal function which converts a UTF8/bytes field into a ReaderLevel."""
 
     # Add the signals to the existing streams.
-    cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
     cmd_val_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "valBase", BUS_ADDR_WIDTH))
+    cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
     out_length   = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
 
     # Create a secondary output stream for the list elements.
@@ -744,8 +744,7 @@ def _list_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, 
     """Internal function which converts a list field into a ReaderLevel."""
 
     # Add the signals to the existing streams.
-    cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
-    out_length   = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
+    out_length = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
 
     # Create a secondary output stream for the list elements.
     out_el_stream, out_el_data = _new_out_stream(prefix, field_prefix + field.child.name + "_")
@@ -757,6 +756,10 @@ def _list_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream, 
         cmd_stream, cmd_ctrl,
         out_el_stream, out_el_data,
         **opts)
+
+    # Command stream signal must be appended after traversing into the
+    # hierarchy.
+    cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
 
     # Construct the primitive reader.
     reader = ListReaderLevel(
@@ -846,8 +849,6 @@ def _field_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
     # Add the signals for the null reader if this field is nullable. This must
     # be done before going down the hierarchy.
     if field.nullable:
-        cmd_no_nulls  = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "noNulls"))
-        cmd_null_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "nullBase", BUS_ADDR_WIDTH))
         out_not_null  = out_data.append(Signal(prefix + "out_" + field_prefix + "notNull"))
 
     # Defer to the field-specific generators.
@@ -867,6 +868,12 @@ def _field_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
             break
     else:
         raise NotImplemented("No code generator is implemented for Field type %s" % type(field))
+
+    # Command stream signals must be appended after traversing into the
+    # hierarchy.
+    if field.nullable:
+        cmd_no_nulls  = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "noNulls"))
+        cmd_null_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "nullBase", BUS_ADDR_WIDTH))
 
     # Generate the null() level if this field is nullable.
     if field.nullable:
