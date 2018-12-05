@@ -128,7 +128,7 @@ begin
 
         end if;
 
-      end if;      
+      end if;
       -- Reset overrides everything.
       if reset = '1' then
         in_ready_s  <= '0';

@@ -169,19 +169,19 @@ architecture Behavioral of StreamParallelizer is
   -- Whether the counter is at the maximum value or the last flag is set in the
   -- input stream.
   signal count_max              : std_logic;
-  
+
   -- Set default values as constants to prevent simulation truncate warning
   -- overflow.
-  constant IN_COUNT_MAX_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)  
+  constant IN_COUNT_MAX_VAL     : std_logic_vector(IN_COUNT_WIDTH-1 downto 0)
     := std_logic_vector(to_unsigned(IN_COUNT_MAX, IN_COUNT_WIDTH));
-    
-  constant IN_COUNT_MAX_VAL_OUT : std_logic_vector(OUT_COUNT_WIDTH-1 downto 0) 
+
+  constant IN_COUNT_MAX_VAL_OUT : std_logic_vector(OUT_COUNT_WIDTH-1 downto 0)
     := std_logic_vector(to_unsigned(IN_COUNT_MAX, OUT_COUNT_WIDTH));
-    
-  constant BUN_COUNT_MAX_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0) 
+
+  constant BUN_COUNT_MAX_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0)
     := std_logic_vector(to_unsigned(BUN_COUNT_MAX, BUN_COUNT_WIDTH));
-    
-  constant BUN_COUNT_ONE_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0) 
+
+  constant BUN_COUNT_ONE_VAL    : std_logic_vector(BUN_COUNT_WIDTH-1 downto 0)
     := std_logic_vector(to_unsigned(1, BUN_COUNT_WIDTH));
 
 begin

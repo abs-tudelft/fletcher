@@ -43,7 +43,7 @@ entity StreamAccumulator is
     -- Active-high synchronous reset.
     reset                       : in  std_logic;
 
-    -- Input stream. 
+    -- Input stream.
     -- If in_skip is high, accumulation will not take place
     -- If in_clear is high, accumulate that element to zero
     in_valid                    : in  std_logic;
@@ -138,7 +138,7 @@ begin
       if in_clear = '1' then
         v.sum                   := (others => '0');
       end if;
-      
+
       -- Increase the sum, if not skipped
       if in_skip = '0' then
         if IS_SIGNED then

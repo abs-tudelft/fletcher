@@ -303,6 +303,7 @@ class Testbench(object):
     use ieee.math_real.all;
 
     library work;
+    use work.StreamSim.all;
     use work.Streams.all;
     use work.Columns.all;
     use work.Utils.all;

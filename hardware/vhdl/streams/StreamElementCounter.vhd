@@ -30,13 +30,13 @@ entity StreamElementCounter is
   generic (
     -- Width of the count input. Must be at least one to prevent null ranges.
     IN_COUNT_WIDTH              : positive := 1;
-    
+
     -- Maximum input count
     IN_COUNT_MAX                : positive := 1;
-    
+
     -- Width of the count output.
     OUT_COUNT_WIDTH             : positive := 8;
-    
+
     -- Maximum output count. If this is larger than what is representable with
     -- an unsigned integer of size OUT_COUNT_WIDTH this value is ignored and
     -- 2**OUT_COUNT_WIDTH - 1 is used instead.
@@ -62,7 +62,7 @@ entity StreamElementCounter is
     out_ready                   : in  std_logic;
     out_count                   : out std_logic_vector(OUT_COUNT_WIDTH-1 downto 0);
     out_last                    : out std_logic
-    
+
   );
 end StreamElementCounter;
 
@@ -122,7 +122,7 @@ begin
     if v.valid = '1' and (out_ready = '0' or v.last_pending = '1') then
       i.ready                   := '0';
     end if;
-   
+
     -- Handle handshaked output
     if v.valid = '1' and out_ready = '1' then
       if v.last_pending = '1' then
@@ -141,12 +141,12 @@ begin
 
     -- If the input is valid, and the output has no data or was handshaked
     -- we may advance the stream.
-    if in_valid = '1' and v.valid = '0' then      
+    if in_valid = '1' and v.valid = '0' then
       -- Increase the output count if the data is valid
       if in_dvalid = '1' then
-        v.count                 := v.count + unsigned(resize_count(in_count, IN_COUNT_MAX));
+        v.count                 := v.count + unsigned(resize_count(in_count, COUNT_REG_WIDTH));
       end if;
-      
+
       -- If we passed the max count with this incoming transfer, we need to
       -- output the max count without last flag. The counter register gets the
       -- remainder, so the sum of the reported counts up to the last flag
@@ -169,7 +169,7 @@ begin
 
         v.result                := to_unsigned(OUT_COUNT_MAX_CLAMP, OUT_COUNT_WIDTH);
         v.count                 := v.count - OUT_COUNT_MAX_CLAMP;
-      
+
       -- If we haven't reached max count yet but find a last flag, send the
       -- current count value with last.
       elsif in_last = '1' then
