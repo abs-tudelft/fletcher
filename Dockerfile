@@ -14,6 +14,7 @@ RUN apt-get update && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DFLETCHER_GEN=1 \
+      -DFLETCHER_TESTS=0 \
       .. && \
     make && make install && \
     cd ../.. && rm -rf fletcher && \
