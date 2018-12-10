@@ -138,7 +138,7 @@ architecture Behavioral of StreamPipelineControl is
   -- output stream suddenly block for a long time. In practice it'll be larger
   -- because this value is rounded upward a few times.
   constant MIN_FIFO_DEPTH       : natural := (NUM_PIPE_REGS + MIN_CYCLES_PER_TRANSFER) / MIN_CYCLES_PER_TRANSFER;
-  constant FIFO_DEPTH_LOG2      : natural := log2ceil(MIN_FIFO_DEPTH);
+  constant FIFO_DEPTH_LOG2      : natural := log2ceil(MIN_FIFO_DEPTH)+1;
   constant REQ_FIFO_DEPTH       : natural := 2**MIN_FIFO_DEPTH;
   signal fifo_reserved          : unsigned(FIFO_DEPTH_LOG2 downto 0);
 
