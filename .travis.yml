@@ -36,20 +36,28 @@ env:
 matrix:
   include:
     # all
-    - env: FLETCHER_CPP=1 FLETCHER_ECHO=1 FLETCHER_AWS=1 FLETCHER_SNAP=1 FLETCHER_GEN=1
+    - name: "[C++] Fletcher"
+      env: FLETCHER_CPP=1 FLETCHER_ECHO=1 FLETCHER_AWS=1 FLETCHER_SNAP=1 FLETCHER_GEN=1
     # common
-    - env: SOURCE_PATH=common/cpp FLETCHER_TESTS=1
+    - name: "[C++] Common"
+      env: SOURCE_PATH=common/cpp FLETCHER_TESTS=1
     # runtime
-    - env: SOURCE_PATH=runtime/cpp FLETCHER_TESTS=1
-    - env: SOURCE_PATH=runtime/cpp FLETCHER_PYTHON=1
+    - name: "[C++] Runtime"
+      env: SOURCE_PATH=runtime/cpp FLETCHER_TESTS=1
+    - name: "[Python] pyfletcher"
+      env: SOURCE_PATH=runtime/cpp FLETCHER_PYTHON=1
     # codegen
-    - env: SOURCE_PATH=codegen/fletchgen
+    - name: "[C++] Fletchgen"
+      env: SOURCE_PATH=codegen/fletchgen
     # snap platform
-    - env: SOURCE_PATH=platforms/snap/runtime FLETCHER_SNAP=1
+    - name: "[C++] Snap platform"
+      env: SOURCE_PATH=platforms/snap/runtime FLETCHER_SNAP=1
     # aws platform
-    - env: SOURCE_PATH=platforms/aws-f1/runtime FLETCHER_AWS=1
+    - name: "[C++] AWS-F1 platform"
+      env: SOURCE_PATH=platforms/aws-f1/runtime FLETCHER_AWS=1
     # echo platform
-    - env: SOURCE_PATH=platforms/echo/runtime
+    - name: "[C++] Echo platform"
+      env: SOURCE_PATH=platforms/echo/runtime
 
 before_install:
   - curl -sSL "https://packages.red-data-tools.org/ubuntu/red-data-tools-keyring.gpg" | sudo -E apt-key add -
