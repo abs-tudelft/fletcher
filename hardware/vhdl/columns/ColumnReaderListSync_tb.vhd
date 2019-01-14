@@ -19,6 +19,7 @@ use ieee.math_real.all;
 
 library work;
 use work.Streams.all;
+use work.StreamSim.all;
 use work.Columns.all;
 
 entity ColumnReaderListSync_tb is

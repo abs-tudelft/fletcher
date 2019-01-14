@@ -21,6 +21,7 @@ library work;
 use work.Memory.all;
 use work.Utils.all;
 use work.Streams.all;
+use work.StreamSim.all;
 use work.Interconnect.all;
 
 -- This simulation-only unit is a mockup of a bus master. It requests

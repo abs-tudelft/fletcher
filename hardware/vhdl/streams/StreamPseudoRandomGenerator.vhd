@@ -21,7 +21,7 @@ use ieee.numeric_std.all;
 --
 -- Symbol: (PRNG)--->
 
--- Inspired by 
+-- Inspired by
 -- https://www.nandland.com/vhdl/modules/lfsr-linear-feedback-shift-register.html
 entity StreamPseudoRandomGenerator is
   generic (
@@ -37,8 +37,8 @@ entity StreamPseudoRandomGenerator is
 
     -- Active-high synchronous reset.
     reset                       : in  std_logic;
-    
-    -- LSFR initial value after reset. Default is zero which is not an invalid 
+
+    -- LSFR initial value after reset. Default is zero which is not an invalid
     -- state since we use XNORs.
     seed                        : in  std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
 
@@ -46,7 +46,7 @@ entity StreamPseudoRandomGenerator is
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
     out_data                    : out std_logic_vector(DATA_WIDTH-1 downto 0)
-    
+
   );
 end StreamPseudoRandomGenerator;
 
@@ -55,13 +55,13 @@ architecture Behavioral of StreamPseudoRandomGenerator is
   constant MIN_DATA_WIDTH : natural := 3;
   constant MAX_DATA_WIDTH : natural := 168;
   constant MAX_TAPS       : natural := 5;
-  
+
   type taps_type is array(0 to MAX_TAPS-1) of natural;
   type taps_array_type is array(MIN_DATA_WIDTH to MAX_DATA_WIDTH) of taps_type;
-  
+
   -- Taps for all combinations of supported data widths.
   -- This is from Xilinx App note xapp052.
-  
+
   constant taps_array : taps_array_type := (
     --0   => (0,0,0,0,0,0),
     --1   => (0,0,0,0,0,0),
@@ -239,7 +239,7 @@ architecture Behavioral of StreamPseudoRandomGenerator is
     lfsr                        : std_logic_vector(DATA_WIDTH downto 1);
     xnor_bit                    : std_logic;
   end record;
-  
+
   signal r                      : reg_type;
   signal d                      : reg_type;
 
@@ -247,7 +247,7 @@ begin
 
   -- This unit only supports an output length of up to 128 bits. Generate an
   -- error in simulation.
-  
+
   --pragma translate off
   assert DATA_WIDTH <= 128
     report "StreamPseudoRandomGenerator data width may not exceed 128 bits."
@@ -272,42 +272,42 @@ begin
     variable v: reg_type;
   begin
     v                           := r;
-    
+
     -- Determine what to shift in by XNORring
     -- Grab the last bit as the first XNOR input
       v.xnor_bit := r.lfsr(DATA_WIDTH);
 
     -- Loop over each bit of the register, except the first one, which is never
     -- tapped.
-    for i in 1 to DATA_WIDTH-1 loop      
+    for i in 1 to DATA_WIDTH-1 loop
       -- Loop over all other possible taps in the constant taps array
       for j in 0 to MAX_TAPS-1 loop
         -- If the bit we are at is in the taps list
-        if taps_array(DATA_WIDTH)(j) = i then        
+        if taps_array(DATA_WIDTH)(j) = i then
           -- XNOR the bit with what we already have
           v.xnor_bit := v.xnor_bit xnor r.lfsr(i);
         end if;
       end loop;
     end loop;
-    
+
     -- Ready the next output only when there is no valid output at the moment
     -- or if it was accepted.
     if (v.valid = '1' and out_ready = '1') or v.valid = '0' then
       -- Shift in the xnor bit
       v.lfsr(1) := v.xnor_bit;
-      
+
       -- Shift the other bits
       for i in 2 to DATA_WIDTH loop
         v.lfsr(i) := r.lfsr(i-1);
       end loop;
-      
+
       v.valid := '1';
     end if;
-    
+
     -- Registered output
     d                           <= v;
   end process;
-  
+
   -- Connect the output valid to the registered valid
   out_valid                     <= r.valid;
   out_data                      <= r.lfsr(DATA_WIDTH downto 1);

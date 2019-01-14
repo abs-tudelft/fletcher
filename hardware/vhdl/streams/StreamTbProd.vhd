@@ -17,6 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+library work;
+use work.StreamSim.all;
+
 -- This simulation-only unit generates a stream of incrementing numbers using
 -- randomized handshake timing. It is intended to be used in conjunction with
 -- StreamTbCons to test correctness of the stream primitives.
@@ -28,7 +31,12 @@ entity StreamTbProd is
     DATA_WIDTH                  : natural := 4;
 
     -- Random seed. This should be different for every instantiation.
-    SEED                        : positive
+    SEED                        : positive;
+
+    -- If specified, this unit will send data from the simulation data
+    -- queue with that name. If not specified, sequential data is generated
+    -- and sent with randomized handshaking.
+    NAME                        : string := ""
 
   );
   port (
@@ -51,13 +59,15 @@ architecture Behavioral of StreamTbProd is
 begin
 
   prod: process is
-    variable data               : unsigned(DATA_WIDTH-1 downto 0);
-    variable item_remain        : integer;
-    variable invalid_cycles     : integer;
+    variable data_waiting       : boolean;
+    variable data               : std_logic_vector(DATA_WIDTH-1 downto 0);
     variable invalid_remain     : integer;
+    variable timing             : integer;
     variable seed1              : positive := SEED;
     variable seed2              : positive := 1;
     variable rand               : real;
+    variable rand_item_remain   : integer;
+    variable rand_invalid_cycles: integer;
     variable error              : boolean := true;
   begin
     loop
@@ -73,37 +83,40 @@ begin
         -- Wait for ready.
         if to_X01(out_ready) = '1' then
 
-          if item_remain > 0 then
+          -- Randomize timing. To get more representative behavior, we send a
+          -- random number of beats with the same timing (referred to as a
+          -- burst). This improves the odds of testing steady-state behavior of
+          -- the unit under test under various conditions.
+          if rand_item_remain > 0 then
 
-            -- Go to next item in same command.
-            item_remain := item_remain - 1;
+            -- Go to next item in same burst.
+            rand_item_remain := rand_item_remain - 1;
 
           else
 
-            -- Randomize the next command.
+            -- Randomize the next burst.
             uniform(seed1, seed2, rand);
             if rand < 0.5 then
               uniform(seed1, seed2, rand);
-              item_remain := integer(rand * 10.0);
+              rand_item_remain := integer(rand * 10.0);
 
               uniform(seed1, seed2, rand);
               if rand < 0.5 then
-                invalid_cycles := 0;
+                rand_invalid_cycles := 0;
               else
                 uniform(seed1, seed2, rand);
-                invalid_cycles := integer(rand * 50.0 / real(item_remain + 1));
+                rand_invalid_cycles := integer(rand * 50.0 / real(rand_item_remain + 1));
               end if;
             else
               uniform(seed1, seed2, rand);
-              invalid_cycles := integer(rand * 50.0);
+              rand_invalid_cycles := integer(rand * 50.0);
             end if;
 
           end if;
 
-          invalid_remain := invalid_cycles;
-
-          -- Increment data item.
-          data := data + 1;
+          -- Mark the data we just transfered as invalid, to remember that we
+          -- need to figure out a new data item.
+          data_waiting := false;
 
         elsif to_X01(out_ready) = 'X' then
 
@@ -114,6 +127,24 @@ begin
 
       end if;
 
+      -- Look for new data to transmit if nothing is waiting.
+      if not data_waiting then
+        if NAME = "" then
+          -- Generate some basic data.
+          invalid_remain := rand_invalid_cycles;
+          data := std_logic_vector(unsigned(data) + 1);
+          data_waiting := true;
+        else
+          -- Try to pull data from our queue.
+          stream_tb_pop(NAME, data, timing, data_waiting);
+          if timing >= 0 then
+            invalid_remain := timing;
+          else
+            invalid_remain := rand_invalid_cycles;
+          end if;
+        end if;
+      end if;
+
       -- Set output signals.
       if to_X01(reset) = '1' then
         out_data <= (others => 'U');
@@ -121,21 +152,29 @@ begin
       elsif error or to_X01(reset) = 'X' then
         out_valid <= 'X';
         out_data <= (others => 'X');
-      elsif invalid_remain = 0 then
-        out_valid <= '1';
-        out_data <= std_logic_vector(data);
-      else
+      elsif not data_waiting or invalid_remain > 0 then
         out_valid <= '0';
         out_data <= (others => 'U');
+      else
+        out_valid <= '1';
+        out_data <= data;
       end if;
 
       -- Reset state if reset is asserted or unknown.
       if to_X01(reset) /= '0' then
-        data := (others => '0');
-        item_remain := 0;
-        uniform(seed1, seed2, rand);
-        invalid_cycles := integer(rand * 50.0) + 1;
-        invalid_remain := invalid_cycles;
+
+        -- Reset pending data only when we're generating it here. If we do it
+        -- when we're configured to pull from a queue, we'd empty the queue out
+        -- during a reset contrary to intuition.
+        if NAME = "" then
+          data := (others => '0');
+          data_waiting := true;
+          rand_item_remain := 0;
+          uniform(seed1, seed2, rand);
+          rand_invalid_cycles := integer(rand * 50.0) + 1;
+          invalid_remain := rand_invalid_cycles;
+        end if;
+
         error := false;
       end if;
 

@@ -18,6 +18,7 @@ use ieee.numeric_std.all;
 
 library work;
 use work.Streams.all;
+use work.StreamSim.all;
 use work.Columns.all;
 
 entity ColumnReaderListSyncDecoder_tb is
