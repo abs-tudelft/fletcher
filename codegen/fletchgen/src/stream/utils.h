@@ -15,20 +15,25 @@
 #pragma once
 
 #include <string>
-#include <memory>
-
-#include <arrow/type.h>
-
-#include "fletcher-streams.h"
 
 namespace fletchgen {
+namespace stream {
 
-/**
- * Print some info about a field.
- * @param field The field
- * @param parent Any parent stream
- * @return A string with some info about a field.
- */
-std::string getFieldInfoString(const std::shared_ptr<arrow::Field>& field, const ArrowStream *parent);
+class Named {
+ public:
+  explicit Named(std::string name)
+      : name_(std::move(name)) {}
+  std::string name() const { return name_; }
+ private:
+  std::string name_;
+};
 
+struct ClockDomain : public Named {
+  explicit ClockDomain(std::string name)
+      : Named(std::move(name)) {}
+
+  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
+};
+
+}  // namespace stream
 }  // namespace fletchgen

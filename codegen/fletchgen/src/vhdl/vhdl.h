@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <map>
 #include <cmath>
+#include <deque>
 
 /**
  * This file contains classes to help generate VHDL in general.
@@ -113,8 +114,8 @@ class Comment {
 
   /// @brief Comment location.
   enum Place {
-    BEFORE, ///< Place the comment before the declaration/statement/expression/etc...
-    AFTER ///< Place the comment after the declaration/statement/expression/etc...
+    BEFORE,  ///< Place the comment before the declaration/statement/expression/etc...
+    AFTER    ///< Place the comment after the declaration/statement/expression/etc...
   };
 
   Comment() = default;
@@ -131,7 +132,7 @@ class Comment {
       place_(place) {}
 
   /// @brief Return the comment string.
-  std::string comment() { return comment_; }
+  std::string comment() const { return comment_; }
 
   /**
    * @brief Change the comment string to \p comment.
@@ -149,7 +150,7 @@ class Comment {
   void place(Place place) { place_ = place; }
 
   /// @brief Return the VHDL string of this comment.
-  virtual std::string toVHDL() { return comment_; }
+  virtual std::string toVHDL() const { return comment_; }
 
  private:
   std::string comment_ = "";
@@ -183,7 +184,7 @@ class Groupable {
   /**
    * @return The port group.
    */
-  int group() { return group_; }
+  int group() const { return group_; }
 
  private:
   int group_ = -1;
@@ -210,34 +211,34 @@ class Value {
   explicit Value(std::string str) : str_(std::move(str)), val_(0) {}
 
   /// @brief Compare two values.
-  bool operator==(Value value);
+  bool operator==(Value value) const;
 
   /// @brief Check if two values are unequal.
-  bool operator!=(Value value);
+  bool operator!=(Value value) const;
 
   /// @brief Multiply two values.
-  Value operator*(Value value);
+  Value operator*(Value value) const;
 
   /// @brief Multiply a value by an integer.
-  Value operator*(int mult);
+  Value operator*(int mult) const;
 
   /// @brief Add two values.
-  Value operator+(Value value);
+  Value operator+(Value value) const;
 
   /// @brief Add a value and an integer.
-  Value operator+(int value);
+  Value operator+(int value) const;
 
   /// @brief Increment value by an integer \p x.
-  Value operator+=(int x);
+  Value operator+=(int x) const;
 
   /// @brief Subtract two values.
-  Value operator-(Value value);
+  Value operator-(Value value) const;
 
   /// @brief Return a range from this value down to 0.
-  Range asRangeDowntoZero();
+  Range asRangeDowntoZero() const;
 
   /// @brief Return the VHDL string of
-  std::string toString();
+  std::string toString() const;
 
  private:
   std::string str_;
@@ -271,15 +272,15 @@ class Range {
       low_(std::move(low)),
       type_(type) {}
 
-  std::string toVHDL();
+  std::string toVHDL() const;
 
-  std::string toString();
+  std::string toString() const;
 
   Value high() { return high_; }
 
   Value low() { return low_; }
 
-  Range::Type type() { return type_; }
+  Range::Type type() const { return type_; }
 
  private:
   Value high_;
@@ -309,18 +310,18 @@ class Signal : public Comment, public Groupable {
    * @brief Generate the VHDL declaration of this port.
    * @return A string containing the declaration of this port.
    */
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   std::string name() const { return name_; }
 
-  Value width() { return width_; }
+  Value width() const { return width_; }
 
-  virtual std::string toString() { return "[SIGNAL: " + name_ + " | width: " + width_.toString() + "]"; }
+  virtual std::string toString() const { return "[SIGNAL: " + name_ + " | width: " + width_.toString() + "]"; }
 
   /**
    * @return Whether this signal is a vector or not.
    */
-  bool isVector();
+  bool isVector() const;
 
  protected:
   std::string name_;
@@ -349,7 +350,7 @@ class Port : public Signal {
   Port(std::string name, Dir dir) : Signal(std::move(name)), dir_(dir) {}
 
   /// @brief Return the direction of this port.
-  Dir dir();
+  Dir dir() const;
 
   /// @brief Invert the direction of this port.
   Port *invert() {
@@ -361,10 +362,10 @@ class Port : public Signal {
    * @brief Generate the VHDL declaration of this port.
    * @return A string containing the declaration of this port.
    */
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   /// @brief Return a human readable string of this Port.
-  std::string toString() override;
+  std::string toString() const override;
 
  private:
   Dir dir_;
@@ -377,7 +378,7 @@ class Connection : public Comment, public Groupable {
  public:
   Connection(Signal *destination, Range dest_range, Signal *source, Range source_range, bool invert = false);
 
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   Signal *source() { return source_; }
 
@@ -413,14 +414,14 @@ class Generic : public Comment, public Groupable {
     value_ = value;
   }
 
-  std::string name() { return name_; }
+  std::string name() const { return name_; }
 
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
-  ///@brief Generate a VHDL declaration of this generic, but omit the default value.
+  /// @brief Generate a VHDL declaration of this generic, but omit the default value.
   std::string toVHDLNoDefault();
 
-  std::string toString() { return "[GENERIC: " + name() + "]"; }
+  std::string toString() const { return "[GENERIC: " + name() + "]"; }
 
  private:
   std::string name_;
@@ -436,7 +437,7 @@ class Entity : public Comment {
   explicit Entity(std::string name);
 
   ///@brief Return a VHDL string of the entity declaration.
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   /**
    * @brief Add a port to this entity.
@@ -451,56 +452,56 @@ class Entity : public Comment {
   Entity* addGeneric(const std::shared_ptr<Generic> &generic);
 
   /// @brief Return the ports of this entity.
-  std::vector<Port *> ports();
+  std::vector<Port *> ports() const;
 
   /// @brief Return the generics of this entity.
-  std::vector<Generic *> generics();
+  std::vector<Generic *> generics() const;
 
-  std::string name() { return name_; }
+  std::string name() const { return name_; }
 
   /**
    * @brief Obtain the a pointer to a port object with some name on this entity.
    * @param name The name of the port.
    * @return The port if exists, nullptr otherwise.
    */
-  Port *getPortByName(const std::string &name);
+  Port *getPortByName(const std::string &name) const;
 
   /**
    * @brief Obtain the a pointer to a generic object with some name on this entity.
    * @param name The name of the generic.
    * @return The generic if exists, nullptr otherwise.
    */
-  Generic *getGenericByName(const std::string &name);
+  Generic *getGenericByName(const std::string &name) const;
 
   /**
    * @brief Check if a generic with name exists on this entity.
    * @param name The name
    * @return True if exists, false otherwise.
    */
-  bool hasGenericWithName(const std::string &name);
+  bool hasGenericWithName(const std::string &name) const;
 
   /**
    * @brief Check if a generic exists in this entity
    * @param generic The generic
    * @return True if exists, false otherwise.
    */
-  bool hasGeneric(Generic *generic);
+  bool hasGeneric(const Generic *generic) const;
 
   /**
    * @brief Check if a port with name exists on this entity.
    * @param name The name
    * @return True if exists, false otherwise.
    */
-  bool hasPortWithName(const std::string &name);
+  bool hasPortWithName(const std::string &name) const;
 
   /**
    * @brief Check if a port exists in this entity.
    * @param port The port.
    * @return True if exists, false otherwise.
    */
-  bool hasPort(Port *port);
+  bool hasPort(const Port *port) const;
 
-  std::string toString() { return "[ENTITY: " + name_ + "]"; }
+  std::string toString() const { return "[ENTITY: " + name_ + "]"; }
 
  private:
   std::string name_;
@@ -603,26 +604,26 @@ class Architecture : public Comment {
    * @brief Generate VHDL code for this architecture.
    * @return A string containing the VHDL code.
    */
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   std::string name() { return name_; }
 
-  std::vector<std::shared_ptr<Signal>> signals() { return signals_; }
+  std::deque<std::shared_ptr<Signal>> signals() { return signals_; }
 
-  std::vector<std::shared_ptr<Connection>> connections() { return connections_; }
+  std::deque<std::shared_ptr<Connection>> connections() { return connections_; }
 
-  std::vector<std::shared_ptr<Instantiation>> instances() { return instances_; }
+  std::deque<std::shared_ptr<Instantiation>> instances() { return instances_; }
 
   std::string toString() { return "[ARCHITECTURE: " + name_ + " of " + entity_->toString() + "]"; }
 
  private:
   std::string name_;
   std::shared_ptr<Entity> entity_;
-  std::vector<std::shared_ptr<Signal>> signals_;
-  std::vector<std::shared_ptr<Connection>> connections_;
-  std::vector<std::shared_ptr<Instantiation>> instances_;
-  std::vector<std::shared_ptr<Component>> comp_decls_;
-  std::vector<std::shared_ptr<Statement>> statements_;
+  std::deque<std::shared_ptr<Signal>> signals_;
+  std::deque<std::shared_ptr<Connection>> connections_;
+  std::deque<std::shared_ptr<Instantiation>> instances_;
+  std::deque<std::shared_ptr<Component>> comp_decls_;
+  std::deque<std::shared_ptr<Statement>> statements_;
 };
 
 /**
@@ -636,16 +637,16 @@ class Component : public Comment {
       entity_(std::make_shared<Entity>(name)),
       architecture_(std::make_shared<Architecture>("Implementation", entity_)) {}
 
-  std::shared_ptr<Entity> entity() { return entity_; }
+  std::shared_ptr<Entity> entity() const { return entity_; }
 
-  std::shared_ptr<Architecture> architecture() { return architecture_; }
+  std::shared_ptr<Architecture> architecture() const { return architecture_; }
 
   virtual std::string toString() { return "[COMPONENT: " + entity()->name() + "]"; }
 
   /**
    * @brief Return the component declaration in VHDL.
    */
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
  protected:
   std::shared_ptr<Entity> entity_;
@@ -682,30 +683,30 @@ class Instantiation : public Comment {
    * @brief Map a \p port to a \p destination signal.
    * @param port The port to map, if it exists.
    * @param destination The string to map it to.
-   * @param range The reange of the destination signal
+   * @param range The range of the destination signal
    */
-  void mapPort(Port *port, Signal *destination, Range dest_range = Range());
+  void mapPort(const Port *port, const Signal *destination, Range dest_range = Range());
 
   /**
    * @brief Map a \p generic to a \p value.
    * @param generic The generic to map, if it exists
    * @param value The value to map to the generic.
    */
-  void mapGeneric(Generic *generic, Value value);
+  void mapGeneric(const Generic *generic, Value value);
 
-  std::string toVHDL() override;
+  std::string toVHDL() const override;
 
   virtual std::string toString() { return "[INSTANTIATION: " + comp_->entity()->name() + "]"; }
 
-  std::shared_ptr<Component> component() { return comp_; }
+  std::shared_ptr<Component> component() const { return comp_; }
 
-  virtual std::string name() { return name_; };
+  virtual std::string name() const { return name_; }
 
  protected:
-  std::string name_; ///< Name of this instantiation.
-  std::shared_ptr<Component> comp_; ///< The component being instantiated.
-  std::map<Generic *, Value> generic_map_; ///< Generic mapping.
-  std::map<Port *, std::pair<Signal *, Range>> port_map_; ///< Port mapping.
+  std::string name_;  ///< Name of this instantiation.
+  std::shared_ptr<Component> comp_;  ///< The component being instantiated.
+  std::map<const Generic *, Value> generic_map_;  ///< Generic mapping.
+  std::map<const Port *, std::pair<const Signal *, Range>> port_map_;  ///< Port mapping.
 
 };
 

@@ -73,12 +73,12 @@ class FletcherColumnStream : public FletcherStream, public DerivedFrom<Column> {
  public:
   FletcherColumnStream(const std::string &name,
                        FST type,
-                       Column *column,
+                       const Column *column,
                        std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(name, type, std::move(ports)), DerivedFrom(column) {}
 
   FletcherColumnStream(FST type,
-                       Column *column,
+                       const Column *column,
                        std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherStream(type, std::move(ports)), DerivedFrom(column) {}
 };
@@ -87,7 +87,7 @@ class FletcherColumnStream : public FletcherStream, public DerivedFrom<Column> {
 class CommandStream : public FletcherColumnStream {
  public:
   CommandStream(const std::string &name,
-                Column *column,
+                const Column *column,
                 std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherColumnStream(name, FST::CMD, column, std::move(ports)) {}
 };
@@ -96,7 +96,7 @@ class CommandStream : public FletcherColumnStream {
 class UnlockStream : public FletcherColumnStream {
  public:
   UnlockStream(const std::string &name,
-               Column *column,
+               const Column *column,
                std::vector<std::shared_ptr<StreamPort>> ports = {})
       : FletcherColumnStream(name, FST::UNLOCK, column, std::move(ports)) {}
 };
@@ -156,9 +156,9 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
    * @param epc The elements per cycle of the data items on this stream.
    */
   ArrowStream(std::shared_ptr<arrow::Field> field,
-              ArrowStream *parent,
+              const ArrowStream *parent,
               Mode mode,
-              Column *column,
+              const Column *column,
               int epc = 1);
 
   /**
@@ -174,75 +174,89 @@ class ArrowStream : public FletcherColumnStream, public ChildOf<ArrowStream>, pu
    */
   ArrowStream(std::string name,
               Value width,
-              ArrowStream *parent,
+              const ArrowStream *parent,
               Mode mode,
-              Column *column,
+              const Column *column,
               int epc = 1);
 
+  /**
+   * @brief Return a new ArrowStream based on a field.
+   *
+   * Typically, this will be a top-level schema field for which any children will be appended recursively as children of
+   * the ArrowStream.
+   * @param streams The vector of streams to append to.
+   * @param field The field to generate streams from.
+   * @param parent Parent stream used for recursive calls of this function.
+   */
+  static std::shared_ptr<ArrowStream> fromField(const std::shared_ptr<arrow::Field> &field,
+                                                Mode mode,
+                                                const Column* column,
+                                                const ArrowStream *parent = nullptr);
+
   /// @brief Return a human readable std::string with information about this stream.
-  std::string toString() override;
+  std::string toString() const;
 
   /// @brief Return the Arrow Field this stream was based on.
-  std::shared_ptr<arrow::Field> field();
+  std::shared_ptr<arrow::Field> field() const;
 
   /// @brief Return the hierarchical depth of this stream.
-  int depth();
+  int depth() const;
 
   /// @brief Return whether this stream is a list.
-  bool isList();
+  bool isList() const;
 
   /// @brief Return whether this stream is a list child.
-  bool isListChild();
+  bool isListChild() const;
 
   /// @brief Return whether this stream is a listprim child
-  bool isListPrimChild();
+  bool isListPrimChild() const;
 
   /// @brief Return whether this stream is a struct.
-  bool isStruct();
+  bool isStruct() const;
 
   /// @brief Return whether this stream is a struct child.
-  bool isStructChild();
+  bool isStructChild() const;
 
   /// @brief Return whether this stream is nullable.
-  bool isNullable();
+  bool isNullable() const;
 
   /// @brief Return the mode of this stream (read/write).
-  Mode mode() { return mode_; }
+  Mode mode() const { return mode_; }
 
   /// @brief Return the width of the ports of this stream by type.
-  Value width(ASP type);
+  Value width(ASP type) const;
 
   /// @brief Return the width of the ports of this stream by a bunch of types.
-  Value width(std::vector<ASP> types);
+  Value width(std::vector<ASP> types) const;
+
+  /// @brief Return whether this stream is based on an explicit Arrow field.
+  bool basedOnField() const { return field_ != nullptr; }
 
   /// @brief Change the number of elements per cycle that this stream should deliver.
   void setEPC(int epc);
 
-  /// @brief Return whether this stream is based on an explicit Arrow field.
-  bool basedOnField() { return field_ != nullptr; }
-
   /// @brief Return a vector containing all ports contained in \p types.
-  std::vector<ArrowPort *> getPortsOfTypes(std::vector<ASP> types);
+  std::vector<ArrowPort *> getPortsOfTypes(std::vector<ASP> types) const;
 
   ArrowStream *ptr() { return this; }
 
   /// @brief Return a prefix usable for signal names derived from field names in the schema.
-  std::string getSchemaPrefix();
+  std::string getSchemaPrefix() const;
 
   /// @brief Return the names of the Arrow buffers that are required to generate this stream.
   std::vector<std::shared_ptr<Buffer>> getBuffers();
 
   /// @brief Return the offset on the concatenated data signal of the Column user data stream.
-  Value data_offset();
+  Value data_offset() const;
 
   /// @brief Returns the offset on the concatenated control signals of the Column user data stream.
-  Value control_offset();
+  Value control_offset() const;
 
   /// @brief Return the data offset for any following stream that is concatenated onto the same stream.
-  Value next_data_offset();
+  Value next_data_offset() const;
 
   /// @brief Return the control offset for any following stream that is concatenated onto the same stream.
-  Value next_control_offset();
+  Value next_control_offset() const;
 
  private:
   std::shared_ptr<arrow::Field> field_;

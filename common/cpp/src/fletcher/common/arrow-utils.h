@@ -23,10 +23,10 @@
 
 namespace fletcher {
 
-/// @brief Access mode for reads / writes to recordbatches, arrays, buffers, etc...
+/// @brief Access mode for reads / writes to recordbatches, arrays, buffers, etc. as seen from accelerator.
 enum class Mode {
-  READ, ///< Read mode
-  WRITE ///< Write mode
+  READ,  ///< Read mode
+  WRITE  ///< Write mode
 };
 
 /**

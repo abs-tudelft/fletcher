@@ -37,7 +37,7 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
     mode == Mode::READ ? "ColumnReader" : "ColumnWriter"
 ), mode_(mode), field_(field) {
 
-  top_stream_ = getArrowStream(field);
+  top_stream_ = ArrowStream::fromField(field, mode, this);
   arrow_streams_ = flatten<ArrowStream>(top_stream_);
 
   auto buffers = getBuffers();
@@ -76,37 +76,6 @@ Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
   // Generics for columnwriters only
   if (mode == Mode::WRITE) {
     mapGeneric(ent->getGenericByName(ce::BUS_STROBE_WIDTH), Value(ce::BUS_STROBE_WIDTH));
-  }
-}
-
-std::shared_ptr<ArrowStream> Column::getArrowStream(const std::shared_ptr<arrow::Field> &field, ArrowStream *parent) {
-  int epc = fletcher::getEPC(field);
-
-  LOGD(getFieldInfoString(field, parent));
-
-  if (field->type()->id() == arrow::Type::BINARY) {
-    // Special case: binary type has a length stream and bytes stream.
-    // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
-    auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
-    master->addChild(slave);
-    return master;
-  } else if (field->type()->id() == arrow::Type::STRING) {
-    // Special case: binary type has a length stream and bytes stream.
-    // The EPC is assumed to relate to the list elements, as there is no explicit child field to place this metadata in.
-    auto master = make_shared<ArrowStream>(field, parent, mode_, ptr());
-    auto slave = make_shared<ArrowStream>("values", Value(8), master.get(), mode_, ptr(), epc);
-    master->addChild(slave);
-    return master;
-  } else {
-    // Normal case: add a stream
-    auto stream = make_shared<ArrowStream>(field, parent, mode_, ptr(), epc);
-
-    // Append any child streams for list or struct
-    for (auto &child : field->type()->children()) {
-      stream->addChild(getArrowStream(child, stream.get()));
-    }
-    return stream;
   }
 }
 
@@ -199,7 +168,7 @@ Value Column::dataWidth() {
   return ret;
 }
 
-std::string Column::toString() {
+std::string Column::toString() const {
   return "[COLUMN INSTANCE: " + comp_->entity()->name() + " of field " + field_->ToString() + "]";
 }
 

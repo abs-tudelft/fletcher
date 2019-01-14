@@ -45,27 +45,15 @@ class Column : public Instantiation {
   std::string configString();
 
   /// @brief Return the Arrow field from which this Column was generated.
-  std::shared_ptr<arrow::Field> field() { return field_; }
+  std::shared_ptr<arrow::Field> field() const { return field_; }
 
   /// @brief Return the mode of this column (READ or WRITE).
   Mode mode() { return mode_; }
 
   /// @brief Return a human readable string with some info about this Column.
-  std::string toString() override;
+  std::string toString() const;
 
   Column *ptr() { return this; }
-
-  /**
-   * @brief Return a new ArrowStream based on a field.
-   *
-   * Typically, this will be a top-level schema field for which any children will be appended recursively as children of
-   * the ArrowStream.
-   * @param streams The vector of streams to append to.
-   * @param field The field to generate streams from.
-   * @param parent Parent stream used for recursive calls of this function.
-   */
-  std::shared_ptr<ArrowStream> getArrowStream(const std::shared_ptr<arrow::Field>& field,
-                                              ArrowStream *parent = nullptr);
 
   /// @brief Generate the User Command Stream for this column.
   std::shared_ptr<FletcherColumnStream> generateUserCommandStream();
@@ -86,7 +74,7 @@ class Column : public Instantiation {
   std::vector<std::shared_ptr<Buffer>> getBuffers();
 
   /// @brief Return the name of this Column(Reader/Writer) instance.
-  std::string name() override { return nameFrom({field_->name(), component()->entity()->name(), "inst"}); }
+  std::string name() const override { return nameFrom({field_->name(), component()->entity()->name(), "inst"}); }
 
  private:
   Mode mode_ = Mode::READ;

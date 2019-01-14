@@ -23,9 +23,9 @@
 #include <arrow/ipc/api.h>
 #include <arrow/io/api.h>
 
-#include "arrow-meta.h"
-#include "column.h"
-#include "column-wrapper.h"
+#include "./arrow-meta.h"
+#include "./column.h"
+#include "./column-wrapper.h"
 
 #include "srec/recordbatch.h"
 #include "vhdt/vhdt.h"
@@ -34,6 +34,7 @@
 #include "top/sim.h"
 
 #include "fletcher/common/arrow-utils.h"
+#include "./design.h"
 
 using fletchgen::Mode;
 
@@ -200,6 +201,8 @@ int main(int argc, char **argv) {
     ofs.open(output_fname);
     outputs.push_back(&ofs);
   }
+
+  auto design = fletchgen::Design(schemas);
 
   auto wrapper = fletchgen::generateColumnWrapper(outputs, schemas, acc_name, wrap_name, cfgs);
   LOGD("Wrapper generation finished.");

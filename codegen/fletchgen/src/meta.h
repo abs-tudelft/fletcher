@@ -15,7 +15,7 @@ class TypedBy {
 
   virtual ~TypedBy() = default;
 
-  virtual T type() { return type_; }
+  virtual T type() const { return type_; }
 
  private:
   T type_;
@@ -28,14 +28,14 @@ class TypedBy {
 template<class T>
 class DerivedFrom {
  public:
-  explicit DerivedFrom(T *source) : source_(source) {}
+  explicit DerivedFrom(const T *source) : source_(source) {}
 
-  void setSource(T *source) { source_ = source; }
+  void setSource(const T *source) { source_ = source; }
 
-  T *source() { return source_; }
+  const T *source() { return source_; }
 
  private:
-  T *source_;
+  const T *source_;
 };
 
 /**
@@ -45,12 +45,12 @@ class DerivedFrom {
 template<class T>
 class Destination {
  public:
-  explicit Destination(T *dest) : dest_(dest) {}
+  explicit Destination(const T *dest) : dest_(dest) {}
 
-  T *dest() { return dest_; }
+  const T *dest() { return dest_; }
 
  private:
-  T *dest_;
+  const T *dest_;
 };
 
 /**
@@ -60,16 +60,16 @@ class Destination {
 template<class T>
 class ChildOf {
  public:
-  explicit ChildOf(T *parent) : parent_(parent) {}
+  explicit ChildOf(const T *parent) : parent_(parent) {}
 
-  bool hasParent() { return parent_ != nullptr; }
+  bool hasParent() const { return parent_ != nullptr; }
 
-  T *parent() { return parent_; }
+  const T *parent() const { return parent_; }
 
   void setParent(T *parent) { parent_ = parent; }
 
  private:
-  T *parent_;
+  const T *parent_;
 };
 
 /**
@@ -85,7 +85,7 @@ class ParentOf {
 
   T child(int i) { return children_[i]; }
 
-  std::vector<std::shared_ptr<T>> children() { return children_; }
+  std::vector<std::shared_ptr<T>> children() const { return children_; }
 
   int num_children() { return (int) children_.size(); };
 
@@ -119,11 +119,11 @@ std::vector<std::shared_ptr<T>> flatten(std::shared_ptr<T> root) {
 }
 
 template<class T>
-std::vector<T *> flatten(T *root) {
+std::vector<const T *> flatten(const T *root) {
   static_assert(std::is_base_of<ParentOf<T>, T>::value, "T must extend ParentOf<T>.");
-  std::vector<T *> ret;
+  std::vector<const T *> ret;
   ret.push_back(root);
-  auto root_as_parentof = dynamic_cast<ParentOf<T> *>(root);
+  auto root_as_parentof = dynamic_cast<const ParentOf<T> *>(root);
   if (root_as_parentof != nullptr) {
     for (const auto &c: root_as_parentof->children()) {
       auto child = flatten<T>(c.get());
@@ -136,9 +136,9 @@ std::vector<T *> flatten(T *root) {
 }
 
 template<class T>
-T *rootOf(T *obj) {
+const T *rootOf(const T *obj) {
   static_assert(std::is_base_of<ChildOf<T>, T>::value, "T must extend ChildOf<T>.");
-  auto obj_as_childof = dynamic_cast<ChildOf<T> *>(obj);
+  auto obj_as_childof = dynamic_cast<const ChildOf<T> *>(obj);
   if (obj_as_childof != nullptr) {
     if (obj_as_childof->hasParent()) {
       return rootOf(obj_as_childof->parent());

@@ -58,7 +58,7 @@ class WithOffset {
 
   void setOffset(Value offset) { offset_ = std::move(offset); }
 
-  Value offset() { return offset_; }
+  Value offset() const { return offset_; }
 
  private:
   Value offset_ = Value(0);
@@ -82,10 +82,10 @@ class Stream {
   Stream *invert();
 
   /// @brief Return a vector with pointers to the port of this stream.
-  std::vector<std::shared_ptr<StreamPort>> ports();
+  std::vector<std::shared_ptr<StreamPort>> ports() const;
 
   /// @brief Return the name of this stream.
-  const std::string name() { return name_; }
+  std::string name() const { return name_; }
 
   /// @brief Set the group of all ports of this stream.
   Stream *setGroup(int group);

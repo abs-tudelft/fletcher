@@ -178,13 +178,13 @@ class ColumnWrapper : public StreamComponent {
   void connectUserCoreStreams();
 
   /// @brief Connect an ArrowPort to a wrapper signal.
-  void connectArrowPortToSignal(FletcherColumnStream *stream, Column *column, ArrowPort *port);
+  void connectArrowPortToSignal(const FletcherColumnStream *stream, const Column *column, const ArrowPort *port);
 
   /// @brief Connect a CommandPort to a wrapper signal.
-  void connectCommandPortToSignal(FletcherColumnStream *stream, Column *column, CommandPort *port);
+  void connectCommandPortToSignal(const FletcherColumnStream *stream, const Column *column, const CommandPort *port);
 
   /// @brief Connect a
-  void connectUnlockPortToSignal(FletcherColumnStream *stream, Column *column, UnlockPort *port);
+  void connectUnlockPortToSignal(const FletcherColumnStream *stream, const Column *column, const UnlockPort *port);
 
   /// @brief Connect read request channels to arbiter.
   void connectReadRequestChannels();

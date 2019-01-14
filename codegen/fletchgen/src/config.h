@@ -41,13 +41,14 @@ struct Arrow {
 struct User {
   width tag_width = ce::TAG_WIDTH_DEFAULT;
   unsigned int num_user_regs = 0;
+  unsigned int num_memory_master = 0;
 };
 
 /// Platform configuration
 struct Platform {
   Bus bus;
   MMIO mmio;
-  unsigned int regs_per_address() { return bus.addr_width / mmio.data_width; }
+  unsigned int regs_per_address() const { return bus.addr_width / mmio.data_width; }
 };
 
 /// Global configuration used in creating wrapper & top level

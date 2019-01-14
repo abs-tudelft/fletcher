@@ -46,7 +46,7 @@ void Stream::addPort(vector<shared_ptr<StreamPort>> ports) {
   }
 }
 
-vector<shared_ptr<StreamPort>> Stream::ports() {
+vector<shared_ptr<StreamPort>> Stream::ports() const {
   vector<shared_ptr<StreamPort>> ret;
   for (const auto &p : ports_) {
     ret.push_back(p);

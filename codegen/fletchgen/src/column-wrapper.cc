@@ -429,7 +429,7 @@ void ColumnWrapper::connectReadRequestChannels() {
       auto ports = cr->stream_rreq_->ports();
       for (const auto &p : ports) {
         auto rrp = std::dynamic_pointer_cast<ReadReqPort>(p);
-        auto rrs = dynamic_cast<ReadRequestStream *>(p->parent());
+        auto rrs = dynamic_cast<const ReadRequestStream *>(p->parent());
         if ((rrs != nullptr) && (rrp != nullptr)) {
           auto sname = rrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
@@ -466,7 +466,7 @@ void ColumnWrapper::connectReadDataChannels() {
       auto cr = std::static_pointer_cast<ColumnReader>(c->component());
       for (const auto &p : cr->stream_rdat_->ports()) {
         auto rdp = std::dynamic_pointer_cast<ReadDataPort>(p);
-        auto rds = dynamic_cast<ReadDataStream *>(p->parent());
+        auto rds = dynamic_cast<const ReadDataStream *>(p->parent());
         if ((rds != nullptr) && (rdp != nullptr)) {
           auto sname = rds->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
@@ -505,7 +505,7 @@ void ColumnWrapper::connectWriteRequestChannels() {
       auto ports = cw->stream_wreq_->ports();
       for (const auto &p : ports) {
         auto wrp = std::dynamic_pointer_cast<WriteReqPort>(p);
-        auto wrs = dynamic_cast<WriteRequestStream *>(p->parent());
+        auto wrs = dynamic_cast<const WriteRequestStream *>(p->parent());
         if ((wrs != nullptr) && (wrp != nullptr)) {
           auto sname = wrs->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
@@ -542,7 +542,7 @@ void ColumnWrapper::connectWriteDataChannels() {
       auto cw = std::static_pointer_cast<ColumnWriter>(c->component());
       for (const auto &p : cw->stream_wdat_->ports()) {
         auto wdp = std::dynamic_pointer_cast<WriteDataPort>(p);
-        auto wds = dynamic_cast<WriteDataStream *>(p->parent());
+        auto wds = dynamic_cast<const WriteDataStream *>(p->parent());
         if ((wds != nullptr) && (wdp != nullptr)) {
           auto sname = wds->name();
           auto col_signame = nameFrom({vhdl::INT_SIG, c->field()->name(), p->name()});
@@ -605,9 +605,9 @@ void ColumnWrapper::connectUserCoreStreams() {
   }
 }
 
-void ColumnWrapper::connectArrowPortToSignal(FletcherColumnStream *stream,
-                                             Column *column,
-                                             ArrowPort *port) {
+void ColumnWrapper::connectArrowPortToSignal(const FletcherColumnStream *stream,
+                                             const Column *column,
+                                             const ArrowPort *port) {
   // Derive the name of the signal on this wrapper from the stream port.
   auto signame = nameFrom(
       {vhdl::INT_SIG, column->field()->name(), typeToString(stream->type()),
@@ -624,9 +624,9 @@ void ColumnWrapper::connectArrowPortToSignal(FletcherColumnStream *stream,
   usercore_inst_->mapPort(port, signal, range);
 }
 
-void ColumnWrapper::connectCommandPortToSignal(FletcherColumnStream *stream,
-                                               Column *column,
-                                               CommandPort *port) {
+void ColumnWrapper::connectCommandPortToSignal(const FletcherColumnStream *stream,
+                                               const Column *column,
+                                               const CommandPort *port) {
   // Derive the name of the signal on this wrapper from the stream port.
   auto signame = nameFrom(
       {vhdl::INT_SIG, column->field()->name(), typeToString(stream->type()),
@@ -643,9 +643,9 @@ void ColumnWrapper::connectCommandPortToSignal(FletcherColumnStream *stream,
   usercore_inst_->mapPort(port, signal, range);
 }
 
-void ColumnWrapper::connectUnlockPortToSignal(FletcherColumnStream *stream,
-                                              Column *column,
-                                              UnlockPort *port) {
+void ColumnWrapper::connectUnlockPortToSignal(const FletcherColumnStream *stream,
+                                              const Column *column,
+                                              const UnlockPort *port) {
   // Derive the name of the signal on this wrapper from the stream port.
   auto signame = nameFrom(
       {vhdl::INT_SIG, column->field()->name(), typeToString(stream->type()),

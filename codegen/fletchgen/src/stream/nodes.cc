@@ -12,23 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <string>
-#include <memory>
-
-#include <arrow/type.h>
-
-#include "fletcher-streams.h"
+#include "nodes.h"
 
 namespace fletchgen {
+namespace stream {
 
-/**
- * Print some info about a field.
- * @param field The field
- * @param parent Any parent stream
- * @return A string with some info about a field.
- */
-std::string getFieldInfoString(const std::shared_ptr<arrow::Field>& field, const ArrowStream *parent);
+std::deque<std::shared_ptr<Edge>> Node::edges() const {
+  std::deque<std::shared_ptr<Edge>> ret;
+  for (const auto &e : ins) {
+    ret.push_back(e);
+  }
+  for (const auto &e : outs) {
+    ret.push_back(e);
+  }
+  return ret;
+}
 
+std::shared_ptr<Node> Node::Make(std::string name, const std::shared_ptr<NodeType> &type) {
+  return std::make_shared<Node>(name, type);
+}
+
+}  // namespace stream
 }  // namespace fletchgen

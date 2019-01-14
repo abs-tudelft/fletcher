@@ -93,12 +93,12 @@ std::string nameFrom(std::vector<std::string> strings) {
   return ret;
 }
 
-Range Value::asRangeDowntoZero() {
+Range Value::asRangeDowntoZero() const {
   auto high = *this - Value(1);
   return Range(high, Value(0));
 }
 
-std::string Value::toString() {
+std::string Value::toString() const {
   std::string ret = str_;
   if (val_ != 0) {
     if (!ret.empty()) {
@@ -114,7 +114,7 @@ std::string Value::toString() {
   return ret;
 }
 
-Value Value::operator+(Value value) {
+Value Value::operator+(Value value) const {
   Value ret;
   ret.val_ = val_;
   ret.str_ = str_;
@@ -132,7 +132,7 @@ Value Value::operator+(Value value) {
   return ret;
 }
 
-Value Value::operator*(Value value) {
+Value Value::operator*(Value value) const {
   Value ret;
   ret.str_ = val_ == 1 ? str_ : "";
   ret.val_ = val_ * value.val_;
@@ -162,7 +162,7 @@ Value Value::operator*(Value value) {
   return ret;
 }
 
-Value Value::operator*(int mult) {
+Value Value::operator*(int mult) const {
   Value ret;
   ret.val_ = val_;
   ret.str_ = str_;
@@ -174,7 +174,7 @@ Value Value::operator*(int mult) {
   }
 }
 
-Value Value::operator+(int val) {
+Value Value::operator+(int val) const {
   Value ret;
   ret.val_ = val;
   ret.str_ = str_;
@@ -186,7 +186,7 @@ Value Value::operator+(int val) {
   }
 }
 
-Value Value::operator-(Value value) {
+Value Value::operator-(Value value) const {
   Value ret;
   ret.val_ = val_;
   ret.str_ = str_;
@@ -206,11 +206,11 @@ Value::Value() {
   val_ = 0;
 }
 
-bool Value::operator!=(Value value) {
+bool Value::operator!=(Value value) const {
   return !(*this == std::move(value));
 }
 
-bool Value::operator==(Value value) {
+bool Value::operator==(Value value) const {
   if (this->str_ == value.str_) {
     if (this->val_ == value.val_) {
       return true;
@@ -219,11 +219,11 @@ bool Value::operator==(Value value) {
   return false;
 }
 
-Value Value::operator+=(int x) {
+Value Value::operator+=(int x) const {
   return *this + Value(x);
 }
 
-std::string Port::toVHDL() {
+std::string Port::toVHDL() const {
   if (vec_) {
     return comment() + alignStat(t(2) + name_,
                                  ": ",
@@ -234,11 +234,11 @@ std::string Port::toVHDL() {
   }
 }
 
-bool Signal::isVector() { return vec_; }
+bool Signal::isVector() const { return vec_; }
 
-Dir Port::dir() { return dir_; }
+Dir Port::dir() const { return dir_; }
 
-std::string Port::toString() {
+std::string Port::toString() const {
   return "[PORT: " + name_ + " | Dir: " + dir2str(dir_) + (isVector() ? " | width: " + width_.toString() + "]" : "]");
 }
 
@@ -256,7 +256,7 @@ std::string dir2str(Dir dir) {
     return "out";
 }
 
-std::string Signal::toVHDL() {
+std::string Signal::toVHDL() const {
   if (vec_) {
     return comment() + alignStat(t(1) + "signal " + name_,
                                  ": ",
@@ -281,7 +281,7 @@ Signal::Signal(std::string name, Value width, bool is_vector) : Groupable(),
 
 Signal::Signal(std::string name) : Signal(std::move(name), Value(1), false) {}
 
-std::string Connection::toVHDL() {
+std::string Connection::toVHDL() const {
   std::string source_string;
 
   // Apply inversion for string generation:
@@ -324,7 +324,7 @@ std::string Generic::toVHDLNoDefault() {
   return comment() + alignStat(t(2) + name_, ": ", type_, COL_ALN);
 }
 
-std::string Generic::toVHDL() {
+std::string Generic::toVHDL() const {
   return comment() + alignStat(t(2) + name_, ": ", type_ + " := " + value_.toString(), COL_ALN);
 }
 
@@ -351,7 +351,7 @@ void Entity::addPort(const std::shared_ptr<Port> &port) {
   addPort(port, port->group());
 }
 
-Port *Entity::getPortByName(const std::string &name) {
+Port *Entity::getPortByName(const std::string &name) const {
   for (auto const &port : ports_) {
     if (port->name() == name)
       return port.get();
@@ -359,7 +359,7 @@ Port *Entity::getPortByName(const std::string &name) {
   return nullptr;
 }
 
-Generic *Entity::getGenericByName(const std::string &name) {
+Generic *Entity::getGenericByName(const std::string &name) const {
   for (auto const &generic : generics_) {
     if (generic->name() == name)
       return generic.get();
@@ -367,15 +367,13 @@ Generic *Entity::getGenericByName(const std::string &name) {
   return nullptr;
 }
 
-std::string Entity::toVHDL() {
+std::string Entity::toVHDL() const {
   std::string ret = comment();
   ret += "entity " + name_ + " is\n";
 
   // Generics:
   if (!generics_.empty()) {
     ret += "  generic(\n";
-    // Sort generics by group id
-    std::sort(generics_.begin(), generics_.end(), Groupable::compare_sp);
     int group = generics_.front()->group();
 
     for (auto const &gen : generics_) {
@@ -395,9 +393,6 @@ std::string Entity::toVHDL() {
   // Ports:
   if (!ports_.empty()) {
     ret += "  port(\n";
-
-    // Sort ports by group id
-    std::sort(ports_.begin(), ports_.end(), Groupable::compare_sp);
 
     // Get the first group id
     int group = ports_.front()->group();
@@ -424,7 +419,7 @@ Entity::Entity(std::string name) {
   name_ = std::move(name);
 }
 
-bool Entity::hasGenericWithName(const std::string &name) {
+bool Entity::hasGenericWithName(const std::string &name) const {
   for (const auto &gen : generics_) {
     if (gen->name() == name) {
       return true;
@@ -433,7 +428,7 @@ bool Entity::hasGenericWithName(const std::string &name) {
   return false;
 }
 
-bool Entity::hasGeneric(Generic *generic) {
+bool Entity::hasGeneric(const Generic *generic) const {
   for (const auto &gen : generics_) {
     if (gen.get() == generic) {
       return true;
@@ -442,7 +437,7 @@ bool Entity::hasGeneric(Generic *generic) {
   return false;
 }
 
-bool Entity::hasPortWithName(const std::string &name) {
+bool Entity::hasPortWithName(const std::string &name) const {
   for (const auto &port : ports_) {
     if (port->name() == name) {
       return true;
@@ -451,7 +446,7 @@ bool Entity::hasPortWithName(const std::string &name) {
   return false;
 }
 
-bool Entity::hasPort(Port *port) {
+bool Entity::hasPort(const Port *port) const {
   for (const auto &p : ports_) {
     if (p.get() == port) {
       return true;
@@ -460,15 +455,15 @@ bool Entity::hasPort(Port *port) {
   return false;
 }
 
-std::vector<Port *> Entity::ports() {
+std::vector<Port *> Entity::ports() const {
   std::vector<Port *> ret;
-  for (const auto &p: ports_) {
+  for (const auto &p : ports_) {
     ret.push_back(p.get());
   }
   return ret;
 }
 
-std::vector<Generic *> Entity::generics() {
+std::vector<Generic *> Entity::generics() const {
   std::vector<Generic *> ret;
   for (const auto &g: generics_) {
     ret.push_back(g.get());
@@ -537,16 +532,16 @@ Signal *Architecture::getSignal(const std::string &name) {
 void Architecture::addConnection(const std::shared_ptr<Connection> &connection) {
   if (connection->inverted()) {
     LOGD("Connecting source " + connection->source()->toString() + " " + connection->source_range().toString() +
-         " to sink " + connection->dest()->toString() + " " + connection->dest_range().toString());
+        " to sink " + connection->dest()->toString() + " " + connection->dest_range().toString());
   } else {
     LOGD("Connecting source " + connection->dest()->toString() + " " + connection->dest_range().toString() +
-         " to sink " + connection->source()->toString() + " " + connection->source_range().toString());
+        " to sink " + connection->source()->toString() + " " + connection->source_range().toString());
   }
 
   connections_.push_back(connection);
 }
 
-std::string Architecture::toVHDL() {
+std::string Architecture::toVHDL() const {
   std::string ret = comment();
 
   ret += "architecture " + name_ + " of " + entity_->name() + " is\n";
@@ -566,7 +561,6 @@ std::string Architecture::toVHDL() {
 
   /* Signal declarations */
   if (!signals_.empty()) {
-    std::sort(signals_.begin(), signals_.end(), Groupable::compare_sp);
 
     group = signals_.front()->group();
 
@@ -589,11 +583,6 @@ std::string Architecture::toVHDL() {
   ret += "\n";
 
   /* Connections */
-  // Sort connections by name first
-  std::sort(connections_.begin(), connections_.end(), Connection::sortFun);
-  // Then by group
-  std::sort(connections_.begin(), connections_.end(), Groupable::compare_sp);
-
   group = connections_.front()->group();
 
   for (const auto &con :connections_) {
@@ -647,7 +636,7 @@ Instantiation::Instantiation(std::shared_ptr<Component> component) :
     name_(nameFrom({component->entity()->name(), "_inst"})),
     comp_(std::move(component)) {}
 
-std::string Instantiation::toVHDL() {
+std::string Instantiation::toVHDL() const {
   std::string ret = comment();
 
   ret += t(1) + name_ + ": " + comp_->entity()->name() + "\n";
@@ -705,7 +694,7 @@ std::string Instantiation::toVHDL() {
   return ret;
 }
 
-void Instantiation::mapPort(Port *port, Signal *destination, Range dest_range) {
+void Instantiation::mapPort(const Port *port, const Signal *destination, Range dest_range) {
   if (port == nullptr) {
     throw std::runtime_error("Port cannot be nullptr.");
   }
@@ -716,13 +705,13 @@ void Instantiation::mapPort(Port *port, Signal *destination, Range dest_range) {
   LOGD("Mapping port " + port->toString() + " to " + destination->toString());
 
   if (comp_->entity()->hasPort(port)) {
-    port_map_.insert(std::pair<Port *, std::pair<Signal *, Range>>{port, {destination, dest_range}});
+    port_map_.insert(std::pair<const Port *, std::pair<const Signal *, Range>>{port, {destination, dest_range}});
   } else {
     throw std::runtime_error("Port " + port->toString() + " does not exist on " + comp_->entity()->toString());
   }
 }
 
-void Instantiation::mapGeneric(Generic *generic, Value value) {
+void Instantiation::mapGeneric(const Generic *generic, Value value) {
   if (generic == nullptr) {
     throw std::runtime_error("Generic cannot be nullptr.");
   }
@@ -730,7 +719,7 @@ void Instantiation::mapGeneric(Generic *generic, Value value) {
   LOGD("Mapping generic " + generic->toString() + " to value: " + value.toString());
 
   if (comp_->entity()->hasGeneric(generic)) {
-    generic_map_.insert(std::pair<Generic *, Value>{generic, value});
+    generic_map_.insert(std::pair<const Generic *, Value>{generic, value});
   } else {
     throw std::runtime_error("Generic " + generic->toString() + " does not exist on " + comp_->entity()->toString());
   }
@@ -740,7 +729,7 @@ bool Connection::sortFun_::operator()(const std::shared_ptr<Connection> &a, cons
   return a->source_->name() < b->source_->name();
 }
 
-std::string Range::toString() {
+std::string Range::toString() const {
   if (type_ == ALL) {
     return "(ALL)";
   } else if (type_ == SINGLE) {
@@ -754,7 +743,7 @@ std::string Range::toString() {
   }
 }
 
-std::string Range::toVHDL() {
+std::string Range::toVHDL() const {
   if (type_ == ALL) {
     return "";
   } else if (type_ == SINGLE) {
@@ -768,7 +757,7 @@ std::string Range::toVHDL() {
   }
 }
 
-std::string Component::toVHDL() {
+std::string Component::toVHDL() const {
   std::string ret = comment();
   ret += t(1) + "component " + entity()->name() + " is\n";
 
@@ -806,7 +795,7 @@ std::string Component::toVHDL() {
     std::sort(ports.begin(), ports.end(), Groupable::compare);
 
     // Sort ports by name
-    std::sort(ports.begin(), ports.end(), [](const Port* a, const Port* b) {
+    std::sort(ports.begin(), ports.end(), [](const Port *a, const Port *b) {
       return a->name() > b->name();
     });
 

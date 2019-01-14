@@ -12,23 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "design.h"
 
-#include <string>
-#include <memory>
-
-#include <arrow/type.h>
-
-#include "fletcher-streams.h"
-
-namespace fletchgen {
-
-/**
- * Print some info about a field.
- * @param field The field
- * @param parent Any parent stream
- * @return A string with some info about a field.
- */
-std::string getFieldInfoString(const std::shared_ptr<arrow::Field>& field, const ArrowStream *parent);
-
-}  // namespace fletchgen

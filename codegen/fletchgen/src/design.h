@@ -14,21 +14,25 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
+#include <vector>
+#include <utility>
 
-#include <arrow/type.h>
-
-#include "fletcher-streams.h"
+#include "./stream/stream.h"
 
 namespace fletchgen {
 
-/**
- * Print some info about a field.
- * @param field The field
- * @param parent Any parent stream
- * @return A string with some info about a field.
- */
-std::string getFieldInfoString(const std::shared_ptr<arrow::Field>& field, const ArrowStream *parent);
+class Design {
+ public:
+  explicit Design(std::vector<std::shared_ptr<arrow::Schema>> schemas)
+      : configs(config::fromSchemas(schemas)), schemas_(std::move(schemas)) {
 
-}  // namespace fletchgen
+  }
+
+  std::shared_ptr<arrow::Schema> schema(int i) { return schemas_[i]; }
+ private:
+  std::vector<config::Config> configs;
+  std::vector<std::shared_ptr<arrow::Schema>> schemas_;
+};
+
+}

@@ -14,21 +14,28 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include <arrow/type.h>
-
-#include "fletcher-streams.h"
+#include "./components.h"
 
 namespace fletchgen {
+namespace dot {
 
-/**
- * Print some info about a field.
- * @param field The field
- * @param parent Any parent stream
- * @return A string with some info about a field.
- */
-std::string getFieldInfoString(const std::shared_ptr<arrow::Field>& field, const ArrowStream *parent);
+using fletchgen::stream::Port;
+using fletchgen::stream::Type;
+using fletchgen::stream::Vector;
+using fletchgen::stream::Signed;
+using fletchgen::stream::Unsigned;
+using fletchgen::stream::Record;
+using fletchgen::stream::Parameter;
+using fletchgen::stream::ComponentType;
+using fletchgen::stream::Component;
+using fletchgen::stream::Edge;
+using fletchgen::stream::Node;
 
+class Grapher {
+ public:
+  static std::string Edges(const std::shared_ptr<Component> &comp);
+  static std::string Nodes(const std::shared_ptr<Component> &comp);
+};
+
+}  // namespace dot
 }  // namespace fletchgen

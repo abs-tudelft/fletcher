@@ -31,6 +31,12 @@ set(HEADERS
         src/top/axi.h
         src/top/sim.h
         src/config.h
+        src/stream/stream.h
+        src/stream/vhdl.h
+        src/stream/types.h
+        src/stream/nodes.h
+        src/stream/components.h
+        src/stream/dot.h
         )
 
 set(SOURCES
@@ -52,6 +58,12 @@ set(SOURCES
         src/top/axi.cc
         src/top/sim.cc
         src/config.cc
+        src/stream/stream.cc
+        src/stream/vhdl.cc
+        src/stream/types.cc
+        src/stream/nodes.cc
+        src/stream/components.cc
+        src/stream/dot.cc
         )
 
 set(RESOURCES
@@ -78,3 +90,21 @@ target_link_libraries(${FLETCHGEN} ${REQUIRED} Boost::program_options)
 
 install(TARGETS ${FLETCHGEN} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)
+
+########################################################################################################################
+# TESTS
+########################################################################################################################
+if (FLETCHER_TESTS)
+    enable_testing()
+    include(GoogleTest)
+    find_package(GTest REQUIRED)
+
+    set(TEST_SOURCES test/test.cc)
+    add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})
+    target_link_libraries(${FLETCHGEN}-test ${FLETCHGEN}-static)
+    target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
+    target_link_libraries(${FLETCHGEN}-test GTest::GTest GTest::Main)
+    target_include_directories(${FLETCHGEN}-test PUBLIC ../../platforms/echo/runtime/src)
+
+    gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
+endif (FLETCHER_TESTS)
