@@ -12,812 +12,381 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <utility>
-#include <iostream>
 #include <algorithm>
-#include <regex>
 
-#include "../logging.h"
+#include "../stream.h"
+#include "../nodes.h"
+#include "../types.h"
+#include "../components.h"
+
+#include "./vhdl.h"
 #include "vhdl.h"
 
+namespace fletchgen {
 namespace vhdl {
 
-constexpr char IDENTIFIER_REGEX[] = "(?!.*__)[a-zA-Z][\\w]*[^_]";
+using fletchgen::Port;
+using fletchgen::Type;
+using fletchgen::Vector;
+using fletchgen::Record;
+using fletchgen::Parameter;
+using fletchgen::Component;
+using fletchgen::Literal;
+using fletchgen::Stream;
 
-int log2ceil(int num) {
-  auto l2 = std::log2<int>(num);
-  auto cl2 = std::ceil(l2);
-  return static_cast<int>(cl2);
+using std::to_string;
+
+std::shared_ptr<Type> valid() {
+  static std::shared_ptr<Type> result = std::make_shared<Bit>("valid");
+  return result;
 }
 
-bool isIdentifier(const std::string &basic_string) {
-  std::regex id_regex(IDENTIFIER_REGEX);
-  return std::regex_match(basic_string, id_regex);
+std::shared_ptr<Type> ready() {
+  static std::shared_ptr<Type> result = std::make_shared<Bit>("ready");
+  return result;
 }
 
-std::string makeIdentifier(const std::string &str) {
-  if (!isIdentifier(str)) {
-    std::string ret = str;
-    // TODO: add more
-    std::replace(ret.begin(), ret.end(), ' ', '_');
-
-    if (!isIdentifier(ret)) {
-      throw std::runtime_error("Could not convert string \"" + str + "\" into valid VHDL identifier.");
-    }
-    return ret;
-  } else {
-    return str;
-  }
-}
-
-std::string t(int i) {
-  std::string ret(uint64_t(2 * i), ' ');
-  return ret;
-}
-
-std::string seperator(int tabs) {
-  return t(tabs) + std::string(static_cast<unsigned long>(COL_MAX - tabs * 2), '-') + "\n";
-}
-
-std::string alignStat(const std::string &prefix,
-                      const std::string &separator,
-                      const std::string &suffix,
-                      uint32_t pos) {
-  int len = (pos - 1) - (int) prefix.length();
-  if (len < 0) len = 0;
-  return prefix + std::string((uint64_t) len, ' ') + separator + suffix;
-}
-
-//TODO(johanpel): use va_arg ?
-std::string nameFrom(std::vector<std::string> strings) {
-  std::string ret;
-
-  auto i = strings.begin();
-  while (i != strings.end()) {
-    if (i->empty()) {
-      i = strings.erase(i);
-    } else {
-      ++i;
-    }
-  }
-
-  for (const auto &str : strings) {
-    if (!str.empty()) {
-      if (str != strings.front()) {
-        ret += "_";
-      }
-      ret += str;
-    }
-  }
-
-  return ret;
-}
-
-Range Value::asRangeDowntoZero() const {
-  auto high = *this - Value(1);
-  return Range(high, Value(0));
-}
-
-std::string Value::toString() const {
-  std::string ret = str_;
-  if (val_ != 0) {
-    if (!ret.empty()) {
-      if (val_ > 0)
-        ret += "+";
-      if (val_ < 0)
-        ret += "-";
-    }
-    ret += std::to_string(std::abs(val_));
-  } else if (str_.empty()) {
-    ret += "0";
-  }
-  return ret;
-}
-
-Value Value::operator+(Value value) const {
-  Value ret;
-  ret.val_ = val_;
-  ret.str_ = str_;
-
-  ret.val_ = ret.val_ + value.val_;
-
-  if (!value.str_.empty()) {
-    if (!ret.str_.empty()) {
-      //TODO: do something fancy here to make n*str -> (n+1)*str if the str is the same
-      ret.str_ += "+";
-    }
-    ret.str_ += value.str_;
-  }
-
-  return ret;
-}
-
-Value Value::operator*(Value value) const {
-  Value ret;
-  ret.str_ = val_ == 1 ? str_ : "";
-  ret.val_ = val_ * value.val_;
-
-  if (!str_.empty()) {
-    if (!value.str_.empty()) {
-      ret.str_ = str_ + "*" + value.str_;
-    }
-  }
-
-  if (value.val_ > 1) {
-    if (!str_.empty()) {
-      if (!ret.str_.empty())
-        ret.str_ += "+";
-      ret.str_ += std::to_string(value.val_) + "*" + str_;
-    }
-  }
-
-  if (val_ > 1) {
-    if (!value.str_.empty()) {
-      if (!ret.str_.empty())
-        ret.str_ += "+";
-      ret.str_ += std::to_string(val_) + "*" + value.str_;
-    }
-  }
-
-  return ret;
-}
-
-Value Value::operator*(int mult) const {
-  Value ret;
-  ret.val_ = val_;
-  ret.str_ = str_;
-
-  if (mult != 1) {
-    return ret * Value(mult);
-  } else {
-    return ret;
-  }
-}
-
-Value Value::operator+(int val) const {
-  Value ret;
-  ret.val_ = val;
-  ret.str_ = str_;
-
-  if (val != 0) {
-    return ret + Value(val);
-  } else {
-    return ret;
-  }
-}
-
-Value Value::operator-(Value value) const {
-  Value ret;
-  ret.val_ = val_;
-  ret.str_ = str_;
-
-  ret.val_ = ret.val_ - value.val_;
-
-  if (!value.str_.empty()) {
-    if (!ret.str_.empty())
-      ret.str_ += "-";
-    ret.str_ += value.str_;
-  }
-  return ret;
-}
-
-Value::Value() {
-  str_ = "";
-  val_ = 0;
-}
-
-bool Value::operator!=(Value value) const {
-  return !(*this == std::move(value));
-}
-
-bool Value::operator==(Value value) const {
-  if (this->str_ == value.str_) {
-    if (this->val_ == value.val_) {
-      return true;
-    }
-  }
-  return false;
-}
-
-Value Value::operator+=(int x) const {
-  return *this + Value(x);
-}
-
-std::string Port::toVHDL() const {
-  if (vec_) {
-    return comment() + alignStat(t(2) + name_,
-                                 ": ",
-                                 dir2str(dir_) + " std_logic_vector(" + width_.asRangeDowntoZero().toVHDL() + ")",
-                                 COL_ALN);
-  } else {
-    return comment() + alignStat(t(2) + name_, ": ", dir2str(dir_) + " std_logic", COL_ALN);
-  }
-}
-
-bool Signal::isVector() const { return vec_; }
-
-Dir Port::dir() const { return dir_; }
-
-std::string Port::toString() const {
-  return "[PORT: " + name_ + " | Dir: " + dir2str(dir_) + (isVector() ? " | width: " + width_.toString() + "]" : "]");
-}
-
-Dir rev(Dir dir) {
-  if (dir == IN) {
-    return Dir::OUT;
-  } else
-    return Dir::IN;
-}
-
-std::string dir2str(Dir dir) {
-  if (dir == IN) {
+std::string ToString(Port::Dir dir) {
+  if (dir == Port::Dir::IN) {
     return "in";
-  } else
+  } else {
     return "out";
+  }
 }
 
-std::string Signal::toVHDL() const {
-  if (vec_) {
-    return comment() + alignStat(t(1) + "signal " + name_,
-                                 ": ",
-                                 "std_logic_vector(" + width_.asRangeDowntoZero().toVHDL() + ");",
-                                 COL_ALN);
+Port::Dir Reverse(Port::Dir dir) {
+  if (dir == Port::Dir::IN) {
+    return Port::Dir::OUT;
   } else {
-    return comment() + alignStat(t(1) + "signal " + name_, ": ", "std_logic;", COL_ALN);
+    return Port::Dir::IN;
   }
 }
 
-Signal::Signal(std::string name, Value width, bool is_vector) : Groupable(),
-                                                                name_(std::move(name)),
-                                                                width_(std::move(width)),
-                                                                vec_(is_vector) {
-  if ((!vec_) && (width_ != Value(1))) {
-    throw std::runtime_error("Signal is not-vector but has width other than 1.");
+std::string ToString(std::vector<Block> blocks) {
+  std::stringstream ret;
+  for (const auto &b : blocks) {
+    ret << b.str();
   }
-  if (name_.empty()) {
-    throw std::runtime_error("Signal name cannot be blank.");
-  }
+  return ret.str();
 }
 
-Signal::Signal(std::string name) : Signal(std::move(name), Value(1), false) {}
-
-std::string Connection::toVHDL() const {
-  std::string source_string;
-
-  // Apply inversion for string generation:
-  auto source = invert_ ? dest_ : source_;
-  auto source_range = invert_ ? dest_range_ : source_range_;
-  auto dest = invert_ ? source_ : dest_;
-  auto dest_range = invert_ ? source_range_ : dest_range_;
-
-  source_string = source->name();
-
-  if (source_range.type() != Range::Type::ALL)
-    source_string += +"(" + source_range.toVHDL() + ")";
-
-  auto sep_string = "<= ";
-
-  auto dest_string = dest->name();
-
-  if (dest_range.type() != Range::Type::ALL)
-    dest_string += "(" + dest_range.toVHDL() + ")";
-
-  return comment() + alignStat(t(1) + source_string, sep_string, dest_string + ";", COL_ALN);
-}
-
-Connection::Connection(Signal *destination, Range dest_range, Signal *source, Range source_range, bool invert)
-    : Groupable(),
-      source_(source),
-      dest_(destination),
-      source_range_(std::move(source_range)),
-      dest_range_(std::move(dest_range)),
-      invert_(invert) {
-  if (source == nullptr) {
-    throw std::runtime_error("DerivedFrom for connection is null pointer.");
-  }
-  if (destination == nullptr) {
-    throw std::runtime_error("Destination for connection is null pointer.");
-  }
-}
-
-std::string Generic::toVHDLNoDefault() {
-  return comment() + alignStat(t(2) + name_, ": ", type_, COL_ALN);
-}
-
-std::string Generic::toVHDL() const {
-  return comment() + alignStat(t(2) + name_, ": ", type_ + " := " + value_.toString(), COL_ALN);
-}
-
-Entity *Entity::addGeneric(const std::shared_ptr<Generic> &generic) {
-  if (!hasGenericWithName(generic->name())) {
-    generics_.push_back(generic);
+std::string ToString(std::shared_ptr<Node> node) {
+  if (node->IsLiteral()) {
+    auto x = std::dynamic_pointer_cast<Literal>(node);
+    return x->ToValueString();
+  } else if (node->IsParameter()) {
+    auto x = Cast<Parameter>(node);
+    return x->name();
   } else {
-    throw std::runtime_error("Generic " + generic->name() + " already exists on entity " + name_);
+    return node->name();
   }
-  return this;
 }
 
-void Entity::addPort(const std::shared_ptr<Port> &port, int group) {
-  LOGD("Adding port " + port->toString() + " to " + toString());
-  if (!hasPortWithName(port->name())) {
-    port->setGroup(group);
-    ports_.push_back(port);
+std::string Declarator::Generate(const std::shared_ptr<Type> &type) {
+  if (type->Is(Type::CLOCK)) {
+    return "std_logic";
+  } else if (type->Is(Type::RESET)) {
+    return "std_logic";
+  } else if (type->Is(Type::BIT)) {
+    return "std_logic";
+  } else if (type->Is(Type::VECTOR)) {
+    auto vec = std::dynamic_pointer_cast<Vector>(type);
+    return "std_logic_vector(" + ToString(vec->width()) + "-1 downto 0)";
+  } else if (type->Is(Type::RECORD)) {
+    auto r = std::dynamic_pointer_cast<Record>(type);
+    return r->name();
+  } else if (type->Is(Type::NATURAL)) {
+    return "natural";
+  } else if (type->Is(Type::STREAM)) {
+    return Generate(Stream::Cast(type)->child());
+  } else if (type->Is(Type::STRING)) {
+    return "string";
+  } else if (type->Is(Type::BOOLEAN)) {
+    return "boolean";
   } else {
-    throw std::runtime_error("Port " + port->name() + " already exists on entity " + name_);
+    return "FLETCHGEN_INVALID_TYPE";
   }
 }
 
-void Entity::addPort(const std::shared_ptr<Port> &port) {
-  addPort(port, port->group());
-}
-
-Port *Entity::getPortByName(const std::string &name) const {
-  for (auto const &port : ports_) {
-    if (port->name() == name)
-      return port.get();
-  }
-  return nullptr;
-}
-
-Generic *Entity::getGenericByName(const std::string &name) const {
-  for (auto const &generic : generics_) {
-    if (generic->name() == name)
-      return generic.get();
-  }
-  return nullptr;
-}
-
-std::string Entity::toVHDL() const {
-  std::string ret = comment();
-  ret += "entity " + name_ + " is\n";
-
-  // Generics:
-  if (!generics_.empty()) {
-    ret += "  generic(\n";
-    int group = generics_.front()->group();
-
-    for (auto const &gen : generics_) {
-      if (gen->group() != group) {
-        ret += seperator(2);
-        group = gen->group();
-      }
-      ret += gen->toVHDLNoDefault();
-      if (generics_.back() != gen) {
-        ret += ";";
-      }
-      ret += "\n";
-    }
-    ret += "  );\n";
-  }
-
-  // Ports:
-  if (!ports_.empty()) {
-    ret += "  port(\n";
-
-    // Get the first group id
-    int group = ports_.front()->group();
-
-    for (auto const &p : ports_) {
-      if (p->group() != group) {
-        ret += seperator(2);
-        group = p->group();
-      }
-      ret += p->toVHDL();
-      if (ports_.back() != p) {
-        ret += ";";
-      }
-      ret += "\n";
-    }
-    ret += "  );\n";
-  }
-  ret += "end " + name_ + ";\n";
-
+Block Declarator::Generate(const std::shared_ptr<Parameter> &par, int depth) {
+  Block ret(depth);
+  Line l;
+  l << par->name() << " : " << Generate(par->type);
+  ret << l;
   return ret;
 }
 
-Entity::Entity(std::string name) {
-  name_ = std::move(name);
-}
-
-bool Entity::hasGenericWithName(const std::string &name) const {
-  for (const auto &gen : generics_) {
-    if (gen->name() == name) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool Entity::hasGeneric(const Generic *generic) const {
-  for (const auto &gen : generics_) {
-    if (gen.get() == generic) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool Entity::hasPortWithName(const std::string &name) const {
-  for (const auto &port : ports_) {
-    if (port->name() == name) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool Entity::hasPort(const Port *port) const {
-  for (const auto &p : ports_) {
-    if (p.get() == port) {
-      return true;
-    }
-  }
-  return false;
-}
-
-std::vector<Port *> Entity::ports() const {
-  std::vector<Port *> ret;
-  for (const auto &p : ports_) {
-    ret.push_back(p.get());
-  }
-  return ret;
-}
-
-std::vector<Generic *> Entity::generics() const {
-  std::vector<Generic *> ret;
-  for (const auto &g: generics_) {
-    ret.push_back(g.get());
-  }
-  return ret;
-}
-
-Architecture::Architecture(std::string name, std::shared_ptr<Entity> entity) {
-  name_ = std::move(name);
-  entity_ = std::move(entity);
-}
-
-void Architecture::addComponent(const std::shared_ptr<Component> &comp) {
-  LOGD("Declaring " + comp->toString() + " in " + toString());
-  comp_decls_.push_back(comp);
-}
-
-void Architecture::addInstantiation(const std::shared_ptr<Instantiation> &inst) {
-  LOGD("Instantiating " + inst->toString() + " in " + toString());
-  // Check if instance already exists:
-  for (const auto &i : instances_) {
-    if (i->name() == inst->name()) {
-      throw std::runtime_error("Signal with name " + inst->name() + " already exists on " + toString());
-    }
-  }
-  instances_.push_back(inst);
-}
-
-Signal *Architecture::addSignal(const std::shared_ptr<Signal> &signal, int group) {
-  LOGD("Declaring " + signal->toString() + " in " + toString());
-  // Check if signal already exists:
-  for (const auto &s : signals_) {
-    if (s->name() == signal->name()) {
-      throw std::runtime_error("Signal with name " + signal->name() + " already exists on " + toString());
-    }
-  }
-  signals_.push_back(signal);
-  signal->setGroup(group);
-  return signal.get();
-}
-
-Signal *Architecture::addSignalFromPort(Port *port, std::string prefix, int group) {
-  if (!port->isVector()) {
-    return addSignal(std::make_shared<Signal>(prefix + "_" + port->name()), group);
+Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port> parent, int depth) {
+  // Check if type is nested
+  if (type->Is(Type::RECORD)) {
+    return Generate(Record::Cast(type), parent, depth);
+  } else if (type->Is(Type::STREAM)) {
+    return Generate(Stream::Cast(type), parent, depth);
   } else {
-    return addSignal(std::make_shared<Signal>(prefix + "_" + port->name(), port->width()), group);
-  }
-}
-
-void Architecture::addSignalsFromEntityPorts(Entity *entity, std::string prefix, int group) {
-  // Create a signal on the top-level for each port.
-  for (const auto &port : entity->ports()) {
-    addSignalFromPort(port, prefix);
-  }
-}
-
-Signal *Architecture::getSignal(const std::string &name) {
-  for (auto const &signal : signals_) {
-    if (signal->name() == name)
-      return signal.get();
-  }
-  LOGD("Could not find signal with name " + name);
-  return nullptr;
-}
-
-void Architecture::addConnection(const std::shared_ptr<Connection> &connection) {
-  if (connection->inverted()) {
-    LOGD("Connecting source " + connection->source()->toString() + " " + connection->source_range().toString() +
-        " to sink " + connection->dest()->toString() + " " + connection->dest_range().toString());
-  } else {
-    LOGD("Connecting source " + connection->dest()->toString() + " " + connection->dest_range().toString() +
-        " to sink " + connection->source()->toString() + " " + connection->source_range().toString());
-  }
-
-  connections_.push_back(connection);
-}
-
-std::string Architecture::toVHDL() const {
-  std::string ret = comment();
-
-  ret += "architecture " + name_ + " of " + entity_->name() + " is\n";
-  ret += "\n";
-
-  int group = 0;
-
-  /* Component declarations */
-  if (!comp_decls_.empty()) {
-    for (const auto &c: comp_decls_) {
-      ret += seperator(1);
-      ret += c->toVHDL();
-    }
-    ret += seperator(1);
-    ret += "\n";
-  }
-
-  /* Signal declarations */
-  if (!signals_.empty()) {
-
-    group = signals_.front()->group();
-
-    for (const auto &s : signals_) {
-      if (s->group() != group) {
-        ret += seperator(1);
-        group = s->group();
-      }
-      ret += s->toVHDL() + "\n";
-    }
-  }
-
-  ret += "begin\n";
-
-  /* Component instantiations */
-  for (const auto &inst : instances_) {
-    ret += inst->toVHDL() + "\n";
-  }
-
-  ret += "\n";
-
-  /* Connections */
-  group = connections_.front()->group();
-
-  for (const auto &con :connections_) {
-    if (con->group() != group) {
-      ret += seperator(1);
-      group = con->group();
-    }
-    ret += con->toVHDL() + "\n";
-  }
-
-  ret += seperator(1);
-
-  /* Statements */
-  for (const auto &stat : statements_) {
-    ret += stat->toVHDL() + "\n";
-  }
-
-  ret += "\nend architecture;\n";
-
-  return ret;
-}
-
-void Architecture::removeSignal(Signal *signal) {
-  if (signal != nullptr) {
-    for (auto s = signals_.begin(); s != signals_.end(); s++) {
-      if (s->get() == signal) {
-        signals_.erase(s);
-        return;
-      }
-    }
-    LOGE("Cannot remove " + signal->name() + " from " + this->toString() + " because it does not exist.");
-  }
-  throw std::runtime_error("Attempt to remove a nullptr signal.");
-}
-
-void Architecture::removeSignal(std::string signal) {
-  auto sig = getSignal(signal);
-  if (sig != nullptr) {
-    removeSignal(sig);
-  } else {
-    LOGE("Cannot remove " + signal + " from " + this->toString() + " because it does not exist.");
-  }
-}
-
-Statement *Architecture::addStatement(std::shared_ptr<Statement> statement) {
-  statements_.push_back(statement);
-  return statement.get();
-}
-
-Instantiation::Instantiation(std::shared_ptr<Component> component) :
-    name_(nameFrom({component->entity()->name(), "_inst"})),
-    comp_(std::move(component)) {}
-
-std::string Instantiation::toVHDL() const {
-  std::string ret = comment();
-
-  ret += t(1) + name_ + ": " + comp_->entity()->name() + "\n";
-
-  if (!generic_map_.empty()) {
-    ret += t(2) + "generic map (\n";
-
-    auto generics = component()->entity()->generics();
-    auto n = false;
-    // For all generics:
-    for (const auto &g: generics) {
-      // Check if the generic is mapped:
-      auto val = generic_map_.find(g);
-      if (val != generic_map_.end()) {
-        if (n) {
-          ret += ",\n";
-        } else {
-          n = true;
-        }
-        ret += alignStat(t(3) + g->name(), "=> ", val->second.toString(), COL_ALN);
-
-      }
-    }
-    ret += "\n" + t(2) + ")\n";
-  }
-
-  ret += "    port map (\n";
-
-  if (!port_map_.empty()) {
-    auto ports = component()->entity()->ports();
-    auto n = false;
-    // For all ports:
-    for (const auto &p : ports) {
-      // Check if the port is mapped:
-      auto port = port_map_.find(p);
-      if (port != port_map_.end()) {
-        if (n) {
-          ret += ",\n";
-        } else {
-          n = true;
-        }
-        auto name_str = port->second.first->name();
-        auto range_str = port->second.second.toVHDL();
-        std::string dest = name_str;
-        if ((port->second.second.type() != Range::ALL) && (port->second.first->isVector())) {
-          dest += "(" + range_str + ")";
-        }
-        ret += alignStat(t(3) + port->first->name(), "=> ", dest, COL_ALN);
-      }
-    }
-  }
-
-  ret += "\n" + t(2) + ");\n";
-
-  return ret;
-}
-
-void Instantiation::mapPort(const Port *port, const Signal *destination, Range dest_range) {
-  if (port == nullptr) {
-    throw std::runtime_error("Port cannot be nullptr.");
-  }
-  if (destination == nullptr) {
-    throw std::runtime_error("Destination cannot be nullptr.");
-  }
-
-  LOGD("Mapping port " + port->toString() + " to " + destination->toString());
-
-  if (comp_->entity()->hasPort(port)) {
-    port_map_.insert(std::pair<const Port *, std::pair<const Signal *, Range>>{port, {destination, dest_range}});
-  } else {
-    throw std::runtime_error("Port " + port->toString() + " does not exist on " + comp_->entity()->toString());
-  }
-}
-
-void Instantiation::mapGeneric(const Generic *generic, Value value) {
-  if (generic == nullptr) {
-    throw std::runtime_error("Generic cannot be nullptr.");
-  }
-
-  LOGD("Mapping generic " + generic->toString() + " to value: " + value.toString());
-
-  if (comp_->entity()->hasGeneric(generic)) {
-    generic_map_.insert(std::pair<const Generic *, Value>{generic, value});
-  } else {
-    throw std::runtime_error("Generic " + generic->toString() + " does not exist on " + comp_->entity()->toString());
-  }
-}
-
-bool Connection::sortFun_::operator()(const std::shared_ptr<Connection> &a, const std::shared_ptr<Connection> &b) {
-  return a->source_->name() < b->source_->name();
-}
-
-std::string Range::toString() const {
-  if (type_ == ALL) {
-    return "(ALL)";
-  } else if (type_ == SINGLE) {
-    return "(" + high_.toString() + ")";
-  } else {
-    if (type_ == DOWNTO) {
-      return "(" + high_.toString() + " downto " + low_.toString() + ")";
+    Block ret(depth);
+    Line d;
+    if (parent->type == type) {
+      // Not nested
+      d << "" << " : " << ToString(parent->dir) << " " + Generate(type);
     } else {
-      return "(" + low_.toString() + " to " + high_.toString() + ")";
+      // Nested child
+      d << type->name() << " : " << ToString(parent->dir) << " " + Generate(type);
     }
+    ret << d;
+    return ret;
   }
 }
 
-std::string Range::toVHDL() const {
-  if (type_ == ALL) {
-    return "";
-  } else if (type_ == SINGLE) {
-    return high_.toString();
+Block Declarator::Generate(const std::shared_ptr<RecordField> &field, const std::shared_ptr<Port> parent, int depth) {
+  Block ret;
+  ret << Generate(field->type(), parent, depth);
+  return ret;
+}
+
+Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port> parent, int depth) {
+  Block ret;
+  for (const auto &f : rec->fields()) {
+    Block fb = Generate(f, parent, depth);
+    ret << prepend(rec->name() + "_", fb);
+  }
+  return ret;
+}
+
+Block Declarator::Generate(const std::shared_ptr<Stream> &str, const std::shared_ptr<Port> parent, int depth) {
+  Block ret;
+  Block child;
+  Line v, r;
+  v << "_valid" << " : " << ToString(parent->dir) << " " + Generate(valid());
+  r << "_ready" << " : " << ToString(Reverse(parent->dir)) << " " + Generate(ready());
+  child = Generate(str->child(), parent, depth);
+  ret << v << r << child;
+  return ret;
+}
+
+Block Declarator::Generate(const std::shared_ptr<Port> &port, int depth) {
+  Block p = Generate(port->type, port, depth);
+  return prepend(port->name(), p);
+}
+
+MultiBlock Declarator::Generate(const std::shared_ptr<Component> &comp, bool entity) {
+  MultiBlock ret;
+
+  // Header
+  Block h(ret.indent), f(ret.indent);
+  Line hl, fl;
+  if (entity) {
+    hl << "entity " + comp->name();
   } else {
-    if (type_ == DOWNTO) {
-      return high_.toString() + " downto " + low_.toString();
-    } else {
-      return low_.toString() + " to " + high_.toString();
-    }
+    hl << "component " + comp->name();
   }
-}
+  h << hl;
+  ret << h;
 
-std::string Component::toVHDL() const {
-  std::string ret = comment();
-  ret += t(1) + "component " + entity()->name() + " is\n";
-
-  auto generics = entity()->generics();
-
-  // Generics:
-  if (!entity()->generics().empty()) {
-    ret += t(1) + "  generic(\n";
-    // Sort generics by group id
-    std::sort(generics.begin(), generics.end(), Groupable::compare);
-    int group = generics.front()->group();
-
-    for (auto const &gen : generics) {
-      if (gen->group() != group) {
-        ret += seperator(3);
-        group = gen->group();
+  // Generics
+  auto generics = comp->GetAll<Parameter>();
+  if (!generics.empty()) {
+    Block gdh(ret.indent + 1);
+    Block gd(ret.indent + 2);
+    Block gdf(ret.indent + 1);
+    Line gh, gf;
+    gh << "generic (";
+    gdh << gh;
+    for (const auto &gen :generics) {
+      auto g = Declarator::Generate(gen, ret.indent + 2);
+      if (gen != generics.back()) {
+        g << ";";
+      } else {
+        g <<= ";";
       }
-      ret += t(1) + gen->toVHDLNoDefault();
-      if (generics.back() != gen) {
-        ret += ";";
-      }
-      ret += "\n";
+      gd << g;
     }
-    ret += t(1) + "  );\n";
+    gf << ");";
+    gdf << gf;
+    ret << gdh << gd << gdf;
   }
-
-  auto ports = entity()->ports();
-
-  // Ports:
+  auto ports = comp->GetAll<Port>();
   if (!ports.empty()) {
-    ret += t(1) + "  port(\n";
-
-    //TODO(johanpel): this sorting should be the other way around but there is something messy with the group ids
-    // Sort ports by group id
-    std::sort(ports.begin(), ports.end(), Groupable::compare);
-
-    // Sort ports by name
-    std::sort(ports.begin(), ports.end(), [](const Port *a, const Port *b) {
-      return a->name() > b->name();
-    });
-
-    // Get the first group id
-    int group = ports.front()->group();
-
-    for (auto const &p : ports) {
-      if (p->group() != group) {
-        ret += seperator(3);
-        group = p->group();
+    Block pdh(ret.indent + 1);
+    Block pd(ret.indent + 2);
+    Block pdf(ret.indent + 1);
+    Line ph, pf;
+    ph << "port (";
+    pdh << ph;
+    for (const auto &port : ports) {
+      auto g = Declarator::Generate(port, ret.indent + 2);
+      if (port != ports.back()) {
+        g << ";";
+      } else {
+        g <<= ";";
       }
-      ret += t(1) + p->toVHDL();
-      if (ports.back() != p) {
-        ret += ";";
-      }
-      ret += "\n";
+      pd << g;
     }
-    ret += t(1) + "  );\n";
+    pf << ");";
+    pdf << pf;
+    ret << pdh << pd << pdf;
   }
-  ret += t(1) + "end component;\n";
+
+  fl << "end component;";
+  f << fl;
+
+  ret << f;
+
+  return ret;
+
+}
+
+Block Instantiator::GenConcatenatedStream(std::shared_ptr<Node> left,
+                                          std::shared_ptr<Node> right,
+                                          std::shared_ptr<Edge> edge) {
+  Block block(1);
+  Line d;
+  Line v;
+  Line r;
+
+  auto leftidx = Edge::GetIndexOf(edge, left);
+  auto rightidx = Edge::GetIndexOf(edge, right);
+
+  auto leftoff = Edge::GetVectorOffsetOf(edge, left);
+  auto rightoff = Edge::GetVectorOffsetOf(edge, right);
+
+  size_t right_width = 0;
+
+  auto rstream = Stream::Cast(right->type);
+  if (rstream->child()->Is(Type::VECTOR)) {
+    auto vec = Vector::Cast(rstream->child());
+    //right_width = vec->width();
+  }
+
+  if (edge->HasSiblings(left)) {
+    d << left->name() + "(" + to_string(leftoff + right_width - 1) + " downto " + to_string(leftoff) + ")";
+    v << left->name() + "_valid(" + to_string(leftidx) + ")";
+    r << left->name() + "_ready(" + to_string(leftidx) + ")";
+  } else {
+    d << left->name();
+    v << left->name() + "_valid";
+    r << left->name() + "_ready";
+  }
+
+  d << " => ";
+  v << " => ";
+  r << " => ";
+
+  if (edge->HasSiblings(right)) {
+    d << right->name() + "(" + to_string(rightoff + right_width - 1) + " downto " + to_string(rightoff) + "),";
+    v << right->name() + "_valid(" + to_string(rightidx) + "),";
+    r << right->name() + "_ready(" + to_string(rightidx) + "),";
+  } else {
+    d << right->name() + ",";
+    v << right->name() + "_valid,";
+    r << right->name() + "_ready,";
+  }
+
+  d << " -- Edge: " + edge->name();
+
+  block << v << r << d;
+  return block;
+}
+
+Block Instantiator::Generate(std::shared_ptr<Node> left,
+                             std::shared_ptr<Node> right,
+                             std::shared_ptr<Edge> edge) {
+  Block ret;
+
+  if (edge->GetOtherNode(left)) {
+    if (left->type->Is(Type::STREAM) && right->type->Is(Type::STREAM)) {
+      ret << GenConcatenatedStream(left, right, edge);
+    }
+  } else {
+    Block b;
+    Line c;
+    c << left->name() << " => " << right->name();
+    b << c;
+    ret << b;
+  }
+  return ret;
+}
+
+MultiBlock Instantiator::Generate(const std::shared_ptr<Component> &comp) {
+  MultiBlock ret;
+
+  // Instantiation header
+  Block lh;
+  lh << comp->name() + " : " + comp->name();
+  ret << lh;
+
+  // Generic map
+  if (comp->CountNodes(Node::PARAMETER) > 0) {
+    Block gmh(ret.indent + 1);
+    Block gm(ret.indent + 2);
+    Block gmf(ret.indent + 1);
+    Line gh, gf;
+    gh << "generic map (";
+    gmh << gh;
+    for (const auto &n : comp->nodes) {
+      Block g;
+      if (n->IsParameter()) {
+        g << Generate(n);
+      }
+      gm << g;
+    }
+    gf << ")";
+    gmf << gf;
+    ret << gmh << gm << gmf;
+  }
+
+  if (comp->CountNodes(Node::PORT) > 0) {
+    // Port map
+    Block pmh(ret.indent + 1);
+    Block pm(ret.indent + 2);
+    Block pmf(ret.indent + 1);
+    Line ph, pf;
+    ph << "port map (";
+    pmh << ph;
+    for (const auto &n : comp->nodes) {
+      Block p;
+      if (n->IsPort()) {
+        p << Generate(n);
+      }
+      pm << p;
+    }
+    pf << ")";
+    pmf << pf;
+    ret << pmh << pm << pmf;
+  }
 
   return ret;
 }
 
+Block Instantiator::Generate(const std::shared_ptr<Node> &node) {
+  Block ret;
+
+  if (node->id == Node::PARAMETER) {
+    // Parameter nodes must be connected to a literal
+    Line l;
+    l << node->name();
+    if (!node->edges().empty()) {
+      for (const auto &e : node->edges()) {
+        auto other = e->GetOtherNode(node);
+        if (other->IsLiteral()) {
+          l << " => " << std::dynamic_pointer_cast<Literal>(other)->ToValueString() << ",";
+        } else {
+          throw std::runtime_error("Parameter node should be attached to literal node.");
+        }
+      }
+    }
+    ret << l;
+  } else if (node->IsPort()) {
+    // Port nodes must be connected to signals or other port nodes
+    if (!node->edges().empty()) {
+      for (const auto &e : node->edges()) {
+        auto other = e->GetOtherNode(node);
+        ret << Generate(node, other, e);
+      }
+    }
+  }
+
+  return ret;
+}
+
+}
 }

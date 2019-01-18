@@ -10,60 +10,27 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
 set(HEADERS
-        src/logging.h
-        src/meta.h
-        src/constants.h
-        src/common.h
-        src/arrow-meta.h
-        src/printers.h
-        src/vhdl/vhdl.h
         src/stream.h
-        src/column.h
-        src/arbiter.h
-        src/fletcher-streams.h
-        src/fletcher-ports.h
-        src/column-wrapper.h
-        src/usercore.h
-        src/usercore-controller.h
-        src/srec/srec.h
-        src/srec/recordbatch.h
-        src/vhdt/vhdt.h
-        src/top/axi.h
-        src/top/sim.h
-        src/config.h
-        src/stream/stream.h
-        src/stream/vhdl.h
-        src/stream/types.h
-        src/stream/nodes.h
-        src/stream/components.h
-        src/stream/dot.h
+        src/types.h
+        src/nodes.h
+        src/components.h
+        src/fletcher_types.h
+        src/fletcher_components.h
+        src/vhdl/vhdl.h
+        src/vhdl/block.h
+        src/dot/dot.h
         )
 
 set(SOURCES
-        src/common.cc
-        src/arrow-meta.cc
-        src/printers.cc
-        src/vhdl/vhdl.cc
         src/stream.cc
-        src/column.cc
-        src/arbiter.cc
-        src/fletcher-streams.cc
-        src/fletcher-ports.cc
-        src/column-wrapper.cc
-        src/usercore.cc
-        src/usercore-controller.cc
-        src/srec/srec.cc
-        src/srec/recordbatch.cc
-        src/vhdt/vhdt.cc
-        src/top/axi.cc
-        src/top/sim.cc
-        src/config.cc
-        src/stream/stream.cc
-        src/stream/vhdl.cc
-        src/stream/types.cc
-        src/stream/nodes.cc
-        src/stream/components.cc
-        src/stream/dot.cc
+        src/types.cc
+        src/nodes.cc
+        src/components.cc
+        src/fletcher_types.cc
+        src/fletcher_components.cc
+        src/vhdl/vhdl.cc
+        src/vhdl/block.cc
+        src/dot/dot.cc
         )
 
 set(RESOURCES
@@ -78,7 +45,7 @@ target_link_libraries(${FLETCHGEN} ${FLETCHGEN}-static)
 # Include common functions, build it and link statically
 if (NOT TARGET fletcher-common)
     add_subdirectory(../../common/cpp fletcher-common)
-endif()
+endif ()
 target_link_libraries(${FLETCHGEN} fletcher-common)
 include_directories(../../common/cpp/src)
 
@@ -99,7 +66,14 @@ if (FLETCHER_TESTS)
     include(GoogleTest)
     find_package(GTest REQUIRED)
 
-    set(TEST_SOURCES test/test.cc)
+    set(TEST_SOURCES
+            test/test.cc
+            test/test_designs.h
+            test/dot/test_graphs.h
+            test/vhdl/test_declarators.h
+            test/vhdl/test_instantiators.h
+            test/vhdl/test_fletcher_components.h
+            )
     add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})
     target_link_libraries(${FLETCHGEN}-test ${FLETCHGEN}-static)
     target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})

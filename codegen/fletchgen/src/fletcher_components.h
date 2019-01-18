@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <memory>
+#pragma once
 
-#include <arrow/api.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
+#include "./types.h"
+#include "components.h"
 
-#include <gtest/gtest.h>
+#include "fletcher_types.h"
 
-#include "vhdl/test_declarators.h"
-#include "vhdl/test_instantiators.h"
-#include "vhdl/test_fletcher_components.h"
+namespace fletchgen {
 
-#include "dot/test_graphs.h"
+std::shared_ptr<Component> BusReadArbiterVec();
 
-int main(int argc, char **argv) {
-
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

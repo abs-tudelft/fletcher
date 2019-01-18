@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <memory>
+#include "types.h"
+#include "nodes.h"
 
-#include <arrow/api.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
+namespace fletchgen {
 
-#include <gtest/gtest.h>
-
-#include "vhdl/test_declarators.h"
-#include "vhdl/test_instantiators.h"
-#include "vhdl/test_fletcher_components.h"
-
-#include "dot/test_graphs.h"
-
-int main(int argc, char **argv) {
-
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+bool Type::Is(Type::ID type_id) {
+  return type_id == id;
 }
+
+Vector::Vector(std::string name, std::shared_ptr<Node> width)
+    : Type(std::move(name), Type::VECTOR) {
+  // Check if width is parameter or literal node
+  if (!(width->IsParameter() || width->IsLiteral())) {
+    throw std::runtime_error("Vector width can only be parameter or literal node.");
+  } else {
+    width_ = std::move(width);
+  }
+}
+}  // namespace fletchgen

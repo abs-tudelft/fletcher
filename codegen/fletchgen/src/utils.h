@@ -12,23 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
+#pragma once
+
+#include <string>
 #include <memory>
 
-#include <arrow/api.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
+namespace fletchgen {
 
-#include <gtest/gtest.h>
+class Named {
+ public:
+  explicit Named(std::string name)
+      : name_(std::move(name)) {}
+  std::string name() const { return name_; }
+ private:
+  std::string name_;
+};
 
-#include "vhdl/test_declarators.h"
-#include "vhdl/test_instantiators.h"
-#include "vhdl/test_fletcher_components.h"
+struct ClockDomain : public Named {
+  explicit ClockDomain(std::string name)
+      : Named(std::move(name)) {}
 
-#include "dot/test_graphs.h"
+  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
+};
 
-int main(int argc, char **argv) {
-
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+}  // namespace fletchgen

@@ -18,79 +18,127 @@
 #include <vector>
 #include <memory>
 
-#include "./vhdl/vhdl.h"
 #include "./stream.h"
-#include "./column.h"
-
-using std::shared_ptr;
-using std::string;
-using std::vector;
-using std::move;
-using std::make_shared;
+#include "./nodes.h"
+#include "./types.h"
+#include "edges.h"
 
 namespace fletchgen {
 
-Stream::Stream(string name, vector<shared_ptr<StreamPort>> ports) :
-    name_(move(name)) {
-  ports_.insert(ports_.begin(), ports.begin(), ports.end());
+std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src) {
+  if (src == nullptr) {
+    throw std::runtime_error("Left-hand side of edge connector is null");
+  }
+  if (dst == nullptr) {
+    throw std::runtime_error("Right-hand side of edge connector is null");
+  }
+  if (src->IsLiteral()) {
+
+  } else if (src->type->id != dst->type->id) {
+    throw std::runtime_error("Cannot connect nodes of different types.");
+  }
+  std::string edge_name = src->name() + "_to_" + dst->name();
+  auto edge = Edge::Make(edge_name, dst, src);
+  src->outs.push_back(edge);
+  dst->ins.push_back(edge);
+  return edge;
 }
 
-void Stream::addPort(const shared_ptr<StreamPort> &port) {
-  ports_.push_back(port);
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
+  return Connect(dst, src);
 }
 
-void Stream::addPort(vector<shared_ptr<StreamPort>> ports) {
-  for (const auto &p : ports) {
-    p->setParent(this);
-    ports_.push_back(p);
+std::shared_ptr<Edge> Edge::Make(std::string name, const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
+  return std::make_shared<Edge>(name, dst, src);
+}
+
+std::shared_ptr<Node> Edge::GetOtherNode(const std::shared_ptr<Node> &node) {
+  if (src == node) return dst;
+  if (dst == node) return src;
+  else return nullptr;
+}
+
+int Edge::CountAllEdges(const std::shared_ptr<Node> &node) {
+  return static_cast<int>(node->ins.size() + node->outs.size());
+}
+
+int Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
+  CheckEdgeOfNode(edge, node);
+  auto siblings = edge->GetAllSiblings(node);
+  auto it = std::find(std::begin(siblings), std::end(siblings), edge);
+  return static_cast<int>(std::distance(std::begin(siblings), it));
+}
+void Edge::CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
+  if (edge == nullptr) {
+    throw std::runtime_error("Edge is null.");
+  }
+  if (node == nullptr) {
+    throw std::runtime_error("Edge is null.");
+  }
+  if (!(edge->src == node) && !(edge->dst == node)) {
+    throw std::runtime_error("Edge " + edge->name() + "is not connected to node " + node->name());
   }
 }
 
-vector<shared_ptr<StreamPort>> Stream::ports() const {
-  vector<shared_ptr<StreamPort>> ret;
-  for (const auto &p : ports_) {
-    ret.push_back(p);
+std::deque<std::shared_ptr<Edge>> Edge::GetAllSiblings(const std::shared_ptr<Node> &node) {
+  if (src == node) {
+    return src->outs;
+  } else {
+    return dst->ins;
   }
-  return ret;
 }
 
-Stream *Stream::invert() {
-  for (const auto &p : ports_) {
-    p->invert();
-  }
-  return this;
-}
-
-Stream *Stream::setGroup(int group) {
-  for (const auto &p : ports_) {
-    p->setGroup(group);
-  }
-  return this;
-}
-
-string StreamComponent::toString() {
-  string ret = "[COMPONENT: " + entity()->name() + " | Streams: ";
-  for (const auto &s : _streams) {
-    ret += s->name() + ", ";
-  }
-  ret += "]";
-  return ret;
-}
-
-void StreamComponent::addStreamPorts(int *group) {
-  // For each stream, at the ports on the entity
-  for (const auto &s : streams()) {
-    for (const auto &p : s->ports()) {
-      if (group != nullptr) {
-        entity()->addPort(p, *group);
-      } else {
-        entity()->addPort(p);
+int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
+  CheckEdgeOfNode(edge, node);
+  int offset = 0;
+  // Iterate over the other siblings
+  auto siblings = edge->GetAllSiblings(node);
+  for (const auto &e : siblings) {
+    // As long as we haven't reached this edge
+    if (e != edge) {
+      // Obtain the data type of the other end
+      auto dt = e->dst->type;
+      if (dt->Is(Type::STREAM)) {
+        // If it's a stream, check if it has a vector as child
+        auto stream = Stream::Cast(dt);
+        if (stream->child()->Is(Type::VECTOR)) {
+          auto vec = Vector::Cast(stream->child());
+          if (vec->width()->IsLiteral()) {
+            auto l = std::dynamic_pointer_cast<Literal>(vec->width());
+            if (l->lit_type == Literal::INT) {
+              offset += l->int_val;
+            } else {
+              // not supported
+            }
+          } else if (vec->width()->IsParameter()) {
+            auto p = std::dynamic_pointer_cast<Literal>(vec->width());
+            // not supported
+          }
+        }
+      } else if (dt->Is(Type::VECTOR)) {
+        // If it's a vector
+        auto vec = Vector::Cast(dt);
+        if (vec->width()->IsLiteral()) {
+          auto l = std::dynamic_pointer_cast<Literal>(vec->width());
+          if (l->lit_type == Literal::INT) {
+            offset += l->int_val;
+          } else {
+            // not supported
+          }
+        } else if (vec->width()->IsParameter()) {
+          auto p = std::dynamic_pointer_cast<Literal>(vec->width());
+          // not supported
+        }
       }
-    }
-    if (group != nullptr) {
-      (*group)++;
+    } else {
+      break;
     }
   }
+  return offset;
+}
+bool Edge::HasSiblings(const std::shared_ptr<Node> &node) {
+  auto sib = GetAllSiblings(node);
+  return sib.size() > 1;
 }
 
 }  // namespace fletchgen

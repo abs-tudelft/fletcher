@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <memory>
-
-#include <arrow/api.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
+#pragma once
 
 #include <gtest/gtest.h>
 
-#include "vhdl/test_declarators.h"
-#include "vhdl/test_instantiators.h"
-#include "vhdl/test_fletcher_components.h"
+#include "../../src/vhdl/vhdl.h"
 
-#include "dot/test_graphs.h"
+#include "../../src/nodes.h"
+#include "../../src/types.h"
+#include "../../src/fletcher_types.h"
 
-int main(int argc, char **argv) {
+#include "../test_designs.h"
 
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+namespace fletchgen {
+
+TEST(VHDL, ComponentDecl) {
+  auto code = vhdl::Declarator::Generate(GetAllPortTypesComponent());
+  std::cout << code.str() << std::endl;
+}
+
 }
