@@ -92,8 +92,8 @@ Usage
 give you some basic usage information:
 
 ```
-$ python3 vhdre.py
-Usage: ./vhdre.py <entity-name> <regex> ... [-- <test-string> ...]
+$ python3 -m vhdre
+Usage: python -m vhdre <entity-name> <regex> ... [-- <test-string> ...]
 
 Generates a file by the name <entity-name>.vhd in the working directory
 which matches against the given regular expressions. If one or more test
