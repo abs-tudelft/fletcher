@@ -5,6 +5,7 @@ option(FLETCHER_TESTS "Build tests." ON)
 
 if (FLETCHER_TESTS)
   enable_testing()
+  include(BuildGTest.cmake)
 endif()
 
 ########################################################################################################################
