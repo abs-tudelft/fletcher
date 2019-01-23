@@ -26,25 +26,25 @@ int main() {
   system("mkdir -p recordbatches");
 
   /* Primitive */
-  schema = fletcher::test::genPrimReadSchema();
+  schema = fletcher::test::GetPrimReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/primread.fbs");
   recordbatch = fletcher::test::getUint8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
 
-  schema = fletcher::test::genPrimWriteSchema();
+  schema = fletcher::test::GetPrimWriteSchema();
   fletcher::writeSchemaToFile(schema, "schemas/primwrite.fbs");
 
   /* String */
-  schema = fletcher::test::genStringReadSchema();
+  schema = fletcher::test::GetStringReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/stringread.fbs");
   recordbatch = fletcher::test::getStringRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/names.rb");
 
-  schema = fletcher::test::genStringWriteSchema();
+  schema = fletcher::test::GetStringWriteSchema();
   fletcher::writeSchemaToFile(schema, "schemas/stringwrite.fbs");
 
   /* List of UInt8 */
-  schema = fletcher::test::genListUint8Schema();
+  schema = fletcher::test::GetListUint8Schema();
   fletcher::writeSchemaToFile(schema, "schemas/listuint8.fbs");
   recordbatch = fletcher::test::getListUint8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");

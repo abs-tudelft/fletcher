@@ -30,14 +30,14 @@ set(SOURCES
         src/fletcher/context.cc
         src/fletcher/usercore.cc)
 
-# CPP runtime library uses global C header
-set(GLOBAL_C_HEADER
-        ../../common/c/src/fletcher/fletcher.h)
-
 set(HEADERS
         src/fletcher/platform.h
         src/fletcher/context.h
         src/fletcher/usercore.h)
+
+# CPP runtime library uses global C header
+set(GLOBAL_C_HEADER
+        ../../common/c/src/fletcher/fletcher.h)
 
 add_library(${FLETCHER} SHARED ${COMMON_HEADERS} ${HEADERS} ${SOURCES})
 
@@ -60,15 +60,13 @@ endif()
 
 # For now, we want to include all symbols from the common static library into the runtime shared library.
 # At some point they should be exposed more programatically (in the api header, for example).
-target_link_libraries(${FLETCHER} -Wl,-whole-archive fletcher-common -Wl,-no-whole-archive)
+target_link_libraries(${FLETCHER} -Wl,-whole-archive fletcher-common-static -Wl,-no-whole-archive)
+
 include_directories(../../common/cpp/src)
 include_directories(../../common/c/src)
 
-# Dynamically link the dynamically library linking library
-target_link_libraries(${FLETCHER} ${CMAKE_DL_LIBS})
-
-# Dynamically link Arrow
 target_link_libraries(${FLETCHER} ${LIB_ARROW})
+target_link_libraries(${FLETCHER} ${CMAKE_DL_LIBS})
 
 # Install .so
 install(TARGETS ${FLETCHER}
@@ -101,6 +99,9 @@ install(FILES ${GLOBAL_C_HEADER}
 ########################################################################################################################
 if (FLETCHER_TESTS)
     enable_testing()
+    include(GoogleTest)
+    find_package(GTest REQUIRED)
+
     if (FLETCHER_ECHO)
       set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
     else ()
@@ -108,15 +109,13 @@ if (FLETCHER_TESTS)
       set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
     endif ()
 
-    # Include GoogleTest CMake functionality
-    include(GoogleTest)
-    find_package(GTest REQUIRED)
-
     set(TEST_SOURCES test/test.cpp)
+    set(TEST_HEADERS)
+
     add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
-    target_link_libraries(${FLETCHER}-test ${FLETCHER})
-    target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
+    target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
+    target_link_libraries(${FLETCHER}-test ${FLETCHER})
     target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
 
     gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")

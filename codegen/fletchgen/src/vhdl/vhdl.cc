@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "./vhdl.h"
+
 #include <algorithm>
+#include <vector>
+#include <string>
+#include <memory>
 
 #include "../stream.h"
 #include "../nodes.h"
 #include "../types.h"
-#include "../components.h"
-
-#include "./vhdl.h"
-#include "vhdl.h"
+#include "../graphs.h"
 
 namespace fletchgen {
 namespace vhdl {
@@ -90,15 +92,15 @@ std::string Declarator::Generate(const std::shared_ptr<Type> &type) {
   } else if (type->Is(Type::BIT)) {
     return "std_logic";
   } else if (type->Is(Type::VECTOR)) {
-    auto vec = std::dynamic_pointer_cast<Vector>(type);
+    auto vec = Cast<Vector>(type);
     return "std_logic_vector(" + ToString(vec->width()) + "-1 downto 0)";
   } else if (type->Is(Type::RECORD)) {
-    auto r = std::dynamic_pointer_cast<Record>(type);
+    auto r = Cast<Record>(type);
     return r->name();
   } else if (type->Is(Type::NATURAL)) {
     return "natural";
   } else if (type->Is(Type::STREAM)) {
-    return Generate(Stream::Cast(type)->child());
+    return Generate(Cast<Stream>(type)->element_type());
   } else if (type->Is(Type::STRING)) {
     return "string";
   } else if (type->Is(Type::BOOLEAN)) {
@@ -116,74 +118,66 @@ Block Declarator::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port> parent, int depth) {
-  // Check if type is nested
+Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port> &parent, int depth) {
   if (type->Is(Type::RECORD)) {
-    return Generate(Record::Cast(type), parent, depth);
+    Block ret(depth);
+    ret << Generate(Cast<Record>(type), parent, depth);
+    return ret;
   } else if (type->Is(Type::STREAM)) {
-    return Generate(Stream::Cast(type), parent, depth);
+    Block ret(depth);
+    ret << Generate(Cast<Stream>(type), parent, depth);
+    return ret;
   } else {
     Block ret(depth);
     Line d;
-    if (parent->type == type) {
-      // Not nested
-      d << "" << " : " << ToString(parent->dir) << " " + Generate(type);
-    } else {
-      // Nested child
-      d << type->name() << " : " << ToString(parent->dir) << " " + Generate(type);
-    }
+    d << " : " << ToString(parent->dir) << " " + Generate(type);
     ret << d;
     return ret;
   }
 }
 
-Block Declarator::Generate(const std::shared_ptr<RecordField> &field, const std::shared_ptr<Port> parent, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Port> &parent, int depth) {
   Block ret;
-  ret << Generate(field->type(), parent, depth);
+  Block d;
+  Line v, r;
+  v << "valid" << " : " << ToString(parent->dir) << " " + Generate(valid());
+  r << "ready" << " : " << ToString(Reverse(parent->dir)) << " " + Generate(ready());
+  d << Generate(stream->element_type(), parent, depth);
+  ret << v << r;
+  ret << Prepend(stream->element_name(), &d, "");
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port> parent, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port> &parent, int depth) {
   Block ret;
   for (const auto &f : rec->fields()) {
-    Block fb = Generate(f, parent, depth);
-    ret << prepend(rec->name() + "_", fb);
+    Block fb = Generate(f->type(), parent, depth);
+    ret << Prepend(f->name(), &fb);
   }
-  return ret;
-}
-
-Block Declarator::Generate(const std::shared_ptr<Stream> &str, const std::shared_ptr<Port> parent, int depth) {
-  Block ret;
-  Block child;
-  Line v, r;
-  v << "_valid" << " : " << ToString(parent->dir) << " " + Generate(valid());
-  r << "_ready" << " : " << ToString(Reverse(parent->dir)) << " " + Generate(ready());
-  child = Generate(str->child(), parent, depth);
-  ret << v << r << child;
   return ret;
 }
 
 Block Declarator::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block p = Generate(port->type, port, depth);
-  return prepend(port->name(), p);
+  return Prepend(port->name(), &p);
 }
 
-MultiBlock Declarator::Generate(const std::shared_ptr<Component> &comp, bool entity) {
+MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity) {
   MultiBlock ret;
 
   // Header
   Block h(ret.indent), f(ret.indent);
   Line hl, fl;
   if (entity) {
-    hl << "entity " + comp->name();
+    hl << "entity " + graph->name();
   } else {
-    hl << "component " + comp->name();
+    hl << "component " + graph->name();
   }
   h << hl;
   ret << h;
 
   // Generics
-  auto generics = comp->GetAll<Parameter>();
+  auto generics = graph->GetAll<Parameter>();
   if (!generics.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
@@ -191,7 +185,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Component> &comp, bool ent
     Line gh, gf;
     gh << "generic (";
     gdh << gh;
-    for (const auto &gen :generics) {
+    for (const auto &gen : generics) {
       auto g = Declarator::Generate(gen, ret.indent + 2);
       if (gen != generics.back()) {
         g << ";";
@@ -204,7 +198,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Component> &comp, bool ent
     gdf << gf;
     ret << gdh << gd << gdf;
   }
-  auto ports = comp->GetAll<Port>();
+  auto ports = graph->GetAll<Port>();
   if (!ports.empty()) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);
@@ -251,9 +245,9 @@ Block Instantiator::GenConcatenatedStream(std::shared_ptr<Node> left,
 
   size_t right_width = 0;
 
-  auto rstream = Stream::Cast(right->type);
-  if (rstream->child()->Is(Type::VECTOR)) {
-    auto vec = Vector::Cast(rstream->child());
+  auto rstream = Cast<Stream>(right->type);
+  if (rstream->element_type()->Is(Type::VECTOR)) {
+    auto vec = Cast<Vector>(rstream->element_type());
     //right_width = vec->width();
   }
 
@@ -306,23 +300,23 @@ Block Instantiator::Generate(std::shared_ptr<Node> left,
   return ret;
 }
 
-MultiBlock Instantiator::Generate(const std::shared_ptr<Component> &comp) {
+MultiBlock Instantiator::Generate(const std::shared_ptr<Graph> &graph) {
   MultiBlock ret;
 
   // Instantiation header
   Block lh;
-  lh << comp->name() + " : " + comp->name();
+  lh << graph->name() + " : " + graph->name();
   ret << lh;
 
   // Generic map
-  if (comp->CountNodes(Node::PARAMETER) > 0) {
+  if (graph->CountNodes(Node::PARAMETER) > 0) {
     Block gmh(ret.indent + 1);
     Block gm(ret.indent + 2);
     Block gmf(ret.indent + 1);
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
-    for (const auto &n : comp->nodes) {
+    for (const auto &n : graph->nodes) {
       Block g;
       if (n->IsParameter()) {
         g << Generate(n);
@@ -334,7 +328,7 @@ MultiBlock Instantiator::Generate(const std::shared_ptr<Component> &comp) {
     ret << gmh << gm << gmf;
   }
 
-  if (comp->CountNodes(Node::PORT) > 0) {
+  if (graph->CountNodes(Node::PORT) > 0) {
     // Port map
     Block pmh(ret.indent + 1);
     Block pm(ret.indent + 2);
@@ -342,7 +336,7 @@ MultiBlock Instantiator::Generate(const std::shared_ptr<Component> &comp) {
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &n : comp->nodes) {
+    for (const auto &n : graph->nodes) {
       Block p;
       if (n->IsPort()) {
         p << Generate(n);

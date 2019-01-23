@@ -26,7 +26,7 @@
 #include "./types.h"
 #include "./edges.h"
 #include "./nodes.h"
-#include "./components.h"
+#include "graphs.h"
 
 namespace fletchgen {
 

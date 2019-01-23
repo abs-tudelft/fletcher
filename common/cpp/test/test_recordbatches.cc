@@ -50,7 +50,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genStringReadSchema(), names.size(), {data_array});
+      record_batch = arrow::RecordBatch::Make(GetStringReadSchema(), names.size(), {data_array});
 
   return record_batch;
 }
@@ -73,7 +73,7 @@ std::shared_ptr<arrow::RecordBatch> getUint8RB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genPrimReadSchema(), numbers.size(), {data_array});
+      record_batch = arrow::RecordBatch::Make(GetPrimReadSchema(), numbers.size(), {data_array});
 
   return record_batch;
 }
@@ -104,7 +104,7 @@ std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genListUint8Schema(), numbers.size(), {a});
+      record_batch = arrow::RecordBatch::Make(GetListUint8Schema(), numbers.size(), {a});
 
   return record_batch;
 }

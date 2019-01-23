@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./components.h"
+#include "graphs.h"
 #include "./edges.h"
+#include "graphs.h"
 
 namespace fletchgen {
 
@@ -39,18 +40,19 @@ std::shared_ptr<Component> Component::Make(std::string name,
   for (const auto &port : ports) {
     ret->Add(port);
   }
-  for (const auto &signal : ports) {
+  for (const auto &signal : signals) {
     ret->Add(signal);
   }
   return ret;
 }
 
-Component &Component::Add(const std::shared_ptr<Node> &node) {
+Graph &Graph::Add(std::shared_ptr<Node> node) {
   nodes.push_back(node);
+  node->parent = this;
   return *this;
 }
 
-std::shared_ptr<Node> Component::Get(Node::ID id, std::string name) {
+std::shared_ptr<Node> Graph::Get(Node::ID id, std::string name) const {
   for (const auto &n : nodes) {
     if ((n->name() == name) && (n->id == id)) {
       return n;
@@ -59,12 +61,12 @@ std::shared_ptr<Node> Component::Get(Node::ID id, std::string name) {
   return nullptr;
 }
 
-Component &Component::Add(const std::shared_ptr<Component> &child) {
+Graph &Graph::Add(const std::shared_ptr<Graph> &child) {
   children.push_back(child);
   return *this;
 }
 
-size_t Component::CountNodes(Node::ID id) {
+size_t Graph::CountNodes(Node::ID id) const {
   size_t count = 0;
   for (const auto &n : nodes) {
     if (n->id == id) {
@@ -72,6 +74,21 @@ size_t Component::CountNodes(Node::ID id) {
     }
   }
   return count;
+}
+
+std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
+  return std::make_shared<Instance>(name, component);
+}
+
+Instance::Instance(std::string name, std::shared_ptr<Component> comp)
+    : Graph(std::move(name)), component(std::move(comp)) {
+  // Make copies of ports and parameters
+  for (const auto& port : component->GetAll<Port>()) {
+    Add(port->Copy());
+  }
+  for (const auto& par : component->GetAll<Parameter>()) {
+    Add(par->Copy());
+  }
 }
 
 }  // namespace fletchgen

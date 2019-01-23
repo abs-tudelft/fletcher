@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(FLETCHER_COMMON fletcher-common)
+project(fletcher-common)
 
-project(${FLETCHER_COMMON})
+set(FLETCHER_COMMON fletcher-common)
 
 option(FLETCHER_PYTHON
         "Build Fletcher for use in building pyfletcher"
@@ -17,7 +17,7 @@ if (FLETCHER_PYTHON)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
     include_directories(${PYARROW_DIR}/include)
     message("Building fletcher-common for Pyfletcher")
-endif()
+endif ()
 
 set(COMMON_SOURCES
         src/fletcher/common/arrow-utils.cc
@@ -29,23 +29,23 @@ set(COMMON_HEADERS
         src/fletcher/common/hex-view.h
         src/fletcher/common/timer.h)
 
+set(COMMON_ALL ${COMMON_SOURCES} ${COMMON_HEADERS})
+
 include_directories(../c/src)
 
-add_library(${FLETCHER_COMMON} STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
-
 find_library(LIB_ARROW arrow)
-target_link_libraries(${FLETCHER_COMMON} ${REQUIRED} ${LIB_ARROW})
+
+add_library(${FLETCHER_COMMON}-static STATIC ${COMMON_ALL})
+target_link_libraries(${FLETCHER_COMMON}-static ${LIB_ARROW})
 
 ########################################################################################################################
 # Tests
 ########################################################################################################################
 
 if (FLETCHER_TESTS)
-
     enable_testing()
-
-    # File generation for Arrow objects in e.g. fletchgen or other tools. Schemas, recordbatches, etc...
-    set(TEST_GEN fletcher-test-generate)
+    include(GoogleTest)
+    find_package(GTest REQUIRED)
 
     set(TEST_GEN_HEADERS
             test/test_schemas.h
@@ -55,29 +55,27 @@ if (FLETCHER_TESTS)
             test/test_schemas.cc
             test/test_recordbatches.cc)
 
-    add_executable(${TEST_GEN} ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES} test/test-generate.cc)
-    target_link_libraries(${TEST_GEN} ${LIB_ARROW})
-    target_link_libraries(${TEST_GEN} ${FLETCHER_COMMON})
+    SET(TEST_GEN_ALL ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES})
+
+    # Expose generation functions as a static library
+    add_library(${FLETCHER_COMMON}-generate-static STATIC ${COMMON_ALL} ${TEST_GEN_ALL})
+    target_link_libraries(${FLETCHER_COMMON}-generate-static ${LIB_ARROW})
+
+    # Expose generation functions as an executable with main function
+    add_executable(${FLETCHER_COMMON}-generate ${COMMON_ALL} ${TEST_GEN_ALL} test/test-generate.cc)
+    target_link_libraries(${FLETCHER_COMMON}-generate ${LIB_ARROW})
 
     # Common library unit tests
 
-    # Include GoogleTest CMake functionality
-    include(GoogleTest)
-    find_package(GTest REQUIRED)
-
     # Test common library functions
-    set(TEST_COMMON fletcher-test-common)
-    set(TEST_COMMON_HEADERS)
-    set(TEST_COMMON_SOURCES test/test-common.cc)
+    set(TEST_HEADERS)
+    set(TEST_SOURCES test/test-common.cc)
 
-    add_executable(${TEST_COMMON}
-            ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES}
-            ${TEST_COMMON_HEADERS} ${TEST_COMMON_SOURCES})
-    target_link_libraries(${TEST_COMMON} ${LIB_ARROW})
-    target_link_libraries(${TEST_COMMON} ${FLETCHER_COMMON})
-    target_link_libraries(${TEST_COMMON} GTest::GTest GTest::Main)
-    include_directories(${TEST_COMMON} src)
+    add_executable(${FLETCHER_COMMON}-test ${COMMON_ALL} ${TEST_GEN_ALL} ${TEST_HEADERS} ${TEST_SOURCES})
+    target_link_libraries(${FLETCHER_COMMON}-test ${LIB_ARROW})
+    target_link_libraries(${FLETCHER_COMMON}-test ${FLETCHER_COMMON}-static)
+    target_link_libraries(${FLETCHER_COMMON}-test GTest::GTest GTest::Main)
 
-    gtest_discover_tests(${TEST_COMMON})
+    gtest_discover_tests(${FLETCHER_COMMON}-test)
 
 endif (FLETCHER_TESTS)

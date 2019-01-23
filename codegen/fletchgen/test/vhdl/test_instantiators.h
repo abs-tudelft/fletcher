@@ -16,8 +16,8 @@
 
 #include <gtest/gtest.h>
 
+#include "../../src/graphs.h"
 #include "../../src/vhdl/vhdl.h"
-
 #include "../../src/fletcher_types.h"
 
 namespace fletchgen {

@@ -23,9 +23,10 @@
 
 #include "vhdl/test_declarators.h"
 #include "vhdl/test_instantiators.h"
-#include "vhdl/test_fletcher_components.h"
 
 #include "dot/test_graphs.h"
+
+#include "fletcher/test_fletcher.h"
 
 int main(int argc, char **argv) {
 

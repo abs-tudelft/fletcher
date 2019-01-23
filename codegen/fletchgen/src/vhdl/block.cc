@@ -20,8 +20,12 @@
 namespace fletchgen {
 namespace vhdl {
 
+static std::string tab(int n) {
+  return std::string(2 * n, ' ');
+}
+
 Line &operator<<(Line &lhs, const std::string &str) {
-  lhs.parts.emplace_back(str);
+  lhs.parts.push_back(str);
   return lhs;
 }
 
@@ -53,7 +57,7 @@ std::string Block::str() const {
   std::stringstream ret;
   auto a = GetAlignments();
   for (const auto &l : lines) {
-    ret << std::string(2 * indent, ' ');
+    ret << tab(indent);
     for (size_t p = 0; p < l.parts.size(); p++) {
       auto align = a[p];
       auto plen = l.parts[p].length();
@@ -80,15 +84,21 @@ Block &operator<<(Block &lhs, const Block &rhs) {
   return lhs;
 }
 
-Block &prepend(const std::string &lhs, Block &rhs) {
-  for (auto &l : rhs.lines) {
-    if (!l.parts.empty()) {
-      l.parts.front() = lhs + l.parts.front();
-    } else {
-      l << lhs;
+Block &Prepend(const std::string &lhs, Block *rhs, std::string sep) {
+  if (!lhs.empty()) {
+    for (auto &l : rhs->lines) {
+      if (!l.parts.empty()) {
+        if (l.parts.front() == " : ") {
+          l.parts.insert(l.parts.begin(), lhs);
+        } else {
+          l.parts.front() = lhs + sep + l.parts.front();
+        }
+      } else {
+        l << lhs;
+      }
     }
   }
-  return rhs;
+  return *rhs;
 }
 
 Block &operator<<(Block &lhs, const std::string &rhs) {
@@ -127,7 +137,7 @@ MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs) {
 
 std::string MultiBlock::str() const {
   std::stringstream ret;
-  for (const auto &b: blocks) {
+  for (const auto &b : blocks) {
     ret << b.str();
   }
   return ret.str();

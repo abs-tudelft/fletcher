@@ -14,6 +14,10 @@
 
 #pragma once
 
+#include <arrow/api.h>
+#include <string>
+#include <memory>
+
 #include "./types.h"
 #include "./nodes.h"
 
@@ -44,6 +48,7 @@ VEC_DECL_FACTORY(date64, 64);
 VEC_DECL_FACTORY(utf8c, 8);
 VEC_DECL_FACTORY(byte, 8);
 VEC_DECL_FACTORY(offset, 32);
+VEC_DECL_FACTORY(length, 32);
 
 std::shared_ptr<ClockDomain> acc_domain();
 std::shared_ptr<ClockDomain> bus_domain();
@@ -63,5 +68,12 @@ std::shared_ptr<Type> bus_read_request();
 std::shared_ptr<Type> bus_read_data();
 std::shared_ptr<Type> bus_write_request();
 std::shared_ptr<Type> bus_write_data();
+
+std::shared_ptr<Type> cmd();
+std::shared_ptr<Type> unlock();
+std::shared_ptr<Type> read_data();
+
+std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType>& type);
+std::string GenerateSuffix(const std::shared_ptr<arrow::DataType>& type);
 
 }  // namespace fletchgen

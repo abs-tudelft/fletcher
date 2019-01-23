@@ -14,31 +14,31 @@
 
 #pragma once
 
-#include <memory>
 #include <arrow/api.h>
+#include <memory>
 
 namespace fletcher {
 namespace test {
 
 /// @brief Generate a schema of a list with uint8 primitives.
-std::shared_ptr<arrow::Schema> genListUint8Schema();
+std::shared_ptr<arrow::Schema> GetListUint8Schema();
 
 /// @brief Simplest example schema to read a primitive.
-std::shared_ptr<arrow::Schema> genPrimReadSchema();
+std::shared_ptr<arrow::Schema> GetPrimReadSchema();
 
 /// @brief Simple example schema to write a primitive.
-std::shared_ptr<arrow::Schema> genPrimWriteSchema();
+std::shared_ptr<arrow::Schema> GetPrimWriteSchema();
 
 /// @brief A schema to read strings.
-std::shared_ptr<arrow::Schema> genStringReadSchema();
+std::shared_ptr<arrow::Schema> GetStringReadSchema();
 /// @brief A schema to write strings.
-std::shared_ptr<arrow::Schema> genStringWriteSchema();
+std::shared_ptr<arrow::Schema> GetStringWriteSchema();
 
 /// @brief  A struct schema.
 std::shared_ptr<arrow::Schema> genStructSchema();
 
 /// @brief A big example schema containing all field types that Fletcher supports.
-std::shared_ptr<arrow::Schema> genBigSchema();
+std::shared_ptr<arrow::Schema> GetBigSchema();
 
 /// @brief An example schema from a genomics pipeline application.
 std::shared_ptr<arrow::Schema> genPairHMMSchema();

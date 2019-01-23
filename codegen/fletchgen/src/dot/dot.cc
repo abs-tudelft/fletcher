@@ -22,63 +22,156 @@
 namespace fletchgen {
 namespace dot {
 
-std::string Grapher::GenEdges(const std::shared_ptr<Component> &comp, int level) {
-  std::stringstream str;
+static std::string tab(uint n) {
+  return std::string(2 * n, ' ');
+}
 
-  for (const auto &e : GetAllEdges(comp)) {
-    if (std::find(generated.begin(), generated.end(), e) == generated.end()) {
-      str << std::string(2 * level, ' ') << e->src->name() << " -> " << e->dst->name();
+static std::string sanitize(std::string in) {
+  std::replace(in.begin(), in.end(), ':', '_');
+  return in;
+}
+
+std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
+  std::stringstream ret;
+
+  // TODO(johanpel): this could be optimized to not take worst case O(E^2)
+  for (const auto &e : GetAllEdges(graph)) {
+    if (std::find(drawn_edges.begin(), drawn_edges.end(), e) == drawn_edges.end()) {
+      std::stringstream str;
+      // Remember we've drawn this edge
+      drawn_edges.push_back(e);
+
+      // Draw edge
+      str << tab(level) << NodeName(e->src) << " -> " << NodeName(e->dst);
+
+      // Set style
       str << " [";
-      if (e->src->IsPort() && e->dst->IsSignal()) {
-        str << style.port_to_sig;
-      } else if (e->src->IsSignal() && e->dst->IsPort()) {
-        str << style.sig_to_port;
-      } else {
-        str << style.edge;
-      }
-      if (!e->src->IsLiteral()) {
-        if (e->src->type->Is(Type::STREAM)) {
-          str << ", " << style.stream;
+
+      if (e->src->type != nullptr) {
+        switch (e->src->type->id) {
+          case Type::STREAM:str << style.edge.stream;
+            break;
+          case Type::CLOCK:str << style.edge.clock;
+            break;
+          case Type::RESET:str << style.edge.reset;
+            break;
+          default:str << style.edge.base;
         }
-      } else {
-        str << ", " << style.litedge;
       }
+
+      if (e->src->IsPort() && config.nodes.ports) {
+        if (e->dst->IsSignal()) {
+          // Port to signal
+          str << ", " + style.edge.port_to_sig;
+        }
+      } else if (e->src->IsSignal() && config.nodes.signals) {
+        if (e->dst->IsPort()) {
+          // Signal to port
+          str << ", " + style.edge.sig_to_port;
+        }
+      } else if (e->src->IsParameter() && config.nodes.parameters) {
+
+      } else if (e->src->IsLiteral() && config.nodes.literals) {
+        str << ", " << style.edge.lit;
+      } else {
+        continue;
+      }
+      // Generic edge
       str << "]\n";
-      generated.push_back(e);
+      ret << str.str();
     }
+  }
+  return ret.str();
+}
+
+std::string Grapher::GenCell(const std::shared_ptr<Type> &type, std::string name, int level) {
+  std::stringstream str;
+  if (type->Is(Type::STREAM)) {
+    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0">)";
+
+    str << R"(<TR><TD>)" + sanitize(name) + R"(</TD>)";
+
+    str << R"(<TD BGCOLOR=")" + style.tables.stream + R"(">)";
+    auto stream = Cast<Stream>(type);
+    str << GenCell(stream->element_type(), stream->element_name(), level + 1);
+    str << R"(</TD></TR>)";
+
+    str << R"(</TABLE>)";
+  } else if (type->Is(Type::RECORD)) {
+    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0">)";
+    str << R"(<TR>)";
+    //if (!name.empty()) {
+      str << R"(<TD BGCOLOR=")" + style.tables.record + R"(">)" + sanitize(name) + R"(</TD>)";
+    //}
+    str << R"(<TD>)";
+    str << R"(<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">)";
+    for (const auto &f : Cast<Record>(type)->fields()) {
+      str << R"(<TR><TD>)";
+      str << GenCell(f->type(), f->name(), level + 1);
+      str << R"(</TD></TR>)";
+    }
+    str << R"(</TABLE>)";
+    str << R"(</TD>)";
+    str << R"(</TR></TABLE>)";
+  } else {
+    str << name;
   }
   return str.str();
 }
 
-std::string Grapher::GenNodes(const std::shared_ptr<Component> &comp, int level) {
-  std::stringstream str;
-  for (const auto &n : comp->nodes) {
-    str << std::string(2 * level, ' ') << n->name();
-    str << " [";
-    if (n->IsPort()) {
-      str << style.port.base;
-      if (n->type->Is(Type::STREAM)) {
-        str << ", " << style.port.stream;
-      } else if (n->type->Is(Type::CLOCK)) {
-        str << ", " << style.port.clock;
-      } else if (n->type->Is(Type::RESET)) {
-        str << ", " << style.port.reset;
-      } else {
+std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, int level) {
+  std::stringstream ret;
+  for (const auto &n : graph->nodes) {
+    std::stringstream str;
 
+    // Indent
+    str << tab(level);
+    str << sanitize(NodeName(n));
+
+    // Draw style
+    str << " [";
+    if (IsNested(n->type)) {
+      str << R"(label=<)";
+      str << GenCell(n->type, n->name(), level + 1);
+      str << R"(>)";
+    } else {
+      str << "label=\"" + sanitize(n->name()) + "\"";
+    }
+    str << ", " + style.node.base;
+    if (n->IsPort() && config.nodes.ports) {
+      // Port style
+      str << ", " + style.node.port;
+      if (n->type->Is(Type::STREAM)) {
+        str << ", " + style.node.type.stream;
+      } else {
+        // other port styles
+        if (n->type->Is(Type::CLOCK) && config.nodes.types.clock) {
+          str << ", " + style.node.type.clock;
+        } else if (n->type->Is(Type::RESET) && config.nodes.types.reset) {
+          str << ", " + style.node.type.reset;
+        } else {
+          continue;
+        }
       }
-    } else if (n->IsSignal()) {
-      str << style.sig.base;
-    } else if (n->IsParameter()) {
-      str << style.param.base;
-    } else if (n->IsLiteral()) {
-      str << style.lit.base;
+    } else if (n->IsSignal() && config.nodes.signals) {
+      // Signal style
+      str << ", " + style.node.sig;
+    } else if (n->IsParameter() && config.nodes.parameters) {
+      // Parameter style
+      str << ", " + style.node.param;
+    } else if (n->IsLiteral() && config.nodes.literals) {
+      // Literal style
+      str << ", " + style.node.lit;
+    } else {
+      continue;
     }
     str << "];\n";
+    ret << str.str();
   }
-  return str.str();
+  return ret.str();
 }
 
-std::string Grapher::GenComponent(const std::shared_ptr<Component> &comp, int level) {
+std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
   std::stringstream ret;
 
   // (sub)graph header
@@ -86,93 +179,71 @@ std::string Grapher::GenComponent(const std::shared_ptr<Component> &comp, int le
     ret << "digraph {\n";
     level++;
   }
-    ret << std::string(2 * level, ' ') << "subgraph cluster_" << comp->name() << " {\n";
-    ret << std::string(2 * (level + 1), ' ') << "label=\"" << comp->name() << "\";\n";
+  ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
+  ret << std::string(2 * (level + 1), ' ') << "label=\"" << sanitize(graph->name()) << "\";\n";
 
-  // Nodes and edges
-  ret << GenNodes(comp, level + 1);
-  ret << GenEdges(comp, level + 1);
+  // Nodes
+  ret << GenNodes(graph, level + 1);
 
-  if (!comp->children.empty()) {
+  if (!graph->children.empty()) {
     ret << "\n";
   }
 
-  // Component children
-  for (const auto &child : comp->children) {
-    ret << GenComponent(child, level + 1);
+  // Graph children
+  for (const auto &child : graph->children) {
+    ret << GenGraph(child, level + 1);
   }
-  ret << std::string(2 * level, ' ') << "}\n";
+  ret << tab(level) << "}\n";
   if (level == 1) {
+    ret << GenEdges(graph, level);
     ret << "}\n";
   }
 
   return ret.str();
 }
 
-std::string Grapher::GenFile(const std::shared_ptr<Component> &comp, std::string path) {
-  std::string graph = GenComponent(comp);
+std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, std::string path) {
+  std::string dot = GenGraph(graph);
   std::ofstream out(path);
-  out << graph;
+  out << dot;
   out.close();
-  return graph;
+  return dot;
 }
 
-std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Component> &comp) {
+std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
-  for (const auto &n : comp->nodes) {
+  for (const auto &n : graph->nodes) {
     auto edges = n->edges();
     for (const auto &e : edges) {
       all_edges.push_back(e);
     }
   }
 
+  for (const auto &g : graph->children) {
+    auto child_edges = GetAllEdges(g);
+    all_edges.insert(all_edges.end(), child_edges.begin(), child_edges.end());
+  }
+
   return all_edges;
 }
 
-Style Style::basic() {
-  static Style style;
-  // 0 ff8181
-  // 1 ffe081
-  // 2 bfff81
-  // 3 81ffd1
-  // 4 81ceff
-  // 5 9381ff
-  // 6 f281ff
-
-  // 0 e85858
-  // 1 e8c558
-  // 2 9fe858
-  // 3 58e8b3
-  // 4 58b0e8
-  // 5 6c58e8
-  // 6 d958e8
-
-  // 0 c04040
-  // 1 c0a140
-  // 2 7fc040
-  // 3 40c091
-  // 4 408fc0
-  // 5 5340c0
-  // 6 b340c0
-
-  style.port.base = "shape=circle";
-  style.port.clock = "shape=diamond, color=\"#000000\", penwidth=1";
-  style.port.reset = "shape=diamond, color=\"#000000\", penwidth=1";
-  style.port.stream = "style=filled, fillcolor=\"#81ceff\", color=\"#408fc0\", penwidth=2";
-
-  style.sig.base = "shape=plaintext, style=filled, fillcolor=\"#bfff81\", margin=0.05, width=0, height=0";
-
-  style.param.base = "shape=note";
-
-  style.lit.base = "shape=plaintext, margin=0.05, width=0, height=0";
-  style.litedge = "style=dotted, arrowhead=none, arrowtail=none";
-
-  style.port_to_sig = "arrowhead=none, arrowtail=inv, dir=both";
-  style.sig_to_port = "arrowhead=normal, arrowtail=none, dir=both";
-  style.stream = "penwidth=2, color=\"#408fc0\"";
-  style.edge = "penwidth=1";
-  return style;
+std::string NodeName(const std::shared_ptr<Node> &n) {
+  std::stringstream ret;
+  ret << "\"";
+  ret << sanitize(n->parent->name() + ":");
+  if (!n->name().empty()) {
+    ret << n->name();
+  } else {
+    if (n->IsLiteral()) {
+      ret << "Anon_" + ToString(n->id) + "_" + Cast<Literal>(n)->ToValueString();
+    } else {
+      // TODO(johanpel): resolve this madness
+      ret << "Anon_" + ToString(n->id) + "_" + std::to_string(reinterpret_cast<unsigned long>(n.get()));
+    }
+  }
+  ret << "\"";
+  return ret.str();
 }
 
 }

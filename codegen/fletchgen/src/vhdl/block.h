@@ -58,10 +58,10 @@ Block &operator<<(Block &lhs, const Block &rhs);
 Block &operator<<(Block &lhs, const std::string &rhs);
 
 /// @brief Append a string to the last parts of all lines in a block, except the last one.
-Block &operator<<=(Block &lhs, const std::string &rhs);
+Block &operator<<=(Block& lhs, const std::string &rhs);
 
 /// @brief Prepend a string to every line of a block.
-Block &prepend(const std::string& lhs, Block& rhs);
+Block &Prepend(const std::string &lhs, Block* rhs, std::string sep = "_");
 
 /// @brief Append a block to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Block &rhs);

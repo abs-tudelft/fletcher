@@ -16,6 +16,7 @@
 #include "./types.h"
 
 #include "./fletcher_types.h"
+#include "fletcher_types.h"
 
 namespace fletchgen {
 
@@ -28,7 +29,7 @@ namespace fletchgen {
 
 #define VEC_FACTORY(NAME, WIDTH)                                      \
   std::shared_ptr<Type> NAME() {                                      \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, lit<WIDTH>()); \
+    static std::shared_ptr<Type> result = Vector::Make(#NAME, litint<WIDTH>()); \
     return result;                                                    \
 }
 
@@ -52,6 +53,7 @@ VEC_FACTORY(date64, 64);
 VEC_FACTORY(utf8c, 8);
 VEC_FACTORY(byte, 8);
 VEC_FACTORY(offset, 32);
+VEC_FACTORY(length, 32);
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
@@ -115,34 +117,85 @@ std::shared_ptr<Literal> bool_false() {
 std::shared_ptr<Type> bus_read_request() {
   static std::shared_ptr<RecordField> bus_addr = RecordField::Make("addr", Vector::Make<64>("addr"));
   static std::shared_ptr<RecordField> bus_len = RecordField::Make("len", Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_req_record = Record::Make("", {bus_addr, bus_len});
-  static std::shared_ptr<Type> bus_req = Stream::Make(bus_req_record);
-  return bus_req;
+  static std::shared_ptr<Type> bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
+  static std::shared_ptr<Type> bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
+  return bus_rreq;
 }
 
 std::shared_ptr<Type> bus_write_request() {
-  static std::shared_ptr<RecordField> bus_addr = RecordField::Make("addr", Vector::Make<64>("addr"));
-  static std::shared_ptr<RecordField> bus_len = RecordField::Make("len", Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_req_record = Record::Make("", {bus_addr, bus_len});
-  static std::shared_ptr<Type> bus_req = Stream::Make(bus_req_record);
-  return bus_req;
+  static std::shared_ptr<RecordField> bus_addr = RecordField::Make(Vector::Make<64>("addr"));
+  static std::shared_ptr<RecordField> bus_len = RecordField::Make(Vector::Make<7>("len"));
+  static std::shared_ptr<Type> bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
+  static std::shared_ptr<Type> bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
+  return bus_wreq;
 }
 
 std::shared_ptr<Type> bus_read_data() {
-  static std::shared_ptr<RecordField> bus_data = RecordField::Make("data", Vector::Make<64>("addr"));
-  static std::shared_ptr<RecordField> bus_last = RecordField::Make("last", Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_rdat_record = Record::Make("", {bus_data, bus_last});
-  static std::shared_ptr<Type> bus_rdat = Stream::Make(bus_rdat_record);
+  static std::shared_ptr<RecordField> bus_rdata = RecordField::Make(Vector::Make<64>("data"));
+  static std::shared_ptr<RecordField> bus_rlast = RecordField::Make("last", bit());
+  static std::shared_ptr<Type> bus_rdat_record = Record::Make("rdat:rec", {bus_rdata, bus_rlast});
+  static std::shared_ptr<Type> bus_rdat = Stream::Make("rdat:stream", bus_rdat_record);
   return bus_rdat;
 }
 
 std::shared_ptr<Type> bus_write_data() {
-  static std::shared_ptr<RecordField> bus_wdata = RecordField::Make("data", Vector::Make<64>("addr"));
-  static std::shared_ptr<RecordField> bus_wstrobe = RecordField::Make("strobe", Vector::Make<64>("strobe"));
-  static std::shared_ptr<RecordField> bus_wlast = RecordField::Make("last", Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_wdat_record = Record::Make("", {bus_wdata, bus_wstrobe, bus_wlast});
-  static std::shared_ptr<Type> bus_wdat = Stream::Make(bus_wdat_record);
+  static std::shared_ptr<RecordField> bus_wdata = RecordField::Make(Vector::Make<64>("data"));
+  static std::shared_ptr<RecordField> bus_wstrobe = RecordField::Make(Vector::Make<64>("strobe"));
+  static std::shared_ptr<RecordField> bus_wlast = RecordField::Make("last", bit());
+  static std::shared_ptr<Type> bus_wdat_record = Record::Make("wdat:rec", {bus_wdata, bus_wstrobe, bus_wlast});
+  static std::shared_ptr<Type> bus_wdat = Stream::Make("wdat:stream", bus_wdat_record);
   return bus_wdat;
+}
+
+std::shared_ptr<Type> cmd() {
+  static std::shared_ptr<RecordField> firstidx = RecordField::Make(Vector::Make<64>("firstIdx"));
+  static std::shared_ptr<RecordField> lastidx = RecordField::Make(Vector::Make<64>("lastidx"));
+  static std::shared_ptr<RecordField> ctrl = RecordField::Make(Vector::Make<64>("ctrl"));
+  static std::shared_ptr<RecordField> tag = RecordField::Make(Vector::Make<8>("tag"));
+  static std::shared_ptr<Type> cmd_record = Record::Make("cmd:rec", {firstidx, lastidx, ctrl, tag});
+  static std::shared_ptr<Type> cmd_stream = Stream::Make("cmd:stream", cmd_record);
+  return cmd_stream;
+}
+
+std::shared_ptr<Type> unlock() {
+  static auto tag = Vector::Make<8>("tag");
+  static std::shared_ptr<Type> unlock_stream = Stream::Make("unlock:stream", tag, "tag");
+  return unlock_stream;
+}
+
+std::shared_ptr<Type> read_data() {
+  static std::shared_ptr<RecordField> data = RecordField::Make(Vector::Make<64>("data"));
+  static std::shared_ptr<RecordField> dvalid = RecordField::Make(Vector::Make<64>("dvalid"));
+  static std::shared_ptr<RecordField> last = RecordField::Make("last", bit());
+  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {data, dvalid, last});
+  static std::shared_ptr<Type> data_stream = Stream::Make("data:stream", data_record);
+  return data_stream;
+}
+
+std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &type) {
+  switch (type->id()) {
+    case arrow::Type::LIST: return length();
+    case arrow::Type::UINT8: return uint8();
+    case arrow::Type::UINT16: return uint16();
+    case arrow::Type::UINT32: return uint32();
+    case arrow::Type::UINT64: return uint64();
+    case arrow::Type::INT8: return int8();
+    case arrow::Type::INT16: return int16();
+    case arrow::Type::INT32: return int32();
+    case arrow::Type::INT64: return int64();
+    case arrow::Type::HALF_FLOAT: return float16();
+    case arrow::Type::FLOAT: return float32();
+    case arrow::Type::DOUBLE: return float64();
+    default:
+      throw std::runtime_error("Unsupported Arrow DataType: " + type->ToString());
+  }
+}
+std::string GenerateSuffix(const std::shared_ptr<arrow::DataType> &type) {
+  if (type->id() == arrow::Type::LIST) {
+    return "_length";
+  } else {
+    return "";
+  }
 }
 
 }  // namespace fletchgen

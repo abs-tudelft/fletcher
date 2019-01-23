@@ -29,12 +29,12 @@ std::deque<std::shared_ptr<Edge>> Node::edges() const {
 
 bool Node::HasSameWidth(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b) {
   if ((a->type->id == Type::VECTOR) && (b->type->id == Type::VECTOR)) {
-    return Vector::Cast(a->type)->width() == Vector::Cast(b->type)->width();
+    return Cast<Vector>(a->type)->width() == Cast<Vector>(b->type)->width();
   } else if ((a->type->id == Type::STREAM) && (b->type->id == Type::STREAM)) {
-    auto s_a = Stream::Cast(a->type);
-    auto s_b = Stream::Cast(b->type);
-    if ((s_a->child()->id == Type::VECTOR) && (s_b->child()->id == Type::VECTOR)) {
-      return Vector::Cast(s_a->child())->width() == Vector::Cast(s_b->child())->width();
+    auto s_a = Cast<Stream>(a->type);
+    auto s_b = Cast<Stream>(b->type);
+    if ((s_a->element_type()->id == Type::VECTOR) && (s_b->element_type()->id == Type::VECTOR)) {
+      return Cast<Vector>(s_a->element_type())->width() == Cast<Vector>(s_b->element_type())->width();
     }
   }
   return a->type->Is(b->type->id);
@@ -73,5 +73,21 @@ Literal::Literal(std::string name, int value)
 
 Literal::Literal(std::string name, bool value)
     : Node(std::move(name), Node::LITERAL, nullptr), lit_type(BOOL), bool_val(value) {}
+
+std::shared_ptr<Literal> litstr(std::string str) {
+  auto result = Literal::Make(str);
+  return result;
+}
+
+std::string ToString(Node::ID id) {
+  switch (id) {
+    case Node::PORT:return "port";
+    case Node::SIGNAL:return "signal";
+    case Node::LITERAL:return "literal";
+    case Node::PARAMETER:return "parameter";
+    default:
+      throw std::runtime_error("Unsupported Node type");
+  }
+}
 
 }  // namespace fletchgen

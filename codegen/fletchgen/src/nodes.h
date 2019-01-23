@@ -1,15 +1,3 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,12 +14,18 @@
 
 #pragma once
 
+#include <string>
+#include <memory>
+#include <deque>
+#include <utility>
+
 #include "./types.h"
 
 namespace fletchgen {
 
 // Forward Declr.
 struct Edge;
+struct Graph;
 
 /**
  * @brief A node.
@@ -52,6 +46,8 @@ struct Node : public Named {
 
   std::deque<std::shared_ptr<Edge>> ins;
   std::deque<std::shared_ptr<Edge>> outs;
+
+  Graph* parent;
 
   Node(std::string name, ID id, std::shared_ptr<Type> type)
       : Named(std::move(name)), id(id), type(std::move(type)) {}
@@ -86,6 +82,8 @@ struct Signal : public Node {
   }
 };
 
+std::string ToString(Node::ID id);
+
 struct Literal : public Node {
   enum { INT, STRING, BOOL } lit_type;
   std::string str_val = "";
@@ -105,10 +103,12 @@ struct Literal : public Node {
 };
 
 template<int V>
-std::shared_ptr<Literal> lit() {
+std::shared_ptr<Literal> litint() {
   static std::shared_ptr<Literal> result = std::make_shared<Literal>("lit_" + std::to_string(V), V);
   return result;
 }
+
+std::shared_ptr<Literal> litstr(std::string str);
 
 struct Parameter : public Node {
   Parameter(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Literal> default_value = nullptr)
@@ -119,6 +119,11 @@ struct Parameter : public Node {
                                          std::shared_ptr<Literal> default_value = nullptr) {
     return std::make_shared<Parameter>(name, type, default_value);
   }
+
+  std::shared_ptr<Parameter> Copy() {
+    return std::make_shared<Parameter>(name(), type, default_value);
+  }
+
   std::shared_ptr<Literal> default_value;
 };
 
@@ -136,10 +141,14 @@ struct Port : public Node {
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN) {
     return std::make_shared<Port>(type->name(), type, dir);
   };
+
+  std::shared_ptr<Port> Copy() {
+    return std::make_shared<Port>(name(), type, dir);
+  }
 };
 
 template<typename T>
-std::shared_ptr<T> Cast(std::shared_ptr<Node> &obj) {
+std::shared_ptr<T>* Cast(std::shared_ptr<Node>* obj) {
   return std::dynamic_pointer_cast<T>(obj);
 }
 

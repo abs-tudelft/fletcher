@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
+#include "./test_schemas.h"
 
 #include <arrow/api.h>
+#include <memory>
+#include <vector>
 
 #include "../src/fletcher/common/arrow-utils.h"
-
-#include "test_schemas.h"
 
 namespace fletcher {
 namespace test {
 
-std::shared_ptr<arrow::Schema> genListUint8Schema() {
+std::shared_ptr<arrow::Schema> GetListUint8Schema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("list", arrow::list(std::make_shared<arrow::Field>("uint8", arrow::uint8(), false)), false)
+      arrow::field("list", arrow::list(std::make_shared<arrow::Field>("number", arrow::uint8(), false)), false)
   };
 
   auto schema = std::make_shared<arrow::Schema>(schema_fields,
@@ -34,7 +34,7 @@ std::shared_ptr<arrow::Schema> genListUint8Schema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genPrimReadSchema() {
+std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
       arrow::field("primread", arrow::uint8(), false)
@@ -46,7 +46,7 @@ std::shared_ptr<arrow::Schema> genPrimReadSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
+std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
       arrow::field("primwrite", arrow::uint8(), false)
@@ -61,14 +61,14 @@ std::shared_ptr<arrow::Schema> genPrimWriteSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genStringReadSchema() {
+std::shared_ptr<arrow::Schema> GetStringReadSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Name", arrow::utf8(), false, metaEPC(4))};
   auto schema_meta = metaMode(Mode::READ);
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genStringWriteSchema() {
+std::shared_ptr<arrow::Schema> GetStringWriteSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Str", arrow::utf8(), false, metaEPC(64))};
   auto schema_meta = metaMode(Mode::WRITE);
   schema_meta->Append("fletcher_num_user_regs", "4");
@@ -91,27 +91,27 @@ std::shared_ptr<arrow::Schema> genStructSchema() {
   return schema;
 }
 
-std::shared_ptr<arrow::Schema> genBigSchema() {
+std::shared_ptr<arrow::Schema> GetBigSchema() {
   std::vector<std::shared_ptr<arrow::Field>> struct_fields = {
-      arrow::field("Prim A", arrow::uint16(), false),
-      arrow::field("Prim B", arrow::uint32(), false),
-      arrow::field("String", arrow::utf8(), false, metaEPC(4))
+      arrow::field("Xuint16", arrow::uint16(), false),
+      arrow::field("Yuint32", arrow::uint32(), false),
+      arrow::field("Zutf8", arrow::utf8(), false, metaEPC(4))
   };
 
   std::vector<std::shared_ptr<arrow::Field>> struct2_fields = {
-      arrow::field("Prim", arrow::uint64(), false),
-      arrow::field("Struct", arrow::struct_(struct_fields), false)
+      arrow::field("Quint64", arrow::uint64(), false),
+      arrow::field("Rstruct", arrow::struct_(struct_fields), false)
   };
 
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Prim", arrow::uint8(), false, metaEPC(4)),
-      arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
-      arrow::field("Binary", arrow::binary(), false),
-      arrow::field("FixedSizeBinary", arrow::fixed_size_binary(5)),
-      arrow::field("Decimal", arrow::decimal(20, 18)),
-      arrow::field("String", arrow::utf8(), false, metaEPC(8)),
-      arrow::field("Struct", arrow::struct_(struct2_fields), false),
-      arrow::field("IgnoreMe", arrow::utf8(), false, metaIgnore())
+      arrow::field("Auint8", arrow::uint8(), false, metaEPC(4)),
+      arrow::field("Blist", arrow::list(arrow::float64()), false),
+      arrow::field("Cbinary", arrow::binary(), false),
+      arrow::field("Dutf8", arrow::utf8(), false, metaEPC(8)),
+      arrow::field("Estruct", arrow::struct_(struct2_fields), false),
+      arrow::field("Fignore", arrow::utf8(), false, metaIgnore())
+      // arrow::field("G", arrow::fixed_size_binary(5)),
+      // arrow::field("H", arrow::decimal(20, 18)),
   };
 
   auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));

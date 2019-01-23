@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +22,7 @@
 
 #include <memory>
 #include <deque>
+#include <string>
 
 #include "./utils.h"
 
@@ -28,7 +31,8 @@ namespace fletchgen {
 struct Node;
 struct Literal;
 
-template<int T> std::shared_ptr<Literal> lit();
+template<int T>
+std::shared_ptr<Literal> litint();
 
 struct Type : public Named {
   enum ID {
@@ -47,8 +51,9 @@ struct Type : public Named {
 
   explicit Type(std::string name, ID id)
       : Named(std::move(name)), id(id) {}
-  bool Is(ID type_id);
   virtual ~Type() = default;
+
+  bool Is(ID type_id);
 };
 
 class Natural : public Type {
@@ -113,11 +118,7 @@ class Vector : public Type {
   }
   template<int T>
   static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<Vector>(name, lit<T>());
-  }
-
-  static std::shared_ptr<Vector> Cast(const std::shared_ptr<Type> &data_type) {
-    return std::dynamic_pointer_cast<Vector>(data_type);
+    return std::make_shared<Vector>(name, litint<T>());
   }
 
   std::shared_ptr<Node> width() const { return width_; }
@@ -134,6 +135,10 @@ class RecordField : public Named {
     return std::make_shared<RecordField>(name, type);
   }
 
+  static std::shared_ptr<RecordField> Make(std::shared_ptr<Type> type) {
+    return std::make_shared<RecordField>(type->name(), type);
+  }
+
   std::shared_ptr<Type> type() const { return type_; }
  private:
   std::shared_ptr<Type> type_;
@@ -148,10 +153,6 @@ class Record : public Type {
     return std::make_shared<Record>(name, fields);
   }
 
-  static std::shared_ptr<Record> Cast(const std::shared_ptr<Type> &data_type) {
-    return std::dynamic_pointer_cast<Record>(data_type);
-  }
-
   Record &AddField(const std::shared_ptr<RecordField> &field) {
     fields_.push_back(field);
     return *this;
@@ -164,25 +165,55 @@ class Record : public Type {
 
 class Stream : public Type {
  public:
-  Stream(const std::string &name, std::shared_ptr<Type> child)
-      : Type(name, Type::STREAM), child_(std::move(child)) {}
+  /**
+   * @brief                 Construct a Stream type
+   * @param type_name       The name of the Stream type.
+   * @param element_type    The type of the elements transported by the stream
+   * @param element_name    The name of the elements transported by the stream
+   * @param epc             Maximum elements per cycle
+   */
+  Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1)
+      : Type(type_name, Type::STREAM),
+        element_type_(std::move(element_type)),
+        element_name_(std::move(element_name)),
+        epc_(epc) {}
 
-  static std::shared_ptr<Type> Make(std::shared_ptr<Type> child) {
-    return std::make_shared<Stream>(child->name() + "_stream", child);
-  }
+  /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named after the data type.
+  static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
 
-  static std::shared_ptr<Type> Make(const std::string &name, std::shared_ptr<Type> child) {
-    return std::make_shared<Stream>(name, child);
-  }
+  /// @brief Shorthand to create a smart pointer to a new Stream type.
+  static std::shared_ptr<Type> Make(std::string name,
+                                    std::shared_ptr<Type> element_type,
+                                    std::string element_name,
+                                    int epc = 1);
 
-  static std::shared_ptr<Stream> Cast(const std::shared_ptr<Type> &data_type) {
-    return std::dynamic_pointer_cast<Stream>(data_type);
-  }
-
-  std::shared_ptr<Type> child() { return child_; }
+  std::shared_ptr<Type> element_type() { return element_type_; }
+  std::string element_name() { return element_name_; }
+  int epc() { return epc_; }
 
  private:
-  std::shared_ptr<Type> child_;
+  std::shared_ptr<Type> element_type_;
+  std::string element_name_;
+
+  /// @brief Elements Per Cycle
+  int epc_ = 1;
 };
+
+bool IsNested(const std::shared_ptr<Type> &type);
+std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type);
+
+template<typename T>
+std::string ToString() {
+  return "UNKNOWN TYPE";
+}
+
+template<typename T>
+std::shared_ptr<T> Cast(const std::shared_ptr<Type> &type) {
+  auto result = std::dynamic_pointer_cast<T>(type);
+  if (result == nullptr) {
+    throw std::runtime_error("Could not cast type " + type->name() + " to " + ToString<T>());
+  }
+  return result;
+}
 
 }  // namespace fletchgen

@@ -25,13 +25,13 @@
 
 TEST(common_arrow_utils, appendExpectedBuffersFromField) {
   // List of uint8's
-  auto schema = fletcher::test::genListUint8Schema();
+  auto schema = fletcher::test::GetListUint8Schema();
   std::vector<std::string> bufs;
   fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
   ASSERT_EQ(bufs[0], "list_offsets");
   ASSERT_EQ(bufs[1], "uint8_values");
 
-  schema = fletcher::test::genStringReadSchema();
+  schema = fletcher::test::GetStringReadSchema();
   // String is essentially a list of non-nullable utf8 bytes
   std::vector<std::string> bufs2;
   fletcher::appendExpectedBuffersFromField(&bufs2, schema->field(0));

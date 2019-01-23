@@ -24,6 +24,7 @@ class Named {
   explicit Named(std::string name)
       : name_(std::move(name)) {}
   std::string name() const { return name_; }
+  void SetName(std::string name) { name_ = std::move(name); }
  private:
   std::string name_;
 };

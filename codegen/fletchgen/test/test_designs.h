@@ -4,7 +4,8 @@
 
 #include "../src/types.h"
 #include "../src/nodes.h"
-#include "../src/components.h"
+#include "../src/edges.h"
+#include "../src/graphs.h"
 
 #include "../src/fletcher_types.h"
 
@@ -14,8 +15,8 @@ std::shared_ptr<Component> GetConcattedStreamsComponent() {
   // Data types
   auto all_type = Vector::Make<4>("all");
   auto sub_type = Vector::Make<2>("sub");
-  auto all_stream = Stream::Make(all_type);
-  auto sub_stream = Stream::Make(sub_type);
+  auto all_stream = Stream::Make("all:stream", all_type);
+  auto sub_stream = Stream::Make("sub:stream", sub_type);
 
   // Port types
   auto pA = Port::Make("A", all_stream, Port::OUT);
@@ -70,7 +71,7 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto r_port = Port::Make("some_record", r_type, Port::OUT);
   auto s_port = Port::Make("some_port", s_type);
 
-  auto l = lit<16>();
+  auto l = litint<16>();
   auto par = Parameter::Make("depth", natural(), l);
 
   auto a_type = Component::Make("a", {par}, {clk_port, rst_port, b_port, v_port, r_port, s_port}, {});

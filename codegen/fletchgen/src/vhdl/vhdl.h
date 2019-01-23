@@ -21,7 +21,7 @@
 #include "../stream.h"
 #include "../nodes.h"
 #include "../types.h"
-#include "../components.h"
+#include "../graphs.h"
 
 #include "./block.h"
 
@@ -38,18 +38,17 @@ Port::Dir Reverse(Port::Dir dir);
 class Declarator {
  public:
   static std::string Generate(const std::shared_ptr<Type> &type);
-  static Block Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port> parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Stream> &str, const std::shared_ptr<Port> parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port> parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<RecordField> &rec, const std::shared_ptr<Port> parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port>& parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Port>& parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port>& parent, int depth = 0);
   static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
   static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
-  static MultiBlock Generate(const std::shared_ptr<Component> &comp, bool entity = false);
+  static MultiBlock Generate(const std::shared_ptr<Graph> &comp, bool entity = false);
 };
 
 class Instantiator {
  public:
-  static MultiBlock Generate(const std::shared_ptr<Component> &comp);
+  static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
   static Block Generate(const std::shared_ptr<Node> &node);
   static Block Generate(std::shared_ptr<Node> left,
                         std::shared_ptr<Node> right,

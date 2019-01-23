@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <memory>
-
 #include <arrow/api.h>
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
+#include <fletcher_echo.h>
+#include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
-#include "fletcher_echo.h"
+#include <string>
+#include <vector>
+#include <memory>
 
-#include "../src/fletcher/platform.h"
-#include "../src/fletcher/context.h"
+#include "fletcher/platform.h"
+#include "fletcher/context.h"
 
 TEST(Platform, NoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
@@ -74,11 +74,11 @@ TEST(Context, ContextFunctions) {
 
   // Create a schema with some stuff
   std::vector<std::shared_ptr<arrow::Field>> schema_fields;
-  schema_fields.push_back(std::make_shared<arrow::Field>("a", arrow::uint64(), false)); // 1
-  schema_fields.push_back(std::make_shared<arrow::Field>("b", arrow::utf8(), false)); // 3
-  schema_fields.push_back(std::make_shared<arrow::Field>("c", arrow::uint64(), true)); // 1
-  schema_fields.push_back(std::make_shared<arrow::Field>("d", arrow::list( // 1
-      std::make_shared<arrow::Field>("e", arrow::uint32(), true)), false)); // 2
+  schema_fields.push_back(std::make_shared<arrow::Field>("a", arrow::uint64(), false));  // 1
+  schema_fields.push_back(std::make_shared<arrow::Field>("b", arrow::utf8(), false));  // 3
+  schema_fields.push_back(std::make_shared<arrow::Field>("c", arrow::uint64(), true));  // 1
+  schema_fields.push_back(std::make_shared<arrow::Field>("d", arrow::list(  // 1
+      std::make_shared<arrow::Field>("e", arrow::uint32(), true)), false));  // 2
 
   // Should produce 8 arrow buffers
 
@@ -104,7 +104,7 @@ TEST(Context, ContextFunctions) {
   ASSERT_TRUE(be->AppendValues({15, 16, 17}).ok());
   ASSERT_TRUE(bd.Append().ok());
   ASSERT_TRUE(be->AppendValues({18}).ok());
-  ASSERT_TRUE(bf.AppendValues({19,20,21,22}).ok());
+  ASSERT_TRUE(bf.AppendValues({19, 20, 21, 22}).ok());
 
   std::shared_ptr<arrow::Array> a;
   std::shared_ptr<arrow::Array> b;
