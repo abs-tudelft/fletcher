@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +26,12 @@
 namespace fletchgen {
 
 struct Graph : public Named {
-  explicit Graph(std::string name) : Named(name) {}
+  /**
+   * @brief Construct a new graph
+   * @param name    The name of the graph
+   */
+  explicit Graph(std::string name) : Named(std::move(name)) {}
+  virtual ~Graph() = default;
   std::deque<std::shared_ptr<Node>> nodes;
   std::deque<std::shared_ptr<Graph>> children;
 
@@ -32,7 +39,7 @@ struct Graph : public Named {
   std::shared_ptr<Node> Get(Node::ID id, std::string name) const;
 
   /// @brief Add a node to the component
-  Graph &Add(std::shared_ptr<Node> node);
+  virtual Graph &Add(std::shared_ptr<Node> node);
 
   /// @brief Count nodes of a specific node type
   size_t CountNodes(Node::ID id) const;
@@ -40,18 +47,28 @@ struct Graph : public Named {
   /// @brief Add a child component
   Graph &Add(const std::shared_ptr<Graph> &child);
 
+  /**
+   * @brief Obtain all nodes of type T from the graph
+   * @tparam T  The node type to obtain
+   * @return    A deque of nodes of type T
+   */
   template<typename T>
   std::deque<std::shared_ptr<T>> GetAll() {
-    std::deque<std::shared_ptr<T>> ret;
+    std::deque<std::shared_ptr<T>> result;
     for (const auto &n : nodes) {
       if (Cast<T>(n) != nullptr) {
-        ret.push_back(Cast<T>(n));
+        result.push_back(Cast<T>(n));
       }
     }
-    return ret;
+    return result;
   }
 };
 
+/**
+ * @brief A Component graph.
+ *
+ * A component graph may contain all node types.
+ */
 struct Component : public Graph {
 
   /// @brief Construct an empty Component
@@ -66,6 +83,11 @@ struct Component : public Graph {
   static std::shared_ptr<Component> Make(std::string name) { return Make(name, {}, {}, {}); }
 };
 
+/**
+ * @brief An instance.
+ *
+ * An instance graph may not contain any signals.
+ */
 struct Instance : public Graph {
   std::shared_ptr<Component> component;
 
@@ -74,6 +96,9 @@ struct Instance : public Graph {
 
   /// @brief Construct a Component with initial parameters and ports.
   static std::shared_ptr<Instance> Make(std::string name, std::shared_ptr<Component> component);
+
+  /// @brief Add a node to the component, throwing an exception if the node is a signal.
+  Graph &Add(std::shared_ptr<Node> node) override;
 };
 
 template<typename T>

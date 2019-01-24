@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,26 +19,58 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <utility>
+#include <vector>
 
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
 
 #include "./types.h"
-#include "graphs.h"
+#include "./graphs.h"
 #include "./fletcher_types.h"
 
 namespace fletchgen {
 
+/**
+ * @brief A named set of schemas.
+ */
+struct SchemaSet : public Named {
+  std::deque<std::shared_ptr<arrow::Schema>> schema_list_;
+
+  SchemaSet(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list)
+      : Named(std::move(name)), schema_list_(std::move(schema_list)) {}
+
+  static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
+};
+
+using TypeList = std::deque<std::shared_ptr<Type>>;
+using ArrowFieldList = std::deque<std::shared_ptr<arrow::Field>>;
+
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level = 0);
 
+/**
+ * @brief The UserCore component to be implemented by the user
+ */
 struct UserCore : Component {
-  using SchemaList = std::deque<std::shared_ptr<arrow::Schema>>;
-  using TypeList = std::deque<std::shared_ptr<Type>>;
-  using ArrowFieldList = std::deque<std::shared_ptr<arrow::Field>>;
+  std::shared_ptr<SchemaSet> schema_set_;
 
-  SchemaList schemas;
+  explicit UserCore(std::string name, std::shared_ptr<SchemaSet> schemas);
+  static std::shared_ptr<UserCore> Make(std::shared_ptr<SchemaSet> schemas);
+};
 
-  explicit UserCore(std::string name, SchemaList schemas);
-  static std::shared_ptr<UserCore> Make(SchemaList schemas);
+/**
+ * @brief A FletcherCore component that instantiates all ColumnReaders/Writers resulting from a Schema set.
+ */
+struct FletcherCore : Component {
+  std::shared_ptr<UserCore> user_core_;
+  std::shared_ptr<Instance> user_core_inst_;
+  std::shared_ptr<SchemaSet> schema_set_;
+
+  std::vector<std::shared_ptr<Instance>> column_readers;
+  std::vector<std::shared_ptr<Instance>> column_writers;
+
+  explicit FletcherCore(std::string name, const std::shared_ptr<SchemaSet>& schema_set);
+  static std::shared_ptr<FletcherCore> Make(std::string name, const std::shared_ptr<SchemaSet>& schema_set);
+  static std::shared_ptr<FletcherCore> Make(const std::shared_ptr<SchemaSet>& schema_set);
 };
 
 std::shared_ptr<Component> BusReadArbiter();

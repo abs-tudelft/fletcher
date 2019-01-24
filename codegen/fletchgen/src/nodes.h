@@ -134,17 +134,11 @@ struct Port : public Node {
   Port(std::string name, std::shared_ptr<Type> type, Dir dir)
       : Node(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
-  static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Dir dir = Dir::IN) {
-    return std::make_shared<Port>(name, type, dir);
-  };
-
-  static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN) {
-    return std::make_shared<Port>(type->name(), type, dir);
-  };
-
-  std::shared_ptr<Port> Copy() {
-    return std::make_shared<Port>(name(), type, dir);
-  }
+  static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Dir dir = Dir::IN);;
+  static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN);;
+  std::shared_ptr<Port> Copy();
+  bool IsInput() { return dir == IN; }
+  bool IsOutput() { return dir == OUT; }
 };
 
 template<typename T>

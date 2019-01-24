@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +15,22 @@
 // limitations under the License.
 
 #include "./fletcher_components.h"
+
+#include <arrow/api.h>
+#include <memory>
+#include <deque>
+
+#include "./edges.h"
+#include "./nodes.h"
 #include "./fletcher_types.h"
+
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
 
 namespace fletchgen {
+
+std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list) {
+  return std::make_shared<SchemaSet>(name, schema_list);
+}
 
 std::shared_ptr<Component> BusReadArbiter() {
   static auto ret = Component::Make("BusReadArbiterVec",
@@ -156,10 +170,11 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
   }
 }
 
-UserCore::UserCore(std::string name, UserCore::SchemaList schemas) : Component(std::move(name)) {
+UserCore::UserCore(std::string name, std::shared_ptr<SchemaSet> schema_set)
+    : Component(std::move(name)), schema_set_(std::move(schema_set)) {
   TypeList stream_types;
   ArrowFieldList arrow_fields;
-  for (const auto &s : schemas) {
+  for (const auto &s : schema_set_->schema_list_) {
     for (const auto &f : s->fields()) {
       if (!fletcher::mustIgnore(f)) {
         auto type = GetStreamType(f);
@@ -169,17 +184,52 @@ UserCore::UserCore(std::string name, UserCore::SchemaList schemas) : Component(s
     }
   }
   for (size_t f = 0; f < stream_types.size(); f++) {
-    auto field_streams = FlattenStreams(stream_types[f]);
     auto port_name = arrow_fields[f]->name();
-    //for (const auto &field_stream : field_streams) {
-    //  Add(Port::Make(port_name, field_stream));
-    //}
     Add(Port::Make(port_name, stream_types[f]));
   }
 }
 
-std::shared_ptr<UserCore> UserCore::Make(UserCore::SchemaList schemas) {
-  std::shared_ptr<UserCore> ret = std::make_shared<UserCore>("UserCore", schemas);
+std::shared_ptr<UserCore> UserCore::Make(std::shared_ptr<SchemaSet> schema_set) {
+  std::shared_ptr<UserCore> ret = std::make_shared<UserCore>("UserCore", schema_set);
   return ret;
 }
+
+FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet>& schema_set)
+    : Component(std::move(name)), schema_set_(schema_set) {
+
+  user_core_ = UserCore::Make(schema_set_);
+  user_core_inst_ = Instance::Make(schema_set_->name(), user_core_);
+  Add(user_core_inst_);
+
+  for (const auto &s : schema_set_->schema_list_) {
+    if (fletcher::getMode(s) == fletcher::Mode::READ) {
+      for (const auto &f : s->fields()) {
+        auto cr_inst = Instance::Make(f->name() + "_cr_inst", ColumnReader());
+        column_readers.push_back(cr_inst);
+        Add(cr_inst);
+      }
+    } else {
+      // TODO(johanpel): ColumnWriters
+    }
+  }
+
+  // Connect Fields
+  auto uc_ports = user_core_inst_->GetAll<Port>();
+  for (size_t i = 0; i < uc_ports.size(); i++) {
+    if (uc_ports[i]->IsInput()) {
+      auto data_stream = column_readers[i]->Get(Node::PORT, "data_out");
+      auto uc_port = uc_ports[i];
+      uc_port <<= data_stream;
+    }
+  }
+}
+
+std::shared_ptr<FletcherCore> FletcherCore::Make(std::string name, const std::shared_ptr<SchemaSet>& schema_set) {
+  return std::make_shared<FletcherCore>(name, schema_set);
+}
+
+std::shared_ptr<FletcherCore> FletcherCore::Make(const std::shared_ptr<SchemaSet>& schema_set) {
+  return std::make_shared<FletcherCore>("FletcherCore:" + schema_set->name(), schema_set);
+}
+
 }

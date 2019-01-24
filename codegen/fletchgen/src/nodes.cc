@@ -90,4 +90,15 @@ std::string ToString(Node::ID id) {
   }
 }
 
+std::shared_ptr<Port> Port::Make(std::string name, std::shared_ptr<Type> type, Port::Dir dir) {
+  return std::make_shared<Port>(name, type, dir);
+}
+
+std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Port::Dir dir) {
+  return std::make_shared<Port>(type->name(), type, dir);
+}
+
+std::shared_ptr<Port> Port::Copy() {
+  return std::make_shared<Port>(name(), type, dir);
+}
 }  // namespace fletchgen

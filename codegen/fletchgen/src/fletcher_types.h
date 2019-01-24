@@ -23,7 +23,7 @@
 
 namespace fletchgen {
 
-// Create basic types similar to Arrow cpp/type.cc for convenience
+// Create basic types corresponding to and in the manner of Arrow's types
 #define BIT_DECL_FACTORY(NAME)        std::shared_ptr<Type> NAME();
 #define VEC_DECL_FACTORY(NAME, WIDTH) std::shared_ptr<Type> NAME();
 
@@ -49,20 +49,30 @@ VEC_DECL_FACTORY(utf8c, 8);
 VEC_DECL_FACTORY(byte, 8);
 VEC_DECL_FACTORY(offset, 32);
 VEC_DECL_FACTORY(length, 32);
-
-std::shared_ptr<ClockDomain> acc_domain();
-std::shared_ptr<ClockDomain> bus_domain();
-std::shared_ptr<Type> acc_clk();
-std::shared_ptr<Type> acc_reset();
-std::shared_ptr<Type> bus_clk();
-std::shared_ptr<Type> bus_reset();
-
 std::shared_ptr<Type> string();
 std::shared_ptr<Type> natural();
 std::shared_ptr<Literal> natval(int val);
 std::shared_ptr<Literal> natval(std::string val);
 std::shared_ptr<Literal> bool_true();
 std::shared_ptr<Literal> bool_false();
+
+/// @brief Fletcher accelerator clock domain
+std::shared_ptr<ClockDomain> acc_domain();
+
+/// @brief Fletcher bus clock domain
+std::shared_ptr<ClockDomain> bus_domain();
+
+/// @brief Fletcher accelerator clock
+std::shared_ptr<Type> acc_clk();
+
+/// @brief Fletcher accelerator reset
+std::shared_ptr<Type> acc_reset();
+
+/// @brief Fletcher bus clock
+std::shared_ptr<Type> bus_clk();
+
+/// @brief Fletcher bus reset
+std::shared_ptr<Type> bus_reset();
 
 std::shared_ptr<Type> bus_read_request();
 std::shared_ptr<Type> bus_read_data();

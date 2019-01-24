@@ -91,4 +91,14 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
   }
 }
 
+Graph &Instance::Add(std::shared_ptr<Node> node) {
+  if (!node->Is(Node::SIGNAL)) {
+    nodes.push_back(node);
+    node->parent = this;
+    return *this;
+  } else {
+    throw std::runtime_error("Cannot add signal nodes to Instance graph " + name());
+  }
+}
+
 }  // namespace fletchgen

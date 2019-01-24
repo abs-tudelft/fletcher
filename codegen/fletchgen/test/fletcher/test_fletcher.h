@@ -32,14 +32,14 @@
 
 namespace fletchgen {
 
-TEST(Fletcher, FletcherBusReadArbiter) {
+TEST(Fletcher, BusReadArbiter) {
   auto brav = BusReadArbiter();
 
   auto source = vhdl::Declarator::Generate(brav);
   std::cout << source.str();
 }
 
-TEST(Fletcher, CRBRA) {
+TEST(Fletcher, UserCore_CR_BRA) {
   // Get component
   auto top = GetColumnReadersAndArbiter();
   // Generate graph
@@ -47,19 +47,19 @@ TEST(Fletcher, CRBRA) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(Fletcher, PrimRead) {
+TEST(Fletcher, UserCore_PrimRead) {
   auto schema = fletcher::test::GetPrimReadSchema();
-  std::deque<std::shared_ptr<arrow::Schema>> schemas = {schema};
-  auto uc = UserCore::Make(schemas);
+  auto set = SchemaSet::Make("PrimRead", {schema});
+  auto uc = UserCore::Make(set);
 
   dot::Grapher dot;
   std::cout << dot.GenFile(uc, "graph.dot");
 }
 
-TEST(Fletcher, StringRead) {
+TEST(Fletcher, UserCore_StringRead) {
   auto schema = fletcher::test::GetStringReadSchema();
-  std::deque<std::shared_ptr<arrow::Schema>> schemas = {schema};
-  auto uc = UserCore::Make(schemas);
+  auto set = SchemaSet::Make("StringRead", {schema});
+  auto uc = UserCore::Make(set);
 
   auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
   std::cout << code.str();
@@ -68,10 +68,10 @@ TEST(Fletcher, StringRead) {
   std::cout << dot.GenFile(uc, "graph.dot");
 }
 
-TEST(Fletcher, ListPrim) {
+TEST(Fletcher, UserCore_ListPrim) {
   auto schema = fletcher::test::GetListUint8Schema();
-  std::deque<std::shared_ptr<arrow::Schema>> schemas = {schema};
-  auto uc = UserCore::Make(schemas);
+  auto set = SchemaSet::Make("ListUint8", {schema});
+  auto uc = UserCore::Make(set);
 
   auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
   std::cout << code.str();
@@ -80,10 +80,10 @@ TEST(Fletcher, ListPrim) {
   std::cout << dot.GenFile(uc, "graph.dot");
 }
 
-TEST(Fletcher, BigSchema) {
+TEST(Fletcher, UserCore_BigSchema) {
   auto schema = fletcher::test::GetBigSchema();
-  std::deque<std::shared_ptr<arrow::Schema>> schemas = {schema};
-  auto uc = UserCore::Make(schemas);
+  auto set = SchemaSet::Make("Big", {schema});
+  auto uc = UserCore::Make(set);
 
   auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
   std::cout << code.str();
@@ -92,54 +92,13 @@ TEST(Fletcher, BigSchema) {
   std::cout << dot.GenFile(uc, "graph.dot");
 }
 
-TEST(Fletcher, BigSchema_UC_BRA_CR) {
-  auto top = Component::Make("top");
-
+TEST(Fletcher, FletcherCore_Big) {
   auto schema = fletcher::test::GetBigSchema();
-  std::deque<std::shared_ptr<arrow::Schema>> schemas = {schema};
-
-  auto bra_inst = Instance::Make("BusReadArbiter_inst", BusReadArbiter());
-  top->Add(bra_inst);
-
-  auto uc = UserCore::Make(schemas);
-  auto uc_inst = Instance::Make("UserCore", uc);
-  top->Add(uc_inst);
-
-  std::vector<std::shared_ptr<Instance>> crs;
-  for (const auto &f : schema->fields()) {
-    auto cr_inst = Instance::Make(f->name() + "_cr_inst", ColumnReader());
-    crs.push_back(cr_inst);
-    top->Add(cr_inst);
-  }
-
-  // Connect Bus
-  auto bra_slv_rreq = bra_inst->Get(Node::PORT, "bsv_rreq");
-  auto bra_slv_rdat = bra_inst->Get(Node::PORT, "bsv_rdat");
-
-  for (const auto &cr : crs) {
-    auto cr_rreq = cr->Get(Node::PORT, "bus_rreq");
-    auto edge = bra_slv_rreq <<= cr_rreq;
-  }
-
-  for (const auto &cr : crs) {
-    auto cr_rdat = cr->Get(Node::PORT, "bus_rdat");
-    auto edge = cr_rdat <<= bra_slv_rdat;
-  }
-
-  // Connect Fields
-  auto uc_ports = uc_inst->GetAll<Port>();
-  for (int i = 0; i < uc_ports.size(); i++) {
-    auto data_stream = crs[i]->Get(Node::PORT, "data_out");
-    auto uc_port = uc_ports[i];
-    uc_port <<= data_stream;
-  }
-
-  auto code = vhdl::Declarator::Generate(Cast<Graph>(uc));
-  //auto code = vhdl::Declarator::Generate(Cast<Graph>(BusReadArbiter()));
-  std::cout << code.str();
+  auto set = SchemaSet::Make("Big", {schema});
+  auto top = FletcherCore::Make("Big", set);
 
   dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  std::cout << dot.GenFile(Cast<Graph>(top), "graph.dot");
 }
 
 }

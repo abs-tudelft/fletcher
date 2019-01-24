@@ -16,10 +16,11 @@
 
 #include <string>
 #include <memory>
+#include <utility>
 
 namespace fletchgen {
 
-class Named {
+struct Named {
  public:
   explicit Named(std::string name)
       : name_(std::move(name)) {}
@@ -27,13 +28,6 @@ class Named {
   void SetName(std::string name) { name_ = std::move(name); }
  private:
   std::string name_;
-};
-
-struct ClockDomain : public Named {
-  explicit ClockDomain(std::string name)
-      : Named(std::move(name)) {}
-
-  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
 };
 
 }  // namespace fletchgen

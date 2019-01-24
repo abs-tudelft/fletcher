@@ -55,6 +55,31 @@ VEC_FACTORY(byte, 8);
 VEC_FACTORY(offset, 32);
 VEC_FACTORY(length, 32);
 
+std::shared_ptr<Type> string() {
+  static std::shared_ptr<Type> result = std::make_shared<String>("string");
+  return result;
+};
+
+std::shared_ptr<Type> natural() {
+  static std::shared_ptr<Type> result = std::make_shared<Natural>("natural");
+  return result;
+};
+
+std::shared_ptr<Type> boolean() {
+  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
+  return result;
+};
+
+std::shared_ptr<Literal> bool_true() {
+  static auto result = Literal::Make("bool_true", true);
+  return result;
+}
+
+std::shared_ptr<Literal> bool_false() {
+  static auto result = Literal::Make("bool_true", false);
+  return result;
+}
+
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
@@ -86,31 +111,6 @@ std::shared_ptr<Type> bus_reset() {
   static std::shared_ptr<Type> result = std::make_shared<Reset>("bus_reset", acc_domain());
   return result;
 };
-
-std::shared_ptr<Type> string() {
-  static std::shared_ptr<Type> result = std::make_shared<String>("string");
-  return result;
-};
-
-std::shared_ptr<Type> natural() {
-  static std::shared_ptr<Type> result = std::make_shared<Natural>("natural");
-  return result;
-};
-
-std::shared_ptr<Type> boolean() {
-  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
-  return result;
-};
-
-std::shared_ptr<Literal> bool_true() {
-  static auto result = Literal::Make("bool_true", true);
-  return result;
-}
-
-std::shared_ptr<Literal> bool_false() {
-  static auto result = Literal::Make("bool_true", false);
-  return result;
-}
 
 // Bus channel
 

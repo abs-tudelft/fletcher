@@ -34,6 +34,13 @@ struct Literal;
 template<int T>
 std::shared_ptr<Literal> litint();
 
+struct ClockDomain : public Named {
+  explicit ClockDomain(std::string name)
+      : Named(std::move(name)) {}
+
+  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
+};
+
 struct Type : public Named {
   enum ID {
     CLOCK,

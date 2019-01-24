@@ -28,6 +28,8 @@ namespace dot {
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph);
 
 struct Style {
+  using str = std::string;
+  // bright
   // 0 ff8181
   // 1 ffe081
   // 2 bfff81
@@ -36,6 +38,7 @@ struct Style {
   // 5 9381ff
   // 6 f281ff
 
+  // medium
   // 0 e85858
   // 1 e8c558
   // 2 9fe858
@@ -44,6 +47,7 @@ struct Style {
   // 5 6c58e8
   // 6 d958e8
 
+  // dark
   // 0 c04040
   // 1 c0a140
   // 2 7fc040
@@ -52,34 +56,41 @@ struct Style {
   // 5 5340c0
   // 6 b340c0
 
-  struct TableStyle {
-    std::string stream = "#58b0e8"; // 4
-    std::string record = "#58e8b3"; // 3
-  } tables;
-
   struct EdgeStyle {
-    std::string base = "penwidth=1";
-    std::string port_to_sig = "arrowhead=none, arrowtail=inv, dir=both";
-    std::string sig_to_port = "arrowhead=normal, arrowtail=none, dir=both";
-    std::string stream = "penwidth=2, color=\"#408fc0\"";
-    std::string lit = "style=dotted, arrowhead=none, arrowtail=none";
-    std::string clock = "shape=diamond, color=\"#000000\", penwidth=1";
-    std::string reset = "shape=diamond, color=\"#000000\", penwidth=1";
+    struct Colors {
+      str stream = "#408fc080:#00000080:#408fc080";  // d-4
+    } color;
+
+    str base = "penwidth=1";
+    str port_to_sig = "arrowhead=none, arrowtail=box, dir=both";
+    str sig_to_port = "arrowhead=normal, arrowtail=none, dir=both";
+    str port_to_port = "arrowhead=normal, arrowtail=box, dir=both";
+    str stream = "penwidth=4";
+    str lit = "style=dotted, arrowhead=none, arrowtail=none";
+    str clock = "shape=diamond, color=\"#000000\", penwidth=1";
+    str reset = "shape=diamond, color=\"#000000\", penwidth=1";
   } edge;
 
   struct NodeStyle {
-    std::string base = "margin=0.15, width=0, height=0";
-    std::string port = "shape=rect";
-    std::string sig = "shape=rect, style=filled, fillcolor=\"#bfff81\", margin=0.05, width=0, height=0";
-    std::string param = "shape=note";
-    std::string lit = "shape=plaintext, margin=0.05, width=0, height=0";
+    struct Colors {
+      str stream = "#81ceff";  // b-4
+      str stream_border = "#408fc0";  // d-4
+      str stream_child = "#58b0e8";  // m-4
+      str record = "#58e8b3";  // m-3
+    } color;
+
+    str base = "margin=0.15, width=0, height=0";
+    str port;
+    str sig = "style=filled, fillcolor=\"#bfff81\", margin=0.05, width=0, height=0";
+    str param;
+    str lit = "margin=0.05, width=0, height=0";
 
     struct TypeStyle {
-      std::string stream = "style=filled, fillcolor=\"#81ceff\", color=\"#408fc0\", penwidth=2";
-      std::string clock;
-      std::string reset;
-      std::string vector;
-      std::string bit;
+      str stream;
+      str clock;
+      str reset;
+      str vector;
+      str bit;
     } type;
   } node;
 };
@@ -107,14 +118,17 @@ struct Grapher {
   Grapher() = default;
   explicit Grapher(Style style) : style(std::move(style)) {}
 
-  std::string GenCell(const std::shared_ptr<Type> &type, std::string name, int level = 0);
+  std::string GenCell(const std::shared_ptr<Type> &type,
+                      const std::shared_ptr<Node> &node,
+                      std::string name,
+                      int level = 0);
   std::string GenEdges(const std::shared_ptr<Graph> &comp, int level = 0);
   std::string GenNodes(const std::shared_ptr<Graph> &comp, int level = 0);
   std::string GenGraph(const std::shared_ptr<Graph> &graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
 };
 
-std::string NodeName(const std::shared_ptr<Node> &n);
+std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix = "");
 
 }  // namespace dot
 }  // namespace fletchgen
