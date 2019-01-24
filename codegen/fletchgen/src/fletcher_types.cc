@@ -190,6 +190,7 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &type) 
       throw std::runtime_error("Unsupported Arrow DataType: " + type->ToString());
   }
 }
+
 std::string GenerateSuffix(const std::shared_ptr<arrow::DataType> &type) {
   if (type->id() == arrow::Type::LIST) {
     return "_length";

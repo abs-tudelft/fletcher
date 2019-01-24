@@ -80,6 +80,10 @@ std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Compo
   return std::make_shared<Instance>(name, component);
 }
 
+std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
+  return std::make_shared<Instance>(component->name() + "_inst", component);
+}
+
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name)), component(std::move(comp)) {
   // Make copies of ports and parameters

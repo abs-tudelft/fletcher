@@ -140,59 +140,48 @@ std::string Grapher::GenCell(const std::shared_ptr<Type> &type,
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
   if (type->Is(Type::STREAM)) {
-    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0">)";
-    {
-      str << R"(<TR>)";
-      {
-        str << R"(<TD)";
-        {
-          str << R"( BGCOLOR="#81ceff">)" + name;
-        }
-        str << R"(</TD>)";
-      }
-      {
-        str << R"(<TD )";
-        if (level == 0) {
-          str << R"( PORT=")" + NodeName(node, ":cell") + R"(")";
-        }
+    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
+    if (level == 0) {
+      str << R"( PORT="cell")";
+    }
+    str << ">";
+      str << "<TR>";
+        str << "<TD";
+        str << R"( BGCOLOR=")" + style.node.color.stream + R"(">)";
+          str << name;
+        str << "</TD>";
+        str << "<TD ";
         str << R"( BGCOLOR=")" + style.node.color.stream_child + R"(">)";
-        {
           auto stream = Cast<Stream>(type);
           str << GenCell(stream->element_type(), node, stream->element_name(), level + 1);
-        }
-        str << R"(</TD>)";
-      }
-      str << R"(</TR>)";
-    }
-    str << R"(</TABLE>)";
+        str << "</TD>";
+      str << "</TR>";
+    str << "</TABLE>";
   } else if (type->Is(Type::RECORD)) {
-    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0">)";
-    {
-      str << R"(<TR>)";
-      {
-        str << R"(<TD)";
-        {
-          str << R"( BGCOLOR="#81ceff">)" + name;
-        }
-        str << R"(</TD>)";
-      }
-      {
-        str << R"(<TD )";
+    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
+    if (level == 0) {
+      str << R"( PORT="cell")";
+    }
+    str << ">";
+      str << "<TR>";
+        str << "<TD";
+        str << R"( BGCOLOR=")" + style.node.color.record + R"(">)";
+        str << name;
+        str << "</TD>";
+        str << "<TD ";
         if (level == 0) {
-          str << R"( PORT=")" + NodeName(node, ":cell") + R"(")";
+          str << R"( PORT="cell")";
         }
         str << R"( BGCOLOR=")" + style.node.color.stream_child + R"(">)";
-        {
           str << R"(<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">)";
           for (const auto &f : Cast<Record>(type)->fields()) {
-            str << R"(<TR><TD>)";
-            str << GenCell(f->type(), node, f->name(), level + 1);
-            str << R"(</TD></TR>)";
+            str << "<TR><TD>";
+              str << GenCell(f->type(), node, f->name(), level + 1);
+            str << "</TD></TR>";
           }
-          str << R"(</TABLE>)";
-          str << R"(</TD>)";
-        }
-    str << R"(</TR></TABLE>)";
+          str << "</TABLE>";
+        str << "</TD>";
+    str << "</TR></TABLE>";
   } else {
     str << name;
   }
@@ -263,8 +252,13 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
     ret << "digraph {\n";
     level++;
   }
+  // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
+  // resulting from this setting
+  ret << tab(level) << "splines=ortho;\n";
+  ret << tab(level) << "rankdir=LR;\n";
+
   ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
-  ret << std::string(2 * (level + 1), ' ') << "label=\"" << sanitize(graph->name()) << "\";\n";
+  ret << tab(level+1) << "label=\"" << sanitize(graph->name()) << "\";\n";
 
   // Nodes
   ret << GenNodes(graph, level + 1);
@@ -277,11 +271,11 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
   for (const auto &child : graph->children) {
     ret << GenGraph(child, level + 1);
   }
-  ret << tab(level) << "}\n";
   if (level == 1) {
-    ret << GenEdges(graph, level);
-    ret << "}\n";
+    ret << GenEdges(graph, level+1);
+    ret << tab(level) << "}\n";
   }
+  ret << "}\n";
 
   return ret.str();
 }
@@ -316,7 +310,7 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
   std::stringstream ret;
   ret << sanitize(n->parent->name() + ":");
   if (!n->name().empty()) {
-    ret << n->name();
+    ret << sanitize(n->name());
   } else {
     if (n->IsLiteral()) {
       ret << "Anon_" + ToString(n->id) + "_" + Cast<Literal>(n)->ToValueString();

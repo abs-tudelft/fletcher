@@ -193,9 +193,10 @@ std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc) {
 }
 
 std::shared_ptr<arrow::KeyValueMetadata> metaIgnore() {
-  std::vector<std::string> ignore_key = {"fletcher_ignore"};
-  std::vector<std::string> ignore_value = {"true"};
-  return std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
+  static std::vector<std::string> ignore_key = {"fletcher_ignore"};
+  static std::vector<std::string> ignore_value = {"true"};
+  static auto result = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
+  return result;
 }
 
 std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names) {

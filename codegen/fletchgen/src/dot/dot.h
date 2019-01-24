@@ -58,14 +58,14 @@ struct Style {
 
   struct EdgeStyle {
     struct Colors {
-      str stream = "#408fc080:#00000080:#408fc080";  // d-4
+      str stream = "#408fc0C0";  // d-4
     } color;
 
     str base = "penwidth=1";
     str port_to_sig = "arrowhead=none, arrowtail=box, dir=both";
-    str sig_to_port = "arrowhead=normal, arrowtail=none, dir=both";
-    str port_to_port = "arrowhead=normal, arrowtail=box, dir=both";
-    str stream = "penwidth=4";
+    str sig_to_port = "arrowtail=none, dir=both";
+    str port_to_port = "arrowtail=box, dir=both";
+    str stream = "penwidth=3";
     str lit = "style=dotted, arrowhead=none, arrowtail=none";
     str clock = "shape=diamond, color=\"#000000\", penwidth=1";
     str reset = "shape=diamond, color=\"#000000\", penwidth=1";

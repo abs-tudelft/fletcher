@@ -96,6 +96,7 @@ struct Instance : public Graph {
 
   /// @brief Construct a Component with initial parameters and ports.
   static std::shared_ptr<Instance> Make(std::string name, std::shared_ptr<Component> component);
+  static std::shared_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
   Graph &Add(std::shared_ptr<Node> node) override;

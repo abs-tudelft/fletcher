@@ -30,6 +30,20 @@
 
 namespace fletchgen {
 
+using TypeList = std::deque<std::shared_ptr<Type>>;
+using ArrowFieldList = std::deque<std::shared_ptr<arrow::Field>>;
+
+std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level = 0);
+
+/**
+ * @brief A port derived from an Arrow field
+ */
+struct ArrowPort : public Port {
+  std::shared_ptr<arrow::Field> field_;
+  ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, Port::Dir dir);
+  static std::shared_ptr<ArrowPort> Make(std::shared_ptr<arrow::Field> field, Port::Dir dir);
+};
+
 /**
  * @brief A named set of schemas.
  */
@@ -42,11 +56,6 @@ struct SchemaSet : public Named {
   static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
 };
 
-using TypeList = std::deque<std::shared_ptr<Type>>;
-using ArrowFieldList = std::deque<std::shared_ptr<arrow::Field>>;
-
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level = 0);
-
 /**
  * @brief The UserCore component to be implemented by the user
  */
@@ -55,6 +64,9 @@ struct UserCore : Component {
 
   explicit UserCore(std::string name, std::shared_ptr<SchemaSet> schemas);
   static std::shared_ptr<UserCore> Make(std::shared_ptr<SchemaSet> schemas);
+
+  std::shared_ptr<ArrowPort> GetArrowPort(std::shared_ptr<arrow::Field> field);
+  std::deque<std::shared_ptr<ArrowPort>> GetAllArrowPorts();
 };
 
 /**
@@ -68,9 +80,9 @@ struct FletcherCore : Component {
   std::vector<std::shared_ptr<Instance>> column_readers;
   std::vector<std::shared_ptr<Instance>> column_writers;
 
-  explicit FletcherCore(std::string name, const std::shared_ptr<SchemaSet>& schema_set);
-  static std::shared_ptr<FletcherCore> Make(std::string name, const std::shared_ptr<SchemaSet>& schema_set);
-  static std::shared_ptr<FletcherCore> Make(const std::shared_ptr<SchemaSet>& schema_set);
+  explicit FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &schema_set);
+  static std::shared_ptr<FletcherCore> Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set);
+  static std::shared_ptr<FletcherCore> Make(const std::shared_ptr<SchemaSet> &schema_set);
 };
 
 std::shared_ptr<Component> BusReadArbiter();

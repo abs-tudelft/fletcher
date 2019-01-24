@@ -80,6 +80,6 @@ struct Edge : public Named {
 std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src);
 
 /// @brief Shorthand for Connect
-std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &left, const std::shared_ptr<Node> &right);
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 
 }  // namespace fletchgen

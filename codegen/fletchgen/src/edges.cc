@@ -37,8 +37,8 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   return edge;
 }
 
-std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
-  return Connect(dst, src);
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+  return Connect(lhs, rhs);
 }
 
 std::shared_ptr<Edge> Edge::Make(std::string name, const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {

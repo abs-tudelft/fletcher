@@ -95,7 +95,16 @@ TEST(Fletcher, UserCore_BigSchema) {
 TEST(Fletcher, FletcherCore_Big) {
   auto schema = fletcher::test::GetBigSchema();
   auto set = SchemaSet::Make("Big", {schema});
-  auto top = FletcherCore::Make("Big", set);
+  auto top = FletcherCore::Make(set);
+
+  dot::Grapher dot;
+  std::cout << dot.GenFile(Cast<Graph>(top), "graph.dot");
+}
+
+TEST(Fletcher, FletcherCore_StringRead) {
+  auto schema = fletcher::test::GetStringReadSchema();
+  auto set = SchemaSet::Make("StringRead", {schema});
+  auto top = FletcherCore::Make(set);
 
   dot::Grapher dot;
   std::cout << dot.GenFile(Cast<Graph>(top), "graph.dot");
