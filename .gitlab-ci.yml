@@ -13,16 +13,16 @@ stages:
 #   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
 
 .env: &env
-  ARROW_VERSION: 0.11.1
-  AWS_FPGA_VERSION: 1.4.4
+  ARROW_VERSION: 0.12.0
+  AWS_FPGA_VERSION: 1.4.5
   CAPI_SNAP_VERSION: 1.5.1
   CAPI_PSLSE_VERSION: "4.1"
 
   GHDL_IMAGE: ghdl/ghdl
   GHDL_TAG: ubuntu18-llvm-5.0
 
-  RUST_VERSION: 1.30.1
-  RUST_VHDL_PARSER_CRATE_VERSION: 0.3.0
+  RUST_VERSION: 1.32.0
+  RUST_VHDL_PARSER_CRATE_VERSION: 0.4.0
 
 .cmake-env: &cmake-env
   <<: *env
