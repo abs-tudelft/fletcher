@@ -14,10 +14,12 @@
 
 #pragma once
 
-#include <iostream>
-#include <memory>
 #include <algorithm>
+#include <iostream>
 #include <utility>
+#include <memory>
+#include <string>
+#include <deque>
 
 #include "./utils.h"
 #include "./nodes.h"
@@ -81,5 +83,8 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
 
 /// @brief Shorthand for Connect
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+
+/// @brief Split an edge up to create two new edges with a signal node in the middle. Returns the new signal.
+std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix = "int_");
 
 }  // namespace fletchgen

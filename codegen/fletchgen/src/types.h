@@ -179,11 +179,7 @@ class Stream : public Type {
    * @param element_name    The name of the elements transported by the stream
    * @param epc             Maximum elements per cycle
    */
-  Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1)
-      : Type(type_name, Type::STREAM),
-        element_type_(std::move(element_type)),
-        element_name_(std::move(element_name)),
-        epc_(epc) {}
+  Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
 
   /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named after the data type.
   static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
@@ -206,7 +202,10 @@ class Stream : public Type {
   int epc_ = 1;
 };
 
+/// @brief Return true if type is nested (e.g. Stream or Record), false otherwise.
 bool IsNested(const std::shared_ptr<Type> &type);
+
+/// @brief Flatten all potential underlying Streams of a Type.
 std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type);
 
 template<typename T>
@@ -222,5 +221,16 @@ std::shared_ptr<T> Cast(const std::shared_ptr<Type> &type) {
   }
   return result;
 }
+
+// Some common types:
+
+/// @brief String type.
+std::shared_ptr<Type> string();
+
+/// @brief Integer type.
+std::shared_ptr<Type> integer();
+
+/// @brief Boolean type.
+std::shared_ptr<Type> boolean();
 
 }  // namespace fletchgen

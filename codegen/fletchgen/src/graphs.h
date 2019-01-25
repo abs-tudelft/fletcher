@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +14,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <memory>
 #include <utility>
@@ -26,26 +25,41 @@
 namespace fletchgen {
 
 struct Graph : public Named {
+  enum ID {
+    GENERIC,    ///< A generic graph
+    COMPONENT,  ///< A component graph
+    INSTANCE    ///< An instance graph
+  };
+  /// @brief Graph type id for convenience
+  ID id;
+
+  /// @brief Graph nodes.
+  std::deque<std::shared_ptr<Node>> nodes;
+
+  /// @brief Graph children / subgraphs.
+  std::deque<std::shared_ptr<Graph>> children;
+
+  /// @brief Optional Graph parents
+  std::deque<Graph *> parents;
+
   /**
    * @brief Construct a new graph
    * @param name    The name of the graph
    */
-  explicit Graph(std::string name) : Named(std::move(name)) {}
+  explicit Graph(std::string name, ID id) : Named(std::move(name)), id(id) {}
   virtual ~Graph() = default;
-  std::deque<std::shared_ptr<Node>> nodes;
-  std::deque<std::shared_ptr<Graph>> children;
 
   /// @brief Get a node of a specific type with a specific name
-  std::shared_ptr<Node> Get(Node::ID id, std::string name) const;
+  std::shared_ptr<Node> Get(Node::ID id, const std::string &node_name) const;
 
   /// @brief Add a node to the component
-  virtual Graph &Add(std::shared_ptr<Node> node);
+  virtual Graph &AddNode(std::shared_ptr<Node> node);
 
   /// @brief Count nodes of a specific node type
   size_t CountNodes(Node::ID id) const;
 
   /// @brief Add a child component
-  Graph &Add(const std::shared_ptr<Graph> &child);
+  virtual Graph &AddChild(const std::shared_ptr<Graph> &child);
 
   /**
    * @brief Obtain all nodes of type T from the graph
@@ -53,16 +67,20 @@ struct Graph : public Named {
    * @return    A deque of nodes of type T
    */
   template<typename T>
-  std::deque<std::shared_ptr<T>> GetAll() {
+  std::deque<std::shared_ptr<T>> GetAllNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
     for (const auto &n : nodes) {
-      if (Cast<T>(n) != nullptr) {
-        result.push_back(Cast<T>(n));
+      auto node = Cast<T>(n);
+      if (node) {
+        result.push_back(*node);
       }
     }
     return result;
   }
 };
+
+// Forward decl.
+struct Instance;
 
 /**
  * @brief A Component graph.
@@ -72,7 +90,7 @@ struct Graph : public Named {
 struct Component : public Graph {
 
   /// @brief Construct an empty Component
-  explicit Component(std::string name) : Graph(std::move(name)) {}
+  explicit Component(std::string name) : Graph(std::move(name), COMPONENT) {}
 
   /// @brief Construct a Component with initial parameters and ports.
   static std::shared_ptr<Component> Make(std::string name,
@@ -80,7 +98,23 @@ struct Component : public Graph {
                                          std::initializer_list<std::shared_ptr<Port>> ports,
                                          std::initializer_list<std::shared_ptr<Signal>> signals);
 
-  static std::shared_ptr<Component> Make(std::string name) { return Make(name, {}, {}, {}); }
+  /// @brief Construct an empty Component with only a name.
+  static std::shared_ptr<Component> Make(std::string name) { return Make(std::move(name), {}, {}, {}); }
+
+  /**
+   * @brief Add a child graph. Only allowed if the child graph is an instance. Throws an error otherwise.
+   * @param child   The child graph to add.
+   * @return        This component if successful.
+   */
+  Graph &AddChild(const std::shared_ptr<Graph> &child) override;
+
+  /**
+  * @brief Gather all Instance graphs from this Component
+  * @param graph The graph to gather from.
+  * @return      A deque holding smart pointer to all instances.
+  */
+  // TODO(johanpel): this function should probably be removed as for overridden AddChild all children must be Instance.
+  std::deque<std::shared_ptr<Instance>> GetAllInstances();
 };
 
 /**
@@ -91,20 +125,56 @@ struct Component : public Graph {
 struct Instance : public Graph {
   std::shared_ptr<Component> component;
 
-  /// @brief Construct an instance of a component, copying over all its ports and parameters
+  /// @brief Construct an Instance of a Component, copying over all its ports and parameters
   explicit Instance(std::string name, std::shared_ptr<Component> comp);
 
-  /// @brief Construct a Component with initial parameters and ports.
+  /// @brief Construct a new Component, and turn it into a smart pointer.
   static std::shared_ptr<Instance> Make(std::string name, std::shared_ptr<Component> component);
+
+  /// @brief Construct a new Component, turn it into a smart pointer, and use the Component name with _inst as suffix.
   static std::shared_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
-  Graph &Add(std::shared_ptr<Node> node) override;
+  Graph &AddNode(std::shared_ptr<Node> node) override;
 };
 
+/**
+ * @brief Gather all unique Components that are children of (or are referred to by instances of) a graph.
+ * @param graph The graph to gather the children from.
+ * @return      A deque holding smart pointers to all unique components.
+ */
+std::deque<std::shared_ptr<Component>> GetAllUniqueComponents(const std::shared_ptr<Graph> &graph);
+
+/**
+ * @brief Cast a generic graph type object to a specific graph type object
+ * @tparam T    The specific Graph type
+ * @param obj   The generic Graph
+ * @return      Optionally, a Graph of type T if the cast was valid.
+ */
 template<typename T>
-const std::shared_ptr<T> Cast(const std::shared_ptr<Graph> &obj) {
-  return std::dynamic_pointer_cast<T>(obj);
+std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Graph> &obj) {
+  auto result = std::dynamic_pointer_cast<T>(obj);
+  if (result != nullptr) {
+    return result;
+  } else {
+    return {};
+  }
+}
+
+/**
+ * @brief Cast a generic graph type object to a specific graph type object
+ * @tparam T    The specific Graph type
+ * @param obj   The generic Graph
+ * @return      Optionally, a Graph of type T if the cast was valid.
+ */
+template<typename T>
+std::optional<T *> Cast(Graph *obj) {
+  auto result = dynamic_cast<T *>(obj);
+  if (result != nullptr) {
+    return result;
+  } else {
+    return {};
+  }
 }
 
 }  // namespace fletchgen

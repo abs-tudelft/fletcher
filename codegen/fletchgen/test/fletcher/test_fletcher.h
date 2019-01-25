@@ -97,8 +97,13 @@ TEST(Fletcher, FletcherCore_Big) {
   auto set = SchemaSet::Make("Big", {schema});
   auto top = FletcherCore::Make(set);
 
-  dot::Grapher dot;
-  std::cout << dot.GenFile(Cast<Graph>(top), "graph.dot");
+  auto decl = vhdl::Declarator::Generate(top, true);
+  auto arch = vhdl::Architecture::Generate(top);
+  std::cout << decl.str();
+  std::cout << arch.str();
+
+  dot::Grapher dot(dot::Style::def(), dot::Config::all());
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 TEST(Fletcher, FletcherCore_StringRead) {
@@ -106,8 +111,13 @@ TEST(Fletcher, FletcherCore_StringRead) {
   auto set = SchemaSet::Make("StringRead", {schema});
   auto top = FletcherCore::Make(set);
 
-  dot::Grapher dot;
-  std::cout << dot.GenFile(Cast<Graph>(top), "graph.dot");
+  auto decl = vhdl::Declarator::Generate(top, true);
+  auto arch = vhdl::Architecture::Generate(top);
+  std::cout << decl.str();
+  std::cout << arch.str();
+
+  dot::Grapher dot(dot::Style::def(), dot::Config::all());
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 }

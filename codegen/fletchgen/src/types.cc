@@ -45,6 +45,12 @@ std::shared_ptr<Type> Stream::Make(std::string name,
   return std::make_shared<Stream>(name, element_type, element_name, epc);
 }
 
+Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc)
+    : Type(type_name, Type::STREAM),
+      element_type_(std::move(element_type)),
+      element_name_(std::move(element_name)),
+      epc_(epc) {}
+
 std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type) {
   std::deque<std::shared_ptr<Type>> ret;
   if (type->Is(Type::STREAM)) {
@@ -64,6 +70,21 @@ std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &ty
 
 bool IsNested(const std::shared_ptr<Type> &type) {
   return type->Is(Type::STREAM) || type->Is(Type::RECORD);
+}
+
+std::shared_ptr<Type> string() {
+  static std::shared_ptr<Type> result = std::make_shared<String>("string");
+  return result;
+}
+
+std::shared_ptr<Type> integer() {
+  static std::shared_ptr<Type> result = std::make_shared<Natural>("integer");
+  return result;
+}
+
+std::shared_ptr<Type> boolean() {
+  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
+  return result;
 }
 
 #define TOSTRING_FACTORY(TYPE)     \

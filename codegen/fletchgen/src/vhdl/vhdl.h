@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "../stream.h"
 #include "../nodes.h"
@@ -38,11 +39,11 @@ Port::Dir Reverse(Port::Dir dir);
 class Declarator {
  public:
   static std::string Generate(const std::shared_ptr<Type> &type);
-  static Block Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port>& parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Port>& parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port>& parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Node> &parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Node> &parent, int depth = 0);
+  static Block Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Node> &parent, int depth = 0);
   static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
-  static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
+  static Block Generate(const std::shared_ptr<Node> &port, int depth = 0);
   static MultiBlock Generate(const std::shared_ptr<Graph> &comp, bool entity = false);
 };
 
@@ -56,6 +57,45 @@ class Instantiator {
   static Block GenConcatenatedStream(std::shared_ptr<Node> left,
                                      std::shared_ptr<Node> right,
                                      std::shared_ptr<Edge> edge);
+};
+
+class Architecture {
+ public:
+  static MultiBlock Generate(const std::shared_ptr<Component> &comp) {
+    MultiBlock ret;
+    Line header_line;
+    header_line << "architecture Implementation of " + comp->name() + " is";
+    ret << header_line;
+
+    // Component declarations
+    auto components_used = GetAllUniqueComponents(comp);
+    for (const auto &c : components_used) {
+      auto comp_decl = Declarator::Generate(c);
+      ret << comp_decl;
+    }
+
+    // Signal declarations
+    auto signals = comp->GetAllNodesOfType<Signal>();
+    for (const auto &s : signals) {
+      auto signal_decl = Declarator::Generate(s);
+      ret << Prepend("signal", &signal_decl, " ");
+    }
+
+    Line header_end;
+    header_end << "is begin";
+    ret << header_end;
+
+    // Component instantiations
+    auto instances = comp->GetAllInstances();
+    for (const auto &i : instances) {
+      auto inst_decl = Instantiator::Generate(i);
+      ret << inst_decl;
+    }
+
+    // Signal connections
+
+    return ret;
+  }
 };
 
 }  // namespace vhdl

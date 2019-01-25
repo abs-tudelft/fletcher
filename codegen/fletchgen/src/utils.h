@@ -17,6 +17,8 @@
 #include <string>
 #include <memory>
 #include <utility>
+#include <deque>
+#include <algorithm>
 
 namespace fletchgen {
 
@@ -29,5 +31,24 @@ struct Named {
  private:
   std::string name_;
 };
+
+template<typename T>
+bool contains(const std::deque<std::shared_ptr<T>>& list, const std::shared_ptr<T>& item) {
+  return std::find(std::begin(list), std::end(list), item) != std::end(list);
+}
+
+template<typename T>
+bool contains(const std::deque<T*>& list, T* item) {
+  return std::find(std::begin(list), std::end(list), item) != std::end(list);
+}
+
+template<typename T>
+std::deque<std::shared_ptr<T>>* remove(std::deque<std::shared_ptr<T>>* list, const std::shared_ptr<T>& item) {
+  auto it = std::find(std::begin(*list), std::end(*list), item);
+  if (it != std::end(*list)) {
+    list->erase(it);
+  }
+  return list;
+}
 
 }  // namespace fletchgen

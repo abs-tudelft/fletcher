@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include "./block.h"
+#include "block.h"
 
 namespace fletchgen {
 namespace vhdl {
@@ -132,6 +133,13 @@ MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs) {
   Block tmp(lhs.indent);
   tmp << rhs;
   lhs << tmp;
+  return lhs;
+}
+
+MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs) {
+  for (const auto& b : rhs.blocks) {
+    lhs << b;
+  }
   return lhs;
 }
 

@@ -49,12 +49,6 @@ VEC_DECL_FACTORY(utf8c, 8);
 VEC_DECL_FACTORY(byte, 8);
 VEC_DECL_FACTORY(offset, 32);
 VEC_DECL_FACTORY(length, 32);
-std::shared_ptr<Type> string();
-std::shared_ptr<Type> natural();
-std::shared_ptr<Literal> natval(int val);
-std::shared_ptr<Literal> natval(std::string val);
-std::shared_ptr<Literal> bool_true();
-std::shared_ptr<Literal> bool_false();
 
 /// @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> acc_domain();
@@ -74,16 +68,35 @@ std::shared_ptr<Type> bus_clk();
 /// @brief Fletcher bus reset
 std::shared_ptr<Type> bus_reset();
 
+/// @brief Fletcher bus read request channel
 std::shared_ptr<Type> bus_read_request();
+
+/// @brief Fletcher bus read data channel
 std::shared_ptr<Type> bus_read_data();
+
+/// @brief Fletcher bus write request channel
 std::shared_ptr<Type> bus_write_request();
+
+/// @brief Fletcher bus write data channel
 std::shared_ptr<Type> bus_write_data();
 
+/// @brief Fletcher command stream
 std::shared_ptr<Type> cmd();
+
+/// @brief Fletcher unlock stream
 std::shared_ptr<Type> unlock();
+
+/// @brief Fletcher read data
 std::shared_ptr<Type> read_data();
 
-std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType>& type);
-std::string GenerateSuffix(const std::shared_ptr<arrow::DataType>& type);
+/// @brief Fletcher write data
+std::shared_ptr<Type> write_data();
+
+/**
+ * @brief Convert an arrow::DataType to a Fletcher Type.
+ * @param arrow_type    The arrow::DataType.
+ * @return              The corresponding Fletcher Type
+ */
+std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType>& arrow_type);
 
 }  // namespace fletchgen

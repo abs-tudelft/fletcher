@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,13 +17,13 @@
 #include <arrow/api.h>
 #include <memory>
 #include <deque>
+#include <utility>
 
 #include "./edges.h"
 #include "./nodes.h"
 #include "./fletcher_types.h"
 
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
-#include "fletcher_components.h"
 
 namespace fletchgen {
 
@@ -52,13 +48,13 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::sha
 
 std::shared_ptr<Component> BusReadArbiter() {
   static auto ret = Component::Make("BusReadArbiterVec",
-                                    {Parameter::Make("BUS_ADDR_WIDTH", natural(), litint<32>()),
-                                     Parameter::Make("BUS_LEN_WIDTH", natural(), litint<32>()),
-                                     Parameter::Make("BUS_DATA_WIDTH", natural(), litint<32>()),
-                                     Parameter::Make("NUM_SLAVE_PORTS", natural(), litint<32>()),
-                                     Parameter::Make("ARB_METHOD", string(), Literal::Make("ROUND-ROBIN")),
-                                     Parameter::Make("MAX_OUTSTANDING", natural(), litint<2>()),
-                                     Parameter::Make("RAM_CONFIG", string(), Literal::Make("")),
+                                    {Parameter::Make("BUS_ADDR_WIDTH", integer(), litint<32>()),
+                                     Parameter::Make("BUS_LEN_WIDTH", integer(), litint<32>()),
+                                     Parameter::Make("BUS_DATA_WIDTH", integer(), litint<32>()),
+                                     Parameter::Make("NUM_SLAVE_PORTS", integer(), litint<32>()),
+                                     Parameter::Make("ARB_METHOD", string(), litstr("ROUND-ROBIN")),
+                                     Parameter::Make("MAX_OUTSTANDING", integer(), litint<2>()),
+                                     Parameter::Make("RAM_CONFIG", string(), litstr("")),
                                      Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
                                      Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
                                      Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
@@ -76,15 +72,15 @@ std::shared_ptr<Component> BusReadArbiter() {
 
 std::shared_ptr<Component> ColumnReader() {
   static auto ret = Component::Make("ColumnReader",
-                                    {Parameter::Make("BUS_ADDR_WIDTH", natural(), litint<32>()),
-                                     Parameter::Make("BUS_LEN_WIDTH", natural(), litint<8>()),
-                                     Parameter::Make("BUS_DATA_WIDTH", natural(), litint<32>()),
-                                     Parameter::Make("BUS_BURST_STEP_LEN", natural(), litint<4>()),
-                                     Parameter::Make("BUS_BURST_MAX_LEN", natural(), litint<16>()),
-                                     Parameter::Make("INDEX_WIDTH", natural(), litint<32>()),
+                                    {Parameter::Make("BUS_ADDR_WIDTH", integer(), litint<32>()),
+                                     Parameter::Make("BUS_LEN_WIDTH", integer(), litint<8>()),
+                                     Parameter::Make("BUS_DATA_WIDTH", integer(), litint<32>()),
+                                     Parameter::Make("BUS_BURST_STEP_LEN", integer(), litint<4>()),
+                                     Parameter::Make("BUS_BURST_MAX_LEN", integer(), litint<16>()),
+                                     Parameter::Make("INDEX_WIDTH", integer(), litint<32>()),
                                      Parameter::Make("CFG", string(), litstr("")),
                                      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
-                                     Parameter::Make("CMD_TAG_WIDTH", natural(), litint<1>())},
+                                     Parameter::Make("CMD_TAG_WIDTH", integer(), litint<1>())},
                                     {Port::Make(bus_clk()),
                                      Port::Make(bus_reset()),
                                      Port::Make(acc_clk()),
@@ -103,7 +99,7 @@ std::shared_ptr<Component> ColumnReader() {
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level) {
   int epc = fletcher::getEPC(field);
 
-  std::shared_ptr<Type> type = nullptr;
+  std::shared_ptr<Type> type;
 
   auto arrow_id = field->type()->id();
   auto name = field->name();
@@ -193,8 +189,8 @@ UserCore::UserCore(std::string name, std::shared_ptr<SchemaSet> schema_set)
   for (const auto &s : schema_set_->schema_list_) {
     for (const auto &f : s->fields()) {
       if (!fletcher::mustIgnore(f)) {
-        Add(ArrowPort::Make(f, mode2dir(fletcher::getMode(s))));
-        Add(Port::Make("cmd_" + f->name(), cmd(), Port::OUT));
+        AddNode(ArrowPort::Make(f, mode2dir(fletcher::getMode(s))));
+        AddNode(Port::Make("cmd_" + f->name(), cmd(), Port::OUT));
       }
     }
   }
@@ -207,9 +203,9 @@ std::shared_ptr<UserCore> UserCore::Make(std::shared_ptr<SchemaSet> schema_set) 
 std::shared_ptr<ArrowPort> UserCore::GetArrowPort(std::shared_ptr<arrow::Field> field) {
   for (const auto &n : nodes) {
     auto ap = Cast<ArrowPort>(n);
-    if (ap != nullptr) {
-      if (ap->field_ == field) {
-        return ap;
+    if (ap) {
+      if ((*ap)->field_ == field) {
+        return *ap;
       }
     }
   }
@@ -219,8 +215,8 @@ std::deque<std::shared_ptr<ArrowPort>> UserCore::GetAllArrowPorts() {
   std::deque<std::shared_ptr<ArrowPort>> result;
   for (const auto &n : nodes) {
     auto ap = Cast<ArrowPort>(n);
-    if (ap != nullptr) {
-      result.push_back(ap);
+    if (ap) {
+      result.push_back(*ap);
     }
   }
   return result;
@@ -232,14 +228,14 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
   // Create and instantiate a UserCore
   user_core_ = UserCore::Make(schema_set_);
   user_core_inst_ = Instance::Make(user_core_);
-  Add(user_core_inst_);
+  AddChild(user_core_inst_);
 
   // Instantiate ColumnReaders/Writers for each field.
   for (const auto &p : user_core_->GetAllArrowPorts()) {
     if (p->dir == Port::IN) {
       auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
       column_readers.push_back(cr_inst);
-      Add(cr_inst);
+      AddChild(cr_inst);
     } else {
       // TODO(johanpel): ColumnWriters
     }
@@ -258,8 +254,9 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
       auto cr_cmd_port = column_readers[i]->Get(Node::PORT, "cmd");
 
       // Connect the ports
-      uci_data_port <<= cr_data_port;
-      cr_cmd_port <<= uci_cmd_port;
+      auto int_data = insert(uci_data_port <<= cr_data_port);
+      auto int_cmd = insert(cr_cmd_port <<= uci_cmd_port);
+      AddNode(int_data).AddNode(int_cmd);
     } else {
       // TODO(johanpel): ColumnWriters
     }
@@ -271,16 +268,16 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
   auto bwr = Port::Make("bus_wreq", bus_write_request());
   auto bwd = Port::Make("bus_wdat", bus_write_data());
 
-  Add(brr).Add(brd).Add(bwr).Add(bwd);
+  AddNode(brr).AddNode(brd).AddNode(bwr).AddNode(bwd);
 
-  for (const auto &cr: column_readers) {
+  for (const auto &cr : column_readers) {
     auto cr_rreq = cr->Get(Node::PORT, "bus_rreq");
     auto cr_rdat = cr->Get(Node::PORT, "bus_rdat");
     brr <<= cr_rreq;
     cr_rdat <<= brd;
   }
 
-  for (const auto &cw: column_writers) {
+  for (const auto &cw : column_writers) {
     auto cr_wreq = cw->Get(Node::PORT, "bus_wreq");
     auto cr_wdat = cw->Get(Node::PORT, "bus_wdat");
     bwr <<= cr_wreq;

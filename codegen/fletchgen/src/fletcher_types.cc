@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "./fletcher_types.h"
+
 #include "./nodes.h"
 #include "./types.h"
-
-#include "./fletcher_types.h"
-#include "fletcher_types.h"
 
 namespace fletchgen {
 
@@ -54,31 +53,6 @@ VEC_FACTORY(utf8c, 8);
 VEC_FACTORY(byte, 8);
 VEC_FACTORY(offset, 32);
 VEC_FACTORY(length, 32);
-
-std::shared_ptr<Type> string() {
-  static std::shared_ptr<Type> result = std::make_shared<String>("string");
-  return result;
-};
-
-std::shared_ptr<Type> natural() {
-  static std::shared_ptr<Type> result = std::make_shared<Natural>("natural");
-  return result;
-};
-
-std::shared_ptr<Type> boolean() {
-  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
-  return result;
-};
-
-std::shared_ptr<Literal> bool_true() {
-  static auto result = Literal::Make("bool_true", true);
-  return result;
-}
-
-std::shared_ptr<Literal> bool_false() {
-  static auto result = Literal::Make("bool_true", false);
-  return result;
-}
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
@@ -172,8 +146,16 @@ std::shared_ptr<Type> read_data() {
   return data_stream;
 }
 
-std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &type) {
-  switch (type->id()) {
+std::shared_ptr<Type> write_data() {
+  static std::shared_ptr<RecordField> data = RecordField::Make(Vector::Make<64>("data"));
+  static std::shared_ptr<RecordField> last = RecordField::Make("last", bit());
+  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {data, last});
+  static std::shared_ptr<Type> data_stream = Stream::Make("data:stream", data_record);
+  return data_stream;
+}
+
+std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type) {
+  switch (arrow_type->id()) {
     case arrow::Type::LIST: return length();
     case arrow::Type::UINT8: return uint8();
     case arrow::Type::UINT16: return uint16();
@@ -187,15 +169,7 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &type) 
     case arrow::Type::FLOAT: return float32();
     case arrow::Type::DOUBLE: return float64();
     default:
-      throw std::runtime_error("Unsupported Arrow DataType: " + type->ToString());
-  }
-}
-
-std::string GenerateSuffix(const std::shared_ptr<arrow::DataType> &type) {
-  if (type->id() == arrow::Type::LIST) {
-    return "_length";
-  } else {
-    return "";
+      throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
   }
 }
 

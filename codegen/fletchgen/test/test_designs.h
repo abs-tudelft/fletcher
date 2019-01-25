@@ -32,17 +32,17 @@ std::shared_ptr<Component> GetConcattedStreamsComponent() {
   auto x = Component::Make("X", {}, {pA, pD, pE}, {});
   auto y = Component::Make("Y", {}, {pB, pC, pF}, {});
 
-  top->Add(x)
-      .Add(y);
+  top->AddChild(x)
+      .AddChild(y);
 
   // Signals
   auto sB = Signal::Make("int_B", sub_stream);
   auto sC = Signal::Make("int_C", sub_stream);
   auto sF = Signal::Make("int_F", all_stream);
 
-  top->Add(sB)
-      .Add(sC)
-      .Add(sF);
+  top->AddNode(sB)
+      .AddNode(sC)
+      .AddNode(sF);
 
   // Connect
   sB <<= x->Get(Node::PORT, "A");
@@ -72,7 +72,7 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto s_port = Port::Make("some_port", s_type);
 
   auto l = litint<16>();
-  auto par = Parameter::Make("depth", natural(), l);
+  auto par = Parameter::Make("depth", integer(), l);
 
   auto a_type = Component::Make("a", {par}, {clk_port, rst_port, b_port, v_port, r_port, s_port}, {});
 

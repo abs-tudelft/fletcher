@@ -19,17 +19,17 @@
 namespace fletchgen {
 
 std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src) {
+  // Check for potential errors
   if (src == nullptr) {
     throw std::runtime_error("Source node is null");
   }
   if (dst == nullptr) {
     throw std::runtime_error("Destination node is null");
   }
-  if (src->IsLiteral()) {
-
-  } else if (src->type->id != dst->type->id) {
+  if (src->type->id != dst->type->id) {
     throw std::runtime_error("Cannot connect nodes of different types.");
   }
+
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
   src->outs.push_back(edge);
@@ -39,6 +39,24 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
 
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
   return Connect(lhs, rhs);
+}
+
+std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix) {
+  // Get the source type
+  auto type = edge->src->type;
+
+  // Create the signal
+  auto signal = Signal::Make(name_prefix + edge->src->name(), type);
+
+  // Make the new connections, effectively creating two new edges.
+  signal <<= edge->src;
+  edge->dst <<= signal;
+
+  // Remove original edge from outs and ins of both ends
+  remove(&edge->src->outs, edge);
+  remove(&edge->dst->ins, edge);
+
+  return signal;
 }
 
 std::shared_ptr<Edge> Edge::Make(std::string name, const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
@@ -67,10 +85,10 @@ int Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<No
 }
 void Edge::CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
   if (edge == nullptr) {
-    throw std::runtime_error("Edge is null.");
+    throw std::runtime_error("CheckEdgeOfNode: Edge is null.");
   }
   if (node == nullptr) {
-    throw std::runtime_error("Edge is null.");
+    throw std::runtime_error("Node: Node is null.");
   }
   if (!(edge->src == node) && !(edge->dst == node)) {
     throw std::runtime_error("Edge " + edge->name() + "is not connected to node " + node->name());
@@ -101,8 +119,8 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
         if (stream->element_type()->Is(Type::VECTOR)) {
           auto vec = Cast<Vector>(stream->element_type());
           if (vec->width()->IsLiteral()) {
-            auto l = Cast<Literal>(vec->width());
-            if (l->lit_type == Literal::INT) {
+            auto l = *Cast<Literal>(vec->width());
+            if (l->val_storage_type == Literal::INT) {
               offset += l->int_val;
             } else {
               // not supported
@@ -116,8 +134,8 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
         // If it's a vector
         auto vec = Cast<Vector>(dt);
         if (vec->width()->IsLiteral()) {
-          auto l = Cast<Literal>(vec->width());
-          if (l->lit_type == Literal::INT) {
+          auto l = *Cast<Literal>(vec->width());
+          if (l->val_storage_type == Literal::INT) {
             offset += l->int_val;
           } else {
             // not supported

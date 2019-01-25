@@ -66,6 +66,9 @@ Block &Prepend(const std::string &lhs, Block* rhs, std::string sep = "_");
 /// @brief Append a block to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Block &rhs);
 
+/// @brief Append a multiblock to a multiblock
+MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs);
+
 /// @brief Append a line to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs);
 

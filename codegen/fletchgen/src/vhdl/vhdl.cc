@@ -74,10 +74,10 @@ std::string ToString(std::vector<Block> blocks) {
 
 std::string ToString(std::shared_ptr<Node> node) {
   if (node->IsLiteral()) {
-    auto x = std::dynamic_pointer_cast<Literal>(node);
+    auto x = *Cast<Literal>(node);
     return x->ToValueString();
   } else if (node->IsParameter()) {
-    auto x = Cast<Parameter>(node);
+    auto x = *Cast<Parameter>(node);
     return x->name();
   } else {
     return node->name();
@@ -118,7 +118,7 @@ Block Declarator::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Port> &parent, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Node> &parent, int depth) {
   if (type->Is(Type::RECORD)) {
     Block ret(depth);
     ret << Generate(Cast<Record>(type), parent, depth);
@@ -130,25 +130,39 @@ Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_
   } else {
     Block ret(depth);
     Line d;
-    d << " : " << ToString(parent->dir) << " " + Generate(type);
+    d << " : ";
+    auto port = Cast<Port>(parent);
+    if (port) {
+      d << ToString((*port)->dir);
+    }
+    d << " " + Generate(type);
     ret << d;
     return ret;
   }
 }
 
-Block Declarator::Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Port> &parent, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Node> &parent, int depth) {
   Block ret;
   Block d;
   Line v, r;
-  v << "valid" << " : " << ToString(parent->dir) << " " + Generate(valid());
-  r << "ready" << " : " << ToString(Reverse(parent->dir)) << " " + Generate(ready());
+  auto port = Cast<Port>(parent);
+
+  v << "valid" << " : ";
+  r << "ready" << " : ";
+  if (port) {
+    v << ToString((*port)->dir);
+    r << ToString(Reverse((*port)->dir));
+  }
+  v << " " + Generate(valid());
+  r << " " + Generate(ready());
+
   d << Generate(stream->element_type(), parent, depth);
   ret << v << r;
   ret << Prepend(stream->element_name(), &d, "");
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Port> &parent, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Node> &parent, int depth) {
   Block ret;
   for (const auto &f : rec->fields()) {
     Block fb = Generate(f->type(), parent, depth);
@@ -157,7 +171,7 @@ Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Port> &port, int depth) {
+Block Declarator::Generate(const std::shared_ptr<Node> &port, int depth) {
   Block p = Generate(port->type, port, depth);
   return Prepend(port->name(), &p);
 }
@@ -177,7 +191,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
   ret << h;
 
   // Generics
-  auto generics = graph->GetAll<Parameter>();
+  auto generics = graph->GetAllNodesOfType<Parameter>();
   if (!generics.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
@@ -198,7 +212,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
     gdf << gf;
     ret << gdh << gd << gdf;
   }
-  auto ports = graph->GetAll<Port>();
+  auto ports = graph->GetAllNodesOfType<Port>();
   if (!ports.empty()) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);

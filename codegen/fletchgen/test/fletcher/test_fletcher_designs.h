@@ -33,9 +33,9 @@ std::shared_ptr<Component> GetColumnReadersAndArbiter() {
   bra_rdat <<= cr0_rdat;
   bra_rdat <<= cr1_rdat;
 
-  top->Add(bra)
-      .Add(cr0)
-      .Add(cr1);
+  top->AddChild(bra)
+      .AddChild(cr0)
+      .AddChild(cr1);
 
   return top;
 }

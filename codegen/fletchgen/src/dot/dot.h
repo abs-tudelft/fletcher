@@ -62,9 +62,9 @@ struct Style {
     } color;
 
     str base = "penwidth=1";
-    str port_to_sig = "arrowhead=none, arrowtail=box, dir=both";
-    str sig_to_port = "arrowtail=none, dir=both";
-    str port_to_port = "arrowtail=box, dir=both";
+    str port_to_sig = "dir=forward";
+    str sig_to_port = "dir=forward";
+    str port_to_port = "dir=forward";
     str stream = "penwidth=3";
     str lit = "style=dotted, arrowhead=none, arrowtail=none";
     str clock = "shape=diamond, color=\"#000000\", penwidth=1";
@@ -79,8 +79,8 @@ struct Style {
       str record = "#58e8b3";  // m-3
     } color;
 
-    str base = "margin=0.15, width=0, height=0";
-    str port;
+    str base = "margin=0.0125, width=0, height=0";
+    str port = "style=filled";
     str sig = "style=filled, fillcolor=\"#bfff81\", margin=0.05, width=0, height=0";
     str param;
     str lit = "margin=0.05, width=0, height=0";
@@ -93,21 +93,42 @@ struct Style {
       str bit;
     } type;
   } node;
-};
 
-struct NodeConfig {
-  bool parameters = false;
-  bool literals = false;
-  bool signals = true;
-  bool ports = true;
-  struct TypeConfig {
-    bool clock = false;
-    bool reset = false;
-  } types;
+  static Style def() {
+    static Style ret;
+    return ret;
+  }
 };
 
 struct Config {
-  NodeConfig nodes;
+  struct NodeConfig {
+    bool parameters = false;
+    bool literals = false;
+    bool signals = true;
+    bool ports = true;
+    struct TypeConfig {
+      bool expand = false;
+      bool clock = false;
+      bool reset = false;
+    } types;
+  } nodes;
+
+  static Config def() {
+    static Config ret;
+    return ret;
+  }
+
+  static Config all() {
+    static Config ret;
+    ret.nodes.parameters = true;
+    ret.nodes.literals = true;
+    ret.nodes.signals = true;
+    ret.nodes.ports = true;
+    ret.nodes.types.expand = true;
+    ret.nodes.types.clock = true;
+    ret.nodes.types.reset = true;
+    return ret;
+  };
 };
 
 struct Grapher {
@@ -116,12 +137,16 @@ struct Grapher {
   std::deque<std::shared_ptr<Edge>> drawn_edges;
 
   Grapher() = default;
-  explicit Grapher(Style style) : style(std::move(style)) {}
+  explicit Grapher(Style style, Config config) : style(std::move(style)), config(std::move(config)) {}
 
-  std::string GenCell(const std::shared_ptr<Type> &type,
-                      const std::shared_ptr<Node> &node,
-                      std::string name,
-                      int level = 0);
+  std::string GenTableCell(const std::shared_ptr<Type> &type,
+                           const std::shared_ptr<Node> &node,
+                           std::string name,
+                           int level = 0);
+  std::string GenRecordCell(const std::shared_ptr<Type> &type,
+                            const std::shared_ptr<Node> &node,
+                            std::string name,
+                            int level = 0);
   std::string GenEdges(const std::shared_ptr<Graph> &comp, int level = 0);
   std::string GenNodes(const std::shared_ptr<Graph> &comp, int level = 0);
   std::string GenGraph(const std::shared_ptr<Graph> &graph, int level = 0);
