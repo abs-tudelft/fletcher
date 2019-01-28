@@ -1,9 +1,3 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,24 +17,22 @@
 #include <memory>
 #include <deque>
 #include <string>
+#include <utility>
 
 #include "./utils.h"
 
 namespace fletchgen {
 
+// Forward decl.
 struct Node;
 struct Literal;
 
 template<int T>
 std::shared_ptr<Literal> litint();
 
-struct ClockDomain : public Named {
-  explicit ClockDomain(std::string name)
-      : Named(std::move(name)) {}
-
-  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
-};
-
+/**
+ * @brief A type
+ */
 struct Type : public Named {
   enum ID {
     CLOCK,
@@ -52,100 +44,73 @@ struct Type : public Named {
     NATURAL,
     STRING,
     BOOLEAN
-  };
+  } id;
 
-  ID id;
-
-  explicit Type(std::string name, ID id)
-      : Named(std::move(name)), id(id) {}
+  explicit Type(std::string name, ID id);
   virtual ~Type() = default;
-
   bool Is(ID type_id);
 };
 
-class Natural : public Type {
- public:
+/**
+ * @brief A clock domain
+ *
+ * Placeholder for automatically generated clock domain crossing support
+ */
+struct ClockDomain : public Named {
+  explicit ClockDomain(std::string name);
+  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
+};
+
+struct Natural : public Type {
   explicit Natural(std::string name) : Type(std::move(name), Type::NATURAL) {}
-
-  static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<Natural>(name);
-  }
+  static std::shared_ptr<Type> Make(std::string name);
 };
 
-class Boolean : public Type {
- public:
-  explicit Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
-
-  static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<Boolean>(name);
-  }
+struct Boolean : public Type {
+  explicit Boolean(std::string name);
+  static std::shared_ptr<Type> Make(std::string name);
 };
 
-class String : public Type {
- public:
-  explicit String(std::string name) : Type(std::move(name), Type::STRING) {}
-
-  static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<String>(name);
-  }
+struct String : public Type {
+  explicit String(std::string name);
+  static std::shared_ptr<Type> Make(std::string name);
 };
 
 struct Clock : public Type {
-  explicit Clock(std::string name, std::shared_ptr<ClockDomain> domain)
-      : Type(std::move(name), Type::CLOCK), domain(std::move(domain)) {}
-  static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-    return std::make_shared<Clock>(name, domain);
-  }
   std::shared_ptr<ClockDomain> domain;
+  Clock(std::string name, std::shared_ptr<ClockDomain> domain);
+  static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
 };
 
 struct Reset : public Type {
-  explicit Reset(std::string name, std::shared_ptr<ClockDomain> domain)
-      : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
-  static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-    return std::make_shared<Reset>(name, domain);
-  }
   std::shared_ptr<ClockDomain> domain;
+  explicit Reset(std::string name, std::shared_ptr<ClockDomain> domain);
+  static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
 };
 
-class Bit : public Type {
- public:
-  explicit Bit(std::string name) : Type(std::move(name), Type::BIT) {}
-  static std::shared_ptr<Bit> Make(std::string name) {
-    return std::make_shared<Bit>(name);
-  }
+struct Bit : public Type {
+  explicit Bit(std::string name);
+  static std::shared_ptr<Bit> Make(std::string name);
 };
 
 class Vector : public Type {
  public:
   Vector(std::string name, std::shared_ptr<Node> width);
-
-  static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Node> width) {
-    return std::make_shared<Vector>(name, width);
-  }
+  static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Node> width);
+  std::shared_ptr<Node> width() const { return width_; }
   template<int T>
   static std::shared_ptr<Type> Make(std::string name) {
     return std::make_shared<Vector>(name, litint<T>());
   }
-
-  std::shared_ptr<Node> width() const { return width_; }
  private:
   std::shared_ptr<Node> width_;
 };
 
 class RecordField : public Named {
  public:
-  RecordField(std::string name, std::shared_ptr<Type> type)
-      : Named(std::move(name)), type_(std::move(type)) {}
-
-  static std::shared_ptr<RecordField> Make(std::string name, std::shared_ptr<Type> type) {
-    return std::make_shared<RecordField>(name, type);
-  }
-
-  static std::shared_ptr<RecordField> Make(std::shared_ptr<Type> type) {
-    return std::make_shared<RecordField>(type->name(), type);
-  }
-
+  RecordField(std::string name, std::shared_ptr<Type> type);
+  static std::shared_ptr<RecordField> Make(std::string name, std::shared_ptr<Type> type);
+  static std::shared_ptr<RecordField> Make(std::shared_ptr<Type> type);
   std::shared_ptr<Type> type() const { return type_; }
  private:
   std::shared_ptr<Type> type_;
@@ -153,17 +118,9 @@ class RecordField : public Named {
 
 class Record : public Type {
  public:
-  explicit Record(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {})
-      : Type(name, Type::RECORD), fields_(std::move(fields)) {}
-
-  static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {}) {
-    return std::make_shared<Record>(name, fields);
-  }
-
-  Record &AddField(const std::shared_ptr<RecordField> &field) {
-    fields_.push_back(field);
-    return *this;
-  };
+  explicit Record(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {});
+  static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {});
+  Record &AddField(const std::shared_ptr<RecordField> &field);;
   std::shared_ptr<RecordField> field(size_t i) const { return fields_[i]; }
   std::deque<std::shared_ptr<RecordField>> fields() { return fields_; }
  private:
@@ -223,6 +180,9 @@ std::shared_ptr<T> Cast(const std::shared_ptr<Type> &type) {
 }
 
 // Some common types:
+
+/// @brief A bit type.
+std::shared_ptr<Type> bit();
 
 /// @brief String type.
 std::shared_ptr<Type> string();

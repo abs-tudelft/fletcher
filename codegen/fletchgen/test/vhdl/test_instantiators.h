@@ -19,17 +19,18 @@
 #include "../../src/graphs.h"
 #include "../../src/vhdl/vhdl.h"
 #include "../../src/fletcher_types.h"
+#include "../../src/dot/dot.h"
 
 namespace fletchgen {
 
 TEST(VHDL, StreamConcat) {
   auto top = GetConcattedStreamsComponent();
 
-  auto x_inst = vhdl::Instantiator::Generate(top->children[0]);
-  auto y_inst = vhdl::Instantiator::Generate(top->children[1]);
+  auto code = vhdl::Design::Generate(top);
+  std::cout << code.ToString();
 
-  std::cout << x_inst.str();
-  std::cout << y_inst.str();
+  dot::Grapher dot(dot::Style::def(), dot::Config::all());
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 }

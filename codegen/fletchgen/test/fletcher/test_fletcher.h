@@ -20,7 +20,7 @@
 #include <memory>
 #include <vector>
 
-#include "test_schemas.h"
+#include "./test_schemas.h"
 
 #include "../../src/vhdl/vhdl.h"
 #include "../../src/dot/dot.h"
@@ -35,8 +35,8 @@ namespace fletchgen {
 TEST(Fletcher, BusReadArbiter) {
   auto brav = BusReadArbiter();
 
-  auto source = vhdl::Declarator::Generate(brav);
-  std::cout << source.str();
+  auto source = vhdl::Decl::Generate(brav);
+  std::cout << source.ToString();
 }
 
 TEST(Fletcher, UserCore_CR_BRA) {
@@ -61,8 +61,8 @@ TEST(Fletcher, UserCore_StringRead) {
   auto set = SchemaSet::Make("StringRead", {schema});
   auto uc = UserCore::Make(set);
 
-  auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
-  std::cout << code.str();
+  auto code = vhdl::Decl::Generate(*Cast<Component>(uc));
+  std::cout << code.ToString();
 
   dot::Grapher dot;
   std::cout << dot.GenFile(uc, "graph.dot");
@@ -73,8 +73,8 @@ TEST(Fletcher, UserCore_ListPrim) {
   auto set = SchemaSet::Make("ListUint8", {schema});
   auto uc = UserCore::Make(set);
 
-  auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
-  std::cout << code.str();
+  auto code = vhdl::Decl::Generate(*Cast<Component>(uc));
+  std::cout << code.ToString();
 
   dot::Grapher dot;
   std::cout << dot.GenFile(uc, "graph.dot");
@@ -85,8 +85,8 @@ TEST(Fletcher, UserCore_BigSchema) {
   auto set = SchemaSet::Make("Big", {schema});
   auto uc = UserCore::Make(set);
 
-  auto code = vhdl::Declarator::Generate(std::dynamic_pointer_cast<Graph>(uc));
-  std::cout << code.str();
+  auto code = vhdl::Decl::Generate(*Cast<Component>(uc));
+  std::cout << code.ToString();
 
   dot::Grapher dot;
   std::cout << dot.GenFile(uc, "graph.dot");
@@ -97,10 +97,10 @@ TEST(Fletcher, FletcherCore_Big) {
   auto set = SchemaSet::Make("Big", {schema});
   auto top = FletcherCore::Make(set);
 
-  auto decl = vhdl::Declarator::Generate(top, true);
-  auto arch = vhdl::Architecture::Generate(top);
-  std::cout << decl.str();
-  std::cout << arch.str();
+  auto decl = vhdl::Decl::Generate(top, true);
+  auto arch = vhdl::Arch::Generate(top);
+  std::cout << decl.ToString();
+  std::cout << arch.ToString();
 
   dot::Grapher dot(dot::Style::def(), dot::Config::all());
   std::cout << dot.GenFile(top, "graph.dot");
@@ -111,10 +111,10 @@ TEST(Fletcher, FletcherCore_StringRead) {
   auto set = SchemaSet::Make("StringRead", {schema});
   auto top = FletcherCore::Make(set);
 
-  auto decl = vhdl::Declarator::Generate(top, true);
-  auto arch = vhdl::Architecture::Generate(top);
-  std::cout << decl.str();
-  std::cout << arch.str();
+  auto decl = vhdl::Decl::Generate(top, true);
+  auto arch = vhdl::Arch::Generate(top);
+  std::cout << decl.ToString();
+  std::cout << arch.ToString();
 
   dot::Grapher dot(dot::Style::def(), dot::Config::all());
   std::cout << dot.GenFile(top, "graph.dot");

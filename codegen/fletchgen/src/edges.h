@@ -50,11 +50,14 @@ struct Edge : public Named {
   /// @brief Get the node opposite to the other edge node.
   std::shared_ptr<Node> GetOtherNode(const std::shared_ptr<Node> &node);
 
-  /// @brief Get all sibling nodes
-  std::deque<std::shared_ptr<Edge>> GetAllSiblings(const std::shared_ptr<Node> &node);
+  /// @brief Get all sibling edges at some node
+  std::deque<std::shared_ptr<Edge>> GetAllSiblings(const std::shared_ptr<Node> &node) const;
 
-  // @brief Return true if a node has any siblings, false otherwise.
-  bool HasSiblings(const std::shared_ptr<Node> &node);
+  /// @brief Return true if a node has any siblings, false otherwise.
+  bool HasSiblings(const std::shared_ptr<Node> &node) const;
+
+  /// @brief Returns the number of sibling edges at a node.
+  size_t num_siblings(const std::shared_ptr<Node> &node) const;
 
   /**
    * @brief Check if an edge is an edge on a node.

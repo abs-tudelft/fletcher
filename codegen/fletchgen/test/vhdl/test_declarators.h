@@ -27,8 +27,8 @@
 namespace fletchgen {
 
 TEST(VHDL, ComponentDecl) {
-  auto code = vhdl::Declarator::Generate(GetAllPortTypesComponent());
-  std::cout << code.str() << std::endl;
+  auto code = vhdl::Decl::Generate(GetAllPortTypesComponent());
+  std::cout << code.ToString() << std::endl;
 }
 
 }

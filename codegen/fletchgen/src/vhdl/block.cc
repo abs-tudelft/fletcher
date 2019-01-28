@@ -143,7 +143,7 @@ MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs) {
   return lhs;
 }
 
-std::string MultiBlock::str() const {
+std::string MultiBlock::ToString() const {
   std::stringstream ret;
   for (const auto &b : blocks) {
     ret << b.str();

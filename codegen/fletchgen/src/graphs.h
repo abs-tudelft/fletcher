@@ -61,6 +61,9 @@ struct Graph : public Named {
   /// @brief Add a child component
   virtual Graph &AddChild(const std::shared_ptr<Graph> &child);
 
+  /// @brief Create a copy of the graph
+  virtual std::shared_ptr<Graph> Copy() const;
+
   /**
    * @brief Obtain all nodes of type T from the graph
    * @tparam T  The node type to obtain
@@ -115,6 +118,9 @@ struct Component : public Graph {
   */
   // TODO(johanpel): this function should probably be removed as for overridden AddChild all children must be Instance.
   std::deque<std::shared_ptr<Instance>> GetAllInstances();
+
+  /// @brief Create a copy of the component
+  std::shared_ptr<Graph> Copy() const override;
 };
 
 /**

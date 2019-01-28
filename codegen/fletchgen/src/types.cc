@@ -24,6 +24,9 @@ bool Type::Is(Type::ID type_id) {
   return type_id == id;
 }
 
+Type::Type(std::string name, Type::ID id)
+    : Named(std::move(name)), id(id) {}
+
 Vector::Vector(std::string name, std::shared_ptr<Node> width)
     : Type(std::move(name), Type::VECTOR) {
   // Check if width is parameter or literal node
@@ -34,8 +37,12 @@ Vector::Vector(std::string name, std::shared_ptr<Node> width)
   }
 }
 
+std::shared_ptr<Type> Vector::Make(std::string name, std::shared_ptr<Node> width) {
+  return std::make_shared<Vector>(name, width);
+}
+
 std::shared_ptr<Type> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
-  return std::make_shared<Stream>(name, element_type, "", epc);
+  return std::make_shared<Stream>(name, element_type, "data", epc);
 }
 
 std::shared_ptr<Type> Stream::Make(std::string name,
@@ -72,6 +79,11 @@ bool IsNested(const std::shared_ptr<Type> &type) {
   return type->Is(Type::STREAM) || type->Is(Type::RECORD);
 }
 
+std::shared_ptr<Type> bit() {
+  static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");
+  return result;
+}
+
 std::shared_ptr<Type> string() {
   static std::shared_ptr<Type> result = std::make_shared<String>("string");
   return result;
@@ -103,4 +115,64 @@ TOSTRING_FACTORY(Natural)
 TOSTRING_FACTORY(String)
 TOSTRING_FACTORY(Boolean)
 
+std::shared_ptr<Type> Natural::Make(std::string name) {
+  return std::make_shared<Natural>(name);
+}
+
+Boolean::Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
+
+std::shared_ptr<Type> Boolean::Make(std::string name) {
+  return std::make_shared<Boolean>(name);
+}
+
+String::String(std::string name) : Type(std::move(name), Type::STRING) {}
+
+std::shared_ptr<Type> String::Make(std::string name) {
+  return std::make_shared<String>(name);
+}
+
+Clock::Clock(std::string name, std::shared_ptr<ClockDomain> domain)
+    : Type(std::move(name), Type::CLOCK), domain(std::move(domain)) {}
+
+std::shared_ptr<Clock> Clock::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
+  return std::make_shared<Clock>(name, domain);
+}
+
+Reset::Reset(std::string name, std::shared_ptr<ClockDomain> domain)
+    : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
+
+std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
+  return std::make_shared<Reset>(name, domain);
+}
+
+Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
+
+std::shared_ptr<Bit> Bit::Make(std::string name) {
+  return std::make_shared<Bit>(name);
+}
+
+RecordField::RecordField(std::string name, std::shared_ptr<Type> type)
+    : Named(std::move(name)), type_(std::move(type)) {}
+
+    std::shared_ptr<RecordField> RecordField::Make(std::string name, std::shared_ptr<Type> type) {
+  return std::make_shared<RecordField>(name, type);
+}
+
+std::shared_ptr<RecordField> RecordField::Make(std::shared_ptr<Type> type) {
+  return std::make_shared<RecordField>(type->name(), type);
+}
+
+Record::Record(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields)
+    : Type(name, Type::RECORD), fields_(std::move(fields)) {}
+
+std::shared_ptr<Type> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields) {
+  return std::make_shared<Record>(name, fields);
+}
+
+Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
+  fields_.push_back(field);
+  return *this;
+}
+
+ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 }  // namespace fletchgen

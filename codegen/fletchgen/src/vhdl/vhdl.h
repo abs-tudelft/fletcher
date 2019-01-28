@@ -14,88 +14,89 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iomanip>
+#include <deque>
+#include <tuple>
 
-#include "../stream.h"
 #include "../nodes.h"
 #include "../types.h"
 #include "../graphs.h"
+#include "../edges.h"
 
 #include "./block.h"
 
 namespace fletchgen {
 namespace vhdl {
 
+class Identifier {
+ private:
+  char separator_ = '_';
+  std::vector<std::string> parts_;
+ public:
+  Identifier() = default;
+  Identifier(std::initializer_list<std::string> parts, char sep = '_');
+  std::string ToString() const;
+  Identifier &append(const std::string &part);
+  Identifier &operator+=(const std::string &rhs);
+};
+Identifier operator+(const Identifier &lhs, const std::string &rhs);
+
 std::shared_ptr<Type> valid();
 std::shared_ptr<Type> ready();
 
 std::string ToString(std::vector<Block> blocks);
+std::string ToString(const std::shared_ptr<Node> &node);
 std::string ToString(Port::Dir dir);
 Port::Dir Reverse(Port::Dir dir);
 
-class Declarator {
- public:
+/// @brief Structure to get flattened list of VHDL identifiers out of a Node with potentially nested type
+struct FlatNode {
+  std::shared_ptr<Node> node_;
+  std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> tuples_;
+  explicit FlatNode(std::shared_ptr<Node> node);
+  void FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Record> &record);
+  void FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Stream> &stream);
+  void FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Type> &type);
+  std::string ToString() const;
+  std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> GetAll();
+  std::tuple<Identifier, std::shared_ptr<Type>> Get(size_t i);
+  size_t size();
+};
+
+struct Transformation {
+  /**
+   * @brief Transforms the component, inserting signals between port-to-port connections of instances.
+   * @param comp    The component to transform
+   * @return        The transformed component
+   */
+  static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
+};
+
+struct Decl {
   static std::string Generate(const std::shared_ptr<Type> &type);
-  static Block Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Node> &parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Node> &parent, int depth = 0);
-  static Block Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Node> &parent, int depth = 0);
   static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
-  static Block Generate(const std::shared_ptr<Node> &port, int depth = 0);
-  static MultiBlock Generate(const std::shared_ptr<Graph> &comp, bool entity = false);
+  static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
+  static Block Generate(const std::shared_ptr<Signal> &sig, int depth = 0);
+  static MultiBlock Generate(const std::shared_ptr<Component> &comp, bool entity = false);
 };
 
-class Instantiator {
- public:
+struct Inst {
   static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
-  static Block Generate(const std::shared_ptr<Node> &node);
-  static Block Generate(std::shared_ptr<Node> left,
-                        std::shared_ptr<Node> right,
-                        std::shared_ptr<Edge> edge);
-  static Block GenConcatenatedStream(std::shared_ptr<Node> left,
-                                     std::shared_ptr<Node> right,
-                                     std::shared_ptr<Edge> edge);
+  static Block Generate(const std::shared_ptr<Port> &lhs);
+  static Block Generate(const std::shared_ptr<Parameter> &port);
 };
 
-class Architecture {
- public:
-  static MultiBlock Generate(const std::shared_ptr<Component> &comp) {
-    MultiBlock ret;
-    Line header_line;
-    header_line << "architecture Implementation of " + comp->name() + " is";
-    ret << header_line;
+struct Arch {
+  static MultiBlock Generate(const std::shared_ptr<Component> &comp);
+};
 
-    // Component declarations
-    auto components_used = GetAllUniqueComponents(comp);
-    for (const auto &c : components_used) {
-      auto comp_decl = Declarator::Generate(c);
-      ret << comp_decl;
-    }
-
-    // Signal declarations
-    auto signals = comp->GetAllNodesOfType<Signal>();
-    for (const auto &s : signals) {
-      auto signal_decl = Declarator::Generate(s);
-      ret << Prepend("signal", &signal_decl, " ");
-    }
-
-    Line header_end;
-    header_end << "is begin";
-    ret << header_end;
-
-    // Component instantiations
-    auto instances = comp->GetAllInstances();
-    for (const auto &i : instances) {
-      auto inst_decl = Instantiator::Generate(i);
-      ret << inst_decl;
-    }
-
-    // Signal connections
-
-    return ret;
-  }
+struct Design {
+  static MultiBlock Generate(const std::shared_ptr<Component> &comp);
 };
 
 }  // namespace vhdl

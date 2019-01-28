@@ -32,9 +32,7 @@ namespace fletchgen {
     return result;                                                    \
 }
 
-BIT_FACTORY(bit);
 BIT_FACTORY(null);
-
 VEC_FACTORY(int8, 8);
 VEC_FACTORY(uint8, 8);
 VEC_FACTORY(int16, 16);

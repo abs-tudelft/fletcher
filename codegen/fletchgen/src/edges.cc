@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "./edges.h"
+#include "edges.h"
 
 #include <memory>
 
@@ -26,14 +27,14 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   if (dst == nullptr) {
     throw std::runtime_error("Destination node is null");
   }
-  if (src->type->id != dst->type->id) {
+  if (src->type_->id != dst->type_->id) {
     throw std::runtime_error("Cannot connect nodes of different types.");
   }
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
-  src->outs.push_back(edge);
-  dst->ins.push_back(edge);
+  src->outs_.push_back(edge);
+  dst->ins_.push_back(edge);
   return edge;
 }
 
@@ -42,19 +43,19 @@ std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::s
 }
 
 std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix) {
-  // Get the source type
-  auto type = edge->src->type;
+  // Get the destination type
+  auto type = edge->dst->type_;
 
   // Create the signal
-  auto signal = Signal::Make(name_prefix + edge->src->name(), type);
+  auto signal = Signal::Make(name_prefix + edge->dst->name(), type);
 
   // Make the new connections, effectively creating two new edges.
   signal <<= edge->src;
   edge->dst <<= signal;
 
   // Remove original edge from outs and ins of both ends
-  remove(&edge->src->outs, edge);
-  remove(&edge->dst->ins, edge);
+  remove(&edge->src->outs_, edge);
+  remove(&edge->dst->ins_, edge);
 
   return signal;
 }
@@ -74,7 +75,7 @@ std::shared_ptr<Node> Edge::GetOtherNode(const std::shared_ptr<Node> &node) {
 }
 
 int Edge::CountAllEdges(const std::shared_ptr<Node> &node) {
-  return static_cast<int>(node->ins.size() + node->outs.size());
+  return static_cast<int>(node->ins_.size() + node->outs_.size());
 }
 
 int Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
@@ -83,6 +84,7 @@ int Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<No
   auto it = std::find(std::begin(siblings), std::end(siblings), edge);
   return static_cast<int>(std::distance(std::begin(siblings), it));
 }
+
 void Edge::CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
   if (edge == nullptr) {
     throw std::runtime_error("CheckEdgeOfNode: Edge is null.");
@@ -95,11 +97,11 @@ void Edge::CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_
   }
 }
 
-std::deque<std::shared_ptr<Edge>> Edge::GetAllSiblings(const std::shared_ptr<Node> &node) {
+std::deque<std::shared_ptr<Edge>> Edge::GetAllSiblings(const std::shared_ptr<Node> &node) const {
   if (src == node) {
-    return src->outs;
+    return src->outs_;
   } else {
-    return dst->ins;
+    return dst->ins_;
   }
 }
 
@@ -112,7 +114,7 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
     // As long as we haven't reached this edge
     if (e != edge) {
       // Obtain the data type of the other end
-      auto dt = e->dst->type;
+      auto dt = e->dst->type_;
       if (dt->Is(Type::STREAM)) {
         // If it's a stream, check if it has a vector as child
         auto stream = Cast<Stream>(dt);
@@ -120,8 +122,8 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
           auto vec = Cast<Vector>(stream->element_type());
           if (vec->width()->IsLiteral()) {
             auto l = *Cast<Literal>(vec->width());
-            if (l->val_storage_type == Literal::INT) {
-              offset += l->int_val;
+            if (l->storage_type_ == Literal::INT) {
+              offset += l->int_val_;
             } else {
               // not supported
             }
@@ -135,8 +137,8 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
         auto vec = Cast<Vector>(dt);
         if (vec->width()->IsLiteral()) {
           auto l = *Cast<Literal>(vec->width());
-          if (l->val_storage_type == Literal::INT) {
-            offset += l->int_val;
+          if (l->storage_type_ == Literal::INT) {
+            offset += l->int_val_;
           } else {
             // not supported
           }
@@ -151,9 +153,19 @@ int Edge::GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared
   }
   return offset;
 }
-bool Edge::HasSiblings(const std::shared_ptr<Node> &node) {
-  auto sib = GetAllSiblings(node);
-  return sib.size() > 1;
+
+size_t Edge::num_siblings(const std::shared_ptr<Node> &node) const {
+  if (src == node) {
+    return src->outs_.size();
+  } else if (dst == node) {
+    return dst->ins_.size();
+  } else {
+    throw std::runtime_error("Node " + node->name() + " does not belong to Edge " + this->name());
+  }
+}
+
+bool Edge::HasSiblings(const std::shared_ptr<Node> &node) const {
+  return num_siblings(node) > 1;
 }
 
 }  // namespace fletchgen

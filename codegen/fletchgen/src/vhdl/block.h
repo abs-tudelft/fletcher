@@ -35,7 +35,7 @@ struct Block {
 struct MultiBlock {
   explicit MultiBlock(int indent=0) : indent(indent) {}
   std::vector<Block> blocks;
-  std::string str() const;
+  std::string ToString() const;
   int indent = 0;
 };
 

@@ -31,28 +31,16 @@ std::shared_ptr<Component> GetConcattedStreamsComponent() {
   auto top = Component::Make("top");
   auto x = Component::Make("X", {}, {pA, pD, pE}, {});
   auto y = Component::Make("Y", {}, {pB, pC, pF}, {});
+  auto x_inst = Instance::Make(x);
+  auto y_inst = Instance::Make(y);
 
-  top->AddChild(x)
-      .AddChild(y);
+  top->AddChild(x_inst)
+      .AddChild(y_inst);
 
-  // Signals
-  auto sB = Signal::Make("int_B", sub_stream);
-  auto sC = Signal::Make("int_C", sub_stream);
-  auto sF = Signal::Make("int_F", all_stream);
-
-  top->AddNode(sB)
-      .AddNode(sC)
-      .AddNode(sF);
-
-  // Connect
-  sB <<= x->Get(Node::PORT, "A");
-  sC <<= x->Get(Node::PORT, "A");
-  sF <<= x->Get(Node::PORT, "D");
-  sF <<= x->Get(Node::PORT, "E");
-
-  y->Get(Node::PORT, "B") <<= sB;
-  y->Get(Node::PORT, "C") <<= sC;
-  y->Get(Node::PORT, "F") <<= sF;
+  y_inst->Get(Node::PORT, "B") <<= x_inst->Get(Node::PORT, "A");
+  y_inst->Get(Node::PORT, "C") <<= x_inst->Get(Node::PORT, "A");
+  y_inst->Get(Node::PORT, "F") <<= x_inst->Get(Node::PORT, "D");
+  y_inst->Get(Node::PORT, "F") <<= x_inst->Get(Node::PORT, "E");
 
   return top;
 }

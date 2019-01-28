@@ -27,10 +27,7 @@ namespace fletchgen {
 #define BIT_DECL_FACTORY(NAME)        std::shared_ptr<Type> NAME();
 #define VEC_DECL_FACTORY(NAME, WIDTH) std::shared_ptr<Type> NAME();
 
-BIT_DECL_FACTORY(bit);
 BIT_DECL_FACTORY(null);
-BIT_DECL_FACTORY(boolean);
-
 VEC_DECL_FACTORY(int8, 8);
 VEC_DECL_FACTORY(uint8, 8);
 VEC_DECL_FACTORY(int16, 16);

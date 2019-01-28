@@ -71,13 +71,13 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
 
       // Draw edge
       str << tab(level);
-      if (IsNested(e->src->type)) {
+      if (IsNested(e->src->type_)) {
         str << NodeName(e->src, ":cell");
       } else {
         str << NodeName(e->src);
       }
       str << " -> ";
-      if (IsNested(e->dst->type)) {
+      if (IsNested(e->dst->type_)) {
         str << NodeName(e->dst, ":cell");
       } else {
         str << NodeName(e->dst);
@@ -87,7 +87,7 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
       str << " [";
       str << style.edge.base;
 
-      switch (e->src->type->id) {
+      switch (e->src->type_->id) {
         case Type::STREAM: {
           str << stylize(style.edge.stream);
           str << quotize("color", style.edge.color.stream);
@@ -238,9 +238,9 @@ std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, int level) {
 
     // Draw style
     str << " [";
-    if (IsNested(n->type) && config.nodes.types.expand) {
+    if (IsNested(n->type_) && config.nodes.types.expand) {
       str << "shape=none, label=<";
-      str << GenTableCell(n->type, n, n->name());
+      str << GenTableCell(n->type_, n, n->name());
       str << ">";
 
       // str << R"(shape=Mrecord, label=")";
@@ -256,15 +256,15 @@ std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, int level) {
     if (n->IsPort() && config.nodes.ports) {
       // Port style
       str << stylize(style.node.port);
-      if (n->type->Is(Type::STREAM)) {
+      if (n->type_->Is(Type::STREAM)) {
         str << stylize(style.node.type.stream);
         str << quotize("fillcolor", style.node.color.stream);
         str << quotize("color", style.node.color.stream_border);
       } else {
         // other port styles
-        if (n->type->Is(Type::CLOCK) && config.nodes.types.clock) {
+        if (n->type_->Is(Type::CLOCK) && config.nodes.types.clock) {
           str << stylize(style.node.type.clock);
-        } else if (n->type->Is(Type::RESET) && config.nodes.types.reset) {
+        } else if (n->type_->Is(Type::RESET) && config.nodes.types.reset) {
           str << stylize(style.node.type.reset);
         } else {
           continue;
@@ -351,18 +351,18 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &grap
 
 std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
   std::stringstream ret;
-  if (n->parent) {
-    ret << (*n->parent)->name() + ":";
+  if (n->parent_) {
+    ret << (*n->parent_)->name() + ":";
   }
   if (!n->name().empty()) {
     ret << n->name();
   } else {
     auto lit = Cast<Literal>(n);
     if (lit) {
-      ret << "Anon_" + ToString(n->id) + "_" + (*lit)->ToValueString();
+      ret << "Anon_" + ToString(n->id_) + "_" + (*lit)->ToValueString();
     } else {
       // TODO(johanpel): resolve this madness
-      ret << "Anon_" + ToString(n->id) + "_" + std::to_string(reinterpret_cast<unsigned long>(n.get()));
+      ret << "Anon_" + ToString(n->id_) + "_" + std::to_string(reinterpret_cast<unsigned long>(n.get()));
     }
   }
   return sanitize(ret.str()) + suffix;

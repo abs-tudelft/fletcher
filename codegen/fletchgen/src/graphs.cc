@@ -26,7 +26,7 @@ std::shared_ptr<Component> Component::Make(std::string name,
   for (const auto &param : parameters) {
     ret->AddNode(param);
     // If the parameter node has edges
-    if (!param->ins.empty()) {
+    if (!param->ins_.empty()) {
       // It has been assigned
       std::shared_ptr<Node> val = param->in(0)->src;
       // Add the value to the node list
@@ -48,13 +48,13 @@ std::shared_ptr<Component> Component::Make(std::string name,
 
 Graph &Graph::AddNode(std::shared_ptr<Node> node) {
   nodes.push_back(node);
-  node->parent = this;
+  node->parent_ = this;
   return *this;
 }
 
 std::shared_ptr<Node> Graph::Get(Node::ID id, const std::string &node_name) const {
   for (const auto &n : nodes) {
-    if ((n->name() == node_name) && (n->id == id)) {
+    if ((n->name() == node_name) && (n->id_ == id)) {
       return n;
     }
   }
@@ -73,11 +73,22 @@ Graph &Graph::AddChild(const std::shared_ptr<Graph> &child) {
 size_t Graph::CountNodes(Node::ID id) const {
   size_t count = 0;
   for (const auto &n : nodes) {
-    if (n->id == id) {
+    if (n->id_ == id) {
       count++;
     }
   }
   return count;
+}
+
+std::shared_ptr<Graph> Graph::Copy() const {
+  auto ret = std::make_shared<Graph>(name(), this->id);
+  for (const auto &child : children) {
+    ret->AddChild(child->Copy());
+  }
+  for (const auto &node : nodes) {
+    ret->AddNode(node->Copy());
+  }
+  return ret;
 }
 
 std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
@@ -102,7 +113,7 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
 Graph &Instance::AddNode(std::shared_ptr<Node> node) {
   if (!node->Is(Node::SIGNAL)) {
     nodes.push_back(node);
-    node->parent = this;
+    node->parent_ = this;
     return *this;
   } else {
     throw std::runtime_error("Cannot add signal nodes to Instance graph " + name());
@@ -145,11 +156,34 @@ std::deque<std::shared_ptr<Instance>> Component::GetAllInstances() {
 }
 
 Graph &Component::AddChild(const std::shared_ptr<Graph> &child) {
-  if (!contains(child->parents, *Cast<Graph>(this))) {
-    child->parents.push_back(this);
+  // We may only add instance children by definition
+  auto inst = Cast<Instance>(child);
+
+  // If the cast was successful...
+  if (inst) {
+    // Add this graph to the child's parent graphs
+    if (!contains(child->parents, *Cast<Graph>(this))) {
+      child->parents.push_back(this);
+    }
+
+    // Add the child graph
+    children.push_back(child);
+    return *this;
+  } else {
+    // Otherwise throw an error.
+    throw std::runtime_error("Component may only have Instance children. " + child->name() + " is not an Instance.");
   }
-  children.push_back(child);
-  return *this;
+}
+
+std::shared_ptr<Graph> Component::Copy() const {
+  auto ret = std::make_shared<Component>(name());
+  for (const auto &child : this->children) {
+    ret->AddChild(*Cast<Instance>(child));
+  }
+  for (const auto &node : this->nodes) {
+    ret->AddNode(node->Copy());
+  }
+  return ret;
 }
 
 }  // namespace fletchgen

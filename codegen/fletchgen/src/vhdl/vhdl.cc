@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "../stream.h"
+#include "../edges.h"
 #include "../nodes.h"
 #include "../types.h"
 #include "../graphs.h"
@@ -72,7 +72,7 @@ std::string ToString(std::vector<Block> blocks) {
   return ret.str();
 }
 
-std::string ToString(std::shared_ptr<Node> node) {
+std::string ToString(const std::shared_ptr<Node> &node) {
   if (node->IsLiteral()) {
     auto x = *Cast<Literal>(node);
     return x->ToValueString();
@@ -84,7 +84,13 @@ std::string ToString(std::shared_ptr<Node> node) {
   }
 }
 
-std::string Declarator::Generate(const std::shared_ptr<Type> &type) {
+Identifier operator+(const Identifier &lhs, const std::string &rhs) {
+  Identifier ret = lhs;
+  ret.append(rhs);
+  return ret;
+}
+
+std::string Decl::Generate(const std::shared_ptr<Type> &type) {
   if (type->Is(Type::CLOCK)) {
     return "std_logic";
   } else if (type->Is(Type::RESET)) {
@@ -110,88 +116,55 @@ std::string Declarator::Generate(const std::shared_ptr<Type> &type) {
   }
 }
 
-Block Declarator::Generate(const std::shared_ptr<Parameter> &par, int depth) {
+Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   Block ret(depth);
   Line l;
-  l << par->name() << " : " << Generate(par->type);
+  l << par->name() << " : " << Generate(par->type_);
+  if (par->default_value) {
+    l << ":= " << par->default_value.value()->ToValueString();
+  }
   ret << l;
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Type> &type, const std::shared_ptr<Node> &parent, int depth) {
-  if (type->Is(Type::RECORD)) {
-    Block ret(depth);
-    ret << Generate(Cast<Record>(type), parent, depth);
-    return ret;
-  } else if (type->Is(Type::STREAM)) {
-    Block ret(depth);
-    ret << Generate(Cast<Stream>(type), parent, depth);
-    return ret;
-  } else {
-    Block ret(depth);
-    Line d;
-    d << " : ";
-    auto port = Cast<Port>(parent);
-    if (port) {
-      d << ToString((*port)->dir);
-    }
-    d << " " + Generate(type);
-    ret << d;
-    return ret;
-  }
-}
-
-Block Declarator::Generate(const std::shared_ptr<Stream> &stream, const std::shared_ptr<Node> &parent, int depth) {
-  Block ret;
-  Block d;
-  Line v, r;
-  auto port = Cast<Port>(parent);
-
-  v << "valid" << " : ";
-  r << "ready" << " : ";
-  if (port) {
-    v << ToString((*port)->dir);
-    r << ToString(Reverse((*port)->dir));
-  }
-  v << " " + Generate(valid());
-  r << " " + Generate(ready());
-
-  d << Generate(stream->element_type(), parent, depth);
-  ret << v << r;
-  ret << Prepend(stream->element_name(), &d, "");
-  return ret;
-}
-
-Block Declarator::Generate(const std::shared_ptr<Record> &rec, const std::shared_ptr<Node> &parent, int depth) {
-  Block ret;
-  for (const auto &f : rec->fields()) {
-    Block fb = Generate(f->type(), parent, depth);
-    ret << Prepend(f->name(), &fb);
+Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
+  Block ret(depth);
+  auto fn = FlatNode(port);
+  for (const auto &tup : fn.GetAll()) {
+    Line l;
+    l << std::get<0>(tup).ToString() << " : " << ToString(port->dir) + " " << Generate(std::get<1>(tup));
+    ret << l;
   }
   return ret;
 }
 
-Block Declarator::Generate(const std::shared_ptr<Node> &port, int depth) {
-  Block p = Generate(port->type, port, depth);
-  return Prepend(port->name(), &p);
+Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
+  Block ret(depth);
+  auto fn = FlatNode(sig);
+  for (const auto &tup : fn.GetAll()) {
+    Line l;
+    l << "signal " + std::get<0>(tup).ToString() << " : " << Generate(std::get<1>(tup));
+    ret << l;
+  }
+  return ret;
 }
 
-MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity) {
+MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
   MultiBlock ret;
 
   // Header
   Block h(ret.indent), f(ret.indent);
   Line hl, fl;
   if (entity) {
-    hl << "entity " + graph->name();
+    hl << "entity " + comp->name();
   } else {
-    hl << "component " + graph->name();
+    hl << "component " + comp->name();
   }
   h << hl;
   ret << h;
 
   // Generics
-  auto generics = graph->GetAllNodesOfType<Parameter>();
+  auto generics = comp->GetAllNodesOfType<Parameter>();
   if (!generics.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
@@ -200,7 +173,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
     gh << "generic (";
     gdh << gh;
     for (const auto &gen : generics) {
-      auto g = Declarator::Generate(gen, ret.indent + 2);
+      auto g = Decl::Generate(gen, ret.indent + 2);
       if (gen != generics.back()) {
         g << ";";
       } else {
@@ -212,7 +185,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
     gdf << gf;
     ret << gdh << gd << gdf;
   }
-  auto ports = graph->GetAllNodesOfType<Port>();
+  auto ports = comp->GetAllNodesOfType<Port>();
   if (!ports.empty()) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);
@@ -221,7 +194,7 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
     ph << "port (";
     pdh << ph;
     for (const auto &port : ports) {
-      auto g = Declarator::Generate(port, ret.indent + 2);
+      auto g = Decl::Generate(port, ret.indent + 2);
       if (port != ports.back()) {
         g << ";";
       } else {
@@ -240,81 +213,72 @@ MultiBlock Declarator::Generate(const std::shared_ptr<Graph> &graph, bool entity
   ret << f;
 
   return ret;
-
 }
 
-Block Instantiator::GenConcatenatedStream(std::shared_ptr<Node> left,
-                                          std::shared_ptr<Node> right,
-                                          std::shared_ptr<Edge> edge) {
-  Block block(1);
-  Line d;
-  Line v;
-  Line r;
+bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b) {
+  auto fa = FlatNode(a);
+  auto fb = FlatNode(b);
 
-  auto leftidx = Edge::GetIndexOf(edge, left);
-  auto rightidx = Edge::GetIndexOf(edge, right);
-
-  auto leftoff = Edge::GetVectorOffsetOf(edge, left);
-  auto rightoff = Edge::GetVectorOffsetOf(edge, right);
-
-  size_t right_width = 0;
-
-  auto rstream = Cast<Stream>(right->type);
-  if (rstream->element_type()->Is(Type::VECTOR)) {
-    auto vec = Cast<Vector>(rstream->element_type());
-    //right_width = vec->width();
+  // Not compatible if the top level type flattens to something with another number of tuples
+  if (fa.size() != fb.size()) {
+    return false;
   }
 
-  if (edge->HasSiblings(left)) {
-    d << left->name() + "(" + to_string(leftoff + right_width - 1) + " downto " + to_string(leftoff) + ")";
-    v << left->name() + "_valid(" + to_string(leftidx) + ")";
-    r << left->name() + "_ready(" + to_string(leftidx) + ")";
-  } else {
-    d << left->name();
-    v << left->name() + "_valid";
-    r << left->name() + "_ready";
-  }
-
-  d << " => ";
-  v << " => ";
-  r << " => ";
-
-  if (edge->HasSiblings(right)) {
-    d << right->name() + "(" + to_string(rightoff + right_width - 1) + " downto " + to_string(rightoff) + "),";
-    v << right->name() + "_valid(" + to_string(rightidx) + "),";
-    r << right->name() + "_ready(" + to_string(rightidx) + "),";
-  } else {
-    d << right->name() + ",";
-    v << right->name() + "_valid,";
-    r << right->name() + "_ready,";
-  }
-
-  d << " -- Edge: " + edge->name();
-
-  block << v << r << d;
-  return block;
-}
-
-Block Instantiator::Generate(std::shared_ptr<Node> left,
-                             std::shared_ptr<Node> right,
-                             std::shared_ptr<Edge> edge) {
-  Block ret;
-
-  if (edge->GetOtherNode(left)) {
-    if (left->type->Is(Type::STREAM) && right->type->Is(Type::STREAM)) {
-      ret << GenConcatenatedStream(left, right, edge);
+  // Not compatible if the type ids of flat view is different
+  for (size_t i = 0; i < fa.size(); i++) {
+    if (std::get<1>(fa.Get(i))->id != std::get<1>(fb.Get(i))->id) {
+      std::cerr << std::get<1>(fa.Get(i))->name() << " != " << std::get<1>(fb.Get(i))->name() << std::endl;
+      return false;
     }
-  } else {
-    Block b;
-    Line c;
-    c << left->name() << " => " << right->name();
-    b << c;
-    ret << b;
+  }
+
+  // Otherwise, it is compatible
+  return true;
+}
+
+Block Inst::Generate(const std::shared_ptr<Port> &lhs) {
+  Block ret;
+  // Iterate over every edge of this port.
+  for (const auto &e : lhs->edges()) {
+    // Get the other end
+    auto rhs = e->GetOtherNode(lhs);
+
+    // Check if other end is compatible
+    if (IsCompatible(lhs, rhs)) {
+
+      // Flatten nodes of both sides into the required VHDL objects: ports on the lhs and ports xor signals on the rhs
+      auto fl = FlatNode(lhs);
+      auto fr = FlatNode(rhs);
+
+      // Iterate over the flattened vhdl objects
+      for (size_t i = 0; i < fl.size(); i++) {
+        Line line;
+        // LHS name
+        line << std::get<0>(fl.Get(i)).ToString();
+
+        // Check if LHS indexing is applicable
+        if (e->num_siblings(lhs) > 1) {
+          line += "(" + std::to_string(Edge::GetIndexOf(e, lhs)) + ")";
+        }
+
+        line << " => ";
+
+        // RHS name
+        line << std::get<0>(fr.Get(i)).ToString();
+
+        // Check if RHS indexing is applicable
+        if (e->num_siblings(rhs) > 1) {
+          line += "(" + std::to_string(Edge::GetIndexOf(e, rhs)) + ")";
+        }
+
+        ret << line;
+      }
+    }
   }
   return ret;
 }
 
-MultiBlock Instantiator::Generate(const std::shared_ptr<Graph> &graph) {
+MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
   MultiBlock ret;
 
   // Instantiation header
@@ -330,12 +294,8 @@ MultiBlock Instantiator::Generate(const std::shared_ptr<Graph> &graph) {
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
-    for (const auto &n : graph->nodes) {
-      Block g;
-      if (n->IsParameter()) {
-        g << Generate(n);
-      }
-      gm << g;
+    for (const auto &g : graph->GetAllNodesOfType<Parameter>()) {
+      gm << Generate(g);
     }
     gf << ")";
     gmf << gf;
@@ -345,56 +305,178 @@ MultiBlock Instantiator::Generate(const std::shared_ptr<Graph> &graph) {
   if (graph->CountNodes(Node::PORT) > 0) {
     // Port map
     Block pmh(ret.indent + 1);
-    Block pm(ret.indent + 2);
+    Block pmb(ret.indent + 2);
     Block pmf(ret.indent + 1);
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &n : graph->nodes) {
-      Block p;
-      if (n->IsPort()) {
-        p << Generate(n);
-      }
-      pm << p;
+    for (const auto &p : graph->GetAllNodesOfType<Port>()) {
+      Block pm;
+      pm << Generate(p);
+      pmb << pm;
     }
     pf << ")";
     pmf << pf;
-    ret << pmh << pm << pmf;
+    ret << pmh << pmb << pmf;
   }
 
   return ret;
 }
 
-Block Instantiator::Generate(const std::shared_ptr<Node> &node) {
-  Block ret;
+Block Inst::Generate(const std::shared_ptr<Parameter> &port) {
+  return Block();
+}
 
-  if (node->id == Node::PARAMETER) {
-    // Parameter nodes must be connected to a literal
-    Line l;
-    l << node->name();
-    if (!node->edges().empty()) {
-      for (const auto &e : node->edges()) {
-        auto other = e->GetOtherNode(node);
-        if (other->IsLiteral()) {
-          l << " => " << std::dynamic_pointer_cast<Literal>(other)->ToValueString() << ",";
-        } else {
-          throw std::runtime_error("Parameter node should be attached to literal node.");
+MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
+  MultiBlock ret;
+  Line header_line;
+  header_line << "architecture Implementation of " + comp->name() + " is";
+  ret << header_line;
+
+  // Component declarations
+  auto components_used = GetAllUniqueComponents(comp);
+  for (const auto &c : components_used) {
+    auto comp_decl = Decl::Generate(c);
+    ret << comp_decl;
+  }
+
+  // Signal declarations
+  auto signals = comp->GetAllNodesOfType<Signal>();
+  for (const auto &s : signals) {
+    auto signal_decl = Decl::Generate(s);
+    ret << signal_decl;
+  }
+
+  Line header_end;
+  header_end << "is begin";
+  ret << header_end;
+
+  // Component instantiations
+  auto instances = comp->GetAllInstances();
+  for (const auto &i : instances) {
+    auto inst_decl = Inst::Generate(i);
+    ret << inst_decl;
+  }
+
+  // Signal connections
+
+  return ret;
+}
+
+std::string Identifier::ToString() const {
+  std::string ret;
+  for (const auto &p : parts_) {
+    ret += p;
+    if (p != parts_.back()) {
+      ret += separator_;
+    }
+  }
+  return ret;
+}
+
+Identifier::Identifier(std::initializer_list<std::string> parts, char sep) : separator_(sep) {
+  for (const auto &p : parts) {
+    parts_.push_back(p);
+  }
+}
+
+Identifier &Identifier::append(const std::string &part) {
+  if (part.empty()) {
+    std::cerr << "Part is empty... : " + this->ToString() << std::endl;
+  } else {
+    parts_.push_back(part);
+  }
+  return *this;
+}
+
+Identifier &Identifier::operator+=(const std::string &rhs) {
+  return append(rhs);
+}
+
+FlatNode::FlatNode(std::shared_ptr<Node> node) : node_(std::move(node)) {
+  Identifier top;
+  top.append(node_->name());
+  FlattenNode(this, top, node_->type_);
+}
+
+void FlatNode::FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Record> &record) {
+  for (const auto &f : record->fields()) {
+    FlattenNode(fn, prefix + f->name(), f->type());
+  }
+}
+
+void FlatNode::FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Stream> &stream) {
+  // Put valid and ready signal
+  fn->tuples_.emplace_back(prefix + "valid", valid());
+  fn->tuples_.emplace_back(prefix + "ready", ready());
+
+  // Insert element type
+  FlattenNode(fn, prefix + stream->element_name(), stream->element_type());
+}
+
+void FlatNode::FlattenNode(FlatNode *fn, const Identifier &prefix, const std::shared_ptr<Type> &type) {
+  if (type->Is(Type::RECORD)) {
+    FlattenNode(fn, prefix, Cast<Record>(type));
+  } else if (type->Is(Type::STREAM)) {
+    FlattenNode(fn, prefix, Cast<Stream>(type));
+  } else {
+    // Not nested types
+    fn->tuples_.emplace_back(prefix, type);
+  }
+}
+
+std::string FlatNode::ToString() const {
+  std::stringstream ret;
+  ret << "FlatNode: " << node_->name() << std::endl;
+  for (const auto &t : tuples_) {
+    ret << "  " << std::setw(16) << std::get<0>(t).ToString()
+        << " : " << std::get<1>(t)->name() << std::endl;
+  }
+  return ret.str();
+}
+
+std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> FlatNode::GetAll() {
+  return tuples_;
+}
+
+size_t FlatNode::size() {
+  return tuples_.size();
+}
+
+std::tuple<Identifier, std::shared_ptr<Type>> FlatNode::Get(size_t i) {
+  return tuples_[i];
+}
+
+std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
+  for (const auto &inst : comp->GetAllInstances()) {
+    for (const auto &port : inst->GetAllNodesOfType<Port>()) {
+      for (const auto &edge : port->edges()) {
+        if (edge->src->IsPort() && edge->dst->IsPort()) {
+          auto sig = insert(edge, "int_");
+          comp->AddNode(sig);
         }
       }
     }
-    ret << l;
-  } else if (node->IsPort()) {
-    // Port nodes must be connected to signals or other port nodes
-    if (!node->edges().empty()) {
-      for (const auto &e : node->edges()) {
-        auto other = e->GetOtherNode(node);
-        ret << Generate(node, other, e);
-      }
-    }
   }
+  return comp;
+}
+
+MultiBlock Design::Generate(const std::shared_ptr<Component> &comp) {
+  MultiBlock ret;
+
+  // Sanitize component
+  auto vhdl_comp_copy = comp->Copy();
+  auto vhdl_comp = *Cast<Component>(vhdl_comp_copy);
+  Transformation::ResolvePortToPort(vhdl_comp);
+
+  auto decl_code = Decl::Generate(vhdl_comp);
+  auto arch_code = Arch::Generate(vhdl_comp);
+
+  ret << decl_code;
+  ret << arch_code;
 
   return ret;
 }
 
-}
-}
+}  // namespace vhdl
+}  // namespace fletchgen

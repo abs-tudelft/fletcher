@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,47 +44,56 @@ struct Node : public Named {
     LITERAL
   };
   /// @brief Node type ID
-  ID id;
+  ID id_;
 
   /// @brief The Type of this Node.
-  std::shared_ptr<Type> type;
+  std::shared_ptr<Type> type_;
 
   /// @brief All incoming Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> ins;
+  std::deque<std::shared_ptr<Edge>> ins_;
 
   /// @brief All outgoing Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> outs;
+  std::deque<std::shared_ptr<Edge>> outs_;
 
   /// @brief An optional parent Graph to which this Node belongs.
-  std::optional<Graph *> parent;
+  std::optional<Graph *> parent_;
 
   /// @brief Node constructor.
   Node(std::string name, ID id, std::shared_ptr<Type> type);
   virtual ~Node() = default;
 
+  /// @brief Return the number of edges of this node, both in and out.
+  size_t num_edges() const;
+
+  /// @brief Get a copy of this Node
+  virtual std::shared_ptr<Node> Copy() const;
+
   /// @brief Return all edges of this node, both in and out.
   std::deque<std::shared_ptr<Edge>> edges() const;
 
   /// @brief Return incoming Edge i
-  std::shared_ptr<Edge> in(size_t i) { return ins[i]; }
+  std::shared_ptr<Edge> in(size_t i) const { return ins_[i]; }
 
   /// @brief Return outgoing Edge i
-  std::shared_ptr<Edge> out(size_t i) { return outs[i]; }
+  std::shared_ptr<Edge> out(size_t i) const { return outs_[i]; }
+
+  /// @brief Return the node Type
+  std::shared_ptr<Type> type() const { return type_; }
 
   /// @brief Return whether this node is of a specific node type id.
-  bool Is(ID tid) { return id == tid; }
+  bool Is(ID tid) const { return id_ == tid; }
 
   /// @brief Return true if this is a PORT node, false otherwise.
-  bool IsPort() { return id == PORT; }
+  bool IsPort() const { return id_ == PORT; }
 
   /// @brief Return true if this is a SIGNAL node, false otherwise.
-  bool IsSignal() { return id == SIGNAL; }
+  bool IsSignal() const { return id_ == SIGNAL; }
 
   /// @brief Return true if this is a PARAMETER node, false otherwise.
-  bool IsParameter() { return id == PARAMETER; }
+  bool IsParameter() const { return id_ == PARAMETER; }
 
   /// @brief Return true if this is a LITERAL node, false otherwise.
-  bool IsLiteral() { return id == LITERAL; }
+  bool IsLiteral() const { return id_ == LITERAL; }
 };
 
 /**
@@ -109,16 +122,28 @@ struct Signal : public Node {
  */
 struct Literal : public Node {
   /// @brief The actual storage type of the value.
-  enum { INT, STRING, BOOL } val_storage_type;
+  enum StorageType { INT, STRING, BOOL } storage_type_;
 
   /// @brief The string storage.
-  std::string str_val = "";
+  std::string str_val_ = "";
 
   /// @brief The integer storage.
-  int int_val = 0;
+  int int_val_ = 0;
 
   /// @brief The boolean storage.
-  bool bool_val = false;
+  bool bool_val_ = false;
+
+  /// @brief Literal constructor
+  Literal(std::string name,
+          const std::shared_ptr<Type> &type,
+          StorageType st,
+          std::string str_val,
+          int int_val,
+          bool bool_val)
+      : Node(std::move(name), Node::LITERAL, type),
+        storage_type_(st),
+        str_val_(std::move(str_val)),
+        int_val_(int_val) {}
 
   /// @brief Construct a new Literal with a string storage type.
   Literal(std::string name, const std::shared_ptr<Type> &type, std::string value);
@@ -143,6 +168,9 @@ struct Literal : public Node {
 
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToValueString();
+
+  /// @brief Create a copy of this Literal.
+  std::shared_ptr<Node> Copy() const override;
 };
 
 /**
@@ -165,7 +193,7 @@ struct Parameter : public Node {
                                          std::optional<std::shared_ptr<Literal>> default_value = {});
 
   /// @brief Create a copy of this Parameter.
-  std::shared_ptr<Parameter> Copy();
+  std::shared_ptr<Node> Copy() const override;
 };
 
 /**
@@ -187,7 +215,7 @@ struct Port : public Node {
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN);;
 
   /// @brief Create a copy of this Port.
-  std::shared_ptr<Port> Copy();
+  std::shared_ptr<Node> Copy() const override;
 
   /// @brief Return true if this Port is an input, false otherwise.
   bool IsInput() { return dir == IN; }

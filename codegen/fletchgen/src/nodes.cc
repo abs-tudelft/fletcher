@@ -27,25 +27,34 @@ namespace fletchgen {
 
 std::deque<std::shared_ptr<Edge>> Node::edges() const {
   std::deque<std::shared_ptr<Edge>> ret;
-  for (const auto &e : ins) {
+  for (const auto &e : ins_) {
     ret.push_back(e);
   }
-  for (const auto &e : outs) {
+  for (const auto &e : outs_) {
     ret.push_back(e);
   }
   return ret;
 }
 
 Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
-    : Named(std::move(name)), id(id), type(std::move(type)) {}
+    : Named(std::move(name)), id_(id), type_(std::move(type)) {}
+
+size_t Node::num_edges() const {
+  return ins_.size() + outs_.size();
+}
+
+std::shared_ptr<Node> Node::Copy() const {
+  auto ret = std::make_shared<Node>(this->name(), this->id_, this->type_);
+  return ret;
+}
 
 std::string Literal::ToValueString() {
-  if (val_storage_type == BOOL) {
-    return std::to_string(bool_val);
-  } else if (val_storage_type == STRING) {
-    return str_val;
+  if (storage_type_ == BOOL) {
+    return std::to_string(bool_val_);
+  } else if (storage_type_ == STRING) {
+    return str_val_;
   } else {
-    return std::to_string(int_val);
+    return std::to_string(int_val_);
   }
 }
 
@@ -66,13 +75,18 @@ std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<T
 }
 
 Literal::Literal(std::string name, const std::shared_ptr<Type>& type, std::string value)
-    : Node(std::move(name), Node::LITERAL, type), val_storage_type(STRING), str_val(std::move(value)) {}
+    : Node(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
 Literal::Literal(std::string name, const std::shared_ptr<Type>& type, int value)
-    : Node(std::move(name), Node::LITERAL, type), val_storage_type(INT), int_val(value) {}
+    : Node(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
 Literal::Literal(std::string name, const std::shared_ptr<Type>& type, bool value)
-    : Node(std::move(name), Node::LITERAL, type), val_storage_type(BOOL), bool_val(value) {}
+    : Node(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
+
+std::shared_ptr<Node> Literal::Copy() const {
+  auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
+  return ret;
+}
 
 std::shared_ptr<Literal> litstr(std::string str) {
   auto result = Literal::Make(string(), std::move(str));
@@ -107,15 +121,15 @@ std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Port::Dir dir) {
   return std::make_shared<Port>(type->name(), type, dir);
 }
 
-std::shared_ptr<Port> Port::Copy() {
-  return std::make_shared<Port>(name(), type, dir);
+std::shared_ptr<Node> Port::Copy() const {
+  return std::make_shared<Port>(name(), type_, dir);
 }
 
 Port::Port(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
     : Node(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
-std::shared_ptr<Parameter> Parameter::Copy() {
-  return std::make_shared<Parameter>(name(), type, default_value);
+std::shared_ptr<Node> Parameter::Copy() const {
+  return std::make_shared<Parameter>(name(), type_, default_value);
 }
 
 std::shared_ptr<Parameter> Parameter::Make(std::string name,
