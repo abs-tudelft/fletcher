@@ -3,6 +3,7 @@ cmake-build-debug/
 .idea/
 debug/
 release/
+/build
 
 *.pyc
 .cproject

@@ -73,29 +73,29 @@ addons:
 script:
   - |
     if [ $FLETCHER_PYTHON -eq 1 ]; then
-      curl "https://bootstrap.pypa.io/get-pip.py" | sudo python3
-      sudo pip install cython numpy pyarrow==$ARROW_VERSION
-      export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
+      curl "https://bootstrap.pypa.io/get-pip.py" | sudo python3 &&
+      sudo pip install cython numpy pyarrow==$ARROW_VERSION &&
+      export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"` &&
     fi
   - |
     if [ $FLETCHER_AWS -eq 1 ]; then
-      git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga
-      pushd aws-fpga
-      source sdk_setup.sh
+      git clone --single-branch --depth 1 --branch v$AWS_FPGA_VERSION https://github.com/aws/aws-fpga &&
+      pushd aws-fpga &&
+      source sdk_setup.sh &&
       popd
     fi
   - |
     if [ $FLETCHER_SNAP -eq 1 ]; then
-      git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse
-      pushd pslse
-      export PSLSE_ROOT=`pwd`
+      git clone --single-branch --depth 1 --branch v$CAPI_PSLSE_VERSION https://github.com/ibm-capi/pslse &&
+      pushd pslse &&
+      export PSLSE_ROOT=`pwd` &&
+      popd &&
+      git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap &&
+      pushd snap &&
+      export SNAP_ROOT=`pwd` &&
+      BUILD_SIMCODE=1 make software &&
       popd
-      git clone --single-branch --depth 1 --branch v$CAPI_SNAP_VERSION https://github.com/open-power/snap
-      pushd snap
-      export SNAP_ROOT=`pwd`
-      BUILD_SIMCODE=1 make software
-      popd
-      fi
+    fi
   - mkdir -p build
   - pushd build
   - cmake
@@ -115,13 +115,13 @@ script:
     fi
   - popd
   - |
-    if [ "$FLETCHER_PYTHON" -ne 0 ]; then
-      pushd build
-      make install
-      popd
-      pushd runtime/python
-      sudo python3 setup.py install
-      sudo ldconfig
-      python3 testing/test.py
+    if [ $FLETCHER_PYTHON -eq 1 ]; then
+      pushd build &&
+      sudo make install &&
+      popd &&
+      pushd runtime/python &&
+      sudo python3 setup.py install &&
+      sudo ldconfig &&
+      python3 testing/test.py &&
       popd
     fi
