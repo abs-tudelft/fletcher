@@ -60,8 +60,8 @@ matrix:
       env: SOURCE_PATH=platforms/echo/runtime
 
 before_install:
-  - curl -sSL "https://dl.bintray.com/apache/arrow/ubuntu/apache-arrow-keyring.gpg" | sudo -E apt-key add -
-  - echo "deb https://dl.bintray.com/apache/arrow/ubuntu/ xenial main" | sudo tee -a /etc/apt/sources.list
+  - curl -sSL "https://dist.apache.org/repos/dist/dev/arrow/KEYS" | sudo -E apt-key add -
+  - echo "deb [arch=amd64] https://dl.bintray.com/apache/arrow/ubuntu/ xenial main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -yq libarrow-dev=${ARROW_VERSION}-1
 
