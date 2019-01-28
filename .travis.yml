@@ -75,7 +75,7 @@ script:
     if [ $FLETCHER_PYTHON -eq 1 ]; then
       curl "https://bootstrap.pypa.io/get-pip.py" | sudo python3 &&
       sudo pip install cython numpy pyarrow==$ARROW_VERSION &&
-      export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"` &&
+      export PYARROW_DIR=`python3 -c "import pyarrow as pa; print(pa.get_library_dirs()[0])"`
     fi
   - |
     if [ $FLETCHER_AWS -eq 1 ]; then
