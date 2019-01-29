@@ -72,5 +72,7 @@ MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs);
 /// @brief Append a line to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs);
 
+std::string ToString(std::vector<Block> blocks);
+
 }
 }

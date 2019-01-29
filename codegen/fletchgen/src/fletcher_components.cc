@@ -19,8 +19,8 @@
 #include <deque>
 #include <utility>
 
-#include "./edges.h"
-#include "./nodes.h"
+#include "edges.h"
+#include "nodes.h"
 #include "./fletcher_types.h"
 
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"

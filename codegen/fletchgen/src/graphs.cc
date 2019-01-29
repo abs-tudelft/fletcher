@@ -13,8 +13,12 @@
 // limitations under the License.
 
 #include "graphs.h"
-#include "./edges.h"
-#include "graphs.h"
+
+#include <string>
+#include <memory>
+
+#include "nodes.h"
+#include "edges.h"
 
 namespace fletchgen {
 

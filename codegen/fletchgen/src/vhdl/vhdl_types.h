@@ -14,16 +14,28 @@
 
 #pragma once
 
-#include "./architecture.h"
-#include "./block.h"
-#include "./declaration.h"
-#include "./design.h"
-#include "./flatnode.h"
-#include "./instantiation.h"
-#include "./transformation.h"
+#include <memory>
+#include <string>
+
+#include "../types.h"
+#include "../nodes.h"
 
 namespace fletchgen {
 namespace vhdl {
+
+// VHDL implementation specific types
+
+std::shared_ptr<Type> valid();
+std::shared_ptr<Type> ready();
+
+// VHDL port stuff
+
+std::string ToString(Port::Dir dir);
+Port::Dir Reverse(Port::Dir dir);
+
+// VHDL type checking
+
+bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b);
 
 }  // namespace vhdl
 }  // namespace fletchgen

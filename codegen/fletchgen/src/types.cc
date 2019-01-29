@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "./nodes.h"
+#include "nodes.h"
 
 namespace fletchgen {
 

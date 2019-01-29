@@ -14,16 +14,24 @@
 
 #pragma once
 
-#include "./architecture.h"
-#include "./block.h"
-#include "./declaration.h"
-#include "./design.h"
-#include "./flatnode.h"
-#include "./instantiation.h"
-#include "./transformation.h"
+#include <memory>
+
+#include "../graphs.h"
 
 namespace fletchgen {
 namespace vhdl {
+
+struct Transformation {
+  /**
+   * @brief Transforms the component, inserting signals between port-to-port connections of instances.
+   *
+   * In VHDL, port-to-port connections of instances are not supported.
+   *
+   * @param comp    The component to transform
+   * @return        The transformed component
+   */
+  static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
+};
 
 }  // namespace vhdl
 }  // namespace fletchgen

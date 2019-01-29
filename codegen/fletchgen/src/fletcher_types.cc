@@ -14,7 +14,7 @@
 
 #include "./fletcher_types.h"
 
-#include "./nodes.h"
+#include "nodes.h"
 #include "./types.h"
 
 namespace fletchgen {

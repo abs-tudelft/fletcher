@@ -12,18 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include "./architecture.h"
-#include "./block.h"
-#include "./declaration.h"
 #include "./design.h"
-#include "./flatnode.h"
-#include "./instantiation.h"
+
+#include <string>
+#include <memory>
+
+#include "../graphs.h"
+
 #include "./transformation.h"
+#include "./declaration.h"
+#include "./architecture.h"
 
 namespace fletchgen {
 namespace vhdl {
+
+MultiBlock Design::Generate(const std::shared_ptr<Component> &comp) {
+  MultiBlock ret;
+
+  // Sanitize component
+  auto vhdl_comp_copy = comp->Copy();
+  auto vhdl_comp = *Cast<Component>(vhdl_comp_copy);
+  Transformation::ResolvePortToPort(vhdl_comp);
+
+  auto decl_code = Decl::Generate(vhdl_comp);
+  auto arch_code = Arch::Generate(vhdl_comp);
+
+  ret << decl_code;
+  ret << arch_code;
+
+  return ret;
+}
 
 }  // namespace vhdl
 }  // namespace fletchgen

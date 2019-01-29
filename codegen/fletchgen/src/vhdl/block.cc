@@ -16,7 +16,6 @@
 #include <sstream>
 
 #include "./block.h"
-#include "block.h"
 
 namespace fletchgen {
 namespace vhdl {
@@ -144,6 +143,14 @@ MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs) {
 }
 
 std::string MultiBlock::ToString() const {
+  std::stringstream ret;
+  for (const auto &b : blocks) {
+    ret << b.str();
+  }
+  return ret.str();
+}
+
+std::string ToString(std::vector<Block> blocks) {
   std::stringstream ret;
   for (const auto &b : blocks) {
     ret << b.str();

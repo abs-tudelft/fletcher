@@ -16,7 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./nodes.h"
+#include "nodes.h"
 
 #include <optional>
 #include <deque>
@@ -154,6 +154,18 @@ std::shared_ptr<Signal> Signal::Make(std::string name, const std::shared_ptr<Typ
 std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
   auto ret = std::make_shared<Signal>(type->name() + "_signal", type);
   return ret;
+}
+
+std::string ToString(const std::shared_ptr<Node> &node) {
+  if (node->IsLiteral()) {
+    auto x = *Cast<Literal>(node);
+    return x->ToValueString();
+  } else if (node->IsParameter()) {
+    auto x = *Cast<Parameter>(node);
+    return x->name();
+  } else {
+    return node->name();
+  }
 }
 
 }  // namespace fletchgen

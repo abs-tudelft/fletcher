@@ -25,10 +25,21 @@ set(HEADERS
         src/types.h
         src/nodes.h
         src/graphs.h
+
         src/fletcher_types.h
         src/fletcher_components.h
-        src/vhdl/vhdl.h
+
+        src/vhdl/architecture.h
         src/vhdl/block.h
+        src/vhdl/declaration.h
+        src/vhdl/design.h
+        src/vhdl/flatnode.h
+        src/vhdl/identifier.h
+        src/vhdl/instantiation.h
+        src/vhdl/transformation.h
+        src/vhdl/vhdl.h
+        src/vhdl/vhdl_types.h
+
         src/dot/dot.h
         )
 
@@ -39,8 +50,18 @@ set(SOURCES
         src/graphs.cc
         src/fletcher_types.cc
         src/fletcher_components.cc
-        src/vhdl/vhdl.cc
+
+        src/vhdl/architecture.cc
         src/vhdl/block.cc
+        src/vhdl/declaration.cc
+        src/vhdl/design.cc
+        src/vhdl/flatnode.cc
+        src/vhdl/identifier.cc
+        src/vhdl/instantiation.cc
+        src/vhdl/transformation.cc
+        src/vhdl/vhdl.cc
+        src/vhdl/vhdl_types.cc
+
         src/dot/dot.cc
         )
 

@@ -36,14 +36,14 @@ struct Graph;
  * @brief A node.
  */
 struct Node : public Named {
-  /// @brief Node type IDs
+  /// @brief Node type IDs.
   enum ID {
     PORT,
     SIGNAL,
     PARAMETER,
     LITERAL
   };
-  /// @brief Node type ID
+  /// @brief Node type ID.
   ID id_;
 
   /// @brief The Type of this Node.
@@ -133,7 +133,7 @@ struct Literal : public Node {
   /// @brief The boolean storage.
   bool bool_val_ = false;
 
-  /// @brief Literal constructor
+  /// @brief Literal constructor.
   Literal(std::string name,
           const std::shared_ptr<Type> &type,
           StorageType st,
@@ -179,7 +179,7 @@ struct Literal : public Node {
  * Can be used to define implementation-specific characteristics of a Graph, or can be connected to e.g. Vector widths.
  */
 struct Parameter : public Node {
-  /// @brief An optional default value
+  /// @brief An optional default value.
   std::optional<std::shared_ptr<Literal>> default_value;
 
   /// @brief Construct a new Parameter, optionally defining a default value Literal.
@@ -202,7 +202,7 @@ struct Parameter : public Node {
  * Can be used to define Graph terminators. Port nodes enforce proper directionality of edges.
  */
 struct Port : public Node {
-  /// @brief Port direction
+  /// @brief Port direction.
   enum Dir { IN, OUT } dir;
 
   /// @brief Construct a new Port.
@@ -225,7 +225,7 @@ struct Port : public Node {
 };
 
 /**
- * @brief Cast a Node to some (typically) less generic Node type T
+ * @brief Cast a Node to some (typically) less generic Node type T.
  * @tparam T    The new Node type.
  * @param obj   The Node to cast.
  * @return      Optionally, the Node casted to T, if successful.
@@ -240,14 +240,14 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Node> &obj) {
   }
 }
 
-/// @brief Convert a Node ID to a human-readable string
+/// @brief Convert a Node ID to a human-readable string.
 std::string ToString(Node::ID id);
 
 // Some often used literals for convenience:
 /**
- * @brief Create an integer Literal
- * @tparam V    The integer value
- * @return      A smart pointer to a literal node representing the value
+ * @brief Create an integer Literal.
+ * @tparam V    The integer value.
+ * @return      A smart pointer to a literal node representing the value.
  */
 template<int V>
 std::shared_ptr<Literal> litint() {
@@ -256,16 +256,19 @@ std::shared_ptr<Literal> litint() {
 }
 
 /**
- * @brief Create a string literal
- * @param str   The string value
- * @return      A smart pointer to a literal node representing the string
+ * @brief Create a string literal.
+ * @param str   The string value.
+ * @return      A smart pointer to a literal node representing the string.
  */
 std::shared_ptr<Literal> litstr(std::string str);
 
-/// @brief Return a literal node representing a Boolean true
+/// @brief Return a literal node representing a Boolean true.
 std::shared_ptr<Literal> bool_true();
 
-/// @brief Return a literal node representing a Boolean false
+/// @brief Return a literal node representing a Boolean false.
 std::shared_ptr<Literal> bool_false();
+
+/// @brief Return a human-readable string with information about the node.
+std::string ToString(const std::shared_ptr<Node> &node);
 
 }  // namespace fletchgen

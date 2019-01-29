@@ -14,16 +14,26 @@
 
 #pragma once
 
-#include "./architecture.h"
+#include <algorithm>
+#include <string>
+#include <memory>
+
+#include "../nodes.h"
+#include "../types.h"
+#include "../graphs.h"
+
 #include "./block.h"
-#include "./declaration.h"
-#include "./design.h"
-#include "./flatnode.h"
-#include "./instantiation.h"
-#include "./transformation.h"
 
 namespace fletchgen {
 namespace vhdl {
+
+struct Decl {
+  static std::string Generate(const std::shared_ptr<Type> &type);
+  static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
+  static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
+  static Block Generate(const std::shared_ptr<Signal> &sig, int depth = 0);
+  static MultiBlock Generate(const std::shared_ptr<Component> &comp, bool entity = false);
+};
 
 }  // namespace vhdl
 }  // namespace fletchgen

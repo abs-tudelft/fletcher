@@ -22,7 +22,7 @@
 #include <deque>
 
 #include "./utils.h"
-#include "./nodes.h"
+#include "nodes.h"
 
 namespace fletchgen {
 

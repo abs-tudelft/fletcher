@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./edges.h"
+#include "edges.h"
 #include "edges.h"
 
 #include <memory>
