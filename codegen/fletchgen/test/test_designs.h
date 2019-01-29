@@ -1,3 +1,17 @@
+// Copyright 2018 Delft University of Technology
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #pragma once
 
 #include <memory>
@@ -11,26 +25,26 @@
 
 namespace fletchgen {
 
-std::shared_ptr<Component> GetConcattedStreamsComponent() {
-  // Data types
-  auto all_type = Vector::Make<4>("all");
-  auto sub_type = Vector::Make<2>("sub");
-  auto all_stream = Stream::Make("all:stream", all_type);
-  auto sub_stream = Stream::Make("sub:stream", sub_type);
+std::shared_ptr<Component> GetConcatStreamsComponent() {
+  auto par_width = Parameter::Make("WIDTH", integer());
 
-  // Port types
-  auto pA = Port::Make("A", all_stream, Port::OUT);
-  auto pB = Port::Make("B", sub_stream, Port::IN);
-  auto pC = Port::Make("C", sub_stream, Port::IN);
+  // Data type
+  auto data_type = Vector::Make("data", par_width);
 
-  auto pD = Port::Make("D", sub_stream, Port::OUT);
-  auto pE = Port::Make("E", sub_stream, Port::OUT);
-  auto pF = Port::Make("F", all_stream, Port::IN);
+  // Port type
+  auto pA = Port::Make("A", data_type, Port::OUT);
+  auto pB = Port::Make("B", data_type, Port::IN);
+  auto pC = Port::Make("C", data_type, Port::IN);
+
+  auto pD = Port::Make("D", data_type, Port::OUT);
+  auto pE = Port::Make("E", data_type, Port::OUT);
+  auto pF = Port::Make("F", data_type, Port::IN);
 
   // Component types
-  auto top = Component::Make("top");
-  auto x = Component::Make("X", {}, {pA, pD, pE}, {});
-  auto y = Component::Make("Y", {}, {pB, pC, pF}, {});
+  auto top = Component::Make("top", {par_width}, {}, {});
+  auto x = Component::Make("X", {par_width}, {pA, pD, pE}, {});
+  auto y = Component::Make("Y", {par_width}, {pB, pC, pF}, {});
+
   auto x_inst = Instance::Make(x);
   auto y_inst = Instance::Make(y);
 

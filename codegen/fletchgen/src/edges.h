@@ -67,10 +67,10 @@ struct Edge : public Named {
   static void CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);
 
   /// @brief Count the total number of edges of a specific node (ins and outs)
-  static int CountAllEdges(const std::shared_ptr<Node> &node);
+  static size_t CountAllEdges(const std::shared_ptr<Node> &node);
 
   /// @brief Get the index of an edge on some node.
-  static int GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);
+  static size_t GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);
 
   // TODO(johanpel): probably move this somewhere else:
   static int GetVectorOffsetOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);

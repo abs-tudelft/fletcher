@@ -189,11 +189,10 @@ std::string Grapher::GenTableCell(const std::shared_ptr<Type> &type,
   return str.str();
 }
 
-
 std::string Grapher::GenRecordCell(const std::shared_ptr<Type> &type,
-                                  const std::shared_ptr<Node> &node,
-                                  std::string name,
-                                  int level) {
+                                   const std::shared_ptr<Node> &node,
+                                   std::string name,
+                                   int level) {
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
   if (type->Is(Type::STREAM)) {
@@ -297,8 +296,8 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 
     // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
     // resulting from this setting
-    ret << tab(level+1) << "splines=ortho;\n";
-    ret << tab(level+1) << "rankdir=LR;\n";
+    ret << tab(level + 1) << "splines=ortho;\n";
+    ret << tab(level + 1) << "rankdir=LR;\n";
   } else {
     ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
     ret << tab(level + 1) << "label=\"" << sanitize(graph->name()) << "\";\n";
@@ -331,6 +330,45 @@ std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, std::string pa
   return dot;
 }
 
+static std::string ToHex(std::shared_ptr<Node> n) {
+  std::stringstream ret;
+  ret << std::hex << reinterpret_cast<uint64_t>(n.get());
+  return ret.str();
+}
+
+std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string prefix, int level) {
+  std::stringstream str;
+
+  std::string node_id;
+  if (!prefix.empty()) {
+    node_id = prefix + "_";
+  }
+  node_id += ToHex(node);
+
+  if (level == 0) {
+    str << "graph {\n";
+  }
+
+  auto n_expr = Cast<Expression>(node);
+  str << "\"" + node_id + "\" [label=\"" + sanitize(node->name()) + "\" ";
+  if (level == 0) {
+    str << ", color=red";
+  }
+  str << "];\n";
+  if (n_expr) {
+    auto left_node_id = node_id + "_" + ToHex((*n_expr)->lhs);
+    auto right_node_id = node_id + "_" + ToHex((*n_expr)->rhs);
+    str << "\"" + node_id + "\" -- \"" + left_node_id + "\"\n";
+    str << "\"" + node_id + "\" -- \"" + right_node_id + "\"\n";
+    str << GenExpr((*n_expr)->lhs, node_id, level + 1);
+    str << GenExpr((*n_expr)->rhs, node_id, level + 1);
+  }
+  if (level == 0) {
+    str << "}\n";
+  }
+  return str.str();
+}
+
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
@@ -359,7 +397,7 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
   } else {
     auto lit = Cast<Literal>(n);
     if (lit) {
-      ret << "Anon_" + ToString(n->id_) + "_" + (*lit)->ToValueString();
+      ret << "Anon_" + ToString(n->id_) + "_" + (*lit)->ToString();
     } else {
       // TODO(johanpel): resolve this madness
       ret << "Anon_" + ToString(n->id_) + "_" + std::to_string(reinterpret_cast<unsigned long>(n.get()));

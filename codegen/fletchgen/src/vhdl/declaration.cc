@@ -60,7 +60,7 @@ Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   Line l;
   l << par->name() << " : " << Generate(par->type_);
   if (par->default_value) {
-    l << ":= " << par->default_value.value()->ToValueString();
+    l << ":= " << par->default_value.value()->ToString();
   }
   ret << l;
   return ret;

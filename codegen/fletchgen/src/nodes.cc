@@ -43,12 +43,24 @@ size_t Node::num_edges() const {
   return ins_.size() + outs_.size();
 }
 
+size_t Node::num_ins() const {
+  return ins_.size();
+}
+
+size_t Node::num_outs() const {
+  return outs_.size();
+}
+
 std::shared_ptr<Node> Node::Copy() const {
   auto ret = std::make_shared<Node>(this->name(), this->id_, this->type_);
   return ret;
 }
 
-std::string Literal::ToValueString() {
+std::string Node::ToString() {
+  return name();
+}
+
+std::string Literal::ToString() {
   if (storage_type_ == BOOL) {
     return std::to_string(bool_val_);
   } else if (storage_type_ == STRING) {
@@ -58,29 +70,29 @@ std::string Literal::ToValueString() {
   }
 }
 
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type>& type, bool value) {
+std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, bool value) {
   return std::make_shared<Literal>(name, type, value);
 }
 
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type>& type, int value) {
+std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, int value) {
   return std::make_shared<Literal>(name, type, value);
 }
 
-std::shared_ptr<Literal> Literal::Make(const std::shared_ptr<Type>& type, std::string value) {
+std::shared_ptr<Literal> Literal::Make(const std::shared_ptr<Type> &type, std::string value) {
   return std::make_shared<Literal>(value, type, value);
 }
 
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type>& type, std::string value) {
+std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, std::string value) {
   return std::make_shared<Literal>(name, type, value);
 }
 
-Literal::Literal(std::string name, const std::shared_ptr<Type>& type, std::string value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type>& type, int value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type>& type, bool value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
@@ -159,7 +171,7 @@ std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
 std::string ToString(const std::shared_ptr<Node> &node) {
   if (node->IsLiteral()) {
     auto x = *Cast<Literal>(node);
-    return x->ToValueString();
+    return x->ToString();
   } else if (node->IsParameter()) {
     auto x = *Cast<Parameter>(node);
     return x->name();
@@ -168,4 +180,87 @@ std::string ToString(const std::shared_ptr<Node> &node) {
   }
 }
 
+std::shared_ptr<Expression> Expression::Make(Expression::Operation op,
+                                             const std::shared_ptr<Node> &lhs,
+                                             const std::shared_ptr<Node> &rhs) {
+  return std::make_shared<Expression>(op, lhs, rhs);
+}
+
+Expression::Expression(Expression::Operation op, const std::shared_ptr<Node> &left, const std::shared_ptr<Node> &right)
+    : Node(::fletchgen::ToString(op), EXPRESSION, string()),
+      operation(op), lhs(left), rhs(right) {}
+
+std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+  return Expression::Make(Expression::ADD, lhs, rhs);
+}
+std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+  return Expression::Make(Expression::SUB, lhs, rhs);
+}
+std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+  return Expression::Make(Expression::MUL, lhs, rhs);
+}
+std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+  return Expression::Make(Expression::DIV, lhs, rhs);
+}
+
+std::shared_ptr<Node> Expression::Minimize() {
+  // TODO(johanpel): put some more elaborate minimization function here
+
+  auto lhe = Cast<Expression>(lhs);
+  auto rhe = Cast<Expression>(rhs);
+  if (lhe) {
+    lhs = (*lhe)->Minimize();
+  }
+  if (rhe) {
+    rhs = (*rhe)->Minimize();
+  }
+
+  if (operation == Expression::ADD) {
+    if (lhs == litint<0>()) {
+      return rhs;
+    } else if (rhs == litint<0>()) {
+      return lhs;
+    }
+  }
+  if (operation == Expression::MUL) {
+    if (lhs == litint<0>()) {
+      return litint<0>();
+    } else if (rhs == litint<0>()) {
+      return litint<0>();
+    }
+  }
+
+  return shared_from_this();
+}
+
+std::string ToString(Expression::Operation operation) {
+  switch (operation) {
+    case Expression::ADD:return "+";
+    case Expression::SUB:return "-";
+    case Expression::MUL:return "*";
+    case Expression::DIV:return "/";
+    default:return "INVALID OP";
+  }
+}
+
+std::string Expression::ToString() {
+  std::string ls;
+  std::string op;
+  std::string rs;
+
+  auto min = Minimize();
+  auto mine = Cast<Expression>(min);
+  if (mine) {
+    ls = (*mine)->lhs->ToString();
+    op = fletchgen::ToString(operation);
+    rs = (*mine)->rhs->ToString();
+    return ls + op + rs;
+  } else {
+    return min->ToString();
+  }
+}
+
+std::shared_ptr<Node> Expression::Copy() const {
+  return Expression::Make(operation, lhs, rhs);
+}
 }  // namespace fletchgen

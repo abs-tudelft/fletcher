@@ -151,6 +151,7 @@ struct Grapher {
   std::string GenNodes(const std::shared_ptr<Graph> &comp, int level = 0);
   std::string GenGraph(const std::shared_ptr<Graph> &graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
+  std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix="", int level = 0);
 };
 
 std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix = "");

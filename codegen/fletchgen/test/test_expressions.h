@@ -16,21 +16,29 @@
 
 #include <gtest/gtest.h>
 
-#include "../../src/graphs.h"
-#include "../../src/vhdl/vhdl.h"
-#include "../../src/fletcher_types.h"
-#include "../../src/dot/dot.h"
+#include <string>
+#include <fstream>
+
+#include "../src/nodes.h"
+#include "../src/dot/dot.h"
 
 namespace fletchgen {
 
-TEST(VHDL, StreamConcat) {
-  auto top = GetConcatStreamsComponent();
+TEST(Expressions, Add) {
+  auto a = Literal::Make(string(), "a");
+  auto b = Parameter::Make("b", string());
+  auto c = Literal::Make(string(), "c");
+  auto d = Parameter::Make("d", string());
+  auto e = litint<10>();
 
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
+  auto f = a+b-c*d/e+a*b-c/d+e;
 
-  dot::Grapher dot(dot::Style::def(), dot::Config::all());
-  std::cout << dot.GenFile(top, "graph.dot");
+  std::cout << f->ToString() << std::endl;
+  ASSERT_EQ(f->ToString(), "a+b-c*d/10+a*b-c/d+10");
+
+  dot::Grapher dot;
+  std::ofstream out("graph.dot");
+  out << dot.GenExpr(f);
 }
 
 }

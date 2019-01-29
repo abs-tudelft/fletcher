@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +15,10 @@
 #pragma once
 
 #include <optional>
+#include <utility>
 #include <string>
 #include <memory>
 #include <deque>
-#include <utility>
 
 #include "./types.h"
 
@@ -35,13 +31,14 @@ struct Graph;
 /**
  * @brief A node.
  */
-struct Node : public Named {
+struct Node : public Named, std::enable_shared_from_this<Node> {
   /// @brief Node type IDs.
   enum ID {
     PORT,
     SIGNAL,
     PARAMETER,
-    LITERAL
+    LITERAL,
+    EXPRESSION
   };
   /// @brief Node type ID.
   ID id_;
@@ -64,6 +61,8 @@ struct Node : public Named {
 
   /// @brief Return the number of edges of this node, both in and out.
   size_t num_edges() const;
+  size_t num_ins() const;
+  size_t num_outs() const;
 
   /// @brief Get a copy of this Node
   virtual std::shared_ptr<Node> Copy() const;
@@ -94,6 +93,12 @@ struct Node : public Named {
 
   /// @brief Return true if this is a LITERAL node, false otherwise.
   bool IsLiteral() const { return id_ == LITERAL; }
+
+  /// @brief Return true if this is an EXPRESSION node, false otherwise.
+  bool IsExpression() const { return id_ == EXPRESSION; }
+
+  /// @brief Return a human-readable string
+  virtual std::string ToString();
 };
 
 /**
@@ -166,11 +171,11 @@ struct Literal : public Node {
   /// @brief Get a smart pointer to a new Literal with a boolean storage type.
   static std::shared_ptr<Literal> Make(std::string name, const std::shared_ptr<Type> &type, bool value);
 
-  /// @brief Convert the Literal value to a human-readable string.
-  std::string ToValueString();
-
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Node> Copy() const override;
+
+  /// @brief Convert the Literal value to a human-readable string.
+  std::string ToString() override;
 };
 
 /**
@@ -223,6 +228,42 @@ struct Port : public Node {
   /// @brief Return true if this Port is an output, false otherwise.
   bool IsOutput() { return dir == OUT; }
 };
+
+/*
+ * @brief A node representing a binary tree of other nodes
+ */
+struct Expression : Node {
+  enum Operation { ADD, SUB, MUL, DIV } operation;
+  std::shared_ptr<Node> lhs;
+  std::shared_ptr<Node> rhs;
+  /**
+   * @brief Construct a new expression
+   * @param op  The operator between two operands
+   * @param lhs The left operand
+   * @param rhs The right operand
+   */
+  Expression(Operation op, const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+
+  /// @brief Short-hand to create a smart pointer to an expression.
+  static std::shared_ptr<Expression> Make(Operation op,
+                                          const std::shared_ptr<Node> &lhs,
+                                          const std::shared_ptr<Node> &rhs);
+
+  /// @brief Minimize this expression.
+  std::shared_ptr<Node> Minimize();
+
+  /// @brief Copy this expression.
+  std::shared_ptr<Node> Copy() const override;
+
+  /// @brief Minimize the expression and convert it to a human-readable string.
+  std::string ToString() override;
+};
+
+std::string ToString(Expression::Operation operation);
+std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 
 /**
  * @brief Cast a Node to some (typically) less generic Node type T.

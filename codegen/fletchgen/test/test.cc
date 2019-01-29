@@ -28,6 +28,8 @@
 
 #include "fletcher/test_fletcher.h"
 
+#include "test_expressions.h"
+
 int main(int argc, char **argv) {
 
   ::testing::InitGoogleTest(&argc, argv);

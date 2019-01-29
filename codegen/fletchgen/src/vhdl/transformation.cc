@@ -24,12 +24,18 @@ namespace fletchgen {
 namespace vhdl {
 
 std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
+  std::deque<std::shared_ptr<Node>> resolved;
   for (const auto &inst : comp->GetAllInstances()) {
     for (const auto &port : inst->GetAllNodesOfType<Port>()) {
       for (const auto &edge : port->edges()) {
         if (edge->src->IsPort() && edge->dst->IsPort()) {
-          auto sig = insert(edge, "int_");
-          comp->AddNode(sig);
+          // Only resolve if not already resolved
+          if (!contains(resolved, edge->src) && !contains(resolved, edge->dst)) {
+            auto sig = insert(edge, "int_");
+            comp->AddNode(sig);
+            resolved.push_back(edge->src);
+            resolved.push_back(edge->dst);
+          }
         }
       }
     }

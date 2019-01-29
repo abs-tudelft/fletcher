@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "edges.h"
-#include "edges.h"
+#include "./edges.h"
 
 #include <memory>
+#include <deque>
+#include <string>
 
 namespace fletchgen {
 
@@ -29,6 +30,7 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   }
   if (src->type_->id != dst->type_->id) {
     throw std::runtime_error("Cannot connect nodes of different types.");
+    // TODO(johanpel): more elaborate compatibility checking goes here
   }
 
   std::string edge_name = src->name() + "_to_" + dst->name();
@@ -43,24 +45,68 @@ std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::s
 }
 
 std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix) {
-  // Get the destination type
-  auto type = edge->dst->type_;
-
-  // Create the signal
-  auto signal = Signal::Make(name_prefix + edge->dst->name(), type);
-
-  // Make the new connections, effectively creating two new edges.
-  signal <<= edge->src;
-  edge->dst <<= signal;
-
-  // Remove original edge from outs and ins of both ends
-  remove(&edge->src->outs_, edge);
-  remove(&edge->dst->ins_, edge);
-
-  return signal;
+  auto src = edge->src;
+  auto dst = edge->dst;
+  if ((src->num_outs() == 1) && (dst->num_ins() == 1)) {
+    // Get the destination type
+    auto type = dst->type_;
+    auto name = name_prefix + dst->name();
+    // Create the signal
+    auto signal = Signal::Make(name, type);
+    // Make the new connections, effectively creating two new edges.
+    signal <<= src;
+    dst <<= signal;
+    // Remove this edge from outs and ins of both ends
+    remove(&src->outs_, edge);
+    remove(&dst->ins_, edge);
+    // Return the new signal
+    return signal;
+  } else if ((src->num_outs() != 1) && (dst->num_ins() == 1)) {
+    // Get the source type
+    auto type = src->type_;
+    auto name = name_prefix + src->name();
+    // Create the signal
+    auto signal = Signal::Make(name, type);
+    // Iterate over all sibling edges
+    for (auto& sib : src->outs_) {
+      // Drive the original destination node with the signal.
+      sib->dst <<= signal;
+      // Remove the original outgoing edge from source node.
+      remove(&src->outs_, sib);
+      // Remove the original incoming edge from the destination node.
+      remove(&sib->dst->ins_, sib);
+      // Return the new signal
+    }
+    // Drive the signal with the original source
+    signal <<= src;
+    return signal;
+  } else if ((src->num_outs() == 1) && (dst->num_ins() != 1)) {
+    // Get the destination type
+    auto type = dst->type_;
+    auto name = name_prefix + dst->name();
+    // Create the signal
+    auto signal = Signal::Make(name, type);
+    // Iterate over all sibling edges
+    for (auto& sib : dst->ins_) {
+      // Drive the signal with the original source
+      signal <<= sib->src;
+      // Remove the original outgoing edge
+      remove(&sib->src->outs_, sib);
+      // Remove the original incoming edge
+      remove(&dst->ins_, sib);
+      // Return the new signal
+    }
+    // Drive the destination with the new signal
+    dst <<= signal;
+    return signal;
+  } else {
+    throw std::runtime_error("Encountered edge with double-sided concatenation. Design is corrupt.");
+  }
 }
 
-std::shared_ptr<Edge> Edge::Make(std::string name, const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
+std::shared_ptr<Edge> Edge::Make(std::string name,
+                                 const std::shared_ptr<Node> &dst,
+                                 const std::shared_ptr<Node> &src) {
   return std::make_shared<Edge>(name, dst, src);
 }
 
@@ -74,15 +120,15 @@ std::shared_ptr<Node> Edge::GetOtherNode(const std::shared_ptr<Node> &node) {
   }
 }
 
-int Edge::CountAllEdges(const std::shared_ptr<Node> &node) {
-  return static_cast<int>(node->ins_.size() + node->outs_.size());
+size_t Edge::CountAllEdges(const std::shared_ptr<Node> &node) {
+  return node->ins_.size() + node->outs_.size();
 }
 
-int Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
+size_t Edge::GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
   CheckEdgeOfNode(edge, node);
   auto siblings = edge->GetAllSiblings(node);
   auto it = std::find(std::begin(siblings), std::end(siblings), edge);
-  return static_cast<int>(std::distance(std::begin(siblings), it));
+  return static_cast<size_t>(std::distance(std::begin(siblings), it));
 }
 
 void Edge::CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node) {
