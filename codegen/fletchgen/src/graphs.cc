@@ -17,8 +17,8 @@
 #include <string>
 #include <memory>
 
-#include "nodes.h"
-#include "edges.h"
+#include "./nodes.h"
+#include "./edges.h"
 
 namespace fletchgen {
 
@@ -30,7 +30,7 @@ std::shared_ptr<Component> Component::Make(std::string name,
   for (const auto &param : parameters) {
     ret->AddNode(param);
     // If the parameter node has edges
-    if (!param->ins_.empty()) {
+    if (!param->ins().empty()) {
       // It has been assigned
       std::shared_ptr<Node> val = param->in(0)->src;
       // Add the value to the node list
@@ -52,13 +52,13 @@ std::shared_ptr<Component> Component::Make(std::string name,
 
 Graph &Graph::AddNode(std::shared_ptr<Node> node) {
   nodes.push_back(node);
-  node->parent_ = this;
+  node->SetParent(this);
   return *this;
 }
 
 std::shared_ptr<Node> Graph::Get(Node::ID id, const std::string &node_name) const {
   for (const auto &n : nodes) {
-    if ((n->name() == node_name) && (n->id_ == id)) {
+    if ((n->name() == node_name) && (n->Is(id))) {
       return n;
     }
   }
@@ -77,7 +77,7 @@ Graph &Graph::AddChild(const std::shared_ptr<Graph> &child) {
 size_t Graph::CountNodes(Node::ID id) const {
   size_t count = 0;
   for (const auto &n : nodes) {
-    if (n->id_ == id) {
+    if (n->Is(id)) {
       count++;
     }
   }
@@ -93,6 +93,16 @@ std::shared_ptr<Graph> Graph::Copy() const {
     ret->AddNode(node->Copy());
   }
   return ret;
+}
+
+std::deque<std::shared_ptr<Node>> Graph::GetAllNodesOfType(Node::ID id) const {
+  std::deque<std::shared_ptr<Node>> result;
+  for (const auto &n : nodes) {
+    if (n->Is(id)) {
+      result.push_back(n);
+    }
+  }
+  return result;
 }
 
 std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
@@ -117,7 +127,7 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
 Graph &Instance::AddNode(std::shared_ptr<Node> node) {
   if (!node->Is(Node::SIGNAL)) {
     nodes.push_back(node);
-    node->parent_ = this;
+    node->SetParent(this);
     return *this;
   } else {
     throw std::runtime_error("Cannot add signal nodes to Instance graph " + name());
@@ -180,6 +190,8 @@ Graph &Component::AddChild(const std::shared_ptr<Graph> &child) {
 }
 
 std::shared_ptr<Graph> Component::Copy() const {
+  // TODO(johanpel): properly copy everything, including edges.
+
   auto ret = std::make_shared<Component>(name());
   for (const auto &child : this->children) {
     ret->AddChild(*Cast<Instance>(child));

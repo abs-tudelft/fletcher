@@ -23,7 +23,7 @@ namespace fletchgen {
 namespace vhdl {
 
 struct Design {
-  static MultiBlock Generate(const std::shared_ptr<Component> &comp);
+  static MultiBlock Generate(std::shared_ptr<Component> comp);
 };
 
 }  // namespace vhdl

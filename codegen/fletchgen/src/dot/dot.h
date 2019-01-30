@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,46 +17,149 @@
 #include <memory>
 #include <deque>
 #include <string>
+#include <vector>
+#include <sstream>
 
 #include "../graphs.h"
 
 namespace fletchgen {
 namespace dot {
 
+inline std::string tab(uint n) {
+  return std::string(2 * n, ' ');
+}
+
+inline std::string tab(int n) {
+  return tab(static_cast<uint>(n));
+}
+
+inline std::string sanitize(std::string in) {
+  std::replace(in.begin(), in.end(), ':', '_');
+  return in;
+}
+
+inline std::string assign_quotes(const std::string &attribute, const std::string &style) {
+  if (!style.empty()) {
+    return attribute + "=\"" + style + "\"";
+  } else {
+    return "";
+  }
+}
+
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph);
+
+struct Palette {
+  std::string black = "#000000";
+  std::string white = "#ffffff";
+  std::string gray = "#808080";
+  std::string darker = "#202020";
+  std::string dark = "#404040";
+  std::string light = "#B0B0B0";
+  std::string lighter = "#D0D0D0";
+  // Bright
+  std::string b[7] = {"#ff8181", "#ffe081", "#bfff81", "#81ffd1", "#81ceff", "#9381ff", "#f281ff"};
+  // Medium
+  std::string m[7] = {"#e85858", "#e8c558", "#9fe858", "#58e8b3", "#58b0e8", "#6c58e8", "#d958e8"};
+  // Dark
+  std::string d[7] = {"#c04040", "#c0a140", "#7fc040", "#40c091", "#408fc0", "#5340c0", "#b340c0"};
+};
+
+static Palette p() {
+  static Palette ret;
+  return ret;
+}
+
+struct StyleBuilder {
+  std::vector<std::string> parts;
+  StyleBuilder &operator<<(const std::string &part) {
+    parts.push_back(part);
+    return *this;
+  }
+  std::string ToString() {
+    std::stringstream str;
+    for (const auto &p : parts) {
+      if (!p.empty()) {
+        str << p;
+        if (p != parts.back()) {
+          str << ", ";
+        }
+      }
+    }
+    return str.str();
+  }
+};
+
+struct Config {
+  struct NodeConfig {
+    bool parameters = true;
+    bool literals = true;
+    bool signals = true;
+    bool ports = true;
+    bool expressions = true;
+    struct ExpandConfig {
+      bool record = true;
+      bool stream = true;
+      bool expression = true;
+    } expand;
+    struct TypeConfig {
+      bool clock = true;
+      bool reset = true;
+      bool bit = true;
+      bool vector = true;
+      bool record = true;
+      bool stream = true;
+    } types;
+  } nodes;
+
+  static Config all() {
+    static Config ret;
+    return ret;
+  }
+
+  static Config streams() {
+    Config ret;
+    ret.nodes.parameters = false;
+    ret.nodes.literals = false;
+    ret.nodes.signals = true;
+    ret.nodes.ports = true;
+    ret.nodes.expressions = false;
+    ret.nodes.types.clock = false;
+    ret.nodes.types.reset = false;
+    ret.nodes.types.bit = false;
+    ret.nodes.types.vector = false;
+    ret.nodes.types.record = false;
+    ret.nodes.types.stream = true;
+    return ret;
+  }
+
+  bool operator()(const std::shared_ptr<Node> &node) {
+    switch (node->id()) {
+      case Node::PARAMETER: return nodes.parameters;
+      case Node::LITERAL: return nodes.literals;
+      case Node::SIGNAL: return nodes.signals;
+      case Node::PORT: return nodes.ports;
+      case Node::EXPRESSION: return nodes.expressions;
+    }
+    return true;
+  }
+};
 
 struct Style {
   using str = std::string;
-  // bright
-  // 0 ff8181
-  // 1 ffe081
-  // 2 bfff81
-  // 3 81ffd1
-  // 4 81ceff
-  // 5 9381ff
-  // 6 f281ff
 
-  // medium
-  // 0 e85858
-  // 1 e8c558
-  // 2 9fe858
-  // 3 58e8b3
-  // 4 58b0e8
-  // 5 6c58e8
-  // 6 d958e8
+  struct SubGraph {
+    str base = "filled";
+    str color = p().light;
+  } subgraph;
 
-  // dark
-  // 0 c04040
-  // 1 c0a140
-  // 2 7fc040
-  // 3 40c091
-  // 4 408fc0
-  // 5 5340c0
-  // 6 b340c0
+  struct NodeGroup {
+    str base = "filled";
+    str color = p().lighter;
+  } nodegroup;
 
   struct EdgeStyle {
     struct Colors {
-      str stream = "#408fc0C0";  // d-4
+      str stream = p().d[3];
     } color;
 
     str base = "penwidth=1";
@@ -73,62 +174,53 @@ struct Style {
 
   struct NodeStyle {
     struct Colors {
-      str stream = "#81ceff";  // b-4
-      str stream_border = "#408fc0";  // d-4
-      str stream_child = "#58b0e8";  // m-4
-      str record = "#58e8b3";  // m-3
+      str stream = p().b[3];
+      str stream_border = p().d[3];
+      str stream_child = p().m[3];
+
+      str record = p().b[4];
+      str record_child = p().m[4];
     } color;
 
-    str base = "margin=0.0125, width=0, height=0";
-    str port = "style=filled";
-    str sig = "style=filled, fillcolor=\"#bfff81\", margin=0.05, width=0, height=0";
-    str param;
-    str lit = "margin=0.05, width=0, height=0";
+    str base = "style=filled, width=0, height=0, margin=0.025";
+
+    str port = "shape=rect";
+    str signal = "shape=rect, style=\"rounded, filled\", margin=0.1";
+    str parameter = "shape=note, fontsize = 8";
+    str literal = "shape=plaintext, fontsize = 8";
+    str expression = "shape=signature";
+
+    str nested = "html";
 
     struct TypeStyle {
-      str stream;
-      str clock;
-      str reset;
-      str vector;
-      str bit;
+      str clock = assign_quotes("fillcolor", p().gray);
+      str reset = assign_quotes("fillcolor", p().gray);
+      str bit = assign_quotes("fillcolor", p().b[0]);
+      str boolean = assign_quotes("fillcolor", p().b[1]);
+      str vector = assign_quotes("fillcolor", p().b[2]);
+      str stream = assign_quotes("fillcolor", p().b[3]);
+      str record = assign_quotes("fillcolor", p().b[4]);
+      str natural = assign_quotes("fillcolor", p().b[5]);
+      str string = assign_quotes("fillcolor", p().b[6]);
     } type;
   } node;
+
+  Config config = Config::all();
+
+  std::string GenHTMLTableCell(const std::shared_ptr<Type> &t,
+                               std::string name,
+                               int level = 0);
+  std::string GenDotRecordCell(const std::shared_ptr<Type> &t,
+                               std::string name,
+                               int level = 0);
+
+  std::string GetLabel(const std::shared_ptr<Node> &n);
+  std::string Get(const std::shared_ptr<Node> &type);
 
   static Style def() {
     static Style ret;
     return ret;
   }
-};
-
-struct Config {
-  struct NodeConfig {
-    bool parameters = false;
-    bool literals = false;
-    bool signals = true;
-    bool ports = true;
-    struct TypeConfig {
-      bool expand = false;
-      bool clock = false;
-      bool reset = false;
-    } types;
-  } nodes;
-
-  static Config def() {
-    static Config ret;
-    return ret;
-  }
-
-  static Config all() {
-    static Config ret;
-    ret.nodes.parameters = true;
-    ret.nodes.literals = true;
-    ret.nodes.signals = true;
-    ret.nodes.ports = true;
-    ret.nodes.types.expand = true;
-    ret.nodes.types.clock = true;
-    ret.nodes.types.reset = true;
-    return ret;
-  };
 };
 
 struct Grapher {
@@ -137,21 +229,13 @@ struct Grapher {
   std::deque<std::shared_ptr<Edge>> drawn_edges;
 
   Grapher() = default;
-  explicit Grapher(Style style, Config config) : style(std::move(style)), config(std::move(config)) {}
-
-  std::string GenTableCell(const std::shared_ptr<Type> &type,
-                           const std::shared_ptr<Node> &node,
-                           std::string name,
-                           int level = 0);
-  std::string GenRecordCell(const std::shared_ptr<Type> &type,
-                            const std::shared_ptr<Node> &node,
-                            std::string name,
-                            int level = 0);
+  explicit Grapher(Style style) : style(std::move(style)) {}
   std::string GenEdges(const std::shared_ptr<Graph> &comp, int level = 0);
-  std::string GenNodes(const std::shared_ptr<Graph> &comp, int level = 0);
+  std::string GenNode(const std::shared_ptr<Node> &n, int level = 0);
+  std::string GenNodes(const std::shared_ptr<Graph> &comp, Node::ID id, int level = 0, bool nogroup=false);
   std::string GenGraph(const std::shared_ptr<Graph> &graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
-  std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix="", int level = 0);
+  std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix = "", int level = 0);
 };
 
 std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix = "");

@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nodes.h"
+#include "./nodes.h"
 
 #include <optional>
+#include <utility>
 #include <deque>
 #include <memory>
 #include <string>
+
+#include "./utils.h"
+#include "./edges.h"
 
 namespace fletchgen {
 
@@ -39,18 +39,6 @@ std::deque<std::shared_ptr<Edge>> Node::edges() const {
 Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
     : Named(std::move(name)), id_(id), type_(std::move(type)) {}
 
-size_t Node::num_edges() const {
-  return ins_.size() + outs_.size();
-}
-
-size_t Node::num_ins() const {
-  return ins_.size();
-}
-
-size_t Node::num_outs() const {
-  return outs_.size();
-}
-
 std::shared_ptr<Node> Node::Copy() const {
   auto ret = std::make_shared<Node>(this->name(), this->id_, this->type_);
   return ret;
@@ -58,6 +46,54 @@ std::shared_ptr<Node> Node::Copy() const {
 
 std::string Node::ToString() {
   return name();
+}
+
+void Node::AddInput(std::shared_ptr<Edge> edge) {
+  // TODO(johanpel): implement more sanity checks
+  // Check if the edge destination is this node
+  if (edge->dst == shared_from_this()) {
+    ins_.push_back(edge);
+  } else if (edge->dst == nullptr) {
+    // There is no destination set, make this node the destination
+    edge->dst = shared_from_this();
+    ins_.push_back(edge);
+  } else {
+    throw std::runtime_error("Cannot add edge as input to node " + name()
+                                 + ". Edge has other destination: " + edge->dst->name());
+  }
+}
+
+void Node::AddOutput(std::shared_ptr<Edge> edge) {
+  // TODO(johanpel): implement more sanity checks
+  // Check if the edge destination is this node
+  if (edge->src == shared_from_this()) {
+    outs_.push_back(edge);
+  } else if (edge->src == nullptr) {
+    // There is no destination set, make this node the destination
+    edge->src = shared_from_this();
+    outs_.push_back(edge);
+  } else {
+    throw std::runtime_error("Cannot add edge as output of node " + name()
+                                 + ". Edge has other source: " + edge->src->name());
+  }
+}
+
+void Node::SetParent(const Graph *parent) {
+  parent_ = parent;
+}
+
+Node &Node::RemoveEdge(const std::shared_ptr<Edge> &edge) {
+  bool success = false;
+  if (edge->src == shared_from_this()) {
+    success = remove(&outs_, edge);
+  } else if (edge->dst == shared_from_this()) {
+    success = remove(&ins_, edge);
+  }
+  if (!success) {
+    throw std::runtime_error("Edge " + edge->name() + " could not be removed from " + name()
+                                 + " because it was neither input or output.");
+  }
+  return *this;
 }
 
 std::string Literal::ToString() {
@@ -134,14 +170,14 @@ std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Port::Dir dir) {
 }
 
 std::shared_ptr<Node> Port::Copy() const {
-  return std::make_shared<Port>(name(), type_, dir);
+  return std::make_shared<Port>(name(), type(), dir);
 }
 
 Port::Port(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
     : Node(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
-  return std::make_shared<Parameter>(name(), type_, default_value);
+  return std::make_shared<Parameter>(name(), type(), default_value);
 }
 
 std::shared_ptr<Parameter> Parameter::Make(std::string name,
@@ -203,34 +239,68 @@ std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const st
   return Expression::Make(Expression::DIV, lhs, rhs);
 }
 
-std::shared_ptr<Node> Expression::Minimize() {
-  // TODO(johanpel): put some more elaborate minimization function here
-
-  auto lhe = Cast<Expression>(lhs);
-  auto rhe = Cast<Expression>(rhs);
-  if (lhe) {
-    lhs = (*lhe)->Minimize();
-  }
-  if (rhe) {
-    rhs = (*rhe)->Minimize();
-  }
-
-  if (operation == Expression::ADD) {
-    if (lhs == litint<0>()) {
-      return rhs;
-    } else if (rhs == litint<0>()) {
-      return lhs;
+static std::shared_ptr<Node> MergeIfIntLiterals(std::shared_ptr<Node> node) {
+  auto pexp = Cast<Expression>(node);
+  if (pexp) {
+    auto exp = *pexp;
+    auto ret = Expression::Make(exp->operation, Expression::Minimize(exp->lhs), Expression::Minimize(exp->rhs));
+    if (ret->lhs->IsLiteral() && ret->rhs->IsLiteral()) {
+      auto ll = *Cast<Literal>(ret->lhs);
+      auto lr = *Cast<Literal>(ret->rhs);
+      if ((ll->storage_type_ == Literal::INT) && (lr->storage_type_ == Literal::INT) && (ll->type() == lr->type())) {
+        switch (exp->operation) {
+          case Expression::ADD: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ + lr->int_val_);
+          case Expression::SUB: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ - lr->int_val_);
+          case Expression::MUL: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ * lr->int_val_);
+          case Expression::DIV: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ / lr->int_val_);
+        }
+      }
+      return ret;
     }
   }
-  if (operation == Expression::MUL) {
-    if (lhs == litint<0>()) {
-      return litint<0>();
-    } else if (rhs == litint<0>()) {
-      return litint<0>();
-    }
-  }
+  return node;
+}
 
-  return shared_from_this();
+static std::shared_ptr<Node> EliminateZeroOne(std::shared_ptr<Node> node) {
+  auto pexp = Cast<Expression>(node);
+  if (pexp) {
+    auto exp = *pexp;
+    auto ret = Expression::Make(exp->operation, Expression::Minimize(exp->lhs), Expression::Minimize(exp->rhs));
+    switch (ret->operation) {
+      case Expression::ADD: {
+        if (ret->lhs == litint<0>()) return ret->rhs;
+        if (ret->rhs == litint<0>()) return ret->lhs;
+        break;
+      }
+      case Expression::SUB: {
+        if (ret->lhs == litint<0>()) return node;
+        if (ret->rhs == litint<0>()) return ret->lhs;
+        break;
+      }
+      case Expression::MUL: {
+        if (ret->lhs == litint<0>()) return litint<0>();
+        if (ret->rhs == litint<0>()) return litint<0>();
+        if (ret->lhs == litint<1>()) return ret->rhs;
+        if (ret->rhs == litint<1>()) return ret->lhs;
+        break;
+      }
+      case Expression::DIV: {
+        if (ret->lhs == litint<0>()) return litint<0>();
+        if (ret->rhs == litint<0>()) throw std::runtime_error("Division by 0.");
+        if (ret->rhs == litint<1>()) return ret->lhs;
+        break;
+      }
+    }
+    return ret;
+  }
+  return node;
+}
+
+std::shared_ptr<Node> Expression::Minimize(const std::shared_ptr<Node>& node) {
+  // TODO(johanpel): put some more elaborate minimization function/rules etc.. here
+  auto min = EliminateZeroOne(node);
+  min = MergeIfIntLiterals(min);
+  return min;
 }
 
 std::string ToString(Expression::Operation operation) {
@@ -248,7 +318,7 @@ std::string Expression::ToString() {
   std::string op;
   std::string rs;
 
-  auto min = Minimize();
+  auto min = Minimize(shared_from_this());
   auto mine = Cast<Expression>(min);
   if (mine) {
     ls = (*mine)->lhs->ToString();

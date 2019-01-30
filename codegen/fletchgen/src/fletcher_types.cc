@@ -14,7 +14,9 @@
 
 #include "./fletcher_types.h"
 
-#include "nodes.h"
+#include <memory>
+
+#include "./nodes.h"
 #include "./types.h"
 
 namespace fletchgen {
@@ -56,12 +58,12 @@ VEC_FACTORY(length, 32);
 std::shared_ptr<ClockDomain> acc_domain() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
   return result;
-};
+}
 
 std::shared_ptr<ClockDomain> bus_domain() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
   return result;
-};
+}
 
 // Create basic clocks & resets
 std::shared_ptr<Type> acc_clk() {
@@ -77,12 +79,12 @@ std::shared_ptr<Type> acc_reset() {
 std::shared_ptr<Type> bus_clk() {
   static std::shared_ptr<Type> result = std::make_shared<Clock>("bus_clk", acc_domain());
   return result;
-};
+}
 
 std::shared_ptr<Type> bus_reset() {
   static std::shared_ptr<Type> result = std::make_shared<Reset>("bus_reset", acc_domain());
   return result;
-};
+}
 
 // Bus channel
 

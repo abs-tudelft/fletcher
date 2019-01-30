@@ -43,7 +43,7 @@ FlatNode::FlatNode(std::shared_ptr<Node> node) : node_(std::move(node)) {
   Identifier top;
   top.append(node_->name());
   // Flatten the node type
-  Flatten(top, node_->type_);
+  Flatten(top, node_->type());
 }
 
 void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Record> &record) {

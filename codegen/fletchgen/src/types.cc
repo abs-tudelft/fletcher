@@ -17,15 +17,16 @@
 #include <string>
 
 #include "nodes.h"
+#include "types.h"
 
 namespace fletchgen {
 
 bool Type::Is(Type::ID type_id) {
-  return type_id == id;
+  return type_id == id_;
 }
 
 Type::Type(std::string name, Type::ID id)
-    : Named(std::move(name)), id(id) {}
+    : Named(std::move(name)), id_(id) {}
 
 Vector::Vector(std::string name, std::shared_ptr<Node> width)
     : Type(std::move(name), Type::VECTOR) {
@@ -50,6 +51,10 @@ std::shared_ptr<Type> Stream::Make(std::string name,
                                    std::string element_name,
                                    int epc) {
   return std::make_shared<Stream>(name, element_type, element_name, epc);
+}
+
+std::shared_ptr<Type> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
+  return std::make_shared<Stream>("stream:" + element_type->name(), element_type, "data", epc);
 }
 
 Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc)

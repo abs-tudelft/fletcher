@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "./types.h"
-#include "nodes.h"
+#include "./nodes.h"
 
 namespace fletchgen {
 

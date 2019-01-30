@@ -32,29 +32,34 @@ std::shared_ptr<Component> GetConcatStreamsComponent() {
   auto data_type = Vector::Make("data", par_width);
 
   // Port type
-  auto pA = Port::Make("A", data_type, Port::OUT);
-  auto pB = Port::Make("B", data_type, Port::IN);
-  auto pC = Port::Make("C", data_type, Port::IN);
+  auto pA = Port::Make("A", Stream::Make(data_type, Port::OUT));
+  auto pB = Port::Make("B", Stream::Make(data_type, Port::OUT));
+  auto pC = Port::Make("C", Stream::Make(data_type, Port::OUT));
+  auto pD = Port::Make("D", Stream::Make(data_type, Port::OUT));
 
-  auto pD = Port::Make("D", data_type, Port::OUT);
-  auto pE = Port::Make("E", data_type, Port::OUT);
-  auto pF = Port::Make("F", data_type, Port::IN);
+  auto pE = Port::Make("E", Stream::Make(data_type, Port::IN));
+  auto pF = Port::Make("F", Stream::Make(data_type, Port::IN));
+  auto pG = Port::Make("G", Stream::Make(data_type, Port::IN));
+  auto pH = Port::Make("H", Stream::Make(data_type, Port::IN));
 
   // Component types
   auto top = Component::Make("top", {par_width}, {}, {});
-  auto x = Component::Make("X", {par_width}, {pA, pD, pE}, {});
-  auto y = Component::Make("Y", {par_width}, {pB, pC, pF}, {});
+  auto x_comp = Component::Make("X", {par_width}, {pA, pB, pC, pD}, {});
+  auto y_comp = Component::Make("Y", {par_width}, {pE, pF, pG, pH}, {});
 
-  auto x_inst = Instance::Make(x);
-  auto y_inst = Instance::Make(y);
+  auto x = Instance::Make(x_comp);
+  auto y = Instance::Make(y_comp);
 
-  top->AddChild(x_inst)
-      .AddChild(y_inst);
+  top->AddChild(x)
+      .AddChild(y);
 
-  y_inst->Get(Node::PORT, "B") <<= x_inst->Get(Node::PORT, "A");
-  y_inst->Get(Node::PORT, "C") <<= x_inst->Get(Node::PORT, "A");
-  y_inst->Get(Node::PORT, "F") <<= x_inst->Get(Node::PORT, "D");
-  y_inst->Get(Node::PORT, "F") <<= x_inst->Get(Node::PORT, "E");
+  y->p("E") <<= x->p("A");
+  y->p("F") <<= x->p("A");
+
+  y->p("G") <<= x->p("B");
+  y->p("G") <<= x->p("C");
+
+  y->p("H") <<= x->p("D");
 
   return top;
 }

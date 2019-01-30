@@ -29,7 +29,7 @@ TEST(VHDL, StreamConcat) {
   auto code = vhdl::Design::Generate(top);
   std::cout << code.ToString();
 
-  dot::Grapher dot(dot::Style::def(), dot::Config::all());
+  dot::Grapher dot(dot::Style::def());
   std::cout << dot.GenFile(top, "graph.dot");
 }
 

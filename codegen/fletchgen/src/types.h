@@ -24,7 +24,7 @@
 namespace fletchgen {
 
 // Forward decl.
-struct Node;
+class Node;
 struct Literal;
 
 template<int T>
@@ -33,7 +33,8 @@ std::shared_ptr<Literal> litint();
 /**
  * @brief A type
  */
-struct Type : public Named {
+class Type : public Named {
+ public:
   enum ID {
     CLOCK,
     RESET,
@@ -44,11 +45,13 @@ struct Type : public Named {
     NATURAL,
     STRING,
     BOOLEAN
-  } id;
-
+  };
+  inline ID id() const { return id_; }
   explicit Type(std::string name, ID id);
   virtual ~Type() = default;
   bool Is(ID type_id);
+ private:
+  ID id_;
 };
 
 /**
@@ -138,7 +141,10 @@ class Stream : public Type {
    */
   Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
 
-  /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named after the data type.
+  /// @brief Create a smart pointer to a new Stream type. Stream name will be stream:<type name>, the elements "data".
+  static std::shared_ptr<Type> Make(std::shared_ptr<Type> element_type, int epc = 1);
+
+  /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named "data".
   static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
 
   /// @brief Shorthand to create a smart pointer to a new Stream type.

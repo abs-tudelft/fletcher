@@ -31,7 +31,8 @@ struct Graph;
 /**
  * @brief A node.
  */
-struct Node : public Named, std::enable_shared_from_this<Node> {
+class Node : public Named, public std::enable_shared_from_this<Node> {
+ public:
   /// @brief Node type IDs.
   enum ID {
     PORT,
@@ -40,65 +41,72 @@ struct Node : public Named, std::enable_shared_from_this<Node> {
     LITERAL,
     EXPRESSION
   };
-  /// @brief Node type ID.
-  ID id_;
-
-  /// @brief The Type of this Node.
-  std::shared_ptr<Type> type_;
-
-  /// @brief All incoming Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> ins_;
-
-  /// @brief All outgoing Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> outs_;
-
-  /// @brief An optional parent Graph to which this Node belongs.
-  std::optional<Graph *> parent_;
 
   /// @brief Node constructor.
   Node(std::string name, ID id, std::shared_ptr<Type> type);
   virtual ~Node() = default;
 
-  /// @brief Return the number of edges of this node, both in and out.
-  size_t num_edges() const;
-  size_t num_ins() const;
-  size_t num_outs() const;
-
   /// @brief Get a copy of this Node
   virtual std::shared_ptr<Node> Copy() const;
-
-  /// @brief Return all edges of this node, both in and out.
-  std::deque<std::shared_ptr<Edge>> edges() const;
-
-  /// @brief Return incoming Edge i
-  std::shared_ptr<Edge> in(size_t i) const { return ins_[i]; }
-
-  /// @brief Return outgoing Edge i
-  std::shared_ptr<Edge> out(size_t i) const { return outs_[i]; }
-
   /// @brief Return the node Type
   std::shared_ptr<Type> type() const { return type_; }
 
+  /// @brief Add an edge to this node as an input.
+  void AddInput(std::shared_ptr<Edge> edge);
+  /// @brief Add an edge to this node as an output.
+  void AddOutput(std::shared_ptr<Edge> edge);
+  /// @brief Remove an edge from this node.
+  Node &RemoveEdge(const std::shared_ptr<Edge> &edge);
+  /// @brief Return the number of edges of this node, both in and out.
+  inline size_t num_edges() const { return ins_.size() + outs_.size(); }
+  /// @brief Return the number of in edges of this node.
+  inline size_t num_ins() const { return ins_.size(); }
+  /// @brief Return the number of out edges of this node.
+  inline size_t num_outs() const { return outs_.size(); }
+  /// @brief Return all edges of this node, both in and out.
+  std::deque<std::shared_ptr<Edge>> edges() const;
+  /// @brief Return incoming Edge i.
+  inline std::shared_ptr<Edge> in(size_t i) const { return ins_[i]; }
+  /// @brief Return outgoing Edge i.
+  inline std::shared_ptr<Edge> out(size_t i) const { return outs_[i]; }
+  /// @brief Return all incoming edges.
+  inline std::deque<std::shared_ptr<Edge>> ins() const { return ins_; }
+  /// @brief Return all outgoing edges.
+  inline std::deque<std::shared_ptr<Edge>> outs() const { return outs_; }
+
+  /// @brief Return the node type ID
+  inline ID id() const { return id_; }
   /// @brief Return whether this node is of a specific node type id.
   bool Is(ID tid) const { return id_ == tid; }
-
   /// @brief Return true if this is a PORT node, false otherwise.
   bool IsPort() const { return id_ == PORT; }
-
   /// @brief Return true if this is a SIGNAL node, false otherwise.
   bool IsSignal() const { return id_ == SIGNAL; }
-
   /// @brief Return true if this is a PARAMETER node, false otherwise.
   bool IsParameter() const { return id_ == PARAMETER; }
-
   /// @brief Return true if this is a LITERAL node, false otherwise.
   bool IsLiteral() const { return id_ == LITERAL; }
-
   /// @brief Return true if this is an EXPRESSION node, false otherwise.
   bool IsExpression() const { return id_ == EXPRESSION; }
 
+  /// @brief Set this node's parent
+  void SetParent(const Graph *parent);
+  inline std::optional<const Graph *> parent() { return parent_; }
+
   /// @brief Return a human-readable string
   virtual std::string ToString();
+
+ private:
+  /// @brief Node type ID.
+  ID id_;
+  /// @brief The Type of this Node.
+  std::shared_ptr<Type> type_;
+  /// @brief All incoming Edges of this Node.
+  std::deque<std::shared_ptr<Edge>> ins_;
+  /// @brief All outgoing Edges of this Node.
+  std::deque<std::shared_ptr<Edge>> outs_;
+  /// @brief An optional parent Graph to which this Node belongs. Initially none.
+  std::optional<const Graph *> parent_ = {};
 };
 
 /**
@@ -249,8 +257,8 @@ struct Expression : Node {
                                           const std::shared_ptr<Node> &lhs,
                                           const std::shared_ptr<Node> &rhs);
 
-  /// @brief Minimize this expression.
-  std::shared_ptr<Node> Minimize();
+  /// @brief Minimize a node, if it is an expression
+  static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node>& node);
 
   /// @brief Copy this expression.
   std::shared_ptr<Node> Copy() const override;

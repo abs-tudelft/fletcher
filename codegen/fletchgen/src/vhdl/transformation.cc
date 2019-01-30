@@ -28,13 +28,26 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
   for (const auto &inst : comp->GetAllInstances()) {
     for (const auto &port : inst->GetAllNodesOfType<Port>()) {
       for (const auto &edge : port->edges()) {
+        // Both sides of the edge must be a port
         if (edge->src->IsPort() && edge->dst->IsPort()) {
-          // Only resolve if not already resolved
-          if (!contains(resolved, edge->src) && !contains(resolved, edge->dst)) {
-            auto sig = insert(edge, "int_");
-            comp->AddNode(sig);
-            resolved.push_back(edge->src);
-            resolved.push_back(edge->dst);
+          // Either of the ports cannot be on the component itself. Component port to instance port edges are allowed.
+          if ((edge->src->parent() != comp.get()) && (edge->dst->parent() != comp.get())) {
+            // Only resolve if not already resolved
+            if (!contains(resolved, edge->src) && !contains(resolved, edge->dst)) {
+              // Insert a signal in between
+              std::string prefix;
+              if (edge->dst->parent()) {
+                prefix = (*edge->dst->parent())->name() + "_";
+              } else if (edge->src->parent()) {
+                prefix = (*edge->src->parent())->name() + "_";
+              }
+              auto sig = insert(edge, prefix);
+              // Add the signal to the component
+              comp->AddNode(sig);
+              // Remember we've touched these nodes already
+              resolved.push_back(edge->src);
+              resolved.push_back(edge->dst);
+            }
           }
         }
       }

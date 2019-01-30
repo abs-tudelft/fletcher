@@ -23,7 +23,7 @@ namespace fletchgen {
 namespace vhdl {
 
 static std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type) {
-  switch (type->id) {
+  switch (type->id()) {
     case Type::VECTOR:return Cast<Vector>(type)->width();
     case Type::BIT:return litint<1>();
     case Type::CLOCK:return litint<1>();

@@ -26,16 +26,17 @@
 namespace fletchgen {
 namespace vhdl {
 
-MultiBlock Design::Generate(const std::shared_ptr<Component> &comp) {
+MultiBlock Design::Generate(std::shared_ptr<Component> comp) {
   MultiBlock ret;
 
-  // Sanitize component
-  auto vhdl_comp_copy = comp->Copy();
-  auto vhdl_comp = *Cast<Component>(vhdl_comp_copy);
-  Transformation::ResolvePortToPort(vhdl_comp);
+  // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing
+  // This currently modifies the original structure.
 
-  auto decl_code = Decl::Generate(vhdl_comp);
-  auto arch_code = Arch::Generate(vhdl_comp);
+  // Sanitize component
+  Transformation::ResolvePortToPort(comp);
+
+  auto decl_code = Decl::Generate(comp);
+  auto arch_code = Arch::Generate(comp);
 
   ret << decl_code;
   ret << arch_code;

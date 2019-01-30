@@ -41,4 +41,23 @@ TEST(Expressions, Add) {
   out << dot.GenExpr(f);
 }
 
+TEST(Expressions, IntLits) {
+  auto z = litint<0>();
+  auto o = litint<1>();
+
+  //auto g0 = z + z;
+  //auto g1 = z + o;
+  //auto g2 = o + z;
+  auto g3 = o + o;
+
+  //std::cout << g0->ToString() << std::endl;
+  //std::cout << g1->ToString() << std::endl;
+  //std::cout << g2->ToString() << std::endl;
+  std::cout << g3->ToString() << std::endl;
+
+  dot::Grapher dot;
+  std::ofstream out("graph.dot");
+  out << dot.GenExpr(g3);
+}
+
 }

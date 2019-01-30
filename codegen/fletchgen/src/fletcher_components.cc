@@ -19,8 +19,8 @@
 #include <deque>
 #include <utility>
 
-#include "edges.h"
-#include "nodes.h"
+#include "./edges.h"
+#include "./nodes.h"
 #include "./fletcher_types.h"
 
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
@@ -190,14 +190,14 @@ UserCore::UserCore(std::string name, std::shared_ptr<SchemaSet> schema_set)
     for (const auto &f : s->fields()) {
       if (!fletcher::mustIgnore(f)) {
         AddNode(ArrowPort::Make(f, mode2dir(fletcher::getMode(s))));
-        AddNode(Port::Make("cmd_" + f->name(), cmd(), Port::OUT));
+        AddNode(Port::Make(f->name() + "_cmd", cmd(), Port::OUT));
       }
     }
   }
 }
 
 std::shared_ptr<UserCore> UserCore::Make(std::shared_ptr<SchemaSet> schema_set) {
-  return std::make_shared<UserCore>("UserCore_" + schema_set->name(), schema_set);
+  return std::make_shared<UserCore>("uc_" + schema_set->name(), schema_set);
 }
 
 std::shared_ptr<ArrowPort> UserCore::GetArrowPort(std::shared_ptr<arrow::Field> field) {
@@ -230,8 +230,11 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
   user_core_inst_ = Instance::Make(user_core_);
   AddChild(user_core_inst_);
 
+  // Connect Fields
+  auto arrow_ports = user_core_->GetAllArrowPorts();
+
   // Instantiate ColumnReaders/Writers for each field.
-  for (const auto &p : user_core_->GetAllArrowPorts()) {
+  for (const auto &p : arrow_ports) {
     if (p->dir == Port::IN) {
       auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
       column_readers.push_back(cr_inst);
@@ -241,22 +244,17 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
     }
   }
 
-  // Connect Fields
-  auto arrow_ports = user_core_->GetAllArrowPorts();
   for (size_t i = 0; i < arrow_ports.size(); i++) {
     if (arrow_ports[i]->IsInput()) {
       // Get the user core instance ports
-      auto uci_data_port = user_core_inst_->Get(Node::PORT, arrow_ports[i]->name());
-      auto uci_cmd_port = user_core_inst_->Get(Node::PORT, "cmd_" + arrow_ports[i]->name());
-
+      auto uci_data_port = user_core_inst_->p(arrow_ports[i]->name());
+      auto uci_cmd_port = user_core_inst_->p(arrow_ports[i]->name() + "_cmd");
       // Get the column reader ports
-      auto cr_data_port = column_readers[i]->Get(Node::PORT, "data_out");
-      auto cr_cmd_port = column_readers[i]->Get(Node::PORT, "cmd");
-
+      auto cr_data_port = column_readers[i]->p("data_out");
+      auto cr_cmd_port = column_readers[i]->p("cmd");
       // Connect the ports
-      auto int_data = insert(uci_data_port <<= cr_data_port);
-      auto int_cmd = insert(cr_cmd_port <<= uci_cmd_port);
-      AddNode(int_data).AddNode(int_cmd);
+      uci_data_port <<= cr_data_port;
+      cr_cmd_port <<= uci_cmd_port;
     } else {
       // TODO(johanpel): ColumnWriters
     }
@@ -271,15 +269,15 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
   AddNode(brr).AddNode(brd).AddNode(bwr).AddNode(bwd);
 
   for (const auto &cr : column_readers) {
-    auto cr_rreq = cr->Get(Node::PORT, "bus_rreq");
-    auto cr_rdat = cr->Get(Node::PORT, "bus_rdat");
+    auto cr_rreq = cr->p("bus_rreq");
+    auto cr_rdat = cr->p("bus_rdat");
     brr <<= cr_rreq;
     cr_rdat <<= brd;
   }
 
   for (const auto &cw : column_writers) {
-    auto cr_wreq = cw->Get(Node::PORT, "bus_wreq");
-    auto cr_wdat = cw->Get(Node::PORT, "bus_wdat");
+    auto cr_wreq = cw->p("bus_wreq");
+    auto cr_wdat = cw->p("bus_wdat");
     bwr <<= cr_wreq;
     bwd <<= cr_wdat;
   }
@@ -293,4 +291,4 @@ std::shared_ptr<FletcherCore> FletcherCore::Make(const std::shared_ptr<SchemaSet
   return std::make_shared<FletcherCore>("FletcherCore:" + schema_set->name(), schema_set);
 }
 
-}
+} // namespace fletchgen

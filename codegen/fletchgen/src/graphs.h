@@ -20,11 +20,11 @@
 #include <utility>
 #include <deque>
 
-#include "nodes.h"
+#include "./nodes.h"
 
 namespace fletchgen {
 
-struct Graph : public Named {
+struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   enum ID {
     GENERIC,    ///< A generic graph
     COMPONENT,  ///< A component graph
@@ -52,6 +52,9 @@ struct Graph : public Named {
   /// @brief Get a node of a specific type with a specific name
   std::shared_ptr<Node> Get(Node::ID id, const std::string &node_name) const;
 
+  inline std::shared_ptr<Node> p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
+  inline std::shared_ptr<Node> s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
+
   /// @brief Add a node to the component
   virtual Graph &AddNode(std::shared_ptr<Node> node);
 
@@ -63,6 +66,9 @@ struct Graph : public Named {
 
   /// @brief Create a copy of the graph
   virtual std::shared_ptr<Graph> Copy() const;
+
+  /// @brief Get all nodes of a specific type.
+  std::deque<std::shared_ptr<Node>> GetAllNodesOfType(Node::ID id) const;
 
   /**
    * @brief Obtain all nodes of type T from the graph
@@ -91,7 +97,6 @@ struct Instance;
  * A component graph may contain all node types.
  */
 struct Component : public Graph {
-
   /// @brief Construct an empty Component
   explicit Component(std::string name) : Graph(std::move(name), COMPONENT) {}
 

@@ -42,13 +42,22 @@ bool contains(const std::deque<T*>& list, T* item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
+/**
+ * @brief Remove an item from a deque, returning false if it was not in the deque, true otherwise.
+ * @tparam T    The type of the item
+ * @param list  The deque
+ * @param item  The item to remove
+ * @return      True if item was in list and got removed, false otherwise.
+ */
 template<typename T>
-std::deque<std::shared_ptr<T>>* remove(std::deque<std::shared_ptr<T>>* list, const std::shared_ptr<T>& item) {
+bool remove(std::deque<std::shared_ptr<T>>* list, const std::shared_ptr<T>& item) {
   auto it = std::find(std::begin(*list), std::end(*list), item);
   if (it != std::end(*list)) {
     list->erase(it);
+    return true;
+  } else {
+    return false;
   }
-  return list;
 }
 
 }  // namespace fletchgen

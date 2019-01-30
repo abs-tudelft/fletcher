@@ -25,7 +25,7 @@
 #include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
 
 #include "./types.h"
-#include "graphs.h"
+#include "./graphs.h"
 #include "./fletcher_types.h"
 
 namespace fletchgen {
@@ -88,4 +88,4 @@ struct FletcherCore : Component {
 std::shared_ptr<Component> BusReadArbiter();
 std::shared_ptr<Component> ColumnReader();
 
-}
+}  // namespace fletchgen
