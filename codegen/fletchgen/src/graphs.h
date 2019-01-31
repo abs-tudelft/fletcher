@@ -68,7 +68,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   virtual std::shared_ptr<Graph> Copy() const;
 
   /// @brief Get all nodes of a specific type.
-  std::deque<std::shared_ptr<Node>> GetAllNodesOfType(Node::ID id) const;
+  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
 
   /**
    * @brief Obtain all nodes of type T from the graph
@@ -76,7 +76,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
    * @return    A deque of nodes of type T
    */
   template<typename T>
-  std::deque<std::shared_ptr<T>> GetAllNodesOfType() const {
+  std::deque<std::shared_ptr<T>> GetNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
     for (const auto &n : nodes) {
       auto node = Cast<T>(n);

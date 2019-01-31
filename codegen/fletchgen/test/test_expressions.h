@@ -29,7 +29,7 @@ TEST(Expressions, Add) {
   auto b = Parameter::Make("b", string());
   auto c = Literal::Make(string(), "c");
   auto d = Parameter::Make("d", string());
-  auto e = litint<10>();
+  auto e = intl<10>();
 
   auto f = a+b-c*d/e+a*b-c/d+e;
 
@@ -42,8 +42,8 @@ TEST(Expressions, Add) {
 }
 
 TEST(Expressions, IntLits) {
-  auto z = litint<0>();
-  auto o = litint<1>();
+  auto z = intl<0>();
+  auto o = intl<1>();
 
   //auto g0 = z + z;
   //auto g1 = z + o;

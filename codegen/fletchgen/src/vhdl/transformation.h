@@ -31,6 +31,11 @@ struct Transformation {
    * @return        The transformed component
    */
   static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
+
+  /**
+   * @brief Resolves port and signals widths of nodes that have concatenated edges.
+   */
+  static std::shared_ptr<Component> PlaceConcatNodesParameters(std::shared_ptr<Component> comp);
 };
 
 }  // namespace vhdl

@@ -19,6 +19,7 @@
 #include <utility>
 #include <deque>
 #include <algorithm>
+#include <optional>
 
 namespace fletchgen {
 
@@ -33,15 +34,19 @@ struct Named {
 };
 
 template<typename T>
-bool contains(const std::deque<std::shared_ptr<T>>& list, const std::shared_ptr<T>& item) {
+bool contains(const std::deque<std::shared_ptr<T>> &list, const std::shared_ptr<T> &item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
 template<typename T>
-bool contains(const std::deque<T*>& list, T* item) {
+bool contains(const std::deque<T *> &list, const T *item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
+template<typename T>
+bool append(std::deque<const std::shared_ptr<T> &> *list_a, const std::deque<const std::shared_ptr<T> &> &list_b) {
+  return list_a->insert(list_a->begin(), list_b.begin(), list_b.end());
+}
 /**
  * @brief Remove an item from a deque, returning false if it was not in the deque, true otherwise.
  * @tparam T    The type of the item
@@ -50,7 +55,7 @@ bool contains(const std::deque<T*>& list, T* item) {
  * @return      True if item was in list and got removed, false otherwise.
  */
 template<typename T>
-bool remove(std::deque<std::shared_ptr<T>>* list, const std::shared_ptr<T>& item) {
+bool remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item) {
   auto it = std::find(std::begin(*list), std::end(*list), item);
   if (it != std::end(*list)) {
     list->erase(it);

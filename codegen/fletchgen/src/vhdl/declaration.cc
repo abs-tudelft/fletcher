@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "declaration.h"
+#include "./declaration.h"
 
 #include <memory>
 #include <string>
@@ -38,14 +38,15 @@ std::string Decl::Generate(const std::shared_ptr<Type> &type) {
     return "std_logic";
   } else if (type->Is(Type::VECTOR)) {
     auto vec = Cast<Vector>(type);
-    return "std_logic_vector(" + ToString(vec->width()) + "-1 downto 0)";
+    return "std_logic_vector(" + (*vec)->width()->ToString() + "-1 downto 0)";
   } else if (type->Is(Type::RECORD)) {
     auto r = Cast<Record>(type);
-    return r->name();
+    return (*r)->name();
   } else if (type->Is(Type::NATURAL)) {
     return "natural";
   } else if (type->Is(Type::STREAM)) {
-    return Generate(Cast<Stream>(type)->element_type());
+    auto stream = *Cast<Stream>(type);
+    return Generate(stream->element_type());
   } else if (type->Is(Type::STRING)) {
     return "string";
   } else if (type->Is(Type::BOOLEAN)) {
@@ -69,9 +70,9 @@ Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
 Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block ret(depth);
   auto fn = FlatNode(port);
-  for (const auto &tup : fn.tuples()) {
+  for (const auto &pair : fn.pairs()) {
     Line l;
-    l << std::get<0>(tup).ToString() << " : " << ToString(port->dir) + " " << Generate(std::get<1>(tup));
+    l << pair.first.ToString() << " : " << ToString(port->dir) + " " << Generate(pair.second);
     ret << l;
   }
   return ret;
@@ -80,9 +81,9 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
 Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   Block ret(depth);
   auto fn = FlatNode(sig);
-  for (const auto &tup : fn.tuples()) {
+  for (const auto &pair : fn.pairs()) {
     Line l;
-    l << "signal " + std::get<0>(tup).ToString() << " : " << Generate(std::get<1>(tup));
+    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second);
     ret << l;
   }
   return ret;
@@ -103,7 +104,7 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
   ret << h;
 
   // Generics
-  auto generics = comp->GetAllNodesOfType<Parameter>();
+  auto generics = comp->GetNodesOfType<Parameter>();
   if (!generics.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
@@ -124,7 +125,7 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
     gdf << gf;
     ret << gdh << gd << gdf;
   }
-  auto ports = comp->GetAllNodesOfType<Port>();
+  auto ports = comp->GetNodesOfType<Port>();
   if (!ports.empty()) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);

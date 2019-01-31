@@ -23,6 +23,11 @@
 namespace fletchgen {
 namespace vhdl {
 
+// VHDL specific type data
+
+/// @brief Obtain the width of a primitive, synthesizable type. If it is not primitive, returns a Literal 0 node
+std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type);
+
 // VHDL implementation specific types
 
 std::shared_ptr<Type> valid();

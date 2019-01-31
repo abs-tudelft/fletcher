@@ -18,6 +18,7 @@
 #include <deque>
 #include <string>
 #include <utility>
+#include <optional>
 
 #include "./utils.h"
 
@@ -28,7 +29,7 @@ class Node;
 struct Literal;
 
 template<int T>
-std::shared_ptr<Literal> litint();
+std::shared_ptr<Literal> intl();
 
 /**
  * @brief A type
@@ -36,12 +37,17 @@ std::shared_ptr<Literal> litint();
 class Type : public Named {
  public:
   enum ID {
+    // Synthesizable primitives
     CLOCK,
     RESET,
     BIT,
     VECTOR,
+
+    // Nested types
     RECORD,
     STREAM,
+
+    // Non-synthesizable types
     NATURAL,
     STRING,
     BOOLEAN
@@ -49,7 +55,8 @@ class Type : public Named {
   inline ID id() const { return id_; }
   explicit Type(std::string name, ID id);
   virtual ~Type() = default;
-  bool Is(ID type_id);
+  bool Is(ID type_id) const;
+  bool IsSynthPrim() const;
  private:
   ID id_;
 };
@@ -103,7 +110,7 @@ class Vector : public Type {
   std::shared_ptr<Node> width() const { return width_; }
   template<int T>
   static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<Vector>(name, litint<T>());
+    return std::make_shared<Vector>(name, intl<T>());
   }
  private:
   std::shared_ptr<Node> width_;
@@ -177,11 +184,18 @@ std::string ToString() {
 }
 
 template<typename T>
-std::shared_ptr<T> Cast(const std::shared_ptr<Type> &type) {
+std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   auto result = std::dynamic_pointer_cast<T>(type);
   if (result == nullptr) {
-    throw std::runtime_error("Could not cast type " + type->name() + " to " + ToString<T>());
+    //throw std::runtime_error("Could not cast type " + type->name() + " to " + ToString<T>());
+    return {};
   }
+  return result;
+}
+
+template<typename T>
+const T &Cast(const Type &type) {
+  auto result = dynamic_cast<T &>(type);
   return result;
 }
 

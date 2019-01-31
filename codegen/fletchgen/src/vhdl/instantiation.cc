@@ -22,17 +22,6 @@
 namespace fletchgen {
 namespace vhdl {
 
-static std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type) {
-  switch (type->id()) {
-    case Type::VECTOR:return Cast<Vector>(type)->width();
-    case Type::BIT:return litint<1>();
-    case Type::CLOCK:return litint<1>();
-    case Type::RESET:return litint<1>();
-    case Type::BOOLEAN:return litint<1>();
-    default:return litint<0>();
-  }
-}
-
 static std::shared_ptr<Node> GetOffsetOf(const std::shared_ptr<Edge> &edge,
                                          const std::shared_ptr<Node> &node,
                                          size_t tuple_index) {
@@ -42,13 +31,13 @@ static std::shared_ptr<Node> GetOffsetOf(const std::shared_ptr<Edge> &edge,
   auto edge_idx = Edge::GetIndexOf(edge, node);
 
   // Initial offset is 0
-  std::shared_ptr<Node> offset = litint<0>();
+  std::shared_ptr<Node> offset = intl<0>();
 
   for (size_t i = 0; i < edge_idx; i++) {
     // Check the siblings other side node width at the right tuple index
     auto fn = FlatNode(siblings[i]->GetOtherNode(node));
-    auto other_tuple = fn.GetTuple(i);
-    auto other_type = std::get<1>(other_tuple);
+    auto other_tuple = fn.pair(i);
+    auto other_type = other_tuple.second;
     offset = offset + GetWidth(other_type);
   }
 
@@ -72,47 +61,47 @@ Block Inst::Generate(const std::shared_ptr<Port> &lhs) {
       // Flatten right hand side node to VHDL objects
       auto fr = FlatNode(rhs);
 
-      std::shared_ptr<Node> lhs_off = litint<0>();
-      std::shared_ptr<Node> rhs_off = litint<0>();
+      std::shared_ptr<Node> lhs_off = intl<0>();
+      std::shared_ptr<Node> rhs_off = intl<0>();
 
       // Iterate over the flattened vhdl objects
       for (size_t i = 0; i < fl.size(); i++) {
         Line line;
         // LHS properties
-        auto lhs_tuple = fl.GetTuple(i);
-        auto lhs_tup_id = std::get<0>(lhs_tuple).ToString();
-        auto lhs_tup_width = GetWidth(std::get<1>(lhs_tuple));
+        auto lhs_pair = fl.pair(i);
+        auto lhs_pair_id = lhs_pair.first.ToString();
+        auto lhs_pair_width = GetWidth(lhs_pair.second);
 
-        line << lhs_tup_id;
+        line << lhs_pair_id;
 
         // Check if LHS indexing is applicable
         if (e->num_siblings(lhs) > 1) {
           line += "(";
-          line += (lhs_off + lhs_tup_width - litint<1>())->ToString();
+          line += (lhs_off + lhs_pair_width - intl<1>())->ToString();
           line += " downto ";
           line += lhs_off->ToString();
           line += ")";
-          lhs_off = (lhs_off + lhs_tup_width);
+          lhs_off = (lhs_off + lhs_pair_width);
         }
 
         line << " => ";
 
         // RHS properties
-        auto rhs_tuple = fr.GetTuple(i);
-        auto rhs_tup_id = std::get<0>(rhs_tuple).ToString();
-        auto rhs_tup_width = GetWidth(std::get<1>(rhs_tuple));
+        auto rhs_pair = fr.pair(i);
+        auto rhs_pair_id = rhs_pair.first.ToString();
+        auto rhs_pair_width = GetWidth(rhs_pair.second);
 
-        line << rhs_tup_id;
+        line << rhs_pair_id;
 
         // Check if RHS indexing is applicable
         if (e->num_siblings(rhs) > 1) {
           rhs_off = GetOffsetOf(e, rhs, i);
           line += "(";
-          line += (rhs_off + rhs_tup_width - litint<1>())->ToString();
+          line += (rhs_off + rhs_pair_width - intl<1>())->ToString();
           line += " downto ";
           line += rhs_off->ToString();
           line += ")";
-          rhs_off = (rhs_off + rhs_tup_width);
+          rhs_off = (rhs_off + rhs_pair_width);
         }
 
         ret << line;
@@ -144,7 +133,7 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
-    for (const auto &g : inst->GetAllNodesOfType<Parameter>()) {
+    for (const auto &g : inst->GetNodesOfType<Parameter>()) {
       gm << Generate(g);
     }
     gf << ")";
@@ -160,7 +149,7 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &p : inst->GetAllNodesOfType<Port>()) {
+    for (const auto &p : inst->GetNodesOfType<Port>()) {
       Block pm;
       pm << Generate(p);
       pmb << pm;

@@ -100,8 +100,10 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
                                     std::string name,
                                     int level) {
   std::stringstream str;
+  auto stream = Cast<Stream>(t);
+  auto rec = Cast<Record>(t);
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-  if (t->Is(Type::STREAM)) {
+  if (stream) {
     str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
     if (level == 0) {
       str << R"( PORT="cell")";
@@ -114,12 +116,11 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
     str << "</TD>";
     str << "<TD ";
     str << R"( BGCOLOR=")" + node.color.stream_child + R"(">)";
-    auto stream = Cast<Stream>(t);
-    str << GenHTMLTableCell(stream->element_type(), stream->element_name(), level + 1);
+    str << GenHTMLTableCell((*stream)->element_type(), (*stream)->element_name(), level + 1);
     str << "</TD>";
     str << "</TR>";
     str << "</TABLE>";
-  } else if (t->Is(Type::RECORD)) {
+  } else if (rec) {
     str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
     if (level == 0) {
       str << R"( PORT="cell")";
@@ -136,7 +137,7 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
     }
     str << R"( BGCOLOR=")" + node.color.record_child + R"(">)";
     str << R"(<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">)";
-    for (const auto &f : Cast<Record>(t)->fields()) {
+    for (const auto &f : (*rec)->fields()) {
       str << "<TR><TD>";
       str << GenHTMLTableCell(f->type(), f->name(), level + 1);
       str << "</TD></TR>";
@@ -146,6 +147,10 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
     str << "</TR></TABLE>";
   } else {
     str << name;
+    auto vec = Cast<Vector>(t);
+    if (vec) {
+      str << "[" + (*vec)->width()->ToString() + "]";
+    }
   }
   return str.str();
 }
@@ -155,24 +160,25 @@ std::string Style::GenDotRecordCell(const std::shared_ptr<Type> &t,
                                     int level) {
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-  if (t->Is(Type::STREAM)) {
-    auto stream = Cast<Stream>(t);
+  auto stream = Cast<Stream>(t);
+  auto rec = Cast<Record>(t);
+  if (stream) {
     if (level == 0) {
       str << "<cell>";
     }
     str << name;
     str << "|";
     str << "{";
-    str << GenDotRecordCell(stream->element_type(), stream->element_name(), level + 1);
+    str << GenDotRecordCell((*stream)->element_type(), (*stream)->element_name(), level + 1);
     str << "}";
-  } else if (t->Is(Type::RECORD)) {
+  } else if (rec) {
     if (level == 0) {
       str << "<cell>";
     }
     str << name;
     str << "|";
     str << "{";
-    auto record_fields = Cast<Record>(t)->fields();
+    auto record_fields = (*rec)->fields();
     for (const auto &f : record_fields) {
       str << GenDotRecordCell(f->type(), f->name(), level + 1);
       if (f != record_fields.back()) {
@@ -200,7 +206,7 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
 
 std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, int level, bool nogroup) {
   std::stringstream ret;
-  auto nodes = graph->GetAllNodesOfType(id);
+  auto nodes = graph->GetNodesOfType(id);
   if (!nodes.empty()) {
     if (!nogroup) {
       ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) + "_" + ToString(id) << " {\n";

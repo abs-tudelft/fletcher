@@ -49,7 +49,9 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Get a copy of this Node
   virtual std::shared_ptr<Node> Copy() const;
   /// @brief Return the node Type
-  std::shared_ptr<Type> type() const { return type_; }
+  inline std::shared_ptr<Type> type() const { return type_; }
+  /// @brief Change the node Type
+  inline void SetType(const std::shared_ptr<Type> &type) { type_ = type; }
 
   /// @brief Add an edge to this node as an input.
   void AddInput(std::shared_ptr<Edge> edge);
@@ -74,6 +76,9 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Return all outgoing edges.
   inline std::deque<std::shared_ptr<Edge>> outs() const { return outs_; }
 
+  // TODO(johanpel): come up with some normal name for this:
+  std::optional<std::deque<std::shared_ptr<Node>>> GetWidthDrivingNodes() const;
+
   /// @brief Return the node type ID
   inline ID id() const { return id_; }
   /// @brief Return whether this node is of a specific node type id.
@@ -96,7 +101,7 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Return a human-readable string
   virtual std::string ToString();
 
- private:
+ protected:
   /// @brief Node type ID.
   ID id_;
   /// @brief The Type of this Node.
@@ -166,6 +171,9 @@ struct Literal : public Node {
 
   /// @brief Construct a new Literal with a boolean storage type.
   Literal(std::string name, const std::shared_ptr<Type> &type, bool value);
+
+  /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
+  static std::shared_ptr<Literal> Make(int value);
 
   /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
   static std::shared_ptr<Literal> Make(const std::shared_ptr<Type> &type, std::string value);
@@ -258,7 +266,7 @@ struct Expression : Node {
                                           const std::shared_ptr<Node> &rhs);
 
   /// @brief Minimize a node, if it is an expression
-  static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node>& node);
+  static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node> &node);
 
   /// @brief Copy this expression.
   std::shared_ptr<Node> Copy() const override;
@@ -289,6 +297,22 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Node> &obj) {
   }
 }
 
+/**
+ * @brief Cast a Node to some (typically) less generic Node type T.
+ * @tparam T    The new Node type.
+ * @param obj   The Node to cast.
+ * @return      Optionally, the Node casted to T, if successful.
+ */
+template<typename T>
+std::optional<T *> Cast(Node *obj) {
+  auto result = std::dynamic_pointer_cast<T>(obj);
+  if (result != nullptr) {
+    return result;
+  } else {
+    return {};
+  }
+}
+
 /// @brief Convert a Node ID to a human-readable string.
 std::string ToString(Node::ID id);
 
@@ -299,7 +323,7 @@ std::string ToString(Node::ID id);
  * @return      A smart pointer to a literal node representing the value.
  */
 template<int V>
-std::shared_ptr<Literal> litint() {
+std::shared_ptr<Literal> intl() {
   static std::shared_ptr<Literal> result = std::make_shared<Literal>("lit_" + std::to_string(V), integer(), V);
   return result;
 }
@@ -309,15 +333,12 @@ std::shared_ptr<Literal> litint() {
  * @param str   The string value.
  * @return      A smart pointer to a literal node representing the string.
  */
-std::shared_ptr<Literal> litstr(std::string str);
+std::shared_ptr<Literal> strl(std::string str);
 
 /// @brief Return a literal node representing a Boolean true.
 std::shared_ptr<Literal> bool_true();
 
 /// @brief Return a literal node representing a Boolean false.
 std::shared_ptr<Literal> bool_false();
-
-/// @brief Return a human-readable string with information about the node.
-std::string ToString(const std::shared_ptr<Node> &node);
 
 }  // namespace fletchgen

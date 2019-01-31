@@ -21,6 +21,7 @@
 #include <iomanip>
 
 #include "../nodes.h"
+#include "../edges.h"
 
 #include "./vhdl_types.h"
 
@@ -37,7 +38,6 @@ std::string FlatNode::ToString() const {
   return ret.str();
 }
 
-
 FlatNode::FlatNode(std::shared_ptr<Node> node) : node_(std::move(node)) {
   // Obtain the top-level node name and create an identifier
   Identifier top;
@@ -53,26 +53,41 @@ void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Record> &
 }
 
 void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Stream> &stream) {
-  // Put valid and ready signal
-  tuples_.emplace_back(prefix + "valid", valid());
-  tuples_.emplace_back(prefix + "ready", ready());
+  // Determine the width of the handshake signals
+  // Default is the basic types for them:
+  std::shared_ptr<Type> v;
+  std::shared_ptr<Type> r;
+  // Determine the handshake width. Get the max of outgoing or incoming edges.
+  auto hw = std::max(node_->num_ins(), node_->num_outs());
+  if (hw > 1) {
+    v = Vector::Make("valid" + std::to_string(hw), Literal::Make(hw));
+    r = Vector::Make("valid" + std::to_string(hw), Literal::Make(hw));
+  } else {
+    v = valid();
+    r = ready();
+  }
+
+  // Append the tuples to the list
+  tuples_.emplace_back(prefix + "valid", v);
+  tuples_.emplace_back(prefix + "ready", r);
 
   // Insert element type
   Flatten(prefix + stream->element_name(), stream->element_type());
 }
 
 void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Type> &type) {
-  if (type->Is(Type::RECORD)) {
-    Flatten(prefix, Cast<Record>(type));
-  } else if (type->Is(Type::STREAM)) {
-    Flatten(prefix, Cast<Stream>(type));
+  auto stream = Cast<Stream>(type);
+  auto rec = Cast<Record>(type);
+  if (rec) {
+    Flatten(prefix, *rec);
+  } else if (stream) {
+    Flatten(prefix, *stream);
   } else {
-    // Not nested types
     tuples_.emplace_back(prefix, type);
   }
 }
 
-std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> FlatNode::tuples() {
+std::deque<std::pair<Identifier, std::shared_ptr<Type>>> FlatNode::pairs() const {
   return tuples_;
 }
 
@@ -80,8 +95,17 @@ size_t FlatNode::size() {
   return tuples_.size();
 }
 
-std::tuple<Identifier, std::shared_ptr<Type>> FlatNode::GetTuple(size_t i) {
+std::pair<Identifier, std::shared_ptr<Type>> FlatNode::pair(size_t i) const {
   return tuples_[i];
+}
+
+std::shared_ptr<Node> WidthOf(const FlatNode &a, const std::deque<FlatNode> &others, size_t tuple_index) {
+  std::shared_ptr<Node> width = intl<0>();
+  for (const auto &other : others) {
+    auto other_width = GetWidth(other.pair(tuple_index).second);
+    width = width + other_width;
+  }
+  return width;
 }
 
 }  // namespace vhdl

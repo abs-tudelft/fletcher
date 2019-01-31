@@ -16,8 +16,8 @@
 
 #include <memory>
 #include <deque>
-#include <tuple>
 #include <string>
+#include <utility>
 
 #include "../nodes.h"
 
@@ -30,8 +30,8 @@ namespace vhdl {
 struct FlatNode {
   /// @brief The Node from which this structure is derived.
   const std::shared_ptr<Node> node_;
-  /// @brief An (Identifier, Type) tuple.
-  std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> tuples_;
+  /// @brief An (Identifier, Type) pair.
+  std::deque<std::pair<Identifier, std::shared_ptr<Type>>> tuples_;
   /// @brief FlatNode constructor
   explicit FlatNode(std::shared_ptr<Node> node);
 
@@ -47,14 +47,16 @@ struct FlatNode {
   std::string ToString() const;
 
   /// @brief Get all tuples of this FlatNode
-  std::deque<std::tuple<Identifier, std::shared_ptr<Type>>> tuples();
+  std::deque<std::pair<Identifier, std::shared_ptr<Type>>> pairs() const;
 
   /// @brief Get tuple i of this FlatNode
-  std::tuple<Identifier, std::shared_ptr<Type>> GetTuple(size_t i);
+  std::pair<Identifier, std::shared_ptr<Type>> pair(size_t i) const;
 
   /// @brief Get the number of tuples of this FlatNode
   size_t size();
 };
+
+std::shared_ptr<Node> WidthOf(const FlatNode &a, const std::deque<FlatNode> &others, size_t tuple_index);
 
 }  // namespace vhdl
 }  // namespace fletchgen

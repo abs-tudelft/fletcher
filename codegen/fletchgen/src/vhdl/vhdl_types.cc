@@ -61,13 +61,24 @@ bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b
   // Not compatible if the type ids of flat view is different
   // TODO(johanpel): is this really necessary?
   for (size_t i = 0; i < fa.size(); i++) {
-    if (std::get<1>(fa.GetTuple(i))->id() != std::get<1>(fb.GetTuple(i))->id()) {
+    if (std::get<1>(fa.pair(i))->id() != std::get<1>(fb.pair(i))->id()) {
       return false;
     }
   }
 
   // Otherwise, it is compatible
   return true;
+}
+
+std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type) {
+  switch (type->id()) {
+    case Type::VECTOR:return (*Cast<Vector>(type))->width();
+    case Type::BIT:return intl<1>();
+    case Type::CLOCK:return intl<1>();
+    case Type::RESET:return intl<1>();
+    case Type::BOOLEAN:return intl<1>();
+    default:return intl<0>();
+  }
 }
 
 }  // namespace vhdl

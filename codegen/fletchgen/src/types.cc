@@ -21,18 +21,22 @@
 
 namespace fletchgen {
 
-bool Type::Is(Type::ID type_id) {
+bool Type::Is(Type::ID type_id) const {
   return type_id == id_;
 }
 
 Type::Type(std::string name, Type::ID id)
     : Named(std::move(name)), id_(id) {}
 
+bool Type::IsSynthPrim() const {
+  return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
+}
+
 Vector::Vector(std::string name, std::shared_ptr<Node> width)
     : Type(std::move(name), Type::VECTOR) {
   // Check if width is parameter or literal node
-  if (!(width->IsParameter() || width->IsLiteral())) {
-    throw std::runtime_error("Vector width can only be parameter or literal node.");
+  if (!(width->IsParameter() || width->IsLiteral() || width->IsExpression())) {
+    throw std::runtime_error("Vector width can only be Parameter, Literal or Expression node.");
   } else {
     width_ = std::move(width);
   }
@@ -65,14 +69,15 @@ Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type,
 
 std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type) {
   std::deque<std::shared_ptr<Type>> ret;
-  if (type->Is(Type::STREAM)) {
+  auto st = Cast<Stream>(type);
+  auto rt = Cast<Record>(type);
+  if (st) {
     ret.push_back(type);
-    auto dt = Cast<Stream>(type)->element_type();
+    auto dt = (*st)->element_type();
     auto children = FlattenStreams(dt);
     ret.insert(ret.end(), children.begin(), children.end());
-  } else if (type->Is(Type::RECORD)) {
-    auto rdt = Cast<Record>(type);
-    for (const auto &rf : rdt->fields()) {
+  } else if (rt) {
+    for (const auto &rf : (*rt)->fields()) {
       auto children = FlattenStreams(rf->type());
       ret.insert(ret.end(), children.begin(), children.end());
     }
@@ -159,7 +164,7 @@ std::shared_ptr<Bit> Bit::Make(std::string name) {
 RecordField::RecordField(std::string name, std::shared_ptr<Type> type)
     : Named(std::move(name)), type_(std::move(type)) {}
 
-    std::shared_ptr<RecordField> RecordField::Make(std::string name, std::shared_ptr<Type> type) {
+std::shared_ptr<RecordField> RecordField::Make(std::string name, std::shared_ptr<Type> type) {
   return std::make_shared<RecordField>(name, type);
 }
 

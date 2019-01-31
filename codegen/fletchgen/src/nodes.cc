@@ -22,6 +22,7 @@
 
 #include "./utils.h"
 #include "./edges.h"
+#include "nodes.h"
 
 namespace fletchgen {
 
@@ -96,6 +97,22 @@ Node &Node::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   return *this;
 }
 
+std::optional<std::deque<std::shared_ptr<Node>>> Node::GetWidthDrivingNodes() const {
+  std::deque<std::shared_ptr<Node>> ret;
+  if (num_ins() > num_outs()) {
+    for (const auto &e : ins()) {
+      ret.push_back(e->src);
+    }
+  } else if (num_ins() < num_outs()) {
+    for (const auto &e : outs()) {
+      ret.push_back(e->dst);
+    }
+  } else {
+    return {};
+  }
+  return ret;
+}
+
 std::string Literal::ToString() {
   if (storage_type_ == BOOL) {
     return std::to_string(bool_val_);
@@ -135,8 +152,12 @@ std::shared_ptr<Node> Literal::Copy() const {
   auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
   return ret;
 }
+std::shared_ptr<Literal> Literal::Make(int value) {
+  auto ret = std::make_shared<Literal>("int" + std::to_string(value), integer(), value);
+  return ret;
+}
 
-std::shared_ptr<Literal> litstr(std::string str) {
+std::shared_ptr<Literal> strl(std::string str) {
   auto result = Literal::Make(string(), std::move(str));
   return result;
 }
@@ -204,18 +225,6 @@ std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
   return ret;
 }
 
-std::string ToString(const std::shared_ptr<Node> &node) {
-  if (node->IsLiteral()) {
-    auto x = *Cast<Literal>(node);
-    return x->ToString();
-  } else if (node->IsParameter()) {
-    auto x = *Cast<Parameter>(node);
-    return x->name();
-  } else {
-    return node->name();
-  }
-}
-
 std::shared_ptr<Expression> Expression::Make(Expression::Operation op,
                                              const std::shared_ptr<Node> &lhs,
                                              const std::shared_ptr<Node> &rhs) {
@@ -268,26 +277,26 @@ static std::shared_ptr<Node> EliminateZeroOne(std::shared_ptr<Node> node) {
     auto ret = Expression::Make(exp->operation, Expression::Minimize(exp->lhs), Expression::Minimize(exp->rhs));
     switch (ret->operation) {
       case Expression::ADD: {
-        if (ret->lhs == litint<0>()) return ret->rhs;
-        if (ret->rhs == litint<0>()) return ret->lhs;
+        if (ret->lhs == intl<0>()) return ret->rhs;
+        if (ret->rhs == intl<0>()) return ret->lhs;
         break;
       }
       case Expression::SUB: {
-        if (ret->lhs == litint<0>()) return node;
-        if (ret->rhs == litint<0>()) return ret->lhs;
+        if (ret->lhs == intl<0>()) return node;
+        if (ret->rhs == intl<0>()) return ret->lhs;
         break;
       }
       case Expression::MUL: {
-        if (ret->lhs == litint<0>()) return litint<0>();
-        if (ret->rhs == litint<0>()) return litint<0>();
-        if (ret->lhs == litint<1>()) return ret->rhs;
-        if (ret->rhs == litint<1>()) return ret->lhs;
+        if (ret->lhs == intl<0>()) return intl<0>();
+        if (ret->rhs == intl<0>()) return intl<0>();
+        if (ret->lhs == intl<1>()) return ret->rhs;
+        if (ret->rhs == intl<1>()) return ret->lhs;
         break;
       }
       case Expression::DIV: {
-        if (ret->lhs == litint<0>()) return litint<0>();
-        if (ret->rhs == litint<0>()) throw std::runtime_error("Division by 0.");
-        if (ret->rhs == litint<1>()) return ret->lhs;
+        if (ret->lhs == intl<0>()) return intl<0>();
+        if (ret->rhs == intl<0>()) throw std::runtime_error("Division by 0.");
+        if (ret->rhs == intl<1>()) return ret->lhs;
         break;
       }
     }
@@ -296,7 +305,7 @@ static std::shared_ptr<Node> EliminateZeroOne(std::shared_ptr<Node> node) {
   return node;
 }
 
-std::shared_ptr<Node> Expression::Minimize(const std::shared_ptr<Node>& node) {
+std::shared_ptr<Node> Expression::Minimize(const std::shared_ptr<Node> &node) {
   // TODO(johanpel): put some more elaborate minimization function/rules etc.. here
   auto min = EliminateZeroOne(node);
   min = MergeIfIntLiterals(min);

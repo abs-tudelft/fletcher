@@ -30,7 +30,7 @@ namespace fletchgen {
 
 #define VEC_FACTORY(NAME, WIDTH)                                      \
   std::shared_ptr<Type> NAME() {                                      \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, litint<WIDTH>()); \
+    static std::shared_ptr<Type> result = Vector::Make(#NAME, intl<WIDTH>()); \
     return result;                                                    \
 }
 

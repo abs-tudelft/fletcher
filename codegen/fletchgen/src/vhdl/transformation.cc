@@ -15,25 +15,29 @@
 #include "./transformation.h"
 
 #include <memory>
+#include <deque>
+#include <string>
 
 #include "../types.h"
 #include "../graphs.h"
 #include "../edges.h"
 
+#include "./flatnode.h"
+
 namespace fletchgen {
 namespace vhdl {
 
 std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
-  std::deque<std::shared_ptr<Node>> resolved;
+  std::deque<Node*> resolved;
   for (const auto &inst : comp->GetAllInstances()) {
-    for (const auto &port : inst->GetAllNodesOfType<Port>()) {
+    for (const auto &port : inst->GetNodesOfType<Port>()) {
       for (const auto &edge : port->edges()) {
         // Both sides of the edge must be a port
         if (edge->src->IsPort() && edge->dst->IsPort()) {
           // Either of the ports cannot be on the component itself. Component port to instance port edges are allowed.
           if ((edge->src->parent() != comp.get()) && (edge->dst->parent() != comp.get())) {
             // Only resolve if not already resolved
-            if (!contains(resolved, edge->src) && !contains(resolved, edge->dst)) {
+            if (!contains(resolved, edge->src.get()) && !contains(resolved, edge->dst.get())) {
               // Insert a signal in between
               std::string prefix;
               if (edge->dst->parent()) {
@@ -45,8 +49,8 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
               // Add the signal to the component
               comp->AddNode(sig);
               // Remember we've touched these nodes already
-              resolved.push_back(edge->src);
-              resolved.push_back(edge->dst);
+              resolved.push_back(edge->src.get());
+              resolved.push_back(edge->dst.get());
             }
           }
         }
@@ -54,6 +58,14 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
     }
   }
   return comp;
+}
+
+std::shared_ptr<Component> Transformation::PlaceConcatNodesParameters(std::shared_ptr<Component> comp) {
+  std::deque<Node*> resolved;
+  for (const auto &inst : comp->GetAllInstances()) {
+    for (const auto & p : inst->GetNodesOfType<Port>()) {
+    }
+  }
 }
 
 }  // namespace vhdl

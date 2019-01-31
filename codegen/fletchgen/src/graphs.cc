@@ -95,7 +95,7 @@ std::shared_ptr<Graph> Graph::Copy() const {
   return ret;
 }
 
-std::deque<std::shared_ptr<Node>> Graph::GetAllNodesOfType(Node::ID id) const {
+std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : nodes) {
     if (n->Is(id)) {
@@ -116,10 +116,10 @@ std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
   // Make copies of ports and parameters
-  for (const auto &port : component->GetAllNodesOfType<Port>()) {
+  for (const auto &port : component->GetNodesOfType<Port>()) {
     AddNode(port->Copy());
   }
-  for (const auto &par : component->GetAllNodesOfType<Parameter>()) {
+  for (const auto &par : component->GetNodesOfType<Parameter>()) {
     AddNode(par->Copy());
   }
 }
