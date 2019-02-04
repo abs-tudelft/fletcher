@@ -53,6 +53,12 @@ std::shared_ptr<ClockDomain> acc_domain();
 /// @brief Fletcher bus clock domain
 std::shared_ptr<ClockDomain> bus_domain();
 
+/// @brief Fletcher dvalid
+std::shared_ptr<Type> dvalid();
+
+/// @brief Fletcher last
+std::shared_ptr<Type> last();
+
 /// @brief Fletcher accelerator clock
 std::shared_ptr<Type> acc_clk();
 

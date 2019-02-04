@@ -22,50 +22,50 @@
 #include "../graphs.h"
 #include "../edges.h"
 
-#include "./flatnode.h"
-
 namespace fletchgen {
 namespace vhdl {
 
 std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
-  std::deque<Node*> resolved;
+  std::deque<Node *> resolved;
   for (const auto &inst : comp->GetAllInstances()) {
     for (const auto &port : inst->GetNodesOfType<Port>()) {
-      for (const auto &edge : port->edges()) {
-        // Both sides of the edge must be a port
-        if (edge->src->IsPort() && edge->dst->IsPort()) {
-          // Either of the ports cannot be on the component itself. Component port to instance port edges are allowed.
-          if ((edge->src->parent() != comp.get()) && (edge->dst->parent() != comp.get())) {
-            // Only resolve if not already resolved
-            if (!contains(resolved, edge->src.get()) && !contains(resolved, edge->dst.get())) {
-              // Insert a signal in between
-              std::string prefix;
-              if (edge->dst->parent()) {
-                prefix = (*edge->dst->parent())->name() + "_";
-              } else if (edge->src->parent()) {
-                prefix = (*edge->src->parent())->name() + "_";
-              }
-              auto sig = insert(edge, prefix);
-              // Add the signal to the component
-              comp->AddNode(sig);
-              // Remember we've touched these nodes already
-              resolved.push_back(edge->src.get());
-              resolved.push_back(edge->dst.get());
-            }
-          }
+      for (const auto &edge : port->outputs()) {
+        // If the edge is not complete, continue.
+        if (!edge->IsComplete()) {
+          continue;
         }
+        // If either side is not a port, continue.
+        if (!(*edge->src)->IsPort() || !(*edge->dst)->IsPort()) {
+          continue;
+        }
+        // If both sides of the edges are a port node on this component, continue.
+        if (((*edge->src)->parent() == comp.get()) && ((*edge->dst)->parent() == comp.get())) {
+          continue;
+        }
+        // If the destination is already resolved, continue.
+        if (contains(resolved, (*edge->dst).get())) {
+          continue;
+        }
+        // Dealing with two port nodes that are not on the component itself. VHDL cannot handle port-to-port connections
+        // of instances. Insert a signal in between and add it to the component.
+        std::string prefix;
+        if ((*edge->dst)->parent()) {
+          prefix = (*(*edge->dst)->parent())->name() + "_";
+        } else if ((*edge->src)->parent()) {
+          prefix = (*(*edge->src)->parent())->name() + "_";
+        }
+        auto sig = insert(edge, prefix);
+        // Add the signal to the component
+        comp->AddNode(sig);
+        // Remember we've touched these nodes already
+        resolved.push_back((*edge->src).get());
+        resolved.push_back((*edge->dst).get());
       }
+
     }
+
   }
   return comp;
-}
-
-std::shared_ptr<Component> Transformation::PlaceConcatNodesParameters(std::shared_ptr<Component> comp) {
-  std::deque<Node*> resolved;
-  for (const auto &inst : comp->GetAllInstances()) {
-    for (const auto & p : inst->GetNodesOfType<Port>()) {
-    }
-  }
 }
 
 }  // namespace vhdl

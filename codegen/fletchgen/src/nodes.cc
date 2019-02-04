@@ -22,19 +22,11 @@
 
 #include "./utils.h"
 #include "./edges.h"
-#include "nodes.h"
 
 namespace fletchgen {
 
-std::deque<std::shared_ptr<Edge>> Node::edges() const {
-  std::deque<std::shared_ptr<Edge>> ret;
-  for (const auto &e : ins_) {
-    ret.push_back(e);
-  }
-  for (const auto &e : outs_) {
-    ret.push_back(e);
-  }
-  return ret;
+std::deque<std::shared_ptr<Edge>> Node::outputs() const {
+  return outputs_;
 }
 
 Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
@@ -49,34 +41,35 @@ std::string Node::ToString() {
   return name();
 }
 
-void Node::AddInput(std::shared_ptr<Edge> edge) {
-  // TODO(johanpel): implement more sanity checks
-  // Check if the edge destination is this node
-  if (edge->dst == shared_from_this()) {
-    ins_.push_back(edge);
-  } else if (edge->dst == nullptr) {
-    // There is no destination set, make this node the destination
+void Node::SetInput(std::shared_ptr<Edge> edge) {
+  // Check if the edge has no destination yet
+  if (!edge->dst) {
+    // Set this node as its destination
     edge->dst = shared_from_this();
-    ins_.push_back(edge);
-  } else {
-    throw std::runtime_error("Cannot add edge as input to node " + name()
-                                 + ". Edge has other destination: " + edge->dst->name());
+  } else if ((*edge->dst).get() != this) {
+    // The edge had a destination but it was not this node. Throw an error.
+    throw std::runtime_error("Cannot add edge as driver to node " + name()
+                                 + ". Edge already has other destination: " + (*edge->dst)->name());
   }
+  // Check if this node already had some source
+  if (input_ != nullptr) {
+    // Invalidate the destination on that edge.
+    input_->dst = {};
+  }
+  // Set this node source to the edge.
+  input_ = edge;
 }
 
 void Node::AddOutput(std::shared_ptr<Edge> edge) {
-  // TODO(johanpel): implement more sanity checks
-  // Check if the edge destination is this node
-  if (edge->src == shared_from_this()) {
-    outs_.push_back(edge);
-  } else if (edge->src == nullptr) {
-    // There is no destination set, make this node the destination
+  // Check if this edge has a source
+  if (!edge->src) {
+    // It has no source, make the source this node.
     edge->src = shared_from_this();
-    outs_.push_back(edge);
-  } else {
+  } else if ((*edge->src).get() != this) {
     throw std::runtime_error("Cannot add edge as output of node " + name()
-                                 + ". Edge has other source: " + edge->src->name());
+                                 + ". Edge has other source: " + (*edge->src)->name());
   }
+  outputs_.push_back(edge);
 }
 
 void Node::SetParent(const Graph *parent) {
@@ -85,32 +78,37 @@ void Node::SetParent(const Graph *parent) {
 
 Node &Node::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   bool success = false;
-  if (edge->src == shared_from_this()) {
-    success = remove(&outs_, edge);
-  } else if (edge->dst == shared_from_this()) {
-    success = remove(&ins_, edge);
+  if (edge->src) {
+    if ((*edge->src).get() == this) {
+      // This node sources the edge.
+      // Remove it from the sinks.
+      success = remove(&outputs_, edge);
+      if (success) {
+        edge->src = {};
+      }
+    }
+  } else if (edge->dst) {
+    if ((*edge->dst).get() == this) {
+      input_ = nullptr;
+      edge->dst = {};
+      success = true;
+    }
   }
   if (!success) {
     throw std::runtime_error("Edge " + edge->name() + " could not be removed from " + name()
-                                 + " because it was neither input or output.");
+                                 + " because it was neither source nor sink.");
   }
   return *this;
 }
 
-std::optional<std::deque<std::shared_ptr<Node>>> Node::GetWidthDrivingNodes() const {
-  std::deque<std::shared_ptr<Node>> ret;
-  if (num_ins() > num_outs()) {
-    for (const auto &e : ins()) {
-      ret.push_back(e->src);
+
+std::optional<std::shared_ptr<Node>> Node::input() {
+  if (input_ != nullptr) {
+    if (input_->src) {
+      return input_->src;
     }
-  } else if (num_ins() < num_outs()) {
-    for (const auto &e : outs()) {
-      ret.push_back(e->dst);
-    }
-  } else {
-    return {};
   }
-  return ret;
+  return {};
 }
 
 std::string Literal::ToString() {
@@ -139,13 +137,22 @@ std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<T
   return std::make_shared<Literal>(name, type, value);
 }
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type, std::string
+                 value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type,
+                 int value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type,
+                 bool value)
     : Node(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
@@ -194,7 +201,10 @@ std::shared_ptr<Node> Port::Copy() const {
   return std::make_shared<Port>(name(), type(), dir);
 }
 
-Port::Port(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
+Port::Port(std::string
+           name, std::shared_ptr<Type>
+           type, Port::Dir
+           dir)
     : Node(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
@@ -207,12 +217,15 @@ std::shared_ptr<Parameter> Parameter::Make(std::string name,
   return std::make_shared<Parameter>(name, type, default_value);
 }
 
-Parameter::Parameter(std::string name,
+Parameter::Parameter(std::string
+                     name,
                      const std::shared_ptr<Type> &type,
                      std::optional<std::shared_ptr<Literal>> default_value)
     : Node(std::move(name), Node::PARAMETER, type), default_value(std::move(default_value)) {}
 
-Signal::Signal(std::string name, std::shared_ptr<Type> type)
+Signal::Signal(std::string
+               name, std::shared_ptr<Type>
+               type)
     : Node(std::move(name), Node::SIGNAL, std::move(type)) {}
 
 std::shared_ptr<Signal> Signal::Make(std::string name, const std::shared_ptr<Type> &type) {
@@ -231,7 +244,10 @@ std::shared_ptr<Expression> Expression::Make(Expression::Operation op,
   return std::make_shared<Expression>(op, lhs, rhs);
 }
 
-Expression::Expression(Expression::Operation op, const std::shared_ptr<Node> &left, const std::shared_ptr<Node> &right)
+Expression::Expression(Expression::Operation
+                       op,
+                       const std::shared_ptr<Node> &left,
+                       const std::shared_ptr<Node> &right)
     : Node(::fletchgen::ToString(op), EXPRESSION, string()),
       operation(op), lhs(left), rhs(right) {}
 
@@ -256,12 +272,25 @@ static std::shared_ptr<Node> MergeIfIntLiterals(std::shared_ptr<Node> node) {
     if (ret->lhs->IsLiteral() && ret->rhs->IsLiteral()) {
       auto ll = *Cast<Literal>(ret->lhs);
       auto lr = *Cast<Literal>(ret->rhs);
-      if ((ll->storage_type_ == Literal::INT) && (lr->storage_type_ == Literal::INT) && (ll->type() == lr->type())) {
+      if ((ll->storage_type_ == Literal::INT) && (lr->storage_type_ == Literal::INT)
+          && (ll->type() == lr->type())) {
         switch (exp->operation) {
-          case Expression::ADD: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ + lr->int_val_);
-          case Expression::SUB: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ - lr->int_val_);
-          case Expression::MUL: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ * lr->int_val_);
-          case Expression::DIV: return Literal::Make(ll->name() + lr->name(), ll->type(), ll->int_val_ / lr->int_val_);
+          case Expression::ADD:
+            return Literal::Make(ll->name() + lr->name(),
+                                 ll->type(),
+                                 ll->int_val_ + lr->int_val_);
+          case Expression::SUB:
+            return Literal::Make(ll->name() + lr->name(),
+                                 ll->type(),
+                                 ll->int_val_ - lr->int_val_);
+          case Expression::MUL:
+            return Literal::Make(ll->name() + lr->name(),
+                                 ll->type(),
+                                 ll->int_val_ * lr->int_val_);
+          case Expression::DIV:
+            return Literal::Make(ll->name() + lr->name(),
+                                 ll->type(),
+                                 ll->int_val_ / lr->int_val_);
         }
       }
       return ret;

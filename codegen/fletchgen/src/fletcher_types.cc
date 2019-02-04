@@ -28,10 +28,10 @@ namespace fletchgen {
     return result;                                                      \
 }
 
-#define VEC_FACTORY(NAME, WIDTH)                                      \
-  std::shared_ptr<Type> NAME() {                                      \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, intl<WIDTH>()); \
-    return result;                                                    \
+#define VEC_FACTORY(NAME, WIDTH)                                                     \
+  std::shared_ptr<Type> NAME() {                                                     \
+    static std::shared_ptr<Type> result = Vector::Make(#NAME, bit(), intl<WIDTH>()); \
+    return result;                                                                   \
 }
 
 BIT_FACTORY(null);
@@ -83,6 +83,18 @@ std::shared_ptr<Type> bus_clk() {
 
 std::shared_ptr<Type> bus_reset() {
   static std::shared_ptr<Type> result = std::make_shared<Reset>("bus_reset", acc_domain());
+  return result;
+}
+
+// Data channel
+
+std::shared_ptr<Type> dvalid() {
+  static std::shared_ptr<Type> result = std::make_shared<Bit>("dvalid");
+  return result;
+}
+
+std::shared_ptr<Type> last() {
+  static std::shared_ptr<Type> result = std::make_shared<Bit>("last");
   return result;
 }
 
@@ -138,10 +150,10 @@ std::shared_ptr<Type> unlock() {
 }
 
 std::shared_ptr<Type> read_data() {
-  static std::shared_ptr<RecordField> data = RecordField::Make(Vector::Make<64>("data"));
-  static std::shared_ptr<RecordField> dvalid = RecordField::Make(Vector::Make<64>("dvalid"));
-  static std::shared_ptr<RecordField> last = RecordField::Make("last", bit());
-  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {data, dvalid, last});
+  static std::shared_ptr<RecordField> d = RecordField::Make(Vector::Make("data", {}));
+  static std::shared_ptr<RecordField> dv = RecordField::Make(dvalid());
+  static std::shared_ptr<RecordField> l = RecordField::Make("last", bit());
+  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {d, dv, l});
   static std::shared_ptr<Type> data_stream = Stream::Make("data:stream", data_record);
   return data_stream;
 }
@@ -168,8 +180,7 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
     case arrow::Type::HALF_FLOAT: return float16();
     case arrow::Type::FLOAT: return float32();
     case arrow::Type::DOUBLE: return float64();
-    default:
-      throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
+    default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
   }
 }
 

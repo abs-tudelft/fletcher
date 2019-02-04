@@ -12,27 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <memory>
-
-#include <arrow/api.h>
-#include <arrow/builder.h>
-#include <arrow/record_batch.h>
+#pragma once
 
 #include <gtest/gtest.h>
 
-#include "./vhdl/test_declarators.h"
-#include "./vhdl/test_instantiators.h"
+#include <string>
+#include <fstream>
 
-#include "./dot/test_graphs.h"
+#include "../src/types.h"
 
-#include "./fletcher/test_fletcher.h"
+namespace fletchgen {
 
-#include "./test_expressions.h"
-#include "./test_types.h"
+TEST(Types, Flatten) {
+  auto a = bit();
+  auto b = Vector::Make<8>();
+  auto c = Stream::Make(b);
 
-int main(int argc, char **argv) {
+  auto d = Record::Make("inner", {RecordField::Make("x", a),
+                                  RecordField::Make("y", b),
+                                  RecordField::Make("z", c)});
+  auto e = Stream::Make(c);
+  auto f = Record::Make("outer", {RecordField::Make("q", d),
+                                  RecordField::Make("r", e)});
 
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  auto flat = Flatten(f);
+  std::cout << ToString(flat);
+
 }
+
+}  // namespace fletchgen

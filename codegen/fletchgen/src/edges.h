@@ -22,16 +22,18 @@
 #include <deque>
 
 #include "./utils.h"
-#include "nodes.h"
+#include "./nodes.h"
 
 namespace fletchgen {
 
 /// @brief A directed edge between two nodes
 struct Edge : public Named {
   /// @brief Destination node
-  std::shared_ptr<Node> dst;
+  std::optional<std::shared_ptr<Node>> dst;
   /// @brief Source node
-  std::shared_ptr<Node> src;
+  std::optional<std::shared_ptr<Node>> src;
+  /// @brief Return true if edge has both source and destination, false otherwise.
+  inline bool IsComplete() { return dst && src; }
 
   /**
    * @brief Construct a new edge.
@@ -50,24 +52,12 @@ struct Edge : public Named {
   /// @brief Get the node opposite to the other edge node.
   std::shared_ptr<Node> GetOtherNode(const std::shared_ptr<Node> &node);
 
-  /// @brief Get all sibling edges at some node
-  std::deque<std::shared_ptr<Edge>> GetAllSiblings(const std::shared_ptr<Node> &node) const;
-
-  /// @brief Return true if a node has any siblings, false otherwise.
-  bool HasSiblings(const std::shared_ptr<Node> &node) const;
-
-  /// @brief Returns the number of sibling edges at a node.
-  size_t num_siblings(const std::shared_ptr<Node> &node) const;
-
   /**
    * @brief Check if an edge is an edge on a node.
    * @param edge    The edge.
    * @param node    The node.
    */
   static void CheckEdgeOfNode(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);
-
-  /// @brief Get the index of an edge on some node.
-  static size_t GetIndexOf(const std::shared_ptr<Edge> &edge, const std::shared_ptr<Node> &node);
 };
 
 /**

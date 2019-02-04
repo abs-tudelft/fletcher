@@ -110,7 +110,12 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: binary type has a length stream and bytes stream.
       // The EPC is assumed to relate to the list elements,
       // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream", byte(), "data", epc);
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", byte()),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
       type = Record::Make(name + ":binary", {
           RecordField::Make("length", length()),
           RecordField::Make("bytes", slave)
@@ -122,7 +127,12 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: string type has a length stream and utf8 character stream.
       // The EPC is assumed to relate to the list elements,
       // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream", utf8c(), "data", epc);
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", utf8c()),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
       type = Record::Make(name + ":string", {
           RecordField::Make("length", length()),
           RecordField::Make("chars", slave)
@@ -138,7 +148,12 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       auto arrow_child = field->type()->child(0);
       auto element_type = GetStreamType(arrow_child, level + 1);
-      auto slave = Stream::Make(arrow_child->name() + ":stream", element_type, "data");
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", element_type),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
       type = Record::Make(name + ":list", {
           RecordField::Make(length()),
           RecordField::Make(arrow_child->name(), slave)
@@ -172,11 +187,15 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
     // Element name is empty by default.
     std::string elements_name;
     // Check if the type is nested. If it is not nested, the give the elements the name "data"
-    if (!IsNested(type)) {
+    if (!type->IsNested()) {
       elements_name = "data";
     }
-    // Create the stream
-    auto stream = Stream::Make(name + ":stream", type, elements_name);
+    // Create the stream record
+    auto record = Record::Make("data", {
+        RecordField::Make(elements_name, type),
+        RecordField::Make("dvalid", dvalid()),
+        RecordField::Make("last", last())});
+    auto stream = Stream::Make(name + ":stream", record, elements_name);
     return stream;
   } else {
     // Otherwise just return the type

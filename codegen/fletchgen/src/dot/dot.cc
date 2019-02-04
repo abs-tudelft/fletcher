@@ -28,69 +28,76 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
 
   for (const auto &e : GetAllEdges(graph)) {
     if (!contains(drawn_edges, e)) {
-      StyleBuilder sb;
       // Remember we've drawn this edge
       drawn_edges.push_back(e);
 
-      // Draw edge
-      ret << tab(level);
-      // if (IsNested(e->src->type())) {
-      //   ret << NodeName(e->src, ":cell");
-      // } else {
-      ret << NodeName(e->src);
-      // }
-      ret << " -> ";
-      // if (IsNested(e->dst->type())) {
-      //   ret << NodeName(e->dst, ":cell");
-      // } else {
-      ret << NodeName(e->dst);
-      // }
+      // Check if edge is complete
+      if (e->IsComplete()) {
+        auto dst = *e->dst;
+        auto src = *e->src;
 
-      // Set style
-      ret << " [";
-      sb << style.edge.base;
+        StyleBuilder sb;
 
-      switch (e->src->type()->id()) {
-        case Type::STREAM: {
-          sb << style.edge.stream;
-          sb << assign_quotes("color", style.edge.color.stream);
-          break;
+        // Draw edge
+        ret << tab(level);
+        // if (IsNested(e->src->type())) {
+        //   ret << NodeName(e->src, ":cell");
+        // } else {
+        ret << NodeName(src);
+        // }
+        ret << " -> ";
+        // if (IsNested(e->dst->type())) {
+        //   ret << NodeName(e->dst, ":cell");
+        // } else {
+        ret << NodeName(dst);
+        // }
+
+        // Set style
+        ret << " [";
+        sb << style.edge.base;
+
+        switch (src->type()->id()) {
+          case Type::STREAM: {
+            sb << style.edge.stream;
+            sb << assign_quotes("color", style.edge.color.stream);
+            break;
+          }
+          case Type::CLOCK: {
+            sb << style.edge.clock;
+            break;
+          }
+          case Type::RESET: {
+            sb << style.edge.reset;
+            break;
+          }
+          default: {
+            sb << style.edge.base;
+            break;
+          }
         }
-        case Type::CLOCK: {
-          sb << style.edge.clock;
-          break;
+
+        if (src->IsPort() && config.nodes.ports) {
+          if (dst->IsSignal()) {
+            // Port to signal
+            sb << style.edge.port_to_sig;
+          } else if (dst->IsPort()) {
+            sb << style.edge.port_to_port;
+          }
+        } else if (src->IsSignal() && config.nodes.signals) {
+          if (dst->IsPort()) {
+            // Signal to port
+            sb << style.edge.sig_to_port;
+          }
+        } else if (src->IsParameter() && config.nodes.parameters) {
+        } else if (src->IsLiteral() && config.nodes.literals) {
+          sb << style.edge.lit;
+        } else {
+          continue;
         }
-        case Type::RESET: {
-          sb << style.edge.reset;
-          break;
-        }
-        default: {
-          sb << style.edge.base;
-          break;
-        }
+        ret << sb.ToString();
+        // Generic edge
+        ret << "]\n";
       }
-
-      if (e->src->IsPort() && config.nodes.ports) {
-        if (e->dst->IsSignal()) {
-          // Port to signal
-          sb << style.edge.port_to_sig;
-        } else if (e->dst->IsPort()) {
-          sb << style.edge.port_to_port;
-        }
-      } else if (e->src->IsSignal() && config.nodes.signals) {
-        if (e->dst->IsPort()) {
-          // Signal to port
-          sb << style.edge.sig_to_port;
-        }
-      } else if (e->src->IsParameter() && config.nodes.parameters) {
-      } else if (e->src->IsLiteral() && config.nodes.literals) {
-        sb << style.edge.lit;
-      } else {
-        continue;
-      }
-      ret << sb.ToString();
-      // Generic edge
-      ret << "]\n";
     }
   }
   return ret.str();
@@ -149,7 +156,8 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
     str << name;
     auto vec = Cast<Vector>(t);
     if (vec) {
-      str << "[" + (*vec)->width()->ToString() + "]";
+      auto width = (*vec)->width();
+      str << "[" + (*width)->ToString() + "]";
     }
   }
   return str.str();
@@ -318,7 +326,7 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &grap
   std::deque<std::shared_ptr<Edge>> all_edges;
 
   for (const auto &n : graph->nodes) {
-    auto edges = n->edges();
+    auto edges = n->outputs();
     for (const auto &e : edges) {
       all_edges.push_back(e);
     }
@@ -422,7 +430,7 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
   }
 
   std::stringstream str;
-  if (IsNested(n->type())) {
+  if (n->type()->IsNested()) {
     str << "label=<";
     if (node.nested == "html") {
       str << GenHTMLTableCell(n->type(), n->name());

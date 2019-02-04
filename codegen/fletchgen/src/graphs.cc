@@ -30,9 +30,9 @@ std::shared_ptr<Component> Component::Make(std::string name,
   for (const auto &param : parameters) {
     ret->AddNode(param);
     // If the parameter node has edges
-    if (!param->ins().empty()) {
+    if (param->input()) {
       // It has been assigned
-      std::shared_ptr<Node> val = param->in(0)->src;
+      std::shared_ptr<Node> val = *param->input();
       // Add the value to the node list
       ret->AddNode(val);
     } else if (param->default_value) {

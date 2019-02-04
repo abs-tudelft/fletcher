@@ -53,23 +53,9 @@ void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Record> &
 }
 
 void FlatNode::Flatten(const Identifier &prefix, const std::shared_ptr<Stream> &stream) {
-  // Determine the width of the handshake signals
-  // Default is the basic types for them:
-  std::shared_ptr<Type> v;
-  std::shared_ptr<Type> r;
-  // Determine the handshake width. Get the max of outgoing or incoming edges.
-  auto hw = std::max(node_->num_ins(), node_->num_outs());
-  if (hw > 1) {
-    v = Vector::Make("valid" + std::to_string(hw), Literal::Make(hw));
-    r = Vector::Make("valid" + std::to_string(hw), Literal::Make(hw));
-  } else {
-    v = valid();
-    r = ready();
-  }
-
-  // Append the tuples to the list
-  tuples_.emplace_back(prefix + "valid", v);
-  tuples_.emplace_back(prefix + "ready", r);
+  // Streams add a valid/ready handshake
+  tuples_.emplace_back(prefix + "valid", valid());
+  tuples_.emplace_back(prefix + "ready", ready());
 
   // Insert element type
   Flatten(prefix + stream->element_name(), stream->element_type());
@@ -102,8 +88,10 @@ std::pair<Identifier, std::shared_ptr<Type>> FlatNode::pair(size_t i) const {
 std::shared_ptr<Node> WidthOf(const FlatNode &a, const std::deque<FlatNode> &others, size_t tuple_index) {
   std::shared_ptr<Node> width = intl<0>();
   for (const auto &other : others) {
-    auto other_width = GetWidth(other.pair(tuple_index).second);
-    width = width + other_width;
+    auto other_width = other.pair(tuple_index).second->width();
+    if (other_width) {
+      width = width + *other_width;
+    }
   }
   return width;
 }

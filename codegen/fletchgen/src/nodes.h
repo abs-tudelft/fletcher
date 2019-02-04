@@ -24,7 +24,7 @@
 
 namespace fletchgen {
 
-// Forward Declr.
+// Forward declarations.
 struct Edge;
 struct Graph;
 
@@ -48,37 +48,11 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
 
   /// @brief Get a copy of this Node
   virtual std::shared_ptr<Node> Copy() const;
+
   /// @brief Return the node Type
   inline std::shared_ptr<Type> type() const { return type_; }
   /// @brief Change the node Type
   inline void SetType(const std::shared_ptr<Type> &type) { type_ = type; }
-
-  /// @brief Add an edge to this node as an input.
-  void AddInput(std::shared_ptr<Edge> edge);
-  /// @brief Add an edge to this node as an output.
-  void AddOutput(std::shared_ptr<Edge> edge);
-  /// @brief Remove an edge from this node.
-  Node &RemoveEdge(const std::shared_ptr<Edge> &edge);
-  /// @brief Return the number of edges of this node, both in and out.
-  inline size_t num_edges() const { return ins_.size() + outs_.size(); }
-  /// @brief Return the number of in edges of this node.
-  inline size_t num_ins() const { return ins_.size(); }
-  /// @brief Return the number of out edges of this node.
-  inline size_t num_outs() const { return outs_.size(); }
-  /// @brief Return all edges of this node, both in and out.
-  std::deque<std::shared_ptr<Edge>> edges() const;
-  /// @brief Return incoming Edge i.
-  inline std::shared_ptr<Edge> in(size_t i) const { return ins_[i]; }
-  /// @brief Return outgoing Edge i.
-  inline std::shared_ptr<Edge> out(size_t i) const { return outs_[i]; }
-  /// @brief Return all incoming edges.
-  inline std::deque<std::shared_ptr<Edge>> ins() const { return ins_; }
-  /// @brief Return all outgoing edges.
-  inline std::deque<std::shared_ptr<Edge>> outs() const { return outs_; }
-
-  // TODO(johanpel): come up with some normal name for this:
-  std::optional<std::deque<std::shared_ptr<Node>>> GetWidthDrivingNodes() const;
-
   /// @brief Return the node type ID
   inline ID id() const { return id_; }
   /// @brief Return whether this node is of a specific node type id.
@@ -94,6 +68,21 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Return true if this is an EXPRESSION node, false otherwise.
   bool IsExpression() const { return id_ == EXPRESSION; }
 
+  /// @brief Get the driving node
+  std::optional<std::shared_ptr<Node>> input();
+  /// @brief Set the input edge of this node.
+  void SetInput(std::shared_ptr<Edge> edge);
+  /// @brief Add an output edge to this node.
+  void AddOutput(std::shared_ptr<Edge> edge);
+  /// @brief Remove an edge from this node.
+  Node &RemoveEdge(const std::shared_ptr<Edge> &edge);
+  /// @brief Return the number of edges of this node.
+  inline size_t num_edges() const { return outputs_.size(); }
+  /// @brief Return all edges of this node.
+  std::deque<std::shared_ptr<Edge>> outputs() const;
+  /// @brief Return output edge i of this node.
+  inline std::shared_ptr<Edge> output(size_t i) const { return outputs_[i]; }
+
   /// @brief Set this node's parent
   void SetParent(const Graph *parent);
   inline std::optional<const Graph *> parent() { return parent_; }
@@ -106,11 +95,11 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   ID id_;
   /// @brief The Type of this Node.
   std::shared_ptr<Type> type_;
-  /// @brief All incoming Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> ins_;
-  /// @brief All outgoing Edges of this Node.
-  std::deque<std::shared_ptr<Edge>> outs_;
-  /// @brief An optional parent Graph to which this Node belongs. Initially none.
+  /// @brief The incoming Edge that sources this Node.
+  std::shared_ptr<Edge> input_;
+  /// @brief The outgoing Edges that sink this Node.
+  std::deque<std::shared_ptr<Edge>> outputs_;
+  /// @brief An optional parent Graph to which this Node belongs. Initially no value.
   std::optional<const Graph *> parent_ = {};
 };
 
@@ -281,6 +270,21 @@ std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const st
 std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 
+/*
+ * @brief A node representing a single node onto which multiple nodes are concatenated.
+ *
+ * The parent graph of the node must have a parameter describing the number of nodes in the list node.
+ */
+struct ListNode : Node {
+  enum Mode {
+    SOURCE,  // Single node sourcing a bunch of other nodes
+    SINK     // Single node sinking a bunch of other nodes
+  } mode;
+  std::shared_ptr<Node> size_;
+  std::shared_ptr<Edge> single_;
+  std::deque<std::shared_ptr<Edge>> multi_;
+};
+
 /**
  * @brief Cast a Node to some (typically) less generic Node type T.
  * @tparam T    The new Node type.
@@ -324,7 +328,7 @@ std::string ToString(Node::ID id);
  */
 template<int V>
 std::shared_ptr<Literal> intl() {
-  static std::shared_ptr<Literal> result = std::make_shared<Literal>("lit_" + std::to_string(V), integer(), V);
+  static std::shared_ptr<Literal> result = std::make_shared<Literal>("int" + std::to_string(V), integer(), V);
   return result;
 }
 

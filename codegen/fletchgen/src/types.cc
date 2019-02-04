@@ -14,10 +14,13 @@
 
 #include "./types.h"
 
+#include <utility>
 #include <string>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
-#include "nodes.h"
-#include "types.h"
+#include "./nodes.h"
 
 namespace fletchgen {
 
@@ -32,18 +35,46 @@ bool Type::IsSynthPrim() const {
   return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
 }
 
-Vector::Vector(std::string name, std::shared_ptr<Node> width)
-    : Type(std::move(name), Type::VECTOR) {
-  // Check if width is parameter or literal node
-  if (!(width->IsParameter() || width->IsLiteral() || width->IsExpression())) {
-    throw std::runtime_error("Vector width can only be Parameter, Literal or Expression node.");
-  } else {
-    width_ = std::move(width);
+bool Type::IsNested() {
+  return (id_ == Type::STREAM) || (id_ == Type::RECORD);
+}
+
+std::string Type::ToString() {
+  switch (id_) {
+    case CLOCK  : return "Clock";
+    case RESET  : return "Reset";
+    case BIT    : return "Bit";
+    case VECTOR : return "Vector";
+    case NATURAL: return "Natural";
+    case STRING : return "String";
+    case BOOLEAN: return "Boolean";
+    case RECORD : return "Record";
+    case STREAM : return "Stream";
+    default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
 }
 
+Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::shared_ptr<Node> width)
+    : Type(std::move(name), Type::VECTOR), element_type_(std::move(element_type)) {
+  // Check if width is parameter or literal node
+  if (width != nullptr) {
+    if (!(width->IsParameter() || width->IsLiteral() || width->IsExpression())) {
+      throw std::runtime_error("Vector width can only be Parameter, Literal or Expression node.");
+    }
+    width_ = width;
+  } else {
+    width = {};
+  }
+}
+
+std::shared_ptr<Type> Vector::Make(std::string name,
+                                   std::shared_ptr<Type> element_type,
+                                   std::shared_ptr<Node> width) {
+  return std::make_shared<Vector>(name, element_type, width);
+}
+
 std::shared_ptr<Type> Vector::Make(std::string name, std::shared_ptr<Node> width) {
-  return std::make_shared<Vector>(name, width);
+  return std::make_shared<Vector>(name, bit(), width);
 }
 
 std::shared_ptr<Type> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
@@ -58,7 +89,7 @@ std::shared_ptr<Type> Stream::Make(std::string name,
 }
 
 std::shared_ptr<Type> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
-  return std::make_shared<Stream>("stream:" + element_type->name(), element_type, "data", epc);
+  return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "data", epc);
 }
 
 Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc)
@@ -85,10 +116,6 @@ std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &ty
   return ret;
 }
 
-bool IsNested(const std::shared_ptr<Type> &type) {
-  return type->Is(Type::STREAM) || type->Is(Type::RECORD);
-}
-
 std::shared_ptr<Type> bit() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");
   return result;
@@ -100,13 +127,91 @@ std::shared_ptr<Type> string() {
 }
 
 std::shared_ptr<Type> integer() {
-  static std::shared_ptr<Type> result = std::make_shared<Natural>("integer");
+  static std::shared_ptr<Type> result = std::make_shared<Integer>("integer");
   return result;
 }
 
 std::shared_ptr<Type> boolean() {
   static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
   return result;
+}
+
+void FlattenRecord(std::deque<FlatType> *list,
+                   const std::shared_ptr<Record> &record,
+                   const std::optional<FlatType> &parent) {
+  for (const auto &f : record->fields()) {
+    Flatten(list, f->type(), parent, f->name());
+  }
+}
+
+void FlattenStream(std::deque<FlatType> *list,
+                   const std::shared_ptr<Stream> &stream,
+                   const std::optional<FlatType> &parent) {
+  Flatten(list, stream->element_type(), parent, stream->element_name());
+}
+
+void Flatten(std::deque<FlatType> *list,
+             const std::shared_ptr<Type> &type,
+             const std::optional<FlatType> &parent,
+             std::string name) {
+  FlatType result;
+  if (parent) {
+    result.nesting_level = (*parent).nesting_level + 1;
+    result.name_parts = (*parent).name_parts;
+  }
+  result.type = type;
+  if (!name.empty()) {
+    result.name_parts.push_back(name);
+  }
+  list->push_back(result);
+
+  switch (type->id()) {
+    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result);
+      break;
+    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result);
+      break;
+    default:break;
+  }
+}
+
+std::deque<FlatType> Flatten(const std::shared_ptr<Type> &type) {
+  std::deque<FlatType> result;
+  Flatten(&result, type, {}, "");
+  return result;
+}
+
+bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b) {
+  auto a_types = Flatten(a);
+  auto b_types = Flatten(b);
+
+  // Check if the lists have equal length.
+  if (a_types.size() != b_types.size()) {
+    return false;
+  }
+
+  // Check every type id to be the same.
+  for (size_t i = 0; i < a_types.size(); i++) {
+    if (a_types[i].type->id() != b_types[i].type->id()) {
+      return false;
+    }
+    if (a_types[i].nesting_level != b_types[i].nesting_level) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+std::string ToString(std::deque<FlatType> flat_type_list) {
+  std::stringstream ret;
+  for (const auto &ft : flat_type_list) {
+    ret << std::setw(32) << std::left
+        << std::string(2 * ft.nesting_level, ' ') + ft.name(ft.nesting_level == 0 ? "(root)" : "") << " : "
+        << std::setw(24) << std::left << ft.type->name() << " : "
+        << std::setw(2) << std::left << ft.nesting_level << " : "
+        << std::setw(8) << std::left << ft.type->ToString() << std::endl;
+  }
+  return ret.str();
 }
 
 #define TOSTRING_FACTORY(TYPE)     \
@@ -121,12 +226,12 @@ TOSTRING_FACTORY(Bit)
 TOSTRING_FACTORY(Vector)
 TOSTRING_FACTORY(Record)
 TOSTRING_FACTORY(Stream)
-TOSTRING_FACTORY(Natural)
+TOSTRING_FACTORY(Integer)
 TOSTRING_FACTORY(String)
 TOSTRING_FACTORY(Boolean)
 
-std::shared_ptr<Type> Natural::Make(std::string name) {
-  return std::make_shared<Natural>(name);
+std::shared_ptr<Type> Integer::Make(std::string name) {
+  return std::make_shared<Integer>(name);
 }
 
 Boolean::Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
@@ -185,4 +290,20 @@ Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
 }
 
 ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
+
+std::string FlatType::name(std::string root, std::string sep) const {
+  std::stringstream ret;
+  ret << root;
+  for (const auto &p : name_parts) {
+    ret << "_" + p;
+  }
+  return ret.str();
+}
+
+FlatType::FlatType(std::shared_ptr<Type> t, std::deque<std::string> prefix, std::string name, int level) {
+  name_parts = std::move(prefix);
+  name_parts.push_back(name);
+  type = std::move(t);
+}
+
 }  // namespace fletchgen

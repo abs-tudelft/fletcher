@@ -38,7 +38,8 @@ std::string Decl::Generate(const std::shared_ptr<Type> &type) {
     return "std_logic";
   } else if (type->Is(Type::VECTOR)) {
     auto vec = Cast<Vector>(type);
-    return "std_logic_vector(" + (*vec)->width()->ToString() + "-1 downto 0)";
+    auto width = (*vec)->width();
+    return "std_logic_vector(" + (*width)->ToString() + "-1 downto 0)";
   } else if (type->Is(Type::RECORD)) {
     auto r = Cast<Record>(type);
     return (*r)->name();

@@ -92,14 +92,19 @@ if (FLETCHER_TESTS)
     find_package(GTest REQUIRED)
 
     set(TEST_SOURCES
+            # Intermeditate
             test/test.cc
+            test/test_types.h
+            test/test_expressions.h
             test/test_designs.h
 
+            # Back-ends
             test/dot/test_graphs.h
 
             test/vhdl/test_declarators.h
             test/vhdl/test_instantiators.h
 
+            # Front-ends
             test/fletcher/test_fletcher_designs.h
             test/fletcher/test_fletcher.h
             )
