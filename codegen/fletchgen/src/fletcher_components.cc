@@ -276,6 +276,7 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
       cr_cmd_port <<= uci_cmd_port;
     } else {
       // TODO(johanpel): ColumnWriters
+      // TODO(johanpel): ColumnWriters
     }
   }
 

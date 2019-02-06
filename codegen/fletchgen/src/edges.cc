@@ -28,9 +28,6 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   if (dst == nullptr) {
     throw std::runtime_error("Destination node is null");
   }
-  if (dst->input()) {
-    throw std::runtime_error("Node " + dst->name() + " cannot have multiple edges.");
-  }
   if (!WeaklyEqual(src->type(), dst->type())) {
     std::cerr << "source: " << std::endl << ToString(Flatten(src->type())) << std::endl;
     std::cerr << "destination: " << std::endl << ToString(Flatten(dst->type())) << std::endl;
@@ -40,7 +37,7 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
   src->AddOutput(edge);
-  dst->SetInput(edge);
+  dst->AddInput(edge);
   return edge;
 }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "graphs.h"
+#include "./graphs.h"
 
 #include <string>
 #include <memory>
@@ -32,9 +32,12 @@ std::shared_ptr<Component> Component::Make(std::string name,
     // If the parameter node has edges
     if (param->input()) {
       // It has been assigned
-      std::shared_ptr<Node> val = *param->input();
-      // Add the value to the node list
-      ret->AddNode(val);
+      auto edge = *param->input();
+      auto val = edge->src;
+      if (val) {
+        // Add the value to the node list
+        ret->AddNode(*val);
+      }
     } else if (param->default_value) {
       // Otherwise assign default value if any
       param <<= *param->default_value;
@@ -50,20 +53,20 @@ std::shared_ptr<Component> Component::Make(std::string name,
   return ret;
 }
 
-Graph &Graph::AddNode(std::shared_ptr<Node> node) {
+Graph &Graph::AddNode(const std::shared_ptr<Node> &node) {
   nodes.push_back(node);
   node->SetParent(this);
   return *this;
 }
 
-std::shared_ptr<Node> Graph::Get(Node::ID id, const std::string &node_name) const {
+std::shared_ptr<Node> Graph::Get(Node::ID node_id, const std::string &node_name) const {
   for (const auto &n : nodes) {
-    if ((n->name() == node_name) && (n->Is(id))) {
+    if ((n->name() == node_name) && (n->Is(node_id))) {
       return n;
     }
   }
-  throw std::runtime_error("Node of type " + ToString(id)
-                               + " name " + node_name + " does not exist on Graph " + name());
+  throw std::runtime_error(
+      "Node of type " + ToString(node_id) + " name " + node_name + " does not exist on Graph " + name());
 }
 
 Graph &Graph::AddChild(const std::shared_ptr<Graph> &child) {
@@ -85,7 +88,7 @@ size_t Graph::CountNodes(Node::ID id) const {
 }
 
 std::shared_ptr<Graph> Graph::Copy() const {
-  auto ret = std::make_shared<Graph>(name(), this->id);
+  auto ret = std::make_shared<Graph>(name(), this->id_);
   for (const auto &child : children) {
     ret->AddChild(child->Copy());
   }
@@ -104,6 +107,9 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   }
   return result;
 }
+
+std::shared_ptr<Node> Graph::p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
+std::shared_ptr<Node> Graph::s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
 
 std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
   return std::make_shared<Instance>(name, component);
@@ -124,7 +130,7 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
   }
 }
 
-Graph &Instance::AddNode(std::shared_ptr<Node> node) {
+Graph &Instance::AddNode(const std::shared_ptr<Node> &node) {
   if (!node->Is(Node::SIGNAL)) {
     nodes.push_back(node);
     node->SetParent(this);
@@ -138,10 +144,10 @@ std::deque<std::shared_ptr<Component>> GetAllUniqueComponents(const std::shared_
   std::deque<std::shared_ptr<Component>> ret;
   for (const auto &g : graph->children) {
     std::optional<std::shared_ptr<Component>> comp;
-    if (g->id == Graph::COMPONENT) {
+    if (g->id_ == Graph::COMPONENT) {
       // Graph itself is the component to potentially insert
       comp = Cast<Component>(g);
-    } else if (g->id == Graph::INSTANCE) {
+    } else if (g->id_ == Graph::INSTANCE) {
       // Graph is an instance, its component is the component to potentially insert
       comp = (*Cast<Instance>(g))->component;
     }
@@ -159,7 +165,7 @@ std::deque<std::shared_ptr<Instance>> Component::GetAllInstances() {
   std::deque<std::shared_ptr<Instance>> ret;
   for (const auto &g : children) {
     std::optional<std::shared_ptr<Instance>> inst;
-    if (g->id == Graph::INSTANCE) {
+    if (g->id_ == Graph::INSTANCE) {
       inst = Cast<Instance>(g);
       if (inst) {
         ret.push_back(*inst);

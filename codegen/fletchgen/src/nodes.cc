@@ -25,10 +25,6 @@
 
 namespace fletchgen {
 
-std::deque<std::shared_ptr<Edge>> Node::outputs() const {
-  return outputs_;
-}
-
 Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
     : Named(std::move(name)), id_(id), type_(std::move(type)) {}
 
@@ -41,7 +37,11 @@ std::string Node::ToString() {
   return name();
 }
 
-void Node::SetInput(std::shared_ptr<Edge> edge) {
+void Node::SetParent(const Graph *parent) {
+  parent_ = parent;
+}
+
+void NormalNode::AddInput(const std::shared_ptr<Edge>& edge) {
   // Check if the edge has no destination yet
   if (!edge->dst) {
     // Set this node as its destination
@@ -60,7 +60,7 @@ void Node::SetInput(std::shared_ptr<Edge> edge) {
   input_ = edge;
 }
 
-void Node::AddOutput(std::shared_ptr<Edge> edge) {
+void MultiOutputsNode::AddOutput(const std::shared_ptr<Edge>& edge) {
   // Check if this edge has a source
   if (!edge->src) {
     // It has no source, make the source this node.
@@ -72,11 +72,7 @@ void Node::AddOutput(std::shared_ptr<Edge> edge) {
   outputs_.push_back(edge);
 }
 
-void Node::SetParent(const Graph *parent) {
-  parent_ = parent;
-}
-
-Node &Node::RemoveEdge(const std::shared_ptr<Edge> &edge) {
+void MultiOutputsNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   bool success = false;
   if (edge->src) {
     if ((*edge->src).get() == this) {
@@ -87,26 +83,16 @@ Node &Node::RemoveEdge(const std::shared_ptr<Edge> &edge) {
         edge->src = {};
       }
     }
-  } else if (edge->dst) {
-    if ((*edge->dst).get() == this) {
-      input_ = nullptr;
-      edge->dst = {};
-      success = true;
-    }
   }
   if (!success) {
-    throw std::runtime_error("Edge " + edge->name() + " could not be removed from " + name()
-                                 + " because it was neither source nor sink.");
+    throw std::runtime_error("Edge " + edge->name() + " could not be removed from node " + name()
+                                 + " because it was not an output of that node.");
   }
-  return *this;
 }
 
-
-std::optional<std::shared_ptr<Node>> Node::input() {
+std::optional<std::shared_ptr<Edge>> NormalNode::input() {
   if (input_ != nullptr) {
-    if (input_->src) {
-      return input_->src;
-    }
+    return input_;
   }
   return {};
 }
@@ -141,19 +127,19 @@ Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type, std::string
                  value)
-    : Node(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
+    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
 Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type,
                  int value)
-    : Node(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
+    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
 Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type,
                  bool value)
-    : Node(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
+    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
   auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
@@ -181,10 +167,13 @@ std::shared_ptr<Literal> bool_false() {
 
 std::string ToString(Node::ID id) {
   switch (id) {
-    case Node::PORT:return "port";
-    case Node::SIGNAL:return "signal";
-    case Node::LITERAL:return "literal";
-    case Node::PARAMETER:return "parameter";
+    case Node::PORT:return "Port";
+    case Node::SIGNAL:return "Signal";
+    case Node::LITERAL:return "Literal";
+    case Node::PARAMETER:return "Parameter";
+    case Node::EXPRESSION:return "Expression";
+    case Node::ARRAY_PORT:return "ArrayPort";
+    case Node::ARRAY_SIGNAL:return "ArraySignal";
     default:throw std::runtime_error("Unsupported Node type");
   }
 }
@@ -205,7 +194,7 @@ Port::Port(std::string
            name, std::shared_ptr<Type>
            type, Port::Dir
            dir)
-    : Node(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
+    : NormalNode(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
   return std::make_shared<Parameter>(name(), type(), default_value);
@@ -221,12 +210,12 @@ Parameter::Parameter(std::string
                      name,
                      const std::shared_ptr<Type> &type,
                      std::optional<std::shared_ptr<Literal>> default_value)
-    : Node(std::move(name), Node::PARAMETER, type), default_value(std::move(default_value)) {}
+    : NormalNode(std::move(name), Node::PARAMETER, type), default_value(std::move(default_value)) {}
 
 Signal::Signal(std::string
                name, std::shared_ptr<Type>
                type)
-    : Node(std::move(name), Node::SIGNAL, std::move(type)) {}
+    : NormalNode(std::move(name), Node::SIGNAL, std::move(type)) {}
 
 std::shared_ptr<Signal> Signal::Make(std::string name, const std::shared_ptr<Type> &type) {
   auto ret = std::make_shared<Signal>(name, type);
@@ -248,7 +237,7 @@ Expression::Expression(Expression::Operation
                        op,
                        const std::shared_ptr<Node> &left,
                        const std::shared_ptr<Node> &right)
-    : Node(::fletchgen::ToString(op), EXPRESSION, string()),
+    : MultiOutputsNode(::fletchgen::ToString(op), EXPRESSION, string()),
       operation(op), lhs(left), rhs(right) {}
 
 std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
@@ -370,5 +359,33 @@ std::string Expression::ToString() {
 
 std::shared_ptr<Node> Expression::Copy() const {
   return Expression::Make(operation, lhs, rhs);
+}
+
+std::shared_ptr<Edge> ArrayNode::Concatenate(std::shared_ptr<Node> n) {
+  std::shared_ptr<Edge> e;
+  if (concat_side == IN) {
+    e = Edge::Make(name() + "_to_" + n->name(), shared_from_this(), n);
+  } else {
+    e = Edge::Make(n->name() + "_to_" + name(), n, shared_from_this());
+  }
+  return e;
+}
+
+void ArrayNode::increment() {
+  if (size_->IsLiteral()) {
+    auto sn = *Cast<Literal>(size_);
+    if (sn->storage_type_ == Literal::INT) {
+      sn->int_val_++;
+    }
+  }
+}
+
+void ArrayNode::decrement() {
+  if (size_->IsLiteral()) {
+    auto sn = *Cast<Literal>(size_);
+    if (sn->storage_type_ == Literal::INT) {
+      sn->int_val_--;
+    }
+  }
 }
 }  // namespace fletchgen

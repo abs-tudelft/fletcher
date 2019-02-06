@@ -31,7 +31,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
     INSTANCE    ///< An instance graph
   };
   /// @brief Graph type id for convenience
-  ID id;
+  ID id_;
 
   /// @brief Graph nodes.
   std::deque<std::shared_ptr<Node>> nodes;
@@ -46,17 +46,17 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
    * @brief Construct a new graph
    * @param name    The name of the graph
    */
-  explicit Graph(std::string name, ID id) : Named(std::move(name)), id(id) {}
+  explicit Graph(std::string name, ID id) : Named(std::move(name)), id_(id) {}
   virtual ~Graph() = default;
 
   /// @brief Get a node of a specific type with a specific name
-  std::shared_ptr<Node> Get(Node::ID id, const std::string &node_name) const;
+  std::shared_ptr<Node> Get(Node::ID node_id, const std::string &node_name) const;
 
-  inline std::shared_ptr<Node> p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
-  inline std::shared_ptr<Node> s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
+  std::shared_ptr<Node> p(const std::string &port_name) const;
+  std::shared_ptr<Node> s(const std::string &signal_name) const;
 
   /// @brief Add a node to the component
-  virtual Graph &AddNode(std::shared_ptr<Node> node);
+  virtual Graph &AddNode(const std::shared_ptr<Node>& node);
 
   /// @brief Count nodes of a specific node type
   size_t CountNodes(Node::ID id) const;
@@ -146,7 +146,7 @@ struct Instance : public Graph {
   static std::shared_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
-  Graph &AddNode(std::shared_ptr<Node> node) override;
+  Graph &AddNode(const std::shared_ptr<Node>& node) override;
 };
 
 /**

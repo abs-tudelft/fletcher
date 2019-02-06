@@ -16,7 +16,7 @@ find_library(LIB_ARROW arrow)
 # Common library, if not already built
 if (NOT TARGET fletcher-common-static)
     add_subdirectory(../../common/cpp fletcher-common)
-endif()
+endif ()
 
 # Sources
 
@@ -48,6 +48,7 @@ set(SOURCES
         src/types.cc
         src/nodes.cc
         src/graphs.cc
+
         src/fletcher_types.cc
         src/fletcher_components.cc
 
