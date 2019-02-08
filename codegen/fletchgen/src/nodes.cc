@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +26,7 @@
 
 #include "./utils.h"
 #include "./edges.h"
+#include "nodes.h"
 
 namespace fletchgen {
 
@@ -41,7 +46,7 @@ void Node::SetParent(const Graph *parent) {
   parent_ = parent;
 }
 
-void NormalNode::AddInput(const std::shared_ptr<Edge>& edge) {
+void NormalNode::AddInput(const std::shared_ptr<Edge> &edge) {
   // Check if the edge has no destination yet
   if (!edge->dst) {
     // Set this node as its destination
@@ -60,7 +65,7 @@ void NormalNode::AddInput(const std::shared_ptr<Edge>& edge) {
   input_ = edge;
 }
 
-void MultiOutputsNode::AddOutput(const std::shared_ptr<Edge>& edge) {
+void MultiOutputNode::AddOutput(const std::shared_ptr<Edge> &edge) {
   // Check if this edge has a source
   if (!edge->src) {
     // It has no source, make the source this node.
@@ -72,7 +77,7 @@ void MultiOutputsNode::AddOutput(const std::shared_ptr<Edge>& edge) {
   outputs_.push_back(edge);
 }
 
-void MultiOutputsNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
+bool MultiOutputNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   bool success = false;
   if (edge->src) {
     if ((*edge->src).get() == this) {
@@ -84,17 +89,35 @@ void MultiOutputsNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
       }
     }
   }
-  if (!success) {
-    throw std::runtime_error("Edge " + edge->name() + " could not be removed from node " + name()
-                                 + " because it was not an output of that node.");
-  }
+  return success;
 }
 
-std::optional<std::shared_ptr<Edge>> NormalNode::input() {
+std::optional<std::shared_ptr<Edge>> NormalNode::input() const {
   if (input_ != nullptr) {
     return input_;
   }
   return {};
+}
+
+bool NormalNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
+  // First remove the edge from any outputs
+  bool success = MultiOutputNode::RemoveEdge(edge);
+  // Check if the edge is an input to this node
+  if (edge->dst) {
+    if (((*edge->dst).get() == this) && (input_ == edge)) {
+      input_ = nullptr;
+      edge->dst = {};
+      success = true;
+    }
+  }
+  return success;
+}
+std::deque<std::shared_ptr<Edge>> NormalNode::inputs() const {
+  if (input_ != nullptr) {
+    return {input_};
+  } else {
+    return {};
+  }
 }
 
 std::string Literal::ToString() {
@@ -127,19 +150,19 @@ Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type, std::string
                  value)
-    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
 Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type,
                  int value)
-    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
 Literal::Literal(std::string
                  name,
                  const std::shared_ptr<Type> &type,
                  bool value)
-    : MultiOutputsNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
   auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
@@ -212,6 +235,18 @@ Parameter::Parameter(std::string
                      std::optional<std::shared_ptr<Literal>> default_value)
     : NormalNode(std::move(name), Node::PARAMETER, type), default_value(std::move(default_value)) {}
 
+std::optional<std::shared_ptr<Node>> Parameter::value() const {
+  if (input()) {
+    auto edge = *input();
+    if (edge->src) {
+      return *edge->src;
+    }
+  } else if (default_value) {
+    return *default_value;
+  }
+  return {};
+}
+
 Signal::Signal(std::string
                name, std::shared_ptr<Type>
                type)
@@ -237,7 +272,7 @@ Expression::Expression(Expression::Operation
                        op,
                        const std::shared_ptr<Node> &left,
                        const std::shared_ptr<Node> &right)
-    : MultiOutputsNode(::fletchgen::ToString(op), EXPRESSION, string()),
+    : MultiOutputNode(::fletchgen::ToString(op), EXPRESSION, string()),
       operation(op), lhs(left), rhs(right) {}
 
 std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
@@ -361,31 +396,104 @@ std::shared_ptr<Node> Expression::Copy() const {
   return Expression::Make(operation, lhs, rhs);
 }
 
-std::shared_ptr<Edge> ArrayNode::Concatenate(std::shared_ptr<Node> n) {
+std::shared_ptr<Edge> ArrayNode::Append(std::shared_ptr<Node> n) {
   std::shared_ptr<Edge> e;
-  if (concat_side == IN) {
-    e = Edge::Make(name() + "_to_" + n->name(), shared_from_this(), n);
+  if (array_side_ == ARRAY_OUT) {
+    e = Edge::Make(name() + "_to_" + n->name(), n, shared_from_this());
+    array_edges_.push_back(e);
+    n->AddInput(e);
   } else {
     e = Edge::Make(n->name() + "_to_" + name(), n, shared_from_this());
+    array_edges_.push_back(e);
+    n->AddOutput(e);
   }
+  increment();
   return e;
 }
 
+static std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
+  if (node->IsLiteral() || node->IsExpression()) {
+    return node + intl<1>();
+  } else if (node->IsParameter()) {
+    // If the node is a parameter
+    auto param = *Cast<Parameter>(node);
+    if (param->value()) {
+      // Recurse until we reach the literal
+      param <<= IncrementNode(*param->value());
+    } else {
+      // Otherwise connect an integer literal of 1 to the parameter
+      param <<= intl<1>();
+    }
+    return param;
+  }
+  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->id()));
+}
+
 void ArrayNode::increment() {
-  if (size_->IsLiteral()) {
-    auto sn = *Cast<Literal>(size_);
-    if (sn->storage_type_ == Literal::INT) {
-      sn->int_val_++;
+  if (size_ == nullptr) {
+    throw std::runtime_error("Invalid ArrayNode. Size points to null.");
+  }
+  auto incremented = IncrementNode(size_);
+  size_ = incremented;
+}
+
+ArrayNode::ArrayNode(std::string name,
+                     Node::ID id,
+                     std::shared_ptr<Type> type,
+                     ArraySide array_side,
+                     std::shared_ptr<Node> size)
+    : Node(std::move(name), id, std::move(type)), array_side_(array_side), size_(std::move(size)) {}
+
+std::deque<std::shared_ptr<Edge>> ArrayNode::inputs() const {
+  if (array_side_ == ARRAY_OUT) {
+    if (single_edge_ != nullptr) {
+      return {single_edge_};
+    } else {
+      return {};
+    }
+  } else {
+    return array_edges_;
+  }
+}
+
+std::deque<std::shared_ptr<Edge>> ArrayNode::outputs() const {
+  if (array_side_ == ARRAY_OUT) {
+    return array_edges_;
+  } else {
+    if (single_edge_ != nullptr) {
+      return {single_edge_};
+    } else {
+      return {};
     }
   }
 }
 
-void ArrayNode::decrement() {
-  if (size_->IsLiteral()) {
-    auto sn = *Cast<Literal>(size_);
-    if (sn->storage_type_ == Literal::INT) {
-      sn->int_val_--;
-    }
-  }
+std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
+                                           std::shared_ptr<Type> type,
+                                           std::shared_ptr<Node> size,
+                                           Port::Dir dir) {
+  return std::make_shared<ArrayPort>(name, type, size, dir);
 }
+
+std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
+                                           std::shared_ptr<Node> size,
+                                           Port::Dir dir) {
+  return std::make_shared<ArrayPort>(type->name(), type, size, dir);
+}
+
+ArrayPort::ArrayPort(std::string name,
+                     std::shared_ptr<Type> type,
+                     std::shared_ptr<Node> size,
+                     Port::Dir dir)
+    : ArrayNode(std::move(name),
+                Node::ARRAY_PORT,
+                std::move(type),
+                dir == Port::IN ? ARRAY_IN : ARRAY_OUT,
+                std::move(size)), dir(dir) {}
+
+std::shared_ptr<Node> ArrayPort::Copy() const {
+  auto result = std::make_shared<ArrayPort>(name(), type(), size(), dir);
+  return result;
+}
+
 }  // namespace fletchgen

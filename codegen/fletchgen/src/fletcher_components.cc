@@ -47,11 +47,15 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::sha
 }
 
 std::shared_ptr<Component> BusReadArbiter() {
+  auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
+  auto slaves_rreq_array = ArrayPort::Make("bsv_rreq", bus_read_request(), nslaves, Port::Dir::IN);
+  auto slaves_rdat_array = ArrayPort::Make("bsv_rdat", bus_read_data(), nslaves, Port::Dir::OUT);
+
   static auto ret = Component::Make("BusReadArbiterVec",
-                                    {Parameter::Make("BUS_ADDR_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("BUS_LEN_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("BUS_DATA_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<32>()),
+                                    {bus_addr_width(),
+                                     bus_len_width(),
+                                     bus_data_width(),
+                                     nslaves,
                                      Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
                                      Parameter::Make("MAX_OUTSTANDING", integer(), intl<2>()),
                                      Parameter::Make("RAM_CONFIG", string(), strl("")),
@@ -63,8 +67,8 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      Port::Make(bus_reset()),
                                      Port::Make("mst_rreq", bus_read_request(), Port::Dir::OUT),
                                      Port::Make("mst_rdat", bus_read_data(), Port::Dir::IN),
-                                     Port::Make("bsv_rreq", bus_read_request(), Port::Dir::IN),
-                                     Port::Make("bsv_rdat", bus_read_data(), Port::Dir::OUT)
+                                     slaves_rreq_array,
+                                     slaves_rdat_array
                                     },
                                     {});
   return ret;
@@ -72,9 +76,7 @@ std::shared_ptr<Component> BusReadArbiter() {
 
 std::shared_ptr<Component> ColumnReader() {
   static auto ret = Component::Make("ColumnReader",
-                                    {Parameter::Make("BUS_ADDR_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("BUS_LEN_WIDTH", integer(), intl<8>()),
-                                     Parameter::Make("BUS_DATA_WIDTH", integer(), intl<32>()),
+                                    {bus_addr_width(), bus_len_width(), bus_data_width(),
                                      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
                                      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
                                      Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
@@ -89,7 +91,7 @@ std::shared_ptr<Component> ColumnReader() {
                                      Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("bus_rreq", bus_read_request(), Port::Dir::OUT),
                                      Port::Make("bus_rdat", bus_read_data(), Port::Dir::IN),
-                                     Port::Make("data_out", read_data(), Port::Dir::OUT)
+                                     Port::Make("out", read_data(), Port::Dir::OUT)
                                     },
                                     {}
   );
@@ -269,7 +271,7 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
       auto uci_data_port = user_core_inst_->p(arrow_ports[i]->name());
       auto uci_cmd_port = user_core_inst_->p(arrow_ports[i]->name() + "_cmd");
       // Get the column reader ports
-      auto cr_data_port = column_readers[i]->p("data_out");
+      auto cr_data_port = column_readers[i]->p("out");
       auto cr_cmd_port = column_readers[i]->p("cmd");
       // Connect the ports
       uci_data_port <<= cr_data_port;
@@ -280,26 +282,34 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
     }
   }
 
-  // Add and connect request and data channels
-  auto brr = Port::Make("bus_rreq", bus_read_request());
-  auto brd = Port::Make("bus_rdat", bus_read_data());
-  auto bwr = Port::Make("bus_wreq", bus_write_request());
-  auto bwd = Port::Make("bus_wdat", bus_write_data());
+  auto num_read_slaves = Parameter::Make("NUM_READ_SLAVES", integer(), intl<0>());
+  auto bus_rreq_array = ArrayPort::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
+  auto bus_rdat_array = ArrayPort::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
 
-  AddNode(brr).AddNode(brd).AddNode(bwr).AddNode(bwd);
+  auto num_write_slaves = Parameter::Make("NUM_WRITE_SLAVES", integer(), intl<0>());
+  auto bus_wreq_array =  ArrayPort::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
+  auto bus_wdat_array =  ArrayPort::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
+
+  AddNode(num_read_slaves);
+  AddNode(bus_rreq_array);
+  AddNode(bus_rdat_array);
+
+  AddNode(num_write_slaves);
+  AddNode(bus_wreq_array);
+  AddNode(bus_wdat_array);
 
   for (const auto &cr : column_readers) {
     auto cr_rreq = cr->p("bus_rreq");
     auto cr_rdat = cr->p("bus_rdat");
-    brr <<= cr_rreq;
-    cr_rdat <<= brd;
+    bus_rreq_array <<= cr_rreq;
+    cr_rdat <<= bus_rdat_array;
   }
 
   for (const auto &cw : column_writers) {
     auto cr_wreq = cw->p("bus_wreq");
     auto cr_wdat = cw->p("bus_wdat");
-    bwr <<= cr_wreq;
-    bwd <<= cr_wdat;
+    bus_wreq_array <<= cr_wreq;
+    bus_wdat_array <<= cr_wdat;
   }
 }
 

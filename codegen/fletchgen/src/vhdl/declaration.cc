@@ -18,7 +18,9 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <iostream>
 
+#include "../edges.h"
 #include "../nodes.h"
 #include "../types.h"
 #include "../graphs.h"
@@ -38,12 +40,17 @@ std::string Decl::Generate(const std::shared_ptr<Type> &type) {
     return "std_logic";
   } else if (type->Is(Type::VECTOR)) {
     auto vec = Cast<Vector>(type);
-    auto width = (*vec)->width();
-    return "std_logic_vector(" + (*width)->ToString() + "-1 downto 0)";
+    if (vec) {
+      auto width = (*vec)->width();
+      if (width) {
+        return "std_logic_vector(" + (*width)->ToString() + "-1 downto 0)";
+      }
+    }
+    return "<incomplete type>";
   } else if (type->Is(Type::RECORD)) {
     auto r = Cast<Record>(type);
     return (*r)->name();
-  } else if (type->Is(Type::NATURAL)) {
+  } else if (type->Is(Type::INTEGER)) {
     return "natural";
   } else if (type->Is(Type::STREAM)) {
     auto stream = *Cast<Stream>(type);
@@ -61,8 +68,11 @@ Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   Block ret(depth);
   Line l;
   l << par->name() << " : " << Generate(par->type());
-  if (par->default_value) {
-    l << ":= " << par->default_value.value()->ToString();
+  if (par->value()) {
+    auto val = *par->value();
+    l << " := " << val->ToString();
+  } else if (par->default_value) {
+    l << " := " << (*par->default_value)->ToString();
   }
   ret << l;
   return ret;
@@ -70,10 +80,30 @@ Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
 
 Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block ret(depth);
-  auto fn = FlatNode(port);
-  for (const auto &pair : fn.pairs()) {
+  // Flatten the type of this port
+  auto flat_types = FlatMapToVHDL(Flatten(port->type()));
+  Sort(&flat_types);
+
+  //
+  for (const auto &ft : flat_types) {
     Line l;
-    l << pair.first.ToString() << " : " << ToString(port->dir) + " " << Generate(pair.second);
+    auto port_name_prefix = port->name();
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type);
+    ret << l;
+  }
+  return ret;
+}
+
+Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
+  Block ret(depth);
+  // Flatten the type of this port
+  auto flat_types = FlatMapToVHDL(Flatten(port->type()));
+  Sort(&flat_types);
+
+  for (const auto &ft : flat_types) {
+    Line l;
+    auto port_name_prefix = port->name();
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type);
     ret << l;
   }
   return ret;
@@ -126,8 +156,10 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
     gdf << gf;
     ret << gdh << gd << gdf;
   }
+
   auto ports = comp->GetNodesOfType<Port>();
-  if (!ports.empty()) {
+  auto array_ports = comp->GetNodesOfType<ArrayPort>();
+  if (!(ports.empty() && array_ports.empty())) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);
     Block pdf(ret.indent + 1);
@@ -137,6 +169,15 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
     for (const auto &port : ports) {
       auto g = Decl::Generate(port, ret.indent + 2);
       if (port != ports.back()) {
+        g << ";";
+      } else {
+        g <<= ";";
+      }
+      pd << g;
+    }
+    for (const auto &port : array_ports) {
+      auto g = Decl::Generate(port, ret.indent + 2);
+      if (port != array_ports.back()) {
         g << ";";
       } else {
         g <<= ";";

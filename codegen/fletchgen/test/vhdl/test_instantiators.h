@@ -24,7 +24,7 @@
 namespace fletchgen {
 
 TEST(VHDL, StreamConcat) {
-  auto top = GetConcatStreamsComponent();
+  auto top = GetStreamsComponent();
 
   auto code = vhdl::Design::Generate(top);
   std::cout << code.ToString();

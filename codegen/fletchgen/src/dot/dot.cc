@@ -25,8 +25,8 @@ namespace dot {
 
 std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
   std::stringstream ret;
-
-  for (const auto &e : GetAllEdges(graph)) {
+  auto all_edges = GetAllEdges(graph);
+  for (const auto &e : all_edges) {
     if (!contains(drawn_edges, e)) {
       // Remember we've drawn this edge
       drawn_edges.push_back(e);
@@ -43,7 +43,8 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
         // if (IsNested(e->src->type())) {
         //   ret << NodeName(e->src, ":cell");
         // } else {
-        ret << NodeName(src);
+        auto srcname = NodeName(src);
+        ret << srcname;
         // }
         ret << " -> ";
         // if (IsNested(e->dst->type())) {
@@ -76,7 +77,7 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
           }
         }
 
-        if (src->IsPort() && config.nodes.ports) {
+        if ((src->IsPort() || src->IsArrayPort()) && config.nodes.ports) {
           if (dst->IsSignal()) {
             // Port to signal
             sb << style.edge.port_to_sig;
@@ -91,6 +92,8 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
         } else if (src->IsParameter() && config.nodes.parameters) {
         } else if (src->IsLiteral() && config.nodes.literals) {
           sb << style.edge.lit;
+        } else if (src->IsExpression() && config.nodes.expressions) {
+          sb << style.edge.expr;
         } else {
           continue;
         }
@@ -157,7 +160,11 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
     auto vec = Cast<Vector>(t);
     if (vec) {
       auto width = (*vec)->width();
-      str << "[" + (*width)->ToString() + "]";
+      if (width) {
+        str << "[" + (*width)->ToString() + "]";
+      } else {
+        str << "[..]";
+      }
     }
   }
   return str.str();
@@ -243,7 +250,7 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 
     // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
     // resulting from this setting
-    ret << tab(level + 1) << "splines=ortho;\n";
+    ret << tab(level + 1) << "splines=compound;\n";
     ret << tab(level + 1) << "rankdir=LR;\n";
   } else {
     ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
@@ -254,9 +261,11 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
   }
 
   // Nodes
+  ret << GenNodes(graph, Node::EXPRESSION, level + 1);
   ret << GenNodes(graph, Node::LITERAL, level + 1);
   ret << GenNodes(graph, Node::PARAMETER, level + 1);
   ret << GenNodes(graph, Node::PORT, level + 1);
+  ret << GenNodes(graph, Node::ARRAY_PORT, level + 1);
   ret << GenNodes(graph, Node::SIGNAL, level + 1, true);
 
   if (!graph->children.empty()) {
@@ -325,9 +334,13 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
-  for (const auto &n : graph->nodes) {
-    auto edges = n->outputs();
-    for (const auto &e : edges) {
+  for (const auto &node : graph->nodes) {
+    auto out_edges = node->outputs();
+    for (const auto &e : out_edges) {
+      all_edges.push_back(e);
+    }
+    auto in_edges = node->inputs();
+    for (const auto &e : in_edges) {
       all_edges.push_back(e);
     }
   }
@@ -346,14 +359,15 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
     auto name = (*n->parent())->name();
     ret << name + ":" + ToString(n->id()) + ":";
   }
-  if (!n->name().empty()) {
+  if (n->IsExpression()) {
+    ret << "Anon_" + ToString(n->id()) + "_" + ToHex(n);
+  } else if (!n->name().empty()) {
     ret << n->name();
   } else {
     auto lit = Cast<Literal>(n);
     if (lit) {
       ret << "Anon_" + ToString(n->id()) + "_" + (*lit)->ToString();
     } else {
-      // TODO(johanpel): resolve this madness
       ret << "Anon_" + ToString(n->id()) + "_" + ToHex(n);
     }
   }
@@ -367,34 +381,26 @@ std::string Style::Get(const std::shared_ptr<Node> &n) {
 
   // Add label
   switch (n->type()->id()) {
-    case Type::RECORD: str << GetLabel(n);
+    case Type::RECORD:break;
+    case Type::STREAM:break;
+    case Type::CLOCK:str << node.type.clock;
       break;
-    case Type::STREAM: str << GetLabel(n);
-      break;
-    case Type::CLOCK: str << node.type.clock;
-      str << assign_quotes("label", sanitize(n->name()));
-      break;
-    case Type::RESET: str << node.type.reset;
-      str << assign_quotes("label", sanitize(n->name()));
+    case Type::RESET:str << node.type.reset;
       break;
     case Type::VECTOR: str << node.type.vector;
-      str << assign_quotes("label", sanitize(n->name()));
       break;
     case Type::BIT:str << node.type.bit;
-      str << assign_quotes("label", sanitize(n->name()));
       break;
-    case Type::NATURAL:str << node.type.natural;
-      str << assign_quotes("label", sanitize(n->name()));
+    case Type::INTEGER:str << node.type.integer;
       break;
     case Type::STRING:str << node.type.string;
-      str << assign_quotes("label", sanitize(n->name()));
       break;
     case Type::BOOLEAN:str << node.type.boolean;
-      str << assign_quotes("label", sanitize(n->name()));
       break;
-    default:str << assign_quotes("label", sanitize(n->name()));
-      break;
+    default:break;
   }
+
+  str << GetLabel(n);
 
   // Add other style
   switch (n->id()) {
@@ -407,6 +413,10 @@ std::string Style::Get(const std::shared_ptr<Node> &n) {
     case Node::LITERAL:str << node.literal;
       break;
     case Node::EXPRESSION:str << node.expression;
+      break;
+    case Node::ARRAY_SIGNAL: str << node.signal;
+      break;
+    case Node::ARRAY_PORT: str << node.port;
       break;
   }
 
@@ -438,9 +448,18 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
       str << GenDotRecordCell(n->type(), n->name());
     }
     str << ">";
+  } else if (n->IsParameter()) {
+    str << "label=\"" + sanitize(n->name());
+    auto par = *Cast<Parameter>(n);
+    if (par->value()) {
+      auto val = *par->value();
+      str << ":" << val->ToString();
+    }
+    str << "\"";
   } else {
     str << "label=\"" + sanitize(n->name()) + "\"";
   }
+
   sb << str.str();
 
   return sb.ToString();

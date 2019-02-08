@@ -31,6 +31,10 @@ bool Type::Is(Type::ID type_id) const {
 Type::Type(std::string name, Type::ID id)
     : Named(std::move(name)), id_(id) {}
 
+bool Type::IsAbstract() const {
+  return Is(STRING) || Is(BOOLEAN) || Is(RECORD) || Is(STREAM);
+}
+
 bool Type::IsSynthPrim() const {
   return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
 }
@@ -45,7 +49,7 @@ std::string Type::ToString() {
     case RESET  : return "Reset";
     case BIT    : return "Bit";
     case VECTOR : return "Vector";
-    case NATURAL: return "Natural";
+    case INTEGER: return "Natural";
     case STRING : return "String";
     case BOOLEAN: return "Boolean";
     case RECORD : return "Record";
@@ -54,26 +58,24 @@ std::string Type::ToString() {
   }
 }
 
-Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::shared_ptr<Node> width)
+Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)
     : Type(std::move(name), Type::VECTOR), element_type_(std::move(element_type)) {
   // Check if width is parameter or literal node
-  if (width != nullptr) {
-    if (!(width->IsParameter() || width->IsLiteral() || width->IsExpression())) {
+  if (width) {
+    if (!((*width)->IsParameter() || (*width)->IsLiteral() || (*width)->IsExpression())) {
       throw std::runtime_error("Vector width can only be Parameter, Literal or Expression node.");
     }
-    width_ = width;
-  } else {
-    width = {};
   }
+  width_ = width;
 }
 
 std::shared_ptr<Type> Vector::Make(std::string name,
                                    std::shared_ptr<Type> element_type,
-                                   std::shared_ptr<Node> width) {
+                                   std::optional<std::shared_ptr<Node>> width) {
   return std::make_shared<Vector>(name, element_type, width);
 }
 
-std::shared_ptr<Type> Vector::Make(std::string name, std::shared_ptr<Node> width) {
+std::shared_ptr<Type> Vector::Make(std::string name, std::optional<std::shared_ptr<Node>> width) {
   return std::make_shared<Vector>(name, bit(), width);
 }
 
@@ -97,24 +99,6 @@ Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type,
       element_type_(std::move(element_type)),
       element_name_(std::move(element_name)),
       epc_(epc) {}
-
-std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type) {
-  std::deque<std::shared_ptr<Type>> ret;
-  auto st = Cast<Stream>(type);
-  auto rt = Cast<Record>(type);
-  if (st) {
-    ret.push_back(type);
-    auto dt = (*st)->element_type();
-    auto children = FlattenStreams(dt);
-    ret.insert(ret.end(), children.begin(), children.end());
-  } else if (rt) {
-    for (const auto &rf : (*rt)->fields()) {
-      auto children = FlattenStreams(rf->type());
-      ret.insert(ret.end(), children.begin(), children.end());
-    }
-  }
-  return ret;
-}
 
 std::shared_ptr<Type> bit() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");
@@ -147,7 +131,7 @@ void FlattenRecord(std::deque<FlatType> *list,
 void FlattenStream(std::deque<FlatType> *list,
                    const std::shared_ptr<Stream> &stream,
                    const std::optional<FlatType> &parent) {
-  Flatten(list, stream->element_type(), parent, stream->element_name());
+  Flatten(list, stream->element_type(), parent, "");
 }
 
 void Flatten(std::deque<FlatType> *list,
@@ -206,7 +190,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
   std::stringstream ret;
   for (const auto &ft : flat_type_list) {
     ret << std::setw(32) << std::left
-        << std::string(2 * ft.nesting_level, ' ') + ft.name(ft.nesting_level == 0 ? "(root)" : "") << " : "
+        << std::string(static_cast<unsigned long>(2 * ft.nesting_level), ' ') + ft.name(ft.nesting_level == 0 ? "(root)" : "") << " : "
         << std::setw(24) << std::left << ft.type->name() << " : "
         << std::setw(2) << std::left << ft.nesting_level << " : "
         << std::setw(8) << std::left << ft.type->ToString() << std::endl;
@@ -214,21 +198,9 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
   return ret.str();
 }
 
-#define TOSTRING_FACTORY(TYPE)     \
-  template<>                       \
-    std::string ToString<TYPE>() { \
-    return #TYPE;                  \
-  }
-
-TOSTRING_FACTORY(Clock)
-TOSTRING_FACTORY(Reset)
-TOSTRING_FACTORY(Bit)
-TOSTRING_FACTORY(Vector)
-TOSTRING_FACTORY(Record)
-TOSTRING_FACTORY(Stream)
-TOSTRING_FACTORY(Integer)
-TOSTRING_FACTORY(String)
-TOSTRING_FACTORY(Boolean)
+void Sort(std::deque<FlatType> *list) {
+  std::sort(list->begin(), list->end());
+}
 
 std::shared_ptr<Type> Integer::Make(std::string name) {
   return std::make_shared<Integer>(name);

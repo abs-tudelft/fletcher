@@ -52,6 +52,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   /// @brief Get a node of a specific type with a specific name
   std::shared_ptr<Node> Get(Node::ID node_id, const std::string &node_name) const;
 
+  std::shared_ptr<Node> ap(const std::string &port_name) const;
   std::shared_ptr<Node> p(const std::string &port_name) const;
   std::shared_ptr<Node> s(const std::string &signal_name) const;
 
@@ -102,9 +103,9 @@ struct Component : public Graph {
 
   /// @brief Construct a Component with initial parameters and ports.
   static std::shared_ptr<Component> Make(std::string name,
-                                         std::initializer_list<std::shared_ptr<Parameter>> parameters,
-                                         std::initializer_list<std::shared_ptr<Port>> ports,
-                                         std::initializer_list<std::shared_ptr<Signal>> signals);
+                                         std::initializer_list<std::shared_ptr<Node>> parameters,
+                                         std::initializer_list<std::shared_ptr<Node>> ports,
+                                         std::initializer_list<std::shared_ptr<Node>> signals);
 
   /// @brief Construct an empty Component with only a name.
   static std::shared_ptr<Component> Make(std::string name) { return Make(std::move(name), {}, {}, {}); }

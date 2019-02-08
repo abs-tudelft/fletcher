@@ -24,15 +24,21 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   // Check for potential errors
   if (src == nullptr) {
     throw std::runtime_error("Source node is null");
-  }
-  if (dst == nullptr) {
+  } else if (dst == nullptr) {
     throw std::runtime_error("Destination node is null");
+  } else if (src->IsArray()) {
+    auto sa = *Cast<ArrayNode>(src);
+    return sa->Append(dst);
+  } else if (dst->IsArray()) {
+    auto da = *Cast<ArrayNode>(dst);
+    return da->Append(src);
   }
-  if (!WeaklyEqual(src->type(), dst->type())) {
+  /*else if (!WeaklyEqual(src->type(), dst->type())) {
     std::cerr << "source: " << std::endl << ToString(Flatten(src->type())) << std::endl;
     std::cerr << "destination: " << std::endl << ToString(Flatten(dst->type())) << std::endl;
     throw std::runtime_error("Cannot connect nodes of weakly different types.");
   }
+   */
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);

@@ -17,6 +17,7 @@
 #include <arrow/api.h>
 #include <string>
 #include <memory>
+#include <locale>
 
 #include "./types.h"
 #include "./nodes.h"
@@ -47,59 +48,37 @@ VEC_DECL_FACTORY(byte, 8);
 VEC_DECL_FACTORY(offset, 32);
 VEC_DECL_FACTORY(length, 32);
 
-/// @brief Fletcher accelerator clock domain
-std::shared_ptr<ClockDomain> acc_domain();
+/// @brief Fletcher
 
-/// @brief Fletcher bus clock domain
-std::shared_ptr<ClockDomain> bus_domain();
+#define PARAM_DECL_FACTORY(NAME) std::shared_ptr<Node> NAME();
+PARAM_DECL_FACTORY(bus_addr_width);
+PARAM_DECL_FACTORY(bus_data_width);
+PARAM_DECL_FACTORY(bus_len_width);
+PARAM_DECL_FACTORY(bus_burst_step_len);
+PARAM_DECL_FACTORY(bus_burst_max_len);
 
-/// @brief Fletcher dvalid
-std::shared_ptr<Type> dvalid();
-
-/// @brief Fletcher last
-std::shared_ptr<Type> last();
-
-/// @brief Fletcher accelerator clock
-std::shared_ptr<Type> acc_clk();
-
-/// @brief Fletcher accelerator reset
-std::shared_ptr<Type> acc_reset();
-
-/// @brief Fletcher bus clock
-std::shared_ptr<Type> bus_clk();
-
-/// @brief Fletcher bus reset
-std::shared_ptr<Type> bus_reset();
-
-/// @brief Fletcher bus read request channel
-std::shared_ptr<Type> bus_read_request();
-
-/// @brief Fletcher bus read data channel
-std::shared_ptr<Type> bus_read_data();
-
-/// @brief Fletcher bus write request channel
-std::shared_ptr<Type> bus_write_request();
-
-/// @brief Fletcher bus write data channel
-std::shared_ptr<Type> bus_write_data();
-
-/// @brief Fletcher command stream
-std::shared_ptr<Type> cmd();
-
-/// @brief Fletcher unlock stream
-std::shared_ptr<Type> unlock();
-
-/// @brief Fletcher read data
-std::shared_ptr<Type> read_data();
-
-/// @brief Fletcher write data
-std::shared_ptr<Type> write_data();
+std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
+std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
+std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
+std::shared_ptr<Type> last(); ///< @brief Fletcher last
+std::shared_ptr<Type> acc_clk(); ///< @brief Fletcher accelerator clock
+std::shared_ptr<Type> acc_reset(); ///< @brief Fletcher accelerator reset
+std::shared_ptr<Type> bus_clk(); ///< @brief Fletcher bus clock
+std::shared_ptr<Type> bus_reset(); ///< @brief Fletcher bus reset
+std::shared_ptr<Type> bus_read_request(); ///< @brief Fletcher bus read request channel
+std::shared_ptr<Type> bus_read_data(); ///< @brief Fletcher bus read data channel
+std::shared_ptr<Type> bus_write_request(); ///< @brief Fletcher bus write request channel
+std::shared_ptr<Type> bus_write_data(); ///< @brief Fletcher bus write data channel
+std::shared_ptr<Type> cmd(); ///< @brief Fletcher command stream
+std::shared_ptr<Type> unlock(); ///< @brief Fletcher unlock stream
+std::shared_ptr<Type> read_data(); ///< @brief Fletcher read data
+std::shared_ptr<Type> write_data(); ///< @brief Fletcher write data
 
 /**
  * @brief Convert an arrow::DataType to a Fletcher Type.
  * @param arrow_type    The arrow::DataType.
  * @return              The corresponding Fletcher Type
  */
-std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType>& arrow_type);
+std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type);
 
 }  // namespace fletchgen

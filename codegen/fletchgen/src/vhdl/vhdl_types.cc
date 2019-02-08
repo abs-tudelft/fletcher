@@ -15,10 +15,10 @@
 #include "./vhdl_types.h"
 
 #include <memory>
+#include <algorithm>
+#include <deque>
 
 #include "../types.h"
-
-#include "./flatnode.h"
 
 namespace fletchgen {
 namespace vhdl {
@@ -49,25 +49,34 @@ Port::Dir Reverse(Port::Dir dir) {
   }
 }
 
-bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b) {
-  auto fa = FlatNode(a);
-  auto fb = FlatNode(b);
-
-  // Not compatible if the top level type flattens to something with another number of tuples
-  if (fa.size() != fb.size()) {
-    return false;
+std::deque<FlatType> ResolveAbstract(const FlatType &ft) {
+  std::deque<FlatType> result;
+  if (ft.type->Is(Type::STREAM)) {
+    auto v = ft;
+    auto r = ft;
+    v.name_parts.emplace_back("valid");
+    v.type = valid();
+    r.name_parts.emplace_back("ready");
+    r.type = ready();
+    result.push_back(v);
+    result.push_back(r);
   }
+  return result;
+}
 
-  // Not compatible if the type ids of flat view is different
-  // TODO(johanpel): is this really necessary?
-  for (size_t i = 0; i < fa.size(); i++) {
-    if (std::get<1>(fa.pair(i))->id() != std::get<1>(fb.pair(i))->id()) {
-      return false;
+std::deque<FlatType> FlatMapToVHDL(const std::deque<FlatType> &list) {
+  std::deque<FlatType> result;
+  for (const auto &ft : list) {
+    // If the type is abstract, resolve it to something meaningful in VHDL
+    if (ft.type->IsAbstract()) {
+      auto resolved = ResolveAbstract(ft);
+      result.insert(result.end(), resolved.begin(), resolved.end());
+    } else {
+      // Otherwise VHDL can express the type already
+      result.push_back(ft);
     }
   }
-
-  // Otherwise, it is compatible
-  return true;
+  return result;
 }
 
 }  // namespace vhdl

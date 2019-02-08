@@ -54,6 +54,18 @@ VEC_FACTORY(byte, 8);
 VEC_FACTORY(offset, 32);
 VEC_FACTORY(length, 32);
 
+#define PARAM_FACTORY(NAME, TYPE, DEFAULT)                    \
+std::shared_ptr<Node> NAME() {                                \
+  static auto result = Parameter::Make(#NAME, TYPE, DEFAULT); \
+  return result;                                              \
+}                                                             \
+
+PARAM_FACTORY(bus_addr_width, integer(), intl<64>());
+PARAM_FACTORY(bus_data_width, integer(), intl<512>());
+PARAM_FACTORY(bus_len_width, integer(), intl<7>());
+PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>());
+PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>());
+
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
@@ -101,45 +113,45 @@ std::shared_ptr<Type> last() {
 // Bus channel
 
 std::shared_ptr<Type> bus_read_request() {
-  static std::shared_ptr<RecordField> bus_addr = RecordField::Make("addr", Vector::Make<64>("addr"));
-  static std::shared_ptr<RecordField> bus_len = RecordField::Make("len", Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
-  static std::shared_ptr<Type> bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
+  static auto bus_addr = RecordField::Make("addr", Vector::Make("addr", bus_addr_width()));
+  static auto bus_len = RecordField::Make("len", Vector::Make("len", bus_len_width()));
+  static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
+  static auto bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
   return bus_rreq;
 }
 
 std::shared_ptr<Type> bus_write_request() {
-  static std::shared_ptr<RecordField> bus_addr = RecordField::Make(Vector::Make<64>("addr"));
-  static std::shared_ptr<RecordField> bus_len = RecordField::Make(Vector::Make<7>("len"));
-  static std::shared_ptr<Type> bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
-  static std::shared_ptr<Type> bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
+  static auto bus_addr = RecordField::Make(Vector::Make("addr", bus_addr_width()));
+  static auto bus_len = RecordField::Make(Vector::Make("len", bus_len_width()));
+  static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
+  static auto bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
   return bus_wreq;
 }
 
 std::shared_ptr<Type> bus_read_data() {
-  static std::shared_ptr<RecordField> bus_rdata = RecordField::Make(Vector::Make<64>("data"));
-  static std::shared_ptr<RecordField> bus_rlast = RecordField::Make("last", bit());
-  static std::shared_ptr<Type> bus_rdat_record = Record::Make("rdat:rec", {bus_rdata, bus_rlast});
-  static std::shared_ptr<Type> bus_rdat = Stream::Make("rdat:stream", bus_rdat_record);
+  static auto bus_rdata = RecordField::Make(Vector::Make("data", bus_data_width()));
+  static auto bus_rlast = RecordField::Make("last", bit());
+  static auto bus_rdat_record = Record::Make("rdat:rec", {bus_rdata, bus_rlast});
+  static auto bus_rdat = Stream::Make("rdat:stream", bus_rdat_record);
   return bus_rdat;
 }
 
 std::shared_ptr<Type> bus_write_data() {
-  static std::shared_ptr<RecordField> bus_wdata = RecordField::Make(Vector::Make<64>("data"));
-  static std::shared_ptr<RecordField> bus_wstrobe = RecordField::Make(Vector::Make<64>("strobe"));
-  static std::shared_ptr<RecordField> bus_wlast = RecordField::Make("last", bit());
-  static std::shared_ptr<Type> bus_wdat_record = Record::Make("wdat:rec", {bus_wdata, bus_wstrobe, bus_wlast});
-  static std::shared_ptr<Type> bus_wdat = Stream::Make("wdat:stream", bus_wdat_record);
+  static auto bus_wdata = RecordField::Make(Vector::Make("data", bus_data_width()));
+  static auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", bus_data_width() / intl<8>()));
+  static auto bus_wlast = RecordField::Make("last", bit());
+  static auto bus_wdat_record = Record::Make("wdat:rec", {bus_wdata, bus_wstrobe, bus_wlast});
+  static auto bus_wdat = Stream::Make("wdat:stream", bus_wdat_record);
   return bus_wdat;
 }
 
 std::shared_ptr<Type> cmd() {
-  static std::shared_ptr<RecordField> firstidx = RecordField::Make(Vector::Make<64>("firstIdx"));
-  static std::shared_ptr<RecordField> lastidx = RecordField::Make(Vector::Make<64>("lastidx"));
-  static std::shared_ptr<RecordField> ctrl = RecordField::Make(Vector::Make<64>("ctrl"));
-  static std::shared_ptr<RecordField> tag = RecordField::Make(Vector::Make<8>("tag"));
-  static std::shared_ptr<Type> cmd_record = Record::Make("cmd:rec", {firstidx, lastidx, ctrl, tag});
-  static std::shared_ptr<Type> cmd_stream = Stream::Make("cmd:stream", cmd_record);
+  static auto firstidx = RecordField::Make(Vector::Make<64>("firstIdx"));
+  static auto lastidx = RecordField::Make(Vector::Make<64>("lastidx"));
+  static auto ctrl = RecordField::Make(Vector::Make<64>("ctrl"));
+  static auto tag = RecordField::Make(Vector::Make<8>("tag"));
+  static auto cmd_record = Record::Make("cmd:rec", {firstidx, lastidx, ctrl, tag});
+  static auto cmd_stream = Stream::Make("cmd:stream", cmd_record);
   return cmd_stream;
 }
 
@@ -150,19 +162,19 @@ std::shared_ptr<Type> unlock() {
 }
 
 std::shared_ptr<Type> read_data() {
-  static std::shared_ptr<RecordField> d = RecordField::Make(Vector::Make("data", {}));
-  static std::shared_ptr<RecordField> dv = RecordField::Make(dvalid());
-  static std::shared_ptr<RecordField> l = RecordField::Make("last", bit());
-  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {d, dv, l});
-  static std::shared_ptr<Type> data_stream = Stream::Make("data:stream", data_record);
+  static auto d = RecordField::Make(Vector::Make("data", {}));
+  static auto dv = RecordField::Make(dvalid());
+  static auto l = RecordField::Make("last", bit());
+  static auto data_record = Record::Make("data:rec", {d, dv, l});
+  static auto data_stream = Stream::Make("data:stream", data_record);
   return data_stream;
 }
 
 std::shared_ptr<Type> write_data() {
-  static std::shared_ptr<RecordField> data = RecordField::Make(Vector::Make<64>("data"));
-  static std::shared_ptr<RecordField> last = RecordField::Make("last", bit());
-  static std::shared_ptr<Type> data_record = Record::Make("data:rec", {data, last});
-  static std::shared_ptr<Type> data_stream = Stream::Make("data:stream", data_record);
+  static auto d = RecordField::Make(Vector::Make<64>("data"));
+  static auto l = RecordField::Make("last", bit());
+  static auto data_record = Record::Make("data:rec", {d, l});
+  static auto data_stream = Stream::Make("data:stream", data_record);
   return data_stream;
 }
 

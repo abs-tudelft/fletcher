@@ -1,5 +1,9 @@
 #include <utility>
 
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,11 +86,11 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Get the output edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> outputs() const { return {}; }
   /// @brief Add an input to this node.
-  virtual void AddInput(const std::shared_ptr<Edge>& input) {}
+  virtual void AddInput(const std::shared_ptr<Edge> &input) {}
   /// @brief Add an output to this node.
-  virtual void AddOutput(const std::shared_ptr<Edge>& output) {}
+  virtual void AddOutput(const std::shared_ptr<Edge> &output) {}
   /// @brief Remove an edge of this node.
-  virtual void RemoveEdge(const std::shared_ptr<Edge>& edge) {}
+  virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) { return false; }
 
   /// @brief Set this node's parent
   void SetParent(const Graph *parent);
@@ -104,13 +108,16 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   std::optional<const Graph *> parent_ = {};
 };
 
-struct MultiOutputsNode : public Node {
+/**
+ * @brief A MultiOutputNode is a Node that can drive multiple outputs.
+ */
+struct MultiOutputNode : public Node {
   /// @brief The outgoing Edges that sink this Node.
   std::deque<std::shared_ptr<Edge>> outputs_;
 
-  MultiOutputsNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : Node(std::move(name),
-                                                                                     id,
-                                                                                     std::move(type)) {}
+  MultiOutputNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : Node(std::move(name),
+                                                                                    id,
+                                                                                    std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
   std::deque<std::shared_ptr<Edge>> inputs() const override { return {}; }
@@ -118,31 +125,37 @@ struct MultiOutputsNode : public Node {
   inline std::deque<std::shared_ptr<Edge>> outputs() const override { return outputs_; }
 
   /// @brief Add an output edge to this node.
-  void AddOutput(const std::shared_ptr<Edge>& edge) override;
+  void AddOutput(const std::shared_ptr<Edge> &edge) override;
   /// @brief Remove an edge from this node.
-  void RemoveEdge(const std::shared_ptr<Edge>& edge) override;
+  bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
   /// @brief Return output edge i of this node.
   inline std::shared_ptr<Edge> output(size_t i) const { return outputs_[i]; }
   /// @brief Return the number of edges of this node.
   inline size_t num_outputs() const { return outputs_.size(); }
 };
 
-struct NormalNode : public MultiOutputsNode {
+/**
+ * @brief A NormalNode is a single-input, multiple-outputs node
+ */
+struct NormalNode : public MultiOutputNode {
   /// @brief The incoming Edge that sources this Node.
   std::shared_ptr<Edge> input_;
 
-  NormalNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : MultiOutputsNode(std::move(name),
-                                                                                           id,
-                                                                                           std::move(type)) {}
+  NormalNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : MultiOutputNode(std::move(name),
+                                                                                          id,
+                                                                                          std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
-  std::deque<std::shared_ptr<Edge>> inputs() const override { return {input_}; }
+  std::deque<std::shared_ptr<Edge>> inputs() const override;
 
   /// @brief Return the single incoming edge.
-  std::optional<std::shared_ptr<Edge>> input();
+  std::optional<std::shared_ptr<Edge>> input() const;
 
   /// @brief Set the input edge of this node.
-  void AddInput(const std::shared_ptr<Edge>& edge) override;
+  void AddInput(const std::shared_ptr<Edge> &edge) override;
+
+  /// @brief Remove an edge from this node.
+  bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
 };
 
 /**
@@ -151,7 +164,7 @@ struct NormalNode : public MultiOutputsNode {
  * A literal node can be used to store some literal value. A literal node can, for example, be used for Vector Type
  * widths or it can be connected to a Parameter Node, to give the Parameter its value.
  */
-struct Literal : public MultiOutputsNode {
+struct Literal : public MultiOutputNode {
   /// @brief The actual storage type of the value.
   enum StorageType { INT, STRING, BOOL } storage_type_;
 
@@ -171,7 +184,7 @@ struct Literal : public MultiOutputsNode {
           std::string str_val,
           int int_val,
           bool bool_val)
-      : MultiOutputsNode(std::move(name), Node::LITERAL, type),
+      : MultiOutputNode(std::move(name), Node::LITERAL, type),
         storage_type_(st),
         str_val_(std::move(str_val)),
         int_val_(int_val) {}
@@ -209,7 +222,7 @@ struct Literal : public MultiOutputsNode {
 /**
  * @brief A node representing a binary tree of other nodes
  */
-struct Expression : public MultiOutputsNode {
+struct Expression : public MultiOutputNode {
   enum Operation { ADD, SUB, MUL, DIV } operation;
   std::shared_ptr<Node> lhs;
   std::shared_ptr<Node> rhs;
@@ -277,6 +290,9 @@ struct Parameter : public NormalNode {
 
   /// @brief Create a copy of this Parameter.
   std::shared_ptr<Node> Copy() const override;
+
+  /// @brief Short hand to get value node.
+  std::optional<std::shared_ptr<Node>> value() const;
 };
 
 /**
@@ -290,10 +306,8 @@ struct Port : public NormalNode {
 
   /// @brief Construct a new Port.
   Port(std::string name, std::shared_ptr<Type> type, Dir dir);
-
   /// @brief Get a smart pointer to a new Port.
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Dir dir = Dir::IN);;
-
   /// @brief Get a smart pointer to a new Port. The Port name is derived from the Type name.
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN);;
 
@@ -302,45 +316,94 @@ struct Port : public NormalNode {
 
   /// @brief Return true if this Port is an input, false otherwise.
   bool IsInput() { return dir == IN; }
-
   /// @brief Return true if this Port is an output, false otherwise.
   bool IsOutput() { return dir == OUT; }
 };
 
 /**
- * @brief A node where either inputs or outputs are concatenated.
+ * @brief A node where either inputs or outputs form an array of a specific type.
  *
  * The flattened type of all connected nodes must be strongly equal, i.e. the widths of the flattened subtypes are all
  * the same.
  *
- * Example: If there is a connection from node "a" to both node "b" and "c", then "b" and "c" are said to be
- *          concatenated on the output of node "a".
+ * Example: If there is a connection from ArrayNode "a" to both node "b" and "c", then "b" and "c" are said to be
+ *          concatenated on the output of ArrayNode "a". The concatenated side of "a" is its output.
  *
- * The number of edges that is concatenated onto an ArrayNode is stored as a pointer to a Node size_.
+ *          Here, a, b and c must all have exactly the same flattened type list.
+ *
+ * The number of edges that is concatenated onto an ArrayNode is related through another node via a special edge size()
  * If size_ is an integer literal, it will automatically be incremented when nodes are added.
  * Otherwise, if the Node is a Parameter node being sourced by an integer literal, it can also be automatically be
  * incremented.
- *
- * Here, a, b and c must all have exactly the same flattened type list.
  */
-struct ArrayNode : public Node {
-  /// @brief Which side is concatenated.
-  enum ConcatSide {
-    OUT,
-    IN
-  } concat_side;
-  /// @brief A node representing the number of concatenated edges.
-  std::shared_ptr<Node> size_;
-  /// @brief The concatenated side.
-  std::shared_ptr<Edge> concat_;
-  /// @brief The arrayed side.
-  std::deque<std::shared_ptr<Edge>> arrayed_;
-  /// @brief Concatenate a node onto this node and return an edge;
-  std::shared_ptr<Edge> Concatenate(std::shared_ptr<Node> n);
+class ArrayNode : public Node {
+ public:
+  /// @brief Which side the "array" is on
+  enum ArraySide {
+    ARRAY_OUT,
+    ARRAY_IN
+  };
+
+  ArrayNode(std::string name,
+            Node::ID id,
+            std::shared_ptr<Type> type,
+            ArraySide array_side,
+            std::shared_ptr<Node> size);
+
+  std::shared_ptr<Edge> Append(std::shared_ptr<Node> n);
 
   /// @brief Increment the size of the ArrayNode.
   void increment();
-  void decrement();
+
+  void SetSize(std::shared_ptr<Node> size) { size_ = std::move(size); }
+  std::shared_ptr<Node> size() const { return size_; }
+
+  std::deque<std::shared_ptr<Edge>> inputs() const override;
+  std::deque<std::shared_ptr<Edge>> outputs() const override;
+
+ private:
+  /// @brief Which side is the "array" side
+  ArraySide array_side_;
+  /// @brief A node representing the number of concatenated edges.
+  std::shared_ptr<Node> size_;
+  /// @brief The concatenated side.
+  std::shared_ptr<Edge> single_edge_;
+  /// @brief The arrayed side.
+  std::deque<std::shared_ptr<Edge>> array_edges_;
+  /// @brief Concatenate a node onto this node and return an edge;
+};
+
+struct ArraySignal : public ArrayNode {
+
+};
+
+struct ArrayPort : public ArrayNode {
+  Port::Dir dir;
+
+  /// @brief Construct a new ArrayPort.
+  ArrayPort(std::string name,
+            std::shared_ptr<Type> type,
+            std::shared_ptr<Node> size,
+            Port::Dir dir);
+
+  /// @brief Get a smart pointer to a new ArrayPort.
+  static std::shared_ptr<ArrayPort> Make(std::string name,
+                                         std::shared_ptr<Type> type,
+                                         std::shared_ptr<Node> size,
+                                         Port::Dir dir = Port::Dir::IN);
+  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Type name.
+  static std::shared_ptr<ArrayPort> Make(std::shared_ptr<Type> type,
+                                         std::shared_ptr<Node> size,
+                                         Port::Dir dir = Port::Dir::IN);
+
+  /// @brief Return true if this Port is an input, false otherwise.
+  bool IsInput() { return dir == Port::IN; }
+
+  /// @brief Return true if this Port is an output, false otherwise.
+  bool IsOutput() { return dir == Port::OUT; }
+
+  /// @brief Create a copy of this ArrayPort.
+  std::shared_ptr<Node> Copy() const override;
 };
 
 /**

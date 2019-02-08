@@ -139,6 +139,8 @@ struct Config {
       case Node::SIGNAL: return nodes.signals;
       case Node::PORT: return nodes.ports;
       case Node::EXPRESSION: return nodes.expressions;
+      case Node::ARRAY_PORT: return nodes.ports;
+      case Node::ARRAY_SIGNAL: return nodes.signals;
     }
     return true;
   }
@@ -168,6 +170,7 @@ struct Style {
     str port_to_port = "dir=forward";
     str stream = "penwidth=3";
     str lit = "style=dotted, arrowhead=none, arrowtail=none";
+    str expr = "style=dotted, arrowhead=none, arrowtail=none";
     str clock = "shape=diamond, color=\"#000000\", penwidth=1";
     str reset = "shape=diamond, color=\"#000000\", penwidth=1";
   } edge;
@@ -200,7 +203,7 @@ struct Style {
       str vector = assign_quotes("fillcolor", p().b[2]);
       str stream = assign_quotes("fillcolor", p().b[3]);
       str record = assign_quotes("fillcolor", p().b[4]);
-      str natural = assign_quotes("fillcolor", p().b[5]);
+      str integer = assign_quotes("fillcolor", p().b[5]);
       str string = assign_quotes("fillcolor", p().b[6]);
     } type;
   } node;
@@ -226,7 +229,7 @@ struct Style {
 struct Grapher {
   Style style;
   Config config;
-  std::deque<std::shared_ptr<Edge>> drawn_edges;
+  std::deque<std::shared_ptr<Edge>> drawn_edges={};
 
   Grapher() = default;
   explicit Grapher(Style style) : style(std::move(style)) {}

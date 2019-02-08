@@ -42,5 +42,12 @@ Port::Dir Reverse(Port::Dir dir);
 
 bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b);
 
+/**
+ * @brief Filter abstract types from a list of flattened types
+ * @param list The list to filter
+ * @return The filtered list
+ */
+std::deque<FlatType> FlatMapToVHDL(const std::deque<FlatType> &list);
+
 }  // namespace vhdl
 }  // namespace fletchgen

@@ -28,16 +28,15 @@ TEST(Types, Flatten) {
   auto b = Vector::Make<8>();
   auto c = Stream::Make(b);
 
-  auto d = Record::Make("inner", {RecordField::Make("x", a),
-                                  RecordField::Make("y", b),
-                                  RecordField::Make("z", c)});
+  auto d = Record::Make("inner", {RecordField::Make("a", a),
+                                  RecordField::Make("b", b),
+                                  RecordField::Make("c", c)});
   auto e = Stream::Make(c);
-  auto f = Record::Make("outer", {RecordField::Make("q", d),
-                                  RecordField::Make("r", e)});
+  auto f = Record::Make("outer", {RecordField::Make("d", d),
+                                  RecordField::Make("e", e)});
 
   auto flat = Flatten(f);
   std::cout << ToString(flat);
-
 }
 
 }  // namespace fletchgen

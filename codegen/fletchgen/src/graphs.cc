@@ -23,25 +23,30 @@
 namespace fletchgen {
 
 std::shared_ptr<Component> Component::Make(std::string name,
-                                           std::initializer_list<std::shared_ptr<Parameter>> parameters,
-                                           std::initializer_list<std::shared_ptr<Port>> ports,
-                                           std::initializer_list<std::shared_ptr<Signal>> signals) {
+                                           std::initializer_list<std::shared_ptr<Node>> parameters,
+                                           std::initializer_list<std::shared_ptr<Node>> ports,
+                                           std::initializer_list<std::shared_ptr<Node>> signals) {
   auto ret = std::make_shared<Component>(name);
   for (const auto &param : parameters) {
-    ret->AddNode(param);
+    // Check if actually a param
+    if (!param->IsParameter()) {
+      throw std::runtime_error("Node " + param->ToString() + " is not a parameter node.");
+    }
+    auto p = *Cast<Parameter>(param);
+    ret->AddNode(p);
     // If the parameter node has edges
-    if (param->input()) {
+    if (p->input()) {
       // It has been assigned
-      auto edge = *param->input();
+      auto edge = *p->input();
       auto val = edge->src;
       if (val) {
         // Add the value to the node list
         ret->AddNode(*val);
       }
-    } else if (param->default_value) {
+    } else if (p->default_value) {
       // Otherwise assign default value if any
-      param <<= *param->default_value;
-      ret->AddNode(*param->default_value);
+      p <<= *p->default_value;
+      ret->AddNode(*p->default_value);
     }
   }
   for (const auto &port : ports) {
@@ -108,6 +113,7 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   return result;
 }
 
+std::shared_ptr<Node> Graph::ap(const std::string &port_name) const { return Get(Node::ARRAY_PORT, port_name); }
 std::shared_ptr<Node> Graph::p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
 std::shared_ptr<Node> Graph::s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
 
@@ -121,12 +127,27 @@ std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
+  std::deque<std::shared_ptr<Node>> copied;
   // Make copies of ports and parameters
   for (const auto &port : component->GetNodesOfType<Port>()) {
-    AddNode(port->Copy());
+    auto inst_port = port->Copy();
+    AddNode(inst_port);
+    copied.push_back(port);
+  }
+  for (const auto &array_port : component->GetNodesOfType<ArrayPort>()) {
+    auto inst_size = array_port->size()->Copy();
+    auto inst_port = array_port->Copy();
+    (*Cast<ArrayPort>(inst_port))->SetSize(inst_size);
+    AddNode(inst_port);
+    AddNode(inst_size);
+
+    copied.push_back(array_port);
+    copied.push_back(array_port->size());
   }
   for (const auto &par : component->GetNodesOfType<Parameter>()) {
-    AddNode(par->Copy());
+    if (!contains(copied, *Cast<Node>(par))) {
+      AddNode(par->Copy());
+    }
   }
 }
 

@@ -28,7 +28,7 @@ namespace fletchgen {
 
 TEST(Dot, StreamConcat) {
   // Get component
-  auto top = GetConcatStreamsComponent();
+  auto top = GetStreamsComponent();
 
   // Generate graph
   dot::Grapher dot;

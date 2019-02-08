@@ -25,29 +25,48 @@
 
 namespace fletchgen {
 
-std::shared_ptr<Component> GetConcatStreamsComponent() {
-  auto par_num_units = Parameter::Make("NUM_UNITS", integer());
-  auto par_width = Parameter::Make("WIDTH", integer());
+std::shared_ptr<Component> GetArrayComponent() {
+  auto size = Parameter::Make("size", integer(), intl<0>());
+  auto data = Vector::Make<8>();
+  auto pA = ArrayPort::Make("A", data, size, Port::OUT);
+  auto pB = Port::Make("B", data, Port::IN);
+  auto pC = Port::Make("C", data, Port::IN);
 
+  auto top = Component::Make("top", {}, {}, {});
+  auto x_comp = Component::Make("X", {size}, {pA}, {});
+  auto y_comp = Component::Make("Y", {}, {pB, pC}, {});
+
+  auto x = Instance::Make(x_comp);
+  auto y = Instance::Make(y_comp);
+
+  top->AddChild(x)
+      .AddChild(y);
+
+  y->p("B") <<= x->ap("A");
+  y->p("C") <<= x->ap("A");
+
+  return top;
+}
+
+std::shared_ptr<Component> GetStreamsComponent() {
   // Data type
-  auto data_type = Vector::Make("data", par_width);
-  auto concat_data_type = Vector::Make("data", par_num_units * par_width);
+  auto data_type = Vector::Make("data", intl<8>());
 
   // Port type
-  auto pA = Port::Make("A", Stream::Make(concat_data_type, Port::OUT));
+  auto pA = Port::Make("A", Stream::Make(data_type, Port::OUT));
   auto pB = Port::Make("B", Stream::Make(data_type, Port::OUT));
   auto pC = Port::Make("C", Stream::Make(data_type, Port::OUT));
   auto pD = Port::Make("D", Stream::Make(data_type, Port::OUT));
 
   auto pE = Port::Make("E", Stream::Make(data_type, Port::IN));
   auto pF = Port::Make("F", Stream::Make(data_type, Port::IN));
-  auto pG = Port::Make("G", Stream::Make(concat_data_type, Port::IN));
+  auto pG = Port::Make("G", Stream::Make(data_type, Port::IN));
   auto pH = Port::Make("H", Stream::Make(data_type, Port::IN));
 
   // Component types
-  auto top = Component::Make("top", {par_width}, {}, {});
-  auto x_comp = Component::Make("X", {par_width, par_num_units}, {pA, pB, pC, pD}, {});
-  auto y_comp = Component::Make("Y", {par_width, par_num_units}, {pE, pF, pG, pH}, {});
+  auto top = Component::Make("top", {}, {}, {});
+  auto x_comp = Component::Make("X", {}, {pA, pB, pC, pD}, {});
+  auto y_comp = Component::Make("Y", {}, {pE, pF, pG, pH}, {});
 
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);

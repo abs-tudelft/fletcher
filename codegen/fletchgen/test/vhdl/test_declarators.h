@@ -18,6 +18,8 @@
 
 #include "../../src/vhdl/vhdl.h"
 
+#include "../../src/dot/dot.h"
+
 #include "../../src/nodes.h"
 #include "../../src/types.h"
 #include "../../src/fletcher_types.h"
@@ -29,6 +31,16 @@ namespace fletchgen {
 TEST(VHDL, ComponentDecl) {
   auto code = vhdl::Decl::Generate(GetAllPortTypesComponent());
   std::cout << code.ToString() << std::endl;
+}
+
+TEST(VHDL, ArrayPort) {
+  auto top = GetArrayComponent();
+
+  auto code = vhdl::Design::Generate(top);
+  std::cout << code.ToString() << std::endl;
+
+  dot::Grapher dot(dot::Style::def());
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 }

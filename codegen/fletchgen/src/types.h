@@ -56,7 +56,7 @@ class Type : public Named {
     BIT,      ///< Concrete, primitive
     VECTOR,   ///< t.b.d.
 
-    NATURAL,  ///< Abstract, primitive
+    INTEGER,  ///< Abstract, primitive
     STRING,   ///< Abstract, primitive
     BOOLEAN,  ///< Abstract, primitive
 
@@ -69,6 +69,8 @@ class Type : public Named {
   bool Is(ID type_id) const;
   /// @brief Return true if the Type is a synthesizable primitive, false otherwise.
   bool IsSynthPrim() const;
+  /// @brief Return true if the Type is an abstract type, false otherwise.
+  bool IsAbstract() const;
   /// @brief Return the width of the type, if it is synthesizable.
   virtual std::optional<std::shared_ptr<Node>> width() const { return {}; }
   /// @brief Return true if type is nested (e.g. Stream or Record), false otherwise.
@@ -125,7 +127,7 @@ std::shared_ptr<Type> bit();
 
 /// @brief Integer type.
 struct Integer : public Type {
-  explicit Integer(std::string name) : Type(std::move(name), Type::NATURAL) {}
+  explicit Integer(std::string name) : Type(std::move(name), Type::INTEGER) {}
   static std::shared_ptr<Type> Make(std::string name);
 };
 /// @brief Generic static Integer type.
@@ -153,13 +155,13 @@ std::shared_ptr<Type> string();
 /// @brief Vector type.
 class Vector : public Type {
  public:
-  Vector(std::string name, std::shared_ptr<Type> element_type, std::shared_ptr<Node> width);
+  Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width);
 
   static std::shared_ptr<Type> Make(std::string name,
                                     std::shared_ptr<Type> element_type,
-                                    std::shared_ptr<Node> width);
+                                    std::optional<std::shared_ptr<Node>> width);
 
-  static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Node> width);
+  static std::shared_ptr<Type> Make(std::string name, std::optional<std::shared_ptr<Node>> width);
 
   template<int W>
   static std::shared_ptr<Type> Make(std::string name) {
@@ -175,7 +177,7 @@ class Vector : public Type {
   std::optional<std::shared_ptr<Node>> width() const override { return width_; }
 
  private:
-  std::shared_ptr<Node> width_;
+  std::optional<std::shared_ptr<Node>> width_;
   std::shared_ptr<Type> element_type_;
 };
 
@@ -227,6 +229,7 @@ class Stream : public Type {
                                     int epc = 1);
 
   std::shared_ptr<Type> element_type() { return element_type_; }
+  // TODO(johanpel): potentially remove element names
   std::string element_name() { return element_name_; }
   int epc() { return epc_; }
 
@@ -241,12 +244,6 @@ class Stream : public Type {
 /// @brief Flatten all potential underlying Streams of a Type.
 std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type);
 
-/// @brief Return a human-readable String for some type T.
-template<typename T>
-std::string ToString() {
-  return "UNKNOWN TYPE";
-}
-
 /// @brief Cast a pointer to a Type to a typically less abstract Type T. Returns no value if the cast was unsuccessful.
 template<typename T>
 std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
@@ -257,12 +254,6 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   return result;
 }
 
-template<typename T>
-const T &Cast(const Type &type) {
-  auto result = dynamic_cast<T &>(type);
-  return result;
-}
-
 struct FlatType {
   FlatType() = default;
   FlatType(std::shared_ptr<Type> t, std::deque<std::string> prefix, std::string name, int level);
@@ -270,6 +261,9 @@ struct FlatType {
   std::deque<std::string> name_parts;
   std::shared_ptr<Type> type;
   std::string name(std::string root = "", std::string sep = ":") const;
+  bool operator<(FlatType& a) {
+    return nesting_level < a.nesting_level;
+  }
 };
 
 // Flattening functions for nested types:
@@ -292,6 +286,12 @@ void Flatten(std::deque<FlatType> *list,
 
 /// @brief Flatten and return a list of FlatTypes.
 std::deque<FlatType> Flatten(const std::shared_ptr<Type> &type);
+
+/**
+ * @brief Sort a list of flattened types by nesting level
+ * @param list
+ */
+void Sort(std::deque<FlatType>* list);
 
 /// @brief Convert a list of FlatTypes to a human-readable string.
 std::string ToString(std::deque<FlatType> flat_type_list);

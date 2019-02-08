@@ -30,7 +30,7 @@ namespace vhdl {
 struct Inst {
   static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
   static Block Generate(const std::shared_ptr<Port> &lhs);
-  static Block Generate(const std::shared_ptr<Parameter> &port);
+  static Block Generate(const std::shared_ptr<Parameter> &par);
 };
 
 }  // namespace vhdl

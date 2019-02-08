@@ -15,6 +15,9 @@
 #include "./instantiation.h"
 
 #include "../edges.h"
+#include "../nodes.h"
+#include "../types.h"
+#include "../graphs.h"
 
 #include "./flatnode.h"
 #include "./vhdl_types.h"
@@ -58,7 +61,7 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     ret << gmh << gm << gmf;
   }
 
-  if (inst->CountNodes(Node::PORT) > 0) {
+  if (inst->CountNodes(Node::PORT) + inst->CountNodes(Node::ARRAY_PORT) > 0) {
     // Port map
     Block pmh(ret.indent + 1);
     Block pmb(ret.indent + 2);
@@ -71,6 +74,11 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
       pm << Generate(p);
       pmb << pm;
     }
+    for (const auto &p : inst->GetNodesOfType<ArrayPort>()) {
+      Block pm;
+      //pm << Generate(p);
+      pmb << pm;
+    }
     pf << ")";
     pmf << pf;
     ret << pmh << pmb << pmf;
@@ -79,8 +87,18 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
   return ret;
 }
 
-Block Inst::Generate(const std::shared_ptr<Parameter> &port) {
-  return Block();
+Block Inst::Generate(const std::shared_ptr<Parameter> &par) {
+  Block ret;
+  Line l;
+  l << par->name() << " => ";
+  if (par->value()) {
+    auto val = *par->value();
+    l << val->ToString();
+  } else if (par->default_value) {
+    l << (*par->default_value)->ToString();
+  }
+  ret << l;
+  return ret;
 }
 
 }  // namespace vhdl
