@@ -355,8 +355,8 @@ class ArrayNode : public Node {
   /// @brief Increment the size of the ArrayNode.
   void increment();
 
-  void SetSize(std::shared_ptr<Node> size) { size_ = std::move(size); }
-  std::shared_ptr<Node> size() const { return size_; }
+  std::shared_ptr<Edge> SetSize(std::shared_ptr<Node> size);
+  std::shared_ptr<Node> size() const;
 
   std::deque<std::shared_ptr<Edge>> inputs() const override;
   std::deque<std::shared_ptr<Edge>> outputs() const override;
@@ -365,7 +365,7 @@ class ArrayNode : public Node {
   /// @brief Which side is the "array" side
   ArraySide array_side_;
   /// @brief A node representing the number of concatenated edges.
-  std::shared_ptr<Node> size_;
+  std::shared_ptr<Edge> size_;
   /// @brief The concatenated side.
   std::shared_ptr<Edge> single_edge_;
   /// @brief The arrayed side.

@@ -34,7 +34,10 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   ID id_;
 
   /// @brief Graph nodes.
-  std::deque<std::shared_ptr<Node>> nodes;
+  std::deque<std::shared_ptr<Node>> nodes_;
+
+  /// @brief Return all graph nodes, including any nodes that have not explicitly been added to the graph.
+  std::deque<std::shared_ptr<Node>> implicit_nodes();
 
   /// @brief Graph children / subgraphs.
   std::deque<std::shared_ptr<Graph>> children;
@@ -79,7 +82,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   template<typename T>
   std::deque<std::shared_ptr<T>> GetNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
-    for (const auto &n : nodes) {
+    for (const auto &n : nodes_) {
       auto node = Cast<T>(n);
       if (node) {
         result.push_back(*node);

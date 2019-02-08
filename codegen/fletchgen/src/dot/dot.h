@@ -97,9 +97,9 @@ struct Config {
     bool ports = true;
     bool expressions = true;
     struct ExpandConfig {
-      bool record = true;
-      bool stream = true;
-      bool expression = true;
+      bool record = false;
+      bool stream = false;
+      bool expression = false;
     } expand;
     struct TypeConfig {
       bool clock = true;

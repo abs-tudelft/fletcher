@@ -222,7 +222,7 @@ std::shared_ptr<UserCore> UserCore::Make(std::shared_ptr<SchemaSet> schema_set) 
 }
 
 std::shared_ptr<ArrowPort> UserCore::GetArrowPort(std::shared_ptr<arrow::Field> field) {
-  for (const auto &n : nodes) {
+  for (const auto &n : nodes_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {
       if ((*ap)->field_ == field) {
@@ -234,7 +234,7 @@ std::shared_ptr<ArrowPort> UserCore::GetArrowPort(std::shared_ptr<arrow::Field> 
 }
 std::deque<std::shared_ptr<ArrowPort>> UserCore::GetAllArrowPorts() {
   std::deque<std::shared_ptr<ArrowPort>> result;
-  for (const auto &n : nodes) {
+  for (const auto &n : nodes_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {
       result.push_back(*ap);

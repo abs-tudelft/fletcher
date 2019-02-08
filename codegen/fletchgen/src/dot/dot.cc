@@ -23,6 +23,12 @@
 namespace fletchgen {
 namespace dot {
 
+static std::string ToHex(const std::shared_ptr<Node> &n) {
+  std::stringstream ret;
+  ret << std::hex << reinterpret_cast<uint64_t>(n.get());
+  return ret.str();
+}
+
 std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
@@ -36,15 +42,18 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
         auto dst = *e->dst;
         auto src = *e->src;
 
-        StyleBuilder sb;
-
         // Draw edge
         ret << tab(level);
         // if (IsNested(e->src->type())) {
         //   ret << NodeName(e->src, ":cell");
         // } else {
-        auto srcname = NodeName(src);
-        ret << srcname;
+        if (src->IsExpression() && config.nodes.expand.expression) {
+          auto srcname = ToHex(src);
+          ret << "\"" + srcname + "\"";
+        } else {
+          auto srcname = NodeName(src);
+          ret << srcname;
+        }
         // }
         ret << " -> ";
         // if (IsNested(e->dst->type())) {
@@ -55,7 +64,8 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
 
         // Set style
         ret << " [";
-        sb << style.edge.base;
+
+        StyleBuilder sb;
 
         switch (src->type()->id()) {
           case Type::STREAM: {
@@ -94,6 +104,9 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
           sb << style.edge.lit;
         } else if (src->IsExpression() && config.nodes.expressions) {
           sb << style.edge.expr;
+          if (config.nodes.expand.expression) {
+            sb << "lhead=\"cluster_" + NodeName(src) + "\"";
+          }
         } else {
           continue;
         }
@@ -209,20 +222,30 @@ std::string Style::GenDotRecordCell(const std::shared_ptr<Type> &t,
 
 std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
   std::stringstream str;
-  // Indent
-  str << tab(level);
-  str << NodeName(n);
-  // Draw style
-  str << " [";
-  str << style.Get(n);
-  str << "];\n";
+  if (n->IsExpression() && config.nodes.expand.expression) {
+    str << GenExpr(n);
+  } else {
+    // Indent
+    str << tab(level);
+    str << NodeName(n);
+    // Draw style
+    str << " [";
+    str << style.Get(n);
+    str << "];\n";
+  }
   return str.str();
 }
 
 std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, int level, bool nogroup) {
   std::stringstream ret;
-  auto nodes = graph->GetNodesOfType(id);
-  if (!nodes.empty()) {
+  auto nodes = graph->implicit_nodes();
+  std::deque<std::shared_ptr<Node>> filtered;
+  for (const auto &n : nodes) {
+    if (n->id() == id) {
+      filtered.push_back(n);
+    }
+  }
+  if (!filtered.empty()) {
     if (!nogroup) {
       ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) + "_" + ToString(id) << " {\n";
       // ret << tab(level + 1) << "label=\"" << ToString(id) << "s\";\n";
@@ -231,7 +254,7 @@ std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, 
       ret << tab(level + 1) << "style=" + style.nodegroup.base + ";\n";
       ret << tab(level + 1) << "color=\"" + style.nodegroup.color + "\";\n";
     }
-    for (const auto &n : nodes) {
+    for (const auto &n : filtered) {
       ret << GenNode(n, level + nogroup);
     }
     if (!nogroup) {
@@ -250,7 +273,7 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 
     // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
     // resulting from this setting
-    ret << tab(level + 1) << "splines=compound;\n";
+    ret << tab(level + 1) << "splines=ortho;\n";
     ret << tab(level + 1) << "rankdir=LR;\n";
   } else {
     ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
@@ -292,12 +315,6 @@ std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, std::string pa
   return dot;
 }
 
-static std::string ToHex(const std::shared_ptr<Node> &n) {
-  std::stringstream ret;
-  ret << std::hex << reinterpret_cast<uint64_t>(n.get());
-  return ret.str();
-}
-
 std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string prefix, int level) {
   std::stringstream str;
 
@@ -308,7 +325,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
   node_id += ToHex(node);
 
   if (level == 0) {
-    str << "graph {\n";
+    str << "subgraph cluster_" + NodeName(node) + " {\n";
   }
 
   auto n_expr = Cast<Expression>(node);
@@ -320,8 +337,8 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
   if (n_expr) {
     auto left_node_id = node_id + "_" + ToHex((*n_expr)->lhs);
     auto right_node_id = node_id + "_" + ToHex((*n_expr)->rhs);
-    str << "\"" + node_id + "\" -- \"" + left_node_id + "\"\n";
-    str << "\"" + node_id + "\" -- \"" + right_node_id + "\"\n";
+    str << "\"" + node_id + "\" -> \"" + left_node_id + "\"\n";
+    str << "\"" + node_id + "\" -> \"" + right_node_id + "\"\n";
     str << GenExpr((*n_expr)->lhs, node_id, level + 1);
     str << GenExpr((*n_expr)->rhs, node_id, level + 1);
   }
@@ -334,7 +351,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
-  for (const auto &node : graph->nodes) {
+  for (const auto &node : graph->nodes_) {
     auto out_edges = node->outputs();
     for (const auto &e : out_edges) {
       all_edges.push_back(e);
@@ -425,13 +442,16 @@ std::string Style::Get(const std::shared_ptr<Node> &n) {
 
 std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
   StyleBuilder sb;
+  bool expand = false;
   if (n->type()->Is(Type::STREAM)) {
+    expand |= config.nodes.expand.stream;
     if (config.nodes.expand.stream) {
       sb << assign_quotes("color", node.color.stream_child);
     } else {
       sb << node.type.stream;
     }
   } else if (n->type()->Is(Type::RECORD)) {
+    expand |= config.nodes.expand.record;
     if (config.nodes.expand.record) {
       sb << assign_quotes("color", node.color.record_child);
     } else {
@@ -440,7 +460,7 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
   }
 
   std::stringstream str;
-  if (n->type()->IsNested()) {
+  if (n->type()->IsNested() && expand) {
     str << "label=<";
     if (node.nested == "html") {
       str << GenHTMLTableCell(n->type(), n->name());

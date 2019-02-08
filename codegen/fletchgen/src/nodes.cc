@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -403,7 +405,7 @@ std::shared_ptr<Edge> ArrayNode::Append(std::shared_ptr<Node> n) {
     array_edges_.push_back(e);
     n->AddInput(e);
   } else {
-    e = Edge::Make(n->name() + "_to_" + name(), n, shared_from_this());
+    e = Edge::Make(n->name() + "_to_" + name(), shared_from_this(), n);
     array_edges_.push_back(e);
     n->AddOutput(e);
   }
@@ -430,11 +432,14 @@ static std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
 }
 
 void ArrayNode::increment() {
-  if (size_ == nullptr) {
+  if (size_ != nullptr) {
+    if (size_->src) {
+      auto incremented = IncrementNode(*size_->src);
+      SetSize(incremented);
+    }
+  } else {
     throw std::runtime_error("Invalid ArrayNode. Size points to null.");
   }
-  auto incremented = IncrementNode(size_);
-  size_ = incremented;
 }
 
 ArrayNode::ArrayNode(std::string name,
@@ -442,18 +447,21 @@ ArrayNode::ArrayNode(std::string name,
                      std::shared_ptr<Type> type,
                      ArraySide array_side,
                      std::shared_ptr<Node> size)
-    : Node(std::move(name), id, std::move(type)), array_side_(array_side), size_(std::move(size)) {}
+    : Node(std::move(name), id, std::move(type)), array_side_(array_side) {}
 
 std::deque<std::shared_ptr<Edge>> ArrayNode::inputs() const {
+  std::deque<std::shared_ptr<Edge>> result;
   if (array_side_ == ARRAY_OUT) {
     if (single_edge_ != nullptr) {
-      return {single_edge_};
-    } else {
-      return {};
+      result.push_back(single_edge_);
+    }
+    if (size_ != nullptr) {
+      result.push_back(size_);
     }
   } else {
-    return array_edges_;
+    append(&result, array_edges_);
   }
+  return result;
 }
 
 std::deque<std::shared_ptr<Edge>> ArrayNode::outputs() const {
@@ -468,17 +476,34 @@ std::deque<std::shared_ptr<Edge>> ArrayNode::outputs() const {
   }
 }
 
+std::shared_ptr<Edge> ArrayNode::SetSize(std::shared_ptr<Node> size) {
+  // Remove the old edge.
+  if (size_ != nullptr) {
+    if (size_->src) {
+      (*size_->src)->RemoveEdge(size_);
+    }
+  }
+  auto size_edge = Edge::Make(name() + "_size", shared_from_this(), size);
+  size->AddOutput(size_edge);
+  size_ = size_edge;
+  return size_edge;
+}
+
+std::shared_ptr<Node> ArrayNode::size() const { return *size_->src; }
+
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
                                            std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
                                            Port::Dir dir) {
-  return std::make_shared<ArrayPort>(name, type, size, dir);
+  auto result = std::make_shared<ArrayPort>(name, type, nullptr, dir);
+  result->SetSize(std::move(size));
+  return result;
 }
 
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
                                            Port::Dir dir) {
-  return std::make_shared<ArrayPort>(type->name(), type, size, dir);
+  return ArrayPort::Make(type->name(), type, size, dir);
 }
 
 ArrayPort::ArrayPort(std::string name,

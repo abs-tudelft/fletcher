@@ -19,6 +19,7 @@
 
 #include "./nodes.h"
 #include "./edges.h"
+#include "graphs.h"
 
 namespace fletchgen {
 
@@ -59,13 +60,13 @@ std::shared_ptr<Component> Component::Make(std::string name,
 }
 
 Graph &Graph::AddNode(const std::shared_ptr<Node> &node) {
-  nodes.push_back(node);
+  nodes_.push_back(node);
   node->SetParent(this);
   return *this;
 }
 
 std::shared_ptr<Node> Graph::Get(Node::ID node_id, const std::string &node_name) const {
-  for (const auto &n : nodes) {
+  for (const auto &n : nodes_) {
     if ((n->name() == node_name) && (n->Is(node_id))) {
       return n;
     }
@@ -84,7 +85,7 @@ Graph &Graph::AddChild(const std::shared_ptr<Graph> &child) {
 
 size_t Graph::CountNodes(Node::ID id) const {
   size_t count = 0;
-  for (const auto &n : nodes) {
+  for (const auto &n : nodes_) {
     if (n->Is(id)) {
       count++;
     }
@@ -97,7 +98,7 @@ std::shared_ptr<Graph> Graph::Copy() const {
   for (const auto &child : children) {
     ret->AddChild(child->Copy());
   }
-  for (const auto &node : nodes) {
+  for (const auto &node : nodes_) {
     ret->AddNode(node->Copy());
   }
   return ret;
@@ -105,7 +106,7 @@ std::shared_ptr<Graph> Graph::Copy() const {
 
 std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   std::deque<std::shared_ptr<Node>> result;
-  for (const auto &n : nodes) {
+  for (const auto &n : nodes_) {
     if (n->Is(id)) {
       result.push_back(n);
     }
@@ -116,6 +117,23 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
 std::shared_ptr<Node> Graph::ap(const std::string &port_name) const { return Get(Node::ARRAY_PORT, port_name); }
 std::shared_ptr<Node> Graph::p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
 std::shared_ptr<Node> Graph::s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
+
+std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
+  std::deque<std::shared_ptr<Node>> result;
+  for (const auto& n : nodes_) {
+    result.push_back(n);
+    for (const auto & i : n->inputs()) {
+      if (i->src) {
+        if (!(*i->src)->parent()) {
+          result.push_back(*i->src);
+        }
+      }
+    }
+  }
+  auto last = std::unique(result.begin(), result.end());
+  result.erase(last, result.end());
+  return result;
+}
 
 std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
   return std::make_shared<Instance>(name, component);
@@ -153,7 +171,7 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
 
 Graph &Instance::AddNode(const std::shared_ptr<Node> &node) {
   if (!node->Is(Node::SIGNAL)) {
-    nodes.push_back(node);
+    nodes_.push_back(node);
     node->SetParent(this);
     return *this;
   } else {
@@ -223,7 +241,7 @@ std::shared_ptr<Graph> Component::Copy() const {
   for (const auto &child : this->children) {
     ret->AddChild(*Cast<Instance>(child));
   }
-  for (const auto &node : this->nodes) {
+  for (const auto &node : this->nodes_) {
     ret->AddNode(node->Copy());
   }
   return ret;

@@ -44,8 +44,8 @@ bool contains(const std::deque<T *> &list, const T *item) {
 }
 
 template<typename T>
-bool append(std::deque<const std::shared_ptr<T> &> *list_a, const std::deque<const std::shared_ptr<T> &> &list_b) {
-  return list_a->insert(list_a->begin(), list_b.begin(), list_b.end());
+void append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared_ptr<T>> &list_b) {
+  list_a->insert(list_a->end(), list_b.begin(), list_b.end());
 }
 /**
  * @brief Remove an item from a deque, returning false if it was not in the deque, true otherwise.
