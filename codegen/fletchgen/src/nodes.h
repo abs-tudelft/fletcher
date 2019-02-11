@@ -250,7 +250,12 @@ struct Expression : public MultiOutputNode {
 };
 
 std::string ToString(Expression::Operation operation);
+
+/// @brief Create an expressions, adding two nodes.
 std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+/// @brief Increment a node with an integer. If the lhs is a literal, return a new literal, otherwise and expression.
+std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs);
+
 std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);

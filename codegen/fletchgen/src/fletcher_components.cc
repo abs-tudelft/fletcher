@@ -35,11 +35,11 @@ static Port::Dir mode2dir(fletcher::Mode mode) {
   }
 }
 
-ArrowPort::ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, Port::Dir dir)
-    : Port(std::move(name), GetStreamType(field), dir), field_(field) {}
+ArrowPort::ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir)
+    : Port(std::move(name), GetStreamType(field, mode), dir), field_(std::move(field)) {}
 
-std::shared_ptr<ArrowPort> ArrowPort::Make(std::shared_ptr<arrow::Field> field, Port::Dir dir) {
-  return std::make_shared<ArrowPort>(field->name(), field, dir);
+std::shared_ptr<ArrowPort> ArrowPort::Make(std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir) {
+  return std::make_shared<ArrowPort>(field->name(), field, mode, dir);
 }
 
 std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list) {
@@ -57,7 +57,7 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      bus_data_width(),
                                      nslaves,
                                      Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
-                                     Parameter::Make("MAX_OUTSTANDING", integer(), intl<2>()),
+                                     Parameter::Make("MAX_OUTSTANDING", integer(), intl<4>()),
                                      Parameter::Make("RAM_CONFIG", string(), strl("")),
                                      Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
                                      Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
@@ -80,7 +80,7 @@ std::shared_ptr<Component> ColumnReader() {
                                      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
                                      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
                                      Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("CFG", string(), strl("")),
+                                     Parameter::Make("CFG", string(), strl("\"\"")),
                                      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
                                      Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>())},
                                     {Port::Make(bus_clk()),
@@ -98,119 +98,13 @@ std::shared_ptr<Component> ColumnReader() {
   return ret;
 }
 
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level) {
-  int epc = fletcher::getEPC(field);
-
-  std::shared_ptr<Type> type;
-
-  auto arrow_id = field->type()->id();
-  auto name = field->name();
-
-  switch (arrow_id) {
-
-    case arrow::Type::BINARY: {
-      // Special case: binary type has a length stream and bytes stream.
-      // The EPC is assumed to relate to the list elements,
-      // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream",
-                                Record::Make("data", {
-                                    RecordField::Make("data", byte()),
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
-                                "data", epc);
-      type = Record::Make(name + ":binary", {
-          RecordField::Make("length", length()),
-          RecordField::Make("bytes", slave)
-      });
-      break;
-    }
-
-    case arrow::Type::STRING: {
-      // Special case: string type has a length stream and utf8 character stream.
-      // The EPC is assumed to relate to the list elements,
-      // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream",
-                                Record::Make("data", {
-                                    RecordField::Make("data", utf8c()),
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
-                                "data", epc);
-      type = Record::Make(name + ":string", {
-          RecordField::Make("length", length()),
-          RecordField::Make("chars", slave)
-      });
-      break;
-    }
-
-      // Lists
-    case arrow::Type::LIST: {
-      if (field->type()->num_children() != 1) {
-        throw std::runtime_error("Encountered Arrow list type with other than 1 child.");
-      }
-
-      auto arrow_child = field->type()->child(0);
-      auto element_type = GetStreamType(arrow_child, level + 1);
-      auto slave = Stream::Make(name + ":stream",
-                                Record::Make("data", {
-                                    RecordField::Make("data", element_type),
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
-                                "data", epc);
-      type = Record::Make(name + ":list", {
-          RecordField::Make(length()),
-          RecordField::Make(arrow_child->name(), slave)
-      });
-      break;
-    }
-
-      // Structs
-    case arrow::Type::STRUCT: {
-      if (field->type()->num_children() < 1) {
-        throw std::runtime_error("Encountered Arrow struct type without any children.");
-      }
-      std::deque<std::shared_ptr<RecordField>> children;
-      for (const auto &f : field->type()->children()) {
-        auto child_type = GetStreamType(f, level + 1);
-        children.push_back(RecordField::Make(f->name(), child_type));
-      }
-      type = Record::Make(name + ":struct", children);
-      break;
-    }
-
-      // Non-nested types
-    default: {
-      type = GenTypeFrom(field->type());
-      break;
-    }
-  }
-
-  // If this is a top level field, create a stream out of it
-  if (level == 0) {
-    // Element name is empty by default.
-    std::string elements_name;
-    // Check if the type is nested. If it is not nested, the give the elements the name "data"
-    if (!type->IsNested()) {
-      elements_name = "data";
-    }
-    // Create the stream record
-    auto record = Record::Make("data", {
-        RecordField::Make(elements_name, type),
-        RecordField::Make("dvalid", dvalid()),
-        RecordField::Make("last", last())});
-    auto stream = Stream::Make(name + ":stream", record, elements_name);
-    return stream;
-  } else {
-    // Otherwise just return the type
-    return type;
-  }
-}
-
 UserCore::UserCore(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
   for (const auto &s : schema_set_->schema_list_) {
+    auto mode = fletcher::getMode(s);
     for (const auto &f : s->fields()) {
       if (!fletcher::mustIgnore(f)) {
-        AddNode(ArrowPort::Make(f, mode2dir(fletcher::getMode(s))));
+        AddNode(ArrowPort::Make(f, mode, mode2dir(mode)));
         AddNode(Port::Make(f->name() + "_cmd", cmd(), Port::OUT));
       }
     }
@@ -287,8 +181,8 @@ FletcherCore::FletcherCore(std::string name, const std::shared_ptr<SchemaSet> &s
   auto bus_rdat_array = ArrayPort::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
 
   auto num_write_slaves = Parameter::Make("NUM_WRITE_SLAVES", integer(), intl<0>());
-  auto bus_wreq_array =  ArrayPort::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
-  auto bus_wdat_array =  ArrayPort::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
+  auto bus_wreq_array = ArrayPort::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
+  auto bus_wdat_array = ArrayPort::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
 
   AddNode(num_read_slaves);
   AddNode(bus_rreq_array);

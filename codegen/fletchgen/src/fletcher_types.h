@@ -19,6 +19,8 @@
 #include <memory>
 #include <locale>
 
+#include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
+
 #include "./types.h"
 #include "./nodes.h"
 
@@ -59,6 +61,7 @@ PARAM_DECL_FACTORY(bus_burst_max_len);
 
 std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
+std::shared_ptr<Type> incomplete_data(); ///< @brief Fletcher data
 std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
 std::shared_ptr<Type> last(); ///< @brief Fletcher last
 std::shared_ptr<Type> acc_clk(); ///< @brief Fletcher accelerator clock
@@ -76,9 +79,22 @@ std::shared_ptr<Type> write_data(); ///< @brief Fletcher write data
 
 /**
  * @brief Convert an arrow::DataType to a Fletcher Type.
+ *
+ * Does not take into consideration nesting.
+ *
  * @param arrow_type    The arrow::DataType.
- * @return              The corresponding Fletcher Type
+ * @return              The corresponding Type
  */
 std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type);
+
+/**
+ * @brief Convert an Arrow::Field into a stream type.
+ * @param field The Arrow::Field to convert.
+ * @param level Nesting level.
+ * @return The Stream Type.
+ */
+std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level = 0);
+
+TypeConverter GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
 
 }  // namespace fletchgen

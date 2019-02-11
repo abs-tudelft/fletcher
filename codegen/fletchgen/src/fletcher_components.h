@@ -33,15 +33,13 @@ namespace fletchgen {
 using TypeList = std::deque<std::shared_ptr<Type>>;
 using ArrowFieldList = std::deque<std::shared_ptr<arrow::Field>>;
 
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, int level = 0);
-
 /**
  * @brief A port derived from an Arrow field
  */
 struct ArrowPort : public Port {
   std::shared_ptr<arrow::Field> field_;
-  ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, Port::Dir dir);
-  static std::shared_ptr<ArrowPort> Make(std::shared_ptr<arrow::Field> field, Port::Dir dir);
+  ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir);
+  static std::shared_ptr<ArrowPort> Make(std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir);
 };
 
 /**

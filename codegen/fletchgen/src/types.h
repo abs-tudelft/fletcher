@@ -21,6 +21,7 @@
 #include <string>
 
 #include "./utils.h"
+#include "./flattypes.h"
 
 namespace fletchgen {
 
@@ -79,9 +80,14 @@ class Type : public Named {
   inline ID id() const { return id_; }
   /// @brief Return the Type ID as a human-readable string.
   std::string ToString();
+  /// @brief Return possible conversions for this type.
+  std::deque<TypeConverter> converters();
+  /// @brief Add a type converter.
+  void AddConversion(TypeConverter ftc);
 
  private:
   ID id_;
+  std::deque<TypeConverter> converters_;
 };
 
 /**
@@ -103,7 +109,7 @@ struct Clock : public Type {
   std::shared_ptr<ClockDomain> domain;
   Clock(std::string name, std::shared_ptr<ClockDomain> domain);
   static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  std::optional<std::shared_ptr<Node>> width() const override { return std::dynamic_pointer_cast<Node>(intl<1>()); }
+  std::optional<std::shared_ptr<Node>> width() const override;
 };
 
 /// @brief Reset type.
@@ -111,14 +117,14 @@ struct Reset : public Type {
   std::shared_ptr<ClockDomain> domain;
   explicit Reset(std::string name, std::shared_ptr<ClockDomain> domain);
   static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  std::optional<std::shared_ptr<Node>> width() const override { return std::dynamic_pointer_cast<Node>(intl<1>()); }
+  std::optional<std::shared_ptr<Node>> width() const override;
 };
 
 /// @brief A bit type.
 struct Bit : public Type {
   explicit Bit(std::string name);
   static std::shared_ptr<Bit> Make(std::string name);
-  std::optional<std::shared_ptr<Node>> width() const override { return std::dynamic_pointer_cast<Node>(intl<1>()); }
+  std::optional<std::shared_ptr<Node>> width() const override;
 };
 /// @brief Generic static Bit type.
 std::shared_ptr<Type> bit();
@@ -241,9 +247,6 @@ class Stream : public Type {
   int epc_ = 1;
 };
 
-/// @brief Flatten all potential underlying Streams of a Type.
-std::deque<std::shared_ptr<Type>> FlattenStreams(const std::shared_ptr<Type> &type);
-
 /// @brief Cast a pointer to a Type to a typically less abstract Type T. Returns no value if the cast was unsuccessful.
 template<typename T>
 std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
@@ -253,55 +256,5 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   }
   return result;
 }
-
-struct FlatType {
-  FlatType() = default;
-  FlatType(std::shared_ptr<Type> t, std::deque<std::string> prefix, std::string name, int level);
-  int nesting_level = 0;
-  std::deque<std::string> name_parts;
-  std::shared_ptr<Type> type;
-  std::string name(std::string root = "", std::string sep = ":") const;
-  bool operator<(FlatType& a) {
-    return nesting_level < a.nesting_level;
-  }
-};
-
-// Flattening functions for nested types:
-
-/// @brief Flatten a Record.
-void FlattenRecord(std::deque<FlatType> *list,
-                   const std::shared_ptr<Record> &record,
-                   const std::optional<FlatType> &parent);
-
-/// @brief Flatten a Stream.
-void FlattenStream(std::deque<FlatType> *list,
-                   const std::shared_ptr<Stream> &stream,
-                   const std::optional<FlatType> &parent);
-
-/// @brief Flatten any Type.
-void Flatten(std::deque<FlatType> *list,
-             const std::shared_ptr<Type> &type,
-             const std::optional<FlatType> &parent,
-             std::string name);
-
-/// @brief Flatten and return a list of FlatTypes.
-std::deque<FlatType> Flatten(const std::shared_ptr<Type> &type);
-
-/**
- * @brief Sort a list of flattened types by nesting level
- * @param list
- */
-void Sort(std::deque<FlatType>* list);
-
-/// @brief Convert a list of FlatTypes to a human-readable string.
-std::string ToString(std::deque<FlatType> flat_type_list);
-
-/**
- * @brief Compare if two types are weakly-equal, that is if their flattened Type ID list has the same levels and ids.
- * @param a The first type.
- * @param b The second type.
- * @return True if flattened Type ID list is the same, false otherwise.
- */
-bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b);
 
 }  // namespace fletchgen

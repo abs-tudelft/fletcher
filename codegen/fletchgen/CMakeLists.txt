@@ -25,6 +25,7 @@ set(HEADERS
         src/types.h
         src/nodes.h
         src/graphs.h
+        src/flattypes.h
 
         src/fletcher_types.h
         src/fletcher_components.h
@@ -48,6 +49,7 @@ set(SOURCES
         src/types.cc
         src/nodes.cc
         src/graphs.cc
+        src/flattypes.cc
 
         src/fletcher_types.cc
         src/fletcher_components.cc

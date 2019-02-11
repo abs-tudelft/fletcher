@@ -18,6 +18,7 @@
 #include <string>
 
 #include "../types.h"
+#include "../flattypes.h"
 #include "../nodes.h"
 
 namespace fletchgen {

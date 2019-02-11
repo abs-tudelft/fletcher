@@ -280,12 +280,25 @@ Expression::Expression(Expression::Operation
 std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
   return Expression::Make(Expression::ADD, lhs, rhs);
 }
+
+std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs) {
+  if (lhs->IsLiteral()) {
+    auto li = *Cast<Literal>(lhs);
+    if (li->storage_type_ == Literal::INT) {
+      return Literal::Make(li->int_val_ + rhs);
+    }
+  }
+  return lhs + Literal::Make(rhs);
+}
+
 std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
   return Expression::Make(Expression::SUB, lhs, rhs);
 }
+
 std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
   return Expression::Make(Expression::MUL, lhs, rhs);
 }
+
 std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
   return Expression::Make(Expression::DIV, lhs, rhs);
 }
@@ -415,7 +428,7 @@ std::shared_ptr<Edge> ArrayNode::Append(std::shared_ptr<Node> n) {
 
 static std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
   if (node->IsLiteral() || node->IsExpression()) {
-    return node + intl<1>();
+    return node + 1;
   } else if (node->IsParameter()) {
     // If the node is a parameter
     auto param = *Cast<Parameter>(node);

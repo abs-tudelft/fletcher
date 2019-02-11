@@ -20,6 +20,7 @@
 #include <fstream>
 
 #include "../src/types.h"
+#include "../src/flattypes.h"
 
 namespace fletchgen {
 
@@ -37,6 +38,37 @@ TEST(Types, Flatten) {
 
   auto flat = Flatten(f);
   std::cout << ToString(flat);
+}
+
+TEST(Types, FlatTypeConverter) {
+  auto a = bit();
+  auto b = Vector::Make<8>();
+  auto c = Record::Make("rec_K", {RecordField::Make("a", a),
+                                  RecordField::Make("b", b)});
+  auto d = Stream::Make(c);
+
+  auto q = bit();
+  auto r = Vector::Make<8>();
+  auto s = Record::Make("rec_L", {RecordField::Make("q", q),
+                                  RecordField::Make("r0", r),
+                                  RecordField::Make("r1", Stream::Make(r))});
+  auto t = Stream::Make(s);
+
+  auto k = Flatten(d);
+  auto l = Flatten(t);
+
+  TypeConverter conv(t, d);
+
+  // TODO(johanpel): type converter mapping is quite ugly at the moment
+  conv(0, 0)
+      (2, 2)
+      (3, 3)
+      (4, 0)
+      (5, 3);
+
+  std::cout << ToString(k);
+  std::cout << ToString(l);
+  std::cout << conv.ToString();
 }
 
 }  // namespace fletchgen

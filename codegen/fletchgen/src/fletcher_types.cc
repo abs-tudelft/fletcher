@@ -16,6 +16,8 @@
 
 #include <memory>
 
+#include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
+
 #include "./nodes.h"
 #include "./types.h"
 
@@ -100,6 +102,11 @@ std::shared_ptr<Type> bus_reset() {
 
 // Data channel
 
+std::shared_ptr<Type> incomplete_data() {
+  static std::shared_ptr<Type> result = Vector::Make("data", {});
+  return result;
+}
+
 std::shared_ptr<Type> dvalid() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("dvalid");
   return result;
@@ -162,9 +169,9 @@ std::shared_ptr<Type> unlock() {
 }
 
 std::shared_ptr<Type> read_data() {
-  static auto d = RecordField::Make(Vector::Make("data", {}));
+  static auto d = RecordField::Make(incomplete_data());
   static auto dv = RecordField::Make(dvalid());
-  static auto l = RecordField::Make("last", bit());
+  static auto l = RecordField::Make(last());
   static auto data_record = Record::Make("data:rec", {d, dv, l});
   static auto data_stream = Stream::Make("data:stream", data_record);
   return data_stream;
@@ -193,6 +200,142 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
     case arrow::Type::FLOAT: return float32();
     case arrow::Type::DOUBLE: return float64();
     default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
+  }
+}
+
+TypeConverter GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
+  TypeConverter conv;
+  if (mode == fletcher::Mode::READ) {
+    conv = TypeConverter(stream_type, read_data());
+  } else {
+    conv = TypeConverter(stream_type, write_data());
+  }
+
+  size_t idx_stream = 0;
+  auto idx_data = index_of(conv.flat_to(), incomplete_data());
+  auto idx_dvalid = index_of(conv.flat_to(), dvalid());
+  auto idx_last = index_of(conv.flat_to(), last());
+
+  auto flat_from = conv.flat_from();
+  for (size_t i = 0; i < flat_from.size(); i++) {
+    if (flat_from[i].type->Is(Type::STREAM)) {
+      conv(i, idx_stream);
+    } else if (flat_from[i].type == dvalid()) {
+      conv(i, idx_dvalid);
+    } else if (flat_from[i].type == last()) {
+      conv(i, idx_last);
+    } else if (flat_from[i].type == incomplete_data()) {
+      conv(i, idx_data);
+    }
+  }
+  return conv;
+}
+
+std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level) {
+  int epc = fletcher::getEPC(field);
+
+  std::shared_ptr<Type> type;
+
+  auto arrow_id = field->type()->id();
+  auto name = field->name();
+
+  switch (arrow_id) {
+
+    case arrow::Type::BINARY: {
+      // Special case: binary type has a length stream and bytes stream.
+      // The EPC is assumed to relate to the list elements,
+      // as there is no explicit child field to place this metadata in.
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", byte()),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
+      type = Record::Make(name + ":binary", {
+          RecordField::Make("length", length()),
+          RecordField::Make("bytes", slave)
+      });
+      break;
+    }
+
+    case arrow::Type::STRING: {
+      // Special case: string type has a length stream and utf8 character stream.
+      // The EPC is assumed to relate to the list elements,
+      // as there is no explicit child field to place this metadata in.
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", utf8c()),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
+      type = Record::Make(name + ":string", {
+          RecordField::Make("length", length()),
+          RecordField::Make("chars", slave)
+      });
+      break;
+    }
+
+      // Lists
+    case arrow::Type::LIST: {
+      if (field->type()->num_children() != 1) {
+        throw std::runtime_error("Encountered Arrow list type with other than 1 child.");
+      }
+
+      auto arrow_child = field->type()->child(0);
+      auto element_type = GetStreamType(arrow_child, mode, level + 1);
+      auto slave = Stream::Make(name + ":stream",
+                                Record::Make("data", {
+                                    RecordField::Make("data", element_type),
+                                    RecordField::Make("dvalid", dvalid()),
+                                    RecordField::Make("last", last())}),
+                                "data", epc);
+      type = Record::Make(name + ":list", {
+          RecordField::Make(length()),
+          RecordField::Make(arrow_child->name(), slave)
+      });
+      break;
+    }
+
+      // Structs
+    case arrow::Type::STRUCT: {
+      if (field->type()->num_children() < 1) {
+        throw std::runtime_error("Encountered Arrow struct type without any children.");
+      }
+      std::deque<std::shared_ptr<RecordField>> children;
+      for (const auto &f : field->type()->children()) {
+        auto child_type = GetStreamType(f, mode, level + 1);
+        children.push_back(RecordField::Make(f->name(), child_type));
+      }
+      type = Record::Make(name + ":struct", children);
+      break;
+    }
+
+      // Non-nested types
+    default: {
+      type = GenTypeFrom(field->type());
+      break;
+    }
+  }
+
+  // If this is a top level field, create a stream out of it
+  if (level == 0) {
+    // Element name is empty by default.
+    std::string elements_name;
+    // Check if the type is nested. If it is not nested, the give the elements the name "data"
+    if (!type->IsNested()) {
+      elements_name = "data";
+    }
+    // Create the stream record
+    auto record = Record::Make("data", {
+        RecordField::Make(elements_name, type),
+        RecordField::Make("dvalid", dvalid()),
+        RecordField::Make("last", last())});
+    auto stream = Stream::Make(name + ":stream", record, elements_name);
+    stream->AddConversion(GetStreamTypeConverter(stream, mode));
+    return stream;
+  } else {
+    // Otherwise just return the type
+    return type;
   }
 }
 

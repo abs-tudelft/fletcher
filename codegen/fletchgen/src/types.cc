@@ -21,6 +21,7 @@
 #include <iomanip>
 
 #include "./nodes.h"
+#include "./flattypes.h"
 
 namespace fletchgen {
 
@@ -56,6 +57,14 @@ std::string Type::ToString() {
     case STREAM : return "Stream";
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
+}
+
+std::deque<TypeConverter> Type::converters() {
+  return converters_;
+}
+
+void Type::AddConversion(TypeConverter ftc) {
+  converters_.push_back(std::move(ftc));
 }
 
 Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)
@@ -120,88 +129,6 @@ std::shared_ptr<Type> boolean() {
   return result;
 }
 
-void FlattenRecord(std::deque<FlatType> *list,
-                   const std::shared_ptr<Record> &record,
-                   const std::optional<FlatType> &parent) {
-  for (const auto &f : record->fields()) {
-    Flatten(list, f->type(), parent, f->name());
-  }
-}
-
-void FlattenStream(std::deque<FlatType> *list,
-                   const std::shared_ptr<Stream> &stream,
-                   const std::optional<FlatType> &parent) {
-  Flatten(list, stream->element_type(), parent, "");
-}
-
-void Flatten(std::deque<FlatType> *list,
-             const std::shared_ptr<Type> &type,
-             const std::optional<FlatType> &parent,
-             std::string name) {
-  FlatType result;
-  if (parent) {
-    result.nesting_level = (*parent).nesting_level + 1;
-    result.name_parts = (*parent).name_parts;
-  }
-  result.type = type;
-  if (!name.empty()) {
-    result.name_parts.push_back(name);
-  }
-  list->push_back(result);
-
-  switch (type->id()) {
-    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result);
-      break;
-    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result);
-      break;
-    default:break;
-  }
-}
-
-std::deque<FlatType> Flatten(const std::shared_ptr<Type> &type) {
-  std::deque<FlatType> result;
-  Flatten(&result, type, {}, "");
-  return result;
-}
-
-bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b) {
-  auto a_types = Flatten(a);
-  auto b_types = Flatten(b);
-
-  // Check if the lists have equal length.
-  if (a_types.size() != b_types.size()) {
-    return false;
-  }
-
-  // Check every type id to be the same.
-  for (size_t i = 0; i < a_types.size(); i++) {
-    if (a_types[i].type->id() != b_types[i].type->id()) {
-      return false;
-    }
-    if (a_types[i].nesting_level != b_types[i].nesting_level) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-std::string ToString(std::deque<FlatType> flat_type_list) {
-  std::stringstream ret;
-  for (const auto &ft : flat_type_list) {
-    ret << std::setw(32) << std::left
-        << std::string(static_cast<unsigned long>(2 * ft.nesting_level), ' ') + ft.name(ft.nesting_level == 0 ? "(root)" : "") << " : "
-        << std::setw(24) << std::left << ft.type->name() << " : "
-        << std::setw(2) << std::left << ft.nesting_level << " : "
-        << std::setw(8) << std::left << ft.type->ToString() << std::endl;
-  }
-  return ret.str();
-}
-
-void Sort(std::deque<FlatType> *list) {
-  std::sort(list->begin(), list->end());
-}
-
 std::shared_ptr<Type> Integer::Make(std::string name) {
   return std::make_shared<Integer>(name);
 }
@@ -225,6 +152,10 @@ std::shared_ptr<Clock> Clock::Make(std::string name, std::shared_ptr<ClockDomain
   return std::make_shared<Clock>(name, domain);
 }
 
+std::optional<std::shared_ptr<Node>> Clock::width() const {
+  return std::dynamic_pointer_cast<Node>(intl<1>());
+}
+
 Reset::Reset(std::string name, std::shared_ptr<ClockDomain> domain)
     : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
 
@@ -232,10 +163,18 @@ std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain
   return std::make_shared<Reset>(name, domain);
 }
 
+std::optional<std::shared_ptr<Node>> Reset::width() const {
+  return std::dynamic_pointer_cast<Node>(intl<1>());
+}
+
 Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
 
 std::shared_ptr<Bit> Bit::Make(std::string name) {
   return std::make_shared<Bit>(name);
+}
+
+std::optional<std::shared_ptr<Node>> Bit::width() const {
+  return std::dynamic_pointer_cast<Node>(intl<1>());
 }
 
 RecordField::RecordField(std::string name, std::shared_ptr<Type> type)
@@ -262,20 +201,5 @@ Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
 }
 
 ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
-
-std::string FlatType::name(std::string root, std::string sep) const {
-  std::stringstream ret;
-  ret << root;
-  for (const auto &p : name_parts) {
-    ret << "_" + p;
-  }
-  return ret.str();
-}
-
-FlatType::FlatType(std::shared_ptr<Type> t, std::deque<std::string> prefix, std::string name, int level) {
-  name_parts = std::move(prefix);
-  name_parts.push_back(name);
-  type = std::move(t);
-}
 
 }  // namespace fletchgen

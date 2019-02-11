@@ -25,9 +25,61 @@
 namespace fletchgen {
 namespace vhdl {
 
-Block Inst::Generate(const std::shared_ptr<Port> &lhs) {
+Block Inst::Generate(const std::shared_ptr<Parameter> &par) {
   Block ret;
+  Line l;
+  l << par->name() << " => ";
+  if (par->value()) {
+    auto val = *par->value();
+    l << val->ToString();
+  } else if (par->default_value) {
+    l << (*par->default_value)->ToString();
+  }
+  ret << l;
+  return ret;
+}
 
+Block Inst::Generate(const std::shared_ptr<Port> &port) {
+  Block ret;
+  std::deque<std::shared_ptr<Edge>> connections;
+  // Get the connections for this port
+  if (port->IsInput()) {
+    connections = port->inputs();
+  } else {
+    connections = port->outputs();
+  }
+
+  // Flatten the port type to a VHDL compatible, synthesizable list of types
+  auto port_flat = (Flatten(port->type()));
+  std::sort(port_flat.begin(), port_flat.end());
+
+  // Iterate over all connected edges
+  for (const auto &edge : connections) {
+    // Get the node on the other side of the connection
+    auto other = edge->GetOtherNode(port);
+
+    // Flatten the other side to VHDL compatible, synthesizable list of types
+    auto other_flat = (Flatten(other->type()));
+    std::sort(other_flat.begin(), other_flat.end());
+
+    // Double check if they can actually be connected.
+    if (!WeaklyEqual(port->type(), other->type())) {
+      std::cerr << ToString(port_flat) << std::endl;
+      std::cerr << ToString(other_flat) << std::endl;
+      throw std::runtime_error(
+          "Flat port types not weakly equal between port node: \"" + port->name()
+              + "\" and port node: \"" + other->name() + "\".");
+    }
+
+    if (port_flat.size() != other_flat.size()) {
+      for (size_t i = 0; i < port_flat.size(); i++) {
+        Line l;
+        l << port_flat[i].name(port->name()) << " => ";
+        ret << l;
+      }
+    }
+
+  }
   return ret;
 }
 
@@ -61,7 +113,8 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     ret << gmh << gm << gmf;
   }
 
-  if (inst->CountNodes(Node::PORT) + inst->CountNodes(Node::ARRAY_PORT) > 0) {
+  auto num_ports = inst->CountNodes(Node::PORT) + inst->CountNodes(Node::ARRAY_PORT);
+  if (num_ports > 0) {
     // Port map
     Block pmh(ret.indent + 1);
     Block pmb(ret.indent + 2);
@@ -84,20 +137,6 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     ret << pmh << pmb << pmf;
   }
 
-  return ret;
-}
-
-Block Inst::Generate(const std::shared_ptr<Parameter> &par) {
-  Block ret;
-  Line l;
-  l << par->name() << " => ";
-  if (par->value()) {
-    auto val = *par->value();
-    l << val->ToString();
-  } else if (par->default_value) {
-    l << (*par->default_value)->ToString();
-  }
-  ret << l;
   return ret;
 }
 
