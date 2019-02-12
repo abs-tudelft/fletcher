@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 #include "./utils.h"
 
@@ -88,32 +89,119 @@ std::string ToString(std::deque<FlatType> flat_type_list);
  */
 bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b);
 
+template<typename T>
+class ConversionMatrix {
+ private:
+  std::vector<T> elements_;
+  size_t height_;
+  size_t width_;
+
+ public:
+  ConversionMatrix(size_t height, size_t width) : height_(height), width_(width) {
+    elements_ = std::vector<T>(height_ * width_, static_cast<T>(0));
+  }
+
+  static ConversionMatrix Identity(size_t dim) {
+    ConversionMatrix ret(dim, dim);
+    for (size_t i = 0; i < dim; i++) {
+      ret(i, i) = 1;
+    }
+  }
+
+  T &get(size_t y, size_t x) {
+    if (y >= height_ || x >= width_) {
+      throw std::runtime_error("Indices exceed matrix dimensions.");
+    }
+    return elements_[width_ * y + x];
+  }
+
+  const T &get(size_t y, size_t x) const {
+    if (y >= height_ || x >= width_) {
+      throw std::runtime_error("Indices exceed matrix dimensions.");
+    }
+    return elements_[width_ * y + x];
+  }
+
+  T &operator()(size_t y, size_t x) {
+    return get(y, x);
+  }
+
+  const T &operator()(size_t y, size_t x) const {
+    return get(y, x);
+  }
+
+  T MaxOfColumn(size_t x) const {
+    T max = 0;
+    for (size_t y = 0; y < height_; y++) {
+      if (get(y, x) > max) {
+        max = get(y, x);
+      }
+    }
+    return max;
+  };
+
+  T MaxOfRow(size_t y) const {
+    T max = 0;
+    for (size_t x = 0; x < width_; x++) {
+      if (get(y, x) > max) {
+        max = get(y, x);
+      }
+    }
+    return max;
+  };
+
+  ConversionMatrix &SetNext(size_t y, size_t x) {
+    get(y, x) = std::max(MaxOfColumn(x), MaxOfRow(y)) + 1;
+    return *this;
+  }
+
+  ConversionMatrix Transpose() {
+    ConversionMatrix ret(width_, height_);
+    for (size_t y = 0; y < height_; y++) {
+      for (size_t x = 0; x < width_; x++) {
+        ret(x, y) = get(y, x);
+      }
+    }
+    return ret;
+  }
+
+  std::string ToString() {
+    std::stringstream ret;
+    for (size_t y = 0; y < height_; y++) {
+      for (size_t x = 0; x < width_; x++) {
+        ret << std::setw(3) << std::right << std::to_string(get(y, x)) << " ";
+      }
+    }
+    return ret.str();
+  }
+
+};
+
 /**
  * @brief A structure to dynamically define type conversions on flattened types.
+ *
+ * Useful for ordered concatenation of N synthesizable types onto M synthesizable types in any way.
  */
 class TypeConverter {
- public:
-  TypeConverter() = default;
-  TypeConverter(std::shared_ptr<Type> from, std::shared_ptr<Type> to);
-
-  /* TODO(johanpel): This function with type parameters cannot work because types can occur multiple times in a
-   * flattened type. It would, however be nice if there is a more syntactically pleasing way to produce the mapping. */
-  // FlatTypeConverter &operator()(const std::shared_ptr<Type> &from, const std::shared_ptr<Type> &to);
-
-  /// @brief Map source FlatType at index "from" to destination FlatType at index "to".
-  TypeConverter &operator()(size_t from, size_t to);
-  std::vector<std::optional<size_t>> conversion_map();
-  std::deque<FlatType> flat_from();
-  std::deque<FlatType> flat_to();
-  bool CanConvert(std::shared_ptr<Type> from, std::shared_ptr<Type> to) const;
-  std::string ToString() const;
-
  private:
-  std::shared_ptr<Type> from_;
-  std::shared_ptr<Type> to_;
-  std::deque<FlatType> flat_from_;
-  std::deque<FlatType> flat_to_;
-  std::vector<std::optional<size_t>> conversion_map_;
+  std::shared_ptr<Type> a_;
+  std::shared_ptr<Type> b_;
+  std::deque<FlatType> fa_;
+  std::deque<FlatType> fb_;
+  ConversionMatrix<size_t> matrix_;
+ public:
+  TypeConverter(std::shared_ptr<Type> a, std::shared_ptr<Type> b);
+  TypeConverter &Add(size_t a, size_t b);
+  ConversionMatrix<size_t> conversion_matrix();
+  std::deque<FlatType> flat_a() const;
+  std::deque<FlatType> flat_b() const;
+  std::shared_ptr<Type> a() { return a_; }
+  std::shared_ptr<Type> b() { return b_; }
+  bool CanConvert(std::shared_ptr<Type> a, std::shared_ptr<Type> b) const;
+  std::deque<FlatType> GetATypesFor(size_t b) const;
+  std::deque<FlatType> GetBTypesFor(size_t a) const;
+  TypeConverter Invert() const;
+  std::string ToString() const;
 };
 
 }  // namespace fletchgen

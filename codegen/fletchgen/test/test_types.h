@@ -60,11 +60,11 @@ TEST(Types, FlatTypeConverter) {
   TypeConverter conv(t, d);
 
   // TODO(johanpel): type converter mapping is quite ugly at the moment
-  conv(0, 0)
-      (2, 2)
-      (3, 3)
-      (4, 0)
-      (5, 3);
+  conv.Add(0, 0)
+      .Add(2, 2)
+      .Add(3, 3)
+      .Add(4, 0)
+      .Add(5, 3);
 
   std::cout << ToString(k);
   std::cout << ToString(l);

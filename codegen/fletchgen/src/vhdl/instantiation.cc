@@ -50,7 +50,7 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
   }
 
   // Flatten the port type to a VHDL compatible, synthesizable list of types
-  auto port_flat = (Flatten(port->type()));
+  auto port_flat = FlatMapToVHDL(Flatten(port->type()));
   std::sort(port_flat.begin(), port_flat.end());
 
   // Iterate over all connected edges
@@ -59,7 +59,7 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
     auto other = edge->GetOtherNode(port);
 
     // Flatten the other side to VHDL compatible, synthesizable list of types
-    auto other_flat = (Flatten(other->type()));
+    auto other_flat = FlatMapToVHDL(Flatten(other->type()));
     std::sort(other_flat.begin(), other_flat.end());
 
     // Double check if they can actually be connected.
@@ -70,15 +70,6 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
           "Flat port types not weakly equal between port node: \"" + port->name()
               + "\" and port node: \"" + other->name() + "\".");
     }
-
-    if (port_flat.size() != other_flat.size()) {
-      for (size_t i = 0; i < port_flat.size(); i++) {
-        Line l;
-        l << port_flat[i].name(port->name()) << " => ";
-        ret << l;
-      }
-    }
-
   }
   return ret;
 }

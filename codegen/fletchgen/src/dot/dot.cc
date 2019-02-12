@@ -273,7 +273,7 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 
     // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
     // resulting from this setting
-    ret << tab(level + 1) << "splines=ortho;\n";
+    ret << tab(level + 1) << "splines=compound;\n";
     ret << tab(level + 1) << "rankdir=LR;\n";
   } else {
     ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
@@ -473,7 +473,7 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
     auto par = *Cast<Parameter>(n);
     if (par->value()) {
       auto val = *par->value();
-      str << ":" << val->ToString();
+      str << ":" << sanitize(val->ToString());
     }
     str << "\"";
   } else {

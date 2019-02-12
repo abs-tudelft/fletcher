@@ -95,6 +95,6 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
  */
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level = 0);
 
-TypeConverter GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
+std::shared_ptr<TypeConverter> GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
 
 }  // namespace fletchgen

@@ -131,18 +131,9 @@ bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b)
   if (!equal) {
     auto convs = a->converters();
     for (const auto &c : convs) {
-      if (c.CanConvert(a, b)) {
+      if (c->CanConvert(a, b)) {
         equal = true;
-        break;
-      }
-    }
-  }
-
-  if (!equal) {
-    auto convs = b->converters();
-    for (const auto &c : convs) {
-      if (!c.CanConvert(a, b)) {
-        equal = true;
+        std::cerr << c->ToString() << std::endl;
         break;
       }
     }
@@ -169,69 +160,76 @@ size_t index_of(const std::deque<FlatType> &flat_types_list, const std::shared_p
   return static_cast<size_t>(-1);
 }
 
-TypeConverter::TypeConverter(std::shared_ptr<Type>
-                             from, std::shared_ptr<Type>
-                             to)
-    : from_(std::move(from)),
-      to_(std::move(to)),
-      flat_from_(Flatten(from_)),
-      flat_to_(Flatten(to_)),
-      conversion_map_(std::vector<std::optional<size_t>>(flat_from_.size())) {}
-
-/*
-FlatTypeConverter &FlatTypeConverter::operator()(const std::shared_ptr<Type> &from, const std::shared_ptr<Type> &to) {
-  // Check for potential errors
-  if ((from == nullptr) || (to == nullptr)) {
-    throw std::runtime_error("Types contain nullptr.");
+TypeConverter::TypeConverter(std::shared_ptr<Type> a, std::shared_ptr<Type> b)
+    : a_(std::move(a)),
+      b_(std::move(b)),
+      fa_(Flatten(a_)),
+      fb_(Flatten(b_)),
+      matrix_(ConversionMatrix<size_t>(fa_.size(), fb_.size())) {
+  if (a_ == b_) {
+    for (size_t i = 0; i < fa_.size(); i++) {
+      matrix_(i, i) = 1;
+    }
   }
-  if (!contains(flat_from_, from)) {
-    throw std::runtime_error("Type " + from->name() + " is not in the flattened type list of " + from_->name());
-  }
-  if (!contains(flat_to_, to_)) {
-    throw std::runtime_error("Type " + to->name() + " is not in the flattened type list of " + to_->name());
-  }
-
-  // Set the mapping
-  auto from_idx = index_of(flat_from_, from);
-  auto to_idx = index_of(flat_to_, to);
-  conversion_map_[from_idx] = to_idx;
-
-  return *this;
 }
-*/
 
-TypeConverter &TypeConverter::operator()(size_t from, size_t to) {
-  if ((from < flat_from_.size()) && (to < flat_to_.size())) {
-    conversion_map_[from] = to;
-  }
+TypeConverter &TypeConverter::Add(size_t a, size_t b) {
+    matrix_.SetNext(a,b);
   return *this;
 }
 
 std::string TypeConverter::ToString() const {
   std::stringstream ret;
-  for (size_t i = 0; i < flat_from_.size(); i++) {
-    std::string locstr = "-";
-    if (conversion_map_[i]) {
-      auto loc = *conversion_map_[i];
-      locstr = std::to_string(loc) + " (" + flat_to_[loc].name() + ") ";
+  for (size_t y = 0; y < fa_.size(); y++) {
+    for (size_t x = 0; x < fb_.size(); x++) {
+      auto val = matrix_(y, x);
+      if (val > 0) {
+        ret << std::setw(16) << std::right << fa_[y].name()
+            << " " << std::setw(3) << y
+            << " => "
+            << std::setw(3) << x << " "
+            << std::setw(16) << std::left << fb_[x].name() + "(" + std::to_string(val) + ")"
+            << std::endl;
+      }
     }
-    auto srcstr = " (" + flat_from_[i].name() + ") " + std::to_string(i);
-    ret << std::setw(16) << std::right << srcstr
-        << " => "
-        << std::setw(16) << std::left << locstr
-        << std::endl;
   }
   return ret.str();
 }
 
-std::vector<std::optional<size_t>> TypeConverter::conversion_map() { return conversion_map_; }
+ConversionMatrix<size_t> TypeConverter::conversion_matrix() { return matrix_; }
 
-std::deque<FlatType> TypeConverter::flat_from() { return flat_from_; }
+std::deque<FlatType> TypeConverter::flat_a() const { return fa_; }
 
-std::deque<FlatType> TypeConverter::flat_to() { return flat_to_; }
+std::deque<FlatType> TypeConverter::flat_b() const { return fb_; }
 
-bool TypeConverter::CanConvert(std::shared_ptr<Type> from, std::shared_ptr<Type> to) const {
-  return (from_ == from) && (to_ == to);
+bool TypeConverter::CanConvert(std::shared_ptr<Type> a, std::shared_ptr<Type> b) const {
+  return ((a_ == a) && (b_ == b)) || ((a_ == b) && (b_ == a));
+}
+
+std::deque<FlatType> TypeConverter::GetBTypesFor(size_t a) const {
+  std::deque<FlatType> ret;
+  for (size_t i = 0; i < fb_.size(); i++) {
+    if (matrix_(a,i)) {
+      ret.push_back(fb_[i]);
+    }
+  }
+  return ret;
+}
+
+std::deque<FlatType> TypeConverter::GetATypesFor(size_t b) const {
+  std::deque<FlatType> ret;
+  for (size_t i = 0; i < fa_.size(); i++) {
+    if (matrix_(i, b)) {
+      ret.push_back(fa_[i]);
+    }
+  }
+  return ret;
+}
+
+TypeConverter TypeConverter::Invert() const {
+  TypeConverter ret(b_, a_);
+  ret.matrix_ = ret.matrix_.Transpose();
+  return ret;
 }
 
 }  // namespace fletchgen

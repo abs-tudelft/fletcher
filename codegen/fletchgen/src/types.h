@@ -81,13 +81,13 @@ class Type : public Named {
   /// @brief Return the Type ID as a human-readable string.
   std::string ToString();
   /// @brief Return possible conversions for this type.
-  std::deque<TypeConverter> converters();
+  std::deque<std::shared_ptr<TypeConverter>> converters();
   /// @brief Add a type converter.
-  void AddConversion(TypeConverter ftc);
+  void AddConversion(std::shared_ptr<TypeConverter> conv);
 
  private:
   ID id_;
-  std::deque<TypeConverter> converters_;
+  std::deque<std::shared_ptr<TypeConverter>> converters_;
 };
 
 /**

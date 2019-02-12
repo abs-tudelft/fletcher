@@ -203,35 +203,42 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
   }
 }
 
-TypeConverter GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
-  TypeConverter conv;
+std::shared_ptr<TypeConverter> GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
+  std::shared_ptr<TypeConverter> conversion;
   if (mode == fletcher::Mode::READ) {
-    conv = TypeConverter(stream_type, read_data());
+    conversion = std::make_shared<TypeConverter>(stream_type, read_data());
   } else {
-    conv = TypeConverter(stream_type, write_data());
+    conversion = std::make_shared<TypeConverter>(stream_type, write_data());
   }
 
   size_t idx_stream = 0;
-  auto idx_data = index_of(conv.flat_to(), incomplete_data());
-  auto idx_dvalid = index_of(conv.flat_to(), dvalid());
-  auto idx_last = index_of(conv.flat_to(), last());
+  auto idx_data = index_of(conversion->flat_b(), incomplete_data());
+  auto idx_dvalid = index_of(conversion->flat_b(), dvalid());
+  auto idx_last = index_of(conversion->flat_b(), last());
 
-  auto flat_from = conv.flat_from();
-  for (size_t i = 0; i < flat_from.size(); i++) {
-    if (flat_from[i].type->Is(Type::STREAM)) {
-      conv(i, idx_stream);
-    } else if (flat_from[i].type == dvalid()) {
-      conv(i, idx_dvalid);
-    } else if (flat_from[i].type == last()) {
-      conv(i, idx_last);
-    } else if (flat_from[i].type == incomplete_data()) {
-      conv(i, idx_data);
+  auto flat_stream = conversion->flat_a();
+  for (size_t i = 0; i < flat_stream.size(); i++) {
+    auto t = flat_stream[i].type;
+    if (t->Is(Type::STREAM)) {
+      conversion->Add(i, idx_stream);
+    } else if (t == dvalid()) {
+      conversion->Add(i, idx_dvalid);
+    } else if (t == last()) {
+      conversion->Add(i, idx_last);
+    } else if (t->Is(Type::RECORD)) {
+      // do nothing
+    } else {
+      // If it's not any of the default control signals on the stream, it must be data.
+      conversion->Add(i, idx_data);
     }
   }
-  return conv;
+  return conversion;
 }
 
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level) {
+  // The ordering of the record fields in this function determines the order in which a nested stream is type converted
+  // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented. Do not touch.
+  
   int epc = fletcher::getEPC(field);
 
   std::shared_ptr<Type> type;
@@ -247,9 +254,9 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // as there is no explicit child field to place this metadata in.
       auto slave = Stream::Make(name + ":stream",
                                 Record::Make("data", {
-                                    RecordField::Make("data", byte()),
                                     RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
+                                    RecordField::Make("last", last()),
+                                    RecordField::Make("data", byte())}),
                                 "data", epc);
       type = Record::Make(name + ":binary", {
           RecordField::Make("length", length()),
@@ -264,9 +271,9 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // as there is no explicit child field to place this metadata in.
       auto slave = Stream::Make(name + ":stream",
                                 Record::Make("data", {
-                                    RecordField::Make("data", utf8c()),
                                     RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
+                                    RecordField::Make("last", last()),
+                                    RecordField::Make("data", utf8c())}),
                                 "data", epc);
       type = Record::Make(name + ":string", {
           RecordField::Make("length", length()),
@@ -285,9 +292,9 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       auto element_type = GetStreamType(arrow_child, mode, level + 1);
       auto slave = Stream::Make(name + ":stream",
                                 Record::Make("data", {
-                                    RecordField::Make("data", element_type),
                                     RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last())}),
+                                    RecordField::Make("last", last()),
+                                    RecordField::Make("data", element_type)}),
                                 "data", epc);
       type = Record::Make(name + ":list", {
           RecordField::Make(length()),
@@ -327,9 +334,9 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
     }
     // Create the stream record
     auto record = Record::Make("data", {
-        RecordField::Make(elements_name, type),
         RecordField::Make("dvalid", dvalid()),
-        RecordField::Make("last", last())});
+        RecordField::Make("last", last()),
+        RecordField::Make(elements_name, type)});
     auto stream = Stream::Make(name + ":stream", record, elements_name);
     stream->AddConversion(GetStreamTypeConverter(stream, mode));
     return stream;

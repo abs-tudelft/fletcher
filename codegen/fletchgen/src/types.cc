@@ -59,12 +59,26 @@ std::string Type::ToString() {
   }
 }
 
-std::deque<TypeConverter> Type::converters() {
+std::deque<std::shared_ptr<TypeConverter>> Type::converters() {
   return converters_;
 }
 
-void Type::AddConversion(TypeConverter ftc) {
-  converters_.push_back(std::move(ftc));
+void Type::AddConversion(std::shared_ptr<TypeConverter> conv) {
+  std::shared_ptr<Type> other;
+
+  if (conv->a().get() == this) {
+    other = conv->b();
+  } else if (conv->b().get() == this) {
+    other = conv->a();
+  } else {
+    throw std::runtime_error("Type converter does not convert " + name());
+  }
+  // Add the converter to this Type
+  converters_.push_back(conv);
+  if (!contains(other->converters_, conv)) {
+    // If the other type doesnt already have it, add it there as well.
+    other->AddConversion(conv);
+  }
 }
 
 Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)

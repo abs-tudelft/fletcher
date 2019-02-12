@@ -34,7 +34,18 @@ inline std::string tab(int n) {
 }
 
 inline std::string sanitize(std::string in) {
+  // Replace :
   std::replace(in.begin(), in.end(), ':', '_');
+
+  // Replace "
+  size_t idx = 0;
+  while (true) {
+    idx = in.find('"', idx);
+    if (idx == std::string::npos)
+      break;
+    in.replace(idx, 2, "\\\"");
+    idx += 2;
+  }
   return in;
 }
 
