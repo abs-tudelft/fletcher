@@ -22,6 +22,7 @@
 
 #include "./nodes.h"
 #include "./flattypes.h"
+#include "types.h"
 
 namespace fletchgen {
 
@@ -40,11 +41,11 @@ bool Type::IsSynthPrim() const {
   return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
 }
 
-bool Type::IsNested() {
+bool Type::IsNested() const {
   return (id_ == Type::STREAM) || (id_ == Type::RECORD);
 }
 
-std::string Type::ToString() {
+std::string Type::ToString() const {
   switch (id_) {
     case CLOCK  : return "Clock";
     case RESET  : return "Reset";
@@ -59,26 +60,39 @@ std::string Type::ToString() {
   }
 }
 
-std::deque<std::shared_ptr<TypeConverter>> Type::converters() {
-  return converters_;
+std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
+  return mappers_;
 }
 
-void Type::AddConversion(std::shared_ptr<TypeConverter> conv) {
-  std::shared_ptr<Type> other;
+void Type::AddMapper(std::shared_ptr<TypeMapper> mapper) {
+  Type *other = (Type *) mapper->b();
+  if (mapper->a() != this) {
+    throw std::runtime_error("Type converter does not convert from " + name());
+  }
 
-  if (conv->a().get() == this) {
-    other = conv->b();
-  } else if (conv->b().get() == this) {
-    other = conv->a();
-  } else {
-    throw std::runtime_error("Type converter does not convert " + name());
-  }
   // Add the converter to this Type
-  converters_.push_back(conv);
-  if (!contains(other->converters_, conv)) {
-    // If the other type doesnt already have it, add it there as well.
-    other->AddConversion(conv);
+  mappers_.push_back(mapper);
+
+  // If the other type doesnt already have it, add the inverse map there as well.
+  if (!other->GetMapper(this)) {
+    other->AddMapper(mapper->Inverse());
   }
+}
+
+std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) const {
+  // Mapper to itself. Create a trivial mapper:
+  if (other == this) {
+    return std::make_shared<TypeMapper>(other, other);
+  } else {
+    // Search for a mapper
+    for (const auto &m : mappers_) {
+      if (m->CanConvert(this, other)) {
+        return m;
+      }
+    }
+  }
+  // There is no mapper
+  return {};
 }
 
 Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)

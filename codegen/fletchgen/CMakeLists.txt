@@ -42,6 +42,7 @@ set(HEADERS
         src/vhdl/vhdl_types.h
 
         src/dot/dot.h
+        src/dot/style.h
         )
 
 set(SOURCES
@@ -66,6 +67,7 @@ set(SOURCES
         src/vhdl/vhdl_types.cc
 
         src/dot/dot.cc
+        src/dot/style.cc
         )
 
 set(RESOURCES

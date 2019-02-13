@@ -48,7 +48,7 @@ bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b
  * @param list The list to filter
  * @return The filtered list
  */
-std::deque<FlatType> FlatMapToVHDL(const std::deque<FlatType> &list);
+std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list);
 
 }  // namespace vhdl
 }  // namespace fletchgen

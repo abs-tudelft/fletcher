@@ -51,24 +51,24 @@ Port::Dir Reverse(Port::Dir dir) {
 
 std::deque<FlatType> ResolveAbstract(const FlatType &ft) {
   std::deque<FlatType> result;
-  if (ft.type->Is(Type::STREAM)) {
+  if (ft.type_->Is(Type::STREAM)) {
     auto v = ft;
     auto r = ft;
-    v.name_parts.emplace_back("valid");
-    v.type = valid();
-    r.name_parts.emplace_back("ready");
-    r.type = ready();
+    v.name_parts_.emplace_back("valid");
+    v.type_ = valid().get();
+    r.name_parts_.emplace_back("ready");
+    r.type_ = ready().get();
     result.push_back(v);
     result.push_back(r);
   }
   return result;
 }
 
-std::deque<FlatType> FlatMapToVHDL(const std::deque<FlatType> &list) {
+std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   std::deque<FlatType> result;
   for (const auto &ft : list) {
     // If the type is abstract, resolve it to something meaningful in VHDL
-    if (ft.type->IsAbstract()) {
+    if (ft.type_->IsAbstract()) {
       auto resolved = ResolveAbstract(ft);
       result.insert(result.end(), resolved.begin(), resolved.end());
     } else {

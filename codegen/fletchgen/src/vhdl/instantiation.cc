@@ -49,27 +49,38 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
     connections = port->outputs();
   }
 
-  // Flatten the port type to a VHDL compatible, synthesizable list of types
-  auto port_flat = FlatMapToVHDL(Flatten(port->type()));
-  std::sort(port_flat.begin(), port_flat.end());
-
   // Iterate over all connected edges
   for (const auto &edge : connections) {
     // Get the node on the other side of the connection
     auto other = edge->GetOtherNode(port);
 
-    // Flatten the other side to VHDL compatible, synthesizable list of types
-    auto other_flat = FlatMapToVHDL(Flatten(other->type()));
-    std::sort(other_flat.begin(), other_flat.end());
+    // Get type mapper
+    std::shared_ptr<TypeMapper> tm;
 
-    // Double check if they can actually be connected.
-    if (!WeaklyEqual(port->type(), other->type())) {
-      std::cerr << ToString(port_flat) << std::endl;
-      std::cerr << ToString(other_flat) << std::endl;
+    // Check if a type mapping exists
+    auto tmo = port->type()->GetMapper(other->type().get());
+    if (tmo) {
+      tm = *tmo;
+
+      // Filter the flattened type for VHDL
+      auto vhdl_flat_ports = tm->flat_a();
+
+      for (size_t i = 0; i < vhdl_flat_ports.size(); i++) {
+        Line l;
+        l << vhdl_flat_ports[i].name(port->name()) + "(" + vhdl_flat_ports[i].type_->ToString() + ")";
+        l << "=> ";
+        auto vhdl_flat_others = tm->GetBTypesFor(i);
+        for (size_t j = 0; j < vhdl_flat_others.size(); j++) {
+          l << vhdl_flat_others[j].name(other->name()) + "(" + vhdl_flat_others[j].type_->ToString() + ")";
+        }
+        ret << l;
+      }
+    } else {
       throw std::runtime_error(
-          "Flat port types not weakly equal between port node: \"" + port->name()
-              + "\" and port node: \"" + other->name() + "\".");
+          "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()
+              + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
     }
+
   }
   return ret;
 }
@@ -118,11 +129,11 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
       pm << Generate(p);
       pmb << pm;
     }
-    for (const auto &p : inst->GetNodesOfType<ArrayPort>()) {
-      Block pm;
-      //pm << Generate(p);
-      pmb << pm;
-    }
+    //for (const auto &p : inst->GetNodesOfType<ArrayPort>()) {
+    //Block pm;
+    //pm << Generate(p);
+    //pmb << pm;
+    //}
     pf << ")";
     pmf << pf;
     ret << pmh << pmb << pmf;

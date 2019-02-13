@@ -66,6 +66,7 @@ class Type : public Named {
   };
   /// @brief Construct a new type.
   explicit Type(std::string name, ID id);
+
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
   /// @brief Return true if the Type is a synthesizable primitive, false otherwise.
@@ -75,19 +76,21 @@ class Type : public Named {
   /// @brief Return the width of the type, if it is synthesizable.
   virtual std::optional<std::shared_ptr<Node>> width() const { return {}; }
   /// @brief Return true if type is nested (e.g. Stream or Record), false otherwise.
-  bool IsNested();
+  bool IsNested() const;
   /// @brief Return the Type ID.
   inline ID id() const { return id_; }
   /// @brief Return the Type ID as a human-readable string.
-  std::string ToString();
-  /// @brief Return possible conversions for this type.
-  std::deque<std::shared_ptr<TypeConverter>> converters();
-  /// @brief Add a type converter.
-  void AddConversion(std::shared_ptr<TypeConverter> conv);
+  std::string ToString() const;
+  /// @brief Return possible type mappers.
+  std::deque<std::shared_ptr<TypeMapper>> mappers() const;
+  /// @brief Add a type mapper.
+  void AddMapper(std::shared_ptr<TypeMapper> mapper);
+  /// @brief Get a mapper to another type, if it exists.
+  std::optional<std::shared_ptr<TypeMapper>> GetMapper(const Type *other) const;
 
  private:
   ID id_;
-  std::deque<std::shared_ptr<TypeConverter>> converters_;
+  std::deque<std::shared_ptr<TypeMapper>> mappers_;
 };
 
 /**
@@ -205,7 +208,7 @@ class Record : public Type {
   static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {});
   Record &AddField(const std::shared_ptr<RecordField> &field);;
   std::shared_ptr<RecordField> field(size_t i) const { return fields_[i]; }
-  std::deque<std::shared_ptr<RecordField>> fields() { return fields_; }
+  std::deque<std::shared_ptr<RecordField>> fields() const { return fields_; }
  private:
   std::deque<std::shared_ptr<RecordField>> fields_;
 };
@@ -234,7 +237,7 @@ class Stream : public Type {
                                     std::string element_name,
                                     int epc = 1);
 
-  std::shared_ptr<Type> element_type() { return element_type_; }
+  std::shared_ptr<Type> element_type() const { return element_type_; }
   // TODO(johanpel): potentially remove element names
   std::string element_name() { return element_name_; }
   int epc() { return epc_; }
@@ -252,6 +255,24 @@ template<typename T>
 std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   auto result = std::dynamic_pointer_cast<T>(type);
   if (result == nullptr) {
+    return {};
+  }
+  return result;
+}
+
+template<typename T>
+std::optional<const T *> Cast(const Type *type) {
+  auto result = dynamic_cast<const T *>(type);
+  if (result == nullptr) {
+    return {};
+  }
+  return result;
+}
+
+template<typename T>
+std::optional<const T &> Cast(const Type &type) {
+  auto result = dynamic_cast<T &>(type);
+  if (&result == nullptr) {
     return {};
   }
   return result;

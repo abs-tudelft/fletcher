@@ -36,7 +36,7 @@ TEST(Types, Flatten) {
   auto f = Record::Make("outer", {RecordField::Make("d", d),
                                   RecordField::Make("e", e)});
 
-  auto flat = Flatten(f);
+  auto flat = Flatten(f.get());
   std::cout << ToString(flat);
 }
 
@@ -54,10 +54,10 @@ TEST(Types, FlatTypeConverter) {
                                   RecordField::Make("r1", Stream::Make(r))});
   auto t = Stream::Make(s);
 
-  auto k = Flatten(d);
-  auto l = Flatten(t);
+  auto k = Flatten(d.get());
+  auto l = Flatten(t.get());
 
-  TypeConverter conv(t, d);
+  TypeMapper conv(t.get(), d.get());
 
   // TODO(johanpel): type converter mapping is quite ugly at the moment
   conv.Add(0, 0)

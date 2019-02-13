@@ -39,7 +39,7 @@ TEST(VHDL, ArrayPort) {
   auto code = vhdl::Design::Generate(top);
   std::cout << code.ToString() << std::endl;
 
-  dot::Grapher dot(dot::Style::def());
+  dot::Grapher dot(dot::Style::normal());
   std::cout << dot.GenFile(top, "graph.dot");
 }
 

@@ -36,41 +36,41 @@ class Stream;
  */
 struct FlatType {
   FlatType() = default;
-  FlatType(std::shared_ptr<Type> t, std::deque<std::string> prefix, std::string name, int level);
-  int nesting_level = 0;
-  std::deque<std::string> name_parts;
-  std::shared_ptr<Type> type;
+  FlatType(const Type *t, std::deque<std::string> prefix, std::string name, int level);
+  const Type *type_;
+  int nesting_level_ = 0;
+  std::deque<std::string> name_parts_;
   std::string name(std::string root = "", std::string sep = ":") const;
-  bool operator<(FlatType &a) {
-    return nesting_level < a.nesting_level;
-  }
 };
+
+bool operator<(const FlatType &a, const FlatType &b);
+
 // Flattening functions for nested types:
 
 /// @brief Flatten a Record.
 void FlattenRecord(std::deque<FlatType> *list,
-                   const std::shared_ptr<Record> &record,
+                   const Record *record,
                    const std::optional<FlatType> &parent);
 
 /// @brief Flatten a Stream.
 void FlattenStream(std::deque<FlatType> *list,
-                   const std::shared_ptr<Stream> &stream,
+                   const Stream *stream,
                    const std::optional<FlatType> &parent);
 
 /// @brief Flatten any Type.
 void Flatten(std::deque<FlatType> *list,
-             const std::shared_ptr<Type> &type,
+             const Type* type,
              const std::optional<FlatType> &parent,
              std::string name);
 
 /// @brief Flatten and return a list of FlatTypes.
-std::deque<FlatType> Flatten(const std::shared_ptr<Type> &type);
+std::deque<FlatType> Flatten(const Type* type);
 
 /// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
-bool contains(const std::deque<FlatType> &flat_types_list, const std::shared_ptr<Type> &type);
+bool contains(const std::deque<FlatType> &flat_types_list, const Type* type);
 
 /// @brief Return the index of some Type in a list of FlatTypes.
-size_t index_of(const std::deque<FlatType> &flat_types_list, const std::shared_ptr<Type> &type);
+size_t index_of(const std::deque<FlatType> &flat_types_list, const Type* type);
 
 /**
  * @brief Sort a list of flattened types by nesting level
@@ -87,22 +87,22 @@ std::string ToString(std::deque<FlatType> flat_type_list);
  * @param b The second type.
  * @return True if flattened Type ID list is the same, false otherwise.
  */
-bool WeaklyEqual(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b);
+bool WeaklyEqual(const Type* a, const Type* b);
 
 template<typename T>
-class ConversionMatrix {
+class MappingMatrix {
  private:
   std::vector<T> elements_;
   size_t height_;
   size_t width_;
 
  public:
-  ConversionMatrix(size_t height, size_t width) : height_(height), width_(width) {
+  MappingMatrix(size_t height, size_t width) : height_(height), width_(width) {
     elements_ = std::vector<T>(height_ * width_, static_cast<T>(0));
   }
 
-  static ConversionMatrix Identity(size_t dim) {
-    ConversionMatrix ret(dim, dim);
+  static MappingMatrix Identity(size_t dim) {
+    MappingMatrix ret(dim, dim);
     for (size_t i = 0; i < dim; i++) {
       ret(i, i) = 1;
     }
@@ -150,13 +150,13 @@ class ConversionMatrix {
     return max;
   };
 
-  ConversionMatrix &SetNext(size_t y, size_t x) {
+  MappingMatrix &SetNext(size_t y, size_t x) {
     get(y, x) = std::max(MaxOfColumn(x), MaxOfRow(y)) + 1;
     return *this;
   }
 
-  ConversionMatrix Transpose() {
-    ConversionMatrix ret(width_, height_);
+  MappingMatrix Transpose() const {
+    MappingMatrix ret(width_, height_);
     for (size_t y = 0; y < height_; y++) {
       for (size_t x = 0; x < width_; x++) {
         ret(x, y) = get(y, x);
@@ -178,29 +178,29 @@ class ConversionMatrix {
 };
 
 /**
- * @brief A structure to dynamically define type conversions on flattened types.
+ * @brief A structure to dynamically define type mappings on flattened types.
  *
  * Useful for ordered concatenation of N synthesizable types onto M synthesizable types in any way.
  */
-class TypeConverter {
+class TypeMapper : Named {
  private:
-  std::shared_ptr<Type> a_;
-  std::shared_ptr<Type> b_;
   std::deque<FlatType> fa_;
   std::deque<FlatType> fb_;
-  ConversionMatrix<size_t> matrix_;
+  const Type *a_;
+  const Type *b_;
+  MappingMatrix<size_t> matrix_;
  public:
-  TypeConverter(std::shared_ptr<Type> a, std::shared_ptr<Type> b);
-  TypeConverter &Add(size_t a, size_t b);
-  ConversionMatrix<size_t> conversion_matrix();
+  TypeMapper(const Type *a, const Type *b);
+  TypeMapper &Add(size_t a, size_t b);
+  MappingMatrix<size_t> map_matrix();
   std::deque<FlatType> flat_a() const;
   std::deque<FlatType> flat_b() const;
-  std::shared_ptr<Type> a() { return a_; }
-  std::shared_ptr<Type> b() { return b_; }
-  bool CanConvert(std::shared_ptr<Type> a, std::shared_ptr<Type> b) const;
+  const Type *a() { return a_; }
+  const Type *b() { return b_; }
+  bool CanConvert(const Type *a, const Type *b) const;
   std::deque<FlatType> GetATypesFor(size_t b) const;
   std::deque<FlatType> GetBTypesFor(size_t a) const;
-  TypeConverter Invert() const;
+  std::shared_ptr<TypeMapper> Inverse() const;
   std::string ToString() const;
 };
 

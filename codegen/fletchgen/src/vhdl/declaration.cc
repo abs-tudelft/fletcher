@@ -31,7 +31,7 @@
 namespace fletchgen {
 namespace vhdl {
 
-std::string Decl::Generate(const std::shared_ptr<Type> &type) {
+std::string Decl::Generate(const Type* type) {
   if (type->Is(Type::CLOCK)) {
     return "std_logic";
   } else if (type->Is(Type::RESET)) {
@@ -54,7 +54,7 @@ std::string Decl::Generate(const std::shared_ptr<Type> &type) {
     return "natural";
   } else if (type->Is(Type::STREAM)) {
     auto stream = *Cast<Stream>(type);
-    return Generate(stream->element_type());
+    return Generate(stream->element_type().get());
   } else if (type->Is(Type::STRING)) {
     return "string";
   } else if (type->Is(Type::BOOLEAN)) {
@@ -67,7 +67,7 @@ std::string Decl::Generate(const std::shared_ptr<Type> &type) {
 Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   Block ret(depth);
   Line l;
-  l << par->name() << " : " << Generate(par->type());
+  l << par->name() << " : " << Generate(par->type().get());
   if (par->value()) {
     auto val = *par->value();
     l << " := " << val->ToString();
@@ -81,14 +81,14 @@ Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
 Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
-  auto flat_types = FlatMapToVHDL(Flatten(port->type()));
+  auto flat_types = FilterForVHDL(Flatten(port->type().get()));
   Sort(&flat_types);
 
   //
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type);
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_);
     ret << l;
   }
   return ret;
@@ -97,13 +97,13 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
 Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
-  auto flat_types = FlatMapToVHDL(Flatten(port->type()));
+  auto flat_types = FilterForVHDL(Flatten(port->type().get()));
   Sort(&flat_types);
 
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type);
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_);
     ret << l;
   }
   return ret;
@@ -114,7 +114,7 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   auto fn = FlatNode(sig);
   for (const auto &pair : fn.pairs()) {
     Line l;
-    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second);
+    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second.get());
     ret << l;
   }
   return ret;

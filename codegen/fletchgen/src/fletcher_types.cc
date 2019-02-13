@@ -137,9 +137,9 @@ std::shared_ptr<Type> bus_write_request() {
 
 std::shared_ptr<Type> bus_read_data() {
   static auto bus_rdata = RecordField::Make(Vector::Make("data", bus_data_width()));
-  static auto bus_rlast = RecordField::Make("last", bit());
-  static auto bus_rdat_record = Record::Make("rdat:rec", {bus_rdata, bus_rlast});
-  static auto bus_rdat = Stream::Make("rdat:stream", bus_rdat_record);
+  static auto bus_rlast = RecordField::Make(last());
+  static auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
+  static auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
   return bus_rdat;
 }
 
@@ -147,24 +147,24 @@ std::shared_ptr<Type> bus_write_data() {
   static auto bus_wdata = RecordField::Make(Vector::Make("data", bus_data_width()));
   static auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", bus_data_width() / intl<8>()));
   static auto bus_wlast = RecordField::Make("last", bit());
-  static auto bus_wdat_record = Record::Make("wdat:rec", {bus_wdata, bus_wstrobe, bus_wlast});
-  static auto bus_wdat = Stream::Make("wdat:stream", bus_wdat_record);
+  static auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
+  static auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
   return bus_wdat;
 }
 
 std::shared_ptr<Type> cmd() {
-  static auto firstidx = RecordField::Make(Vector::Make<64>("firstIdx"));
-  static auto lastidx = RecordField::Make(Vector::Make<64>("lastidx"));
-  static auto ctrl = RecordField::Make(Vector::Make<64>("ctrl"));
+  static auto firstidx = RecordField::Make(Vector::Make<32>("firstIdx"));
+  static auto lastidx = RecordField::Make(Vector::Make<32>("lastidx"));
+  static auto ctrl = RecordField::Make(Vector::Make("ctrl", {}));
   static auto tag = RecordField::Make(Vector::Make<8>("tag"));
-  static auto cmd_record = Record::Make("cmd:rec", {firstidx, lastidx, ctrl, tag});
-  static auto cmd_stream = Stream::Make("cmd:stream", cmd_record);
+  static auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
+  static auto cmd_stream = Stream::Make("command", cmd_record);
   return cmd_stream;
 }
 
 std::shared_ptr<Type> unlock() {
   static auto tag = Vector::Make<8>("tag");
-  static std::shared_ptr<Type> unlock_stream = Stream::Make("unlock:stream", tag, "tag");
+  static std::shared_ptr<Type> unlock_stream = Stream::Make("unlock", tag, "tag");
   return unlock_stream;
 }
 
@@ -172,16 +172,16 @@ std::shared_ptr<Type> read_data() {
   static auto d = RecordField::Make(incomplete_data());
   static auto dv = RecordField::Make(dvalid());
   static auto l = RecordField::Make(last());
-  static auto data_record = Record::Make("data:rec", {d, dv, l});
-  static auto data_stream = Stream::Make("data:stream", data_record);
+  static auto data_record = Record::Make("arrow_read_data_rec", {d, dv, l});
+  static auto data_stream = Stream::Make("arrow_read_data", data_record);
   return data_stream;
 }
 
 std::shared_ptr<Type> write_data() {
-  static auto d = RecordField::Make(Vector::Make<64>("data"));
-  static auto l = RecordField::Make("last", bit());
-  static auto data_record = Record::Make("data:rec", {d, l});
-  static auto data_stream = Stream::Make("data:stream", data_record);
+  static auto d = RecordField::Make(incomplete_data());
+  static auto l = RecordField::Make(last());
+  static auto data_record = Record::Make("arrow_write_data_rec", {d, l});
+  static auto data_stream = Stream::Make("arrow_write_data", data_record);
   return data_stream;
 }
 
@@ -203,27 +203,27 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
   }
 }
 
-std::shared_ptr<TypeConverter> GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
-  std::shared_ptr<TypeConverter> conversion;
+std::shared_ptr<TypeMapper> GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
+  std::shared_ptr<TypeMapper> conversion;
   if (mode == fletcher::Mode::READ) {
-    conversion = std::make_shared<TypeConverter>(stream_type, read_data());
+    conversion = std::make_shared<TypeMapper>(stream_type.get(), read_data().get());
   } else {
-    conversion = std::make_shared<TypeConverter>(stream_type, write_data());
+    conversion = std::make_shared<TypeMapper>(stream_type.get(), write_data().get());
   }
 
   size_t idx_stream = 0;
-  auto idx_data = index_of(conversion->flat_b(), incomplete_data());
-  auto idx_dvalid = index_of(conversion->flat_b(), dvalid());
-  auto idx_last = index_of(conversion->flat_b(), last());
+  auto idx_data = index_of(conversion->flat_b(), incomplete_data().get());
+  auto idx_dvalid = index_of(conversion->flat_b(), dvalid().get());
+  auto idx_last = index_of(conversion->flat_b(), last().get());
 
   auto flat_stream = conversion->flat_a();
   for (size_t i = 0; i < flat_stream.size(); i++) {
-    auto t = flat_stream[i].type;
+    auto t = flat_stream[i].type_;
     if (t->Is(Type::STREAM)) {
       conversion->Add(i, idx_stream);
-    } else if (t == dvalid()) {
+    } else if (t == dvalid().get()) {
       conversion->Add(i, idx_dvalid);
-    } else if (t == last()) {
+    } else if (t == last().get()) {
       conversion->Add(i, idx_last);
     } else if (t->Is(Type::RECORD)) {
       // do nothing
@@ -338,7 +338,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
         RecordField::Make("last", last()),
         RecordField::Make(elements_name, type)});
     auto stream = Stream::Make(name + ":stream", record, elements_name);
-    stream->AddConversion(GetStreamTypeConverter(stream, mode));
+    stream->AddMapper(GetStreamTypeConverter(stream, mode));
     return stream;
   } else {
     // Otherwise just return the type
