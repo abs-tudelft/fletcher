@@ -32,6 +32,7 @@ static std::string ToHex(const std::shared_ptr<Node> &n) {
 std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
+  int ei = 0;
   for (const auto &e : all_edges) {
     if (!contains(drawn_edges, e)) {
       // Remember we've drawn this edge
@@ -70,7 +71,7 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
         switch (src->type()->id()) {
           case Type::STREAM: {
             sb << style.edge.stream;
-            sb << assign_quotes("color", style.edge.color.stream);
+            sb << awq("color", style.edge.color.stream);
             break;
           }
           case Type::CLOCK: {
@@ -115,6 +116,7 @@ std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
         ret << "]\n";
       }
     }
+    ei++;
   }
   return ret.str();
 }
@@ -389,100 +391,6 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
     }
   }
   return sanitize(ret.str()) + suffix;
-}
-
-std::string Style::Get(const std::shared_ptr<Node> &n) {
-  StyleBuilder str;
-
-  str << node.base;
-
-  // Add label
-  switch (n->type()->id()) {
-    case Type::RECORD:break;
-    case Type::STREAM:break;
-    case Type::CLOCK:str << node.type.clock;
-      break;
-    case Type::RESET:str << node.type.reset;
-      break;
-    case Type::VECTOR: str << node.type.vector;
-      break;
-    case Type::BIT:str << node.type.bit;
-      break;
-    case Type::INTEGER:str << node.type.integer;
-      break;
-    case Type::STRING:str << node.type.string;
-      break;
-    case Type::BOOLEAN:str << node.type.boolean;
-      break;
-    default:break;
-  }
-
-  str << GetLabel(n);
-
-  // Add other style
-  switch (n->id()) {
-    case Node::PORT: str << node.port;
-      break;
-    case Node::SIGNAL:str << node.signal;
-      break;
-    case Node::PARAMETER:str << node.parameter;
-      break;
-    case Node::LITERAL:str << node.literal;
-      break;
-    case Node::EXPRESSION:str << node.expression;
-      break;
-    case Node::ARRAY_SIGNAL: str << node.signal;
-      break;
-    case Node::ARRAY_PORT: str << node.port;
-      break;
-  }
-
-  return str.ToString();
-}
-
-std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
-  StyleBuilder sb;
-  bool expand = false;
-  if (n->type()->Is(Type::STREAM)) {
-    expand |= config.nodes.expand.stream;
-    if (config.nodes.expand.stream) {
-      sb << assign_quotes("color", node.color.stream_child);
-    } else {
-      sb << node.type.stream;
-    }
-  } else if (n->type()->Is(Type::RECORD)) {
-    expand |= config.nodes.expand.record;
-    if (config.nodes.expand.record) {
-      sb << assign_quotes("color", node.color.record_child);
-    } else {
-      sb << node.type.record;
-    }
-  }
-
-  std::stringstream str;
-  if (n->type()->IsNested() && expand) {
-    str << "label=<";
-    if (node.nested == "html") {
-      str << GenHTMLTableCell(n->type(), n->name());
-    } else {
-      str << GenDotRecordCell(n->type(), n->name());
-    }
-    str << ">";
-  } else if (n->IsParameter()) {
-    str << "label=\"" + sanitize(n->name());
-    auto par = *Cast<Parameter>(n);
-    if (par->value()) {
-      auto val = *par->value();
-      str << ":" << sanitize(val->ToString());
-    }
-    str << "\"";
-  } else {
-    str << "label=\"" + sanitize(n->name()) + "\"";
-  }
-
-  sb << str.str();
-
-  return sb.ToString();
 }
 
 }  // namespace dot
