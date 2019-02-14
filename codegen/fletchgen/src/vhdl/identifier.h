@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 
 namespace fletchgen {
 namespace vhdl {
@@ -28,8 +29,12 @@ class Identifier {
   Identifier() = default;
   /// @brief Construct an identifier from a bunch of strings.
   Identifier(std::initializer_list<std::string> parts, char sep = '_');
+  /// @brief Construct an identifier from a bunch of strings.
+  explicit Identifier(std::deque<std::string> parts, char sep = '_');
   /// @brief Append a part to the Identifier.
   Identifier &append(const std::string &part);
+  /// @brief Append a part to the Identifier.
+  Identifier &prepend(const std::string &part);
   /// @brief Append a part to the Identifier.
   Identifier &operator+=(const std::string &rhs);
   /// @brief Create a copy and add a new part to the Identifier.
@@ -39,7 +44,7 @@ class Identifier {
   /// @brief The separator character between different parts of the identifier.
   char separator_ = '_';
   /// @brief The parts of the identifier.
-  std::vector<std::string> parts_;
+  std::deque<std::string> parts_;
 };
 
 }  // namespace vhdl

@@ -39,6 +39,88 @@ Block Inst::Generate(const std::shared_ptr<Parameter> &par) {
   return ret;
 }
 
+std::deque<Range> GetRanges(const std::deque<FlatType> &types) {
+  std::deque<Range> ret;
+  std::shared_ptr<Node> offset = intl<0>();
+  for (const auto &ft : types) {
+    Range r;
+    std::optional<std::shared_ptr<Node>> w;
+    if (ft.type_->Is(Type::STREAM)) {
+      // For the sake of this function, stream widths are 1
+      w = intl<1>();
+    } else {
+      w = ft.type_->width();
+    }
+
+    if (w) {
+      if (*w == intl<1>()) {
+        r.type = Range::SINGLE;
+      } else {
+        r.type = Range::MULTI;
+      }
+      r.bottom = offset->ToString();
+      offset = offset + *w;
+      r.top = (offset - 1)->ToString();
+    }
+
+    ret.push_back(r);
+  }
+  return ret;
+}
+
+Block Inst::Generate(std::string lh_prefix,
+                     const FlatType &lh,
+                     Range lh_range,
+                     std::string rh_prefix,
+                     const FlatType &rh,
+                     Range rh_range) {
+  Block ret;
+
+  Identifier lhn(lh.name_parts_);
+  Identifier rhn(rh.name_parts_);
+  lhn.prepend(lh_prefix);
+  rhn.prepend(rh_prefix);
+
+  // Nested types
+  if (lh.type_->Is(Type::STREAM)) {
+    // Streams generate additional valid and ready
+    Line v;
+    Line r;
+    auto lhnv = lhn;
+    auto lhnr = lhn;
+    auto rhnv = rhn;
+    auto rhnr = rhn;
+    lhnv.append("valid");
+    lhnr.append("ready");
+    rhnv.append("valid");
+    rhnr.append("ready");
+
+    // Valid and ready port map
+    v << lhnv.ToString() + lh_range.ToString() << "=> " << rhnv.ToString() + rh_range.ToString();
+    r << lhnr.ToString() + lh_range.ToString() << "=> " << rhnr.ToString() + rh_range.ToString();
+
+    // Comments
+    v << " -- Stream valid: (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
+        + rh.type_->ToString() + ")";
+    r << " -- Stream ready: (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
+        + rh.type_->ToString() + ")";
+
+    ret << v << r;
+  } else if (lh.type_->Is(Type::RECORD)) {
+    // Records generate nothing
+  } else {
+    // Other types
+    Line l;
+    // Port map
+    l << lhn.ToString() + lh_range.ToString() << "=> " << rhn.ToString() + rh_range.ToString();
+    // Comment
+    l << " -- (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
+        + rh.type_->ToString() + ")";
+    ret << l;
+  }
+  return ret;
+}
+
 Block Inst::Generate(const std::shared_ptr<Port> &port) {
   Block ret;
   std::deque<std::shared_ptr<Edge>> connections;
@@ -61,20 +143,22 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
     auto tmo = port->type()->GetMapper(other->type().get());
     if (tmo) {
       tm = *tmo;
+      //std::cout << tm->ToString() << std::endl;
 
-      // Filter the flattened type for VHDL
-      auto vhdl_flat_ports = tm->flat_a();
+      // Loop over all flat types for type A (the instance port)
+      for (size_t ia = 0; ia < tm->flat_a().size(); ia++) {
+        // Get all the flat type indices on type B (the connecting object)
+        auto b_types = tm->GetOrderedBTypesFor(ia);
 
-      for (size_t i = 0; i < vhdl_flat_ports.size(); i++) {
-        Line l;
-        l << vhdl_flat_ports[i].name(port->name()) + "(" + vhdl_flat_ports[i].type_->ToString() + ")";
-        l << "=> ";
-        auto vhdl_flat_others = tm->GetBTypesFor(i);
-        for (size_t j = 0; j < vhdl_flat_others.size(); j++) {
-          l << vhdl_flat_others[j].name(other->name()) + "(" + vhdl_flat_others[j].type_->ToString() + ")";
+        for (size_t a_offset = 0; a_offset < b_types.size(); a_offset++) {
+          Line l;
+          l << tm->flat_a()[ia].name(port->name()) + "(" + std::to_string(a_offset) + ")";
+          l << " => ";
+          l << b_types[a_offset].name(other->name());
+          ret << l;
         }
-        ret << l;
       }
+
     } else {
       throw std::runtime_error(
           "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()

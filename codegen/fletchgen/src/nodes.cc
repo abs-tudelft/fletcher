@@ -2,8 +2,6 @@
 
 #include <utility>
 
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,11 +32,6 @@ namespace fletchgen {
 
 Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
     : Named(std::move(name)), id_(id), type_(std::move(type)) {}
-
-std::shared_ptr<Node> Node::Copy() const {
-  auto ret = std::make_shared<Node>(this->name(), this->id_, this->type_);
-  return ret;
-}
 
 std::string Node::ToString() {
   return name();
@@ -148,22 +141,13 @@ std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<T
   return std::make_shared<Literal>(name, type, value);
 }
 
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type, std::string
-                 value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type,
-                 int value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type,
-                 bool value)
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
@@ -215,10 +199,7 @@ std::shared_ptr<Node> Port::Copy() const {
   return std::make_shared<Port>(name(), type(), dir);
 }
 
-Port::Port(std::string
-           name, std::shared_ptr<Type>
-           type, Port::Dir
-           dir)
+Port::Port(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
     : NormalNode(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
@@ -264,6 +245,11 @@ std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
   return ret;
 }
 
+std::shared_ptr<Node> Signal::Copy() const {
+  auto ret = std::make_shared<Signal>(this->name(), this->type_);
+  return ret;
+}
+
 std::shared_ptr<Expression> Expression::Make(Expression::Operation op,
                                              const std::shared_ptr<Node> &lhs,
                                              const std::shared_ptr<Node> &rhs) {
@@ -289,6 +275,10 @@ std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs) {
     }
   }
   return lhs + Literal::Make(rhs);
+}
+
+std::shared_ptr<Node> operator-(const std::shared_ptr<Node> &lhs, int rhs) {
+  return operator+(lhs, -rhs);
 }
 
 std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
@@ -458,8 +448,7 @@ void ArrayNode::increment() {
 ArrayNode::ArrayNode(std::string name,
                      Node::ID id,
                      std::shared_ptr<Type> type,
-                     ArraySide array_side,
-                     std::shared_ptr<Node> size)
+                     ArraySide array_side)
     : Node(std::move(name), id, std::move(type)), array_side_(array_side) {}
 
 std::deque<std::shared_ptr<Edge>> ArrayNode::inputs() const {
@@ -508,7 +497,7 @@ std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
                                            std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
                                            Port::Dir dir) {
-  auto result = std::make_shared<ArrayPort>(name, type, nullptr, dir);
+  auto result = std::make_shared<ArrayPort>(name, type, dir);
   result->SetSize(std::move(size));
   return result;
 }
@@ -516,21 +505,15 @@ std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
                                            Port::Dir dir) {
-  return ArrayPort::Make(type->name(), type, size, dir);
+  return ArrayPort::Make(type->name(), type, std::move(size), dir);
 }
 
-ArrayPort::ArrayPort(std::string name,
-                     std::shared_ptr<Type> type,
-                     std::shared_ptr<Node> size,
-                     Port::Dir dir)
-    : ArrayNode(std::move(name),
-                Node::ARRAY_PORT,
-                std::move(type),
-                dir == Port::IN ? ARRAY_IN : ARRAY_OUT,
-                std::move(size)), dir(dir) {}
+ArrayPort::ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
+    : ArrayNode(std::move(name), Node::ARRAY_PORT, std::move(type), dir == Port::IN ? ARRAY_IN : ARRAY_OUT), dir(dir) {}
 
 std::shared_ptr<Node> ArrayPort::Copy() const {
-  auto result = std::make_shared<ArrayPort>(name(), type(), size(), dir);
+  auto result = std::make_shared<ArrayPort>(name(), type(), dir);
+  result->SetSize(this->size());
   return result;
 }
 

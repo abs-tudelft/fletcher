@@ -23,11 +23,13 @@
 #include "../graphs.h"
 
 #include "./block.h"
+#include "./vhdl_types.h"
 
 namespace fletchgen {
 namespace vhdl {
 
 struct Inst {
+  static Block Generate(std::string lh_prefix, const FlatType& lhs, Range lh_range, std::string rh_prefix, const FlatType& rhs,  Range rh_range);
   static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
   static Block Generate(const std::shared_ptr<Port> &port);
   static Block Generate(const std::shared_ptr<Parameter> &par);

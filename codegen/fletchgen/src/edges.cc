@@ -26,19 +26,32 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
     throw std::runtime_error("Source node is null");
   } else if (dst == nullptr) {
     throw std::runtime_error("Destination node is null");
-  } else if (src->IsArray()) {
+  }
+
+  // Check if the types can be mapped onto each other
+  if (!src->type()->GetMapper(dst->type().get())) {
+    throw std::runtime_error(
+        "No known type mapping available during connection of node "
+            + src->ToString() + " (" + src->type()->ToString() + ")  to ("
+            + src->ToString() + " (" + src->type()->ToString() + ")");
+  }
+
+  // If the destination is a port, check if we're not driving an output port
+  if (dst->IsPort()) {
+    auto p = *Cast<Port>(dst);
+    if (p->IsOutput()) {
+      throw std::runtime_error("Cannot drive port " + p->ToString() + " of mode output");
+    }
+  }
+
+  // Defer to ArrayNodes if applicable
+  if (src->IsArray()) {
     auto sa = *Cast<ArrayNode>(src);
     return sa->Append(dst);
   } else if (dst->IsArray()) {
     auto da = *Cast<ArrayNode>(dst);
     return da->Append(src);
   }
-  /*else if (!WeaklyEqual(src->type(), dst->type())) {
-    std::cerr << "source: " << std::endl << ToString(Flatten(src->type())) << std::endl;
-    std::cerr << "destination: " << std::endl << ToString(Flatten(dst->type())) << std::endl;
-    throw std::runtime_error("Cannot connect nodes of weakly different types.");
-  }
-   */
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
@@ -47,8 +60,8 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   return edge;
 }
 
-std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-  return Connect(lhs, rhs);
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
+  return Connect(dst, src);
 }
 
 std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix) {

@@ -56,7 +56,7 @@ void FlattenRecord(std::deque<FlatType> *list,
 }
 
 void FlattenStream(std::deque<FlatType> *list,
-                   const Stream* stream,
+                   const Stream *stream,
                    const std::optional<FlatType> &parent) {
   Flatten(list, stream->element_type().get(), parent, "");
 }
@@ -110,40 +110,6 @@ void Sort(std::deque<FlatType> *list) {
   std::sort(list->begin(), list->end());
 }
 
-bool WeaklyEqual(const Type *a, const Type *b) {
-  bool equal = true;
-  auto a_types = Flatten(a);
-  auto b_types = Flatten(b);
-
-  // Check if the lists have equal length.
-  if (a_types.size() != b_types.size()) {
-    equal = false;
-  }
-
-  // Check every type id to be the same.
-  for (size_t i = 0; i < a_types.size(); i++) {
-    if (a_types[i].type_->id() != b_types[i].type_->id()) {
-      equal = false;
-    }
-    if (a_types[i].nesting_level_ != b_types[i].nesting_level_) {
-      equal = false;
-    }
-  }
-
-  // Try type conversions
-  if (!equal) {
-    auto convs = a->mappers();
-    for (const auto &c : convs) {
-      if (c->CanConvert(a, b)) {
-        equal = true;
-        break;
-      }
-    }
-  }
-
-  return equal;
-}
-
 bool contains(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (const auto &ft : flat_types_list) {
     if (ft.type_ == type) {
@@ -181,18 +147,38 @@ TypeMapper &TypeMapper::Add(size_t a, size_t b) {
 
 std::string TypeMapper::ToString() const {
   std::stringstream ret;
+  ret << "TypeMapper [" + a()->ToString() + "]=>[" + b()->ToString() << "]:" << std::endl;
+  ret << std::setw(16) << " " << " | ";
+
+  for (const auto &x : fb_) {
+    ret << std::setw(16) << x.name() << " | ";
+  }
+  ret << std::endl;
+  ret << std::setw(16) << " " << " | ";
+  for (const auto &x : fb_) {
+    ret << std::setw(16) << x.type_->ToString() << " | ";
+  }
+  ret << std::endl;
+
+  // Separator
+  for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(16, '-') << " | "; }
+  ret << std::endl;
+
   for (size_t y = 0; y < fa_.size(); y++) {
+    ret << std::setw(16) << fa_[y].name() << " | ";
+    for (size_t x = 0; x < fb_.size(); x++) {
+      ret << std::setw(16) << " " << " | ";
+    }
+    ret << std::endl;
+    ret << std::setw(16) << fa_[y].type_->ToString() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       auto val = matrix_(y, x);
-      if (val > 0) {
-        ret << std::setw(16) << std::right << fa_[y].name()
-            << " " << std::setw(3) << y
-            << " => "
-            << std::setw(3) << x << " "
-            << std::setw(16) << std::left << fb_[x].name() + "(" + std::to_string(val) + ")"
-            << std::endl;
-      }
+      ret << std::setw(16) << val << " | ";
     }
+    ret << std::endl;
+    // Separator
+    for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(16, '-') << " | "; }
+    ret << std::endl;
   }
   return ret.str();
 }
@@ -204,26 +190,32 @@ std::deque<FlatType> TypeMapper::flat_a() const { return fa_; }
 std::deque<FlatType> TypeMapper::flat_b() const { return fb_; }
 
 bool TypeMapper::CanConvert(const Type *a, const Type *b) const {
-  return ((a_ == a) && (b_ == b)) || ((a_ == b) && (b_ == a));
+  return ((a_ == a) && (b_ == b));
 }
 
-std::deque<FlatType> TypeMapper::GetBTypesFor(size_t a) const {
-  std::deque<FlatType> ret;
-  for (size_t i = 0; i < fb_.size(); i++) {
-    if (matrix_(a, i)) {
-      ret.push_back(fb_[i]);
+std::deque<FlatType> TypeMapper::GetOrderedBTypesFor(size_t ia) const {
+  std::deque<std::pair<size_t, size_t>> b_order_indices;
+  // Obtain the order and index that the FlatType of A at index ia should connect.
+  for (size_t ib = 0; ib < fb_.size(); ib++) {
+    if (matrix_(ia, ib) > 0) {
+      b_order_indices.emplace_back(matrix_(ia, ib), ib);
     }
   }
-  return ret;
-}
 
-std::deque<FlatType> TypeMapper::GetATypesFor(size_t b) const {
+  // Sort the list to obtain the right order.
+  std::sort(b_order_indices.begin(),
+            b_order_indices.end(),
+            [](const std::pair<size_t, size_t> &a, const std::pair<size_t, size_t> &b) {
+              return a.first < b.first;
+            }
+  );
+
+  // Construct the deque of ordered flat types of type b
   std::deque<FlatType> ret;
-  for (size_t i = 0; i < fa_.size(); i++) {
-    if (matrix_(i, b)) {
-      ret.push_back(fa_[i]);
-    }
+  for (const auto &ib : b_order_indices) {
+    ret.push_back(fb_[ib.second]);
   }
+
   return ret;
 }
 

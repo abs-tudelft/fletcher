@@ -145,12 +145,12 @@ std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
-  std::deque<std::shared_ptr<Node>> copied;
+  std::deque<Node*> copied;
   // Make copies of ports and parameters
   for (const auto &port : component->GetNodesOfType<Port>()) {
     auto inst_port = port->Copy();
     AddNode(inst_port);
-    copied.push_back(port);
+    copied.push_back(port.get());
   }
   for (const auto &array_port : component->GetNodesOfType<ArrayPort>()) {
     auto inst_size = array_port->size()->Copy();
@@ -159,11 +159,11 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     AddNode(inst_port);
     AddNode(inst_size);
 
-    copied.push_back(array_port);
-    copied.push_back(array_port->size());
+    copied.push_back(array_port.get());
+    copied.push_back(array_port->size().get());
   }
   for (const auto &par : component->GetNodesOfType<Parameter>()) {
-    if (!contains(copied, *Cast<Node>(par))) {
+    if (!contains(copied, (*Cast<Node>(par)).get())) {
       AddNode(par->Copy());
     }
   }

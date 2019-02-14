@@ -33,7 +33,7 @@ MultiBlock Design::Generate(std::shared_ptr<Component> comp) {
   // This currently modifies the original structure.
 
   // Sanitize component
-  Transformation::ResolvePortToPort(comp);
+  //Transformation::ResolvePortToPort(comp);
 
   auto decl_code = Decl::Generate(comp);
   auto arch_code = Arch::Generate(comp);

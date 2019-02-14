@@ -1,9 +1,3 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,9 +46,11 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
 
   /// @brief Node constructor.
   Node(std::string name, ID id, std::shared_ptr<Type> type);
+  /// @brief Virtual destructor for Node.
+  virtual ~Node() = default;
 
   /// @brief Get a copy of this Node.
-  virtual std::shared_ptr<Node> Copy() const;
+  virtual std::shared_ptr<Node> Copy() const = 0;
 
   /// @brief Return the node Type
   inline std::shared_ptr<Type> type() const { return type_; }
@@ -115,6 +111,7 @@ struct MultiOutputNode : public Node {
   /// @brief The outgoing Edges that sink this Node.
   std::deque<std::shared_ptr<Edge>> outputs_;
 
+  /// @brief MultiOutputNode constructor.
   MultiOutputNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : Node(std::move(name),
                                                                                     id,
                                                                                     std::move(type)) {}
@@ -141,6 +138,7 @@ struct NormalNode : public MultiOutputNode {
   /// @brief The incoming Edge that sources this Node.
   std::shared_ptr<Edge> input_;
 
+  /// @brief NormalNode constructor.
   NormalNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : MultiOutputNode(std::move(name),
                                                                                           id,
                                                                                           std::move(type)) {}
@@ -165,16 +163,16 @@ struct NormalNode : public MultiOutputNode {
  * widths or it can be connected to a Parameter Node, to give the Parameter its value.
  */
 struct Literal : public MultiOutputNode {
-  /// @brief The actual storage type of the value.
+  /// The storage type of the literal value.
   enum StorageType { INT, STRING, BOOL } storage_type_;
 
-  /// @brief The string storage.
+  /// The string storage.
   std::string str_val_ = "";
 
-  /// @brief The integer storage.
+  /// The integer storage.
   int int_val_ = 0;
 
-  /// @brief The boolean storage.
+  /// The boolean storage.
   bool bool_val_ = false;
 
   /// @brief Literal constructor.
@@ -255,6 +253,8 @@ std::string ToString(Expression::Operation operation);
 std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 /// @brief Increment a node with an integer. If the lhs is a literal, return a new literal, otherwise and expression.
 std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs);
+/// @brief Decrement a node with an integer. If the lhs is a literal, return a new literal, otherwise and expression.
+std::shared_ptr<Node> operator-(const std::shared_ptr<Node> &lhs, int rhs);
 
 std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
@@ -272,6 +272,8 @@ struct Signal : public NormalNode {
   static std::shared_ptr<Signal> Make(std::string name, const std::shared_ptr<Type> &type);
   /// @brief Create a new Signal and return a smart pointer to it. The Signal name is derived from the Type name.
   static std::shared_ptr<Signal> Make(const std::shared_ptr<Type> &type);
+  /// @brief Create a copy of this Signal.
+  std::shared_ptr<Node> Copy() const override;
 };
 
 /**
@@ -306,7 +308,7 @@ struct Parameter : public NormalNode {
  * Can be used to define Graph terminators. Port nodes enforce proper directionality of edges.
  */
 struct Port : public NormalNode {
-  /// @brief Port direction.
+  /// Port direction.
   enum Dir { IN, OUT } dir;
 
   /// @brief Construct a new Port.
@@ -343,27 +345,38 @@ struct Port : public NormalNode {
  */
 class ArrayNode : public Node {
  public:
-  /// @brief Which side the "array" is on
+  /// Which side of the node the "array" is on.
   enum ArraySide {
     ARRAY_OUT,
     ARRAY_IN
   };
 
+  /// @brief ArrayNode constructor.
   ArrayNode(std::string name,
             Node::ID id,
             std::shared_ptr<Type> type,
-            ArraySide array_side,
-            std::shared_ptr<Node> size);
+            ArraySide array_side);
 
+  /// @brief Append another Node to this ArrayNode, returns an Edge between this ArrayNode and the appended Node.
   std::shared_ptr<Edge> Append(std::shared_ptr<Node> n);
 
   /// @brief Increment the size of the ArrayNode.
   void increment();
 
+  /**
+   * @brief Set the number of edges on the array side of this ArrayNode.
+   *
+   * The size Node must appear as a node on the parent Graph.
+   */
   std::shared_ptr<Edge> SetSize(std::shared_ptr<Node> size);
+
+  /// @brief Return the Node representing the number of edges on the array side of this ArrayNode.
   std::shared_ptr<Node> size() const;
 
+  /// @brief Return the inputs to this node.
   std::deque<std::shared_ptr<Edge>> inputs() const override;
+
+  /// @brief Return the outputs of this node.
   std::deque<std::shared_ptr<Edge>> outputs() const override;
 
  private:
@@ -383,13 +396,11 @@ struct ArraySignal : public ArrayNode {
 };
 
 struct ArrayPort : public ArrayNode {
+  /// Port direction.
   Port::Dir dir;
 
   /// @brief Construct a new ArrayPort.
-  ArrayPort(std::string name,
-            std::shared_ptr<Type> type,
-            std::shared_ptr<Node> size,
-            Port::Dir dir);
+  ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir);
 
   /// @brief Get a smart pointer to a new ArrayPort.
   static std::shared_ptr<ArrayPort> Make(std::string name,

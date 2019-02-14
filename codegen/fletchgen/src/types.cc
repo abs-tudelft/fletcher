@@ -47,15 +47,15 @@ bool Type::IsNested() const {
 
 std::string Type::ToString() const {
   switch (id_) {
-    case CLOCK  : return "Clock";
-    case RESET  : return "Reset";
-    case BIT    : return "Bit";
-    case VECTOR : return "Vector";
-    case INTEGER: return "Natural";
-    case STRING : return "String";
-    case BOOLEAN: return "Boolean";
-    case RECORD : return "Record";
-    case STREAM : return "Stream";
+    case CLOCK  : return name() + ":Clock";
+    case RESET  : return name() + ":Reset";
+    case BIT    : return name() + ":Bit";
+    case VECTOR : return name() + ":Vector";
+    case INTEGER: return name() + ":Natural";
+    case STRING : return name() + ":String";
+    case BOOLEAN: return name() + ":Boolean";
+    case RECORD : return name() + ":Record";
+    case STREAM : return name() + ":Stream";
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
 }
@@ -216,9 +216,6 @@ std::shared_ptr<RecordField> RecordField::Make(std::shared_ptr<Type> type) {
   return std::make_shared<RecordField>(type->name(), type);
 }
 
-Record::Record(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields)
-    : Type(name, Type::RECORD), fields_(std::move(fields)) {}
-
 std::shared_ptr<Type> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields) {
   return std::make_shared<Record>(name, fields);
 }
@@ -227,6 +224,9 @@ Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
   fields_.push_back(field);
   return *this;
 }
+
+Record::Record(std::string name, std::deque<std::shared_ptr<RecordField>> fields)
+    : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
 
 ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 

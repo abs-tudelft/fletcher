@@ -40,7 +40,7 @@ TEST(Types, Flatten) {
   std::cout << ToString(flat);
 }
 
-TEST(Types, FlatTypeConverter) {
+TEST(Types, TypeMapper) {
   auto a = bit();
   auto b = Vector::Make<8>();
   auto c = Record::Make("rec_K", {RecordField::Make("a", a),

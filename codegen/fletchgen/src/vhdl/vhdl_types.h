@@ -50,5 +50,26 @@ bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b
  */
 std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list);
 
+struct Range {
+  enum {
+    NIL,
+    SINGLE,
+    MULTI,
+  } type = NIL;
+
+  std::string bottom;
+  std::string top;
+
+  std::string ToString() {
+    if (type == SINGLE) {
+      return "(" + bottom + ")";
+    } else if (type == MULTI) {
+      return "(" + top + " downto " + bottom + ")";
+    } else {
+      return "";
+    }
+  }
+};
+
 }  // namespace vhdl
 }  // namespace fletchgen

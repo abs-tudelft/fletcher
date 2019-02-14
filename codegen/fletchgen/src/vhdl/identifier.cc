@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 
 namespace fletchgen {
 namespace vhdl {
@@ -37,9 +38,20 @@ Identifier::Identifier(std::initializer_list<std::string> parts, char sep) : sep
   }
 }
 
+Identifier::Identifier(std::deque<std::string> parts, char sep) : separator_(sep) {
+  parts_ = std::move(parts);
+}
+
 Identifier &Identifier::append(const std::string &part) {
   if (!part.empty()) {
     parts_.push_back(part);
+  }
+  return *this;
+}
+
+Identifier &Identifier::prepend(const std::string &part) {
+  if (!part.empty()) {
+    parts_.push_front(part);
   }
   return *this;
 }

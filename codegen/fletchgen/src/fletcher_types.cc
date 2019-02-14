@@ -203,7 +203,7 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
   }
 }
 
-std::shared_ptr<TypeMapper> GetStreamTypeConverter(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
+std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
   std::shared_ptr<TypeMapper> conversion;
   if (mode == fletcher::Mode::READ) {
     conversion = std::make_shared<TypeMapper>(stream_type.get(), read_data().get());
@@ -252,13 +252,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: binary type has a length stream and bytes stream.
       // The EPC is assumed to relate to the list elements,
       // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream",
+      auto slave = Stream::Make(name,
                                 Record::Make("data", {
                                     RecordField::Make("dvalid", dvalid()),
                                     RecordField::Make("last", last()),
                                     RecordField::Make("data", byte())}),
                                 "data", epc);
-      type = Record::Make(name + ":binary", {
+      type = Record::Make(name + "_rec", {
           RecordField::Make("length", length()),
           RecordField::Make("bytes", slave)
       });
@@ -269,13 +269,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: string type has a length stream and utf8 character stream.
       // The EPC is assumed to relate to the list elements,
       // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name + ":stream",
+      auto slave = Stream::Make(name,
                                 Record::Make("data", {
                                     RecordField::Make("dvalid", dvalid()),
                                     RecordField::Make("last", last()),
                                     RecordField::Make("data", utf8c())}),
                                 "data", epc);
-      type = Record::Make(name + ":string", {
+      type = Record::Make(name + "_rec", {
           RecordField::Make("length", length()),
           RecordField::Make("chars", slave)
       });
@@ -290,13 +290,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       auto arrow_child = field->type()->child(0);
       auto element_type = GetStreamType(arrow_child, mode, level + 1);
-      auto slave = Stream::Make(name + ":stream",
+      auto slave = Stream::Make(name,
                                 Record::Make("data", {
                                     RecordField::Make("dvalid", dvalid()),
                                     RecordField::Make("last", last()),
                                     RecordField::Make("data", element_type)}),
                                 "data", epc);
-      type = Record::Make(name + ":list", {
+      type = Record::Make(name + "_rec", {
           RecordField::Make(length()),
           RecordField::Make(arrow_child->name(), slave)
       });
@@ -313,7 +313,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
         auto child_type = GetStreamType(f, mode, level + 1);
         children.push_back(RecordField::Make(f->name(), child_type));
       }
-      type = Record::Make(name + ":struct", children);
+      type = Record::Make(name + "_rec", children);
       break;
     }
 
@@ -337,8 +337,8 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
         RecordField::Make("dvalid", dvalid()),
         RecordField::Make("last", last()),
         RecordField::Make(elements_name, type)});
-    auto stream = Stream::Make(name + ":stream", record, elements_name);
-    stream->AddMapper(GetStreamTypeConverter(stream, mode));
+    auto stream = Stream::Make(name, record, elements_name);
+    stream->AddMapper(GetStreamTypeMapper(stream, mode));
     return stream;
   } else {
     // Otherwise just return the type

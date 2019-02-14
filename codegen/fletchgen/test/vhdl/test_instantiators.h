@@ -21,10 +21,22 @@
 #include "../../src/fletcher_types.h"
 #include "../../src/dot/dot.h"
 
+#include "../test_designs.h"
+
 namespace fletchgen {
 
 TEST(VHDL, StreamConcat) {
   auto top = GetStreamsComponent();
+
+  auto code = vhdl::Design::Generate(top);
+  std::cout << code.ToString();
+
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
+TEST(VHDL, TypeMapper) {
+  auto top = GetTypeConvComponent();
 
   auto code = vhdl::Design::Generate(top);
   std::cout << code.ToString();

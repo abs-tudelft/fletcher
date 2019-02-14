@@ -31,7 +31,7 @@
 namespace fletchgen {
 namespace vhdl {
 
-std::string Decl::Generate(const Type* type) {
+std::string Decl::Generate(const Type *type) {
   if (type->Is(Type::CLOCK)) {
     return "std_logic";
   } else if (type->Is(Type::RESET)) {
@@ -39,14 +39,14 @@ std::string Decl::Generate(const Type* type) {
   } else if (type->Is(Type::BIT)) {
     return "std_logic";
   } else if (type->Is(Type::VECTOR)) {
-    auto vec = Cast<Vector>(type);
-    if (vec) {
-      auto width = (*vec)->width();
-      if (width) {
-        return "std_logic_vector(" + (*width)->ToString() + "-1 downto 0)";
-      }
+    auto vec = *Cast<Vector>(type);
+    auto width = vec->width();
+    if (width) {
+      auto wnode = (*width);
+      return "std_logic_vector(" + wnode->ToString() + "-1 downto 0)";
+    } else {
+      return "<incomplete type>";
     }
-    return "<incomplete type>";
   } else if (type->Is(Type::RECORD)) {
     auto r = Cast<Record>(type);
     return (*r)->name();

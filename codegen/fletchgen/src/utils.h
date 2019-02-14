@@ -23,26 +23,35 @@
 
 namespace fletchgen {
 
+/**
+ * @brief Structure to name objects.
+ */
 struct Named {
  public:
-  explicit Named(std::string name)
-      : name_(std::move(name)) {}
+  /// @brief Named constructor.
+  explicit Named(std::string name) : name_(std::move(name)) {}
+  /// @brief Return the name of the object.
   std::string name() const { return name_; }
+  /// @brief Change the name of the object.
   void SetName(std::string name) { name_ = std::move(name); }
  private:
+  /// @brief The object name.
   std::string name_;
 };
 
+/// @brief Return true if list contains item, false otherwise.
 template<typename T>
 bool contains(const std::deque<std::shared_ptr<T>> &list, const std::shared_ptr<T> &item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
+/// @brief Return true if list contains item, false otherwise.
 template<typename T>
 bool contains(const std::deque<T *> &list, const T *item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
+/// @brief Append list b to list a.
 template<typename T>
 void append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared_ptr<T>> &list_b) {
   list_a->insert(list_a->end(), list_b.begin(), list_b.end());

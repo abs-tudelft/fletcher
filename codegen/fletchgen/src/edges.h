@@ -69,7 +69,7 @@ struct Edge : public Named {
 std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src);
 
 /// @brief Shorthand for Connect
-std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);
 
 /// @brief Split an edge up to create two new edges with a signal node in the middle. Returns the new signal.
 std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix = "int_");

@@ -82,13 +82,9 @@ void Sort(std::deque<FlatType> *list);
 std::string ToString(std::deque<FlatType> flat_type_list);
 
 /**
- * @brief Compare if two types are weakly-equal, that is if their flattened Type ID list has the same levels and ids.
- * @param a The first type.
- * @param b The second type.
- * @return True if flattened Type ID list is the same, false otherwise.
+ * @brief A matrix used for TypeMapper.
+ * @tparam T The type of matrix elements.
  */
-bool WeaklyEqual(const Type* a, const Type* b);
-
 template<typename T>
 class MappingMatrix {
  private:
@@ -178,11 +174,11 @@ class MappingMatrix {
 };
 
 /**
- * @brief A structure to dynamically define type mappings on flattened types.
+ * @brief A structure to dynamically define type mappings between flattened types.
  *
  * Useful for ordered concatenation of N synthesizable types onto M synthesizable types in any way.
  */
-class TypeMapper : Named {
+class TypeMapper : public Named {
  private:
   std::deque<FlatType> fa_;
   std::deque<FlatType> fb_;
@@ -191,15 +187,22 @@ class TypeMapper : Named {
   MappingMatrix<size_t> matrix_;
  public:
   TypeMapper(const Type *a, const Type *b);
+
   TypeMapper &Add(size_t a, size_t b);
   MappingMatrix<size_t> map_matrix();
+
   std::deque<FlatType> flat_a() const;
   std::deque<FlatType> flat_b() const;
-  const Type *a() { return a_; }
-  const Type *b() { return b_; }
+  const Type *a() const { return a_; }
+  const Type *b() const { return b_; }
   bool CanConvert(const Type *a, const Type *b) const;
-  std::deque<FlatType> GetATypesFor(size_t b) const;
-  std::deque<FlatType> GetBTypesFor(size_t a) const;
+
+  /**
+   * @brief Obtain an ordered list of FlatTypes of Type B, that are mapped to FlatType at index ia of Type A.
+   * @param ia  The index of the FlatType of Type A.
+   * @return    An ordered list of FlatTypes.
+   */
+  std::deque<FlatType> GetOrderedBTypesFor(size_t ia) const;
   std::shared_ptr<TypeMapper> Inverse() const;
   std::string ToString() const;
 };
