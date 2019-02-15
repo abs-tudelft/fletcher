@@ -29,16 +29,17 @@ namespace vhdl {
 MultiBlock Design::Generate(std::shared_ptr<Component> comp) {
   MultiBlock ret;
 
-  // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing
+  // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing,
+  //  in case multiple back ends are processing the graph
   // This currently modifies the original structure.
 
   // Sanitize component
-  //Transformation::ResolvePortToPort(comp);
+  Transformation::ResolvePortToPort(comp);
 
-  auto decl_code = Decl::Generate(comp);
+  //auto decl_code = Decl::Generate(comp);
   auto arch_code = Arch::Generate(comp);
 
-  ret << decl_code;
+  //ret << decl_code;
   ret << arch_code;
 
   return ret;

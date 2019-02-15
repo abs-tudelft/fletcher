@@ -106,10 +106,6 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
   return ret.str();
 }
 
-void Sort(std::deque<FlatType> *list) {
-  std::sort(list->begin(), list->end());
-}
-
 bool contains(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (const auto &ft : flat_types_list) {
     if (ft.type_ == type) {
@@ -200,7 +196,7 @@ std::shared_ptr<TypeMapper> TypeMapper::Inverse() const {
 }
 
 std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
-  std::deque<std::pair<size_t, size_t>> pairs;
+  std::deque<MappingPair> pairs;
 
   // Find mappings that are one to one
   for (size_t ia = 0; ia < fa_.size(); ia++) {
@@ -209,7 +205,10 @@ std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
       auto ib = maps_a.front().first;
       auto maps_b = matrix_.mapping_column(ib);
       if (maps_b.size() == 1) {
-        std::cout << "A:" << ia << " -> " << "B:" << ib << std::endl;
+        MappingPair mp;
+        mp.a.emplace_back(ia, 0, fa_[ia]);
+        mp.b.emplace_back(ib, 0, fb_[ib]);
+        pairs.push_back(mp);
       }
     }
   }
@@ -218,9 +217,12 @@ std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
   for (size_t ia = 0; ia < fa_.size(); ia++) {
     auto maps = matrix_.mapping_row(ia);
     if (maps.size() > 1) {
+      MappingPair mp;
+      mp.a.emplace_back(ia, 0, fa_[ia]);
       for (const auto &m : maps) {
-        std::cout << "A:" << ia << " -> " << "B:" << m.first << " order " << m.second << std::endl;
+        mp.b.emplace_back(m.first, m.second, fb_[m.first]);
       }
+      pairs.push_back(mp);
     }
   }
 
@@ -228,12 +230,15 @@ std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
   for (size_t ib = 0; ib < fb_.size(); ib++) {
     auto maps = matrix_.mapping_column(ib);
     if (maps.size() > 1) {
+      MappingPair mp;
+      mp.b.emplace_back(ib, 0, fb_[ib]);
       for (const auto &m : maps) {
-        std::cout << "A:" << m.first << " order " << m.second << " -> " << "B:" << ib << std::endl;
+        mp.a.emplace_back(m.first, m.second, fa_[m.first]);
       }
+      pairs.push_back(mp);
     }
   }
-  return {};
+  return pairs;
 }
 
 }  // namespace fletchgen

@@ -25,7 +25,7 @@
 namespace fletchgen {
 namespace vhdl {
 
-Block Inst::Generate(const std::shared_ptr<Parameter> &par) {
+Block Inst::GenerateGenericMap(const std::shared_ptr<Parameter> &par) {
   Block ret;
   Line l;
   l << par->name() << " => ";
@@ -68,60 +68,109 @@ std::deque<Range> GetRanges(const std::deque<FlatType> &types) {
   return ret;
 }
 
-Block Inst::Generate(std::string lh_prefix,
-                     const FlatType &lh,
-                     Range lh_range,
-                     std::string rh_prefix,
-                     const FlatType &rh,
-                     Range rh_range) {
+Block Inst::GenerateMappingPair(const MappingPair &p,
+                                size_t ia,
+                                std::shared_ptr<Node> *offset_a,
+                                size_t ib,
+                                std::shared_ptr<Node> *offset_b,
+                                const std::string &lh_prefix,
+                                const std::string &rh_prefix) {
   Block ret;
 
-  Identifier lhn(lh.name_parts_);
-  Identifier rhn(rh.name_parts_);
-  lhn.prepend(lh_prefix);
-  rhn.prepend(rh_prefix);
+  std::shared_ptr<Node> next_offset_a;
+  std::shared_ptr<Node> next_offset_b;
 
-  // Nested types
-  if (lh.type_->Is(Type::STREAM)) {
-    // Streams generate additional valid and ready
+  if (p.flat_type_b(ib).type_->width()) {
+    next_offset_a = (*offset_a) + *p.flat_type_b(ib).type_->width();
+  } else {
+    next_offset_a = (*offset_a);
+  }
+  if (p.flat_type_a(ia).type_->width()) {
+    next_offset_b = (*offset_b) + *p.flat_type_a(ia).type_->width();
+  } else {
+    next_offset_b = (*offset_b);
+  }
+
+  if (p.flat_type_a(0).type_->Is(Type::STREAM)) {
     Line v;
     Line r;
-    auto lhnv = lhn;
-    auto lhnr = lhn;
-    auto rhnv = rhn;
-    auto rhnr = rhn;
-    lhnv.append("valid");
-    lhnr.append("ready");
-    rhnv.append("valid");
-    rhnr.append("ready");
 
-    // Valid and ready port map
-    v << lhnv.ToString() + lh_range.ToString() << "=> " << rhnv.ToString() + rh_range.ToString();
-    r << lhnr.ToString() + lh_range.ToString() << "=> " << rhnr.ToString() + rh_range.ToString();
+    v << p.flat_type_a(ia).name(lh_prefix) + "_valid";
+    r << p.flat_type_a(ia).name(lh_prefix) + "_ready";
 
-    // Comments
-    v << " -- Stream valid: (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
-        + rh.type_->ToString() + ")";
-    r << " -- Stream ready: (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
-        + rh.type_->ToString() + ")";
+    if (p.num_b() > 1) {
+      v += "(" + (*offset_a)->ToString() + ")";
+      r += "(" + (*offset_a)->ToString() + ")";
+      next_offset_a = (*offset_a) + 1;
+    }
+
+    v << " => ";
+    r << " => ";
+
+    v << p.flat_type_b(ib).name(rh_prefix) + "_valid";
+    r << p.flat_type_b(ib).name(rh_prefix) + "_ready";
+
+    if (p.num_a() > 1) {
+      v += "(" + (*offset_b)->ToString() + ")";
+      r += "(" + (*offset_b)->ToString() + ")";
+      next_offset_b = (*offset_b) + 1;
+    }
 
     ret << v << r;
-  } else if (lh.type_->Is(Type::RECORD)) {
-    // Records generate nothing
-  } else {
-    // Other types
+  } else if (p.flat_type_a(0).type_->Is(Type::RECORD)) {
+    // don't output anything
+  }  else {
     Line l;
-    // Port map
-    l << lhn.ToString() + lh_range.ToString() << "=> " << rhn.ToString() + rh_range.ToString();
-    // Comment
-    l << " -- (" + lh.type_->name() + ":" + lh.type_->ToString() + " <-> " + rh.type_->name() + ":"
-        + rh.type_->ToString() + ")";
+    l << p.flat_type_a(ia).name(lh_prefix);
+    if (p.num_b() > 1) {
+      if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
+        l += "(" + (*offset_a)->ToString() + ")";
+      } else {
+        l += "(" + (next_offset_a - 1)->ToString() + " downto " + (*offset_a)->ToString() + ")";
+      }
+    }
+
+    l << " => ";
+    l << p.flat_type_b(ib).name(rh_prefix);
+    if (p.num_a() > 1) {
+      if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
+        l += "(" + (*offset_b)->ToString() + ")";
+      } else {
+        l += "(" + (next_offset_b - 1)->ToString() + " downto " + (*offset_b)->ToString() + ")";
+      }
+    }
     ret << l;
+  }
+
+  *offset_a = next_offset_a;
+  *offset_b = next_offset_b;
+
+  return ret;
+}
+
+Block Inst::GeneratePortNodeMapping(std::deque<MappingPair> pairs,
+                                    const std::shared_ptr<Port> &port,
+                                    const std::shared_ptr<Node> &other) {
+  Block ret;
+  // Sort the pair in order of appearance on the flatmap
+  std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
+    return x.index_a(0) < y.index_a(0);
+  });
+
+  // Loop over all pairs
+  for (const auto &p: pairs) {
+    std::shared_ptr<Node> offset_b = intl<0>();
+    for (size_t ia = 0; ia < p.num_a(); ia++) {
+      std::shared_ptr<Node> offset_a = intl<0>();
+      for (size_t ib = 0; ib < p.num_b(); ib++) {
+        ret << GenerateMappingPair(p, ia, &offset_a, ib, &offset_b, port->name(), other->name());
+      }
+    }
   }
   return ret;
 }
 
-Block Inst::Generate(const std::shared_ptr<Port> &port) {
+Block Inst::GeneratePortMap(const std::shared_ptr<Port> &port) {
   Block ret;
   std::deque<std::shared_ptr<Edge>> connections;
   // Get the connections for this port
@@ -144,9 +193,11 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
     if (tmo) {
       tm = *tmo;
 
-      std::cout << tm->ToString() << std::endl;
+      //std::cout << tm->ToString() << std::endl;
 
-      auto b_types = tm->GetUniqueMappingPairs();
+      auto pairs = tm->GetUniqueMappingPairs();
+      ret << GeneratePortNodeMapping(pairs, port, other);
+    }
 
       /*
       Line l;
@@ -156,12 +207,11 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
       ret << l;
        */
 
-    } else {
+    else {
       throw std::runtime_error(
           "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()
               + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
     }
-
   }
   return ret;
 }
@@ -189,7 +239,7 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     gh << "generic map (";
     gmh << gh;
     for (const auto &g : inst->GetNodesOfType<Parameter>()) {
-      gm << Generate(g);
+      gm << GenerateGenericMap(g);
     }
     gf << ")";
     gmf << gf;
@@ -207,7 +257,7 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     pmh << ph;
     for (const auto &p : inst->GetNodesOfType<Port>()) {
       Block pm;
-      pm << Generate(p);
+      pm << GeneratePortMap(p);
       pmb << pm;
     }
     //for (const auto &p : inst->GetNodesOfType<ArrayPort>()) {

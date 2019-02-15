@@ -82,7 +82,9 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
   auto flat_types = FilterForVHDL(Flatten(port->type().get()));
-  Sort(&flat_types);
+
+  // Sort by nesting level
+  std::sort(flat_types.begin(), flat_types.end());
 
   //
   for (const auto &ft : flat_types) {
@@ -98,7 +100,8 @@ Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
   auto flat_types = FilterForVHDL(Flatten(port->type().get()));
-  Sort(&flat_types);
+  // Sort by nesting level
+  std::sort(flat_types.begin(), flat_types.end());
 
   for (const auto &ft : flat_types) {
     Line l;

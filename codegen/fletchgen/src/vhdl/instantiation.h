@@ -29,10 +29,20 @@ namespace fletchgen {
 namespace vhdl {
 
 struct Inst {
-  static Block Generate(std::string lh_prefix, const FlatType& lhs, Range lh_range, std::string rh_prefix, const FlatType& rhs,  Range rh_range);
+  static Block GenerateMappingPair(const MappingPair &p,
+                                   size_t ia,
+                                   std::shared_ptr<Node> *offset_a,
+                                   size_t ib,
+                                   std::shared_ptr<Node> *offset_b,
+                                   const std::string &lh_prefix,
+                                   const std::string &rh_prefix);
+
+  static Block GeneratePortNodeMapping(std::deque<MappingPair> pairs,
+                                       const std::shared_ptr<Port>& port,
+                                       const std::shared_ptr<Node>& other);
   static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
-  static Block Generate(const std::shared_ptr<Port> &port);
-  static Block Generate(const std::shared_ptr<Parameter> &par);
+  static Block GeneratePortMap(const std::shared_ptr<Port> &port);
+  static Block GenerateGenericMap(const std::shared_ptr<Parameter> &par);
 };
 
 }  // namespace vhdl

@@ -111,7 +111,7 @@ std::shared_ptr<Component> GetTypeConvComponent() {
 
   auto t_wide = Vector::Make<4>();
   auto t_narrow = Vector::Make<2>();
-                                          // Flat indices:
+  // Flat indices:
   auto tA = Record::Make("rec_A", {       // 0
       RecordField::Make("q", t_wide),     // 1
       RecordField::Make("r", t_narrow),   // 2
@@ -128,9 +128,10 @@ std::shared_ptr<Component> GetTypeConvComponent() {
 
   // Create a type mapping from tA to tE
   auto mapper = std::make_shared<TypeMapper>(tA.get(), tB.get());
+  mapper->Add(0, 0);
   mapper->Add(1, 2).Add(1, 3);
-  mapper->Add(2, 1);
   mapper->Add(3, 1);
+  mapper->Add(2, 1);
   mapper->Add(4, 4);
   tA->AddMapper(mapper);
 

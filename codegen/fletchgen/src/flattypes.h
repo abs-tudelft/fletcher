@@ -72,11 +72,6 @@ bool contains(const std::deque<FlatType> &flat_types_list, const Type *type);
 /// @brief Return the index of some Type in a list of FlatTypes.
 size_t index_of(const std::deque<FlatType> &flat_types_list, const Type *type);
 
-/**
- * @brief Sort a list of flattened types by nesting level
- * @param list
- */
-void Sort(std::deque<FlatType> *list);
 
 /// @brief Convert a list of FlatTypes to a human-readable string.
 std::string ToString(std::deque<FlatType> flat_type_list);
@@ -146,7 +141,7 @@ class MappingMatrix {
     return max;
   };
 
-  /// @brief Obtain non zero element indices and value from column x.
+  /// @brief Obtain non-zero element indices and value from column x, sorted by value.
   std::deque<std::pair<size_t, T>> mapping_column(size_t x) {
     std::deque<std::pair<size_t, T>> ret;
     for (size_t y = 0; y < height_; y++) {
@@ -155,18 +150,25 @@ class MappingMatrix {
         ret.emplace_back(y, val);
       }
     }
+    std::sort(ret.begin(), ret.end(), [](const auto& x, const auto& y)->bool{
+      return x.second < y.second;
+    });
     return ret;
   }
 
-  /// @brief Obtain non zero element indices and value from row y.
+  /// @brief Obtain non-zero element indices and value from row y, sorted by value.
   std::deque<std::pair<size_t, T>> mapping_row(size_t y) {
-    std::deque<std::pair<size_t, T>> ret;
+    using pair = std::pair<size_t, T>;
+    std::deque<pair> ret;
     for (size_t x = 0; x < width_; x++) {
       auto val = get(y, x);
       if (val > 0) {
         ret.emplace_back(x, val);
       }
     }
+    std::sort(ret.begin(), ret.end(), [](const auto& x, const auto& y)->bool{
+      return x.second < y.second;
+    });
     return ret;
   }
 
@@ -198,10 +200,19 @@ class MappingMatrix {
 };
 
 struct MappingPair {
+  using index = size_t;
   using offset = size_t;
-  using pair = std::pair<offset, FlatType>;
-  std::deque<pair> a;
-  std::deque<pair> b;
+  using tuple = std::tuple<index, offset, FlatType>;
+  std::deque<tuple> a;
+  std::deque<tuple> b;
+  size_t num_a() const { return a.size(); }
+  size_t num_b() const { return b.size(); }
+  index index_a(size_t i) const { return std::get<0>(a[i]); }
+  index index_b(size_t i) const { return std::get<0>(b[i]); }
+  offset offset_a(size_t i) const { return std::get<1>(a[i]); }
+  offset offset_b(size_t i) const { return std::get<1>(b[i]); }
+  FlatType flat_type_a(size_t i) const { return std::get<2>(a[i]); }
+  FlatType flat_type_b(size_t i) const { return std::get<2>(b[i]); }
 };
 
 /**
