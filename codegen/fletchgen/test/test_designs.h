@@ -116,20 +116,22 @@ std::shared_ptr<Component> GetTypeConvComponent() {
       RecordField::Make("q", t_wide),     // 1
       RecordField::Make("r", t_narrow),   // 2
       RecordField::Make("s", t_narrow),   // 3
+      RecordField::Make("t", t_wide),     // 4
   });
 
   auto tB = Record::Make("rec_B", {       // 0
-      RecordField::Make("t", t_wide),     // 1
-      RecordField::Make("u", t_narrow),   // 2
-      RecordField::Make("v", t_narrow),   // 3
+      RecordField::Make("u", t_wide),     // 1
+      RecordField::Make("v", t_narrow),   // 2
+      RecordField::Make("w", t_narrow),   // 3
+      RecordField::Make("x", t_wide),     // 4
   });
 
   // Create a type mapping from tA to tE
   auto mapper = std::make_shared<TypeMapper>(tA.get(), tB.get());
-  mapper->Add(1, 2);
-  mapper->Add(1, 3);
+  mapper->Add(1, 2).Add(1, 3);
   mapper->Add(2, 1);
   mapper->Add(3, 1);
+  mapper->Add(4, 4);
   tA->AddMapper(mapper);
 
   // Ports

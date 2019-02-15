@@ -193,36 +193,47 @@ bool TypeMapper::CanConvert(const Type *a, const Type *b) const {
   return ((a_ == a) && (b_ == b));
 }
 
-std::deque<FlatType> TypeMapper::GetOrderedBTypesFor(size_t ia) const {
-  std::deque<std::pair<size_t, size_t>> b_order_indices;
-  // Obtain the order and index that the FlatType of A at index ia should connect.
-  for (size_t ib = 0; ib < fb_.size(); ib++) {
-    if (matrix_(ia, ib) > 0) {
-      b_order_indices.emplace_back(matrix_(ia, ib), ib);
-    }
-  }
-
-  // Sort the list to obtain the right order.
-  std::sort(b_order_indices.begin(),
-            b_order_indices.end(),
-            [](const std::pair<size_t, size_t> &a, const std::pair<size_t, size_t> &b) {
-              return a.first < b.first;
-            }
-  );
-
-  // Construct the deque of ordered flat types of type b
-  std::deque<FlatType> ret;
-  for (const auto &ib : b_order_indices) {
-    ret.push_back(fb_[ib.second]);
-  }
-
-  return ret;
-}
-
 std::shared_ptr<TypeMapper> TypeMapper::Inverse() const {
   auto ret = std::make_shared<TypeMapper>(b_, a_);
   ret->matrix_ = matrix_.Transpose();
   return ret;
+}
+
+std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
+  std::deque<std::pair<size_t, size_t>> pairs;
+
+  // Find mappings that are one to one
+  for (size_t ia = 0; ia < fa_.size(); ia++) {
+    auto maps_a = matrix_.mapping_row(ia);
+    if (maps_a.size() == 1) {
+      auto ib = maps_a.front().first;
+      auto maps_b = matrix_.mapping_column(ib);
+      if (maps_b.size() == 1) {
+        std::cout << "A:" << ia << " -> " << "B:" << ib << std::endl;
+      }
+    }
+  }
+
+  // B stuff that is concatenated on A
+  for (size_t ia = 0; ia < fa_.size(); ia++) {
+    auto maps = matrix_.mapping_row(ia);
+    if (maps.size() > 1) {
+      for (const auto &m : maps) {
+        std::cout << "A:" << ia << " -> " << "B:" << m.first << " order " << m.second << std::endl;
+      }
+    }
+  }
+
+  // A stuff that is concatenated on B
+  for (size_t ib = 0; ib < fb_.size(); ib++) {
+    auto maps = matrix_.mapping_column(ib);
+    if (maps.size() > 1) {
+      for (const auto &m : maps) {
+        std::cout << "A:" << m.first << " order " << m.second << " -> " << "B:" << ib << std::endl;
+      }
+    }
+  }
+  return {};
 }
 
 }  // namespace fletchgen

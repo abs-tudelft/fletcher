@@ -143,21 +143,18 @@ Block Inst::Generate(const std::shared_ptr<Port> &port) {
     auto tmo = port->type()->GetMapper(other->type().get());
     if (tmo) {
       tm = *tmo;
-      //std::cout << tm->ToString() << std::endl;
 
-      // Loop over all flat types for type A (the instance port)
-      for (size_t ia = 0; ia < tm->flat_a().size(); ia++) {
-        // Get all the flat type indices on type B (the connecting object)
-        auto b_types = tm->GetOrderedBTypesFor(ia);
+      std::cout << tm->ToString() << std::endl;
 
-        for (size_t a_offset = 0; a_offset < b_types.size(); a_offset++) {
-          Line l;
-          l << tm->flat_a()[ia].name(port->name()) + "(" + std::to_string(a_offset) + ")";
-          l << " => ";
-          l << b_types[a_offset].name(other->name());
-          ret << l;
-        }
-      }
+      auto b_types = tm->GetUniqueMappingPairs();
+
+      /*
+      Line l;
+      l << tm->flat_a()[ia].name(port->name()) + "(" + std::to_string(a_off_idx) + ")";
+      l << " => ";
+      l << b_types[a_off_idx].name(other->name());
+      ret << l;
+       */
 
     } else {
       throw std::runtime_error(

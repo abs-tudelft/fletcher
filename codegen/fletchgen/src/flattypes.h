@@ -59,18 +59,18 @@ void FlattenStream(std::deque<FlatType> *list,
 
 /// @brief Flatten any Type.
 void Flatten(std::deque<FlatType> *list,
-             const Type* type,
+             const Type *type,
              const std::optional<FlatType> &parent,
              std::string name);
 
 /// @brief Flatten and return a list of FlatTypes.
-std::deque<FlatType> Flatten(const Type* type);
+std::deque<FlatType> Flatten(const Type *type);
 
 /// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
-bool contains(const std::deque<FlatType> &flat_types_list, const Type* type);
+bool contains(const std::deque<FlatType> &flat_types_list, const Type *type);
 
 /// @brief Return the index of some Type in a list of FlatTypes.
-size_t index_of(const std::deque<FlatType> &flat_types_list, const Type* type);
+size_t index_of(const std::deque<FlatType> &flat_types_list, const Type *type);
 
 /**
  * @brief Sort a list of flattened types by nesting level
@@ -146,6 +146,30 @@ class MappingMatrix {
     return max;
   };
 
+  /// @brief Obtain non zero element indices and value from column x.
+  std::deque<std::pair<size_t, T>> mapping_column(size_t x) {
+    std::deque<std::pair<size_t, T>> ret;
+    for (size_t y = 0; y < height_; y++) {
+      auto val = get(y, x);
+      if (val > 0) {
+        ret.emplace_back(y, val);
+      }
+    }
+    return ret;
+  }
+
+  /// @brief Obtain non zero element indices and value from row y.
+  std::deque<std::pair<size_t, T>> mapping_row(size_t y) {
+    std::deque<std::pair<size_t, T>> ret;
+    for (size_t x = 0; x < width_; x++) {
+      auto val = get(y, x);
+      if (val > 0) {
+        ret.emplace_back(x, val);
+      }
+    }
+    return ret;
+  }
+
   MappingMatrix &SetNext(size_t y, size_t x) {
     get(y, x) = std::max(MaxOfColumn(x), MaxOfRow(y)) + 1;
     return *this;
@@ -173,6 +197,13 @@ class MappingMatrix {
 
 };
 
+struct MappingPair {
+  using offset = size_t;
+  using pair = std::pair<offset, FlatType>;
+  std::deque<pair> a;
+  std::deque<pair> b;
+};
+
 /**
  * @brief A structure to dynamically define type mappings between flattened types.
  *
@@ -195,15 +226,17 @@ class TypeMapper : public Named {
   std::deque<FlatType> flat_b() const;
   const Type *a() const { return a_; }
   const Type *b() const { return b_; }
+
+  /// @brief Return true if this TypeMapper can map type a to type b.
   bool CanConvert(const Type *a, const Type *b) const;
 
-  /**
-   * @brief Obtain an ordered list of FlatTypes of Type B, that are mapped to FlatType at index ia of Type A.
-   * @param ia  The index of the FlatType of Type A.
-   * @return    An ordered list of FlatTypes.
-   */
-  std::deque<FlatType> GetOrderedBTypesFor(size_t ia) const;
+  /// @brief Return a new TypeMapper that is the inverse of this TypeMapper.
   std::shared_ptr<TypeMapper> Inverse() const;
+
+  /// @brief Get a list of unique mapping pairs.
+  std::deque<MappingPair> GetUniqueMappingPairs();
+
+  /// @brief Return a human-readable string of this TypeMapper.
   std::string ToString() const;
 };
 
