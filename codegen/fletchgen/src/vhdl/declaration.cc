@@ -43,7 +43,7 @@ std::string Decl::Generate(const Type *type) {
     auto width = vec->width();
     if (width) {
       auto wnode = (*width);
-      return "std_logic_vector(" + wnode->ToString() + "-1 downto 0)";
+      return "std_logic_vector(" + (wnode - 1)->ToString() + " downto 0)";
     } else {
       return "<incomplete type>";
     }
@@ -124,7 +124,7 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
 }
 
 MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
-  MultiBlock ret;
+  MultiBlock ret(1);
 
   // Header
   Block h(ret.indent), f(ret.indent);

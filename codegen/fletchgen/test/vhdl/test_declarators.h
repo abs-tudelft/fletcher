@@ -22,11 +22,12 @@
 
 #include "../../src/nodes.h"
 #include "../../src/types.h"
-#include "../../src/fletcher_types.h"
+#include "../../src/hardware/basic_types.h"
 
 #include "../test_designs.h"
 
 namespace fletchgen {
+namespace hardware {
 
 TEST(VHDL, ComponentDecl) {
   auto code = vhdl::Decl::Generate(GetAllPortTypesComponent());
@@ -43,4 +44,5 @@ TEST(VHDL, ArrayPort) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
+}
 }

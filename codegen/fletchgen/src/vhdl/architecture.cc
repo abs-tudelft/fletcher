@@ -41,7 +41,7 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   // Signal declarations
   auto signals = comp->GetNodesOfType<Signal>();
   for (const auto &s : signals) {
-    auto signal_decl = Decl::Generate(s);
+    auto signal_decl = Decl::Generate(s, 1);
     ret << signal_decl;
   }
 

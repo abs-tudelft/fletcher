@@ -22,13 +22,18 @@ endif ()
 
 set(HEADERS
         src/edges.h
-        src/types.h
-        src/nodes.h
-        src/graphs.h
         src/flattypes.h
+        src/graphs.h
+        src/nodes.h
+        src/types.h
+        src/utils.h
 
-        src/fletcher_types.h
-        src/fletcher_components.h
+        src/hardware/schema.h
+        src/hardware/bus.h
+        src/hardware/column.h
+        src/hardware/basic_types.h
+        src/hardware/mantle.h
+        src/hardware/core.h
 
         src/vhdl/architecture.h
         src/vhdl/block.h
@@ -52,8 +57,12 @@ set(SOURCES
         src/graphs.cc
         src/flattypes.cc
 
-        src/fletcher_types.cc
-        src/fletcher_components.cc
+        src/hardware/schema.cc
+        src/hardware/bus.cc
+        src/hardware/column.cc
+        src/hardware/basic_types.cc
+        src/hardware/mantle.cc
+        src/hardware/core.cc
 
         src/vhdl/architecture.cc
         src/vhdl/block.cc

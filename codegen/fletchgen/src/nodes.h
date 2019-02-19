@@ -33,7 +33,7 @@ struct Graph;
  */
 class Node : public Named, public std::enable_shared_from_this<Node> {
  public:
-  /// @brief Node type IDs with different properties.
+  /// Node type IDs with different properties.
   enum ID {
     LITERAL,         ///< No-input     AND multi-output node with storage type and storage value.
     EXPRESSION,      ///< No-input     AND multi-output node that forms a binary tree with operations and nodes.
@@ -59,23 +59,23 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Return the node type ID
   inline ID id() const { return id_; }
   /// @brief Return whether this node is of a specific node type id.
-  bool Is(ID node_id) const { return id_ == node_id; }
+  inline bool Is(ID node_id) const { return id_ == node_id; }
   /// @brief Return true if this is a PORT node, false otherwise.
-  bool IsPort() const { return id_ == PORT; }
+  inline bool IsPort() const { return id_ == PORT; }
   /// @brief Return true if this is a SIGNAL node, false otherwise.
-  bool IsSignal() const { return id_ == SIGNAL; }
+  inline bool IsSignal() const { return id_ == SIGNAL; }
   /// @brief Return true if this is a PARAMETER node, false otherwise.
-  bool IsParameter() const { return id_ == PARAMETER; }
+  inline bool IsParameter() const { return id_ == PARAMETER; }
   /// @brief Return true if this is a LITERAL node, false otherwise.
-  bool IsLiteral() const { return id_ == LITERAL; }
+  inline bool IsLiteral() const { return id_ == LITERAL; }
   /// @brief Return true if this is an EXPRESSION node, false otherwise.
-  bool IsExpression() const { return id_ == EXPRESSION; }
+  inline bool IsExpression() const { return id_ == EXPRESSION; }
   /// @brief Return true if this is some type of ARRAY node, false otherwise.
-  bool IsArray() const { return (id_ == ARRAY_PORT) || (id_ == ARRAY_SIGNAL); }
+  inline bool IsArray() const { return (id_ == ARRAY_PORT) || (id_ == ARRAY_SIGNAL); }
   /// @brief Return true if this is an ARRAY_PORT node, false otherwise.
-  bool IsArrayPort() const { return id_ == ARRAY_PORT; }
+  inline bool IsArrayPort() const { return id_ == ARRAY_PORT; }
   /// @brief Return true if this is an ARRAY_SIGNAL node, false otherwise.
-  bool IsArraySignal() const { return id_ == ARRAY_SIGNAL; }
+  inline bool IsArraySignal() const { return id_ == ARRAY_SIGNAL; }
 
   /// @brief Get the input edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> inputs() const { return {}; }
@@ -96,11 +96,11 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   virtual std::string ToString();
 
  protected:
-  /// @brief Node type ID.
+  /// Node type ID.
   ID id_;
-  /// @brief The Type of this Node.
+  /// The Type of this Node.
   std::shared_ptr<Type> type_;
-  /// @brief An optional parent Graph to which this Node belongs. Initially no value.
+  /// An optional parent Graph to which this Node belongs. Initially no value.
   std::optional<const Graph *> parent_ = {};
 };
 
@@ -322,9 +322,9 @@ struct Port : public NormalNode {
   std::shared_ptr<Node> Copy() const override;
 
   /// @brief Return true if this Port is an input, false otherwise.
-  bool IsInput() { return dir == IN; }
+  inline bool IsInput() { return dir == IN; }
   /// @brief Return true if this Port is an output, false otherwise.
-  bool IsOutput() { return dir == OUT; }
+  inline bool IsOutput() { return dir == OUT; }
 };
 
 /**
@@ -347,15 +347,12 @@ class ArrayNode : public Node {
  public:
   /// Which side of the node the "array" is on.
   enum ArraySide {
-    ARRAY_OUT,
-    ARRAY_IN
+    ARRAY_OUT,  ///< The array is on the output side
+    ARRAY_IN    ///< The array is on the input side
   };
 
   /// @brief ArrayNode constructor.
-  ArrayNode(std::string name,
-            Node::ID id,
-            std::shared_ptr<Type> type,
-            ArraySide array_side);
+  ArrayNode(std::string name, Node::ID id, std::shared_ptr<Type> type, ArraySide array_side);
 
   /// @brief Append another Node to this ArrayNode, returns an Edge between this ArrayNode and the appended Node.
   std::shared_ptr<Edge> Append(std::shared_ptr<Node> n);
@@ -380,21 +377,19 @@ class ArrayNode : public Node {
   std::deque<std::shared_ptr<Edge>> outputs() const override;
 
  private:
-  /// @brief Which side is the "array" side
+  /// Which side is the "array" side
   ArraySide array_side_;
-  /// @brief A node representing the number of concatenated edges.
+  /// A node representing the number of concatenated edges.
   std::shared_ptr<Edge> size_;
-  /// @brief The concatenated side.
+  /// The concatenated side.
   std::shared_ptr<Edge> single_edge_;
-  /// @brief The arrayed side.
+  /// The arrayed side.
   std::deque<std::shared_ptr<Edge>> array_edges_;
-  /// @brief Concatenate a node onto this node and return an edge;
 };
 
-struct ArraySignal : public ArrayNode {
-
-};
-
+/**
+ * @brief A port node that has an array of multiple edges to other nodes.
+ */
 struct ArrayPort : public ArrayNode {
   /// Port direction.
   Port::Dir dir;
@@ -413,10 +408,10 @@ struct ArrayPort : public ArrayNode {
                                          Port::Dir dir = Port::Dir::IN);
 
   /// @brief Return true if this Port is an input, false otherwise.
-  bool IsInput() { return dir == Port::IN; }
+  inline bool IsInput() { return dir == Port::IN; }
 
   /// @brief Return true if this Port is an output, false otherwise.
-  bool IsOutput() { return dir == Port::OUT; }
+  inline bool IsOutput() { return dir == Port::OUT; }
 
   /// @brief Create a copy of this ArrayPort.
   std::shared_ptr<Node> Copy() const override;

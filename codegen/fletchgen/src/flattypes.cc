@@ -142,38 +142,39 @@ TypeMapper &TypeMapper::Add(size_t a, size_t b) {
 }
 
 std::string TypeMapper::ToString() const {
+  constexpr int w = 20;
   std::stringstream ret;
   ret << "TypeMapper [" + a()->ToString() + "]=>[" + b()->ToString() << "]:" << std::endl;
-  ret << std::setw(16) << " " << " | ";
+  ret << std::setw(w) << " " << " | ";
 
   for (const auto &x : fb_) {
-    ret << std::setw(16) << x.name() << " | ";
+    ret << std::setw(w) << x.name() << " | ";
   }
   ret << std::endl;
-  ret << std::setw(16) << " " << " | ";
+  ret << std::setw(w) << " " << " | ";
   for (const auto &x : fb_) {
-    ret << std::setw(16) << x.type_->ToString() << " | ";
+    ret << std::setw(w) << x.type_->ToString() << " | ";
   }
   ret << std::endl;
 
   // Separator
-  for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(16, '-') << " | "; }
+  for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
   ret << std::endl;
 
   for (size_t y = 0; y < fa_.size(); y++) {
-    ret << std::setw(16) << fa_[y].name() << " | ";
+    ret << std::setw(w) << fa_[y].name() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
-      ret << std::setw(16) << " " << " | ";
+      ret << std::setw(w) << " " << " | ";
     }
     ret << std::endl;
-    ret << std::setw(16) << fa_[y].type_->ToString() << " | ";
+    ret << std::setw(w) << fa_[y].type_->ToString() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       auto val = matrix_(y, x);
-      ret << std::setw(16) << val << " | ";
+      ret << std::setw(w) << val << " | ";
     }
     ret << std::endl;
     // Separator
-    for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(16, '-') << " | "; }
+    for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
     ret << std::endl;
   }
   return ret.str();

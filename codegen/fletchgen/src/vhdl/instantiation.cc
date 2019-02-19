@@ -192,21 +192,11 @@ Block Inst::GeneratePortMap(const std::shared_ptr<Port> &port) {
     auto tmo = port->type()->GetMapper(other->type().get());
     if (tmo) {
       tm = *tmo;
-
-      //std::cout << tm->ToString() << std::endl;
-
+      // Obtain the unique mapping pairs for this mapping
       auto pairs = tm->GetUniqueMappingPairs();
+      // Generate the mapping for this port-node pair.
       ret << GeneratePortNodeMapping(pairs, port, other);
     }
-
-      /*
-      Line l;
-      l << tm->flat_a()[ia].name(port->name()) + "(" + std::to_string(a_off_idx) + ")";
-      l << " => ";
-      l << b_types[a_off_idx].name(other->name());
-      ret << l;
-       */
-
     else {
       throw std::runtime_error(
           "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()
@@ -217,7 +207,7 @@ Block Inst::GeneratePortMap(const std::shared_ptr<Port> &port) {
 }
 
 MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
-  MultiBlock ret;
+  MultiBlock ret(1);
 
   if (!Cast<Instance>(graph)) {
     throw std::runtime_error("Graph is not an instance.");
@@ -225,33 +215,32 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
 
   auto inst = *Cast<Instance>(graph);
 
-  // Instantiation header
-  Block lh;
-  lh << inst->name() + " : " + inst->component->name();
-  ret << lh;
+  Block ih(ret.indent);       // Instantiation header
+  Block gmh(ret.indent + 1);  // generic map header
+  Block gmb(ret.indent + 2);  // generic map body
+  Block gmf(ret.indent + 1);  // generic map footer
+  Block pmh(ret.indent + 1);  // port map header
+  Block pmb(ret.indent + 2);  // port map body
+  Block pmf(ret.indent + 1);  // port map footer
+
+  ih << inst->name() + " : " + inst->component->name();
 
   // Generic map
   if (inst->CountNodes(Node::PARAMETER) > 0) {
-    Block gmh(ret.indent + 1);
-    Block gm(ret.indent + 2);
-    Block gmf(ret.indent + 1);
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
     for (const auto &g : inst->GetNodesOfType<Parameter>()) {
-      gm << GenerateGenericMap(g);
+      gmb << GenerateGenericMap(g);
     }
+    gmb <<= ",";
     gf << ")";
     gmf << gf;
-    ret << gmh << gm << gmf;
   }
 
-  auto num_ports = inst->CountNodes(Node::PORT) + inst->CountNodes(Node::ARRAY_PORT);
+  auto num_ports = inst->CountNodes(Node::PORT);
   if (num_ports > 0) {
     // Port map
-    Block pmh(ret.indent + 1);
-    Block pmb(ret.indent + 2);
-    Block pmf(ret.indent + 1);
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
@@ -260,15 +249,20 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
       pm << GeneratePortMap(p);
       pmb << pm;
     }
+    pmb <<= ",";
+    //inst->CountNodes(Node::ARRAY_PORT)
     //for (const auto &p : inst->GetNodesOfType<ArrayPort>()) {
     //Block pm;
     //pm << Generate(p);
     //pmb << pm;
     //}
-    pf << ")";
+    pf << ");";
     pmf << pf;
-    ret << pmh << pmb << pmf;
   }
+
+  ret << ih;
+  ret << gmh << gmb << gmf;
+  ret << pmh << pmb << pmf;
 
   return ret;
 }

@@ -14,25 +14,16 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include <memory>
 
-#include "../../src/graphs.h"
-#include "../../src/vhdl/vhdl.h"
-#include "../../src/hardware/basic_types.h"
-#include "../../src/dot/dot.h"
+#include "../graphs.h"
+#include "../types.h"
 
-#include "../test_designs.h"
+#include "basic_types.h"
 
 namespace fletchgen {
+namespace hardware {
 
-TEST(VHDL, TypeMapper) {
-  auto top = GetTypeConvComponent();
 
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
-
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
-}
-
-}
+}  // namespace hardware
+}  // namespace fletchgen

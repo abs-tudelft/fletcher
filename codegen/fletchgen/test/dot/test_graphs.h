@@ -18,22 +18,13 @@
 
 #include "../../src/nodes.h"
 #include "../../src/types.h"
-#include "../../src/fletcher_types.h"
+#include "../../src/hardware/basic_types.h"
 
 #include "../test_designs.h"
 
 #include "../../src/dot/dot.h"
 
 namespace fletchgen {
-
-TEST(Dot, StreamConcat) {
-  // Get component
-  auto top = GetStreamsComponent();
-
-  // Generate graph
-  dot::Grapher dot;
-  dot.GenFile(top, "graph.dot");
-}
 
 TEST(Dot, Component) {
   // Get component

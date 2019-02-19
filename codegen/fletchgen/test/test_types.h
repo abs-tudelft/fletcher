@@ -29,15 +29,38 @@ TEST(Types, Flatten) {
   auto b = Vector::Make<8>();
   auto c = Stream::Make(b);
 
-  auto d = Record::Make("inner", {RecordField::Make("a", a),
-                                  RecordField::Make("b", b),
-                                  RecordField::Make("c", c)});
+  auto d = Record::Make("inner", {
+      RecordField::Make("a", a),
+      RecordField::Make("b", b),
+      RecordField::Make("c", c)});
+
   auto e = Stream::Make(c);
-  auto f = Record::Make("outer", {RecordField::Make("d", d),
-                                  RecordField::Make("e", e)});
+
+  auto f = Record::Make("outer", {
+      RecordField::Make("d", d),
+      RecordField::Make("e", e)});
 
   auto flat = Flatten(f.get());
-  std::cout << ToString(flat);
+
+  ASSERT_EQ(flat[0].type_, f.get());
+  ASSERT_EQ(flat[1].type_, d.get());
+  ASSERT_EQ(flat[2].type_, a.get());
+  ASSERT_EQ(flat[3].type_, b.get());
+  ASSERT_EQ(flat[4].type_, c.get());
+  ASSERT_EQ(flat[5].type_, b.get());
+  ASSERT_EQ(flat[6].type_, e.get());
+  ASSERT_EQ(flat[7].type_, c.get());
+  ASSERT_EQ(flat[8].type_, b.get());
+
+  ASSERT_EQ(flat[0].name("x", "_"), "x");
+  ASSERT_EQ(flat[1].name("x", "_"), "x_d");
+  ASSERT_EQ(flat[2].name("x", "_"), "x_d_a");
+  ASSERT_EQ(flat[3].name("x", "_"), "x_d_b");
+  ASSERT_EQ(flat[4].name("x", "_"), "x_d_c");
+  ASSERT_EQ(flat[5].name("x", "_"), "x_d_c");
+  ASSERT_EQ(flat[6].name("x", "_"), "x_e");
+  ASSERT_EQ(flat[7].name("x", "_"), "x_e");
+  ASSERT_EQ(flat[8].name("x", "_"), "x_e");
 }
 
 TEST(Types, TypeMapper) {
@@ -54,21 +77,21 @@ TEST(Types, TypeMapper) {
                                   RecordField::Make("r1", Stream::Make(r))});
   auto t = Stream::Make(s);
 
-  auto k = Flatten(d.get());
-  auto l = Flatten(t.get());
-
   TypeMapper conv(t.get(), d.get());
 
-  // TODO(johanpel): type converter mapping is quite ugly at the moment
+  // TODO(johanpel): make type converter mapping less obscure
   conv.Add(0, 0)
       .Add(2, 2)
       .Add(3, 3)
       .Add(4, 0)
       .Add(5, 3);
 
-  std::cout << ToString(k);
-  std::cout << ToString(l);
+  auto ump = conv.GetUniqueMappingPairs();
+
+  // TODO(johanpel): come up with some test.
+
   std::cout << conv.ToString();
+
 }
 
 }  // namespace fletchgen

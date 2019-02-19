@@ -232,7 +232,7 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
     str << NodeName(n);
     // Draw style
     str << " [";
-    str << style.Get(n);
+    str << style.GetStyle(n);
     str << "];\n";
   }
   return str.str();

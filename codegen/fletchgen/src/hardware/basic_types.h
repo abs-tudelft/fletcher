@@ -19,12 +19,13 @@
 #include <memory>
 #include <locale>
 
-#include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
+#include "../../../../common/cpp/src/fletcher/common/arrow-utils.h"
 
-#include "./types.h"
-#include "./nodes.h"
+#include "../types.h"
+#include "../nodes.h"
 
 namespace fletchgen {
+namespace hardware {
 
 // Create basic types corresponding to and in the manner of Arrow's types
 #define BIT_DECL_FACTORY(NAME)        std::shared_ptr<Type> NAME();
@@ -58,6 +59,7 @@ PARAM_DECL_FACTORY(bus_data_width);
 PARAM_DECL_FACTORY(bus_len_width);
 PARAM_DECL_FACTORY(bus_burst_step_len);
 PARAM_DECL_FACTORY(bus_burst_max_len);
+PARAM_DECL_FACTORY(index_width);
 
 std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
@@ -107,4 +109,5 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
  */
 std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
 
+}  // namespace hardware
 }  // namespace fletchgen

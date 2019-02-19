@@ -163,7 +163,7 @@ Palette Palette::normal() {
   return ret;
 }
 
-std::string Style::Get(const std::shared_ptr<Node> &n) {
+std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
   StyleBuilder sb;
 
   sb << node.base;

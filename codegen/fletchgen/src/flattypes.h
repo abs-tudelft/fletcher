@@ -199,6 +199,14 @@ class MappingMatrix {
 
 };
 
+/**
+ * @brief A structure representing a mapping pair for a type mapping.
+ *
+ * The mapping pair typically contains one FlatType on one side (a or b), and one or multiple FlatTypes on the other
+ * side (a or b). If, for example, side a contains one FlatType and b contains two FlatTypes (b0 and b1), that means
+ * that if this is a mapping pair of a mapping between two types A and B, when some node X of type A and a node Y of
+ * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto a.
+ */
 struct MappingPair {
   using index = size_t;
   using offset = size_t;

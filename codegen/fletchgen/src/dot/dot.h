@@ -26,6 +26,9 @@
 namespace fletchgen {
 namespace dot {
 
+/**
+ * @brief Dot graph output generator.
+ */
 struct Grapher {
   Style style;
   Config config;

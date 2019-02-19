@@ -12,27 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <gtest/gtest.h>
-
-#include "../../src/graphs.h"
-#include "../../src/vhdl/vhdl.h"
-#include "../../src/hardware/basic_types.h"
-#include "../../src/dot/dot.h"
-
-#include "../test_designs.h"
-
-namespace fletchgen {
-
-TEST(VHDL, TypeMapper) {
-  auto top = GetTypeConvComponent();
-
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
-
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
-}
-
-}
+#include "top.h"

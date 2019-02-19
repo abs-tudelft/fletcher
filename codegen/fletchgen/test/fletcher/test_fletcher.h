@@ -25,12 +25,15 @@
 #include "../../src/vhdl/vhdl.h"
 #include "../../src/dot/dot.h"
 
-#include "../../src/fletcher_types.h"
-#include "../../src/fletcher_components.h"
+#include "../../src/hardware/basic_types.h"
+#include "../../src/hardware/mantle.h"
+#include "../../src/hardware/bus.h"
+#include "../../src/hardware/schema.h"
 
 #include "./test_fletcher_designs.h"
 
 namespace fletchgen {
+namespace hardware {
 
 TEST(Fletcher, BusReadArbiter) {
   auto brav = BusReadArbiter();
@@ -50,7 +53,7 @@ TEST(Fletcher, UserCore_CR_BRA) {
 TEST(Fletcher, UserCore_PrimRead) {
   auto schema = fletcher::test::GetPrimReadSchema();
   auto set = SchemaSet::Make("PrimRead", {schema});
-  auto top = UserCore::Make(set);
+  auto top = Core::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
@@ -60,7 +63,7 @@ TEST(Fletcher, UserCore_PrimRead) {
 TEST(Fletcher, UserCore_StringRead) {
   auto schema = fletcher::test::GetStringReadSchema();
   auto set = SchemaSet::Make("StringRead", {schema});
-  auto top = UserCore::Make(set);
+  auto top = Core::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
@@ -70,7 +73,7 @@ TEST(Fletcher, UserCore_StringRead) {
 TEST(Fletcher, UserCore_ListPrim) {
   auto schema = fletcher::test::GetListUint8Schema();
   auto set = SchemaSet::Make("ListUint8", {schema});
-  auto top = UserCore::Make(set);
+  auto top = Core::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
@@ -80,7 +83,7 @@ TEST(Fletcher, UserCore_ListPrim) {
 TEST(Fletcher, UserCore_BigSchema) {
   auto schema = fletcher::test::GetBigSchema();
   auto set = SchemaSet::Make("Big", {schema});
-  auto top = UserCore::Make(set);
+  auto top = Core::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
@@ -90,8 +93,7 @@ TEST(Fletcher, UserCore_BigSchema) {
 TEST(Fletcher, FletcherCore_Big) {
   auto schema = fletcher::test::GetBigSchema();
   auto set = SchemaSet::Make("Big", {schema});
-  auto top = FletcherCore::Make(set);
-
+  auto top = Mantle::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
@@ -101,11 +103,12 @@ TEST(Fletcher, FletcherCore_Big) {
 TEST(Fletcher, FletcherCore_StringRead) {
   auto schema = fletcher::test::GetStringReadSchema();
   auto set = SchemaSet::Make("StringRead", {schema});
-  auto top = FletcherCore::Make(set);
+  auto top = Mantle::Make(set);
 
   std::cout << vhdl::Design::Generate(top).ToString();
   dot::Grapher dot;
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
+}
 }

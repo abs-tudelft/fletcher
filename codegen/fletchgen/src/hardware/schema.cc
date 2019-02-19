@@ -12,27 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <gtest/gtest.h>
-
-#include "../../src/graphs.h"
-#include "../../src/vhdl/vhdl.h"
-#include "../../src/hardware/basic_types.h"
-#include "../../src/dot/dot.h"
-
-#include "../test_designs.h"
+#include "schema.h"
+#include <memory>
 
 namespace fletchgen {
+namespace hardware {
 
-TEST(VHDL, TypeMapper) {
-  auto top = GetTypeConvComponent();
-
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
-
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list) {
+  return std::make_shared<SchemaSet>(name, schema_list);
 }
 
-}
+}  // namespace hardware
+}  // namespace fletchgen

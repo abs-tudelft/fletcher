@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./fletcher_types.h"
+#include "basic_types.h"
 
 #include <memory>
 
-#include "../../../common/cpp/src/fletcher/common/arrow-utils.h"
+#include "../../../../common/cpp/src/fletcher/common/arrow-utils.h"
 
-#include "./nodes.h"
-#include "./types.h"
+#include "../nodes.h"
+#include "../types.h"
 
 namespace fletchgen {
+namespace hardware {
 
 // Create basic types similar to Arrow cpp/type.cc for convenience
 #define BIT_FACTORY(NAME)                                               \
@@ -67,6 +68,7 @@ PARAM_FACTORY(bus_data_width, integer(), intl<512>());
 PARAM_FACTORY(bus_len_width, integer(), intl<7>());
 PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>());
 PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>());
+PARAM_FACTORY(index_width, integer(), intl<32>());
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
@@ -346,4 +348,5 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
   }
 }
 
+}  // namespace hardware
 }  // namespace fletchgen

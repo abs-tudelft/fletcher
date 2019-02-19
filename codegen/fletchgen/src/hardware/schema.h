@@ -14,25 +14,24 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
-
-#include "../../src/graphs.h"
-#include "../../src/vhdl/vhdl.h"
-#include "../../src/hardware/basic_types.h"
-#include "../../src/dot/dot.h"
-
-#include "../test_designs.h"
+#include <memory>
+#include <arrow/api.h>
+#include "../utils.h"
 
 namespace fletchgen {
+namespace hardware {
 
-TEST(VHDL, TypeMapper) {
-  auto top = GetTypeConvComponent();
+/**
+ * @brief A named set of schemas.
+ */
+struct SchemaSet : public Named {
+  std::deque<std::shared_ptr<arrow::Schema>> schema_list_;
 
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
+  SchemaSet(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list)
+      : Named(std::move(name)), schema_list_(std::move(schema_list)) {}
 
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
-}
+  static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
+};
 
-}
+}  // namespace hardware
+}  // namespace fletchgen

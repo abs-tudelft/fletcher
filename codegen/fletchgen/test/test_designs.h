@@ -21,7 +21,7 @@
 #include "../src/edges.h"
 #include "../src/graphs.h"
 
-#include "../src/fletcher_types.h"
+#include "../src/hardware/basic_types.h"
 
 namespace fletchgen {
 
@@ -46,65 +46,6 @@ std::shared_ptr<Component> GetArrayComponent() {
   y->p("C") <<= x->ap("A");
 
   return top;
-}
-
-std::shared_ptr<Component> GetStreamsComponent() {
-  // Data type
-  auto data_type = Vector::Make("data", intl<8>());
-
-  // Port type
-  auto pA = Port::Make("A", Stream::Make(data_type, Port::OUT));
-  auto pB = Port::Make("B", Stream::Make(data_type, Port::OUT));
-  auto pC = Port::Make("C", Stream::Make(data_type, Port::OUT));
-  auto pD = Port::Make("D", Stream::Make(data_type, Port::OUT));
-
-  auto pE = Port::Make("E", Stream::Make(data_type, Port::IN));
-  auto pF = Port::Make("F", Stream::Make(data_type, Port::IN));
-  auto pG = Port::Make("G", Stream::Make(data_type, Port::IN));
-  auto pH = Port::Make("H", Stream::Make(data_type, Port::IN));
-
-  // Component types
-  auto top = Component::Make("top", {}, {}, {});
-  auto x_comp = Component::Make("X", {}, {pA, pB, pC, pD}, {});
-  auto y_comp = Component::Make("Y", {}, {pE, pF, pG, pH}, {});
-
-  auto x = Instance::Make(x_comp);
-  auto y = Instance::Make(y_comp);
-
-  top->AddChild(x)
-      .AddChild(y);
-
-  y->p("E") <<= x->p("A");
-  y->p("F") <<= x->p("A");
-
-  y->p("G") <<= x->p("B");
-  y->p("G") <<= x->p("C");
-
-  y->p("H") <<= x->p("D");
-
-  return top;
-}
-
-std::shared_ptr<Component> GetAllPortTypesComponent() {
-  auto r_type = Record::Make("rec", {
-      RecordField::Make("a", int8()),
-      RecordField::Make("b", float32())
-  });
-  auto s_type = Stream::Make("stream", uint32());
-
-  auto clk_port = Port::Make(acc_clk());
-  auto rst_port = Port::Make(acc_reset());
-  auto b_port = Port::Make("some_bool", boolean(), Port::OUT);
-  auto v_port = Port::Make("some_vector", uint16());
-  auto r_port = Port::Make("some_record", r_type, Port::OUT);
-  auto s_port = Port::Make("some_port", s_type);
-
-  auto l = intl<16>();
-  auto par = Parameter::Make("depth", integer(), l);
-
-  auto a_type = Component::Make("a", {par}, {clk_port, rst_port, b_port, v_port, r_port, s_port}, {});
-
-  return a_type;
 }
 
 std::shared_ptr<Component> GetTypeConvComponent() {
@@ -152,6 +93,29 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   y->p("B") <<= x->p("A");
 
   return top;
+}
+
+std::shared_ptr<Component> GetAllPortTypesComponent() {
+  auto r_type = Record::Make("rec", {
+      RecordField::Make("a", Vector::Make<8>()),
+      RecordField::Make("b", Vector::Make<32>())
+  });
+  auto s_type = Stream::Make("stream", Vector::Make<16>());
+
+  auto clk_domain = ClockDomain::Make("domain0");
+  auto clk_port = Port::Make(Clock::Make("clk", clk_domain));
+  auto rst_port = Port::Make(Reset::Make("reset", clk_domain));
+  auto b_port = Port::Make("some_bool", boolean(), Port::OUT);
+  auto v_port = Port::Make("some_vector", Vector::Make<64>());
+  auto r_port = Port::Make("some_record", r_type, Port::OUT);
+  auto s_port = Port::Make("some_port", s_type);
+
+  auto l = intl<16>();
+  auto par = Parameter::Make("depth", integer(), l);
+
+  auto a_type = Component::Make("a", {par}, {clk_port, rst_port, b_port, v_port, r_port, s_port}, {});
+
+  return a_type;
 }
 
 }

@@ -78,6 +78,9 @@ struct Palette {
   static Palette normal();
 };
 
+/**
+ * @brief Convenience structure to build up dot styles
+ */
 struct StyleBuilder {
   std::vector<std::string> parts;
   StyleBuilder &operator<<(const std::string &part);
@@ -111,14 +114,19 @@ struct Config {
   bool operator()(const std::shared_ptr<Node> &node);
 };
 
+/**
+ * @brief Dot style configuration
+ */
 struct Style {
   using str = std::string;
 
+  /// @brief Subgraph configuration
   struct SubGraph {
     str base;
     str color;
   } subgraph;
 
+  /// @brief Node group configuration
   struct NodeGroup {
     str base;
     str color;
@@ -140,7 +148,9 @@ struct Style {
     str reset;
   } edge;
 
+  /// @brief Node style configuration
   struct NodeStyle {
+    /// @brief Colors for nodes
     struct Colors {
       str stream;
       str stream_border;
@@ -157,6 +167,7 @@ struct Style {
     str expression;
     str nested;
 
+    /// @brief Styles for specific node types.
     struct TypeStyle {
       str clock;
       str reset;
@@ -172,16 +183,23 @@ struct Style {
 
   Config config;
 
+  /// @brief Generate a HTML table cell from a type.
   std::string GenHTMLTableCell(const std::shared_ptr<Type> &t,
                                std::string name,
                                int level = 0);
+
+  /// @brief Generate a DOT record cell from a type
   std::string GenDotRecordCell(const std::shared_ptr<Type> &t,
                                std::string name,
                                int level = 0);
 
+  /// @brief Get the label for a node.
   std::string GetLabel(const std::shared_ptr<Node> &n);
-  std::string Get(const std::shared_ptr<Node> &type);
 
+  /// @brief Get the style for a node
+  std::string GetStyle(const std::shared_ptr<Node> &n);
+
+  /// @brief Default style
   static Style normal();
 };
 

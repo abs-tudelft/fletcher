@@ -24,6 +24,9 @@
 
 namespace fletchgen {
 
+/**
+ * @brief A graph representing a hardware structure.
+ */
 struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   enum ID {
     GENERIC,    ///< A generic graph
