@@ -75,9 +75,11 @@ std::shared_ptr<Type> acc_reset(); ///< @brief Fletcher accelerator reset
 std::shared_ptr<Type> bus_clk(); ///< @brief Fletcher bus clock
 std::shared_ptr<Type> bus_reset(); ///< @brief Fletcher bus reset
 std::shared_ptr<Type> bus_read_request(); ///< @brief Fletcher bus read request channel
-std::shared_ptr<Type> bus_read_data(); ///< @brief Fletcher bus read data channel
+/// Fletcher bus read data channel
+std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width = bus_data_width());
 std::shared_ptr<Type> bus_write_request(); ///< @brief Fletcher bus write request channel
-std::shared_ptr<Type> bus_write_data(); ///< @brief Fletcher bus write data channel
+/// Fletcher bus write data channel
+std::shared_ptr<Type> bus_write_data(std::shared_ptr<Node> width = bus_data_width());
 std::shared_ptr<Type> cmd(); ///< @brief Fletcher command stream
 std::shared_ptr<Type> unlock(); ///< @brief Fletcher unlock stream
 std::shared_ptr<Type> read_data(); ///< @brief Fletcher read data

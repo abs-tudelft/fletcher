@@ -58,9 +58,9 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   /// @brief Get a node of a specific type with a specific name
   std::shared_ptr<Node> Get(Node::ID node_id, const std::string &node_name) const;
 
-  std::shared_ptr<Node> ap(const std::string &port_name) const;
-  std::shared_ptr<Node> p(const std::string &port_name) const;
-  std::shared_ptr<Node> s(const std::string &signal_name) const;
+  std::shared_ptr<ArrayPort> ap(const std::string &port_name) const;
+  std::shared_ptr<Port> p(const std::string &port_name) const;
+  std::shared_ptr<Signal> s(const std::string &signal_name) const;
 
   /// @brief Add a node to the component
   virtual Graph &AddNode(const std::shared_ptr<Node>& node);

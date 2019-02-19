@@ -25,7 +25,7 @@
 namespace cerata {
 namespace vhdl {
 
-MultiBlock Design::Generate(std::shared_ptr<Component> comp) {
+MultiBlock Design::Generate() {
   MultiBlock ret;
 
   // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing,
@@ -35,11 +35,18 @@ MultiBlock Design::Generate(std::shared_ptr<Component> comp) {
   // Sanitize component
   Transformation::ResolvePortToPort(comp);
 
-  //auto decl_code = Decl::Generate(comp);
-  auto arch_code = Arch::Generate(comp);
+  if (!head.empty()) {
+    Block h;
+    h << Line(head);
+    ret << h;
+  }
 
-  //ret << decl_code;
-  ret << arch_code;
+  auto decl = Decl::Generate(comp, true);
+  auto arch = Arch::Generate(comp);
+
+
+  ret << decl;
+  ret << arch;
 
   return ret;
 }

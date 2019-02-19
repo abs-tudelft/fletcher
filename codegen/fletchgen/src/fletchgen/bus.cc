@@ -62,4 +62,37 @@ std::shared_ptr<Component> BusReadArbiter() {
   return ret;
 }
 
+Artery::Artery(std::shared_ptr<Node> address_width,
+               std::shared_ptr<Node> master_width,
+               std::deque<std::shared_ptr<Node>> slave_widths)
+    : Component("artery"),
+      address_width_(std::move(address_width)),
+      master_width_(std::move(master_width)),
+      slave_widths_(std::move(slave_widths)) {
+  AddNode(bus_addr_width());
+  AddNode(bus_data_width());
+  for (const auto& sw : slave_widths_) {
+    auto par = Parameter::Make("NUM_SLV_W" + sw->ToString(), integer());
+    AddNode(par);
+    auto req = ArrayPort::Make("bus" + sw->ToString() + "_rreq", bus_read_request(), par, Port::IN);
+    auto dat = ArrayPort::Make("bus" + sw->ToString() + "_rdat", bus_read_data(sw), par, Port::IN);
+    AddNode(req);
+    AddNode(dat);
+  }
+}
+
+std::shared_ptr<Artery> Artery::Make(std::shared_ptr<Node> address_width,
+                                     std::shared_ptr<Node> master_width,
+                                     std::deque<std::shared_ptr<Node>> slave_widths) {
+  return std::make_shared<Artery>(address_width, master_width, slave_widths);
+}
+
+std::shared_ptr<ArrayPort> ArteryInstance::read_data(const std::shared_ptr<Node> &width) {
+  return ap("bus" + width->ToString() + "_rdat");
+}
+
+std::shared_ptr<ArrayPort> ArteryInstance::read_request(const std::shared_ptr<Node> &width) {
+  return ap("bus" + width->ToString() + "_rreq");
+}
+
 }  // namespace fletchgen

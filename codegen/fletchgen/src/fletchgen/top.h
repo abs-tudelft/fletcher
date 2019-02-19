@@ -16,14 +16,8 @@
 
 #include <memory>
 
-#include "../graphs.h"
-#include "../types.h"
-
-#include "basic_types.h"
-
 namespace fletchgen {
-namespace hardware {
 
 
-}  // namespace hardware
+
 }  // namespace fletchgen

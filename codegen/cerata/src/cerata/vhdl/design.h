@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +27,13 @@ namespace cerata {
 namespace vhdl {
 
 struct Design {
-  static MultiBlock Generate(std::shared_ptr<Component> comp);
+  std::shared_ptr<Component> comp;
+  std::string head;
+
+  Design() = default;
+  explicit Design(std::shared_ptr<Component> component, std::string header = "")
+      : comp(std::move(component)), head(std::move(header)) {}
+  MultiBlock Generate();
 };
 
 }  // namespace vhdl

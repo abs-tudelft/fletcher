@@ -273,7 +273,13 @@ std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs) {
 }
 
 std::shared_ptr<Node> operator-(const std::shared_ptr<Node> &lhs, int rhs) {
-  return operator+(lhs, -rhs);
+  if (lhs->IsLiteral()) {
+    auto li = *Cast<Literal>(lhs);
+    if (li->storage_type_ == Literal::INT) {
+      return Literal::Make(li->int_val_ - rhs);
+    }
+  }
+  return lhs - Literal::Make(rhs);
 }
 
 std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {

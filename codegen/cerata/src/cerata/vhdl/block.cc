@@ -117,8 +117,10 @@ Block &operator<<(Block &lhs, const std::string &rhs) {
 }
 
 Block &operator<<=(Block &lhs, const std::string &rhs) {
-  for (uint i = 0; i < lhs.lines.size() - 1; i++) {
-    lhs.lines[i].parts.back().append(rhs);
+  if (lhs.lines.size() > 0) {
+    for (uint i = 0; i < lhs.lines.size() - 1; i++) {
+      lhs.lines[i].parts.back().append(rhs);
+    }
   }
   return lhs;
 }
@@ -136,7 +138,7 @@ MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs) {
 }
 
 MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs) {
-  for (const auto& b : rhs.blocks) {
+  for (const auto &b : rhs.blocks) {
     lhs << b;
   }
   return lhs;

@@ -21,6 +21,10 @@ namespace cerata {
 namespace vhdl {
 
 struct Line {
+  Line()=default;
+  explicit Line(const std::string &str) {
+    parts.push_back(str);
+  }
   std::vector<std::string> parts;
 };
 

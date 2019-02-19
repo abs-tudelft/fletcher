@@ -30,36 +30,42 @@
 namespace cerata {
 namespace vhdl {
 
-std::string Decl::Generate(const Type *type) {
-  if (type->Is(Type::CLOCK)) {
-    return "std_logic";
-  } else if (type->Is(Type::RESET)) {
-    return "std_logic";
-  } else if (type->Is(Type::BIT)) {
-    return "std_logic";
-  } else if (type->Is(Type::VECTOR)) {
-    auto vec = *Cast<Vector>(type);
-    auto width = vec->width();
-    if (width) {
-      auto wnode = (*width);
-      return "std_logic_vector(" + (wnode - 1)->ToString() + " downto 0)";
-    } else {
-      return "<incomplete type>";
+std::string Decl::Generate(const Type *type, const std::shared_ptr<Node> &multiplier) {
+  switch (type->id()) {
+    default: {
+      if (multiplier == intl<1>()) {
+        return "std_logic";
+      } else {
+        return "std_logic_vector(" + (multiplier-1)->ToString() + " downto 0)";
+      }
     }
-  } else if (type->Is(Type::RECORD)) {
-    auto r = Cast<Record>(type);
-    return (*r)->name();
-  } else if (type->Is(Type::INTEGER)) {
-    return "natural";
-  } else if (type->Is(Type::STREAM)) {
-    auto stream = *Cast<Stream>(type);
-    return Generate(stream->element_type().get());
-  } else if (type->Is(Type::STRING)) {
-    return "string";
-  } else if (type->Is(Type::BOOLEAN)) {
-    return "boolean";
-  } else {
-    return "FLETCHGEN_INVALID_TYPE";
+    case Type::VECTOR: {
+      auto vec = *Cast<Vector>(type);
+      auto width = vec->width();
+      if (width) {
+        auto wnode = (*width);
+        return "std_logic_vector(" + (multiplier * wnode - 1)->ToString() + " downto 0)";
+      } else {
+        return "<incomplete type>";
+      }
+    }
+    case Type::RECORD: {
+      auto r = Cast<Record>(type);
+      return (*r)->name();
+    }
+    case Type::INTEGER: {
+      return "natural";
+    }
+    case Type::STREAM: {
+      auto stream = *Cast<Stream>(type);
+      return Generate(stream->element_type().get());
+    }
+    case Type::STRING: {
+      return "string";
+    }
+    case Type::BOOLEAN: {
+      return "boolean";
+    }
   }
 }
 
@@ -105,7 +111,7 @@ Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_);
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_, port->size());
     ret << l;
   }
   return ret;
@@ -124,6 +130,10 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
 
 MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
   MultiBlock ret(1);
+
+  if (entity) {
+    ret.indent = 0;
+  }
 
   // Header
   Block h(ret.indent), f(ret.indent);
@@ -168,6 +178,7 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
     Line ph, pf;
     ph << "port (";
     pdh << ph;
+    // Process ports
     for (const auto &port : ports) {
       auto g = Decl::Generate(port, ret.indent + 2);
       if (port != ports.back()) {
@@ -177,6 +188,7 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
       }
       pd << g;
     }
+    // Process array ports
     for (const auto &port : array_ports) {
       auto g = Decl::Generate(port, ret.indent + 2);
       if (port != array_ports.back()) {
@@ -191,7 +203,12 @@ MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
     ret << pdh << pd << pdf;
   }
 
-  fl << "end component;";
+  if (entity) {
+    fl << "end entity;";
+  } else {
+    fl << "end component;";
+  }
+
   f << fl;
 
   ret << f;

@@ -46,7 +46,8 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
     if (p->dir == Port::IN) {
       auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
       auto config_node = cr_inst->Get(Node::PARAMETER, "CFG");
-      config_node <<= cerata::strl(GenerateConfigString(p->field_));
+      config_node <<=
+          cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));
       column_readers.push_back(cr_inst);
       AddChild(cr_inst);
     } else {

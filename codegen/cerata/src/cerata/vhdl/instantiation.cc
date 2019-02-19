@@ -209,11 +209,11 @@ Block Inst::GeneratePortMap(const std::shared_ptr<Port> &port) {
 MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
   MultiBlock ret(1);
 
-  if (!Cast<Instance>(graph)) {
+  auto pinst = Cast<Instance>(graph);
+  if (!pinst) {
     throw std::runtime_error("Graph is not an instance.");
   }
-
-  auto inst = *Cast<Instance>(graph);
+  auto inst = *pinst;
 
   Block ih(ret.indent);       // Instantiation header
   Block gmh(ret.indent + 1);  // generic map header

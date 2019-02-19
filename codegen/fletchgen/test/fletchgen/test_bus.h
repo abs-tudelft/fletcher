@@ -1,0 +1,74 @@
+// Copyright 2018 Delft University of Technology
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#pragma once
+
+#include <gtest/gtest.h>
+
+#include "cerata/vhdl/vhdl.h"
+#include "cerata/dot/dot.h"
+
+#include "fletchgen/bus.h"
+
+namespace fletchgen {
+
+using cerata::intl;
+using cerata::Instance;
+using cerata::Port;
+
+TEST(Bus, BusReadArbiter) {
+  auto brav = BusReadArbiter();
+
+  auto source = cerata::vhdl::Decl::Generate(brav);
+  std::cout << source.ToString();
+}
+
+TEST(Bus, Artery) {
+  // Create a bunch of read data ports
+  auto a = Port::Make("a", bus_read_data(intl<8>()));
+  auto b = Port::Make("b", bus_read_data(intl<8>()));
+  auto c = Port::Make("c", bus_read_data(intl<8>()));
+  auto d = Port::Make("d", bus_read_data(intl<32>()));
+  auto e = Port::Make("e", bus_read_data(intl<32>()));
+  auto f = Port::Make("f", bus_read_data(intl<128>()));
+
+  // Create a component with the ports
+  auto comp = Component::Make("comp", {}, {a, b, c, d, e, f}, {});
+
+  // Create an artery able to handle these ports
+  auto artery = Artery::Make(intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
+
+  // Instaniate component and artery
+  auto comp_inst = Instance::Make(comp);
+  auto art_inst = ArteryInstance::Make(artery);
+
+  // Create a component
+  auto top = Component::Make("top", {}, {}, {});
+
+  top->AddChild(comp_inst);
+  top->AddChild(art_inst);
+
+  // Get the read data width 8 array port
+  auto rd8 = art_inst->read_data(intl<8>());
+
+  // Append the component ports to it
+  rd8->Append(comp_inst->p("a"));
+  rd8->Append(comp_inst->p("b"));
+  rd8->Append(comp_inst->p("c"));
+
+  auto source = cerata::vhdl::Design(top);
+  std::cout << source.Generate().ToString();
+}
+
+}

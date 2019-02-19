@@ -113,15 +113,21 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   return result;
 }
 
-std::shared_ptr<Node> Graph::ap(const std::string &port_name) const { return Get(Node::ARRAY_PORT, port_name); }
-std::shared_ptr<Node> Graph::p(const std::string &port_name) const { return Get(Node::PORT, port_name); }
-std::shared_ptr<Node> Graph::s(const std::string &signal_name) const { return Get(Node::SIGNAL, signal_name); }
+std::shared_ptr<Port> Graph::p(const std::string &port_name) const {
+  return std::dynamic_pointer_cast<Port>(Get(Node::PORT, port_name));
+}
+std::shared_ptr<Signal> Graph::s(const std::string &signal_name) const {
+  return std::dynamic_pointer_cast<Signal>(Get(Node::SIGNAL, signal_name));
+}
+std::shared_ptr<ArrayPort> Graph::ap(const std::string &port_name) const {
+  return std::dynamic_pointer_cast<ArrayPort>(Get(Node::ARRAY_PORT, port_name));
+}
 
 std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
   std::deque<std::shared_ptr<Node>> result;
-  for (const auto& n : nodes_) {
+  for (const auto &n : nodes_) {
     result.push_back(n);
-    for (const auto & i : n->inputs()) {
+    for (const auto &i : n->inputs()) {
       if (i->src) {
         if (!(*i->src)->parent()) {
           result.push_back(*i->src);
@@ -144,26 +150,36 @@ std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
-  std::deque<Node*> copied;
-  // Make copies of ports and parameters
+  // Remember what nodes we have already copied, e.g. in case a parameter has been copied by an ArrayPort copy,
+  // we don't have to copy it again.
+  std::deque<Node *> copied;
+  // Make copies of ports
   for (const auto &port : component->GetNodesOfType<Port>()) {
     auto inst_port = port->Copy();
     AddNode(inst_port);
     copied.push_back(port.get());
   }
+  // Make copies of array ports
   for (const auto &array_port : component->GetNodesOfType<ArrayPort>()) {
     auto inst_size = array_port->size()->Copy();
     auto inst_port = array_port->Copy();
     (*Cast<ArrayPort>(inst_port))->SetSize(inst_size);
     AddNode(inst_port);
     AddNode(inst_size);
-
+    // Remember we've copied the array port and its size node
     copied.push_back(array_port.get());
     copied.push_back(array_port->size().get());
   }
+  // Make copies of parameters
   for (const auto &par : component->GetNodesOfType<Parameter>()) {
     if (!contains(copied, (*Cast<Node>(par)).get())) {
       AddNode(par->Copy());
+    }
+  }
+  // Make copies of literals
+  for (const auto &lit : component->GetNodesOfType<Literal>()) {
+    if (!contains(copied, (*Cast<Node>(lit)).get())) {
+      AddNode(lit->Copy());
     }
   }
 }

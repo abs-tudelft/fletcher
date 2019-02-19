@@ -149,20 +149,20 @@ std::shared_ptr<Type> bus_write_request() {
   return bus_wreq;
 }
 
-std::shared_ptr<Type> bus_read_data() {
-  static auto bus_rdata = RecordField::Make(Vector::Make("data", bus_data_width()));
-  static auto bus_rlast = RecordField::Make(last());
-  static auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
-  static auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
+std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width) {
+  auto bus_rdata = RecordField::Make(Vector::Make("data", width));
+  auto bus_rlast = RecordField::Make(last());
+  auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
+  auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
   return bus_rdat;
 }
 
-std::shared_ptr<Type> bus_write_data() {
-  static auto bus_wdata = RecordField::Make(Vector::Make("data", bus_data_width()));
-  static auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", bus_data_width() / intl<8>()));
-  static auto bus_wlast = RecordField::Make("last", bit());
-  static auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
-  static auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
+std::shared_ptr<Type> bus_write_data(std::shared_ptr<Node> width) {
+  auto bus_wdata = RecordField::Make(Vector::Make("data", width));
+  auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", width / intl<8>()));
+  auto bus_wlast = RecordField::Make("last", bit());
+  auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
+  auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
   return bus_wdat;
 }
 

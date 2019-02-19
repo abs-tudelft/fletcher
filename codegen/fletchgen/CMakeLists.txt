@@ -20,6 +20,7 @@ endif ()
 
 # Cerata
 add_subdirectory(../cerata cerata)
+include_directories(../cerata/src)
 
 # Sources
 set(HEADERS
@@ -29,6 +30,7 @@ set(HEADERS
         src/fletchgen/basic_types.h
         src/fletchgen/mantle.h
         src/fletchgen/core.h
+        src/fletchgen/constants.h
         )
 
 set(SOURCES
@@ -41,8 +43,6 @@ set(SOURCES
         )
 
 # Linking
-
-include_directories(../cerata/src)
 include_directories(src)
 
 add_library(${FLETCHGEN}-static STATIC ${HEADERS} ${SOURCES})
@@ -71,17 +71,22 @@ if (FLETCHGEN_TESTS)
             test/fletchgen/test.cc
 
             # Front-ends
-            test/fletchgen/test_designs.h
-            test/fletchgen/test_hardware.h
+            test/fletchgen/test_core.h
+            test/fletchgen/test_mantle.h
+            test/fletchgen/test_bus.h
+
             )
+
     add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})
-    target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
+
     target_link_libraries(${FLETCHGEN}-test fletchgen-static)
     target_link_libraries(${FLETCHGEN}-test fletcher-common-generate-static)
+    include_directories(../../common/cpp/test)
+
     target_link_libraries(${FLETCHGEN}-test cerata)
+
+    target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHGEN}-test GTest::GTest GTest::Main)
-    target_include_directories(${FLETCHGEN}-test PUBLIC ../../common/cpp/src)
-    target_include_directories(${FLETCHGEN}-test PUBLIC ../../common/cpp/test)
 
     gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHGEN_TESTS)

@@ -14,8 +14,9 @@
 
 #include <gtest/gtest.h>
 
-#include "./test_designs.h"
-#include "./test_hardware.h"
+#include "test_bus.h"
+#include "test_core.h"
+#include "test_mantle.h"
 
 int main(int argc, char **argv) {
 
