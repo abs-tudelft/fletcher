@@ -18,81 +18,42 @@ if (NOT TARGET fletcher-common-static)
     add_subdirectory(../../common/cpp fletcher-common)
 endif ()
 
+# Cerata
+add_subdirectory(../cerata cerata)
+
 # Sources
-
 set(HEADERS
-        src/edges.h
-        src/flattypes.h
-        src/graphs.h
-        src/nodes.h
-        src/types.h
-        src/utils.h
-
-        src/hardware/schema.h
-        src/hardware/bus.h
-        src/hardware/column.h
-        src/hardware/basic_types.h
-        src/hardware/mantle.h
-        src/hardware/core.h
-
-        src/vhdl/architecture.h
-        src/vhdl/block.h
-        src/vhdl/declaration.h
-        src/vhdl/design.h
-        src/vhdl/flatnode.h
-        src/vhdl/identifier.h
-        src/vhdl/instantiation.h
-        src/vhdl/transformation.h
-        src/vhdl/vhdl.h
-        src/vhdl/vhdl_types.h
-
-        src/dot/dot.h
-        src/dot/style.h
+        src/fletchgen/schema.h
+        src/fletchgen/bus.h
+        src/fletchgen/column.h
+        src/fletchgen/basic_types.h
+        src/fletchgen/mantle.h
+        src/fletchgen/core.h
         )
 
 set(SOURCES
-        src/edges.cc
-        src/types.cc
-        src/nodes.cc
-        src/graphs.cc
-        src/flattypes.cc
-
-        src/hardware/schema.cc
-        src/hardware/bus.cc
-        src/hardware/column.cc
-        src/hardware/basic_types.cc
-        src/hardware/mantle.cc
-        src/hardware/core.cc
-
-        src/vhdl/architecture.cc
-        src/vhdl/block.cc
-        src/vhdl/declaration.cc
-        src/vhdl/design.cc
-        src/vhdl/flatnode.cc
-        src/vhdl/identifier.cc
-        src/vhdl/instantiation.cc
-        src/vhdl/transformation.cc
-        src/vhdl/vhdl.cc
-        src/vhdl/vhdl_types.cc
-
-        src/dot/dot.cc
-        src/dot/style.cc
+        src/fletchgen/schema.cc
+        src/fletchgen/bus.cc
+        src/fletchgen/column.cc
+        src/fletchgen/basic_types.cc
+        src/fletchgen/mantle.cc
+        src/fletchgen/core.cc
         )
 
-set(RESOURCES
-        ../../hardware/vhdl/sim/sim_top.vhdt
-        ../../hardware/vhdl/axi/axi_top.vhdt)
-
 # Linking
+
+include_directories(../cerata/src)
+include_directories(src)
 
 add_library(${FLETCHGEN}-static STATIC ${HEADERS} ${SOURCES})
 target_link_libraries(${FLETCHGEN}-static ${LIB_ARROW})
 target_link_libraries(${FLETCHGEN}-static fletcher-common-static)
 
-add_executable(${FLETCHGEN} src/fletchgen.cc)
+add_executable(${FLETCHGEN} src/fletchgen/fletchgen.cc)
 target_link_libraries(${FLETCHGEN} ${LIB_ARROW})
 target_link_libraries(${FLETCHGEN} fletchgen-static)
 target_link_libraries(${FLETCHGEN} fletcher-common-static)
+target_link_libraries(${FLETCHGEN} cerata)
 
 install(TARGETS ${FLETCHGEN} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)
@@ -100,35 +61,27 @@ install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fle
 ########################################################################################################################
 # TESTS
 ########################################################################################################################
-if (FLETCHER_TESTS)
+if (FLETCHGEN_TESTS)
     enable_testing()
     include(GoogleTest)
     find_package(GTest REQUIRED)
 
     set(TEST_SOURCES
             # Intermeditate
-            test/test.cc
-            test/test_types.h
-            test/test_expressions.h
-            test/test_designs.h
-
-            # Back-ends
-            test/dot/test_graphs.h
-
-            test/vhdl/test_declarators.h
-            test/vhdl/test_instantiators.h
+            test/fletchgen/test.cc
 
             # Front-ends
-            test/fletcher/test_fletcher_designs.h
-            test/fletcher/test_fletcher.h
+            test/fletchgen/test_designs.h
+            test/fletchgen/test_hardware.h
             )
     add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})
     target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHGEN}-test fletchgen-static)
     target_link_libraries(${FLETCHGEN}-test fletcher-common-generate-static)
+    target_link_libraries(${FLETCHGEN}-test cerata)
     target_link_libraries(${FLETCHGEN}-test GTest::GTest GTest::Main)
     target_include_directories(${FLETCHGEN}-test PUBLIC ../../common/cpp/src)
     target_include_directories(${FLETCHGEN}-test PUBLIC ../../common/cpp/test)
 
     gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
-endif (FLETCHER_TESTS)
+endif (FLETCHGEN_TESTS)
