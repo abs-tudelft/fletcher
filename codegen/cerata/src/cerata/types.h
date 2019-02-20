@@ -51,6 +51,7 @@ std::shared_ptr<Literal> intl();
  */
 class Type : public Named {
  public:
+  /// @brief The Type ID. Used for convenient type checking.
   enum ID {
     CLOCK,    ///< Concrete, primitive
     RESET,    ///< Concrete, primitive
@@ -64,10 +65,23 @@ class Type : public Named {
     RECORD,   ///< Abstract, nested
     STREAM,   ///< Abstract, nested
   };
-  /// @brief Construct a new Type.
+
+  /**
+   * @brief Type constructor.
+   * @param name    The name of the Type.
+   * @param id      The Type::ID.
+   */
   explicit Type(std::string name, ID id);
-  /// @brief Virtual destructor for Type.
+
+  /// @brief Type virtual destructor.
   virtual ~Type() = default;
+
+  /**
+   * @brief Determine if this Type is exactly equal to an other Type.
+   * @param other   The other type.
+   * @return        True if exactly equal, false otherwise.
+   */
+  virtual bool IsEqual(const Type *other) const;
 
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
@@ -90,7 +104,7 @@ class Type : public Named {
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const Type *other) const;
 
- private:
+ protected:
   ID id_;
   std::deque<std::shared_ptr<TypeMapper>> mappers_;
 };
@@ -121,6 +135,8 @@ struct Clock : public Type {
   static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
   /// @brief Clock width returns integer literal 1.
   std::optional<std::shared_ptr<Node>> width() const override;
+  /// @brief Determine if this Clock is exactly equal to an other Clock.
+  bool IsEqual(const Type *other) const override;
 };
 
 /// @brief Reset type.
@@ -133,6 +149,8 @@ struct Reset : public Type {
   static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
   /// @brief Reset width returns integer literal 1.
   std::optional<std::shared_ptr<Node>> width() const override;
+  /// @brief Determine if this Reset is exactly equal to an other Reset.
+  bool IsEqual(const Type *other) const override;
 };
 
 /// @brief A bit type.
@@ -214,6 +232,8 @@ class Vector : public Type {
 
   /// @brief Return a pointer to the node representing the width of this vector, if specified.
   std::optional<std::shared_ptr<Node>> width() const override { return width_; }
+  /// @brief Determine if this Type is exactly equal to an other Type.
+  bool IsEqual(const Type *other) const override;
 };
 
 /// @brief A Record field.
@@ -244,6 +264,10 @@ class Record : public Type {
   std::shared_ptr<RecordField> field(size_t i) const { return fields_[i]; }
   /// @brief Return all fields contained by this record.
   std::deque<std::shared_ptr<RecordField>> fields() const { return fields_; }
+  /// @brief Return the number of fields in this record.
+  inline size_t num_fields() const { return fields_.size(); }
+  /// @brief Determine if this Type is exactly equal to an other Type.
+  bool IsEqual(const Type *other) const override;;
  private:
   std::deque<std::shared_ptr<RecordField>> fields_;
 };
@@ -259,13 +283,10 @@ class Stream : public Type {
    * @param epc             Maximum elements per cycle
    */
   Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
-
   /// @brief Create a smart pointer to a new Stream type. Stream name will be stream:\<type name\>, the elements "data".
   static std::shared_ptr<Type> Make(std::shared_ptr<Type> element_type, int epc = 1);
-
   /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named "data".
   static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
-
   /// @brief Shorthand to create a smart pointer to a new Stream type.
   static std::shared_ptr<Type> Make(std::string name,
                                     std::shared_ptr<Type> element_type,
@@ -274,12 +295,14 @@ class Stream : public Type {
 
   /// @brief Return the type of the elements of this stream.
   std::shared_ptr<Type> element_type() const { return element_type_; }
-
   /// @brief Return the name of the elements of this stream.
   std::string element_name() { return element_name_; }
 
-  /// @brief Return the number of elements per cycle this stream should deliver.
+  /// @brief Return the maximum number of elements per cycle this stream can deliver.
   int epc() { return epc_; } // TODO(johanpel): this should probably become a node as well.
+
+  /// @brief Determine if this Stream is exactly equal to another Stream.
+  bool IsEqual(const Type *other) const override;
 
  private:
   /// @brief The type of the elements traveling over this stream.

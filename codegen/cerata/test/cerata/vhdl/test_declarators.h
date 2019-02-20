@@ -33,8 +33,8 @@ TEST(VHDL, ComponentDecl) {
 TEST(VHDL, ArrayPort) {
   auto top = GetArrayComponent();
 
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString() << std::endl;
+  auto code = vhdl::Design(top);
+  std::cout << code.Generate().ToString() << std::endl;
 
   dot::Grapher dot(dot::Style::normal());
   std::cout << dot.GenFile(top, "graph.dot");

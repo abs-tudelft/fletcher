@@ -381,6 +381,14 @@ std::string ToString(Expression::Operation operation) {
   }
 }
 
+std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, const std::optional<std::shared_ptr<Node>> &rhs) {
+  if (rhs) {
+    return lhs + *rhs;
+  } else {
+    return lhs;
+  }
+}
+
 std::string Expression::ToString() {
   std::string ls;
   std::string op;
@@ -493,6 +501,24 @@ std::shared_ptr<Edge> ArrayNode::SetSize(std::shared_ptr<Node> size) {
 }
 
 std::shared_ptr<Node> ArrayNode::size() const { return *size_->src; }
+
+size_t ArrayNode::IndexOf(const std::shared_ptr<Edge> &edge) {
+  size_t idx = 0;
+  for (const auto& e : inputs()) {
+    if (e == edge) {
+      return idx;
+    }
+    idx++;
+  }
+  idx = 0;
+  for (const auto& e : outputs()) {
+    if (e == edge) {
+      return idx;
+    }
+    idx++;
+  }
+  throw std::runtime_error("Edge does not connect to this Node");
+}
 
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
                                            std::shared_ptr<Type> type,

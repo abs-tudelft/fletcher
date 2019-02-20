@@ -93,6 +93,48 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   return top;
 }
 
+std::shared_ptr<Component> GetArrayTypeConvComponent() {
+
+  auto t_wide = Vector::Make<4>();
+  auto t_narrow = Vector::Make<2>();
+  // Flat indices:
+  auto tA = Record::Make("rec_A", {       // 0
+      RecordField::Make("q", t_wide),     // 1
+  });
+
+  auto tB = Record::Make("rec_B", {       // 0
+      RecordField::Make("r", t_narrow),   // 1
+      RecordField::Make("s", t_narrow),   // 2
+  });
+
+  // Create a type mapping from tA to tE
+  auto mapper = std::make_shared<TypeMapper>(tA.get(), tB.get());
+  mapper->Add(1, 1);
+  mapper->Add(1, 2);
+  tA->AddMapper(mapper);
+
+  // Ports
+  auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl<0>());
+  auto pA = ArrayPort::Make("A", tA, parSize, Port::OUT);
+  auto pB = Port::Make("B", tB, Port::IN);
+  auto pC = Port::Make("C", tB, Port::IN);
+
+  // Components and instantiations
+  auto top = Component::Make("top", {}, {}, {});
+  auto x_comp = Component::Make("X", {}, {pA}, {});
+  auto y_comp = Component::Make("Y", {}, {pB, pC}, {});
+  auto x = Instance::Make(x_comp);
+  auto y = Instance::Make(y_comp);
+  top->AddChild(x)
+      .AddChild(y);
+
+  // Connect ports
+  x->ap("A")->Append(y->p("B"));
+  x->ap("A")->Append(y->p("C"));
+
+  return top;
+}
+
 std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto r_type = Record::Make("rec", {
       RecordField::Make("a", Vector::Make<8>()),

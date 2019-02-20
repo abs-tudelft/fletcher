@@ -28,10 +28,12 @@ using cerata::Instance;
 using cerata::Port;
 
 TEST(Bus, BusReadArbiter) {
-  auto brav = BusReadArbiter();
+  auto top = BusReadArbiter();
 
-  auto source = cerata::vhdl::Decl::Generate(brav);
-  std::cout << source.ToString();
+  auto design = cerata::vhdl::Design(top);
+  std::cout << design.Generate().ToString();
+  cerata::dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 TEST(Bus, Artery) {
@@ -55,20 +57,26 @@ TEST(Bus, Artery) {
 
   // Create a component
   auto top = Component::Make("top", {}, {}, {});
-
   top->AddChild(comp_inst);
   top->AddChild(art_inst);
 
-  // Get the read data width 8 array port
+  // Get the read data ports with the specified widths
   auto rd8 = art_inst->read_data(intl<8>());
+  auto rd32 = art_inst->read_data(intl<32>());
+  auto rd128 = art_inst->read_data(intl<128>());
 
   // Append the component ports to it
   rd8->Append(comp_inst->p("a"));
   rd8->Append(comp_inst->p("b"));
   rd8->Append(comp_inst->p("c"));
+  rd32->Append(comp_inst->p("d"));
+  rd32->Append(comp_inst->p("e"));
+  rd128->Append(comp_inst->p("f"));
 
-  auto source = cerata::vhdl::Design(top);
-  std::cout << source.Generate().ToString();
+  auto design = cerata::vhdl::Design(top);
+  std::cout << design.Generate().ToString();
+  cerata::dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 }

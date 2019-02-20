@@ -80,19 +80,27 @@ void Type::AddMapper(std::shared_ptr<TypeMapper> mapper) {
 }
 
 std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) const {
-  // Mapper to itself. Create a trivial mapper:
-  if (other == this) {
-    return std::make_shared<TypeMapper>(other, other);
-  } else {
-    // Search for a mapper
-    for (const auto &m : mappers_) {
-      if (m->CanConvert(this, other)) {
-        return m;
-      }
+  // Search for an explicit type mapper.
+  for (const auto &m : mappers_) {
+    if (m->CanConvert(this, other)) {
+      return m;
     }
+  }
+  // Implicit type mappers maybe be generated in two cases; if it's exactly the same type or if its an equal type.
+  if (other == this) {
+    // Generate a type mapper to itself using the TypeMapper constructor.
+    return TypeMapper::Make(this);
+  }
+  if (IsEqual(other)) {
+    // Generate an implicit type mapping.
+    return TypeMapper::MakeImplicit(this, other);
   }
   // There is no mapper
   return {};
+}
+
+bool Type::IsEqual(const Type *other) const {
+  return other->id() == id_;
 }
 
 Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)
@@ -116,6 +124,17 @@ std::shared_ptr<Type> Vector::Make(std::string name, std::optional<std::shared_p
   return std::make_shared<Vector>(name, bit(), width);
 }
 
+bool Vector::IsEqual(const Type *other) const {
+  // Must also be a vector
+  if (other->Is(Type::VECTOR)) {
+    // Must have the same width
+    if (width_ == other->width()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::shared_ptr<Type> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
   return std::make_shared<Stream>(name, element_type, "data", epc);
 }
@@ -136,6 +155,13 @@ Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type,
       element_type_(std::move(element_type)),
       element_name_(std::move(element_name)),
       epc_(epc) {}
+
+bool Stream::IsEqual(const Type *other) const {
+  if (other->Is(Type::STREAM)) {
+    return element_type()->IsEqual((*Cast<Stream>(other))->element_type().get());
+  }
+  return false;
+}
 
 std::shared_ptr<Type> bit() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");
@@ -184,6 +210,16 @@ std::optional<std::shared_ptr<Node>> Clock::width() const {
   return std::dynamic_pointer_cast<Node>(intl<1>());
 }
 
+bool Clock::IsEqual(const Type *other) const {
+  if (other->id() == Type::CLOCK) {
+    auto oc = *Cast<Clock>(other);
+    if (oc->domain == this->domain) {
+      return true;
+    }
+  }
+  return false;
+}
+
 Reset::Reset(std::string name, std::shared_ptr<ClockDomain> domain)
     : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
 
@@ -193,6 +229,16 @@ std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain
 
 std::optional<std::shared_ptr<Node>> Reset::width() const {
   return std::dynamic_pointer_cast<Node>(intl<1>());
+}
+
+bool Reset::IsEqual(const Type *other) const {
+  if (other->id() == Type::RESET) {
+    auto oc = *Cast<Reset>(other);
+    if (oc->domain == this->domain) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
@@ -227,6 +273,29 @@ Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
 
 Record::Record(std::string name, std::deque<std::shared_ptr<RecordField>> fields)
     : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
+
+bool Record::IsEqual(const Type *other) const {
+  if (other == this) {
+    return true;
+  }
+  // Must also be a record
+  if (!other->Is(Type::RECORD)) {
+    return false;
+  }
+  // Must have same number of fields
+  auto orec = *Cast<Record>(other);
+  if (orec->num_fields() != this->num_fields()) {
+    return false;
+  }
+  // Each field must also be of equal type
+  for (size_t i = 0; i < this->num_fields(); i++) {
+    if (!this->field(i)->type()->IsEqual(orec->field(i)->type().get())) {
+      return false;
+    }
+  }
+  // If we didn't return already, the Record Types are the same
+  return true;
+}
 
 ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 

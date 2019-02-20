@@ -25,6 +25,7 @@
 
 #include "cerata/utils.h"
 #include "cerata/types.h"
+#include "cerata/nodes.h"
 
 namespace cerata {
 
@@ -128,11 +129,23 @@ TypeMapper::TypeMapper(const Type *a, const Type *b)
       fa_(Flatten(a)), fb_(Flatten(b)),
       a_(a), b_(b),
       matrix_(MappingMatrix<size_t>(fa_.size(), fb_.size())) {
+  // If the types are the same, the mapping is trivial and implicitly constructed.
+  // The matrix will be the identity matrix.
   if (a_ == b_) {
     for (size_t i = 0; i < fa_.size(); i++) {
       matrix_(i, i) = 1;
     }
   }
+}
+
+std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(const Type *a, const Type *b) {
+  auto ret = std::make_shared<TypeMapper>(a, b);
+  if (a->IsEqual(b)) {
+    for (size_t i = 0; i < ret->flat_a().size(); i++) {
+      ret->Add(i, i);
+    }
+  }
+  return ret;
 }
 
 TypeMapper &TypeMapper::Add(size_t a, size_t b) {
@@ -239,6 +252,67 @@ std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
     }
   }
   return pairs;
+}
+
+std::shared_ptr<TypeMapper> TypeMapper::Make(const Type *a) {
+  return std::make_shared<TypeMapper>(a, a);
+}
+
+std::string MappingPair::ToString() const {
+  std::stringstream ret;
+  ret << "MappingPair: " << std::endl;
+  for (size_t i = 0; i < std::max(a.size(), b.size()); i++) {
+    if (i < a.size()) {
+      ret << " i: " << std::setw(3) << index_a(i);
+      ret << " o: " << std::setw(3) << offset_a(i);
+      ret << std::setw(20) << flat_type_a(i).name();
+      ret << std::setw(20) << flat_type_a(i).type_->ToString();
+    } else {
+      ret << std::setw(54) << " ";
+    }
+    ret << " --> ";
+    if (i < b.size()) {
+      ret << " i: " << std::setw(3) << index_b(i);
+      ret << " o: " << std::setw(3) << offset_b(i);
+      ret << std::setw(20) << flat_type_b(i).name();
+      ret << std::setw(20) << flat_type_b(i).type_->ToString();
+    } else {
+      ret << std::setw(54) << " ";
+    }
+    ret << std::endl;
+  }
+  // output total width of both sides
+  ret << " w: " << std::setw(50) << width_a()->ToString();
+  ret << "     ";
+  ret << " w: " << std::setw(50) << width_b()->ToString();
+  ret << std::endl;
+  return ret.str();
+}
+
+std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
+  std::shared_ptr<Node> w = intl<0>();
+  for (size_t i = 0; i < num_a(); i++) {
+    auto fw = flat_type_a(i).type_->width();
+    if (fw) {
+      w = w + *fw;
+    } else if (no_width_increment) {
+      w = w + *no_width_increment;
+    }
+  }
+  return w;
+}
+
+std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
+  std::shared_ptr<Node> w = intl<0>();
+  for (size_t i = 0; i < num_b(); i++) {
+    auto fw = flat_type_b(i).type_->width();
+    if (fw) {
+      w = w + *fw;
+    } else if (no_width_increment) {
+      w = w + *no_width_increment;
+    }
+  }
+  return w;
 }
 
 }  // namespace cerata

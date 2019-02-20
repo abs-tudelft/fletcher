@@ -27,8 +27,18 @@ namespace cerata {
 TEST(VHDL, TypeMapper) {
   auto top = GetTypeConvComponent();
 
-  auto code = vhdl::Design::Generate(top);
-  std::cout << code.ToString();
+  auto code = vhdl::Design(top);
+  std::cout << code.Generate().ToString();
+
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
+TEST(VHDL, ArrayTypeMapper) {
+  auto top = GetArrayTypeConvComponent();
+
+  auto code = vhdl::Design(top);
+  std::cout << code.Generate().ToString();
 
   dot::Grapher dot;
   std::cout << dot.GenFile(top, "graph.dot");

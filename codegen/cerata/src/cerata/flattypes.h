@@ -30,6 +30,7 @@ namespace cerata {
 class Type;
 class Record;
 class Stream;
+class Node;
 
 /**
  * @brief A flattened type.
@@ -221,6 +222,21 @@ struct MappingPair {
   offset offset_b(size_t i) const { return std::get<1>(b[i]); }
   FlatType flat_type_a(size_t i) const { return std::get<2>(a[i]); }
   FlatType flat_type_b(size_t i) const { return std::get<2>(b[i]); }
+  /**
+   * @brief Return the total width of the types on side A.
+   * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
+   * @return                    The total width on side A.
+   */
+  std::shared_ptr<Node> width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment={}) const;
+  /**
+   * @brief Return the total width of the types on side B.
+   * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
+   * @return                    The total width on side B.
+   */
+  std::shared_ptr<Node> width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment={}) const;
+
+  /// @brief Generate a human-readable version of this MappingPair
+  std::string ToString() const;
 };
 
 /**
@@ -236,7 +252,12 @@ class TypeMapper : public Named {
   const Type *b_;
   MappingMatrix<size_t> matrix_;
  public:
+  /// @brief TypeMapper constructor. Constructs an empty type mapping.
   TypeMapper(const Type *a, const Type *b);
+  /// @brief Construct a new TypeMapper from some type to itself, and return a smart pointer to it.
+  static std::shared_ptr<TypeMapper> Make(const Type *a);
+  /// @brief Construct a new TypeMapper from some type to another type, and automatically determine the type mapping.
+  static std::shared_ptr<TypeMapper> MakeImplicit(const Type *a, const Type *b);;
 
   TypeMapper &Add(size_t a, size_t b);
   MappingMatrix<size_t> map_matrix();

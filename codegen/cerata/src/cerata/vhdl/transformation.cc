@@ -61,9 +61,7 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
         resolved.push_back((*edge->src).get());
         resolved.push_back((*edge->dst).get());
       }
-
     }
-
   }
   return comp;
 }

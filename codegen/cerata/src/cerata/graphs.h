@@ -63,7 +63,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::shared_ptr<Signal> s(const std::string &signal_name) const;
 
   /// @brief Add a node to the component
-  virtual Graph &AddNode(const std::shared_ptr<Node>& node);
+  virtual Graph &AddNode(const std::shared_ptr<Node> &node);
 
   /// @brief Count nodes of a specific node type
   size_t CountNodes(Node::ID id) const;
@@ -73,6 +73,9 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
 
   /// @brief Create a copy of the graph
   virtual std::shared_ptr<Graph> Copy() const;
+
+  /// @brief Get all nodes.
+  std::deque<std::shared_ptr<Node>> GetNodes() const { return nodes_; }
 
   /// @brief Get all nodes of a specific type.
   std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
@@ -153,7 +156,7 @@ struct Instance : public Graph {
   static std::shared_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
-  Graph &AddNode(const std::shared_ptr<Node>& node) override;
+  Graph &AddNode(const std::shared_ptr<Node> &node) override;
 };
 
 /**

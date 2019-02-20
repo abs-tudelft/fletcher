@@ -31,7 +31,6 @@ struct Transformation {
    * @return        The transformed component
    */
   static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
-
 };
 
 }  // namespace vhdl

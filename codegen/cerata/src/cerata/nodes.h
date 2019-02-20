@@ -376,6 +376,9 @@ class ArrayNode : public Node {
   /// @brief Return the outputs of this node.
   std::deque<std::shared_ptr<Edge>> outputs() const override;
 
+  /// @brief Return the index of an edge on this node.
+  size_t IndexOf(const std::shared_ptr<Edge>& edge);
+
  private:
   /// Which side is the "array" side
   ArraySide array_side_;
