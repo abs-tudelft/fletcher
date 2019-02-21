@@ -82,9 +82,9 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Get the output edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> outputs() const { return {}; }
   /// @brief Add an input to this node.
-  virtual void AddInput(const std::shared_ptr<Edge> &input) {}
+  virtual void AddInput(const std::shared_ptr<Edge> &input) = 0;
   /// @brief Add an output to this node.
-  virtual void AddOutput(const std::shared_ptr<Edge> &output) {}
+  virtual void AddOutput(const std::shared_ptr<Edge> &output) = 0;
   /// @brief Remove an edge of this node.
   virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) { return false; }
 
@@ -207,6 +207,8 @@ struct Literal : public MultiOutputNode {
 
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Node> Copy() const override;
+  /// @brief Add an input to this node.
+  void AddInput(const std::shared_ptr<Edge> &input) override;
 
   /// @brief A literal node has no inputs. This function returns an empty list.
   inline std::deque<std::shared_ptr<Edge>> inputs() const override { return {}; }
@@ -236,6 +238,9 @@ struct Expression : public MultiOutputNode {
   static std::shared_ptr<Expression> Make(Operation op,
                                           const std::shared_ptr<Node> &lhs,
                                           const std::shared_ptr<Node> &rhs);
+
+  /// @brief Add an input to this node.
+  void AddInput(const std::shared_ptr<Edge> &input) override;
 
   /// @brief Minimize a node, if it is an expression
   static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node> &node);
@@ -303,28 +308,36 @@ struct Parameter : public NormalNode {
 };
 
 /**
- * @brief A Port node.
- *
- * Can be used to define Graph terminators. Port nodes enforce proper directionality of edges.
+ * @brief A terminator structure to enable terminator sanity checks.
  */
-struct Port : public NormalNode {
-  /// Port direction.
-  enum Dir { IN, OUT } dir;
+class Term {
+ public:
+  /// Terminator direction.
+  enum Dir { NONE, IN, OUT };
 
-  /// @brief Construct a new Port.
-  Port(std::string name, std::shared_ptr<Type> type, Dir dir);
-  /// @brief Get a smart pointer to a new Port.
-  static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Dir dir = Dir::IN);;
-  /// @brief Get a smart pointer to a new Port. The Port name is derived from the Type name.
-  static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Dir dir = Dir::IN);;
+  /// @brief Return the direction of this terminator.
+  inline Dir dir() const { return dir_; };
 
-  /// @brief Create a copy of this Port.
+  /// @brief Construct a new Term.
+  explicit Term(Dir dir) : dir_(dir) {}
+
+  /// @brief Return true if this Term is an input, false otherwise.
+  inline bool IsInput() { return dir_ == IN; }
+  /// @brief Return true if this Term is an output, false otherwise.
+  inline bool IsOutput() { return dir_ == OUT; }
+
+ private:
+  Dir dir_;
+};
+
+/**
+ * @brief A port is a terminator node on a graph
+ */
+struct Port : public NormalNode, public Term {
+  Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir);
+  static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
+  static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   std::shared_ptr<Node> Copy() const override;
-
-  /// @brief Return true if this Port is an input, false otherwise.
-  inline bool IsInput() { return dir == IN; }
-  /// @brief Return true if this Port is an output, false otherwise.
-  inline bool IsOutput() { return dir == OUT; }
 };
 
 /**
@@ -347,39 +360,33 @@ class ArrayNode : public Node {
  public:
   /// Which side of the node the "array" is on.
   enum ArraySide {
-    ARRAY_OUT,  ///< The array is on the output side
-    ARRAY_IN    ///< The array is on the input side
+    ARRAY_OUT,  ///< The array is on the side of the outgoing edges.
+    ARRAY_IN    ///< The array is on the side of the incoming edges.
   };
 
   /// @brief ArrayNode constructor.
   ArrayNode(std::string name, Node::ID id, std::shared_ptr<Type> type, ArraySide array_side);
-
-  /// @brief Append another Node to this ArrayNode, returns an Edge between this ArrayNode and the appended Node.
-  std::shared_ptr<Edge> Append(std::shared_ptr<Node> n);
+  /// @brief Add an input edge to this node.
+  void AddInput(const std::shared_ptr<Edge> &edge) override;
+  /// @brief Add an output edge to this node.
+  void AddOutput(const std::shared_ptr<Edge> &edge) override;
 
   /// @brief Increment the size of the ArrayNode.
   void increment();
-
-  /**
-   * @brief Set the number of edges on the array side of this ArrayNode.
-   *
-   * The size Node must appear as a node on the parent Graph.
-   */
+  /// @brief Set the array size of this ArrayNode. The size Node must appear as a node on the parent Graph.
   std::shared_ptr<Edge> SetSize(std::shared_ptr<Node> size);
-
   /// @brief Return the Node representing the number of edges on the array side of this ArrayNode.
   std::shared_ptr<Node> size() const;
-
   /// @brief Return the inputs to this node.
   std::deque<std::shared_ptr<Edge>> inputs() const override;
-
   /// @brief Return the outputs of this node.
   std::deque<std::shared_ptr<Edge>> outputs() const override;
-
   /// @brief Return the index of an edge on this node.
-  size_t IndexOf(const std::shared_ptr<Edge>& edge);
+  size_t IndexOf(const std::shared_ptr<Edge> &edge);
 
  private:
+  /// @brief Append another Node to this ArrayNode, returns an Edge between this ArrayNode and the appended Node.
+  std::shared_ptr<Edge> Append(const std::shared_ptr<Edge> &n);
   /// Which side is the "array" side
   ArraySide array_side_;
   /// A node representing the number of concatenated edges.
@@ -393,10 +400,7 @@ class ArrayNode : public Node {
 /**
  * @brief A port node that has an array of multiple edges to other nodes.
  */
-struct ArrayPort : public ArrayNode {
-  /// Port direction.
-  Port::Dir dir;
-
+struct ArrayPort : public ArrayNode, public Term {
   /// @brief Construct a new ArrayPort.
   ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir);
 
@@ -409,12 +413,6 @@ struct ArrayPort : public ArrayNode {
   static std::shared_ptr<ArrayPort> Make(std::shared_ptr<Type> type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
-
-  /// @brief Return true if this Port is an input, false otherwise.
-  inline bool IsInput() { return dir == Port::IN; }
-
-  /// @brief Return true if this Port is an output, false otherwise.
-  inline bool IsOutput() { return dir == Port::OUT; }
 
   /// @brief Create a copy of this ArrayPort.
   std::shared_ptr<Node> Copy() const override;

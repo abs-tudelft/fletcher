@@ -19,6 +19,8 @@
 
 #include "cerata/graphs.h"
 #include "cerata/types.h"
+#include "cerata/edges.h"
+
 #include "fletchgen/basic_types.h"
 
 namespace fletchgen {
@@ -78,6 +80,11 @@ Artery::Artery(std::shared_ptr<Node> address_width,
     auto dat = ArrayPort::Make("bus" + sw->ToString() + "_rdat", bus_read_data(sw), par, Port::IN);
     AddNode(req);
     AddNode(dat);
+
+    auto inst = Instance::Make("brav" + sw->ToString() + "_inst", BusReadArbiter());
+    inst->par("bus_addr_width") <<= address_width_;
+    inst->par("bus_data_width") <<= sw;
+    AddChild(inst);
   }
 }
 
@@ -88,11 +95,11 @@ std::shared_ptr<Artery> Artery::Make(std::shared_ptr<Node> address_width,
 }
 
 std::shared_ptr<ArrayPort> ArteryInstance::read_data(const std::shared_ptr<Node> &width) {
-  return ap("bus" + width->ToString() + "_rdat");
+  return aport("bus" + width->ToString() + "_rdat");
 }
 
 std::shared_ptr<ArrayPort> ArteryInstance::read_request(const std::shared_ptr<Node> &width) {
-  return ap("bus" + width->ToString() + "_rreq");
+  return aport("bus" + width->ToString() + "_rreq");
 }
 
 }  // namespace fletchgen

@@ -46,10 +46,8 @@ TEST(Mantle, StringRead) {
   auto set = SchemaSet::Make("StringRead", {schema});
   auto top = Mantle::Make(set);
 
-  std::cout << std::endl;
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();
-
   cerata::dot::Grapher dot;
   std::cout << dot.GenFile(top, "graph.dot");
 }

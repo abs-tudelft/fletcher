@@ -26,7 +26,7 @@ namespace dot {
 Style Style::normal() {
   static Style ret;
 
-  ret.config = Config::all();
+  ret.config = Config::normal();
 
   ret.subgraph.base = "filled";
   ret.subgraph.color = Palette::normal().light;
@@ -121,6 +121,29 @@ Config Config::streams() {
   ret.nodes.types.vector = false;
   ret.nodes.types.record = false;
   ret.nodes.types.stream = true;
+  return ret;
+}
+
+Config Config::normal() {
+  static Config ret;
+
+  ret.nodes.parameters = true;
+  ret.nodes.literals = true;
+  ret.nodes.signals = true;
+  ret.nodes.ports = true;
+  ret.nodes.expressions = true;
+
+  ret.nodes.expand.record = false;
+  ret.nodes.expand.stream = false;
+  ret.nodes.expand.expression = false;
+
+  ret.nodes.types.clock = true;
+  ret.nodes.types.reset = true;
+  ret.nodes.types.bit = true;
+  ret.nodes.types.vector = true;
+  ret.nodes.types.record = true;
+  ret.nodes.types.stream = true;
+
   return ret;
 }
 

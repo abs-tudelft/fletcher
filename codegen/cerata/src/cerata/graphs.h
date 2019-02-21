@@ -29,12 +29,16 @@ namespace cerata {
  */
 struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   enum ID {
-    GENERIC,    ///< A generic graph
     COMPONENT,  ///< A component graph
     INSTANCE    ///< An instance graph
   };
   /// @brief Graph type id for convenience
   ID id_;
+
+  /// @brief Return true if this graph is a component, false otherwise.
+  bool IsComponent() const { return id_ == COMPONENT; }
+  /// @brief Return true if this graph is an instance, false otherwise.
+  bool IsInstance() const { return id_ == INSTANCE; }
 
   /// @brief Graph nodes.
   std::deque<std::shared_ptr<Node>> nodes_;
@@ -57,34 +61,19 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
 
   /// @brief Get a node of a specific type with a specific name
   std::shared_ptr<Node> Get(Node::ID node_id, const std::string &node_name) const;
-
-  std::shared_ptr<ArrayPort> ap(const std::string &port_name) const;
-  std::shared_ptr<Port> p(const std::string &port_name) const;
-  std::shared_ptr<Signal> s(const std::string &signal_name) const;
-
-  /// @brief Add a node to the component
-  virtual Graph &AddNode(const std::shared_ptr<Node> &node);
-
-  /// @brief Count nodes of a specific node type
-  size_t CountNodes(Node::ID id) const;
-
-  /// @brief Add a child component
-  virtual Graph &AddChild(const std::shared_ptr<Graph> &child);
-
-  /// @brief Create a copy of the graph
-  virtual std::shared_ptr<Graph> Copy() const;
-
-  /// @brief Get all nodes.
-  std::deque<std::shared_ptr<Node>> GetNodes() const { return nodes_; }
-
-  /// @brief Get all nodes of a specific type.
-  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
-
+  /// @brief Shorthand to Get(Node::ARRAY_PORT, ...)
+  std::shared_ptr<ArrayPort> aport(const std::string &port_name) const;
+  /// @brief Shorthand to Get(Node::PORT, ...)
+  std::shared_ptr<Port> port(const std::string &port_name) const;
+  /// @brief Shorthand to Get(Node::SIGNAL, ...)
+  std::shared_ptr<Signal> sig(const std::string &signal_name) const;
+  /// @brief Shorthand to Get(Node::PARAMETER, ...)
+  std::shared_ptr<Parameter> par(const std::string &signal_name) const;
   /**
-   * @brief Obtain all nodes of type T from the graph
-   * @tparam T  The node type to obtain
-   * @return    A deque of nodes of type T
-   */
+ * @brief Obtain all nodes of type T from the graph
+ * @tparam T  The node type to obtain
+ * @return    A deque of nodes of type T
+ */
   template<typename T>
   std::deque<std::shared_ptr<T>> GetNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
@@ -96,6 +85,23 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
     }
     return result;
   }
+  /// @brief Obtain all nodes which ids are in a list of Node::IDs
+  std::deque<std::shared_ptr<Node>> GetNodesOfTypes(std::initializer_list<Node::ID> ids);
+
+  /// @brief Add a node to the component
+  virtual Graph &AddNode(const std::shared_ptr<Node> &node);
+  /// @brief Count nodes of a specific node type
+  size_t CountNodes(Node::ID id) const;
+  /// @brief Get all nodes.
+  std::deque<std::shared_ptr<Node>> GetNodes() const { return nodes_; }
+  /// @brief Get all nodes of a specific type.
+  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
+
+  /// @brief Add a child component
+  virtual Graph &AddChild(const std::shared_ptr<Graph> &child);
+
+  /// @brief Create a copy of the graph
+  virtual std::shared_ptr<Graph> Copy() const;
 };
 
 // Forward decl.

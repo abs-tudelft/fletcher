@@ -18,6 +18,9 @@
 #include <deque>
 #include <string>
 
+#include "cerata/graphs.h"
+#include "cerata/nodes.h"
+
 namespace cerata {
 
 std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src) {
@@ -30,28 +33,37 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
 
   // Check if the types can be mapped onto each other
   if (!src->type()->GetMapper(dst->type().get())) {
-    throw std::runtime_error(
-        "No known type mapping available during connection of node "
-            + src->ToString() + " (" + src->type()->ToString() + ")  to ("
+    throw std::logic_error(
+        "No known type mapping available for connection between node "
+            + dst->ToString() + " (" + dst->type()->ToString() + ")  and ("
             + src->ToString() + " (" + src->type()->ToString() + ")");
   }
 
-  // If the destination is a port, check if we're not driving an output port
-  if (dst->IsPort()) {
-    auto p = *Cast<Port>(dst);
-    if (p->IsOutput()) {
-      throw std::runtime_error("Cannot drive port " + p->ToString() + " of mode output");
+  // If the destination is a terminator
+  if (dst->IsPort() || dst->IsArrayPort()) {
+    auto t = *Cast<Term>(dst);
+    // Check if it has a parent
+    if (dst->parent()) {
+      auto parent = *dst->parent();
+      if (parent->IsInstance() && t->IsOutput()) {
+        // If the parent is an instance, and the terminator node is an output, then we may not drive it.
+        throw std::logic_error("Cannot drive instance port " + dst->ToString() + " of mode output.");
+      } else if (parent->IsComponent() && t->IsInput()) {
+        // If the parent is a component, and the terminator node is an input, then we may not drive it.
+        throw std::logic_error("Cannot drive component port " + dst->ToString() + " of mode input.");
+      }
     }
   }
 
   // Defer to ArrayNodes if applicable
-  if (src->IsArray()) {
+
+  /*if (src->IsArray()) {
     auto sa = *Cast<ArrayNode>(src);
     return sa->Append(dst);
   } else if (dst->IsArray()) {
     auto da = *Cast<ArrayNode>(dst);
     return da->Append(src);
-  }
+  }*/
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
@@ -67,10 +79,10 @@ std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::s
 std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::string &name_prefix) {
   // Sanity checks
   if (!edge->src) {
-    throw std::runtime_error("Cannot insert Node on Edge, because it has no source Node.");
+    throw std::logic_error("Cannot insert Node on Edge, because it has no source Node.");
   }
   if (!edge->dst) {
-    throw std::runtime_error("Cannot insert Node on Edge, because it has no destination Node.");
+    throw std::logic_error("Cannot insert Node on Edge, because it has no destination Node.");
   }
 
   auto src = *edge->src;

@@ -33,7 +33,7 @@ MultiBlock Design::Generate() {
   // This currently modifies the original structure.
 
   // Sanitize component
-  Transformation::ResolvePortToPort(comp);
+  //Transformation::ResolvePortToPort(comp);
 
   if (!head.empty()) {
     Block h;

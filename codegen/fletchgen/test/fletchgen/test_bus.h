@@ -18,6 +18,7 @@
 
 #include "cerata/vhdl/vhdl.h"
 #include "cerata/dot/dot.h"
+#include "cerata/edges.h"
 
 #include "fletchgen/bus.h"
 
@@ -66,16 +67,21 @@ TEST(Bus, Artery) {
   auto rd128 = art_inst->read_data(intl<128>());
 
   // Append the component ports to it
-  rd8->Append(comp_inst->p("a"));
-  rd8->Append(comp_inst->p("b"));
-  rd8->Append(comp_inst->p("c"));
-  rd32->Append(comp_inst->p("d"));
-  rd32->Append(comp_inst->p("e"));
-  rd128->Append(comp_inst->p("f"));
+  rd8 <<= comp_inst->port("a");
+  rd8 <<= comp_inst->port("b");
+  rd8 <<= comp_inst->port("c");
+  rd32 <<= comp_inst->port("d");
+  rd32 <<= comp_inst->port("e");
+  rd128 <<= comp_inst->port("f");
 
-  auto design = cerata::vhdl::Design(top);
-  std::cout << design.Generate().ToString();
+  auto artery_design = cerata::vhdl::Design(artery);
+  auto top_design = cerata::vhdl::Design(top);
+
+  std::cout << artery_design.Generate().ToString();
+  std::cout << top_design.Generate().ToString();
+
   cerata::dot::Grapher dot;
+  std::cout << dot.GenFile(artery, "artery.dot");
   std::cout << dot.GenFile(top, "graph.dot");
 }
 

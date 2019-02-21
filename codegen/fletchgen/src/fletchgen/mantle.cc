@@ -43,7 +43,7 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
 
   // Instantiate ColumnReaders/Writers for each field.
   for (const auto &p : arrow_ports) {
-    if (p->dir == Port::IN) {
+    if (p->dir() == Port::IN) {
       auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
       auto config_node = cr_inst->Get(Node::PARAMETER, "CFG");
       config_node <<=
@@ -59,11 +59,11 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
   for (size_t i = 0; i < arrow_ports.size(); i++) {
     if (arrow_ports[i]->IsInput()) {
       // Get the user core instance ports
-      auto uci_data_port = user_core_inst_->p(arrow_ports[i]->name());
-      auto uci_cmd_port = user_core_inst_->p(arrow_ports[i]->name() + "_cmd");
+      auto uci_data_port = user_core_inst_->port(arrow_ports[i]->name());
+      auto uci_cmd_port = user_core_inst_->port(arrow_ports[i]->name() + "_cmd");
       // Get the column reader ports
-      auto cr_data_port = column_readers[i]->p("out");
-      auto cr_cmd_port = column_readers[i]->p("cmd");
+      auto cr_data_port = column_readers[i]->port("out");
+      auto cr_cmd_port = column_readers[i]->port("cmd");
       // Connect the ports
       uci_data_port <<= cr_data_port;
       cr_cmd_port <<= uci_cmd_port;
@@ -90,17 +90,17 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
   AddNode(bus_wdat_array);
 
   for (const auto &cr : column_readers) {
-    auto cr_rreq = cr->p("bus_rreq");
-    auto cr_rdat = cr->p("bus_rdat");
+    auto cr_rreq = cr->port("bus_rreq");
+    auto cr_rdat = cr->port("bus_rdat");
     bus_rreq_array <<= cr_rreq;
     cr_rdat <<= bus_rdat_array;
   }
 
   for (const auto &cw : column_writers) {
-    auto cr_wreq = cw->p("bus_wreq");
-    auto cr_wdat = cw->p("bus_wdat");
-    bus_wreq_array <<= cr_wreq;
-    bus_wdat_array <<= cr_wdat;
+    auto cw_wreq = cw->port("bus_wreq");
+    auto cw_wdat = cw->port("bus_wdat");
+    bus_wreq_array <<= cw_wreq;
+    bus_wdat_array <<= cw_wdat;
   }
 }
 

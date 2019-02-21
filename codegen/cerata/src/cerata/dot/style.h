@@ -35,28 +35,8 @@ inline std::string tab(int n) {
 }
 
 inline std::string sanitize(std::string in) {
-  // Replace :
   std::replace(in.begin(), in.end(), ':', '_');
-
-  // Replace "
-  size_t idx = 0;
-  while (true) {
-    idx = in.find('"', idx);
-    if (idx == std::string::npos)
-      break;
-    in.replace(idx, 2, "\\\"");
-    idx += 2;
-  }
-
-  // Replace '\'
-  idx = 0;
-  while (true) {
-    idx = in.find('\\', idx);
-    if (idx == std::string::npos)
-      break;
-    in.replace(idx, 2, "\\");
-    idx += 2;
-  }
+  std::replace(in.begin(), in.end(), '"', '_');
   return in;
 }
 
@@ -121,6 +101,7 @@ struct Config {
   } nodes;
 
   static Config all();
+  static Config normal();
   static Config streams();
   bool operator()(const std::shared_ptr<Node> &node);
 };

@@ -113,14 +113,20 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   return result;
 }
 
-std::shared_ptr<Port> Graph::p(const std::string &port_name) const {
+std::shared_ptr<Port> Graph::port(const std::string &port_name) const {
   return std::dynamic_pointer_cast<Port>(Get(Node::PORT, port_name));
 }
-std::shared_ptr<Signal> Graph::s(const std::string &signal_name) const {
+
+std::shared_ptr<Signal> Graph::sig(const std::string &signal_name) const {
   return std::dynamic_pointer_cast<Signal>(Get(Node::SIGNAL, signal_name));
 }
-std::shared_ptr<ArrayPort> Graph::ap(const std::string &port_name) const {
+
+std::shared_ptr<ArrayPort> Graph::aport(const std::string &port_name) const {
   return std::dynamic_pointer_cast<ArrayPort>(Get(Node::ARRAY_PORT, port_name));
+}
+
+std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
+  return std::dynamic_pointer_cast<Parameter>(Get(Node::PARAMETER, signal_name));
 }
 
 std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
@@ -137,6 +143,19 @@ std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
   }
   auto last = std::unique(result.begin(), result.end());
   result.erase(last, result.end());
+  return result;
+}
+
+std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::ID> ids) {
+  std::deque<std::shared_ptr<Node>> result;
+  for (const auto &n : nodes_) {
+    for (const auto &id : ids) {
+      if (n->id() == id) {
+        result.push_back(n);
+        break;
+      }
+    }
+  }
   return result;
 }
 

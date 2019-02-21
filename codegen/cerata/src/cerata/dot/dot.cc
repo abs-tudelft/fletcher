@@ -230,6 +230,7 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
     // Indent
     str << tab(level);
     str << NodeName(n);
+    if (NodeName(n) == "Auint8_cr_inst_Literal_\\") throw std::runtime_error("bla");
     // Draw style
     str << " [";
     str << style.GetStyle(n);
@@ -257,7 +258,7 @@ std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, 
       ret << tab(level + 1) << "color=\"" + style.nodegroup.color + "\";\n";
     }
     for (const auto &n : filtered) {
-      ret << GenNode(n, level + nogroup);
+      ret << GenNode(n, level + nogroup + 1);
     }
     if (!nogroup) {
       ret << tab(level) << "}\n";
@@ -383,6 +384,7 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
   } else if (!n->name().empty()) {
     ret << n->name();
   } else {
+
     auto lit = Cast<Literal>(n);
     if (lit) {
       ret << "Anon_" + ToString(n->id()) + "_" + (*lit)->ToString();

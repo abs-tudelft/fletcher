@@ -26,15 +26,11 @@ namespace cerata {
 namespace vhdl {
 
 static bool IsInput(const std::shared_ptr<Node> port) {
-  auto pp = Cast<Port>(port);
-  auto pap = Cast<ArrayPort>(port);
-
-  if (pp) {
-    return (*pp)->IsInput();
-  } else if (pap) {
-    return (*pap)->IsInput();
+  auto t = Cast<Term>(port);
+  if (t) {
+    return (*t)->IsInput();
   } else {
-    throw std::runtime_error("Node is not a port.");
+    throw std::runtime_error("Node is not a terminator.");
   }
 }
 
@@ -181,10 +177,10 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
                                            other->IsArray());
         ret << mpblock;
         // Increase the offset on the left side.
-        offset_a = offset_a + (b_width ? *b_width : 0);
+        offset_a = offset_a + (b_width ? *b_width : intl<0>());
       }
       // Increase the offset on the right side.
-      offset_b = offset_b + (a_width ? *a_width : 0);
+      offset_b = offset_b + (a_width ? *a_width : intl<0>());
     }
   }
   return ret;
@@ -215,8 +211,7 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       size_t idx = 0;
       if (port->IsArray()) {
         idx = (*Cast<ArrayNode>(port))->IndexOf(edge);
-      }
-      if (other->IsArray()) {
+      } else if (other->IsArray()) {
         idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
       }
       // Generate the mapping for this port-node pair.
@@ -268,14 +263,9 @@ MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &p : inst->GetNodesOfType<Port>()) {
+    for (const auto &n : inst->GetNodesOfTypes({Node::PORT, Node::ARRAY_PORT})) {
       Block pm;
-      pm << GeneratePortMaps(p);
-      pmb << pm;
-    }
-    for (const auto &ap : inst->GetNodesOfType<ArrayPort>()) {
-      Block pm;
-      pm << GeneratePortMaps(ap);
+      pm << GeneratePortMaps(n);
       pmb << pm;
     }
     pmb <<= ",";

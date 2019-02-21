@@ -154,6 +154,10 @@ std::shared_ptr<Literal> Literal::Make(int value) {
   return ret;
 }
 
+void Literal::AddInput(const std::shared_ptr<Edge> &input) {
+  throw std::runtime_error("Cannot drive a literal node.");
+}
+
 std::shared_ptr<Literal> strl(std::string str) {
   auto result = Literal::Make(string(), std::move(str));
   return result;
@@ -182,20 +186,20 @@ std::string ToString(Node::ID id) {
   }
 }
 
-std::shared_ptr<Port> Port::Make(std::string name, std::shared_ptr<Type> type, Port::Dir dir) {
+std::shared_ptr<Port> Port::Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir) {
   return std::make_shared<Port>(name, type, dir);
 }
 
-std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Port::Dir dir) {
+std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Term::Dir dir) {
   return std::make_shared<Port>(type->name(), type, dir);
 }
 
 std::shared_ptr<Node> Port::Copy() const {
-  return std::make_shared<Port>(name(), type(), dir);
+  return std::make_shared<Port>(name(), type(), dir());
 }
 
-Port::Port(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
-    : NormalNode(std::move(name), Node::PORT, std::move(type)), dir(dir) {}
+Port::Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir)
+    : NormalNode(std::move(name), Node::PORT, std::move(type)), Term(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
   return std::make_shared<Parameter>(name(), type(), default_value);
@@ -410,19 +414,8 @@ std::shared_ptr<Node> Expression::Copy() const {
   return Expression::Make(operation, lhs, rhs);
 }
 
-std::shared_ptr<Edge> ArrayNode::Append(std::shared_ptr<Node> n) {
-  std::shared_ptr<Edge> e;
-  if (array_side_ == ARRAY_OUT) {
-    e = Edge::Make(name() + "_to_" + n->name(), n, shared_from_this());
-    array_edges_.push_back(e);
-    n->AddInput(e);
-  } else {
-    e = Edge::Make(n->name() + "_to_" + name(), shared_from_this(), n);
-    array_edges_.push_back(e);
-    n->AddOutput(e);
-  }
-  increment();
-  return e;
+void Expression::AddInput(const std::shared_ptr<Edge> &input) {
+  throw std::runtime_error("Cannot drive an expression node.");
 }
 
 static std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
@@ -504,20 +497,69 @@ std::shared_ptr<Node> ArrayNode::size() const { return *size_->src; }
 
 size_t ArrayNode::IndexOf(const std::shared_ptr<Edge> &edge) {
   size_t idx = 0;
-  for (const auto& e : inputs()) {
+  for (const auto &e : inputs()) {
     if (e == edge) {
       return idx;
     }
     idx++;
   }
   idx = 0;
-  for (const auto& e : outputs()) {
+  for (const auto &e : outputs()) {
     if (e == edge) {
       return idx;
     }
     idx++;
   }
   throw std::runtime_error("Edge does not connect to this Node");
+}
+
+std::shared_ptr<Edge> ArrayNode::Append(const std::shared_ptr<Edge> &edge) {
+  if (!edge->IsComplete()) {
+    throw std::logic_error("Edge is not complete.");
+  }
+  array_edges_.push_back(edge);
+  increment();
+  return edge;
+}
+
+void ArrayNode::AddInput(const std::shared_ptr<Edge> &edge) {
+  // Check if the edge has no destination yet
+  if (!edge->dst) {
+    // Set this node as its destination
+    edge->dst = shared_from_this();
+  } else if ((*edge->dst).get() != this) {
+    // The edge had a destination but it was not this node. Throw an error.
+    throw std::runtime_error("Cannot add edge as driver to node " + name()
+                                 + ". Edge already has other destination: " + (*edge->dst)->name());
+  }
+
+  if (array_side_ == ARRAY_IN) {
+    Append(edge);
+  } else {
+    // Check if this node already had some source
+    if (single_edge_ != nullptr) {
+      // Invalidate the destination on that edge.
+      single_edge_->dst = {};
+    }
+    // Set this node source to the edge.
+    single_edge_ = edge;
+  }
+}
+
+void ArrayNode::AddOutput(const std::shared_ptr<Edge> &edge) {
+  // Check if this edge has a source
+  if (!edge->src) {
+    // It has no source, make the source this node.
+    edge->src = shared_from_this();
+  } else if ((*edge->src) != shared_from_this()) {
+    throw std::runtime_error("Cannot add edge as output of node " + name()
+                                 + ". Edge has other source: " + (*edge->src)->name());
+  }
+  if (array_side_ == ARRAY_OUT) {
+    Append(edge);
+  } else {
+    single_edge_ = edge;
+  }
 }
 
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
@@ -535,11 +577,12 @@ std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
   return ArrayPort::Make(type->name(), type, std::move(size), dir);
 }
 
-ArrayPort::ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir)
-    : ArrayNode(std::move(name), Node::ARRAY_PORT, std::move(type), dir == Port::IN ? ARRAY_IN : ARRAY_OUT), dir(dir) {}
+ArrayPort::ArrayPort(std::string name, std::shared_ptr<Type> type, Term::Dir dir)
+    : ArrayNode(std::move(name), Node::ARRAY_PORT, std::move(type), dir == Port::IN ? ARRAY_IN : ARRAY_OUT),
+      Term(dir) {}
 
 std::shared_ptr<Node> ArrayPort::Copy() const {
-  auto result = std::make_shared<ArrayPort>(name(), type(), dir);
+  auto result = std::make_shared<ArrayPort>(name(), type(), dir());
   result->SetSize(this->size());
   return result;
 }

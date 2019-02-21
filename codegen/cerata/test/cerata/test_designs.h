@@ -26,9 +26,9 @@ namespace cerata {
 std::shared_ptr<Component> GetArrayComponent() {
   auto size = Parameter::Make("size", integer(), intl<0>());
   auto data = Vector::Make<8>();
-  auto pA = ArrayPort::Make("A", data, size, Port::OUT);
-  auto pB = Port::Make("B", data, Port::IN);
-  auto pC = Port::Make("C", data, Port::IN);
+  auto pA = ArrayPort::Make("A", data, size, Term::OUT);
+  auto pB = Port::Make("B", data, Term::IN);
+  auto pC = Port::Make("C", data, Term::IN);
 
   auto top = Component::Make("top", {}, {}, {});
   auto x_comp = Component::Make("X", {size}, {pA}, {});
@@ -40,8 +40,8 @@ std::shared_ptr<Component> GetArrayComponent() {
   top->AddChild(x)
       .AddChild(y);
 
-  y->p("B") <<= x->ap("A");
-  y->p("C") <<= x->ap("A");
+  y->port("B") <<= x->aport("A");
+  y->port("C") <<= x->aport("A");
 
   return top;
 }
@@ -88,7 +88,7 @@ std::shared_ptr<Component> GetTypeConvComponent() {
       .AddChild(y);
 
   // Connect ports
-  y->p("B") <<= x->p("A");
+  y->port("B") <<= x->port("A");
 
   return top;
 }
@@ -116,21 +116,18 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   // Ports
   auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl<0>());
   auto pA = ArrayPort::Make("A", tA, parSize, Port::OUT);
-  auto pB = Port::Make("B", tB, Port::IN);
-  auto pC = Port::Make("C", tB, Port::IN);
+  auto pB = Port::Make("B", tB, Port::OUT);
+  auto pC = Port::Make("C", tB, Port::OUT);
 
   // Components and instantiations
-  auto top = Component::Make("top", {}, {}, {});
+  auto top = Component::Make("top", {}, {pB, pC}, {});
   auto x_comp = Component::Make("X", {}, {pA}, {});
-  auto y_comp = Component::Make("Y", {}, {pB, pC}, {});
   auto x = Instance::Make(x_comp);
-  auto y = Instance::Make(y_comp);
-  top->AddChild(x)
-      .AddChild(y);
+  top->AddChild(x);
 
-  // Connect ports
-  x->ap("A")->Append(y->p("B"));
-  x->ap("A")->Append(y->p("C"));
+  // Drive B and C from A
+  pB <<= x->aport("A");
+  pC <<= x->aport("A");
 
   return top;
 }

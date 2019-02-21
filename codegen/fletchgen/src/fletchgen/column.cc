@@ -59,50 +59,6 @@ std::shared_ptr<Component> ColumnReader() {
   return ret;
 }
 
-std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
-  std::string ret;
-  ConfigType ct = GetConfigType(field->type().get());
-
-  if (field->nullable()) {
-    ret += "null(";
-    level++;
-  }
-
-  int epc = fletcher::getEPC(field);
-
-  if (ct == ConfigType::PRIM) {
-    auto w = GetWidth(field->type().get());
-    ret += "prim(" + w->ToString();
-    level++;
-  } else if (ct == ConfigType::LISTPRIM) {
-    ret += "listprim(8";
-    level++;
-  } else if (ct == ConfigType::LIST) {
-    ret += "list(";
-    level++;
-  } else if (ct == ConfigType::STRUCT) {
-    ret += "struct(";
-    level++;
-  }
-
-  if (epc > 1) {
-    ret += ";epc=" + std::to_string(epc);
-  }
-
-  // Append children
-  for (int c = 0; c < field->type()->num_children(); c++) {
-    auto child = field->type()->child(c);
-    ret += GenerateConfigString(child);
-    if (c != field->type()->num_children() - 1)
-      ret += ",";
-  }
-
-  for (; level > 0; level--)
-    ret += ")";
-
-  return ret;
-}
-
 ConfigType GetConfigType(const arrow::DataType *type) {
   ConfigType ret = ConfigType::PRIM;
 
@@ -166,6 +122,54 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
       return Literal::Make(t->bit_width());
     }
   }
+}
+
+std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
+  std::string ret;
+  ConfigType ct = GetConfigType(field->type().get());
+
+  if (field->nullable()) {
+    ret += "null(";
+    level++;
+  }
+
+  int epc = fletcher::getEPC(field);
+
+  if (ct == ConfigType::PRIM) {
+    auto w = GetWidth(field->type().get());
+    ret += "prim(" + w->ToString();
+    level++;
+  } else if (ct == ConfigType::LISTPRIM) {
+    ret += "listprim(8";
+    level++;
+  } else if (ct == ConfigType::LIST) {
+    if (GetConfigType(field->type()->child(0)->type().get()) == ConfigType::PRIM) {
+      ret += "list";
+    } else {
+      ret += "list(";
+    }
+    level++;
+  } else if (ct == ConfigType::STRUCT) {
+    ret += "struct(";
+    level++;
+  }
+
+  if (epc > 1) {
+    ret += ";epc=" + std::to_string(epc);
+  }
+
+  // Append children
+  for (int c = 0; c < field->type()->num_children(); c++) {
+    auto child = field->type()->child(c);
+    ret += GenerateConfigString(child);
+    if (c != field->type()->num_children() - 1)
+      ret += ",";
+  }
+
+  for (; level > 0; level--)
+    ret += ")";
+
+  return ret;
 }
 
 }  // namespace fletchgen

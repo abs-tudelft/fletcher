@@ -95,7 +95,7 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_);
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir()) + " " << Generate(ft.type_);
     ret << l;
   }
   return ret;
@@ -111,7 +111,7 @@ Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir) + " " << Generate(ft.type_, port->size());
+    l << ft.name(port_name_prefix) << " : " << ToString(port->dir()) + " " << Generate(ft.type_, port->size());
     ret << l;
   }
   return ret;
