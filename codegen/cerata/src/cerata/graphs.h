@@ -34,23 +34,20 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   };
   /// @brief Graph type id for convenience
   ID id_;
+  /// @brief Graph nodes.
+  std::deque<std::shared_ptr<Node>> nodes_;
+  /// @brief Graph children / subgraphs.
+  std::deque<std::unique_ptr<Graph>> children;
+  /// @brief Optional Graph parents
+  std::deque<Graph *> parents;
 
   /// @brief Return true if this graph is a component, false otherwise.
   bool IsComponent() const { return id_ == COMPONENT; }
   /// @brief Return true if this graph is an instance, false otherwise.
   bool IsInstance() const { return id_ == INSTANCE; }
 
-  /// @brief Graph nodes.
-  std::deque<std::shared_ptr<Node>> nodes_;
-
   /// @brief Return all graph nodes, including any nodes that have not explicitly been added to the graph.
-  std::deque<std::shared_ptr<Node>> implicit_nodes();
-
-  /// @brief Graph children / subgraphs.
-  std::deque<std::shared_ptr<Graph>> children;
-
-  /// @brief Optional Graph parents
-  std::deque<Graph *> parents;
+  std::deque<std::shared_ptr<Node>> implicit_nodes() const;
 
   /**
    * @brief Construct a new graph
@@ -86,7 +83,7 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
     return result;
   }
   /// @brief Obtain all nodes which ids are in a list of Node::IDs
-  std::deque<std::shared_ptr<Node>> GetNodesOfTypes(std::initializer_list<Node::ID> ids);
+  std::deque<std::shared_ptr<Node>> GetNodesOfTypes(std::initializer_list<Node::ID> ids) const;
 
   /// @brief Add a node to the component
   virtual Graph &AddNode(const std::shared_ptr<Node> &node);
@@ -98,10 +95,10 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
 
   /// @brief Add a child component
-  virtual Graph &AddChild(const std::shared_ptr<Graph> &child);
+  virtual Graph &AddChild(std::unique_ptr<Graph> child);
 
   /// @brief Create a copy of the graph
-  virtual std::shared_ptr<Graph> Copy() const;
+  //virtual std::shared_ptr<Graph> Copy() const;
 };
 
 // Forward decl.
@@ -130,18 +127,17 @@ struct Component : public Graph {
    * @param child   The child graph to add.
    * @return        This component if successful.
    */
-  Graph &AddChild(const std::shared_ptr<Graph> &child) override;
+  Graph &AddChild(std::unique_ptr<Graph> child) override;
 
   /**
   * @brief Gather all Instance graphs from this Component
   * @param graph The graph to gather from.
-  * @return      A deque holding smart pointer to all instances.
+  * @return      A deque holding pointers to all instances.
   */
-  // TODO(johanpel): this function should probably be removed as for overridden AddChild all children must be Instance.
-  std::deque<std::shared_ptr<Instance>> GetAllInstances();
+  std::deque<Instance *> GetAllInstances() const;
 
   /// @brief Create a copy of the component
-  std::shared_ptr<Graph> Copy() const override;
+  //std::shared_ptr<Graph> Copy() const override;
 };
 
 /**
@@ -156,10 +152,10 @@ struct Instance : public Graph {
   explicit Instance(std::string name, std::shared_ptr<Component> comp);
 
   /// @brief Construct a new Component, and turn it into a smart pointer.
-  static std::shared_ptr<Instance> Make(std::string name, std::shared_ptr<Component> component);
+  static std::unique_ptr<Instance> Make(std::string name, std::shared_ptr<Component> component);
 
   /// @brief Construct a new Component, turn it into a smart pointer, and use the Component name with _inst as suffix.
-  static std::shared_ptr<Instance> Make(std::shared_ptr<Component> component);
+  static std::unique_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
   Graph &AddNode(const std::shared_ptr<Node> &node) override;
@@ -170,7 +166,7 @@ struct Instance : public Graph {
  * @param graph The graph to gather the children from.
  * @return      A deque holding smart pointers to all unique components.
  */
-std::deque<std::shared_ptr<Component>> GetAllUniqueComponents(const std::shared_ptr<Graph> &graph);
+std::deque<const Component *> GetAllUniqueComponents(const Graph *graph);
 
 /**
  * @brief Cast a generic graph type object to a specific graph type object
@@ -195,8 +191,40 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Graph> &obj) {
  * @return      Optionally, a Graph of type T if the cast was valid.
  */
 template<typename T>
+std::optional<std::unique_ptr<T>> Cast(const std::unique_ptr<Graph> &obj) {
+  auto result = std::dynamic_pointer_cast<T>(obj);
+  if (result != nullptr) {
+    return result;
+  } else {
+    return {};
+  }
+}
+
+/**
+ * @brief Cast a generic graph type object to a specific graph type object
+ * @tparam T    The specific Graph type
+ * @param obj   The generic Graph
+ * @return      Optionally, a Graph of type T if the cast was valid.
+ */
+template<typename T>
 std::optional<T *> Cast(Graph *obj) {
   auto result = dynamic_cast<T *>(obj);
+  if (result != nullptr) {
+    return result;
+  } else {
+    return {};
+  }
+}
+
+/**
+ * @brief Cast a generic graph type object to a specific graph type object
+ * @tparam T    The specific Graph type
+ * @param obj   The generic Graph
+ * @return      Optionally, a Graph of type T if the cast was valid.
+ */
+template<typename T>
+std::optional<const T *> Cast(const Graph *obj) {
+  auto result = dynamic_cast<const T *>(obj);
   if (result != nullptr) {
     return result;
   } else {

@@ -37,11 +37,14 @@ std::shared_ptr<Component> GetArrayComponent() {
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);
 
-  top->AddChild(x)
-      .AddChild(y);
+  auto xr = x.get();
+  auto yr = y.get();
 
-  y->port("B") <<= x->aport("A");
-  y->port("C") <<= x->aport("A");
+  top->AddChild(std::move(x))
+      .AddChild(std::move(y));
+
+  yr->port("B") <<= xr->aport("A");
+  yr->port("C") <<= xr->aport("A");
 
   return top;
 }
@@ -84,11 +87,13 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   auto y_comp = Component::Make("Y", {}, {pB}, {});
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);
-  top->AddChild(x)
-      .AddChild(y);
+  auto xr = x.get();
+  auto yr = y.get();
+  top->AddChild(std::move(x))
+      .AddChild(std::move(y));
 
   // Connect ports
-  y->port("B") <<= x->port("A");
+  yr->port("B") <<= xr->port("A");
 
   return top;
 }
@@ -123,11 +128,12 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   auto top = Component::Make("top", {}, {pB, pC}, {});
   auto x_comp = Component::Make("X", {}, {pA}, {});
   auto x = Instance::Make(x_comp);
-  top->AddChild(x);
+  auto xr = x.get();
+  top->AddChild(std::move(x));
 
   // Drive B and C from A
-  pB <<= x->aport("A");
-  pC <<= x->aport("A");
+  pB <<= xr->aport("A");
+  pC <<= xr->aport("A");
 
   return top;
 }

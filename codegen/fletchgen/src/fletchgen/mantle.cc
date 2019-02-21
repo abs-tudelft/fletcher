@@ -35,8 +35,9 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
 
   // Create and instantiate a Core
   user_core_ = Core::Make(schema_set_);
-  user_core_inst_ = Instance::Make(user_core_);
-  AddChild(user_core_inst_);
+  auto ucinst = Instance::Make(user_core_);
+  user_core_inst_ = ucinst.get();
+  AddChild(std::move(ucinst));
 
   // Connect Fields
   auto arrow_ports = user_core_->GetAllArrowPorts();
@@ -48,8 +49,8 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
       auto config_node = cr_inst->Get(Node::PARAMETER, "CFG");
       config_node <<=
           cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));
-      column_readers.push_back(cr_inst);
-      AddChild(cr_inst);
+      column_readers.push_back(cr_inst.get());
+      AddChild(std::move(cr_inst));
     } else {
       // TODO(johanpel): ColumnWriters
     }

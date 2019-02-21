@@ -29,7 +29,7 @@ static std::string ToHex(const std::shared_ptr<Node> &n) {
   return ret.str();
 }
 
-std::string Grapher::GenEdges(const std::shared_ptr<Graph> &graph, int level) {
+std::string Grapher::GenEdges(const Graph* graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
   int ei = 0;
@@ -239,7 +239,7 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
   return str.str();
 }
 
-std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, int level, bool nogroup) {
+std::string Grapher::GenNodes(const Graph* graph, Node::ID id, int level, bool nogroup) {
   std::stringstream ret;
   auto nodes = graph->implicit_nodes();
   std::deque<std::shared_ptr<Node>> filtered;
@@ -267,7 +267,7 @@ std::string Grapher::GenNodes(const std::shared_ptr<Graph> &graph, Node::ID id, 
   return ret.str();
 }
 
-std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
+std::string Grapher::GenGraph(const Graph* graph, int level) {
   std::stringstream ret;
 
   // (sub)graph header
@@ -300,7 +300,7 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 
   // Graph children
   for (const auto &child : graph->children) {
-    ret << GenGraph(child, level + 1);
+    ret << GenGraph(child.get(), level + 1);
   }
   if (level == 0) {
     ret << GenEdges(graph, level + 1);
@@ -311,7 +311,7 @@ std::string Grapher::GenGraph(const std::shared_ptr<Graph> &graph, int level) {
 }
 
 std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, std::string path) {
-  std::string dot = GenGraph(graph);
+  std::string dot = GenGraph(graph.get());
   std::ofstream out(path);
   out << dot;
   out.close();
@@ -351,7 +351,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
   return str.str();
 }
 
-std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph) {
+std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph* graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
   for (const auto &node : graph->nodes_) {
@@ -366,7 +366,7 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &grap
   }
 
   for (const auto &g : graph->children) {
-    auto child_edges = GetAllEdges(g);
+    auto child_edges = GetAllEdges(g.get());
     all_edges.insert(all_edges.end(), child_edges.begin(), child_edges.end());
   }
 

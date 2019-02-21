@@ -128,7 +128,7 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   return ret;
 }
 
-MultiBlock Decl::Generate(const std::shared_ptr<Component> &comp, bool entity) {
+MultiBlock Decl::Generate(const Component* comp, bool entity) {
   MultiBlock ret(1);
 
   if (entity) {

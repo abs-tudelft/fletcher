@@ -36,10 +36,10 @@ struct Grapher {
 
   Grapher() : Grapher(Style::normal()) {};
   explicit Grapher(Style style) : style(std::move(style)) {}
-  std::string GenEdges(const std::shared_ptr<Graph> &comp, int level = 0);
+  std::string GenEdges(const Graph *graph, int level = 0);
   std::string GenNode(const std::shared_ptr<Node> &n, int level = 0);
-  std::string GenNodes(const std::shared_ptr<Graph> &comp, Node::ID id, int level = 0, bool nogroup = false);
-  std::string GenGraph(const std::shared_ptr<Graph> &graph, int level = 0);
+  std::string GenNodes(const Graph *graph, Node::ID id, int level = 0, bool nogroup = false);
+  std::string GenGraph(const Graph *graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
   std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix = "", int level = 0);
 };

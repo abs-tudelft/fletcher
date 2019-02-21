@@ -31,7 +31,7 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   ret << header_line;
 
   // Component declarations
-  auto components_used = GetAllUniqueComponents(comp);
+  auto components_used = GetAllUniqueComponents(comp.get());
   for (const auto &c : components_used) {
     auto comp_decl = Decl::Generate(c);
     ret << comp_decl;

@@ -174,11 +174,11 @@ Palette Palette::normal() {
   static Palette ret;
   ret.black = "#000000";
   ret.white = "#ffffff";
-  ret.gray = "#808080";
-  ret.darker = "#202020";
-  ret.dark = "#404040";
-  ret.light = "#B0B0B0";
-  ret.lighter = "#D0D0D0";
+  ret.gray = "#A0A0A0";
+  ret.dark = "#808080";
+  ret.darker = "#404040";
+  ret.light = "#D0D0D0";
+  ret.lighter = "#E0E0E0";
   ret.num_colors = 7;
   ret.b = {"#ff8181", "#ffe081", "#bfff81", "#81ffd1", "#81ceff", "#9381ff", "#f281ff"};
   ret.m = {"#e85858", "#e8c558", "#9fe858", "#58e8b3", "#58b0e8", "#6c58e8", "#d958e8"};

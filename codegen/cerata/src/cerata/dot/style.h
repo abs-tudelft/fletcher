@@ -49,7 +49,7 @@ inline std::string awq(const std::string &attribute, const std::string &style) {
   }
 }
 
-std::deque<std::shared_ptr<Edge>> GetAllEdges(const std::shared_ptr<Graph> &graph);
+std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph* graph);
 
 struct Palette {
   int num_colors;

@@ -31,9 +31,9 @@ namespace vhdl {
 struct Inst {
   static Block GenerateMappingPair(const MappingPair &p,
                                    size_t ia,
-                                   const std::shared_ptr<Node>& offset_a,
+                                   const std::shared_ptr<Node> &offset_a,
                                    size_t ib,
-                                   const std::shared_ptr<Node>& offset_b,
+                                   const std::shared_ptr<Node> &offset_b,
                                    const std::string &lh_prefix,
                                    const std::string &rh_prefix,
                                    bool a_is_array,
@@ -43,7 +43,7 @@ struct Inst {
                                        const std::shared_ptr<Node> &port,
                                        const std::shared_ptr<Node> &other,
                                        size_t array_index);
-  static MultiBlock Generate(const std::shared_ptr<Graph> &graph);
+  static MultiBlock Generate(const Graph *graph);
   static Block GeneratePortMaps(const std::shared_ptr<Node> &port);
   static Block GenerateGenericMap(const std::shared_ptr<Parameter> &par);
 };

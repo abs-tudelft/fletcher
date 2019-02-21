@@ -38,8 +38,8 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
         if (!(*edge->src)->IsPort() || !(*edge->dst)->IsPort()) {
           continue;
         }
-        // If both sides of the edges are a port node on this component, continue.
-        if (((*edge->src)->parent() == comp.get()) && ((*edge->dst)->parent() == comp.get())) {
+        // If either sides of the edges are a port node on this component, continue.
+        if (((*edge->src)->parent() == comp.get()) || ((*edge->dst)->parent() == comp.get())) {
           continue;
         }
         // If the destination is already resolved, continue.

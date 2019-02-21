@@ -84,7 +84,7 @@ Artery::Artery(std::shared_ptr<Node> address_width,
     auto inst = Instance::Make("brav" + sw->ToString() + "_inst", BusReadArbiter());
     inst->par("bus_addr_width") <<= address_width_;
     inst->par("bus_data_width") <<= sw;
-    AddChild(inst);
+    AddChild(std::move(inst));
   }
 }
 

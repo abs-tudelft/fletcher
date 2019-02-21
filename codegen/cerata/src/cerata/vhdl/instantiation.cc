@@ -225,7 +225,7 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
   return ret;
 }
 
-MultiBlock Inst::Generate(const std::shared_ptr<Graph> &graph) {
+MultiBlock Inst::Generate(const Graph* graph) {
   MultiBlock ret(1);
 
   auto pinst = Cast<Instance>(graph);

@@ -51,6 +51,12 @@ bool contains(const std::deque<T *> &list, const T *item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
+/// @brief Return true if list contains item, false otherwise.
+template<typename T>
+bool contains(const std::deque<const T *> &list, const T *item) {
+  return std::find(std::begin(list), std::end(list), item) != std::end(list);
+}
+
 /// @brief Append list b to list a.
 template<typename T>
 void append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared_ptr<T>> &list_b) {

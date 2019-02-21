@@ -56,11 +56,6 @@ TEST(Bus, Artery) {
   auto comp_inst = Instance::Make(comp);
   auto art_inst = ArteryInstance::Make(artery);
 
-  // Create a component
-  auto top = Component::Make("top", {}, {}, {});
-  top->AddChild(comp_inst);
-  top->AddChild(art_inst);
-
   // Get the read data ports with the specified widths
   auto rd8 = art_inst->read_data(intl<8>());
   auto rd32 = art_inst->read_data(intl<32>());
@@ -74,14 +69,19 @@ TEST(Bus, Artery) {
   rd32 <<= comp_inst->port("e");
   rd128 <<= comp_inst->port("f");
 
-  auto artery_design = cerata::vhdl::Design(artery);
+  // Create a component
+  auto top = Component::Make("top", {}, {}, {});
+  top->AddChild(std::move(comp_inst));
+  top->AddChild(std::move(art_inst));
+
+  //auto artery_design = cerata::vhdl::Design(artery);
   auto top_design = cerata::vhdl::Design(top);
 
-  std::cout << artery_design.Generate().ToString();
+  //std::cout << artery_design.Generate().ToString();
   std::cout << top_design.Generate().ToString();
 
   cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(artery, "artery.dot");
+  //std::cout << dot.GenFile(artery, "artery.dot");
   std::cout << dot.GenFile(top, "graph.dot");
 }
 

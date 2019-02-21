@@ -69,8 +69,8 @@ struct Artery : Component {
 struct ArteryInstance : Instance {
   explicit ArteryInstance(std::string name, const std::shared_ptr<Artery> &comp)
       : Instance(std::move(name), std::dynamic_pointer_cast<Component>(comp)) {}
-  static std::shared_ptr<ArteryInstance> Make(const std::shared_ptr<Artery> &comp) {
-    return std::make_shared<ArteryInstance>(comp->name() + "_inst", comp);
+  static std::unique_ptr<ArteryInstance> Make(const std::shared_ptr<Artery> &comp) {
+    return std::make_unique<ArteryInstance>(comp->name() + "_inst", comp);
   }
   std::shared_ptr<ArrayPort> read_data(const std::shared_ptr<Node> &width);
   std::shared_ptr<ArrayPort> read_request(const std::shared_ptr<Node> &width);

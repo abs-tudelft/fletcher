@@ -26,7 +26,7 @@
 namespace cerata {
 
 TEST(VHDL, ComponentDecl) {
-  auto code = vhdl::Decl::Generate(GetAllPortTypesComponent());
+  auto code = vhdl::Decl::Generate(GetAllPortTypesComponent().get());
   std::cout << code.ToString() << std::endl;
 }
 

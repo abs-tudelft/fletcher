@@ -33,7 +33,7 @@ MultiBlock Design::Generate() {
   // This currently modifies the original structure.
 
   // Sanitize component
-  //Transformation::ResolvePortToPort(comp);
+  Transformation::ResolvePortToPort(comp);
 
   if (!head.empty()) {
     Block h;
@@ -41,7 +41,7 @@ MultiBlock Design::Generate() {
     ret << h;
   }
 
-  auto decl = Decl::Generate(comp, true);
+  auto decl = Decl::Generate(comp.get(), true);
   auto arch = Arch::Generate(comp);
 
 

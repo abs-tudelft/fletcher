@@ -27,14 +27,14 @@ struct Mantle : Component {
   /// The Core instantiated by this Mantle
   std::shared_ptr<Core> user_core_;
   /// The actual instantiated Core
-  std::shared_ptr<Instance> user_core_inst_;
+  Instance *user_core_inst_;
   /// The schema set on which this Mantle is based
   std::shared_ptr<SchemaSet> schema_set_;
 
   /// The ColumnReader instances
-  std::vector<std::shared_ptr<Instance>> column_readers;
+  std::vector<Instance *> column_readers;
   /// The ColumnWriter instances
-  std::vector<std::shared_ptr<Instance>> column_writers;
+  std::vector<Instance *> column_writers;
 
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set);

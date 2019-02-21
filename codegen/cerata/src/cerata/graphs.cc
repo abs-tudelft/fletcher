@@ -74,11 +74,11 @@ std::shared_ptr<Node> Graph::Get(Node::ID node_id, const std::string &node_name)
       "Node of type " + ToString(node_id) + " name " + node_name + " does not exist on Graph " + name());
 }
 
-Graph &Graph::AddChild(const std::shared_ptr<Graph> &child) {
+Graph &Graph::AddChild(std::unique_ptr<Graph> child) {
   if (!contains(child->parents, this)) {
     child->parents.push_back(this);
   }
-  children.push_back(child);
+  children.push_back(std::move(child));
   return *this;
 }
 
@@ -90,17 +90,6 @@ size_t Graph::CountNodes(Node::ID id) const {
     }
   }
   return count;
-}
-
-std::shared_ptr<Graph> Graph::Copy() const {
-  auto ret = std::make_shared<Graph>(name(), this->id_);
-  for (const auto &child : children) {
-    ret->AddChild(child->Copy());
-  }
-  for (const auto &node : nodes_) {
-    ret->AddNode(node->Copy());
-  }
-  return ret;
 }
 
 std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
@@ -129,7 +118,7 @@ std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
   return std::dynamic_pointer_cast<Parameter>(Get(Node::PARAMETER, signal_name));
 }
 
-std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
+std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : nodes_) {
     result.push_back(n);
@@ -146,7 +135,7 @@ std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() {
   return result;
 }
 
-std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::ID> ids) {
+std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::ID> ids) const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : nodes_) {
     for (const auto &id : ids) {
@@ -159,12 +148,12 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<N
   return result;
 }
 
-std::shared_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
-  return std::make_shared<Instance>(name, component);
+std::unique_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
+  return std::make_unique<Instance>(name, component);
 }
 
-std::shared_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
-  return std::make_shared<Instance>(component->name() + "_inst", component);
+std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
+  return std::make_unique<Instance>(component->name() + "_inst", component);
 }
 
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
@@ -213,33 +202,32 @@ Graph &Instance::AddNode(const std::shared_ptr<Node> &node) {
   }
 }
 
-std::deque<std::shared_ptr<Component>> GetAllUniqueComponents(const std::shared_ptr<Graph> &graph) {
-  std::deque<std::shared_ptr<Component>> ret;
+std::deque<const Component *> GetAllUniqueComponents(const Graph *graph) {
+  std::deque<const Component *> ret;
   for (const auto &g : graph->children) {
-    std::optional<std::shared_ptr<Component>> comp;
+    Component *comp = nullptr;
     if (g->id_ == Graph::COMPONENT) {
       // Graph itself is the component to potentially insert
-      comp = Cast<Component>(g);
+      comp = (*Cast<Component>(g.get()));
     } else if (g->id_ == Graph::INSTANCE) {
       // Graph is an instance, its component is the component to potentially insert
-      comp = (*Cast<Instance>(g))->component;
+      comp = (*Cast<Instance>(g.get()))->component.get();
     }
-    if (comp) {
-      if (!contains(ret, *comp)) {
+    if (comp != nullptr) {
+      if (!contains(ret, comp)) {
         // If so, push it onto the deque
-        ret.push_back(*comp);
+        ret.push_back(comp);
       }
     }
   }
   return ret;
 }
 
-std::deque<std::shared_ptr<Instance>> Component::GetAllInstances() {
-  std::deque<std::shared_ptr<Instance>> ret;
+std::deque<Instance *> Component::GetAllInstances() const {
+  std::deque<Instance *> ret;
   for (const auto &g : children) {
-    std::optional<std::shared_ptr<Instance>> inst;
     if (g->id_ == Graph::INSTANCE) {
-      inst = Cast<Instance>(g);
+      auto inst = Cast<Instance>(g.get());
       if (inst) {
         ret.push_back(*inst);
       }
@@ -248,9 +236,9 @@ std::deque<std::shared_ptr<Instance>> Component::GetAllInstances() {
   return ret;
 }
 
-Graph &Component::AddChild(const std::shared_ptr<Graph> &child) {
+Graph &Component::AddChild(std::unique_ptr<Graph> child) {
   // We may only add instance children by definition
-  auto inst = Cast<Instance>(child);
+  auto inst = Cast<Instance>(child.get());
 
   // If the cast was successful...
   if (inst) {
@@ -260,25 +248,12 @@ Graph &Component::AddChild(const std::shared_ptr<Graph> &child) {
     }
 
     // Add the child graph
-    children.push_back(child);
+    children.push_back(std::move(child));
     return *this;
   } else {
     // Otherwise throw an error.
     throw std::runtime_error("Component may only have Instance children. " + child->name() + " is not an Instance.");
   }
-}
-
-std::shared_ptr<Graph> Component::Copy() const {
-  // TODO(johanpel): properly copy everything, including edges.
-
-  auto ret = std::make_shared<Component>(name());
-  for (const auto &child : this->children) {
-    ret->AddChild(*Cast<Instance>(child));
-  }
-  for (const auto &node : this->nodes_) {
-    ret->AddNode(node->Copy());
-  }
-  return ret;
 }
 
 }  // namespace cerata
