@@ -36,6 +36,7 @@ inline std::string tab(int n) {
 
 inline std::string sanitize(std::string in) {
   std::replace(in.begin(), in.end(), ':', '_');
+  std::replace(in.begin(), in.end(), '-', '_');
   std::replace(in.begin(), in.end(), '"', '_');
   return in;
 }
@@ -133,6 +134,7 @@ struct Style {
     str port_to_sig;
     str sig_to_port;
     str port_to_port;
+    str param;
     str stream;
     str lit;
     str expr;

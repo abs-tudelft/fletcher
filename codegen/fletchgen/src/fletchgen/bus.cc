@@ -73,17 +73,29 @@ Artery::Artery(std::shared_ptr<Node> address_width,
       slave_widths_(std::move(slave_widths)) {
   AddNode(bus_addr_width());
   AddNode(bus_data_width());
-  for (const auto& sw : slave_widths_) {
+  // For each required slave width
+  for (const auto &sw : slave_widths_) {
+    // Create parameters
     auto par = Parameter::Make("NUM_SLV_W" + sw->ToString(), integer());
     AddNode(par);
+
+    // Create ports
     auto req = ArrayPort::Make("bus" + sw->ToString() + "_rreq", bus_read_request(), par, Port::IN);
-    auto dat = ArrayPort::Make("bus" + sw->ToString() + "_rdat", bus_read_data(sw), par, Port::IN);
+    auto dat = ArrayPort::Make("bus" + sw->ToString() + "_rdat", bus_read_data(sw), par, Port::OUT);
     AddNode(req);
     AddNode(dat);
 
+    // Create a bus read arbiter vector instance
     auto inst = Instance::Make("brav" + sw->ToString() + "_inst", BusReadArbiter());
+
+    // Set its parameters
     inst->par("bus_addr_width") <<= address_width_;
     inst->par("bus_data_width") <<= sw;
+
+    // Connect its ports
+    inst->aport("bsv_rreq") <<= req;
+    dat <<= inst->aport("bsv_rdat");
+
     AddChild(std::move(inst));
   }
 }

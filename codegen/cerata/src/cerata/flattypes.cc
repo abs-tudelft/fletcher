@@ -106,7 +106,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
   return ret.str();
 }
 
-bool contains(const std::deque<FlatType> &flat_types_list, const Type *type) {
+bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (const auto &ft : flat_types_list) {
     if (ft.type_ == type) {
       return true;
@@ -115,7 +115,7 @@ bool contains(const std::deque<FlatType> &flat_types_list, const Type *type) {
   return false;
 }
 
-size_t index_of(const std::deque<FlatType> &flat_types_list, const Type *type) {
+size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (size_t i = 0; i < flat_types_list.size(); i++) {
     if (flat_types_list[i].type_ == type) {
       return i;

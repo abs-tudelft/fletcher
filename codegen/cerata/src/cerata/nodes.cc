@@ -345,7 +345,6 @@ static std::shared_ptr<Node> EliminateZeroOne(std::shared_ptr<Node> node) {
         break;
       }
       case Expression::SUB: {
-        if (ret->lhs == intl<0>()) return node;
         if (ret->rhs == intl<0>()) return ret->lhs;
         break;
       }
@@ -357,7 +356,7 @@ static std::shared_ptr<Node> EliminateZeroOne(std::shared_ptr<Node> node) {
         break;
       }
       case Expression::DIV: {
-        if (ret->lhs == intl<0>()) return intl<0>();
+        if (ret->lhs == intl<0>() && ret->rhs != intl<0>()) return intl<0>();
         if (ret->rhs == intl<0>()) throw std::runtime_error("Division by 0.");
         if (ret->rhs == intl<1>()) return ret->lhs;
         break;
@@ -394,16 +393,12 @@ std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, const std::opt
 }
 
 std::string Expression::ToString() {
-  std::string ls;
-  std::string op;
-  std::string rs;
-
   auto min = Minimize(shared_from_this());
   auto mine = Cast<Expression>(min);
   if (mine) {
-    ls = (*mine)->lhs->ToString();
-    op = cerata::ToString(operation);
-    rs = (*mine)->rhs->ToString();
+    auto ls = (*mine)->lhs->ToString();
+    auto op = cerata::ToString(operation);
+    auto rs = (*mine)->rhs->ToString();
     return ls + op + rs;
   } else {
     return min->ToString();
@@ -561,6 +556,8 @@ void ArrayNode::AddOutput(const std::shared_ptr<Edge> &edge) {
     single_edge_ = edge;
   }
 }
+
+std::shared_ptr<Edge> ArrayNode::size_edge() const { return size_; }
 
 std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
                                            std::shared_ptr<Type> type,

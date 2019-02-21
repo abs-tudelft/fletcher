@@ -26,6 +26,7 @@
 
 #include "cerata/graphs.h"
 #include "cerata/types.h"
+#include "cerata/nodes.h"
 
 #include "fletchgen/basic_types.h"
 
@@ -74,6 +75,11 @@ struct ArteryInstance : Instance {
   }
   std::shared_ptr<ArrayPort> read_data(const std::shared_ptr<Node> &width);
   std::shared_ptr<ArrayPort> read_request(const std::shared_ptr<Node> &width);
+
+  template<int W>
+  std::shared_ptr<ArrayPort> read_data() {
+    return read_data(cerata::intl<W>());
+  }
 };
 
 }  // namespace fletchgen

@@ -47,7 +47,7 @@ bool contains(const std::deque<std::shared_ptr<T>> &list, const std::shared_ptr<
 
 /// @brief Return true if list contains item, false otherwise.
 template<typename T>
-bool contains(const std::deque<T *> &list, const T *item) {
+bool contains(const std::deque<T *> &list, T *item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 

@@ -29,7 +29,7 @@ static std::string ToHex(const std::shared_ptr<Node> &n) {
   return ret.str();
 }
 
-std::string Grapher::GenEdges(const Graph* graph, int level) {
+std::string Grapher::GenEdges(const Graph *graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
   int ei = 0;
@@ -42,6 +42,11 @@ std::string Grapher::GenEdges(const Graph* graph, int level) {
       if (e->IsComplete()) {
         auto dst = *e->dst;
         auto src = *e->src;
+
+        // Don't draw literals
+        if (dst->IsLiteral() || src->IsLiteral()) {
+          continue;
+        }
 
         // Draw edge
         ret << tab(level);
@@ -101,6 +106,7 @@ std::string Grapher::GenEdges(const Graph* graph, int level) {
             sb << style.edge.sig_to_port;
           }
         } else if (src->IsParameter() && config.nodes.parameters) {
+          sb << style.edge.param;
         } else if (src->IsLiteral() && config.nodes.literals) {
           sb << style.edge.lit;
         } else if (src->IsExpression() && config.nodes.expressions) {
@@ -230,7 +236,6 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
     // Indent
     str << tab(level);
     str << NodeName(n);
-    if (NodeName(n) == "Auint8_cr_inst_Literal_\\") throw std::runtime_error("bla");
     // Draw style
     str << " [";
     str << style.GetStyle(n);
@@ -239,9 +244,9 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
   return str.str();
 }
 
-std::string Grapher::GenNodes(const Graph* graph, Node::ID id, int level, bool nogroup) {
+std::string Grapher::GenNodes(const Graph *graph, Node::ID id, int level, bool nogroup) {
   std::stringstream ret;
-  auto nodes = graph->implicit_nodes();
+  auto nodes = graph->GetNodes();
   std::deque<std::shared_ptr<Node>> filtered;
   for (const auto &n : nodes) {
     if (n->id() == id) {
@@ -267,7 +272,7 @@ std::string Grapher::GenNodes(const Graph* graph, Node::ID id, int level, bool n
   return ret.str();
 }
 
-std::string Grapher::GenGraph(const Graph* graph, int level) {
+std::string Grapher::GenGraph(const Graph *graph, int level) {
   std::stringstream ret;
 
   // (sub)graph header
@@ -288,7 +293,8 @@ std::string Grapher::GenGraph(const Graph* graph, int level) {
 
   // Nodes
   ret << GenNodes(graph, Node::EXPRESSION, level + 1);
-  ret << GenNodes(graph, Node::LITERAL, level + 1);
+  // if (config.nodes.literals)
+  //   ret << GenNodes(graph, Node::LITERAL, level + 1);
   ret << GenNodes(graph, Node::PARAMETER, level + 1);
   ret << GenNodes(graph, Node::PORT, level + 1);
   ret << GenNodes(graph, Node::ARRAY_PORT, level + 1);
@@ -351,7 +357,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
   return str.str();
 }
 
-std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph* graph) {
+std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
   for (const auto &node : graph->nodes_) {
@@ -383,15 +389,8 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
     ret << "Anon_" + ToString(n->id()) + "_" + ToHex(n);
   } else if (!n->name().empty()) {
     ret << n->name();
-  } else {
-
-    auto lit = Cast<Literal>(n);
-    if (lit) {
-      ret << "Anon_" + ToString(n->id()) + "_" + (*lit)->ToString();
-    } else {
-      ret << "Anon_" + ToString(n->id()) + "_" + ToHex(n);
-    }
   }
+
   return sanitize(ret.str()) + suffix;
 }
 

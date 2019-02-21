@@ -68,10 +68,10 @@ void Flatten(std::deque<FlatType> *list,
 std::deque<FlatType> Flatten(const Type *type);
 
 /// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
-bool contains(const std::deque<FlatType> &flat_types_list, const Type *type);
+bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
 
 /// @brief Return the index of some Type in a list of FlatTypes.
-size_t index_of(const std::deque<FlatType> &flat_types_list, const Type *type);
+size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
 
 
 /// @brief Convert a list of FlatTypes to a human-readable string.

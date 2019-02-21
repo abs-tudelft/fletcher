@@ -34,12 +34,13 @@ Style Style::normal() {
   ret.nodegroup.base = "filled";
   ret.nodegroup.color = Palette::normal().lighter;
 
-  ret.edge.color.stream = Palette::normal().b[3];
+  ret.edge.color.stream = Palette::normal().d[3];
 
   ret.edge.base = "penwidth=1";
   ret.edge.port_to_sig = "dir=forward";
   ret.edge.sig_to_port = "dir=forward";
   ret.edge.port_to_port = "dir=forward";
+  ret.edge.param = "style=dotted, arrowhead=none, arrowtail=none";
   ret.edge.stream = "penwidth=3";
   ret.edge.lit = "style=dotted, arrowhead=none, arrowtail=none";
   ret.edge.expr = "style=dotted, arrowhead=none, arrowtail=none";
@@ -109,7 +110,7 @@ bool Config::operator()(const std::shared_ptr<Node> &node) {
 }
 
 Config Config::streams() {
-  Config ret = Config::all();
+  static Config ret;
   ret.nodes.parameters = false;
   ret.nodes.literals = false;
   ret.nodes.signals = true;
@@ -126,16 +127,15 @@ Config Config::streams() {
 
 Config Config::normal() {
   static Config ret;
-
   ret.nodes.parameters = true;
-  ret.nodes.literals = true;
+  ret.nodes.literals = false;
   ret.nodes.signals = true;
   ret.nodes.ports = true;
-  ret.nodes.expressions = true;
+  ret.nodes.expressions = false;
 
-  ret.nodes.expand.record = false;
-  ret.nodes.expand.stream = false;
-  ret.nodes.expand.expression = false;
+  ret.nodes.expand.record = true;
+  ret.nodes.expand.stream = true;
+  ret.nodes.expand.expression = true;
 
   ret.nodes.types.clock = true;
   ret.nodes.types.reset = true;

@@ -375,6 +375,8 @@ class ArrayNode : public Node {
   void increment();
   /// @brief Set the array size of this ArrayNode. The size Node must appear as a node on the parent Graph.
   std::shared_ptr<Edge> SetSize(std::shared_ptr<Node> size);
+  /// @brief Return the Edge to the Node representing the number of edges on the array side of this ArrayNode.
+  std::shared_ptr<Edge> size_edge() const;
   /// @brief Return the Node representing the number of edges on the array side of this ArrayNode.
   std::shared_ptr<Node> size() const;
   /// @brief Return the inputs to this node.

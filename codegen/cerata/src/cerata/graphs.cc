@@ -16,7 +16,9 @@
 
 #include <string>
 #include <memory>
+#include <map>
 
+#include "cerata/utils.h"
 #include "cerata/nodes.h"
 #include "cerata/edges.h"
 
@@ -118,10 +120,9 @@ std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
   return std::dynamic_pointer_cast<Parameter>(Get(Node::PARAMETER, signal_name));
 }
 
-std::deque<std::shared_ptr<Node>> Graph::implicit_nodes() const {
+std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : nodes_) {
-    result.push_back(n);
     for (const auto &i : n->inputs()) {
       if (i->src) {
         if (!(*i->src)->parent()) {
@@ -158,36 +159,39 @@ std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
-  // Remember what nodes we have already copied, e.g. in case a parameter has been copied by an ArrayPort copy,
-  // we don't have to copy it again.
-  std::deque<Node *> copied;
+  // Create a map that maps an "old" node to a "new" node.
+  std::map<std::shared_ptr<Node>, std::shared_ptr<Node>> copied;
   // Make copies of ports
   for (const auto &port : component->GetNodesOfType<Port>()) {
     auto inst_port = port->Copy();
     AddNode(inst_port);
-    copied.push_back(port.get());
+    copied[port] = inst_port;
   }
   // Make copies of array ports
   for (const auto &array_port : component->GetNodesOfType<ArrayPort>()) {
-    auto inst_size = array_port->size()->Copy();
+    // Make a copy of the port
     auto inst_port = array_port->Copy();
-    (*Cast<ArrayPort>(inst_port))->SetSize(inst_size);
     AddNode(inst_port);
-    AddNode(inst_size);
-    // Remember we've copied the array port and its size node
-    copied.push_back(array_port.get());
-    copied.push_back(array_port->size().get());
-  }
-  // Make copies of parameters
-  for (const auto &par : component->GetNodesOfType<Parameter>()) {
-    if (!contains(copied, (*Cast<Node>(par)).get())) {
-      AddNode(par->Copy());
+    copied[array_port] = inst_port;
+
+    // Figure out whether the size node was already copied
+    std::shared_ptr<Node> inst_size;
+    if (copied.count(array_port->size()) > 0) {
+      inst_size = copied[array_port->size()];
+    } else {
+      inst_size = array_port->size()->Copy();
+      AddNode(inst_size);
+      copied[array_port->size()] = inst_size;
     }
+    // Set the size for the copied node
+    (*Cast<ArrayPort>(inst_port))->SetSize(inst_size);
   }
-  // Make copies of literals
-  for (const auto &lit : component->GetNodesOfType<Literal>()) {
-    if (!contains(copied, (*Cast<Node>(lit)).get())) {
-      AddNode(lit->Copy());
+  // Make copies of parameters and literals
+  for (const auto &node : component->GetNodesOfTypes({Node::PARAMETER, Node::LITERAL})) {
+    if (copied.count(node) == 0) {
+      auto inst_node = node->Copy();
+      AddNode(inst_node);
+      copied[node] = inst_node;
     }
   }
 }

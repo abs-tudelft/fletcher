@@ -23,6 +23,25 @@
 
 namespace cerata {
 
+std::shared_ptr<Component> GetArrayToArrayComponent() {
+  auto data = Vector::Make<8>();
+
+  auto top_size = Parameter::Make("top_size", integer(), intl<0>());
+  auto top_array = ArrayPort::Make("top_array", data, top_size, Term::IN);
+  auto top_comp = Component::Make("top_comp", {top_size}, {top_array}, {});
+
+  auto child_size = Parameter::Make("child_size", integer(), intl<0>());
+  auto child_array = ArrayPort::Make("child_array", data, child_size, Term::IN);
+  auto child_comp = Component::Make("child_comp", {child_size}, {child_array}, {});
+  auto child_inst = Instance::Make(child_comp);
+
+  child_inst->aport("child_array") <<= top_comp->aport("top_array");
+
+  top_comp->AddChild(std::move(child_inst));
+
+  return top_comp;
+}
+
 std::shared_ptr<Component> GetArrayComponent() {
   auto size = Parameter::Make("size", integer(), intl<0>());
   auto data = Vector::Make<8>();

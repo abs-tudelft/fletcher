@@ -46,9 +46,6 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   /// @brief Return true if this graph is an instance, false otherwise.
   bool IsInstance() const { return id_ == INSTANCE; }
 
-  /// @brief Return all graph nodes, including any nodes that have not explicitly been added to the graph.
-  std::deque<std::shared_ptr<Node>> implicit_nodes() const;
-
   /**
    * @brief Construct a new graph
    * @param name    The name of the graph
@@ -93,6 +90,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::deque<std::shared_ptr<Node>> GetNodes() const { return nodes_; }
   /// @brief Get all nodes of a specific type.
   std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
+  /// @brief Return all graph nodes that do not explicitly belong to the graph.
+  std::deque<std::shared_ptr<Node>> GetImplicitNodes() const;
 
   /// @brief Add a child component
   virtual Graph &AddChild(std::unique_ptr<Graph> child);

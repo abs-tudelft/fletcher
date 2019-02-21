@@ -226,9 +226,9 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
   }
 
   size_t idx_stream = 0;
-  auto idx_data = index_of(conversion->flat_b(), incomplete_data().get());
-  auto idx_dvalid = index_of(conversion->flat_b(), dvalid().get());
-  auto idx_last = index_of(conversion->flat_b(), last().get());
+  auto idx_data = IndexOfFlatType(conversion->flat_b(), incomplete_data().get());
+  auto idx_dvalid = IndexOfFlatType(conversion->flat_b(), dvalid().get());
+  auto idx_last = IndexOfFlatType(conversion->flat_b(), last().get());
 
   auto flat_stream = conversion->flat_a();
   for (size_t i = 0; i < flat_stream.size(); i++) {

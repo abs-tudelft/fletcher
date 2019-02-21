@@ -209,7 +209,9 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       auto pairs = tm->GetUniqueMappingPairs();
       // Figure out any array indices
       size_t idx = 0;
-      if (port->IsArray()) {
+      if (port->IsArray() && other->IsArray()) {
+
+      } else if (port->IsArray()) {
         idx = (*Cast<ArrayNode>(port))->IndexOf(edge);
       } else if (other->IsArray()) {
         idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
@@ -225,7 +227,7 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
   return ret;
 }
 
-MultiBlock Inst::Generate(const Graph* graph) {
+MultiBlock Inst::Generate(const Graph *graph) {
   MultiBlock ret(1);
 
   auto pinst = Cast<Instance>(graph);
