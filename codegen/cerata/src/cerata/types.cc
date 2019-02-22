@@ -79,6 +79,10 @@ void Type::AddMapper(std::shared_ptr<TypeMapper> mapper) {
   }
 }
 
+std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const std::shared_ptr<Type> &other) const {
+  return GetMapper(other.get());
+}
+
 std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) const {
   // Search for an explicit type mapper.
   for (const auto &m : mappers_) {
@@ -267,7 +271,7 @@ bool Vector::IsEqual(const Type *other) const {
     if (width_ && other->width()) {
       // TODO(johanpel): implement proper width checking..
       //if (*width_ == *other->width()) {
-        return true;
+      return true;
       //}
     }
   }

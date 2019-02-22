@@ -12,29 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "cerata/objects.h"
 
-#include <algorithm>
 #include <string>
 #include <memory>
 
 #include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
-
-#include "cerata/vhdl/block.h"
+#include "cerata/arrays.h"
+#include "cerata/utils.h"
 
 namespace cerata {
-namespace vhdl {
 
-struct Decl {
-  static std::string Generate(const Type *type, const std::shared_ptr<Node> &multiplier = intl<1>());
-  static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
-  static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
-  static Block Generate(const std::shared_ptr<PortArray> &port, int depth = 0);
-  static Block Generate(const std::shared_ptr<Signal> &sig, int depth = 0);
-  static MultiBlock Generate(const Component *comp, bool entity = false);
-};
+template<>
+Object::ID id_of<Node>() { return Object::NODE; }
+template<>
+Object::ID id_of<Port>() { return Object::NODE; }
+template<>
+Object::ID id_of<NodeArray>() { return Object::ARRAY; }
+template<>
+Object::ID id_of<PortArray>() { return Object::ARRAY; }
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // cerata;

@@ -93,7 +93,7 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
           }
         }
 
-        if ((src->IsPort() || src->IsArrayPort()) && config.nodes.ports) {
+        if ((src->IsPort()) && config.nodes.ports) {
           if (dst->IsSignal()) {
             // Port to signal
             sb << style.edge.port_to_sig;
@@ -297,7 +297,7 @@ std::string Grapher::GenGraph(const Graph *graph, int level) {
   //   ret << GenNodes(graph, Node::LITERAL, level + 1);
   ret << GenNodes(graph, Node::PARAMETER, level + 1);
   ret << GenNodes(graph, Node::PORT, level + 1);
-  ret << GenNodes(graph, Node::ARRAY_PORT, level + 1);
+  //ret << GenNodes(graph, Node::ARRAY_PORT, level + 1);
   ret << GenNodes(graph, Node::SIGNAL, level + 1, true);
 
   if (!graph->children.empty()) {
@@ -360,7 +360,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
-  for (const auto &node : graph->nodes_) {
+  for (const auto &node : graph->GetAll<Node>()) {
     auto out_edges = node->sinks();
     for (const auto &e : out_edges) {
       all_edges.push_back(e);

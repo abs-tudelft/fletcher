@@ -24,56 +24,61 @@
 
 namespace cerata {
 
-std::shared_ptr<Component> Component::Make(std::string name,
-                                           std::initializer_list<std::shared_ptr<Node>> parameters,
-                                           std::initializer_list<std::shared_ptr<Node>> ports,
-                                           std::initializer_list<std::shared_ptr<Node>> signals) {
+std::shared_ptr<Component> Component::Make(std::string name, std::initializer_list<std::shared_ptr<Object>> objects) {
   auto ret = std::make_shared<Component>(name);
-  for (const auto &param : parameters) {
-    // Check if actually a param
-    if (!param->IsParameter()) {
-      throw std::runtime_error("Node " + param->ToString() + " is not a parameter node.");
-    }
-    auto p = *Cast<Parameter>(param);
-    ret->AddNode(p);
-    // If the parameter node has edges
-    if (p->input()) {
-      // It has been assigned
-      auto edge = *p->input();
-      auto val = edge->src;
-      if (val) {
-        // Add the value to the node list
-        ret->AddNode(*val);
+  for (const auto &object : objects) {
+    // If there are any parameter nodes, also add its input to the component graph
+    auto ppar = Cast<Parameter>(object);
+    if (ppar) {
+      auto par = *ppar;
+      ret->AddObject(par);
+      // If the parameter node has edges
+      if (par->input()) {
+        // It has been assigned
+        auto edge = *par->input();
+        auto val = edge->src;
+        if (val) {
+          // Add the value to the node list
+          ret->AddObject(*val);
+        }
+      } else if (par->default_value) {
+        // Otherwise assign default value if any
+        par <<= *par->default_value;
+        ret->AddObject(*par->default_value);
       }
-    } else if (p->default_value) {
-      // Otherwise assign default value if any
-      p <<= *p->default_value;
-      ret->AddNode(*p->default_value);
+    } else {
+      ret->AddObject(object);
     }
-  }
-  for (const auto &port : ports) {
-    ret->AddNode(port);
-  }
-  for (const auto &signal : signals) {
-    ret->AddNode(signal);
   }
   return ret;
 }
 
-Graph &Graph::AddNode(const std::shared_ptr<Node> &node) {
-  nodes_.push_back(node);
-  node->SetParent(this);
+Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
+  objects_.push_back(obj);
+  obj->SetParent(this);
   return *this;
 }
 
-std::shared_ptr<Node> Graph::Get(Node::ID node_id, const std::string &node_name) const {
-  for (const auto &n : nodes_) {
-    if ((n->name() == node_name) && (n->Is(node_id))) {
-      return n;
-    }
+std::shared_ptr<NodeArray> Graph::GetArray(NodeArray::ID array_id, const std::string &array_name) const {
+  for (const auto &a : GetAll<NodeArray>()) {
+    if (a->name() == array_name)
+      if (a->id_ == array_id) {
+        return a;
+      }
   }
   throw std::runtime_error(
-      "Node of type " + ToString(node_id) + " name " + node_name + " does not exist on Graph " + name());
+      "NodeArray " + array_name + " does not exist on Graph " + this->name());
+}
+
+std::shared_ptr<Node> Graph::GetNode(Node::ID node_id, const std::string &node_name) const {
+  for (const auto &n : GetAll<Node>()) {
+    if (n->name() == node_name)
+      if (n->Is(node_id)) {
+        return n;
+      }
+  }
+  throw std::runtime_error(
+      "Node " + node_name + " does not exist on Graph " + this->name());
 }
 
 Graph &Graph::AddChild(std::unique_ptr<Graph> child) {
@@ -86,7 +91,7 @@ Graph &Graph::AddChild(std::unique_ptr<Graph> child) {
 
 size_t Graph::CountNodes(Node::ID id) const {
   size_t count = 0;
-  for (const auto &n : nodes_) {
+  for (const auto &n : GetAll<Node>()) {
     if (n->Is(id)) {
       count++;
     }
@@ -96,7 +101,7 @@ size_t Graph::CountNodes(Node::ID id) const {
 
 std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
   std::deque<std::shared_ptr<Node>> result;
-  for (const auto &n : nodes_) {
+  for (const auto &n : GetAll<Node>()) {
     if (n->Is(id)) {
       result.push_back(n);
     }
@@ -105,24 +110,21 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
 }
 
 std::shared_ptr<Port> Graph::port(const std::string &port_name) const {
-  return std::dynamic_pointer_cast<Port>(Get(Node::PORT, port_name));
+  return std::dynamic_pointer_cast<Port>(GetNode(Node::PORT, port_name));
 }
-
 std::shared_ptr<Signal> Graph::sig(const std::string &signal_name) const {
-  return std::dynamic_pointer_cast<Signal>(Get(Node::SIGNAL, signal_name));
+  return std::dynamic_pointer_cast<Signal>(GetNode(Node::SIGNAL, signal_name));
 }
-
-std::shared_ptr<ArrayPort> Graph::aport(const std::string &port_name) const {
-  return std::dynamic_pointer_cast<ArrayPort>(Get(Node::ARRAY_PORT, port_name));
-}
-
 std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
-  return std::dynamic_pointer_cast<Parameter>(Get(Node::PARAMETER, signal_name));
+  return std::dynamic_pointer_cast<Parameter>(GetNode(Node::PARAMETER, signal_name));
+}
+std::shared_ptr<PortArray> Graph::porta(const std::string &port_name) const {
+  return std::dynamic_pointer_cast<PortArray>(GetArray(NodeArray::PORT, port_name));
 }
 
 std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
   std::deque<std::shared_ptr<Node>> result;
-  for (const auto &n : nodes_) {
+  for (const auto &n : GetAll<Node>()) {
     for (const auto &i : n->sources()) {
       if (i->src) {
         if (!(*i->src)->parent()) {
@@ -138,7 +140,7 @@ std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
 
 std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::ID> ids) const {
   std::deque<std::shared_ptr<Node>> result;
-  for (const auto &n : nodes_) {
+  for (const auto &n : GetAll<Node>()) {
     for (const auto &id : ids) {
       if (n->id() == id) {
         result.push_back(n);
@@ -160,50 +162,49 @@ std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
   // Create a map that maps an "old" node to a "new" node.
-  std::map<std::shared_ptr<Node>, std::shared_ptr<Node>> copied;
+  std::map<std::shared_ptr<Object>, std::shared_ptr<Object>> copied;
   // Make copies of ports
-  for (const auto &port : component->GetNodesOfType<Port>()) {
+  for (const auto &port : component->GetAll<Port>()) {
     auto inst_port = port->Copy();
-    AddNode(inst_port);
+    AddObject(inst_port);
     copied[port] = inst_port;
   }
-  // Make copies of array ports
-  for (const auto &array_port : component->GetNodesOfType<ArrayPort>()) {
+  // Make copies of port arrays
+  for (const auto &array_port : component->GetAll<PortArray>()) {
     // Make a copy of the port
     auto inst_port = array_port->Copy();
-    AddNode(inst_port);
+    AddObject(inst_port);
     copied[array_port] = inst_port;
 
     // Figure out whether the size node was already copied
-    std::shared_ptr<Node> inst_size;
+    std::shared_ptr<Object> inst_size;
     if (copied.count(array_port->size()) > 0) {
       inst_size = copied[array_port->size()];
     } else {
       inst_size = array_port->size()->Copy();
-      AddNode(inst_size);
+      AddObject(inst_size);
       copied[array_port->size()] = inst_size;
     }
     // Set the size for the copied node
-    (*Cast<ArrayPort>(inst_port))->SetSize(inst_size);
+    auto isn = *Cast<Node>(inst_size);
+    auto ipa = *Cast<PortArray>(inst_port);
+    ipa->SetSize(isn);
   }
+
   // Make copies of parameters and literals
   for (const auto &node : component->GetNodesOfTypes({Node::PARAMETER, Node::LITERAL})) {
     if (copied.count(node) == 0) {
       auto inst_node = node->Copy();
-      AddNode(inst_node);
+      AddObject(inst_node);
       copied[node] = inst_node;
     }
   }
 }
 
-Graph &Instance::AddNode(const std::shared_ptr<Node> &node) {
-  if (!node->Is(Node::SIGNAL)) {
-    nodes_.push_back(node);
-    node->SetParent(this);
-    return *this;
-  } else {
-    throw std::runtime_error("Cannot add signal nodes to Instance graph " + name());
-  }
+Graph &Instance::AddObject(const std::shared_ptr<Object> &object) {
+  objects_.push_back(object);
+  object->SetParent(this);
+  return *this;
 }
 
 std::deque<const Component *> GetAllUniqueComponents(const Graph *graph) {

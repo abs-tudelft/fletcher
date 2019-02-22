@@ -1,3 +1,9 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,63 +34,70 @@ namespace cerata {
 
 std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node);
 
-class ArrayNode : public Node {
+class NodeArray : public Object {
  public:
+  enum ID {
+    PORT,
+    SIGNAL
+  } id_;
+
   /// @brief ArrayNode constructor.
-  ArrayNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : Node(std::move(name), id, std::move(type)) {}
-  /// @brief Append the ArrayNode with a new source.
-  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &source) override;
-  /// @brief Append the ArrayNode with a new sink.
-  std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &sink) override;
+  NodeArray(std::string name, ID id, std::shared_ptr<Node> base, std::shared_ptr<Node> size)
+      : Object(std::move(name), Object::ARRAY), id_(id), base_(std::move(base)), size_(std::move(size)) {}
 
-  /// @brief Add an edge to this node.
-  bool AddEdge(const std::shared_ptr<Edge>& edge) override;
-  /// @brief Remove an edge of this node.
-  bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
-
-  /// @brief Return the Edge to the Node representing the number of edges on the array side of this ArrayNode.
-  inline std::shared_ptr<Edge> size_edge() const { return size_; }
-  /// @brief Return the Node representing the number of edges on the array side of this ArrayNode.
-  inline std::shared_ptr<Node> size() const { return *size_->src; }
-  /// @brief Set the array size of this ArrayNode. The size Node must appear as a node on the parent Graph.
+  inline std::shared_ptr<Node> size() const { return size_; }
   void SetSize(const std::shared_ptr<Node> &size);
 
-  /// @brief Return all incoming edges of this node.
-  std::deque<std::shared_ptr<Edge>> sources() const override;
-  /// @brief Return all outgoing edges of this node.
-  std::deque<std::shared_ptr<Edge>> sinks() const override;
+  std::shared_ptr<Type> type() const { return base_->type(); }
 
-  /// @brief Return array node i.
-  std::shared_ptr<Node> operator[](size_t i);
+  std::shared_ptr<Object> Copy() const override;
 
- private:
+  /// @brief Append a node to this array. Returns a pointer to that node.
+  std::shared_ptr<Node> Append();
+  /// @brief Return all nodes of this NodeArray.
+  std::deque<std::shared_ptr<Node>> nodes() const { return nodes_; };
+  /// @brief Return element node i.
+  std::shared_ptr<Node> node(size_t i) const;
+  /// @brief Return element node i.
+  std::shared_ptr<Node> operator[](size_t i) const { return node(i); }
+  /// @brief Return the number of element nodes.
+  size_t num_nodes() { return nodes_.size(); }
+
+  std::string ToString() const { return name(); }
+
+ protected:
   /// @brief Increment the size of the ArrayNode.
   void increment();
+  /// A node representing the template for each of the element nodes.
+  std::shared_ptr<Node> base_;
   /// A node representing the number of concatenated edges.
-  std::shared_ptr<Edge> size_;
+  std::shared_ptr<Node> size_;
   /// The nodes contained by this array
   std::deque<std::shared_ptr<Node>> nodes_;
 };
 
 /**
- * @brief A port node that has an array of multiple edges to other nodes.
+ * @brief An array of port nodes
  */
-struct ArrayPort : public ArrayNode, public Term {
+class PortArray : public NodeArray, public Term {
+ public:
   /// @brief Construct a new ArrayPort.
-  ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir);
+  PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir);
 
   /// @brief Get a smart pointer to a new ArrayPort.
-  static std::shared_ptr<ArrayPort> Make(std::string name,
+  static std::shared_ptr<PortArray> Make(std::string name,
                                          std::shared_ptr<Type> type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
-  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Type name.
-  static std::shared_ptr<ArrayPort> Make(std::shared_ptr<Type> type,
+  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Base name.
+  static std::shared_ptr<PortArray> Make(std::shared_ptr<Type> type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
 
-  /// @brief Create a copy of this ArrayPort.
-  std::shared_ptr<Node> Copy() const override;
+  /// @brief Make a copy of this port array
+  std::shared_ptr<Object> Copy() const override {
+    return Make(name(), type(), *Cast<Node>(size()->Copy()), dir());
+  }
 };
 
 }

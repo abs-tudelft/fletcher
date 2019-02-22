@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +22,7 @@
 #include <memory>
 #include <deque>
 
+#include "cerata/objects.h"
 #include "cerata/types.h"
 
 namespace cerata {
@@ -31,7 +34,7 @@ struct Graph;
 /**
  * @brief A node.
  */
-class Node : public Named, public std::enable_shared_from_this<Node> {
+class Node : public Object, public std::enable_shared_from_this<Node> {
  public:
   /// Node type IDs with different properties.
   enum ID {
@@ -39,18 +42,13 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
     EXPRESSION,      ///< No-input     AND multi-output node that forms a binary tree with operations and nodes.
     SIGNAL,          ///< Single-input AND multi-output node.
     PORT,            ///< Single-input AND multi-output node with direction.
-    PARAMETER,       ///< Single-input AND multi-output node with default value.
-    ARRAY_SIGNAL,    ///< Multi-input  XOR multi-output node with count node.
-    ARRAY_PORT,      ///< Multi-input  XOR multi-output node with count node and direction.
+    PARAMETER        ///< Single-input AND multi-output node with default value.
   };
 
   /// @brief Node constructor.
   Node(std::string name, ID id, std::shared_ptr<Type> type);
   /// @brief Virtual destructor for Node.
   virtual ~Node() = default;
-
-  /// @brief Get a copy of this Node.
-  virtual std::shared_ptr<Node> Copy() const = 0;
 
   /// @brief Return the node Type
   inline std::shared_ptr<Type> type() const { return type_; }
@@ -70,29 +68,19 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   inline bool IsLiteral() const { return id_ == LITERAL; }
   /// @brief Return true if this is an EXPRESSION node, false otherwise.
   inline bool IsExpression() const { return id_ == EXPRESSION; }
-  /// @brief Return true if this is some type of ARRAY node, false otherwise.
-  inline bool IsArray() const { return (id_ == ARRAY_PORT) || (id_ == ARRAY_SIGNAL); }
-  /// @brief Return true if this is an ARRAY_PORT node, false otherwise.
-  inline bool IsArrayPort() const { return id_ == ARRAY_PORT; }
-  /// @brief Return true if this is an ARRAY_SIGNAL node, false otherwise.
-  inline bool IsArraySignal() const { return id_ == ARRAY_SIGNAL; }
 
   /// @brief Add an input to this node.
   virtual std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) = 0;
   /// @brief Add an output to this node.
   virtual std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &output) = 0;
   /// @brief Add an edge to this node.
-  virtual bool AddEdge(const std::shared_ptr<Edge>& edge) = 0;
+  virtual bool AddEdge(const std::shared_ptr<Edge> &edge) = 0;
   /// @brief Remove an edge of this node.
   virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) = 0;
   /// @brief Get the input edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> sources() const { return {}; }
   /// @brief Get the output edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> sinks() const { return {}; }
-
-  /// @brief Set this node's parent
-  void SetParent(const Graph *parent);
-  inline std::optional<const Graph *> parent() { return parent_; }
 
   /// @brief Return a human-readable string
   virtual std::string ToString();
@@ -102,8 +90,6 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   ID id_;
   /// The Type of this Node.
   std::shared_ptr<Type> type_;
-  /// An optional parent Graph to which this Node belongs. Initially no value.
-  std::optional<const Graph *> parent_ = {};
 };
 
 /**
@@ -128,7 +114,7 @@ struct MultiOutputNode : public Node {
   /// @brief Remove an edge from this node.
   bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
   /// @brief Add an output edge to this node.
-  bool AddEdge(const std::shared_ptr<Edge>& edge) override;
+  bool AddEdge(const std::shared_ptr<Edge> &edge) override;
 
   /// @brief Return output edge i of this node.
   inline std::shared_ptr<Edge> output(size_t i) const { return outputs_[i]; }
@@ -214,7 +200,7 @@ struct Literal : public MultiOutputNode {
   static std::shared_ptr<Literal> Make(std::string name, const std::shared_ptr<Type> &type, bool value);
 
   /// @brief Create a copy of this Literal.
-  std::shared_ptr<Node> Copy() const override;
+  std::shared_ptr<Object> Copy() const override;
   /// @brief Add an input to this node.
   std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) override;
 
@@ -254,7 +240,7 @@ struct Expression : public MultiOutputNode {
   static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node> &node);
 
   /// @brief Copy this expression.
-  std::shared_ptr<Node> Copy() const override;
+  std::shared_ptr<Object> Copy() const override;
 
   /// @brief Minimize the expression and convert it to a human-readable string.
   std::string ToString() override;
@@ -286,7 +272,7 @@ struct Signal : public NormalNode {
   /// @brief Create a new Signal and return a smart pointer to it. The Signal name is derived from the Type name.
   static std::shared_ptr<Signal> Make(const std::shared_ptr<Type> &type);
   /// @brief Create a copy of this Signal.
-  std::shared_ptr<Node> Copy() const override;
+  std::shared_ptr<Object> Copy() const override;
 };
 
 /**
@@ -309,7 +295,7 @@ struct Parameter : public NormalNode {
                                          std::optional<std::shared_ptr<Literal>> default_value = {});
 
   /// @brief Create a copy of this Parameter.
-  std::shared_ptr<Node> Copy() const override;
+  std::shared_ptr<Object> Copy() const override;
 
   /// @brief Short hand to get value node.
   std::optional<std::shared_ptr<Node>> value() const;
@@ -345,7 +331,7 @@ struct Port : public NormalNode, public Term {
   Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir);
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
-  std::shared_ptr<Node> Copy() const override;
+  std::shared_ptr<Object> Copy() const override;
 };
 
 /**

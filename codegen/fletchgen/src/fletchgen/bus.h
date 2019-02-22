@@ -37,7 +37,7 @@ using cerata::Instance;
 using cerata::Node;
 using cerata::Port;
 using cerata::Parameter;
-using cerata::ArrayPort;
+using cerata::PortArray;
 using cerata::integer;
 using cerata::Cast;
 
@@ -73,11 +73,11 @@ struct ArteryInstance : Instance {
   static std::unique_ptr<ArteryInstance> Make(const std::shared_ptr<Artery> &comp) {
     return std::make_unique<ArteryInstance>(comp->name() + "_inst", comp);
   }
-  std::shared_ptr<ArrayPort> read_data(const std::shared_ptr<Node> &width);
-  std::shared_ptr<ArrayPort> read_request(const std::shared_ptr<Node> &width);
+  std::shared_ptr<PortArray> read_data(const std::shared_ptr<Node> &width);
+  std::shared_ptr<PortArray> read_request(const std::shared_ptr<Node> &width);
 
   template<int W>
-  std::shared_ptr<ArrayPort> read_data() {
+  std::shared_ptr<PortArray> read_data() {
     return read_data(cerata::intl<W>());
   }
 };

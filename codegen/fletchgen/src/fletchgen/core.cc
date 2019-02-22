@@ -43,8 +43,8 @@ Core::Core(std::string name, std::shared_ptr<SchemaSet> schema_set)
     auto mode = fletcher::getMode(s);
     for (const auto &f : s->fields()) {
       if (!fletcher::mustIgnore(f)) {
-        AddNode(ArrowPort::Make(f, mode, mode2dir(mode)));
-        AddNode(Port::Make(f->name() + "_cmd", cmd(), Port::OUT));
+        AddObject(ArrowPort::Make(f, mode, mode2dir(mode)));
+        AddObject(Port::Make(f->name() + "_cmd", cmd(), Port::OUT));
       }
     }
   }
@@ -55,7 +55,7 @@ std::shared_ptr<Core> Core::Make(std::shared_ptr<SchemaSet> schema_set) {
 }
 
 std::shared_ptr<ArrowPort> Core::GetArrowPort(std::shared_ptr<arrow::Field> field) {
-  for (const auto &n : nodes_) {
+  for (const auto &n : objects_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {
       if ((*ap)->field_ == field) {
@@ -67,7 +67,7 @@ std::shared_ptr<ArrowPort> Core::GetArrowPort(std::shared_ptr<arrow::Field> fiel
 }
 std::deque<std::shared_ptr<ArrowPort>> Core::GetAllArrowPorts() {
   std::deque<std::shared_ptr<ArrowPort>> result;
-  for (const auto &n : nodes_) {
+  for (const auto &n : objects_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {
       result.push_back(*ap);

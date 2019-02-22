@@ -103,8 +103,6 @@ bool Config::operator()(const std::shared_ptr<Node> &node) {
     case Node::SIGNAL: return nodes.signals;
     case Node::PORT: return nodes.ports;
     case Node::EXPRESSION: return nodes.expressions;
-    case Node::ARRAY_PORT: return nodes.ports;
-    case Node::ARRAY_SIGNAL: return nodes.signals;
   }
   return true;
 }
@@ -225,10 +223,6 @@ std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
     case Node::LITERAL:sb << node.literal;
       break;
     case Node::EXPRESSION:sb << node.expression;
-      break;
-    case Node::ARRAY_SIGNAL: sb << node.signal;
-      break;
-    case Node::ARRAY_PORT: sb << node.port;
       break;
   }
 
