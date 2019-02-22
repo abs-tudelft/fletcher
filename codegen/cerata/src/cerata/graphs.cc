@@ -123,7 +123,7 @@ std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
 std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : nodes_) {
-    for (const auto &i : n->inputs()) {
+    for (const auto &i : n->sources()) {
       if (i->src) {
         if (!(*i->src)->parent()) {
           result.push_back(*i->src);

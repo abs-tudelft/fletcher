@@ -67,8 +67,8 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
-  src->AddOutput(edge);
-  dst->AddInput(edge);
+  src->AddEdge(edge);
+  dst->AddEdge(edge);
   return edge;
 }
 

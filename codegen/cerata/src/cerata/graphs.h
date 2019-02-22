@@ -21,6 +21,7 @@
 #include <deque>
 
 #include "cerata/nodes.h"
+#include "cerata/arrays.h"
 
 namespace cerata {
 

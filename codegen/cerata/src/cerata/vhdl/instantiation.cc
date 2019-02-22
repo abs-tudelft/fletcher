@@ -16,6 +16,7 @@
 
 #include "cerata/edges.h"
 #include "cerata/nodes.h"
+#include "cerata/arrays.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
 
@@ -191,9 +192,9 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
   std::deque<std::shared_ptr<Edge>> connections;
   // Check if this is an input or output port
   if (IsInput(port)) {
-    connections = port->inputs();
+    connections = port->sources();
   } else {
-    connections = port->outputs();
+    connections = port->sinks();
   }
   // Iterate over all connected edges
   for (const auto &edge : connections) {
@@ -212,9 +213,9 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       if (port->IsArray() && other->IsArray()) {
 
       } else if (port->IsArray()) {
-        idx = (*Cast<ArrayNode>(port))->IndexOf(edge);
+        //idx = (*Cast<ArrayNode>(port))->IndexOf(edge);
       } else if (other->IsArray()) {
-        idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
+        //idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
       }
       // Generate the mapping for this port-node pair.
       ret << GeneratePortMappingPair(pairs, port, other, idx);

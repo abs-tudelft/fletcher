@@ -36,35 +36,12 @@ void Node::SetParent(const Graph *parent) {
   parent_ = parent;
 }
 
-void NormalNode::AddInput(const std::shared_ptr<Edge> &edge) {
-  // Check if the edge has no destination yet
-  if (!edge->dst) {
-    // Set this node as its destination
-    edge->dst = shared_from_this();
-  } else if ((*edge->dst).get() != this) {
-    // The edge had a destination but it was not this node. Throw an error.
-    throw std::runtime_error("Cannot add edge as driver to node " + name()
-                                 + ". Edge already has other destination: " + (*edge->dst)->name());
-  }
-  // Check if this node already had some source
-  if (input_ != nullptr) {
-    // Invalidate the destination on that edge.
-    input_->dst = {};
-  }
-  // Set this node source to the edge.
-  input_ = edge;
+std::shared_ptr<Edge> NormalNode::AddSource(const std::shared_ptr<Node> &source) {
+  return Connect(shared_from_this(), source);
 }
 
-void MultiOutputNode::AddOutput(const std::shared_ptr<Edge> &edge) {
-  // Check if this edge has a source
-  if (!edge->src) {
-    // It has no source, make the source this node.
-    edge->src = shared_from_this();
-  } else if ((*edge->src).get() != this) {
-    throw std::runtime_error("Cannot add edge as output of node " + name()
-                                 + ". Edge has other source: " + (*edge->src)->name());
-  }
-  outputs_.push_back(edge);
+std::shared_ptr<Edge> MultiOutputNode::AddSink(const std::shared_ptr<Node> &sink) {
+  return Connect(sink, shared_from_this());
 }
 
 bool MultiOutputNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
@@ -75,8 +52,20 @@ bool MultiOutputNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
       // Remove it from the sinks.
       success = remove(&outputs_, edge);
       if (success) {
+        // Remove it from the edge source.
         edge->src = {};
       }
+    }
+  }
+  return success;
+}
+
+bool MultiOutputNode::AddEdge(const std::shared_ptr<Edge> &edge) {
+  bool success = false;
+  if (edge->src) {
+    if ((*edge->src).get() == this) {
+      outputs_.push_back(edge);
+      success = true;
     }
   }
   return success;
@@ -93,7 +82,7 @@ bool NormalNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   // First remove the edge from any outputs
   bool success = MultiOutputNode::RemoveEdge(edge);
   // Check if the edge is an input to this node
-  if (edge->dst) {
+  if (edge->dst && !success) {
     if (((*edge->dst).get() == this) && (input_ == edge)) {
       input_ = nullptr;
       edge->dst = {};
@@ -102,12 +91,34 @@ bool NormalNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   }
   return success;
 }
-std::deque<std::shared_ptr<Edge>> NormalNode::inputs() const {
+
+std::deque<std::shared_ptr<Edge>> NormalNode::sources() const {
   if (input_ != nullptr) {
     return {input_};
   } else {
     return {};
   }
+}
+
+bool NormalNode::AddEdge(const std::shared_ptr<Edge> &edge) {
+  bool success = MultiOutputNode::AddEdge(edge);
+  // If we couldn't add the edge as output, it must be input
+  if (!success) {
+    // Check if the edge destination is this node.
+    if (edge->dst) {
+      if ((*edge->dst).get() == this) {
+        // Check if this node already had some source
+        if (input_ != nullptr) {
+          // Invalidate the destination on that edge.
+          input_->dst = {};
+        }
+        // Set this node source to the edge.
+        input_ = edge;
+        success = true;
+      }
+    }
+  }
+  return success;
 }
 
 std::string Literal::ToString() {
@@ -136,13 +147,22 @@ std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<T
   return std::make_shared<Literal>(name, type, value);
 }
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type, std::string
+                 value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type,
+                 int value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
+Literal::Literal(std::string
+                 name,
+                 const std::shared_ptr<Type> &type,
+                 bool value)
     : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
 
 std::shared_ptr<Node> Literal::Copy() const {
@@ -154,7 +174,7 @@ std::shared_ptr<Literal> Literal::Make(int value) {
   return ret;
 }
 
-void Literal::AddInput(const std::shared_ptr<Edge> &input) {
+std::shared_ptr<Edge> Literal::AddSource(const std::shared_ptr<Node> &source) {
   throw std::runtime_error("Cannot drive a literal node.");
 }
 
@@ -198,7 +218,10 @@ std::shared_ptr<Node> Port::Copy() const {
   return std::make_shared<Port>(name(), type(), dir());
 }
 
-Port::Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir)
+Port::Port(std::string
+           name, std::shared_ptr<Type>
+           type, Term::Dir
+           dir)
     : NormalNode(std::move(name), Node::PORT, std::move(type)), Term(dir) {}
 
 std::shared_ptr<Node> Parameter::Copy() const {
@@ -409,179 +432,8 @@ std::shared_ptr<Node> Expression::Copy() const {
   return Expression::Make(operation, lhs, rhs);
 }
 
-void Expression::AddInput(const std::shared_ptr<Edge> &input) {
+std::shared_ptr<Edge> Expression::AddSource(const std::shared_ptr<Node> &source) {
   throw std::runtime_error("Cannot drive an expression node.");
-}
-
-static std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
-  if (node->IsLiteral() || node->IsExpression()) {
-    return node + 1;
-  } else if (node->IsParameter()) {
-    // If the node is a parameter
-    auto param = *Cast<Parameter>(node);
-    if (param->value()) {
-      // Recurse until we reach the literal
-      param <<= IncrementNode(*param->value());
-    } else {
-      // Otherwise connect an integer literal of 1 to the parameter
-      param <<= intl<1>();
-    }
-    return param;
-  }
-  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->id()));
-}
-
-void ArrayNode::increment() {
-  if (size_ != nullptr) {
-    if (size_->src) {
-      auto incremented = IncrementNode(*size_->src);
-      SetSize(incremented);
-    }
-  } else {
-    throw std::runtime_error("Invalid ArrayNode. Size points to null.");
-  }
-}
-
-ArrayNode::ArrayNode(std::string name,
-                     Node::ID id,
-                     std::shared_ptr<Type> type,
-                     ArraySide array_side)
-    : Node(std::move(name), id, std::move(type)), array_side_(array_side) {}
-
-std::deque<std::shared_ptr<Edge>> ArrayNode::inputs() const {
-  std::deque<std::shared_ptr<Edge>> result;
-  if (array_side_ == ARRAY_OUT) {
-    if (single_edge_ != nullptr) {
-      result.push_back(single_edge_);
-    }
-    if (size_ != nullptr) {
-      result.push_back(size_);
-    }
-  } else {
-    append(&result, array_edges_);
-  }
-  return result;
-}
-
-std::deque<std::shared_ptr<Edge>> ArrayNode::outputs() const {
-  if (array_side_ == ARRAY_OUT) {
-    return array_edges_;
-  } else {
-    if (single_edge_ != nullptr) {
-      return {single_edge_};
-    } else {
-      return {};
-    }
-  }
-}
-
-std::shared_ptr<Edge> ArrayNode::SetSize(std::shared_ptr<Node> size) {
-  // Remove the old edge.
-  if (size_ != nullptr) {
-    if (size_->src) {
-      (*size_->src)->RemoveEdge(size_);
-    }
-  }
-  auto size_edge = Edge::Make(name() + "_size", shared_from_this(), size);
-  size->AddOutput(size_edge);
-  size_ = size_edge;
-  return size_edge;
-}
-
-std::shared_ptr<Node> ArrayNode::size() const { return *size_->src; }
-
-size_t ArrayNode::IndexOf(const std::shared_ptr<Edge> &edge) {
-  size_t idx = 0;
-  for (const auto &e : inputs()) {
-    if (e == edge) {
-      return idx;
-    }
-    idx++;
-  }
-  idx = 0;
-  for (const auto &e : outputs()) {
-    if (e == edge) {
-      return idx;
-    }
-    idx++;
-  }
-  throw std::runtime_error("Edge does not connect to this Node");
-}
-
-std::shared_ptr<Edge> ArrayNode::Append(const std::shared_ptr<Edge> &edge) {
-  if (!edge->IsComplete()) {
-    throw std::logic_error("Edge is not complete.");
-  }
-  array_edges_.push_back(edge);
-  increment();
-  return edge;
-}
-
-void ArrayNode::AddInput(const std::shared_ptr<Edge> &edge) {
-  // Check if the edge has no destination yet
-  if (!edge->dst) {
-    // Set this node as its destination
-    edge->dst = shared_from_this();
-  } else if ((*edge->dst).get() != this) {
-    // The edge had a destination but it was not this node. Throw an error.
-    throw std::runtime_error("Cannot add edge as driver to node " + name()
-                                 + ". Edge already has other destination: " + (*edge->dst)->name());
-  }
-
-  if (array_side_ == ARRAY_IN) {
-    Append(edge);
-  } else {
-    // Check if this node already had some source
-    if (single_edge_ != nullptr) {
-      // Invalidate the destination on that edge.
-      single_edge_->dst = {};
-    }
-    // Set this node source to the edge.
-    single_edge_ = edge;
-  }
-}
-
-void ArrayNode::AddOutput(const std::shared_ptr<Edge> &edge) {
-  // Check if this edge has a source
-  if (!edge->src) {
-    // It has no source, make the source this node.
-    edge->src = shared_from_this();
-  } else if ((*edge->src) != shared_from_this()) {
-    throw std::runtime_error("Cannot add edge as output of node " + name()
-                                 + ". Edge has other source: " + (*edge->src)->name());
-  }
-  if (array_side_ == ARRAY_OUT) {
-    Append(edge);
-  } else {
-    single_edge_ = edge;
-  }
-}
-
-std::shared_ptr<Edge> ArrayNode::size_edge() const { return size_; }
-
-std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
-                                           std::shared_ptr<Type> type,
-                                           std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  auto result = std::make_shared<ArrayPort>(name, type, dir);
-  result->SetSize(std::move(size));
-  return result;
-}
-
-std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
-                                           std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  return ArrayPort::Make(type->name(), type, std::move(size), dir);
-}
-
-ArrayPort::ArrayPort(std::string name, std::shared_ptr<Type> type, Term::Dir dir)
-    : ArrayNode(std::move(name), Node::ARRAY_PORT, std::move(type), dir == Port::IN ? ARRAY_IN : ARRAY_OUT),
-      Term(dir) {}
-
-std::shared_ptr<Node> ArrayPort::Copy() const {
-  auto result = std::make_shared<ArrayPort>(name(), type(), dir());
-  result->SetSize(this->size());
-  return result;
 }
 
 }  // namespace cerata

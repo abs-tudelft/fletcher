@@ -361,11 +361,11 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
   for (const auto &node : graph->nodes_) {
-    auto out_edges = node->outputs();
+    auto out_edges = node->sinks();
     for (const auto &e : out_edges) {
       all_edges.push_back(e);
     }
-    auto in_edges = node->inputs();
+    auto in_edges = node->sources();
     for (const auto &e : in_edges) {
       all_edges.push_back(e);
     }

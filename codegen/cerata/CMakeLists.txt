@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
 # Sources
 set(HEADERS
+        src/cerata/arrays.h
         src/cerata/edges.h
         src/cerata/types.h
         src/cerata/nodes.h
@@ -33,6 +34,7 @@ set(HEADERS
         )
 
 set(SOURCES
+        src/cerata/arrays.cc
         src/cerata/edges.cc
         src/cerata/types.cc
         src/cerata/nodes.cc

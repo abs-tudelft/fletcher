@@ -20,6 +20,7 @@
 #include "cerata/nodes.h"
 #include "cerata/edges.h"
 #include "cerata/graphs.h"
+#include "cerata/arrays.h"
 
 namespace cerata {
 

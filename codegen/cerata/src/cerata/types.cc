@@ -103,6 +103,10 @@ bool Type::IsEqual(const Type *other) const {
   return other->id() == id_;
 }
 
+bool Type::IsEqual(const std::shared_ptr<Type> &other) const {
+  return IsEqual(other.get());
+}
+
 Vector::Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width)
     : Type(std::move(name), Type::VECTOR), element_type_(std::move(element_type)) {
   // Check if width is parameter or literal node

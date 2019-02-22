@@ -83,6 +83,9 @@ class Type : public Named {
    */
   virtual bool IsEqual(const Type *other) const;
 
+  /// @brief Shorthand for shared pointers.
+  bool IsEqual(const std::shared_ptr<Type>& other) const;
+
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
   /// @brief Return true if the Type is a synthesizable primitive, false otherwise.

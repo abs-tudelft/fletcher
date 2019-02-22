@@ -77,16 +77,18 @@ class Node : public Named, public std::enable_shared_from_this<Node> {
   /// @brief Return true if this is an ARRAY_SIGNAL node, false otherwise.
   inline bool IsArraySignal() const { return id_ == ARRAY_SIGNAL; }
 
-  /// @brief Get the input edges of this Node.
-  virtual std::deque<std::shared_ptr<Edge>> inputs() const { return {}; }
-  /// @brief Get the output edges of this Node.
-  virtual std::deque<std::shared_ptr<Edge>> outputs() const { return {}; }
   /// @brief Add an input to this node.
-  virtual void AddInput(const std::shared_ptr<Edge> &input) = 0;
+  virtual std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) = 0;
   /// @brief Add an output to this node.
-  virtual void AddOutput(const std::shared_ptr<Edge> &output) = 0;
+  virtual std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &output) = 0;
+  /// @brief Add an edge to this node.
+  virtual bool AddEdge(const std::shared_ptr<Edge>& edge) = 0;
   /// @brief Remove an edge of this node.
-  virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) { return false; }
+  virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) = 0;
+  /// @brief Get the input edges of this Node.
+  virtual std::deque<std::shared_ptr<Edge>> sources() const { return {}; }
+  /// @brief Get the output edges of this Node.
+  virtual std::deque<std::shared_ptr<Edge>> sinks() const { return {}; }
 
   /// @brief Set this node's parent
   void SetParent(const Graph *parent);
@@ -117,14 +119,17 @@ struct MultiOutputNode : public Node {
                                                                                     std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
-  std::deque<std::shared_ptr<Edge>> inputs() const override { return {}; }
+  std::deque<std::shared_ptr<Edge>> sources() const override { return {}; }
   /// @brief The outgoing Edges that sink this Node.
-  inline std::deque<std::shared_ptr<Edge>> outputs() const override { return outputs_; }
+  inline std::deque<std::shared_ptr<Edge>> sinks() const override { return outputs_; }
 
   /// @brief Add an output edge to this node.
-  void AddOutput(const std::shared_ptr<Edge> &edge) override;
+  std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &sink) override;
   /// @brief Remove an edge from this node.
   bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
+  /// @brief Add an output edge to this node.
+  bool AddEdge(const std::shared_ptr<Edge>& edge) override;
+
   /// @brief Return output edge i of this node.
   inline std::shared_ptr<Edge> output(size_t i) const { return outputs_[i]; }
   /// @brief Return the number of edges of this node.
@@ -144,13 +149,16 @@ struct NormalNode : public MultiOutputNode {
                                                                                           std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
-  std::deque<std::shared_ptr<Edge>> inputs() const override;
+  std::deque<std::shared_ptr<Edge>> sources() const override;
 
   /// @brief Return the single incoming edge.
   std::optional<std::shared_ptr<Edge>> input() const;
 
   /// @brief Set the input edge of this node.
-  void AddInput(const std::shared_ptr<Edge> &edge) override;
+  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &source) override;
+
+  /// @brief Add an edge to this node.
+  bool AddEdge(const std::shared_ptr<Edge> &edge) override;
 
   /// @brief Remove an edge from this node.
   bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
@@ -208,12 +216,12 @@ struct Literal : public MultiOutputNode {
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Node> Copy() const override;
   /// @brief Add an input to this node.
-  void AddInput(const std::shared_ptr<Edge> &input) override;
+  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) override;
 
   /// @brief A literal node has no inputs. This function returns an empty list.
-  inline std::deque<std::shared_ptr<Edge>> inputs() const override { return {}; }
+  inline std::deque<std::shared_ptr<Edge>> sources() const override { return {}; }
   /// @brief Get the output edges of this Node.
-  inline std::deque<std::shared_ptr<Edge>> outputs() const override { return outputs_; }
+  inline std::deque<std::shared_ptr<Edge>> sinks() const override { return outputs_; }
 
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToString() override;
@@ -240,7 +248,7 @@ struct Expression : public MultiOutputNode {
                                           const std::shared_ptr<Node> &rhs);
 
   /// @brief Add an input to this node.
-  void AddInput(const std::shared_ptr<Edge> &input) override;
+  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &source) override;
 
   /// @brief Minimize a node, if it is an expression
   static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node> &node);
@@ -337,86 +345,6 @@ struct Port : public NormalNode, public Term {
   Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir);
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
-  std::shared_ptr<Node> Copy() const override;
-};
-
-/**
- * @brief A node where either inputs or outputs form an array of a specific type.
- *
- * The flattened type of all connected nodes must be strongly equal, i.e. the widths of the flattened subtypes are all
- * the same.
- *
- * Example: If there is a connection from ArrayNode "a" to both node "b" and "c", then "b" and "c" are said to be
- *          concatenated on the output of ArrayNode "a". The concatenated side of "a" is its output.
- *
- *          Here, a, b and c must all have exactly the same flattened type list.
- *
- * The number of edges that is concatenated onto an ArrayNode is related through another node via a special edge size()
- * If size_ is an integer literal, it will automatically be incremented when nodes are added.
- * Otherwise, if the Node is a Parameter node being sourced by an integer literal, it can also be automatically be
- * incremented.
- */
-class ArrayNode : public Node {
- public:
-  /// Which side of the node the "array" is on.
-  enum ArraySide {
-    ARRAY_OUT,  ///< The array is on the side of the outgoing edges.
-    ARRAY_IN    ///< The array is on the side of the incoming edges.
-  };
-
-  /// @brief ArrayNode constructor.
-  ArrayNode(std::string name, Node::ID id, std::shared_ptr<Type> type, ArraySide array_side);
-  /// @brief Add an input edge to this node.
-  void AddInput(const std::shared_ptr<Edge> &edge) override;
-  /// @brief Add an output edge to this node.
-  void AddOutput(const std::shared_ptr<Edge> &edge) override;
-
-  /// @brief Increment the size of the ArrayNode.
-  void increment();
-  /// @brief Set the array size of this ArrayNode. The size Node must appear as a node on the parent Graph.
-  std::shared_ptr<Edge> SetSize(std::shared_ptr<Node> size);
-  /// @brief Return the Edge to the Node representing the number of edges on the array side of this ArrayNode.
-  std::shared_ptr<Edge> size_edge() const;
-  /// @brief Return the Node representing the number of edges on the array side of this ArrayNode.
-  std::shared_ptr<Node> size() const;
-  /// @brief Return the inputs to this node.
-  std::deque<std::shared_ptr<Edge>> inputs() const override;
-  /// @brief Return the outputs of this node.
-  std::deque<std::shared_ptr<Edge>> outputs() const override;
-  /// @brief Return the index of an edge on this node.
-  size_t IndexOf(const std::shared_ptr<Edge> &edge);
-
- private:
-  /// @brief Append another Node to this ArrayNode, returns an Edge between this ArrayNode and the appended Node.
-  std::shared_ptr<Edge> Append(const std::shared_ptr<Edge> &n);
-  /// Which side is the "array" side
-  ArraySide array_side_;
-  /// A node representing the number of concatenated edges.
-  std::shared_ptr<Edge> size_;
-  /// The concatenated side.
-  std::shared_ptr<Edge> single_edge_;
-  /// The arrayed side.
-  std::deque<std::shared_ptr<Edge>> array_edges_;
-};
-
-/**
- * @brief A port node that has an array of multiple edges to other nodes.
- */
-struct ArrayPort : public ArrayNode, public Term {
-  /// @brief Construct a new ArrayPort.
-  ArrayPort(std::string name, std::shared_ptr<Type> type, Port::Dir dir);
-
-  /// @brief Get a smart pointer to a new ArrayPort.
-  static std::shared_ptr<ArrayPort> Make(std::string name,
-                                         std::shared_ptr<Type> type,
-                                         std::shared_ptr<Node> size,
-                                         Port::Dir dir = Port::Dir::IN);
-  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Type name.
-  static std::shared_ptr<ArrayPort> Make(std::shared_ptr<Type> type,
-                                         std::shared_ptr<Node> size,
-                                         Port::Dir dir = Port::Dir::IN);
-
-  /// @brief Create a copy of this ArrayPort.
   std::shared_ptr<Node> Copy() const override;
 };
 

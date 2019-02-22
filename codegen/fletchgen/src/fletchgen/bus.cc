@@ -20,6 +20,7 @@
 #include "cerata/graphs.h"
 #include "cerata/types.h"
 #include "cerata/edges.h"
+#include "cerata/arrays.h"
 
 #include "fletchgen/basic_types.h"
 

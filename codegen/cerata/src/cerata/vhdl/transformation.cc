@@ -29,7 +29,7 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
   std::deque<Node *> resolved;
   for (const auto &inst : comp->GetAllInstances()) {
     for (const auto &port : inst->GetNodesOfType<Port>()) {
-      for (const auto &edge : port->outputs()) {
+      for (const auto &edge : port->sinks()) {
         // If the edge is not complete, continue.
         if (!edge->IsComplete()) {
           continue;
