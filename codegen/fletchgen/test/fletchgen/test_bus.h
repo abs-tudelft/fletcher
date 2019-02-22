@@ -47,7 +47,7 @@ TEST(Bus, Artery) {
   auto f = Port::Make("f", bus_read_data(intl<128>()));
 
   // Create a component with the ports
-  auto comp = Component::Make("comp", {}, {a, b, c, d, e, f}, {});
+  auto comp = Component::Make("comp", {a, b, c, d, e, f});
 
   // Create an artery able to handle these ports
   auto artery = Artery::Make(intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
@@ -62,15 +62,15 @@ TEST(Bus, Artery) {
   auto rd128 = art_inst->read_data<128>();
 
   // Append the component ports to it
-  comp_inst->port("a") <<= rd8;
-  comp_inst->port("b") <<= rd8;
-  comp_inst->port("c") <<= rd8;
-  comp_inst->port("d") <<= rd32;
-  comp_inst->port("e") <<= rd32;
-  comp_inst->port("f") <<= rd128;
+  comp_inst->port("a") <<= rd8->Append();
+  comp_inst->port("b") <<= rd8->Append();
+  comp_inst->port("c") <<= rd8->Append();
+  comp_inst->port("d") <<= rd32->Append();
+  comp_inst->port("e") <<= rd32->Append();
+  comp_inst->port("f") <<= rd128->Append();
 
   // Create a component
-  auto top = Component::Make("top", {}, {}, {});
+  auto top = Component::Make("top");
   top->AddChild(std::move(comp_inst));
   top->AddChild(std::move(art_inst));
 

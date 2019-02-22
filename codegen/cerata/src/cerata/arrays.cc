@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,105 +45,37 @@ std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
     }
     return param;
   }
-  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->id()));
+  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->node_id()));
 }
 
-std::shared_ptr<ArrayPort> ArrayPort::Make(std::string name,
-                                           std::shared_ptr<Type> type,
-                                           std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  auto result = std::make_shared<ArrayPort>(name, type, dir);
-  result->SetSize(size);
-  return result;
-}
-
-std::shared_ptr<ArrayPort> ArrayPort::Make(std::shared_ptr<Type> type,
-                                           std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  return ArrayPort::Make(type->name(), type, std::move(size), dir);
-}
-
-ArrayPort::ArrayPort(std::string name, std::shared_ptr<Type> type, Term::Dir dir)
-    : ArrayNode(std::move(name), Node::ARRAY_PORT, std::move(type)),
-      Term(dir) {}
-
-std::shared_ptr<Node> ArrayPort::Copy() const {
-  auto result = std::make_shared<ArrayPort>(name(), type(), dir());
-  result->SetSize(this->size());
-  return result;
-}
-
-void ArrayNode::SetSize(const std::shared_ptr<Node> &size) {
-  if (size_ != nullptr) {
-    // Remove the old edge.
-    if (size_->src) {
-      (*size_->src)->RemoveEdge(size_);
-    }
-  }
-
+void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
   if (size == nullptr) {
     throw std::runtime_error("Cannot set ArrayNode size to nullptr.");
   } else {
-    size_ = size->AddSink(size);
+    size_ = size;
   }
 }
 
-bool ArrayNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
-  return false;
-}
-
-bool ArrayNode::AddEdge(const std::shared_ptr<Edge> &edge) {
-  auto src = *edge->src;
-  auto dst = *edge->dst;
-  if (this == src.get()) {
-    AddSink(dst);
-    return true;
-  }
-  if (this == dst.get()) {
-    AddSource(dst);
-    return true;
-  }
-  return false;
-}
-
-std::shared_ptr<Edge> ArrayNode::AddSink(const std::shared_ptr<Node> &sink) {
-  if (type()->IsEqual(sink->type())) {
-    auto copy = sink->Copy();
-    copy->SetName(name() + std::to_string(nodes_.size()));
-    auto edge = Connect(copy, sink);
-    nodes_.push_back(copy);
-    increment();
-    return edge;
+void NodeArray::increment() {
+  if (size_ != nullptr) {
+    auto incremented = IncrementNode(size_);
+    SetSize(incremented);
   } else {
-    throw std::runtime_error("Type error.");
+    throw std::runtime_error("Invalid ArrayNode. Size is nullptr.");
   }
 }
 
-std::shared_ptr<Edge> ArrayNode::AddSource(const std::shared_ptr<Node> &source) {
-  if (type()->IsEqual(source->type())) {
-    auto copy = source->Copy();
-    copy->SetName(name() + std::to_string(nodes_.size()));
-    auto edge = Connect(copy, source);
-    nodes_.push_back(copy);
-    increment();
-    return edge;
-  } else {
-    throw std::runtime_error("Type error.");
+std::shared_ptr<Node> NodeArray::Append() {
+  auto elem = *Cast<Node>(base_->Copy());
+  if (parent()) {
+    elem->SetParent(*parent());
   }
+  nodes_.push_back(elem);
+  increment();
+  return elem;
 }
 
-std::deque<std::shared_ptr<Edge>> ArrayNode::sources() const {
-  std::deque<std::shared_ptr<Edge>> result;
-  return result;
-}
-
-std::deque<std::shared_ptr<Edge>> ArrayNode::sinks() const {
-  std::deque<std::shared_ptr<Edge>> result;
-
-  return result;
-}
-
-std::shared_ptr<Node> ArrayNode::operator[](size_t i) {
+std::shared_ptr<Node> NodeArray::node(size_t i) const {
   if (i << nodes_.size()) {
     return nodes_[i];
   } else {
@@ -147,15 +83,35 @@ std::shared_ptr<Node> ArrayNode::operator[](size_t i) {
   }
 }
 
-void ArrayNode::increment() {
-  if (size_ != nullptr) {
-    if (size_->src) {
-      auto incremented = IncrementNode(*size_->src);
-      SetSize(incremented);
-    }
-  } else {
-    throw std::runtime_error("Invalid ArrayNode. Size points to null.");
+std::shared_ptr<Object> NodeArray::Copy() const {
+  auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, *Cast<Node>(size()->Copy()));
+  for (size_t i = 0; i < nodes_.size(); i++) {
+    ret->Append();
   }
+  return ret;
+}
+
+PortArray::PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir)
+    : NodeArray(std::move(name), Node::PORT, Port::Make(name, std::move(type), dir), std::move(size)),
+      Term(dir) {}
+
+std::shared_ptr<PortArray> PortArray::Make(std::string name,
+                                           std::shared_ptr<Type> type,
+                                           std::shared_ptr<Node> size,
+                                           Port::Dir dir) {
+  return std::make_shared<PortArray>(name, type, size, dir);
+}
+
+std::shared_ptr<PortArray> PortArray::Make(std::shared_ptr<Type> type, std::shared_ptr<Node> size, Port::Dir dir) {
+  return PortArray::Make(type->name(), type, std::move(size), dir);
+}
+
+std::shared_ptr<Object> PortArray::Copy() const {
+  auto ret = std::make_shared<PortArray>(name(), type(), *Cast<Node>(size()->Copy()), dir());
+  for (size_t i = 0; i < nodes_.size(); i++) {
+    ret->Append();
+  }
+  return ret;
 }
 
 }  // namespace cerata

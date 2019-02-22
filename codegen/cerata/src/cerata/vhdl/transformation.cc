@@ -56,7 +56,7 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
         }
         auto sig = insert(edge, prefix);
         // Add the signal to the component
-        comp->AddNode(sig);
+        comp->AddObject(sig);
         // Remember we've touched these nodes already
         resolved.push_back((*edge->src).get());
         resolved.push_back((*edge->dst).get());

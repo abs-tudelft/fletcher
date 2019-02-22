@@ -26,7 +26,7 @@ namespace fletchgen {
 using cerata::Parameter;
 using cerata::Literal;
 using cerata::Port;
-using cerata::ArrayPort;
+using cerata::PortArray;
 using cerata::integer;
 using cerata::string;
 using cerata::intl;
@@ -43,8 +43,8 @@ std::shared_ptr<Component> ColumnReader() {
                                      Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
                                      Parameter::Make("CFG", string(), strl("\"\"")),
                                      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
-                                     Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>())},
-                                    {Port::Make(bus_clk()),
+                                     Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>()),
+                                     Port::Make(bus_clk()),
                                      Port::Make(bus_reset()),
                                      Port::Make(acc_clk()),
                                      Port::Make(acc_reset()),
@@ -52,9 +52,7 @@ std::shared_ptr<Component> ColumnReader() {
                                      Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("bus_rreq", bus_read_request(), Port::Dir::OUT),
                                      Port::Make("bus_rdat", bus_read_data(), Port::Dir::IN),
-                                     Port::Make("out", read_data(), Port::Dir::OUT)
-                                    },
-                                    {}
+                                     Port::Make("out", read_data(), Port::Dir::OUT)}
   );
   return ret;
 }

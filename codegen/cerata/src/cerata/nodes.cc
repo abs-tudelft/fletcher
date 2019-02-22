@@ -25,23 +25,28 @@
 
 namespace cerata {
 
-Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
-    : Named(std::move(name)), id_(id), type_(std::move(type)) {}
+Node::Node(std::string name, Node::NodeID id, std::shared_ptr<Type> type)
+    : Object(std::move(name), Object::NODE), node_id_(id), type_(std::move(type)) {}
 
 std::string Node::ToString() {
   return name();
 }
 
-void Node::SetParent(const Graph *parent) {
-  parent_ = parent;
-}
-
-std::shared_ptr<Edge> NormalNode::AddSource(const std::shared_ptr<Node> &source) {
-  return Connect(shared_from_this(), source);
-}
-
-std::shared_ptr<Edge> MultiOutputNode::AddSink(const std::shared_ptr<Node> &sink) {
-  return Connect(sink, shared_from_this());
+bool MultiOutputNode::AddEdge(const std::shared_ptr<Edge> &edge) {
+  bool success = false;
+  // Check if this edge has a source
+  if (edge->src) {
+    // Check if the source is this node
+    if ((*edge->src).get() == this) {
+      // Check if this node does not already contain this edge
+      if (!contains(outputs_, edge)) {
+        // Add the edge to this node
+        outputs_.push_back(edge);
+        success = true;
+      }
+    }
+  }
+  return success;
 }
 
 bool MultiOutputNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
@@ -60,15 +65,8 @@ bool MultiOutputNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   return success;
 }
 
-bool MultiOutputNode::AddEdge(const std::shared_ptr<Edge> &edge) {
-  bool success = false;
-  if (edge->src) {
-    if ((*edge->src).get() == this) {
-      outputs_.push_back(edge);
-      success = true;
-    }
-  }
-  return success;
+std::shared_ptr<Edge> MultiOutputNode::AddSink(const std::shared_ptr<Node> &sink) {
+  return Connect(sink, shared_from_this());
 }
 
 std::optional<std::shared_ptr<Edge>> NormalNode::input() const {
@@ -76,6 +74,37 @@ std::optional<std::shared_ptr<Edge>> NormalNode::input() const {
     return input_;
   }
   return {};
+}
+
+std::deque<std::shared_ptr<Edge>> NormalNode::sources() const {
+  if (input_ != nullptr) {
+    return {input_};
+  } else {
+    return {};
+  }
+}
+
+bool NormalNode::AddEdge(const std::shared_ptr<Edge> &edge) {
+  // first attempt to add the edge as an output.
+  bool success = MultiOutputNode::AddEdge(edge);
+  // If we couldn't add the edge as output, it must be input
+  if (!success) {
+    // Check if the edge has a destination
+    if (edge->dst) {
+      // Check if this is the destination
+      if ((*edge->dst).get() == this) {
+        // Check if this node already had some source
+        if (input_ != nullptr) {
+          // Invalidate the destination on that edge.
+          input_->dst = {};
+        }
+        // Set this node source to the edge.
+        input_ = edge;
+        success = true;
+      }
+    }
+  }
+  return success;
 }
 
 bool NormalNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
@@ -92,33 +121,8 @@ bool NormalNode::RemoveEdge(const std::shared_ptr<Edge> &edge) {
   return success;
 }
 
-std::deque<std::shared_ptr<Edge>> NormalNode::sources() const {
-  if (input_ != nullptr) {
-    return {input_};
-  } else {
-    return {};
-  }
-}
-
-bool NormalNode::AddEdge(const std::shared_ptr<Edge> &edge) {
-  bool success = MultiOutputNode::AddEdge(edge);
-  // If we couldn't add the edge as output, it must be input
-  if (!success) {
-    // Check if the edge destination is this node.
-    if (edge->dst) {
-      if ((*edge->dst).get() == this) {
-        // Check if this node already had some source
-        if (input_ != nullptr) {
-          // Invalidate the destination on that edge.
-          input_->dst = {};
-        }
-        // Set this node source to the edge.
-        input_ = edge;
-        success = true;
-      }
-    }
-  }
-  return success;
+std::shared_ptr<Edge> NormalNode::AddSource(const std::shared_ptr<Node> &source) {
+  return Connect(shared_from_this(), source);
 }
 
 std::string Literal::ToString() {
@@ -131,49 +135,34 @@ std::string Literal::ToString() {
   }
 }
 
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
+Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
+    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
+
 std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, bool value) {
   return std::make_shared<Literal>(name, type, value);
 }
-
 std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, int value) {
   return std::make_shared<Literal>(name, type, value);
 }
-
 std::shared_ptr<Literal> Literal::Make(const std::shared_ptr<Type> &type, std::string value) {
   return std::make_shared<Literal>(value, type, value);
 }
-
 std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, std::string value) {
   return std::make_shared<Literal>(name, type, value);
-}
-
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type, std::string
-                 value)
-    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(STRING), str_val_(std::move(value)) {}
-
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type,
-                 int value)
-    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(INT), int_val_(value) {}
-
-Literal::Literal(std::string
-                 name,
-                 const std::shared_ptr<Type> &type,
-                 bool value)
-    : MultiOutputNode(std::move(name), Node::LITERAL, type), storage_type_(BOOL), bool_val_(value) {}
-
-std::shared_ptr<Node> Literal::Copy() const {
-  auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
-  return ret;
 }
 std::shared_ptr<Literal> Literal::Make(int value) {
   auto ret = std::make_shared<Literal>("int" + std::to_string(value), integer(), value);
   return ret;
 }
 
+std::shared_ptr<Object> Literal::Copy() const {
+  auto ret = std::make_shared<Literal>(name(), type(), storage_type_, str_val_, int_val_, bool_val_);
+  return ret;
+}
 std::shared_ptr<Edge> Literal::AddSource(const std::shared_ptr<Node> &source) {
   throw std::runtime_error("Cannot drive a literal node.");
 }
@@ -193,15 +182,13 @@ std::shared_ptr<Literal> bool_false() {
   return result;
 }
 
-std::string ToString(Node::ID id) {
+std::string ToString(Node::NodeID id) {
   switch (id) {
     case Node::PORT:return "Port";
     case Node::SIGNAL:return "Signal";
     case Node::LITERAL:return "Literal";
     case Node::PARAMETER:return "Parameter";
     case Node::EXPRESSION:return "Expression";
-    case Node::ARRAY_PORT:return "ArrayPort";
-    case Node::ARRAY_SIGNAL:return "ArraySignal";
     default:throw std::runtime_error("Unsupported Node type");
   }
 }
@@ -214,7 +201,7 @@ std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Term::Dir dir) {
   return std::make_shared<Port>(type->name(), type, dir);
 }
 
-std::shared_ptr<Node> Port::Copy() const {
+std::shared_ptr<Object> Port::Copy() const {
   return std::make_shared<Port>(name(), type(), dir());
 }
 
@@ -224,7 +211,7 @@ Port::Port(std::string
            dir)
     : NormalNode(std::move(name), Node::PORT, std::move(type)), Term(dir) {}
 
-std::shared_ptr<Node> Parameter::Copy() const {
+std::shared_ptr<Object> Parameter::Copy() const {
   return std::make_shared<Parameter>(name(), type(), default_value);
 }
 
@@ -267,7 +254,7 @@ std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
   return ret;
 }
 
-std::shared_ptr<Node> Signal::Copy() const {
+std::shared_ptr<Object> Signal::Copy() const {
   auto ret = std::make_shared<Signal>(this->name(), this->type_);
   return ret;
 }
@@ -428,7 +415,7 @@ std::string Expression::ToString() {
   }
 }
 
-std::shared_ptr<Node> Expression::Copy() const {
+std::shared_ptr<Object> Expression::Copy() const {
   return Expression::Make(operation, lhs, rhs);
 }
 

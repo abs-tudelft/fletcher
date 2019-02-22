@@ -174,8 +174,8 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
                                            offset_b,
                                            port->name(),
                                            other->name(),
-                                           port->IsArray(),
-                                           other->IsArray());
+                                           false,
+                                           false);
         ret << mpblock;
         // Increase the offset on the left side.
         offset_a = offset_a + (b_width ? *b_width : intl<0>());
@@ -210,6 +210,8 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       auto pairs = tm->GetUniqueMappingPairs();
       // Figure out any array indices
       size_t idx = 0;
+
+      /*
       if (port->IsArray() && other->IsArray()) {
 
       } else if (port->IsArray()) {
@@ -217,6 +219,7 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       } else if (other->IsArray()) {
         //idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
       }
+       */
       // Generate the mapping for this port-node pair.
       ret << GeneratePortMappingPair(pairs, port, other, idx);
     } else {
@@ -260,13 +263,13 @@ MultiBlock Inst::Generate(const Graph *graph) {
     gmf << gf;
   }
 
-  auto num_ports = inst->CountNodes(Node::PORT) + inst->CountNodes(Node::ARRAY_PORT);
+  auto num_ports = inst->CountNodes(Node::PORT);// + inst->CountNodes(Node::ARRAY_PORT);
   if (num_ports > 0) {
     // Port map
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &n : inst->GetNodesOfTypes({Node::PORT, Node::ARRAY_PORT})) {
+    for (const auto &n : inst->GetNodesOfType(Node::PORT)) {
       Block pm;
       pm << GeneratePortMaps(n);
       pmb << pm;

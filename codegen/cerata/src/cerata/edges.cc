@@ -40,7 +40,7 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
   }
 
   // If the destination is a terminator
-  if (dst->IsPort() || dst->IsArrayPort()) {
+  if (dst->IsPort()) {
     auto t = *Cast<Term>(dst);
     // Check if it has a parent
     if (dst->parent()) {

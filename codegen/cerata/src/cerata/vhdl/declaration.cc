@@ -101,7 +101,7 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   return ret;
 }
 
-Block Decl::Generate(const std::shared_ptr<ArrayPort> &port, int depth) {
+Block Decl::Generate(const std::shared_ptr<PortArray> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
   auto flat_types = FilterForVHDL(Flatten(port->type().get()));
@@ -170,7 +170,7 @@ MultiBlock Decl::Generate(const Component* comp, bool entity) {
   }
 
   auto ports = comp->GetNodesOfType<Port>();
-  auto array_ports = comp->GetNodesOfType<ArrayPort>();
+  auto array_ports = comp->GetNodesOfType<PortArray>();
   if (!(ports.empty() && array_ports.empty())) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);

@@ -46,7 +46,7 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
   for (const auto &p : arrow_ports) {
     if (p->dir() == Port::IN) {
       auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
-      auto config_node = cr_inst->Get(Node::PARAMETER, "CFG");
+      auto config_node = cr_inst->GetNode(Node::PARAMETER, "CFG");
       config_node <<=
           cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));
       column_readers.push_back(cr_inst.get());
@@ -75,33 +75,33 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
   }
 
   auto num_read_slaves = cerata::Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_rreq_array = cerata::ArrayPort::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
-  auto bus_rdat_array = cerata::ArrayPort::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
+  auto bus_rreq_array = cerata::PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
+  auto bus_rdat_array = cerata::PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
 
   auto num_write_slaves = cerata::Parameter::Make("NUM_WRITE_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_wreq_array = cerata::ArrayPort::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
-  auto bus_wdat_array = cerata::ArrayPort::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
+  auto bus_wreq_array = cerata::PortArray::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
+  auto bus_wdat_array = cerata::PortArray::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
 
-  AddNode(num_read_slaves);
-  AddNode(bus_rreq_array);
-  AddNode(bus_rdat_array);
+  AddObject(num_read_slaves);
+  AddObject(bus_rreq_array);
+  AddObject(bus_rdat_array);
 
-  AddNode(num_write_slaves);
-  AddNode(bus_wreq_array);
-  AddNode(bus_wdat_array);
+  AddObject(num_write_slaves);
+  AddObject(bus_wreq_array);
+  AddObject(bus_wdat_array);
 
   for (const auto &cr : column_readers) {
     auto cr_rreq = cr->port("bus_rreq");
     auto cr_rdat = cr->port("bus_rdat");
-    bus_rreq_array <<= cr_rreq;
-    cr_rdat <<= bus_rdat_array;
+    bus_rreq_array->Append() <<= cr_rreq;
+    cr_rdat <<= bus_rdat_array->Append();
   }
 
   for (const auto &cw : column_writers) {
     auto cw_wreq = cw->port("bus_wreq");
     auto cw_wdat = cw->port("bus_wdat");
-    bus_wreq_array <<= cw_wreq;
-    bus_wdat_array <<= cw_wdat;
+    bus_wreq_array->Append() <<= cw_wreq;
+    bus_wdat_array->Append() <<= cw_wdat;
   }
 }
 

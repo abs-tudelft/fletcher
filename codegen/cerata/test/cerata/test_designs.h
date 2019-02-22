@@ -25,46 +25,46 @@
 namespace cerata {
 
 std::shared_ptr<Component> GetArrayToArrayComponent() {
+  /*
   auto data = Vector::Make<8>();
 
   auto top_size = Parameter::Make("top_size", integer(), intl<0>());
-  auto top_array = ArrayPort::Make("top_array", data, top_size, Term::IN);
+  auto top_array = PortArray::Make("top_array", data, top_size, Term::IN);
   auto top_comp = Component::Make("top_comp", {top_size}, {top_array}, {});
 
   auto child_size = Parameter::Make("child_size", integer(), intl<0>());
-  auto child_array = ArrayPort::Make("child_array", data, child_size, Term::IN);
+  auto child_array = PortArray::Make("child_array", data, child_size, Term::IN);
   auto child_comp = Component::Make("child_comp", {child_size}, {child_array}, {});
   auto child_inst = Instance::Make(child_comp);
 
-  child_inst->aport("child_array") <<= top_comp->aport("top_array");
+  child_inst->porta("child_array") <<= top_comp->porta("top_array");
 
   top_comp->AddChild(std::move(child_inst));
 
   return top_comp;
+   */
+  return nullptr;
 }
 
 std::shared_ptr<Component> GetArrayComponent() {
   auto size = Parameter::Make("size", integer(), intl<0>());
   auto data = Vector::Make<8>();
-  auto pA = ArrayPort::Make("A", data, size, Term::OUT);
+  auto pA = PortArray::Make("A", data, size, Term::OUT);
   auto pB = Port::Make("B", data, Term::IN);
   auto pC = Port::Make("C", data, Term::IN);
 
-  auto top = Component::Make("top", {}, {}, {});
-  auto x_comp = Component::Make("X", {size}, {pA}, {});
-  auto y_comp = Component::Make("Y", {}, {pB, pC}, {});
+  auto top = Component::Make("top");
+  auto x_comp = Component::Make("X", {size, pA});
+  auto y_comp = Component::Make("Y", {pB, pC});
 
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);
 
-  auto xr = x.get();
-  auto yr = y.get();
+  y->port("B") <<= x->porta("A")->Append();
+  y->port("C") <<= x->porta("A")->Append();
 
   top->AddChild(std::move(x))
       .AddChild(std::move(y));
-
-  yr->port("B") <<= xr->aport("A");
-  yr->port("C") <<= xr->aport("A");
 
   return top;
 }
@@ -102,9 +102,9 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   auto pB = Port::Make("B", tB, Port::IN);
 
   // Components and instantiations
-  auto top = Component::Make("top", {}, {}, {});
-  auto x_comp = Component::Make("X", {}, {pA}, {});
-  auto y_comp = Component::Make("Y", {}, {pB}, {});
+  auto top = Component::Make("top");
+  auto x_comp = Component::Make("X", {pA});
+  auto y_comp = Component::Make("Y", {pB});
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);
   auto xr = x.get();
@@ -140,20 +140,20 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
 
   // Ports
   auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl<0>());
-  auto pA = ArrayPort::Make("A", tA, parSize, Port::OUT);
+  auto pA = PortArray::Make("A", tA, parSize, Port::OUT);
   auto pB = Port::Make("B", tB, Port::OUT);
   auto pC = Port::Make("C", tB, Port::OUT);
 
   // Components and instantiations
-  auto top = Component::Make("top", {}, {pB, pC}, {});
-  auto x_comp = Component::Make("X", {}, {pA}, {});
+  auto top = Component::Make("top", {pB, pC});
+  auto x_comp = Component::Make("X", {pA});
   auto x = Instance::Make(x_comp);
   auto xr = x.get();
   top->AddChild(std::move(x));
 
   // Drive B and C from A
-  pB <<= xr->aport("A");
-  pC <<= xr->aport("A");
+  pB <<= xr->porta("A")->Append();
+  pC <<= xr->porta("A")->Append();
 
   return top;
 }
@@ -176,7 +176,7 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto l = intl<16>();
   auto par = Parameter::Make("depth", integer(), l);
 
-  auto a_type = Component::Make("a", {par}, {clk_port, rst_port, b_port, v_port, r_port, s_port}, {});
+  auto a_type = Component::Make("a", {par, clk_port, rst_port, b_port, v_port, r_port, s_port});
 
   return a_type;
 }

@@ -35,8 +35,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   };
   /// @brief Graph type id for convenience
   ID id_;
-  /// @brief Graph nodes.
-  std::deque<std::shared_ptr<Node>> nodes_;
+  /// @brief Graph objects.
+  std::deque<std::shared_ptr<Object>> objects_;
   /// @brief Graph children / subgraphs.
   std::deque<std::unique_ptr<Graph>> children;
   /// @brief Optional Graph parents
@@ -54,51 +54,62 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   explicit Graph(std::string name, ID id) : Named(std::move(name)), id_(id) {}
   virtual ~Graph() = default;
 
-  /// @brief Get a node of a specific type with a specific name
-  std::shared_ptr<Node> Get(Node::ID node_id, const std::string &node_name) const;
-  /// @brief Shorthand to Get(Node::ARRAY_PORT, ...)
-  std::shared_ptr<ArrayPort> aport(const std::string &port_name) const;
-  /// @brief Shorthand to Get(Node::PORT, ...)
-  std::shared_ptr<Port> port(const std::string &port_name) const;
-  /// @brief Shorthand to Get(Node::SIGNAL, ...)
-  std::shared_ptr<Signal> sig(const std::string &signal_name) const;
-  /// @brief Shorthand to Get(Node::PARAMETER, ...)
-  std::shared_ptr<Parameter> par(const std::string &signal_name) const;
+  /// @brief Add a child graph
+  virtual Graph &AddChild(std::unique_ptr<Graph> child);
+  /// @brief Add an object to the component
+  virtual Graph &AddObject(const std::shared_ptr<Object> &obj);
+  /// @brief Get all objects of a specific type.
+  template<typename T>
+  std::deque<std::shared_ptr<T>> GetAll() const {
+    std::deque<std::shared_ptr<T>> ret;
+    for (const auto &o : objects_) {
+      auto co = std::dynamic_pointer_cast<T>(o);
+      if (co != nullptr)
+        ret.push_back(co);
+    }
+    return ret;
+  }
+
+  /// @brief Get a NodeArray object of a specific type with a specific name
+  std::shared_ptr<NodeArray> GetArray(Node::NodeID node_id, const std::string &array_name) const;
+  /// @brief Get a Node of a specific type with a specific name
+  std::shared_ptr<Node> GetNode(Node::NodeID node_id, const std::string &node_name) const;
   /**
- * @brief Obtain all nodes of type T from the graph
- * @tparam T  The node type to obtain
- * @return    A deque of nodes of type T
- */
+   * @brief Obtain all nodes of type T from the graph
+   * @tparam T  The node type to obtain
+   * @return    A deque of nodes of type T
+   */
   template<typename T>
   std::deque<std::shared_ptr<T>> GetNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
-    for (const auto &n : nodes_) {
-      auto node = Cast<T>(n);
-      if (node) {
-        result.push_back(*node);
-      }
+    for (const auto &node : GetAll<Node>()) {
+      if (Cast<T>(node)) result.push_back(*Cast<T>(node));
     }
     return result;
   }
   /// @brief Obtain all nodes which ids are in a list of Node::IDs
-  std::deque<std::shared_ptr<Node>> GetNodesOfTypes(std::initializer_list<Node::ID> ids) const;
-
-  /// @brief Add a node to the component
-  virtual Graph &AddNode(const std::shared_ptr<Node> &node);
+  std::deque<std::shared_ptr<Node>>
+  GetNodesOfTypes(std::initializer_list<Node::NodeID>
+                  ids) const;
   /// @brief Count nodes of a specific node type
-  size_t CountNodes(Node::ID id) const;
+  size_t CountNodes(Node::NodeID id) const;
   /// @brief Get all nodes.
-  std::deque<std::shared_ptr<Node>> GetNodes() const { return nodes_; }
+  std::deque<std::shared_ptr<Node>> GetNodes() const { return GetAll<Node>(); }
   /// @brief Get all nodes of a specific type.
-  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
+  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::NodeID id) const;
+  /// @brief Get all arrays of a specific type.
+  std::deque<std::shared_ptr<NodeArray>> GetArraysOfType(Node::NodeID id) const;
   /// @brief Return all graph nodes that do not explicitly belong to the graph.
   std::deque<std::shared_ptr<Node>> GetImplicitNodes() const;
 
-  /// @brief Add a child component
-  virtual Graph &AddChild(std::unique_ptr<Graph> child);
-
-  /// @brief Create a copy of the graph
-  //virtual std::shared_ptr<Graph> Copy() const;
+  /// @brief Shorthand to Get(, ..)
+  std::shared_ptr<PortArray> porta(const std::string &port_name) const;
+  /// @brief Shorthand to Get(Node::PORT, ..)
+  std::shared_ptr<Port> port(const std::string &port_name) const;
+  /// @brief Shorthand to Get(Node::SIGNAL, ..)
+  std::shared_ptr<Signal> sig(const std::string &signal_name) const;
+  /// @brief Shorthand to Get(Node::PARAMETER, ..)
+  std::shared_ptr<Parameter> par(const std::string &signal_name) const;
 };
 
 // Forward decl.
@@ -113,14 +124,11 @@ struct Component : public Graph {
   /// @brief Construct an empty Component
   explicit Component(std::string name) : Graph(std::move(name), COMPONENT) {}
 
-  /// @brief Construct a Component with initial parameters and ports.
-  static std::shared_ptr<Component> Make(std::string name,
-                                         std::initializer_list<std::shared_ptr<Node>> parameters,
-                                         std::initializer_list<std::shared_ptr<Node>> ports,
-                                         std::initializer_list<std::shared_ptr<Node>> signals);
+  /// @brief Construct a Component with initial nodes
+  static std::shared_ptr<Component> Make(std::string name, std::initializer_list<std::shared_ptr<Object>> nodes);
 
   /// @brief Construct an empty Component with only a name.
-  static std::shared_ptr<Component> Make(std::string name) { return Make(std::move(name), {}, {}, {}); }
+  static std::shared_ptr<Component> Make(std::string name) { return Make(std::move(name), {}); }
 
   /**
    * @brief Add a child graph. Only allowed if the child graph is an instance. Throws an error otherwise.
@@ -135,9 +143,6 @@ struct Component : public Graph {
   * @return      A deque holding pointers to all instances.
   */
   std::deque<Instance *> GetAllInstances() const;
-
-  /// @brief Create a copy of the component
-  //std::shared_ptr<Graph> Copy() const override;
 };
 
 /**
@@ -158,7 +163,7 @@ struct Instance : public Graph {
   static std::unique_ptr<Instance> Make(std::shared_ptr<Component> component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
-  Graph &AddNode(const std::shared_ptr<Node> &node) override;
+  Graph &AddObject(const std::shared_ptr<Object> &obj) override;
 };
 
 /**

@@ -97,14 +97,12 @@ StyleBuilder &StyleBuilder::operator<<(const std::string &part) {
 }
 
 bool Config::operator()(const std::shared_ptr<Node> &node) {
-  switch (node->id()) {
+  switch (node->node_id()) {
     case Node::PARAMETER: return nodes.parameters;
     case Node::LITERAL: return nodes.literals;
     case Node::SIGNAL: return nodes.signals;
     case Node::PORT: return nodes.ports;
     case Node::EXPRESSION: return nodes.expressions;
-    case Node::ARRAY_PORT: return nodes.ports;
-    case Node::ARRAY_SIGNAL: return nodes.signals;
   }
   return true;
 }
@@ -215,7 +213,7 @@ std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
   sb << GetLabel(n);
 
   // Add other style
-  switch (n->id()) {
+  switch (n->node_id()) {
     case Node::PORT: sb << node.port;
       break;
     case Node::SIGNAL:sb << node.signal;
@@ -225,10 +223,6 @@ std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
     case Node::LITERAL:sb << node.literal;
       break;
     case Node::EXPRESSION:sb << node.expression;
-      break;
-    case Node::ARRAY_SIGNAL: sb << node.signal;
-      break;
-    case Node::ARRAY_PORT: sb << node.port;
       break;
   }
 

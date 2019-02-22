@@ -106,6 +106,8 @@ class Type : public Named {
   void AddMapper(std::shared_ptr<TypeMapper> mapper);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const Type *other) const;
+  /// @brief Get a mapper to another type, if it exists.
+  std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other) const;
 
  protected:
   ID id_;
