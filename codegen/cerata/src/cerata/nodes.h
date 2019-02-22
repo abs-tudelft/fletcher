@@ -37,7 +37,7 @@ struct Graph;
 class Node : public Object, public std::enable_shared_from_this<Node> {
  public:
   /// Node type IDs with different properties.
-  enum ID {
+  enum NodeID {
     LITERAL,         ///< No-input     AND multi-output node with storage type and storage value.
     EXPRESSION,      ///< No-input     AND multi-output node that forms a binary tree with operations and nodes.
     SIGNAL,          ///< Single-input AND multi-output node.
@@ -46,28 +46,26 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   };
 
   /// @brief Node constructor.
-  Node(std::string name, ID id, std::shared_ptr<Type> type);
-  /// @brief Virtual destructor for Node.
-  virtual ~Node() = default;
+  Node(std::string name, NodeID id, std::shared_ptr<Type> type);
 
   /// @brief Return the node Type
   inline std::shared_ptr<Type> type() const { return type_; }
   /// @brief Set the node Type
   inline void SetType(const std::shared_ptr<Type> &type) { type_ = type; }
   /// @brief Return the node type ID
-  inline ID id() const { return id_; }
+  inline NodeID node_id() const { return node_id_; }
   /// @brief Return whether this node is of a specific node type id.
-  inline bool Is(ID node_id) const { return id_ == node_id; }
+  inline bool Is(NodeID node_id) const { return node_id_ == node_id; }
   /// @brief Return true if this is a PORT node, false otherwise.
-  inline bool IsPort() const { return id_ == PORT; }
+  inline bool IsPort() const { return node_id_ == PORT; }
   /// @brief Return true if this is a SIGNAL node, false otherwise.
-  inline bool IsSignal() const { return id_ == SIGNAL; }
+  inline bool IsSignal() const { return node_id_ == SIGNAL; }
   /// @brief Return true if this is a PARAMETER node, false otherwise.
-  inline bool IsParameter() const { return id_ == PARAMETER; }
+  inline bool IsParameter() const { return node_id_ == PARAMETER; }
   /// @brief Return true if this is a LITERAL node, false otherwise.
-  inline bool IsLiteral() const { return id_ == LITERAL; }
+  inline bool IsLiteral() const { return node_id_ == LITERAL; }
   /// @brief Return true if this is an EXPRESSION node, false otherwise.
-  inline bool IsExpression() const { return id_ == EXPRESSION; }
+  inline bool IsExpression() const { return node_id_ == EXPRESSION; }
 
   /// @brief Add an input to this node.
   virtual std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) = 0;
@@ -87,7 +85,7 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
 
  protected:
   /// Node type ID.
-  ID id_;
+  NodeID node_id_;
   /// The Type of this Node.
   std::shared_ptr<Type> type_;
 };
@@ -100,7 +98,7 @@ struct MultiOutputNode : public Node {
   std::deque<std::shared_ptr<Edge>> outputs_;
 
   /// @brief MultiOutputNode constructor.
-  MultiOutputNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : Node(std::move(name),
+  MultiOutputNode(std::string name, Node::NodeID id, std::shared_ptr<Type> type) : Node(std::move(name),
                                                                                     id,
                                                                                     std::move(type)) {}
 
@@ -130,7 +128,7 @@ struct NormalNode : public MultiOutputNode {
   std::shared_ptr<Edge> input_;
 
   /// @brief NormalNode constructor.
-  NormalNode(std::string name, Node::ID id, std::shared_ptr<Type> type) : MultiOutputNode(std::move(name),
+  NormalNode(std::string name, Node::NodeID id, std::shared_ptr<Type> type) : MultiOutputNode(std::move(name),
                                                                                           id,
                                                                                           std::move(type)) {}
 
@@ -367,7 +365,7 @@ std::optional<T *> Cast(Node *obj) {
 }
 
 /// @brief Convert a Node ID to a human-readable string.
-std::string ToString(Node::ID id);
+std::string ToString(Node::NodeID id);
 
 // Some often used literals for convenience:
 /**

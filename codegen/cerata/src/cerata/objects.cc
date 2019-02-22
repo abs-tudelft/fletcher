@@ -23,13 +23,4 @@
 
 namespace cerata {
 
-template<>
-Object::ID id_of<Node>() { return Object::NODE; }
-template<>
-Object::ID id_of<Port>() { return Object::NODE; }
-template<>
-Object::ID id_of<NodeArray>() { return Object::ARRAY; }
-template<>
-Object::ID id_of<PortArray>() { return Object::ARRAY; }
-
 }  // cerata;

@@ -42,7 +42,6 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
       if (e->IsComplete()) {
         auto dst = *e->dst;
         auto src = *e->src;
-
         // Don't draw literals
         if (dst->IsLiteral() || src->IsLiteral()) {
           continue;
@@ -50,9 +49,6 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
 
         // Draw edge
         ret << tab(level);
-        // if (IsNested(e->src->type())) {
-        //   ret << NodeName(e->src, ":cell");
-        // } else {
         if (src->IsExpression() && config.nodes.expand.expression) {
           auto srcname = ToHex(src);
           ret << "\"" + srcname + "\"";
@@ -60,19 +56,12 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
           auto srcname = NodeName(src);
           ret << srcname;
         }
-        // }
         ret << " -> ";
-        // if (IsNested(e->dst->type())) {
-        //   ret << NodeName(e->dst, ":cell");
-        // } else {
         ret << NodeName(dst);
-        // }
 
         // Set style
-        ret << " [";
-
         StyleBuilder sb;
-
+        ret << " [";
         switch (src->type()->id()) {
           case Type::STREAM: {
             sb << style.edge.stream;
@@ -244,16 +233,11 @@ std::string Grapher::GenNode(const std::shared_ptr<Node> &n, int level) {
   return str.str();
 }
 
-std::string Grapher::GenNodes(const Graph *graph, Node::ID id, int level, bool nogroup) {
+std::string Grapher::GenNodes(const Graph *graph, Node::NodeID id, int level, bool nogroup) {
   std::stringstream ret;
-  auto nodes = graph->GetNodes();
-  std::deque<std::shared_ptr<Node>> filtered;
-  for (const auto &n : nodes) {
-    if (n->id() == id) {
-      filtered.push_back(n);
-    }
-  }
-  if (!filtered.empty()) {
+  auto nodes = graph->GetNodesOfType(id);
+  auto arrays = graph->GetArraysOfType(id);
+  if (!nodes.empty() || !arrays.empty()) {
     if (!nogroup) {
       ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) + "_" + ToString(id) << " {\n";
       // ret << tab(level + 1) << "label=\"" << ToString(id) << "s\";\n";
@@ -262,8 +246,13 @@ std::string Grapher::GenNodes(const Graph *graph, Node::ID id, int level, bool n
       ret << tab(level + 1) << "style=" + style.nodegroup.base + ";\n";
       ret << tab(level + 1) << "color=\"" + style.nodegroup.color + "\";\n";
     }
-    for (const auto &n : filtered) {
+    for (const auto &n : nodes) {
       ret << GenNode(n, level + nogroup + 1);
+    }
+    for (const auto &a : arrays) {
+      for (const auto &n : a->nodes()) {
+        ret << GenNode(n, level + nogroup + 1);
+      }
     }
     if (!nogroup) {
       ret << tab(level) << "}\n";
@@ -297,7 +286,6 @@ std::string Grapher::GenGraph(const Graph *graph, int level) {
   //   ret << GenNodes(graph, Node::LITERAL, level + 1);
   ret << GenNodes(graph, Node::PARAMETER, level + 1);
   ret << GenNodes(graph, Node::PORT, level + 1);
-  //ret << GenNodes(graph, Node::ARRAY_PORT, level + 1);
   ret << GenNodes(graph, Node::SIGNAL, level + 1, true);
 
   if (!graph->children.empty()) {
@@ -360,6 +348,7 @@ std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, std::string pref
 std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   std::deque<std::shared_ptr<Edge>> all_edges;
 
+  // Get all normal nodes
   for (const auto &node : graph->GetAll<Node>()) {
     auto out_edges = node->sinks();
     for (const auto &e : out_edges) {
@@ -368,6 +357,19 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
     auto in_edges = node->sources();
     for (const auto &e : in_edges) {
       all_edges.push_back(e);
+    }
+  }
+
+  for (const auto &array : graph->GetAll<NodeArray>()) {
+    for (const auto &node : array->nodes()) {
+      auto out_edges = node->sinks();
+      for (const auto &e : out_edges) {
+        all_edges.push_back(e);
+      }
+      auto in_edges = node->sources();
+      for (const auto &e : in_edges) {
+        all_edges.push_back(e);
+      }
     }
   }
 
@@ -383,10 +385,10 @@ std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
   std::stringstream ret;
   if (n->parent()) {
     auto name = (*n->parent())->name();
-    ret << name + ":" + ToString(n->id()) + ":";
+    ret << name + ":" + ToString(n->node_id()) + ":";
   }
   if (n->IsExpression()) {
-    ret << "Anon_" + ToString(n->id()) + "_" + ToHex(n);
+    ret << "Anon_" + ToString(n->node_id()) + "_" + ToHex(n);
   } else if (!n->name().empty()) {
     ret << n->name();
   }

@@ -97,7 +97,7 @@ StyleBuilder &StyleBuilder::operator<<(const std::string &part) {
 }
 
 bool Config::operator()(const std::shared_ptr<Node> &node) {
-  switch (node->id()) {
+  switch (node->node_id()) {
     case Node::PARAMETER: return nodes.parameters;
     case Node::LITERAL: return nodes.literals;
     case Node::SIGNAL: return nodes.signals;
@@ -213,7 +213,7 @@ std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
   sb << GetLabel(n);
 
   // Add other style
-  switch (n->id()) {
+  switch (n->node_id()) {
     case Node::PORT: sb << node.port;
       break;
     case Node::SIGNAL:sb << node.signal;

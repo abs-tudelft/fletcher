@@ -60,14 +60,11 @@ std::shared_ptr<Component> GetArrayComponent() {
   auto x = Instance::Make(x_comp);
   auto y = Instance::Make(y_comp);
 
-  auto xr = x.get();
-  auto yr = y.get();
+  y->port("B") <<= x->porta("A")->Append();
+  y->port("C") <<= x->porta("A")->Append();
 
   top->AddChild(std::move(x))
       .AddChild(std::move(y));
-
-  yr->port("B") <<= xr->porta("A")->Append();
-  yr->port("C") <<= xr->porta("A")->Append();
 
   return top;
 }

@@ -32,9 +32,11 @@ class Object : public Named {
   enum ID {
     NODE,
     ARRAY
-  } id;
-  explicit Object(std::string name, ID id) : Named(std::move(name)), id(id) {}
+  };
+  explicit Object(std::string name, ID id) : Named(std::move(name)), obj_id_(id) {}
   virtual ~Object() = default;
+
+  ID obj_id() const { return obj_id_; };
 
   void SetParent(const Graph *parent) {
     if (parent != nullptr) { parent_ = parent; }
@@ -45,6 +47,7 @@ class Object : public Named {
   virtual std::shared_ptr<Object> Copy() const = 0;
 
  protected:
+  ID obj_id_;
   /// An optional parent Graph to which this Node belongs. Initially no value.
   std::optional<const Graph *> parent_ = {};
 };
@@ -64,20 +67,5 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Object> &obj) {
     return {};
   }
 }
-
-template<typename T>
-Object::ID id_of() {
-  // do some c++ magic to make this static assert fail if its not a node or an array
-  throw std::runtime_error("Nope");
-}
-
-template<>
-Object::ID id_of<Node>();
-template<>
-Object::ID id_of<Port>();
-template<>
-Object::ID id_of<NodeArray>();
-template<>
-Object::ID id_of<PortArray>();
 
 }  // cerata;

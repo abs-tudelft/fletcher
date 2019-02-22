@@ -59,18 +59,14 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
   return *this;
 }
 
-std::shared_ptr<NodeArray> Graph::GetArray(NodeArray::ID array_id, const std::string &array_name) const {
+std::shared_ptr<NodeArray> Graph::GetArray(Node::NodeID node_id, const std::string &array_name) const {
   for (const auto &a : GetAll<NodeArray>()) {
-    if (a->name() == array_name)
-      if (a->id_ == array_id) {
-        return a;
-      }
+    if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  throw std::runtime_error(
-      "NodeArray " + array_name + " does not exist on Graph " + this->name());
+  throw std::runtime_error("NodeArray " + array_name + " does not exist on Graph " + this->name());
 }
 
-std::shared_ptr<Node> Graph::GetNode(Node::ID node_id, const std::string &node_name) const {
+std::shared_ptr<Node> Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
   for (const auto &n : GetAll<Node>()) {
     if (n->name() == node_name)
       if (n->Is(node_id)) {
@@ -89,7 +85,7 @@ Graph &Graph::AddChild(std::unique_ptr<Graph> child) {
   return *this;
 }
 
-size_t Graph::CountNodes(Node::ID id) const {
+size_t Graph::CountNodes(Node::NodeID id) const {
   size_t count = 0;
   for (const auto &n : GetAll<Node>()) {
     if (n->Is(id)) {
@@ -99,11 +95,22 @@ size_t Graph::CountNodes(Node::ID id) const {
   return count;
 }
 
-std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::ID id) const {
+std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::NodeID id) const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : GetAll<Node>()) {
     if (n->Is(id)) {
       result.push_back(n);
+    }
+  }
+  return result;
+}
+
+std::deque<std::shared_ptr<NodeArray>> Graph::GetArraysOfType(Node::NodeID id) const {
+  std::deque<std::shared_ptr<NodeArray>> result;
+  auto arrays = GetAll<NodeArray>();
+  for (const auto &a : arrays) {
+    if (a->node_id() == id) {
+      result.push_back(a);
     }
   }
   return result;
@@ -119,7 +126,7 @@ std::shared_ptr<Parameter> Graph::par(const std::string &signal_name) const {
   return std::dynamic_pointer_cast<Parameter>(GetNode(Node::PARAMETER, signal_name));
 }
 std::shared_ptr<PortArray> Graph::porta(const std::string &port_name) const {
-  return std::dynamic_pointer_cast<PortArray>(GetArray(NodeArray::PORT, port_name));
+  return std::dynamic_pointer_cast<PortArray>(GetArray(Node::PORT, port_name));
 }
 
 std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
@@ -138,11 +145,11 @@ std::deque<std::shared_ptr<Node>> Graph::GetImplicitNodes() const {
   return result;
 }
 
-std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::ID> ids) const {
+std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<Node::NodeID> ids) const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : GetAll<Node>()) {
     for (const auto &id : ids) {
-      if (n->id() == id) {
+      if (n->node_id() == id) {
         result.push_back(n);
         break;
       }
@@ -162,28 +169,28 @@ std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
 Instance::Instance(std::string name, std::shared_ptr<Component> comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
   // Create a map that maps an "old" node to a "new" node.
-  std::map<std::shared_ptr<Object>, std::shared_ptr<Object>> copied;
+  std::map<std::shared_ptr<Object>, std::shared_ptr<Object>> copies;
   // Make copies of ports
   for (const auto &port : component->GetAll<Port>()) {
     auto inst_port = port->Copy();
     AddObject(inst_port);
-    copied[port] = inst_port;
+    copies[port] = inst_port;
   }
   // Make copies of port arrays
   for (const auto &array_port : component->GetAll<PortArray>()) {
     // Make a copy of the port
     auto inst_port = array_port->Copy();
     AddObject(inst_port);
-    copied[array_port] = inst_port;
+    copies[array_port] = inst_port;
 
     // Figure out whether the size node was already copied
     std::shared_ptr<Object> inst_size;
-    if (copied.count(array_port->size()) > 0) {
-      inst_size = copied[array_port->size()];
+    if (copies.count(array_port->size()) > 0) {
+      inst_size = copies[array_port->size()];
     } else {
       inst_size = array_port->size()->Copy();
       AddObject(inst_size);
-      copied[array_port->size()] = inst_size;
+      copies[array_port->size()] = inst_size;
     }
     // Set the size for the copied node
     auto isn = *Cast<Node>(inst_size);
@@ -193,10 +200,10 @@ Instance::Instance(std::string name, std::shared_ptr<Component> comp)
 
   // Make copies of parameters and literals
   for (const auto &node : component->GetNodesOfTypes({Node::PARAMETER, Node::LITERAL})) {
-    if (copied.count(node) == 0) {
+    if (copies.count(node) == 0) {
       auto inst_node = node->Copy();
       AddObject(inst_node);
-      copied[node] = inst_node;
+      copies[node] = inst_node;
     }
   }
 }

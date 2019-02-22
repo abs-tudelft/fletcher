@@ -45,7 +45,7 @@ std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node) {
     }
     return param;
   }
-  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->id()));
+  throw std::runtime_error("Cannot increment node " + node->name() + " of type " + ToString(node->node_id()));
 }
 
 void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
@@ -67,6 +67,9 @@ void NodeArray::increment() {
 
 std::shared_ptr<Node> NodeArray::Append() {
   auto elem = *Cast<Node>(base_->Copy());
+  if (parent()) {
+    elem->SetParent(*parent());
+  }
   nodes_.push_back(elem);
   increment();
   return elem;
@@ -81,7 +84,7 @@ std::shared_ptr<Node> NodeArray::node(size_t i) const {
 }
 
 std::shared_ptr<Object> NodeArray::Copy() const {
-  auto ret = std::make_shared<NodeArray>(name(), id_, base_, *Cast<Node>(size()->Copy()));
+  auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, *Cast<Node>(size()->Copy()));
   for (size_t i = 0; i < nodes_.size(); i++) {
     ret->Append();
   }
@@ -89,7 +92,7 @@ std::shared_ptr<Object> NodeArray::Copy() const {
 }
 
 PortArray::PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir)
-    : NodeArray(std::move(name), NodeArray::PORT, Port::Make(name, std::move(type), dir), std::move(size)),
+    : NodeArray(std::move(name), Node::PORT, Port::Make(name, std::move(type), dir), std::move(size)),
       Term(dir) {}
 
 std::shared_ptr<PortArray> PortArray::Make(std::string name,
@@ -101,6 +104,14 @@ std::shared_ptr<PortArray> PortArray::Make(std::string name,
 
 std::shared_ptr<PortArray> PortArray::Make(std::shared_ptr<Type> type, std::shared_ptr<Node> size, Port::Dir dir) {
   return PortArray::Make(type->name(), type, std::move(size), dir);
+}
+
+std::shared_ptr<Object> PortArray::Copy() const {
+  auto ret = std::make_shared<PortArray>(name(), type(), *Cast<Node>(size()->Copy()), dir());
+  for (size_t i = 0; i < nodes_.size(); i++) {
+    ret->Append();
+  }
+  return ret;
 }
 
 }  // namespace cerata

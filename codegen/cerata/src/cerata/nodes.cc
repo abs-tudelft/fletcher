@@ -25,8 +25,8 @@
 
 namespace cerata {
 
-Node::Node(std::string name, Node::ID id, std::shared_ptr<Type> type)
-    : Object(std::move(name), Object::NODE), id_(id), type_(std::move(type)) {}
+Node::Node(std::string name, Node::NodeID id, std::shared_ptr<Type> type)
+    : Object(std::move(name), Object::NODE), node_id_(id), type_(std::move(type)) {}
 
 std::string Node::ToString() {
   return name();
@@ -182,7 +182,7 @@ std::shared_ptr<Literal> bool_false() {
   return result;
 }
 
-std::string ToString(Node::ID id) {
+std::string ToString(Node::NodeID id) {
   switch (id) {
     case Node::PORT:return "Port";
     case Node::SIGNAL:return "Signal";

@@ -36,14 +36,11 @@ std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node);
 
 class NodeArray : public Object {
  public:
-  enum ID {
-    PORT,
-    SIGNAL
-  } id_;
+  Node::NodeID node_id() { return node_id_; }
 
   /// @brief ArrayNode constructor.
-  NodeArray(std::string name, ID id, std::shared_ptr<Node> base, std::shared_ptr<Node> size)
-      : Object(std::move(name), Object::ARRAY), id_(id), base_(std::move(base)), size_(std::move(size)) {}
+  NodeArray(std::string name, Node::NodeID id, std::shared_ptr<Node> base, std::shared_ptr<Node> size)
+      : Object(std::move(name), Object::ARRAY), node_id_(id), base_(std::move(base)), size_(std::move(size)) {}
 
   inline std::shared_ptr<Node> size() const { return size_; }
   void SetSize(const std::shared_ptr<Node> &size);
@@ -66,6 +63,7 @@ class NodeArray : public Object {
   std::string ToString() const { return name(); }
 
  protected:
+  Node::NodeID node_id_;
   /// @brief Increment the size of the ArrayNode.
   void increment();
   /// A node representing the template for each of the element nodes.
@@ -95,9 +93,7 @@ class PortArray : public NodeArray, public Term {
                                          Port::Dir dir = Port::Dir::IN);
 
   /// @brief Make a copy of this port array
-  std::shared_ptr<Object> Copy() const override {
-    return Make(name(), type(), *Cast<Node>(size()->Copy()), dir());
-  }
+  std::shared_ptr<Object> Copy() const override;
 };
 
 }

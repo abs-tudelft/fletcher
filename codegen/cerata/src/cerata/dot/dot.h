@@ -38,7 +38,7 @@ struct Grapher {
   explicit Grapher(Style style) : style(std::move(style)) {}
   std::string GenEdges(const Graph *graph, int level = 0);
   std::string GenNode(const std::shared_ptr<Node> &n, int level = 0);
-  std::string GenNodes(const Graph *graph, Node::ID id, int level = 0, bool nogroup = false);
+  std::string GenNodes(const Graph *graph, Node::NodeID id, int level = 0, bool nogroup = false);
   std::string GenGraph(const Graph *graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
   std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix = "", int level = 0);

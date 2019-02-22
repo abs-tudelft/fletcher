@@ -54,69 +54,62 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   explicit Graph(std::string name, ID id) : Named(std::move(name)), id_(id) {}
   virtual ~Graph() = default;
 
+  /// @brief Add a child graph
+  virtual Graph &AddChild(std::unique_ptr<Graph> child);
+  /// @brief Add an object to the component
+  virtual Graph &AddObject(const std::shared_ptr<Object> &obj);
   /// @brief Get all objects of a specific type.
   template<typename T>
   std::deque<std::shared_ptr<T>> GetAll() const {
     std::deque<std::shared_ptr<T>> ret;
-    for (const auto& o : objects_) {
-      if (o->id == id_of<T>()) {
-        ret.push_back(std::static_pointer_cast<T>(o));
-      }
+    for (const auto &o : objects_) {
+      auto co = std::dynamic_pointer_cast<T>(o);
+      if (co != nullptr)
+        ret.push_back(co);
     }
     return ret;
   }
 
-  /// @brief Get a nodearray of a specific type with a specific name
-  std::shared_ptr<NodeArray> GetArray(NodeArray::ID array_id, const std::string &array_name) const;
-  /// @brief Get a node of a specific type with a specific name
-  std::shared_ptr<Node> GetNode(Node::ID node_id, const std::string &node_name) const;
-
+  /// @brief Get a NodeArray object of a specific type with a specific name
+  std::shared_ptr<NodeArray> GetArray(Node::NodeID node_id, const std::string &array_name) const;
+  /// @brief Get a Node of a specific type with a specific name
+  std::shared_ptr<Node> GetNode(Node::NodeID node_id, const std::string &node_name) const;
   /**
- * @brief Obtain all nodes of type T from the graph
- * @tparam T  The node type to obtain
- * @return    A deque of nodes of type T
- */
+   * @brief Obtain all nodes of type T from the graph
+   * @tparam T  The node type to obtain
+   * @return    A deque of nodes of type T
+   */
   template<typename T>
   std::deque<std::shared_ptr<T>> GetNodesOfType() const {
     std::deque<std::shared_ptr<T>> result;
-    for (const auto &o : objects_) {
-      if (o->id == Object::NODE) {
-        auto no = std::dynamic_pointer_cast<Node>(o);
-        auto node = Cast<T>(no);
-        if (node) {
-          result.push_back(*node);
-        }
-      }
+    for (const auto &node : GetAll<Node>()) {
+      if (Cast<T>(node)) result.push_back(*Cast<T>(node));
     }
     return result;
   }
   /// @brief Obtain all nodes which ids are in a list of Node::IDs
-  std::deque<std::shared_ptr<Node>> GetNodesOfTypes(std::initializer_list<Node::ID> ids) const;
-  /// @brief Add a node to the component
-  virtual Graph &AddObject(const std::shared_ptr<Object> &obj);
+  std::deque<std::shared_ptr<Node>>
+  GetNodesOfTypes(std::initializer_list<Node::NodeID>
+                  ids) const;
   /// @brief Count nodes of a specific node type
-  size_t CountNodes(Node::ID id) const;
+  size_t CountNodes(Node::NodeID id) const;
   /// @brief Get all nodes.
   std::deque<std::shared_ptr<Node>> GetNodes() const { return GetAll<Node>(); }
   /// @brief Get all nodes of a specific type.
-  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::ID id) const;
+  std::deque<std::shared_ptr<Node>> GetNodesOfType(Node::NodeID id) const;
+  /// @brief Get all arrays of a specific type.
+  std::deque<std::shared_ptr<NodeArray>> GetArraysOfType(Node::NodeID id) const;
   /// @brief Return all graph nodes that do not explicitly belong to the graph.
   std::deque<std::shared_ptr<Node>> GetImplicitNodes() const;
 
-  /// @brief Shorthand to Get(Node::ARRAY_PORT, ...)
+  /// @brief Shorthand to Get(, ..)
   std::shared_ptr<PortArray> porta(const std::string &port_name) const;
-  /// @brief Shorthand to Get(Node::PORT, ...)
+  /// @brief Shorthand to Get(Node::PORT, ..)
   std::shared_ptr<Port> port(const std::string &port_name) const;
-  /// @brief Shorthand to Get(Node::SIGNAL, ...)
+  /// @brief Shorthand to Get(Node::SIGNAL, ..)
   std::shared_ptr<Signal> sig(const std::string &signal_name) const;
-  /// @brief Shorthand to Get(Node::PARAMETER, ...)
+  /// @brief Shorthand to Get(Node::PARAMETER, ..)
   std::shared_ptr<Parameter> par(const std::string &signal_name) const;
-
-  /// @brief Add a child component
-  virtual Graph &AddChild(std::unique_ptr<Graph> child);
-
-  /// @brief Create a copy of the graph
-  //virtual std::shared_ptr<Graph> Copy() const;
 };
 
 // Forward decl.
@@ -150,9 +143,6 @@ struct Component : public Graph {
   * @return      A deque holding pointers to all instances.
   */
   std::deque<Instance *> GetAllInstances() const;
-
-  /// @brief Create a copy of the component
-  //std::shared_ptr<Graph> Copy() const override;
 };
 
 /**
