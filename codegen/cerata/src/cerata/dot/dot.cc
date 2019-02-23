@@ -250,9 +250,7 @@ std::string Grapher::GenNodes(const Graph *graph, Node::NodeID id, int level, bo
       ret << GenNode(n, level + nogroup + 1);
     }
     for (const auto &a : arrays) {
-      for (const auto &n : a->nodes()) {
-        ret << GenNode(n, level + nogroup + 1);
-      }
+        ret << GenNode(a->base(), level + nogroup + 1);
     }
     if (!nogroup) {
       ret << tab(level) << "}\n";

@@ -28,7 +28,7 @@ namespace cerata {
 namespace vhdl {
 
 struct Decl {
-  static std::string Generate(const Type *type, const std::shared_ptr<Node> &multiplier = intl<1>());
+  static std::string Generate(const Type *type, const std::optional<std::shared_ptr<Node>> &multiplier = {});
   static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
   static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
   static Block Generate(const std::shared_ptr<PortArray> &port, int depth = 0);

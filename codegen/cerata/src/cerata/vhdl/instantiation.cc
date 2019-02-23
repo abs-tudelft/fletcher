@@ -208,20 +208,8 @@ Block Inst::GeneratePortMaps(const std::shared_ptr<Node> &port) {
       tm = *tmo;
       // Obtain the unique mapping pairs for this mapping
       auto pairs = tm->GetUniqueMappingPairs();
-      // Figure out any array indices
-      size_t idx = 0;
-
-      /*
-      if (port->IsArray() && other->IsArray()) {
-
-      } else if (port->IsArray()) {
-        //idx = (*Cast<ArrayNode>(port))->IndexOf(edge);
-      } else if (other->IsArray()) {
-        //idx = (*Cast<ArrayNode>(other))->IndexOf(edge);
-      }
-       */
       // Generate the mapping for this port-node pair.
-      ret << GeneratePortMappingPair(pairs, port, other, idx);
+      ret << GeneratePortMappingPair(pairs, port, other, 0);
     } else {
       throw std::runtime_error(
           "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()
@@ -255,7 +243,7 @@ MultiBlock Inst::Generate(const Graph *graph) {
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
-    for (const auto &g : inst->GetNodesOfType<Parameter>()) {
+    for (const auto &g : inst->GetAll<Parameter>()) {
       gmb << GenerateGenericMap(g);
     }
     gmb <<= ",";
@@ -269,7 +257,7 @@ MultiBlock Inst::Generate(const Graph *graph) {
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &n : inst->GetNodesOfType(Node::PORT)) {
+    for (const auto &n : inst->GetAll<Port>()) {
       Block pm;
       pm << GeneratePortMaps(n);
       pmb << pm;

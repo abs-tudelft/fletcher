@@ -30,13 +30,13 @@
 namespace cerata {
 namespace vhdl {
 
-std::string Decl::Generate(const Type *type, const std::shared_ptr<Node> &multiplier) {
+std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr<Node>>& multiplier) {
   switch (type->id()) {
     default: {
-      if (multiplier == intl<1>()) {
+      if (!multiplier) {
         return "std_logic";
       } else {
-        return "std_logic_vector(" + (multiplier-1)->ToString() + " downto 0)";
+        return "std_logic_vector(" + ((*multiplier) - 1)->ToString() + " downto 0)";
       }
     }
     case Type::VECTOR: {
@@ -44,7 +44,11 @@ std::string Decl::Generate(const Type *type, const std::shared_ptr<Node> &multip
       auto width = vec->width();
       if (width) {
         auto wnode = (*width);
-        return "std_logic_vector(" + (multiplier * wnode - 1)->ToString() + " downto 0)";
+        if (!multiplier) {
+          return "std_logic_vector(" + (wnode-1)->ToString() + " downto 0)";
+        } else {
+          return "std_logic_vector(" + (*multiplier * wnode -1)->ToString() + " downto 0)";
+        }
       } else {
         return "<incomplete type>";
       }
@@ -147,7 +151,7 @@ MultiBlock Decl::Generate(const Component* comp, bool entity) {
   ret << h;
 
   // Generics
-  auto generics = comp->GetNodesOfType<Parameter>();
+  auto generics = comp->GetAll<Parameter>();
   if (!generics.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
@@ -169,9 +173,9 @@ MultiBlock Decl::Generate(const Component* comp, bool entity) {
     ret << gdh << gd << gdf;
   }
 
-  auto ports = comp->GetNodesOfType<Port>();
-  auto array_ports = comp->GetNodesOfType<PortArray>();
-  if (!(ports.empty() && array_ports.empty())) {
+  auto ports = comp->GetAll<Port>();
+  auto array_ports = comp->GetAll<PortArray>();
+  if (!ports.empty() || !array_ports.empty()) {
     Block pdh(ret.indent + 1);
     Block pd(ret.indent + 2);
     Block pdf(ret.indent + 1);
@@ -189,9 +193,9 @@ MultiBlock Decl::Generate(const Component* comp, bool entity) {
       pd << g;
     }
     // Process array ports
-    for (const auto &port : array_ports) {
-      auto g = Decl::Generate(port, ret.indent + 2);
-      if (port != array_ports.back()) {
+    for (const auto &array_port : array_ports) {
+      auto g = Decl::Generate(array_port, ret.indent + 2);
+      if (array_port != array_ports.back()) {
         g << ";";
       } else {
         g <<= ";";

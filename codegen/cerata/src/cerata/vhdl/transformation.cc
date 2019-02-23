@@ -28,7 +28,7 @@ namespace vhdl {
 std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
   std::deque<Node *> resolved;
   for (const auto &inst : comp->GetAllInstances()) {
-    for (const auto &port : inst->GetNodesOfType<Port>()) {
+    for (const auto &port : inst->GetAll<Port>()) {
       for (const auto &edge : port->sinks()) {
         // If the edge is not complete, continue.
         if (!edge->IsComplete()) {

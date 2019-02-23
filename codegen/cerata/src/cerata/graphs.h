@@ -74,19 +74,6 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::shared_ptr<NodeArray> GetArray(Node::NodeID node_id, const std::string &array_name) const;
   /// @brief Get a Node of a specific type with a specific name
   std::shared_ptr<Node> GetNode(Node::NodeID node_id, const std::string &node_name) const;
-  /**
-   * @brief Obtain all nodes of type T from the graph
-   * @tparam T  The node type to obtain
-   * @return    A deque of nodes of type T
-   */
-  template<typename T>
-  std::deque<std::shared_ptr<T>> GetNodesOfType() const {
-    std::deque<std::shared_ptr<T>> result;
-    for (const auto &node : GetAll<Node>()) {
-      if (Cast<T>(node)) result.push_back(*Cast<T>(node));
-    }
-    return result;
-  }
   /// @brief Obtain all nodes which ids are in a list of Node::IDs
   std::deque<std::shared_ptr<Node>>
   GetNodesOfTypes(std::initializer_list<Node::NodeID>

@@ -62,6 +62,8 @@ class NodeArray : public Object {
 
   std::string ToString() const { return name(); }
 
+  std::shared_ptr<Node> base() { return base_; }
+
  protected:
   Node::NodeID node_id_;
   /// @brief Increment the size of the ArrayNode.
