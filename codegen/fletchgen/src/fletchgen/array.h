@@ -26,7 +26,7 @@ namespace fletchgen {
 
 using cerata::Component;
 
-/// @brief Types for ColumnReader/Writer configuration string.
+/// @brief Types for ArrayReader/Writer configuration string.
 enum class ConfigType {
   ARB,        ///< Arbiter level.
   NUL,        ///< Null bitmap.
@@ -51,14 +51,14 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type);
 ConfigType GetConfigType(const arrow::DataType *type);
 
 /**
- * @brief Return the configuration string for a ColumnReader/Writer.
+ * @brief Return the configuration string for a ArrayReader/Writer.
  * @param field The arrow::Field to derive the string from.
  * @param level Nesting level for recursive calls to this function.
  * @return      The string.
  */
 std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level=0);
 
-/// @brief Return a ColumnReader component.
-std::shared_ptr<Component> ColumnReader();
+/// @brief Return a ArrayReader component.
+std::shared_ptr<Component> ArrayReader();
 
 }  // namespace fletchgen

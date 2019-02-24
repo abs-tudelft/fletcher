@@ -88,7 +88,7 @@ std::shared_ptr<Object> NodeArray::Copy() const {
   auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, *Cast<Node>(size()->Copy()));
   ret->SetParent(*parent());
   for (size_t i = 0; i < nodes_.size(); i++) {
-    ret->Append();
+    //ret->Append();
   }
   return ret;
 }
@@ -129,7 +129,7 @@ std::shared_ptr<Object> PortArray::Copy() const {
   auto ret = std::make_shared<PortArray>(name(), type(), *Cast<Node>(size()->Copy()), dir());
   ret->SetParent(*parent());
   for (size_t i = 0; i < nodes_.size(); i++) {
-    ret->Append();
+    //ret->Append();
   }
   return ret;
 }

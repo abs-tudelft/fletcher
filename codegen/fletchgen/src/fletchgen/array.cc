@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/column.h"
+#include "fletchgen/array.h"
 
 #include <memory>
 
@@ -35,7 +35,8 @@ using cerata::boolean;
 using cerata::bool_true;
 using cerata::bool_false;
 
-std::shared_ptr<Component> ColumnReader() {
+std::shared_ptr<Component> ArrayReader() {
+  // TODO(johanpel) as soon as the hardware has been refactored this should also be named ArrayReader
   static auto ret = Component::Make("ColumnReader",
                                     {bus_addr_width(), bus_len_width(), bus_data_width(),
                                      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),

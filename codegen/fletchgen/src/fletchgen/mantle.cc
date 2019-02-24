@@ -25,7 +25,7 @@
 #include "cerata/nodes.h"
 
 #include "fletchgen/basic_types.h"
-#include "fletchgen/column.h"
+#include "fletchgen/array.h"
 #include "fletchgen/schema.h"
 
 namespace fletchgen {
@@ -45,7 +45,7 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
   // Instantiate ColumnReaders/Writers for each field.
   for (const auto &p : arrow_ports) {
     if (p->dir() == Port::IN) {
-      auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ColumnReader());
+      auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ArrayReader());
       auto config_node = cr_inst->GetNode(Node::PARAMETER, "CFG");
       config_node <<=
           cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));

@@ -26,7 +26,7 @@ include_directories(../cerata/src)
 set(HEADERS
         src/fletchgen/schema.h
         src/fletchgen/bus.h
-        src/fletchgen/column.h
+        src/fletchgen/array.h
         src/fletchgen/basic_types.h
         src/fletchgen/mantle.h
         src/fletchgen/core.h
@@ -36,7 +36,7 @@ set(HEADERS
 set(SOURCES
         src/fletchgen/schema.cc
         src/fletchgen/bus.cc
-        src/fletchgen/column.cc
+        src/fletchgen/array.cc
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc
         src/fletchgen/core.cc

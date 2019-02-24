@@ -123,8 +123,10 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
   std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
     return x.index_a(0) < y.index_a(0);
   });
-  bool a_array, b_array = false;
-  size_t a_idx, b_idx = 0;
+  bool a_array = false;
+  bool b_array = false;
+  size_t a_idx = 0;
+  size_t b_idx = 0;
   // Figure out if these nodes are on NodeArrays and what their index is
   if (a->array()) {
     a_array = true;

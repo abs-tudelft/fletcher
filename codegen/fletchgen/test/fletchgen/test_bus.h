@@ -78,7 +78,7 @@ TEST(Bus, Artery) {
   auto top_design = cerata::vhdl::Design(top);
 
   std::cout << artery_design.Generate().ToString();
-  //std::cout << top_design.Generate().ToString();
+  std::cout << top_design.Generate().ToString();
 
   cerata::dot::Grapher dot;
   std::cout << dot.GenFile(artery, "artery.dot");
