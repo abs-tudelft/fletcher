@@ -83,11 +83,16 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// @brief Return a human-readable string
   virtual std::string ToString();
 
+  void SetArray(const NodeArray* array) { array_ = array; }
+  std::optional<const NodeArray*> array() { return array_; }
+
  protected:
   /// Node type ID.
   NodeID node_id_;
   /// The Type of this Node.
   std::shared_ptr<Type> type_;
+  /// Parent if this belongs to an array
+  std::optional<const NodeArray*> array_ = {};
 };
 
 /**

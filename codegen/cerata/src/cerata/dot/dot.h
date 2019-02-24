@@ -44,7 +44,7 @@ struct Grapher {
   std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix = "", int level = 0);
 };
 
-std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix = "");
+std::string NodeName(const std::shared_ptr<Node> &node, std::string suffix = "");
 
 }  // namespace dot
 }  // namespace cerata

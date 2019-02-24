@@ -95,6 +95,16 @@ size_t Graph::CountNodes(Node::NodeID id) const {
   return count;
 }
 
+size_t Graph::CountArrays(Node::NodeID id) const {
+  size_t count = 0;
+  for (const auto &n : GetAll<NodeArray>()) {
+    if (n->node_id() == id) {
+      count++;
+    }
+  }
+  return count;
+}
+
 std::deque<std::shared_ptr<Node>> Graph::GetNodesOfType(Node::NodeID id) const {
   std::deque<std::shared_ptr<Node>> result;
   for (const auto &n : GetAll<Node>()) {

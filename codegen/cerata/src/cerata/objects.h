@@ -38,17 +38,12 @@ class Object : public Named {
 
   ID obj_id() const { return obj_id_; };
 
-  void SetParent(const Graph *parent) {
-    if (parent != nullptr) { parent_ = parent; }
-    else { throw std::runtime_error("Parent cannot be nullptr."); }
-  }
-  inline std::optional<const Graph *> parent() { return parent_; }
-
+  virtual void SetParent(const Graph *parent);
+  virtual std::optional<const Graph *> parent() const;
   virtual std::shared_ptr<Object> Copy() const = 0;
-
  protected:
   ID obj_id_;
-  /// An optional parent Graph to which this Node belongs. Initially no value.
+  /// An optional parent Graph to which this Object belongs. Initially no value.
   std::optional<const Graph *> parent_ = {};
 };
 

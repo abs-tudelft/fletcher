@@ -82,6 +82,18 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
           }
         }
 
+        // Put array index label
+        if (src->array() && !dst->array()) {
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(src)) + "\"";
+        }
+        if (!src->array() && dst->array()) {
+          sb << "label=\"" + std::to_string((*dst->array())->IndexOf(dst)) + "\"";
+        }
+        if (src->array() && dst->array()) {
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(src)) + " to "
+              + std::to_string((*dst->array())->IndexOf(dst)) + "\"";
+        }
+
         if ((src->IsPort()) && config.nodes.ports) {
           if (dst->IsSignal()) {
             // Port to signal
@@ -250,7 +262,7 @@ std::string Grapher::GenNodes(const Graph *graph, Node::NodeID id, int level, bo
       ret << GenNode(n, level + nogroup + 1);
     }
     for (const auto &a : arrays) {
-        ret << GenNode(a->base(), level + nogroup + 1);
+      ret << GenNode(a->base(), level + nogroup + 1);
     }
     if (!nogroup) {
       ret << tab(level) << "}\n";
@@ -379,16 +391,16 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   return all_edges;
 }
 
-std::string NodeName(const std::shared_ptr<Node> &n, std::string suffix) {
+std::string NodeName(const std::shared_ptr<Node> &node, std::string suffix) {
   std::stringstream ret;
-  if (n->parent()) {
-    auto name = (*n->parent())->name();
-    ret << name + ":" + ToString(n->node_id()) + ":";
+  if (node->parent()) {
+    auto name = (*node->parent())->name();
+    ret << name + ":" + ToString(node->node_id()) + ":";
   }
-  if (n->IsExpression()) {
-    ret << "Anon_" + ToString(n->node_id()) + "_" + ToHex(n);
-  } else if (!n->name().empty()) {
-    ret << n->name();
+  if (node->IsExpression()) {
+    ret << "Anon_" + ToString(node->node_id()) + "_" + ToHex(node);
+  } else if (!node->name().empty()) {
+    ret << node->name();
   }
 
   return sanitize(ret.str()) + suffix;

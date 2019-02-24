@@ -40,7 +40,11 @@ class NodeArray : public Object {
 
   /// @brief ArrayNode constructor.
   NodeArray(std::string name, Node::NodeID id, std::shared_ptr<Node> base, std::shared_ptr<Node> size)
-      : Object(std::move(name), Object::ARRAY), node_id_(id), base_(std::move(base)), size_(std::move(size)) {}
+      : Object(std::move(name), Object::ARRAY), node_id_(id), base_(std::move(base)), size_(std::move(size)) {
+    base_->SetArray(this);
+  }
+
+  void SetParent(const Graph *parent) override;
 
   inline std::shared_ptr<Node> size() const { return size_; }
   void SetSize(const std::shared_ptr<Node> &size);
@@ -58,7 +62,9 @@ class NodeArray : public Object {
   /// @brief Return element node i.
   std::shared_ptr<Node> operator[](size_t i) const { return node(i); }
   /// @brief Return the number of element nodes.
-  size_t num_nodes() { return nodes_.size(); }
+  size_t num_nodes() const { return nodes_.size(); }
+  /// @brief Return the index of a specific node.
+  size_t IndexOf(const std::shared_ptr<Node> &n) const;
 
   std::string ToString() const { return name(); }
 

@@ -80,6 +80,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
                   ids) const;
   /// @brief Count nodes of a specific node type
   size_t CountNodes(Node::NodeID id) const;
+  /// @brief Count nodes of a specific array type
+  size_t CountArrays(Node::NodeID id) const;
   /// @brief Get all nodes.
   std::deque<std::shared_ptr<Node>> GetNodes() const { return GetAll<Node>(); }
   /// @brief Get all nodes of a specific type.

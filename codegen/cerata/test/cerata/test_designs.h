@@ -25,25 +25,27 @@
 namespace cerata {
 
 std::shared_ptr<Component> GetArrayToArrayComponent() {
-  /*
   auto data = Vector::Make<8>();
 
   auto top_size = Parameter::Make("top_size", integer(), intl<0>());
   auto top_array = PortArray::Make("top_array", data, top_size, Term::IN);
-  auto top_comp = Component::Make("top_comp", {top_size}, {top_array}, {});
+  auto top_comp = Component::Make("top_comp", {top_size, top_array});
 
   auto child_size = Parameter::Make("child_size", integer(), intl<0>());
   auto child_array = PortArray::Make("child_array", data, child_size, Term::IN);
-  auto child_comp = Component::Make("child_comp", {child_size}, {child_array}, {});
+  auto child_comp = Component::Make("child_comp", {child_size, child_array});
   auto child_inst = Instance::Make(child_comp);
 
-  child_inst->porta("child_array") <<= top_comp->porta("top_array");
+  child_inst->porta("child_array")->Append();
+  child_inst->porta("child_array")->Append();
+  top_array->Append();
+
+  child_inst->porta("child_array")->node(0) <<= top_array->node(0);
+  child_inst->porta("child_array")->node(1) <<= top_array->node(0);
 
   top_comp->AddChild(std::move(child_inst));
 
   return top_comp;
-   */
-  return nullptr;
 }
 
 std::shared_ptr<Component> GetArrayComponent() {

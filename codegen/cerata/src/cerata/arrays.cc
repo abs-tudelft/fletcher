@@ -70,13 +70,14 @@ std::shared_ptr<Node> NodeArray::Append() {
   if (parent()) {
     elem->SetParent(*parent());
   }
+  elem->SetArray(this);
   nodes_.push_back(elem);
   increment();
   return elem;
 }
 
 std::shared_ptr<Node> NodeArray::node(size_t i) const {
-  if (i << nodes_.size()) {
+  if (i < nodes_.size()) {
     return nodes_[i];
   } else {
     throw std::runtime_error("Index " + std::to_string(i) + " out of bounds for node " + ToString());
@@ -85,10 +86,28 @@ std::shared_ptr<Node> NodeArray::node(size_t i) const {
 
 std::shared_ptr<Object> NodeArray::Copy() const {
   auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, *Cast<Node>(size()->Copy()));
+  ret->SetParent(*parent());
   for (size_t i = 0; i < nodes_.size(); i++) {
     ret->Append();
   }
   return ret;
+}
+
+void NodeArray::SetParent(const Graph *parent) {
+  Object::SetParent(parent);
+  base_->SetParent(parent);
+  for (const auto &e : nodes_) {
+    e->SetParent(parent);
+  }
+}
+
+size_t NodeArray::IndexOf(const std::shared_ptr<Node> &n) const {
+  for (size_t i = 0; i < nodes_.size(); i++) {
+    if (nodes_[i] == n) {
+      return i;
+    }
+  }
+  throw std::logic_error("Node " + n->ToString() + " is not element of " + this->ToString());
 }
 
 PortArray::PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir)
@@ -108,6 +127,7 @@ std::shared_ptr<PortArray> PortArray::Make(std::shared_ptr<Type> type, std::shar
 
 std::shared_ptr<Object> PortArray::Copy() const {
   auto ret = std::make_shared<PortArray>(name(), type(), *Cast<Node>(size()->Copy()), dir());
+  ret->SetParent(*parent());
   for (size_t i = 0; i < nodes_.size(); i++) {
     ret->Append();
   }

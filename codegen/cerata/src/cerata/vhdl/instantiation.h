@@ -40,11 +40,11 @@ struct Inst {
                                    bool b_is_array);
 
   static Block GeneratePortMappingPair(std::deque<MappingPair> pairs,
-                                       const std::shared_ptr<Node> &port,
-                                       const std::shared_ptr<Node> &other,
-                                       size_t array_index);
+                                       const std::shared_ptr<Node> &a,
+                                       const std::shared_ptr<Node> &b);
   static MultiBlock Generate(const Graph *graph);
-  static Block GeneratePortMaps(const std::shared_ptr<Node> &port);
+  static Block GeneratePortMaps(const std::shared_ptr<Port> &port);
+  static Block GeneratePortArrayMaps(const std::shared_ptr<PortArray> &array);
   static Block GenerateGenericMap(const std::shared_ptr<Parameter> &par);
 };
 

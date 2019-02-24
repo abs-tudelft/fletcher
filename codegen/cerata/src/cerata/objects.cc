@@ -23,4 +23,11 @@
 
 namespace cerata {
 
+void Object::SetParent(const Graph *parent) {
+  if (parent != nullptr) { parent_ = parent; }
+  else { throw std::runtime_error("Parent cannot be nullptr."); }
+}
+
+std::optional<const Graph *> Object::parent() const { return parent_; }
+
 }  // cerata;
