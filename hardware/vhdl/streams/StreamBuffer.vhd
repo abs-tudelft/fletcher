@@ -107,7 +107,7 @@ begin
   -- Optional FIFO.
   fifo_gen: if MIN_DEPTH > 4 generate
 
-    -- Returns min(2, ceil(log2(depth - 4)))
+    -- Returns max(2, ceil(log2(depth - 4)))
     function depth_log2(depth: natural) return natural is
       variable x : natural;
       variable y : natural;
