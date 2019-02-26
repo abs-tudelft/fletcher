@@ -74,12 +74,20 @@ std::shared_ptr<Type> acc_clk(); ///< @brief Fletcher accelerator clock
 std::shared_ptr<Type> acc_reset(); ///< @brief Fletcher accelerator reset
 std::shared_ptr<Type> bus_clk(); ///< @brief Fletcher bus clock
 std::shared_ptr<Type> bus_reset(); ///< @brief Fletcher bus reset
-std::shared_ptr<Type> bus_read_request(); ///< @brief Fletcher bus read request channel
-/// Fletcher bus read data channel
+
+/// @brief Fletcher bus read request channel
+std::shared_ptr<Type> bus_read_request(std::shared_ptr<Node> addr_width = bus_addr_width(),
+                                       std::shared_ptr<Node> len_width = bus_len_width());
+/// @brief Fletcher bus read data channel
 std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width = bus_data_width());
-std::shared_ptr<Type> bus_write_request(); ///< @brief Fletcher bus write request channel
-/// Fletcher bus write data channel
+
+/// @brief Fletcher bus write request channel
+std::shared_ptr<Type> bus_write_request(std::shared_ptr<Node> addr_width = bus_addr_width(),
+                                        std::shared_ptr<Node> len_width = bus_len_width());
+
+/// @brief Fletcher bus write data channel
 std::shared_ptr<Type> bus_write_data(std::shared_ptr<Node> width = bus_data_width());
+
 std::shared_ptr<Type> cmd(); ///< @brief Fletcher command stream
 std::shared_ptr<Type> unlock(); ///< @brief Fletcher unlock stream
 std::shared_ptr<Type> read_data(); ///< @brief Fletcher read data

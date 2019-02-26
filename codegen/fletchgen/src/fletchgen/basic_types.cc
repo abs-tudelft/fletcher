@@ -133,17 +133,17 @@ std::shared_ptr<Type> last() {
 
 // Bus channel
 
-std::shared_ptr<Type> bus_read_request() {
-  static auto bus_addr = RecordField::Make("addr", Vector::Make("addr", bus_addr_width()));
-  static auto bus_len = RecordField::Make("len", Vector::Make("len", bus_len_width()));
+std::shared_ptr<Type> bus_read_request(std::shared_ptr<Node> addr_width, std::shared_ptr<Node> len_width) {
+  static auto bus_addr = RecordField::Make("addr", Vector::Make("addr", addr_width));
+  static auto bus_len = RecordField::Make("len", Vector::Make("len", len_width));
   static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
   static auto bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
   return bus_rreq;
 }
 
-std::shared_ptr<Type> bus_write_request() {
-  static auto bus_addr = RecordField::Make(Vector::Make("addr", bus_addr_width()));
-  static auto bus_len = RecordField::Make(Vector::Make("len", bus_len_width()));
+std::shared_ptr<Type> bus_write_request(std::shared_ptr<Node> addr_width, std::shared_ptr<Node> len_width) {
+  static auto bus_addr = RecordField::Make(Vector::Make("addr", addr_width));
+  static auto bus_len = RecordField::Make(Vector::Make("len", len_width));
   static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
   static auto bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
   return bus_wreq;

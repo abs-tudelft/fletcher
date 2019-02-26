@@ -280,7 +280,7 @@ std::string Grapher::GenGraph(const Graph *graph, int level) {
 
     // Preferably we would want to use splines=ortho, but dot is bugged when using html tables w.r.t. arrow directions
     // resulting from this setting
-    ret << tab(level + 1) << "splines=compound;\n";
+    ret << tab(level + 1) << "splines=ortho;\n";
     ret << tab(level + 1) << "rankdir=LR;\n";
   } else {
     ret << tab(level) << "subgraph cluster_" << sanitize(graph->name()) << " {\n";
@@ -291,12 +291,20 @@ std::string Grapher::GenGraph(const Graph *graph, int level) {
   }
 
   // Nodes
-  ret << GenNodes(graph, Node::EXPRESSION, level + 1);
+  if (config.nodes.expressions)
+    ret << GenNodes(graph, Node::EXPRESSION, level + 1);
+
   // if (config.nodes.literals)
   //   ret << GenNodes(graph, Node::LITERAL, level + 1);
-  ret << GenNodes(graph, Node::PARAMETER, level + 1);
-  ret << GenNodes(graph, Node::PORT, level + 1);
-  ret << GenNodes(graph, Node::SIGNAL, level + 1, true);
+
+  if (config.nodes.parameters)
+    ret << GenNodes(graph, Node::PARAMETER, level + 1);
+
+  if (config.nodes.ports)
+    ret << GenNodes(graph, Node::PORT, level + 1);
+
+  if (config.nodes.signals)
+    ret << GenNodes(graph, Node::SIGNAL, level + 1, true);
 
   if (!graph->children.empty()) {
     ret << "\n";

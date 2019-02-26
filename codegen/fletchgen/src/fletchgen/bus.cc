@@ -34,6 +34,7 @@ using cerata::integer;
 using cerata::string;
 using cerata::strl;
 using cerata::boolean;
+using cerata::integer;
 using cerata::bool_true;
 using cerata::bool_false;
 
@@ -64,6 +65,34 @@ std::shared_ptr<Component> BusReadArbiter() {
   return ret;
 }
 
+std::shared_ptr<Component> BusReadSerializer() {
+  auto aw = Parameter::Make("ADDR_WIDTH", integer(), {});
+  auto mdw = Parameter::Make("MASTER_DATA_WIDTH", integer(), {});
+  auto mlw = Parameter::Make("MASTER_LEN_WIDTH", integer(), {});
+  auto sdw = Parameter::Make("SLAVE_DATA_WIDTH", integer(), {});
+  auto slw = Parameter::Make("SLAVE_LEN_WIDTH", integer(), {});
+  static auto ret = Component::Make("BusReadSerializer", {
+      aw,
+      mdw,
+      mlw,
+      sdw,
+      slw,
+      Parameter::Make("SLAVE_MAX_BURST", integer(), {}),
+      Parameter::Make("ENABLE_FIFO", boolean(), bool_false()),
+      Parameter::Make("SLV_REQ_SLICE_DEPTH", integer(), intl<2>()),
+      Parameter::Make("SLV_DAT_SLICE_DEPTH", integer(), intl<2>()),
+      Parameter::Make("MST_REQ_SLICE_DEPTH", integer(), intl<2>()),
+      Parameter::Make("MST_DAT_SLICE_DEPTH", integer(), intl<2>()),
+      Port::Make(bus_clk()),
+      Port::Make(bus_reset()),
+      Port::Make("mst_rreq", bus_read_request(aw, mlw), Port::Dir::OUT),
+      Port::Make("mst_rdat", bus_read_data(mdw), Port::Dir::IN),
+      Port::Make("slv_rreq", bus_read_request(aw, slw), Port::Dir::IN),
+      Port::Make("slv_rdat", bus_read_data(sdw), Port::Dir::OUT),
+  });
+  return ret;
+}
+
 Artery::Artery(std::shared_ptr<Node> address_width,
                std::shared_ptr<Node> master_width,
                std::deque<std::shared_ptr<Node>> slave_widths)
@@ -74,29 +103,47 @@ Artery::Artery(std::shared_ptr<Node> address_width,
   AddObject(bus_addr_width());
   AddObject(bus_data_width());
   // For each required slave width
-  for (const auto &sw : slave_widths_) {
+  for (const auto &slave_width : slave_widths_) {
     // Create parameters
-    auto par = Parameter::Make("NUM_SLV_W" + sw->ToString(), integer());
-    AddObject(par);
+    auto num_slaves_par = Parameter::Make("NUM_SLV_W" + slave_width->ToString(), integer());
+    AddObject(num_slaves_par);
 
     // Create ports
-    auto req = PortArray::Make("bus" + sw->ToString() + "_rreq", bus_read_request(), par, Port::IN);
-    auto dat = PortArray::Make("bus" + sw->ToString() + "_rdat", bus_read_data(sw), par, Port::OUT);
-    AddObject(req);
-    AddObject(dat);
+    auto req_array = PortArray::Make("bus" + slave_width->ToString() + "_rreq",
+                                     bus_read_request(),
+                                     num_slaves_par,
+                                     Port::IN);
+    auto dat_array = PortArray::Make("bus" + slave_width->ToString() + "_rdat",
+                                     bus_read_data(slave_width),
+                                     num_slaves_par,
+                                     Port::OUT);
+    AddObject(req_array);
+    AddObject(dat_array);
 
     // Create a bus read arbiter vector instance
-    auto inst = Instance::Make("brav" + sw->ToString() + "_inst", BusReadArbiter());
+    auto read_arb = Instance::Make("arb_" + slave_width->ToString(), BusReadArbiter());
 
     // Set its parameters
-    inst->par("bus_addr_width") <<= address_width_;
-    inst->par("bus_data_width") <<= sw;
+    read_arb->par("bus_addr_width") <<= address_width_;
+    read_arb->par("bus_data_width") <<= slave_width;
 
     // Connect its ports
-    inst->porta("bsv_rreq")->Append() <<= req->Append();
-    dat->Append() <<= inst->porta("bsv_rdat")->Append();
+    read_arb->porta("bsv_rreq")->Append() <<= req_array->Append();
+    dat_array->Append() <<= read_arb->porta("bsv_rdat")->Append();
 
-    AddChild(std::move(inst));
+    // Create a bus read serializer for other widths than master.
+    if (slave_width != master_width_) {
+      // Create bus read serializer
+      auto read_ser = Instance::Make("ser_" + slave_width->ToString(), BusReadSerializer());
+      // Connet
+      read_ser->port("slv_rreq") <<= read_arb->port("mst_rreq");
+      read_arb->port("mst_rdat") <<= read_ser->port("slv_rdat");
+      AddChild(std::move(read_ser));
+    } else {
+
+    }
+
+    AddChild(std::move(read_arb));
   }
 }
 

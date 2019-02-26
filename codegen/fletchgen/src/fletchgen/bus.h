@@ -41,7 +41,10 @@ using cerata::PortArray;
 using cerata::integer;
 using cerata::Cast;
 
+std::shared_ptr<Component> BusReadSerializer();
 std::shared_ptr<Component> BusReadArbiter();
+
+std::shared_ptr<Component> BusWriteSerializer();
 std::shared_ptr<Component> BusWriteArbiter();
 
 /**

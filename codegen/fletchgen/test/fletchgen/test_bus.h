@@ -81,6 +81,7 @@ TEST(Bus, Artery) {
   std::cout << top_design.Generate().ToString();
 
   cerata::dot::Grapher dot;
+  dot.config = cerata::dot::Config::streams();
   std::cout << dot.GenFile(artery, "artery.dot");
   std::cout << dot.GenFile(top, "graph.dot");
 }
