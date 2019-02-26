@@ -198,6 +198,37 @@ package Interconnect is
     );
   end component;
 
+  component BusReadBenchmarker is
+    generic (
+      BUS_ADDR_WIDTH              : natural := 64;
+      BUS_DATA_WIDTH              : natural := 512;
+      BUS_LEN_WIDTH               : natural := 9;
+      BUS_MAX_BURST_LENGTH        : natural := 256;
+      BUS_BURST_BOUNDARY          : natural := 4096
+    );
+    port (
+      bus_clk                     : in  std_logic;
+      bus_reset                   : in  std_logic;
+      bus_rreq_valid              : out std_logic;
+      bus_rreq_ready              : in  std_logic;
+      bus_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_rreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      bus_rdat_valid              : in  std_logic;
+      bus_rdat_ready              : out std_logic;
+      bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_rdat_last               : in  std_logic;
+      reg_control                 : in  std_logic_vector(31 downto 0);
+      reg_status                  : out std_logic_vector(31 downto 0);
+      reg_burst_length            : in  std_logic_vector(31 downto 0);
+      reg_max_bursts              : in  std_logic_vector(31 downto 0);
+      reg_base_addr_lo            : in  std_logic_vector(31 downto 0);
+      reg_base_addr_hi            : in  std_logic_vector(31 downto 0);
+      reg_addr_mask_lo            : in  std_logic_vector(31 downto 0);
+      reg_addr_mask_hi            : in  std_logic_vector(31 downto 0);
+      reg_cycles                  : out std_logic_vector(31 downto 0)
+    );
+  end component;
+
   component BusReadArbiter is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;

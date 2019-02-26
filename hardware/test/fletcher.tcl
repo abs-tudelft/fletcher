@@ -102,6 +102,8 @@ proc add_interconnect {{source_dir ""}} {
   add_source $source_dir/interconnect/BusWriteArbiter.vhd
   add_source $source_dir/interconnect/BusWriteArbiterVec.vhd
   add_source $source_dir/interconnect/BusWriteBuffer.vhd
+  
+  add_source $source_dir/interconnect/BusReadBenchmarker.vhd
 }
 
 proc add_interconnect_tb {{source_dir ""}} {
@@ -118,6 +120,7 @@ proc add_interconnect_tb {{source_dir ""}} {
   
   add_source $source_dir/interconnect/BusReadArbiter_tb.vhd
   
+  add_source $source_dir/interconnect/BusReadBenchmarker_tb.vhd
 }
 
 proc add_buffers {{source_dir ""}} {
