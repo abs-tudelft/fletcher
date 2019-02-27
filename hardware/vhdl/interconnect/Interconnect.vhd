@@ -225,7 +225,8 @@ package Interconnect is
       reg_base_addr_hi            : in  std_logic_vector(31 downto 0);
       reg_addr_mask_lo            : in  std_logic_vector(31 downto 0);
       reg_addr_mask_hi            : in  std_logic_vector(31 downto 0);
-      reg_cycles                  : out std_logic_vector(31 downto 0)
+      reg_cycles                  : out std_logic_vector(31 downto 0);
+      reg_checksum                : out std_logic_vector(31 downto 0)
     );
   end component;
 

@@ -56,6 +56,7 @@ architecture Behavioral of BusReadBenchmarker_tb is
     signal reg_addr_mask_hi     : std_logic_vector(31 downto 0) := X"00000000";
     
     signal reg_cycles           : std_logic_vector(31 downto 0);
+    signal reg_checksum         : std_logic_vector(31 downto 0);
     
     signal simulation_done      : boolean := false;
 begin

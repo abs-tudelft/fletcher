@@ -61,7 +61,8 @@ entity BusReadBenchmarker is
     reg_addr_mask_hi            : in  std_logic_vector(31 downto 0);
 
     -- Result registers
-    reg_cycles                  : out std_logic_vector(31 downto 0)
+    reg_cycles                  : out std_logic_vector(31 downto 0);
+    reg_checksum                : out std_logic_vector(31 downto 0)
   );
 end BusReadBenchmarker;
 
@@ -120,7 +121,7 @@ begin
   req_seq: process(bus_clk) is begin
     if rising_edge(bus_clk) then
       r_req <= d_req;
-      if bus_reset = '1' then
+      if bus_reset = '1' or reg_control(CONTROL_RESET) = '1' then
         r_req.state <= IDLE;
       end if;
     end if;
