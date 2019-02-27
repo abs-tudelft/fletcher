@@ -79,7 +79,7 @@ architecture Behavioral of BusReadBenchmarker is
   
   constant ADDR_SHIFT           : natural := log2ceil(BUS_MAX_BURST_LENGTH * BUS_DATA_WIDTH / 8);
 
-  type req_state_type is (IDLE, REQUEST, DONE, ERROR);
+  type req_state_type is (IDLE, BUSY, DONE, ERROR);
 
   type req_regs_type is record
     -- State machine state
@@ -91,7 +91,8 @@ architecture Behavioral of BusReadBenchmarker is
     burst_length                : unsigned(31 downto 0);
     -- Measurements for workload
     cycles                      : unsigned(31 downto 0);
-    num_bursts                  : unsigned(31 downto 0);
+    num_requests                : unsigned(31 downto 0);
+    num_responses               : unsigned(31 downto 0);
   end record;
 
   signal r_req                  : req_regs_type;
@@ -131,6 +132,8 @@ begin
   req_comb: process(
     r_req,
     bus_rreq_ready,
+    bus_rdat_valid,
+    bus_rdat_last,
     reg_control,
     reg_max_bursts,
     reg_burst_length,
@@ -157,31 +160,41 @@ begin
       
         -- At the start, clock in all settings
         if reg_control(CONTROL_START) = '1' then
-          v_req.state        := REQUEST;
-          v_req.cycles       := (others => '0');
-          v_req.max_bursts   := unsigned(reg_max_bursts);
-          v_req.num_bursts   := unsigned(reg_max_bursts);
-          v_req.burst_length := unsigned(reg_burst_length);
-          v_req.base_addr    := reg_base_addr_hi & reg_base_addr_lo;
-          v_req.addr_mask    := reg_addr_mask_hi & reg_addr_mask_lo;
+          v_req.state         := BUSY;
+          v_req.cycles        := (others => '0');
+          v_req.max_bursts    := unsigned(reg_max_bursts);
+          v_req.num_requests  := unsigned(reg_max_bursts);
+          v_req.num_responses := unsigned(reg_max_bursts);
+          v_req.burst_length  := unsigned(reg_burst_length);
+          v_req.base_addr     := reg_base_addr_hi & reg_base_addr_lo;
+          v_req.addr_mask     := reg_addr_mask_hi & reg_addr_mask_lo;
         end if;
         
-      when REQUEST =>
+      when BUSY =>
         reg_status(STATUS_BUSY) <= '1';
       
         -- Count all cycles spent on all requests
         v_req.cycles := r_req.cycles + 1;
 
-        -- Generate a valid read request
-        bus_rreq_valid <= '1';
-        bus_rreq_addr <= slv(u(r_req.base_addr) + u(prng_data and r_req.addr_mask));
+        if r_req.num_requests /= 0 then
+          -- Generate a valid read request
+          bus_rreq_valid <= '1';
+          bus_rreq_addr <= slv(u(r_req.base_addr) + u(prng_data and r_req.addr_mask));
 
-        if bus_rreq_ready = '1' then
-          prng_ready <= '1';
-          v_req.num_bursts := r_req.num_bursts - 1;
-          if v_req.num_bursts = 0 then
-            v_req.state := DONE;
+          -- Keep track of how many read requests have been served.
+          if bus_rreq_ready = '1' then
+            prng_ready <= '1';
+            v_req.num_requests := r_req.num_requests - 1;
           end if;
+        end if;
+        
+        -- Keep track of how many responses have been delivered.
+        if bus_rdat_valid = '1' and bus_rdat_last = '1' then
+          v_req.num_responses := r_req.num_responses - 1;
+        end if;
+        
+        if v_req.num_responses = 0 then
+          v_req.state := DONE;
         end if;
         
       when DONE =>
