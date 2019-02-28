@@ -273,7 +273,7 @@ begin
           
           -- Write only if register is writeable
           if (REG_CONFIG = "") or (REG_CONFIG(idx) = 'W') or (REG_CONFIG(idx) = 'B') then
-            v.regs(idx) := s_axi_wdata;
+            v.regs(idx) := int_s_axi_wdata;
           else
             -- If not writable, generate a warning in simulation            
             report "[AXI MMIO] Attempted to write to read-only register " & 
