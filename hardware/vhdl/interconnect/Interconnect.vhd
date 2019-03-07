@@ -204,7 +204,8 @@ package Interconnect is
       BUS_DATA_WIDTH              : natural := 512;
       BUS_LEN_WIDTH               : natural := 9;
       BUS_MAX_BURST_LENGTH        : natural := 256;
-      BUS_BURST_BOUNDARY          : natural := 4096
+      BUS_BURST_BOUNDARY          : natural := 4096;
+      PATTERN                     : string := "RANDOM"
     );
     port (
       bus_clk                     : in  std_logic;
@@ -649,6 +650,7 @@ package Interconnect is
       SEED                      : positive := 1;
       RANDOM_REQUEST_TIMING     : boolean := true;
       RANDOM_RESPONSE_TIMING    : boolean := true;
+      REQUEST_LATENCY           : natural := 1;
       SREC_FILE                 : string := ""
     );
     port (

@@ -70,7 +70,7 @@ entity BusReadArbiter is
     bus_clk                     : in  std_logic;
     bus_reset                   : in  std_logic;
 
-    -- Slave port.
+    -- Master port.
     mst_rreq_valid              : out std_logic;
     mst_rreq_ready              : in  std_logic;
     mst_rreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -82,7 +82,7 @@ entity BusReadArbiter is
 
     -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
 
-    -- Master port 0.
+    -- Slave port 0.
     bs00_rreq_valid             : in  std_logic := '0';
     bs00_rreq_ready             : out std_logic;
     bs00_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -92,7 +92,7 @@ entity BusReadArbiter is
     bs00_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs00_rdat_last              : out std_logic;
 
-    -- Master port 1.
+    -- Slave port 1.
     bs01_rreq_valid             : in  std_logic := '0';
     bs01_rreq_ready             : out std_logic;
     bs01_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -102,7 +102,7 @@ entity BusReadArbiter is
     bs01_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs01_rdat_last              : out std_logic;
 
-    -- Master port 2.
+    -- Slave port 2.
     bs02_rreq_valid             : in  std_logic := '0';
     bs02_rreq_ready             : out std_logic;
     bs02_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -112,7 +112,7 @@ entity BusReadArbiter is
     bs02_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs02_rdat_last              : out std_logic;
 
-    -- Master port 3.
+    -- Slave port 3.
     bs03_rreq_valid             : in  std_logic := '0';
     bs03_rreq_ready             : out std_logic;
     bs03_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -122,7 +122,7 @@ entity BusReadArbiter is
     bs03_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs03_rdat_last              : out std_logic;
 
-    -- Master port 4.
+    -- Slave port 4.
     bs04_rreq_valid             : in  std_logic := '0';
     bs04_rreq_ready             : out std_logic;
     bs04_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -132,7 +132,7 @@ entity BusReadArbiter is
     bs04_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs04_rdat_last              : out std_logic;
 
-    -- Master port 5.
+    -- Slave port 5.
     bs05_rreq_valid             : in  std_logic := '0';
     bs05_rreq_ready             : out std_logic;
     bs05_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -142,7 +142,7 @@ entity BusReadArbiter is
     bs05_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs05_rdat_last              : out std_logic;
 
-    -- Master port 6.
+    -- Slave port 6.
     bs06_rreq_valid             : in  std_logic := '0';
     bs06_rreq_ready             : out std_logic;
     bs06_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -152,7 +152,7 @@ entity BusReadArbiter is
     bs06_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs06_rdat_last              : out std_logic;
 
-    -- Master port 7.
+    -- Slave port 7.
     bs07_rreq_valid             : in  std_logic := '0';
     bs07_rreq_ready             : out std_logic;
     bs07_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -162,7 +162,7 @@ entity BusReadArbiter is
     bs07_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs07_rdat_last              : out std_logic;
 
-    -- Master port 8.
+    -- Slave port 8.
     bs08_rreq_valid             : in  std_logic := '0';
     bs08_rreq_ready             : out std_logic;
     bs08_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -172,7 +172,7 @@ entity BusReadArbiter is
     bs08_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs08_rdat_last              : out std_logic;
 
-    -- Master port 9.
+    -- Slave port 9.
     bs09_rreq_valid             : in  std_logic := '0';
     bs09_rreq_ready             : out std_logic;
     bs09_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -182,7 +182,7 @@ entity BusReadArbiter is
     bs09_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs09_rdat_last              : out std_logic;
 
-    -- Master port 10.
+    -- Slave port 10.
     bs10_rreq_valid             : in  std_logic := '0';
     bs10_rreq_ready             : out std_logic;
     bs10_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -192,7 +192,7 @@ entity BusReadArbiter is
     bs10_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs10_rdat_last              : out std_logic;
 
-    -- Master port 11.
+    -- Slave port 11.
     bs11_rreq_valid             : in  std_logic := '0';
     bs11_rreq_ready             : out std_logic;
     bs11_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -202,7 +202,7 @@ entity BusReadArbiter is
     bs11_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs11_rdat_last              : out std_logic;
 
-    -- Master port 12.
+    -- Slave port 12.
     bs12_rreq_valid             : in  std_logic := '0';
     bs12_rreq_ready             : out std_logic;
     bs12_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -212,7 +212,7 @@ entity BusReadArbiter is
     bs12_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs12_rdat_last              : out std_logic;
 
-    -- Master port 13.
+    -- Slave port 13.
     bs13_rreq_valid             : in  std_logic := '0';
     bs13_rreq_ready             : out std_logic;
     bs13_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -222,7 +222,7 @@ entity BusReadArbiter is
     bs13_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs13_rdat_last              : out std_logic;
 
-    -- Master port 14.
+    -- Slave port 14.
     bs14_rreq_valid             : in  std_logic := '0';
     bs14_rreq_ready             : out std_logic;
     bs14_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -232,7 +232,7 @@ entity BusReadArbiter is
     bs14_rdat_data              : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bs14_rdat_last              : out std_logic;
 
-    -- Master port 15.
+    -- Slave port 15.
     bs15_rreq_valid             : in  std_logic := '0';
     bs15_rreq_ready             : out std_logic;
     bs15_rreq_addr              : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -259,7 +259,7 @@ architecture Behavioral of BusReadArbiter is
 
 begin
 
-  -- Connect bus master 0 to internal signal.
+  -- Connect bus slave 0 to internal signal.
   bs00_connect_gen: if NUM_SLAVE_PORTS > 0 generate
   begin
     bsv_rreq_valid(0)                                           <= bs00_rreq_valid;
@@ -272,7 +272,7 @@ begin
     bs00_rdat_last                                              <= bsv_rdat_last(0);
   end generate;
 
-  -- Connect bus master 1 to internal signal.
+  -- Connect bus slave 1 to internal signal.
   bs01_connect_gen: if NUM_SLAVE_PORTS > 1 generate
   begin
     bsv_rreq_valid(1)                                           <= bs01_rreq_valid;
@@ -285,7 +285,7 @@ begin
     bs01_rdat_last                                              <= bsv_rdat_last(1);
   end generate;
 
-  -- Connect bus master 2 to internal signal.
+  -- Connect bus slave 2 to internal signal.
   bs02_connect_gen: if NUM_SLAVE_PORTS > 2 generate
   begin
     bsv_rreq_valid(2)                                           <= bs02_rreq_valid;
@@ -298,7 +298,7 @@ begin
     bs02_rdat_last                                              <= bsv_rdat_last(2);
   end generate;
 
-  -- Connect bus master 3 to internal signal.
+  -- Connect bus slave 3 to internal signal.
   bs03_connect_gen: if NUM_SLAVE_PORTS > 3 generate
   begin
     bsv_rreq_valid(3)                                           <= bs03_rreq_valid;
@@ -311,7 +311,7 @@ begin
     bs03_rdat_last                                              <= bsv_rdat_last(3);
   end generate;
 
-  -- Connect bus master 4 to internal signal.
+  -- Connect bus slave 4 to internal signal.
   bs04_connect_gen: if NUM_SLAVE_PORTS > 4 generate
   begin
     bsv_rreq_valid(4)                                           <= bs04_rreq_valid;
@@ -324,7 +324,7 @@ begin
     bs04_rdat_last                                              <= bsv_rdat_last(4);
   end generate;
 
-  -- Connect bus master 5 to internal signal.
+  -- Connect bus slave 5 to internal signal.
   bs05_connect_gen: if NUM_SLAVE_PORTS > 5 generate
   begin
     bsv_rreq_valid(5)                                           <= bs05_rreq_valid;
@@ -337,7 +337,7 @@ begin
     bs05_rdat_last                                              <= bsv_rdat_last(5);
   end generate;
 
-  -- Connect bus master 6 to internal signal.
+  -- Connect bus slave 6 to internal signal.
   bs06_connect_gen: if NUM_SLAVE_PORTS > 6 generate
   begin
     bsv_rreq_valid(6)                                           <= bs06_rreq_valid;
@@ -350,7 +350,7 @@ begin
     bs06_rdat_last                                              <= bsv_rdat_last(6);
   end generate;
 
-  -- Connect bus master 7 to internal signal.
+  -- Connect bus slave 7 to internal signal.
   bs07_connect_gen: if NUM_SLAVE_PORTS > 7 generate
   begin
     bsv_rreq_valid(7)                                           <= bs07_rreq_valid;
@@ -363,7 +363,7 @@ begin
     bs07_rdat_last                                              <= bsv_rdat_last(7);
   end generate;
 
-  -- Connect bus master 8 to internal signal.
+  -- Connect bus slave 8 to internal signal.
   bs08_connect_gen: if NUM_SLAVE_PORTS > 8 generate
   begin
     bsv_rreq_valid(8)                                           <= bs08_rreq_valid;
@@ -376,7 +376,7 @@ begin
     bs08_rdat_last                                              <= bsv_rdat_last(8);
   end generate;
 
-  -- Connect bus master 9 to internal signal.
+  -- Connect bus slave 9 to internal signal.
   bs09_connect_gen: if NUM_SLAVE_PORTS > 9 generate
   begin
     bsv_rreq_valid(9)                                           <= bs09_rreq_valid;
@@ -389,7 +389,7 @@ begin
     bs09_rdat_last                                              <= bsv_rdat_last(9);
   end generate;
 
-  -- Connect bus master 10 to internal signal.
+  -- Connect bus slave 10 to internal signal.
   bs10_connect_gen: if NUM_SLAVE_PORTS > 10 generate
   begin
     bsv_rreq_valid(10)                                          <= bs10_rreq_valid;
@@ -402,7 +402,7 @@ begin
     bs10_rdat_last                                              <= bsv_rdat_last(10);
   end generate;
 
-  -- Connect bus master 11 to internal signal.
+  -- Connect bus slave 11 to internal signal.
   bs11_connect_gen: if NUM_SLAVE_PORTS > 11 generate
   begin
     bsv_rreq_valid(11)                                          <= bs11_rreq_valid;
@@ -415,7 +415,7 @@ begin
     bs11_rdat_last                                              <= bsv_rdat_last(11);
   end generate;
 
-  -- Connect bus master 12 to internal signal.
+  -- Connect bus slave 12 to internal signal.
   bs12_connect_gen: if NUM_SLAVE_PORTS > 12 generate
   begin
     bsv_rreq_valid(12)                                          <= bs12_rreq_valid;
@@ -428,7 +428,7 @@ begin
     bs12_rdat_last                                              <= bsv_rdat_last(12);
   end generate;
 
-  -- Connect bus master 13 to internal signal.
+  -- Connect bus slave 13 to internal signal.
   bs13_connect_gen: if NUM_SLAVE_PORTS > 13 generate
   begin
     bsv_rreq_valid(13)                                          <= bs13_rreq_valid;
@@ -441,7 +441,7 @@ begin
     bs13_rdat_last                                              <= bsv_rdat_last(13);
   end generate;
 
-  -- Connect bus master 14 to internal signal.
+  -- Connect bus slave 14 to internal signal.
   bs14_connect_gen: if NUM_SLAVE_PORTS > 14 generate
   begin
     bsv_rreq_valid(14)                                          <= bs14_rreq_valid;
@@ -454,7 +454,7 @@ begin
     bs14_rdat_last                                              <= bsv_rdat_last(14);
   end generate;
 
-  -- Connect bus master 15 to internal signal.
+  -- Connect bus slave 15 to internal signal.
   bs15_connect_gen: if NUM_SLAVE_PORTS > 15 generate
   begin
     bsv_rreq_valid(15)                                          <= bs15_rreq_valid;

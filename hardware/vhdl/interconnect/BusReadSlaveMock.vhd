@@ -49,6 +49,9 @@ entity BusReadSlaveMock is
 
     -- Whether to randomize the request stream handshake timing.
     RANDOM_RESPONSE_TIMING      : boolean := true;
+    
+    -- Latency on request channel handshakes, when random response is false.
+    REQUEST_LATENCY             : natural := 0;
 
     -- S-record file to load into memory. If not specified, the unit reponds
     -- with the requested address for each word.
@@ -127,7 +130,7 @@ begin
   end generate;
 
   fast_request_timing_gen: if not RANDOM_REQUEST_TIMING generate
-  begin
+  begin      
     rreq_int_valid <= rreq_valid;
     rreq_ready <= rreq_int_ready;
   end generate;
@@ -139,10 +142,15 @@ begin
     variable addr   : unsigned(63 downto 0);
     variable data   : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     variable mem    : mem_state_type;
+    variable cycles : natural := 0;
   begin
     if SREC_FILE /= "" then
       mem_clear(mem);
       mem_loadSRec(mem, SREC_FILE);
+    end if;
+    
+    if REQUEST_LATENCY < 1 then
+      report "REQUEST_LATENCY must be at least 1." severity failure;
     end if;
 
     state: loop
@@ -152,12 +160,15 @@ begin
       rdat_int_valid <= '0';
       rdat_data <= (others => '0');
       rdat_last <= '0';
+      
+      cycles := 0;
 
       -- Wait for request valid.
       loop
+        exit when rreq_int_valid = '1' and cycles >= REQUEST_LATENCY-1;         
         wait until rising_edge(clk);
         exit state when reset = '1';
-        exit when rreq_int_valid = '1';
+        cycles := cycles + 1;
       end loop;
 
       addr := resize(unsigned(rreq_addr), 64);

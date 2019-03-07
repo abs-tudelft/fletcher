@@ -29,7 +29,8 @@ entity BusReadBenchmarker_tb is
     BUS_DATA_WIDTH              : natural := 512;
     BUS_LEN_WIDTH               : natural := 9;
     BUS_MAX_BURST_LENGTH        : natural := 256;
-    BUS_BURST_BOUNDARY          : natural := 4096
+    BUS_BURST_BOUNDARY          : natural := 4096;
+    PATTERN                     : string := "SEQUENTIAL"
   );
 end BusReadBenchmarker_tb;
 
@@ -86,8 +87,8 @@ begin
   begin
     wait until rising_edge(bus_clk);
     
-    reg_burst_length <= X"00000040";
-    reg_max_bursts   <= X"00001000";
+    reg_burst_length <= X"00000010";
+    reg_max_bursts   <= X"00000004";
     reg_control      <= X"00000001";
     
     loop 
@@ -133,7 +134,8 @@ begin
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_MAX_BURST_LENGTH      => BUS_MAX_BURST_LENGTH,
-      BUS_BURST_BOUNDARY        => BUS_BURST_BOUNDARY
+      BUS_BURST_BOUNDARY        => BUS_BURST_BOUNDARY,
+      PATTERN                   => PATTERN
     )
     port map (
       bus_clk                   => bus_clk,

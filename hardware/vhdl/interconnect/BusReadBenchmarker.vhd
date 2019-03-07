@@ -33,7 +33,8 @@ entity BusReadBenchmarker is
     BUS_DATA_WIDTH              : natural := 512;
     BUS_LEN_WIDTH               : natural := 9;
     BUS_MAX_BURST_LENGTH        : natural := 64;
-    BUS_BURST_BOUNDARY          : natural := 4096
+    BUS_BURST_BOUNDARY          : natural := 4096;
+    PATTERN                     : string := "RANDOM"
   );
   port (
     bus_clk                     : in  std_logic;
@@ -89,6 +90,8 @@ architecture Behavioral of BusReadBenchmarker is
     addr_mask                   : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     max_bursts                  : unsigned(31 downto 0);
     burst_length                : unsigned(31 downto 0);
+    -- Current request address
+    addr                        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     -- Measurements for workload
     cycles                      : unsigned(31 downto 0);
     num_requests                : unsigned(31 downto 0);
@@ -104,21 +107,23 @@ architecture Behavioral of BusReadBenchmarker is
 
 begin
 
-  -- Pseudo random number generator instance
-  prng_inst : StreamPseudoRandomGenerator
-    generic map (
-      DATA_WIDTH  => BUS_ADDR_WIDTH
-    )
-    port map (
-      clk         => bus_clk,
-      reset       => bus_reset,
-      seed        => slv(resize(u(X"FEEDBEEF00000042"), BUS_ADDR_WIDTH)),
-      out_valid   => prng_valid,
-      out_ready   => prng_ready,
-      out_data    => prng_data
-    );
+  -- Pseudo random number generator instance, if pattern is set to random
+  random_prng : if PATTERN = "RANDOM" generate
+    prng_inst : StreamPseudoRandomGenerator
+      generic map (
+        DATA_WIDTH  => BUS_ADDR_WIDTH
+      )
+      port map (
+        clk         => bus_clk,
+        reset       => bus_reset,
+        seed        => slv(resize(u(X"FEEDBEEF13374242"), BUS_ADDR_WIDTH)),
+        out_valid   => prng_valid,
+        out_ready   => prng_ready,
+        out_data    => prng_data
+      );
+  end generate;
 
-  -- Request state machine sequential part
+  -- State machine sequential part
   req_seq: process(bus_clk) is begin
     if rising_edge(bus_clk) then
       r_req <= d_req;
@@ -128,7 +133,7 @@ begin
     end if;
   end process;
 
-  -- Request state machine combinatorial part
+  -- State machine combinatorial part
   req_comb: process(
     r_req,
     bus_rreq_ready,
@@ -138,7 +143,9 @@ begin
     reg_max_bursts,
     reg_burst_length,
     reg_base_addr_lo,
-    reg_base_addr_hi
+    reg_base_addr_hi,
+    prng_valid,
+    prng_data
   ) is
     variable v_req : req_regs_type;
   begin
@@ -168,6 +175,7 @@ begin
           v_req.burst_length  := unsigned(reg_burst_length);
           v_req.base_addr     := reg_base_addr_hi & reg_base_addr_lo;
           v_req.addr_mask     := reg_addr_mask_hi & reg_addr_mask_lo;
+          v_req.addr          := reg_base_addr_hi & reg_base_addr_lo;
         end if;
         
       when BUSY =>
@@ -179,12 +187,27 @@ begin
         if r_req.num_requests /= 0 then
           -- Generate a valid read request
           bus_rreq_valid <= '1';
-          bus_rreq_addr <= slv(u(r_req.base_addr) + u(prng_data and r_req.addr_mask));
+          
+          -- Determine the next address
+          if PATTERN = "RANDOM" then
+            -- Use PRNG burst address
+            bus_rreq_addr <= slv(u(r_req.base_addr) + u(prng_data and r_req.addr_mask));
+          else
+            -- Use sequential burst address
+            bus_rreq_addr <= r_req.addr;
+          end if;
 
-          -- Keep track of how many read requests have been served.
+          -- If request was handshaked
           if bus_rreq_ready = '1' then
-            prng_ready <= '1';
+            -- Decrease number of requests left to make
             v_req.num_requests := r_req.num_requests - 1;
+            
+            -- Either grab next PRN or increment the address to the next burst
+            if PATTERN = "RANDOM" then
+              prng_ready <= '1';            
+            else
+              v_req.addr := slv(u(r_req.addr) + shift_left(r_req.burst_length, log2ceil(BUS_DATA_WIDTH/8)));
+            end if;
           end if;
         end if;
         
