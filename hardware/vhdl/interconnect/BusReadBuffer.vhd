@@ -256,7 +256,8 @@ begin
   mst_rdat_buffer_inst: StreamBuffer
     generic map (
       MIN_DEPTH                         => sel(MST_DAT_SLICE, 2, 0) + 2**DEPTH_LOG2,
-      DATA_WIDTH                        => BPI(BPI'high)
+      DATA_WIDTH                        => BPI(BPI'high),
+      RAM_CONFIG                        => RAM_CONFIG
     )
     port map (
       clk                               => clk,
