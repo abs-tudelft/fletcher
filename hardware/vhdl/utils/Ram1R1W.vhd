@@ -67,6 +67,16 @@ architecture Behavioral of Ram1R1W is
   -- Shared variable needs to be protected for synthesis by vivado.
   -- Use a signal instead.
   signal mem : mem_type;
+  
+  -- RAM style pragmas:
+  
+  -- Vivado RAM style
+  attribute ram_style : string;
+  attribute ram_style of mem : signal is RAM_CONFIG;
+  
+  -- Quartus RAM style
+  
+  -- ... RAM style
 
 begin
 
