@@ -25,14 +25,21 @@ use work.Streams.all;
 
 entity BusBurstModel_tb is
   generic (
-    NUM_CONSUMERS               : natural :=  2;
-    REQUEST_LATENCY             : natural := 20;
+    ----------------------------------------------------------------------------
+    NUM_CONSUMERS               : natural :=    4;
+    
+    REQUEST_LATENCY             : natural :=   20;
     
     D0                          : natural :=  400;
     D1                          : natural := 3400;
-    B0                          : natural :=  5;
-    B1                          : natural := 16;
-
+    D2                          : natural := 1600;
+    D3                          : natural := 2000;
+    
+    B0                          : natural :=    5;
+    B1                          : natural :=   16;
+    B2                          : natural :=    8;
+    B3                          : natural :=   20;
+    ----------------------------------------------------------------------------
     BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 512;
     BUS_LEN_WIDTH               : natural := 9;
@@ -125,9 +132,13 @@ begin
 
     reg_max_bursts(0)   <= slv(u(D0 / B0, 32));
     reg_max_bursts(1)   <= slv(u(D1 / B1, 32));
+    reg_max_bursts(2)   <= slv(u(D2 / B2, 32));
+    reg_max_bursts(3)   <= slv(u(D3 / B3, 32));
 
     reg_burst_length(0) <= slv(u(B0, 32));
     reg_burst_length(1) <= slv(u(B1, 32));
+    reg_burst_length(2) <= slv(u(B2, 32));
+    reg_burst_length(3) <= slv(u(B3, 32));
 
     loop
       wait until rising_edge(bus_clk);

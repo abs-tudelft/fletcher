@@ -80,11 +80,13 @@ architecture Behavioral of BusReadBenchmarker is
   
   constant ADDR_SHIFT           : natural := log2ceil(BUS_MAX_BURST_LENGTH * BUS_DATA_WIDTH / 8);
 
-  type req_state_type is (IDLE, BUSY, DONE, ERROR);
+  type state_type is (IDLE, BUSY, DONE, ERROR);
 
-  type req_regs_type is record
+  type regs_type is record
     -- State machine state
-    state                       : req_state_type;
+    state                       : state_type;
+    -- Memory for start bit high
+    start                       : std_logic;
     -- Settings for workload
     base_addr                   : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     addr_mask                   : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -98,8 +100,8 @@ architecture Behavioral of BusReadBenchmarker is
     num_responses               : unsigned(31 downto 0);
   end record;
 
-  signal r_req                  : req_regs_type;
-  signal d_req                  : req_regs_type;
+  signal r                      : regs_type;
+  signal d                      : regs_type;
 
   signal prng_valid             : std_logic;
   signal prng_ready             : std_logic;
@@ -126,16 +128,16 @@ begin
   -- State machine sequential part
   req_seq: process(bus_clk) is begin
     if rising_edge(bus_clk) then
-      r_req <= d_req;
+      r <= d;
       if bus_reset = '1' or reg_control(CONTROL_RESET) = '1' then
-        r_req.state <= IDLE;
+        r.state <= IDLE;
       end if;
     end if;
   end process;
 
   -- State machine combinatorial part
   req_comb: process(
-    r_req,
+    r,
     bus_rreq_ready,
     bus_rdat_valid,
     bus_rdat_last,
@@ -147,88 +149,98 @@ begin
     prng_valid,
     prng_data
   ) is
-    variable v_req : req_regs_type;
+    variable v : regs_type;
   begin
-    v_req := r_req;
-
-    bus_rreq_valid <= '0';
-    bus_rdat_ready <= '1';
-    bus_rreq_len   <= slv(r_req.burst_length(BUS_LEN_WIDTH-1 downto 0));
-
-    prng_ready <= '0';
+    v := r;
     
-    -- default status
-    reg_status <= (others => '0');
+    -- Default outputs
+    bus_rreq_valid <= '0';
+    bus_rreq_len   <= slv(r.burst_length(BUS_LEN_WIDTH-1 downto 0));
+    bus_rdat_ready <= '1';
+    prng_ready     <= '0';
+    reg_status     <= (others => '0');
 
-    case r_req.state is
+    -- States
+    case r.state is
     
       when IDLE =>
         reg_status(STATUS_IDLE) <= '1';
       
-        -- At the start, clock in all settings
+        -- When start is high, clock in all settings
         if reg_control(CONTROL_START) = '1' then
-          v_req.state         := BUSY;
-          v_req.cycles        := (others => '0');
-          v_req.max_bursts    := unsigned(reg_max_bursts);
-          v_req.num_requests  := unsigned(reg_max_bursts);
-          v_req.num_responses := unsigned(reg_max_bursts);
-          v_req.burst_length  := unsigned(reg_burst_length);
-          v_req.base_addr     := reg_base_addr_hi & reg_base_addr_lo;
-          v_req.addr_mask     := reg_addr_mask_hi & reg_addr_mask_lo;
-          v_req.addr          := reg_base_addr_hi & reg_base_addr_lo;
+          v.start         := '1';
+          v.cycles        := (others => '0');
+          v.max_bursts    := unsigned(reg_max_bursts);
+          v.num_requests  := unsigned(reg_max_bursts);
+          v.num_responses := unsigned(reg_max_bursts);
+          v.burst_length  := unsigned(reg_burst_length);
+          v.base_addr     := reg_base_addr_hi & reg_base_addr_lo;
+          v.addr_mask     := reg_addr_mask_hi & reg_addr_mask_lo;
+          v.addr          := reg_base_addr_hi & reg_base_addr_lo;
+        end if;
+        
+        -- When start goes low after it was high, start the actual benchmark
+        if reg_control(CONTROL_START) = '0' and r.start = '1' then
+          v.state := BUSY;
+          -- Reset the start bit for next time.
+          v.start := '1';
         end if;
         
       when BUSY =>
         reg_status(STATUS_BUSY) <= '1';
       
         -- Count all cycles spent on all requests
-        v_req.cycles := r_req.cycles + 1;
+        v.cycles := r.cycles + 1;
 
-        if r_req.num_requests /= 0 then
+        if r.num_requests /= 0 then
           -- Generate a valid read request
           bus_rreq_valid <= '1';
           
           -- Determine the next address
           if PATTERN = "RANDOM" then
             -- Use PRNG burst address
-            bus_rreq_addr <= slv(u(r_req.base_addr) + u(prng_data and r_req.addr_mask));
+            bus_rreq_addr <= slv(u(r.base_addr) + u(prng_data and r.addr_mask));
           else
             -- Use sequential burst address
-            bus_rreq_addr <= r_req.addr;
+            bus_rreq_addr <= r.addr;
           end if;
 
           -- If request was handshaked
           if bus_rreq_ready = '1' then
             -- Decrease number of requests left to make
-            v_req.num_requests := r_req.num_requests - 1;
+            v.num_requests := r.num_requests - 1;
             
             -- Either grab next PRN or increment the address to the next burst
             if PATTERN = "RANDOM" then
               prng_ready <= '1';            
             else
-              v_req.addr := slv(u(r_req.addr) + shift_left(r_req.burst_length, log2ceil(BUS_DATA_WIDTH/8)));
+              v.addr := slv(u(r.addr) + shift_left(r.burst_length, log2ceil(BUS_DATA_WIDTH/8)));
             end if;
           end if;
         end if;
         
         -- Keep track of how many responses have been delivered.
         if bus_rdat_valid = '1' and bus_rdat_last = '1' then
-          v_req.num_responses := r_req.num_responses - 1;
+          v.num_responses := r.num_responses - 1;
         end if;
         
-        if v_req.num_responses = 0 then
-          v_req.state := DONE;
+        if v.num_responses = 0 then
+          v.state := DONE;
         end if;
         
       when DONE =>
         reg_status(STATUS_DONE) <= '1';
-        reg_cycles <= slv(r_req.cycles);
+        reg_cycles <= slv(r.cycles);
+        -- Go to idle on reset.
+        if (reg_control(CONTROL_RESET) = '1') then
+          v.state := IDLE;
+        end if;
 
       when ERROR =>
         reg_status(STATUS_ERROR) <= '1';
 
     end case;
-    d_req <= v_req;
+    d <= v;
   end process;
   
 end Behavioral;
