@@ -135,6 +135,5 @@ deploy:
   local-dir: docs/book
   keep-history: false
   on:
-    # TODO: update to develop
-    branch: docs
+    branch: develop
     condition: $FLETCHER_DOCS = 1
