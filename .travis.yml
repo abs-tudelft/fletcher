@@ -126,9 +126,9 @@ script:
 
 before_deploy:
   - pushd docs
-  - tar xfz <(curl -sL https://github.com/rust-lang-nursery/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz)
-  - mdbook build
-  - mdbook test
+  - tar xvfz <(curl -sL https://github.com/rust-lang-nursery/mdBook/releases/download/v$MDBOOK_VERSION/mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz)
+  - ./mdbook build
+  - ./mdbook test
 
 deploy:
   provider: pages
