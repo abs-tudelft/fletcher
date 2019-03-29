@@ -1,0 +1,5 @@
+[book]
+authors = [""]
+multilingual = false
+src = "src"
+title = "Fletcher: A framework to integrate FPGA accelerators with Apache Arrow"
