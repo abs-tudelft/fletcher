@@ -15,6 +15,7 @@ env:
     - CAPI_SNAP_VERSION=1.5.1
     - CAPI_PSLSE_VERSION=4.1
     - PSLVER=8
+    - MDBOOK_VERSION=0.2.1
     # fletcher
     - FLETCHER_CPP=0
     - FLETCHER_ECHO=0
@@ -23,6 +24,7 @@ env:
     - FLETCHER_GEN=0
     - FLETCHER_PYTHON=0
     - FLETCHER_TESTS=0
+    - FLETCHER_DOCS=0
     - SOURCE_PATH=
     # cmake
     - CTEST_OUTPUT_ON_FAILURE=1
@@ -52,6 +54,8 @@ matrix:
     # echo platform
     - name: "[C++] Echo platform"
       env: SOURCE_PATH=platforms/echo/runtime
+    - name: "Docs"
+      env: FLETCHER_DOCS=1
 
 before_install:
   - curl -sSL "https://dist.apache.org/repos/dist/dev/arrow/KEYS" | sudo -E apt-key add -
@@ -119,3 +123,18 @@ script:
       python3 testing/test.py &&
       popd
     fi
+
+before_deploy:
+  - tar xfz <(curl -sL https://github.com/rust-lang-nursery/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v{MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz)
+  - cd docs && mdbook build && mdbook test
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  local-dir: docs/book
+  keep-history: false
+  on:
+    # TODO: update to develop
+    branch: docs
+    condition: $FLETCHER_DOCS = 1
