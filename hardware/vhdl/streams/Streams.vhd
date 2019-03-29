@@ -96,6 +96,25 @@ package Streams is
       out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0)
     );
   end component;
+  
+    component StreamBuffer_NP2 is
+    generic (
+      DEPTH                     : natural;
+      DATA_WIDTH                : natural;
+      RAM_CONFIG                : string := ""
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0)
+    );
+  end component;
+
 
   -----------------------------------------------------------------------------
   -- Component declarations for split & merge stream primitives
