@@ -13,7 +13,7 @@ stages:
 #   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
 
 .env: &env
-  ARROW_VERSION: 0.12.1
+  ARROW_VERSION: 0.12.0
   AWS_FPGA_VERSION: 1.4.7
   CAPI_SNAP_VERSION: 1.5.1
   CAPI_PSLSE_VERSION: "4.1"
