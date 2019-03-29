@@ -13,16 +13,13 @@ stages:
 #   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
 
 .env: &env
-  ARROW_VERSION: 0.12.0
-  AWS_FPGA_VERSION: 1.4.6
+  ARROW_VERSION: 0.12.1
+  AWS_FPGA_VERSION: 1.4.7
   CAPI_SNAP_VERSION: 1.5.1
   CAPI_PSLSE_VERSION: "4.1"
 
   GHDL_IMAGE: ghdl/ghdl
   GHDL_TAG: ubuntu18-llvm-5.0
-
-  RUST_VERSION: 1.32.0
-  RUST_VHDL_PARSER_CRATE_VERSION: 0.4.0
 
 .cmake-env: &cmake-env
   <<: *env
@@ -55,15 +52,6 @@ variables:
     pip3 || curl "https://bootstrap.pypa.io/get-pip.py" | python3
     pip3 install -U $PIP_PACKAGES
   fi
-
-check-vhdl-syntax:
-  stage: check
-  image: rust:${RUST_VERSION}-slim-stretch
-  before_script:
-    - cargo install vhdl_parser --version $RUST_VHDL_PARSER_CRATE_VERSION
-  script:
-    - find hardware -name "*.vhd" |
-      xargs vhdl_parser --show
 
 .ghdl-check-job: &ghdl-check-job
   stage: check
