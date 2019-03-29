@@ -8,7 +8,7 @@ The base pyfletcher library binary wheels can be easily installed on Linux:
 pip install pyfletcher
 ```
 
-In order to use pyfletcher to interface with FPGA's, please install the correct driver for your platform from the [repository](https://github.com/johanpel/fletcher/tree/master/platforms). It is recommended to install the echo platform for debugging and testing.
+In order to use pyfletcher to interface with FPGA's, please install the correct driver for your platform from the [repository](https://github.com/johanpel/fletcher/tree/develop/platforms). It is recommended to install the echo platform for debugging and testing.
 
 # Building from source
 Before installing pyfletcher, you should install Cython, numpy and pyarrow.
@@ -17,7 +17,7 @@ Before installing pyfletcher, you should install Cython, numpy and pyarrow.
 pip install Cython numpy pyarrow
 ```
 
-Install the [Fletcher C++ run-time library](https://github.com/Mythir/fletcher/tree/runtime-redesign/runtime/cpp) as follows:
+Install the [Fletcher C++ run-time library](https://github.com/johanpel/fletcher/tree/develop/runtime/cpp) as follows:
 
 ```console
 mkdir build

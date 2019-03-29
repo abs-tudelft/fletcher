@@ -1,4 +1,4 @@
-ARG ARROW_VERSION=0.11.1
+ARG ARROW_VERSION=0.12.0
 FROM mbrobbel/libarrow:$ARROW_VERSION
 
 LABEL fletcher=
