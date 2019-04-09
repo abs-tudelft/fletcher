@@ -60,7 +60,7 @@ begin
   uut: StreamFIFO
     generic map (
       DATA_WIDTH                => DATA_WIDTH,
-      DEPTH_LOG2                => 5,
+      DEPTH                     => 5,
       XCLK_STAGES               => 2
     )
     port map (
