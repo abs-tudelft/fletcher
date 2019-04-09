@@ -23,6 +23,7 @@ use work.Utils.all;
 use work.Streams.all;
 use work.StreamSim.all;
 use work.Interconnect.all;
+use work.SimUtils.all;
 
 -- This simulation-only unit is a mockup of a bus slave that can either
 -- respond based on an S-record file of the memory contents, or simply returns
@@ -45,13 +46,16 @@ entity BusReadSlaveMock is
     SEED                        : positive := 1;
 
     -- Whether to randomize the request stream handshake timing.
-    RANDOM_REQUEST_TIMING       : boolean := true;
+    RANDOM_REQUEST_TIMING       : boolean := false;
 
     -- Whether to randomize the request stream handshake timing.
-    RANDOM_RESPONSE_TIMING      : boolean := true;
+    RANDOM_RESPONSE_TIMING      : boolean := false;
     
     -- Latency on request channel handshakes, when random response is false.
-    REQUEST_LATENCY             : natural := 0;
+    REQUEST_LATENCY             : positive := 1;
+    
+    -- Pipeline depth of the interface
+    PIPELINE_DEPTH              : positive := 1;
 
     -- S-record file to load into memory. If not specified, the unit reponds
     -- with the requested address for each word.
@@ -79,109 +83,100 @@ entity BusReadSlaveMock is
 end BusReadSlaveMock;
 
 architecture Behavioral of BusReadSlaveMock is
+  
+  type request_type is record
+    addr    : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    len     : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    latency : natural;
+  end record;
+  
+  type req_queue_type is array (0 to PIPELINE_DEPTH-1) of request_type;
+  signal reqs         : req_queue_type;
+  signal req_idx_out  : natural := 0;
+  signal req_idx_in   : natural := 0;
+  signal req_flip_in  : boolean := false;
+  signal req_flip_out : boolean := false;
+  signal req_full     : boolean := false;
+  signal req_empty    : boolean := true;
 
-  signal rreq_cons_valid        : std_logic;
-  signal rreq_cons_ready        : std_logic;
-
-  signal rreq_int_valid         : std_logic;
-  signal rreq_int_ready         : std_logic;
-
-  signal rdat_prod_valid        : std_logic;
-  signal rdat_prod_ready        : std_logic;
-
-  signal rdat_int_valid         : std_logic;
-  signal rdat_int_ready         : std_logic;
-
+  procedure subtract_latency_cycles(signal reqs : inout req_queue_type) is
+  begin
+    for I in 0 to PIPELINE_DEPTH-1 loop
+      if reqs(I).latency - 1 >= 0 then
+        reqs(I).latency <= reqs(I).latency - 1;
+      end if;
+    end loop;
+  end procedure;
+  
 begin
 
-  random_request_timing_gen: if RANDOM_REQUEST_TIMING generate
+  req_full <= true when (req_flip_in /= req_flip_out) and (req_idx_in = req_idx_out)
+              else false;
+              
+  req_empty <= true when req_flip_in = req_flip_out  and (req_idx_in = req_idx_out)
+              else false;
+  
+  -- Always accept requests when FIFO is not full
+  rreq_ready <= '0' when req_full else '1';
+  
+  -- Request process
+  req_proc : process is
   begin
-
-    -- Request consumer and synchronizer. These two units randomize the rate at
-    -- which requests are consumed.
-    consumer_sync: StreamSync
-      generic map (
-        NUM_INPUTS                => 1,
-        NUM_OUTPUTS               => 2
-      )
-      port map (
-        clk                       => clk,
-        reset                     => reset,
-        in_valid(0)               => rreq_valid,
-        in_ready(0)               => rreq_ready,
-        out_valid(1)              => rreq_cons_valid,
-        out_valid(0)              => rreq_int_valid,
-        out_ready(1)              => rreq_cons_ready,
-        out_ready(0)              => rreq_int_ready
-      );
-
-    consumer_inst: StreamTbCons
-      generic map (
-        SEED                      => SEED
-      )
-      port map (
-        clk                       => clk,
-        reset                     => reset,
-        in_valid                  => rreq_cons_valid,
-        in_ready                  => rreq_cons_ready,
-        in_data                   => (others => '0')
-      );
-
-  end generate;
-
-  fast_request_timing_gen: if not RANDOM_REQUEST_TIMING generate
-  begin      
-    rreq_int_valid <= rreq_valid;
-    rreq_ready <= rreq_int_ready;
-  end generate;
-
-  -- Request handler. First accepts and ready's a command, then outputs the a
-  -- response burst as fast as possible.
-  process is
+    state: loop
+      -- Wait for request valid and fifo not full
+      loop
+        exit when rreq_valid = '1' and req_full = false;
+        wait until rising_edge(clk);
+        subtract_latency_cycles(reqs);
+        exit state when reset = '1';
+      end loop;
+      
+      reqs(req_idx_in).addr    <= rreq_addr;
+      reqs(req_idx_in).len     <= rreq_len;
+      reqs(req_idx_in).latency <= REQUEST_LATENCY-1;
+        
+      -- Wrap or increment input index
+      if req_idx_in + 1 >= PIPELINE_DEPTH then
+        req_idx_in <= 0;
+        req_flip_in <= not req_flip_in;
+      else
+        req_idx_in <= req_idx_in + 1;
+      end if;
+      
+      -- Wait one clock cycle
+      wait until rising_edge(clk);
+      subtract_latency_cycles(reqs);
+      exit state when reset = '1';
+      
+    end loop;
+  end process;
+  
+  -- Response process
+  resp_proc : process is
     variable len    : natural;
     variable addr   : unsigned(63 downto 0);
     variable data   : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     variable mem    : mem_state_type;
-    variable cycles : natural := 0;
   begin
     if SREC_FILE /= "" then
       mem_clear(mem);
       mem_loadSRec(mem, SREC_FILE);
     end if;
-    
-    if REQUEST_LATENCY < 1 then
-      report "REQUEST_LATENCY must be at least 1." severity failure;
-    end if;
-
+  
     state: loop
-
-      -- Reset state.
-      rreq_int_ready <= '0';
-      rdat_int_valid <= '0';
-      rdat_data <= (others => '0');
-      rdat_last <= '0';
-      
-      cycles := 0;
-
-      -- Wait for request valid.
+      -- Wait for fifo not empty and latency.
       loop
-        exit when rreq_int_valid = '1' and cycles >= REQUEST_LATENCY-1;         
+        exit when req_empty = false and reqs(req_idx_out).latency = 0;
         wait until rising_edge(clk);
         exit state when reset = '1';
-        cycles := cycles + 1;
       end loop;
-
-      addr := resize(unsigned(rreq_addr), 64);
-      len := to_integer(unsigned(rreq_len));
-
-      -- Accept the request.
-      rreq_int_ready <= '1';
-      wait until rising_edge(clk);
-      exit state when reset = '1';
-      rreq_int_ready <= '0';
-
+      
+      len  := to_integer(unsigned(reqs(req_idx_out).len));
+      addr := unsigned(reqs(req_idx_out).addr);
+      
+      -- dumpStdOut("Generating Response. Addr: " & ii(addr) & " length: " & ii(len));
+      
       for i in 0 to len-1 loop
-
         -- Figure out what data to respond with.
         if SREC_FILE /= "" then
           mem_read(mem, std_logic_vector(addr), data);
@@ -190,10 +185,18 @@ begin
         end if;
 
         -- Assert response.
-        rdat_int_valid <= '1';
+        rdat_valid <= '1';
         rdat_data <= data;
+        
         if i = len-1 then
           rdat_last <= '1';
+          -- Wrap or increment output index
+          if req_idx_out + 1 >= PIPELINE_DEPTH then
+            req_idx_out <= 0;
+            req_flip_out <= not req_flip_out;
+          else
+            req_idx_out <= req_idx_out + 1;
+          end if;
         else
           rdat_last <= '0';
         end if;
@@ -202,54 +205,17 @@ begin
         loop
           wait until rising_edge(clk);
           exit state when reset = '1';
-          exit when rdat_int_ready = '1';
+          exit when rdat_ready = '1';
         end loop;
 
         addr := addr + (BUS_DATA_WIDTH / 8);
-
+        
       end loop;
+            
+      rdat_valid <= '0';
+      rdat_last <= '0';
 
     end loop;
   end process;
-
-  random_response_timing_gen: if RANDOM_RESPONSE_TIMING generate
-  begin
-
-    -- Response producer and synchronizer. These two units randomize the rate at
-    -- which burst beats are generated.
-    producer_inst: StreamTbProd
-      generic map (
-        SEED                      => SEED + 31415
-      )
-      port map (
-        clk                       => clk,
-        reset                     => reset,
-        out_valid                 => rdat_prod_valid,
-        out_ready                 => rdat_prod_ready
-      );
-
-    producer_sync: StreamSync
-      generic map (
-        NUM_INPUTS                => 2,
-        NUM_OUTPUTS               => 1
-      )
-      port map (
-        clk                       => clk,
-        reset                     => reset,
-        in_valid(1)               => rdat_prod_valid,
-        in_valid(0)               => rdat_int_valid,
-        in_ready(1)               => rdat_prod_ready,
-        in_ready(0)               => rdat_int_ready,
-        out_valid(0)              => rdat_valid,
-        out_ready(0)              => rdat_ready
-      );
-
-  end generate;
-
-  fast_response_timing_gen: if not RANDOM_RESPONSE_TIMING generate
-  begin
-    rdat_valid <= rdat_int_valid;
-    rdat_int_ready <= rdat_ready;
-  end generate;
 
 end Behavioral;
