@@ -25,27 +25,21 @@ use work.Streams.all;
 
 entity BusBurstModel_tb is
   generic (
-    ----------------------------------------------------------------------------
-    NUM_CONSUMERS               : natural :=    4;
+    ----------------------------------------------------------------------------    
+    D : nat_array := ( 6000,  3000);
+    T : nat_array := (    1,     2);
+    B : nat_array := (    3,     3);
     
-    REQUEST_LATENCY             : natural :=   20;
-    
-    D0                          : natural :=  400;
-    D1                          : natural := 3400;
-    D2                          : natural := 1600;
-    D3                          : natural := 2000;
-    
-    B0                          : natural :=    5;
-    B1                          : natural :=   16;
-    B2                          : natural :=    8;
-    B3                          : natural :=   20;
-    ----------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural := 64;
-    BUS_DATA_WIDTH              : natural := 512;
-    BUS_LEN_WIDTH               : natural := 9;
-    BUS_MAX_BURST_LENGTH        : natural := 256;
-    BUS_BURST_BOUNDARY          : natural := 4096;
-    PATTERN                     : string := "SEQUENTIAL"
+    NUM_CONSUMERS               : natural  :=     2;
+    REQUEST_LATENCY             : positive :=     4;
+    PIPELINE_DEPTH              : positive :=     2;
+    ----------------------------------------- -----------------------------------
+    BUS_ADDR_WIDTH              : natural  :=    64;
+    BUS_DATA_WIDTH              : natural  :=    32;
+    BUS_LEN_WIDTH               : natural  :=     9;
+    BUS_MAX_BURST_LENGTH        : natural  :=   129;
+    BUS_BURST_BOUNDARY          : natural  :=  4096;
+    PATTERN                     : string   :=  "SEQUENTIAL"
   );
 end BusBurstModel_tb;
 
@@ -65,7 +59,17 @@ architecture Behavioral of BusBurstModel_tb is
   signal bus_rdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_rdat_last        : std_logic;
 
-  -- Consumer interfaces
+  -- Buffer interfaces
+  signal buf_rreq_valid       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
+  signal buf_rreq_ready       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
+  signal buf_rreq_addr        : std_logic_vector(NUM_CONSUMERS*BUS_ADDR_WIDTH-1 downto 0);
+  signal buf_rreq_len         : std_logic_vector(NUM_CONSUMERS*BUS_LEN_WIDTH-1 downto 0);
+  signal buf_rdat_valid       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
+  signal buf_rdat_ready       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
+  signal buf_rdat_data        : std_logic_vector(NUM_CONSUMERS*BUS_DATA_WIDTH-1 downto 0);
+  signal buf_rdat_last        : std_logic_vector(NUM_CONSUMERS-1 downto 0);
+
+  -- Arbiter interfaces
   signal bsv_rreq_valid       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
   signal bsv_rreq_ready       : std_logic_vector(NUM_CONSUMERS-1 downto 0);
   signal bsv_rreq_addr        : std_logic_vector(NUM_CONSUMERS*BUS_ADDR_WIDTH-1 downto 0);
@@ -84,7 +88,8 @@ architecture Behavioral of BusBurstModel_tb is
   signal reg_base_addr_hi     : reg_array;
   signal reg_addr_mask_lo     : reg_array;
   signal reg_addr_mask_hi     : reg_array;
-
+  signal reg_cycles_per_word  : reg_array;
+  
   signal reg_cycles           : reg_array;
   signal reg_checksum         : reg_array;
 
@@ -106,7 +111,7 @@ begin
   reset_proc: process is
   begin
     bus_reset <= '1';
-    wait for 50 ns;
+    wait for 10 ns;
     wait until rising_edge(bus_clk);
     bus_reset <= '0';
     wait;
@@ -128,17 +133,20 @@ begin
       reg_base_addr_hi(I) <= X"00000000";
       reg_addr_mask_lo(I) <= X"00FFF000";
       reg_addr_mask_hi(I) <= X"00000000";
+      
+      reg_max_bursts(I)      <= slv(u(D(I) / B(I), 32));
+      reg_cycles_per_word(I) <= slv(u(T(I), 32));
+      reg_burst_length(I)    <= slv(u(B(I), 32));
     end loop;
-
-    reg_max_bursts(0)   <= slv(u(D0 / B0, 32));
-    reg_max_bursts(1)   <= slv(u(D1 / B1, 32));
-    reg_max_bursts(2)   <= slv(u(D2 / B2, 32));
-    reg_max_bursts(3)   <= slv(u(D3 / B3, 32));
-
-    reg_burst_length(0) <= slv(u(B0, 32));
-    reg_burst_length(1) <= slv(u(B1, 32));
-    reg_burst_length(2) <= slv(u(B2, 32));
-    reg_burst_length(3) <= slv(u(B3, 32));
+    
+    wait until rising_edge(bus_clk);
+    
+    -- Lower start to actually start
+    for I in 0 to NUM_CONSUMERS-1 loop
+      reg_control(I)      <= X"00000000";
+    end loop;
+    
+    wait until rising_edge(bus_clk);
 
     loop
       wait until rising_edge(bus_clk);
@@ -157,7 +165,8 @@ begin
 
     for I in 0 to NUM_CONSUMERS-1 loop
       dumpStdOut(
-          ii(I) & ":"
+          "C"
+        & ii(I) & ":"
         & ii(int(reg_burst_length(I)) * int(reg_max_bursts(I))) & "," 
         & ii(int(reg_max_bursts(I))) & ","
         & ii(int(reg_burst_length(I)))  & ","
@@ -168,7 +177,7 @@ begin
       total_data := total_data + int(reg_burst_length(I)) * int(reg_max_bursts(I));
     end loop;
 
-    dumpStdOut("T:" & ii(cycles) & ", " & ii(total_data) & ", " & (real'image((real(total_data) / real(cycles)))));
+    dumpStdOut(" A:" & ii(cycles) & ", " & ii(total_data) & ", " & (real'image((real(total_data) / real(cycles)))));
 
     wait;
 
@@ -176,6 +185,39 @@ begin
 
   -- Consumers
   cons_gen: for I in 0 to NUM_CONSUMERS-1 generate
+    buf : BusReadBuffer
+      generic map (
+        BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
+        BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
+        BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
+        FIFO_DEPTH                => B(I) + 1,
+        RAM_CONFIG                => "",
+        SLV_REQ_SLICE             => false,
+        MST_REQ_SLICE             => false,
+        MST_DAT_SLICE             => false,
+        SLV_DAT_SLICE             => false
+      )
+      port map (
+        clk                       => bus_clk,
+        reset                     => bus_reset,
+        slv_rreq_valid            => buf_rreq_valid(I),
+        slv_rreq_ready            => buf_rreq_ready(I),
+        slv_rreq_addr             => buf_rreq_addr((I+1)*BUS_ADDR_WIDTH-1 downto I*BUS_ADDR_WIDTH),
+        slv_rreq_len              => buf_rreq_len((I+1)*BUS_LEN_WIDTH-1 downto I*BUS_LEN_WIDTH),
+        slv_rdat_valid            => buf_rdat_valid(I),
+        slv_rdat_ready            => buf_rdat_ready(I),
+        slv_rdat_data             => buf_rdat_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH),
+        slv_rdat_last             => buf_rdat_last(I),
+        mst_rreq_valid            => bsv_rreq_valid(I),
+        mst_rreq_ready            => bsv_rreq_ready(I),
+        mst_rreq_addr             => bsv_rreq_addr((I+1)*BUS_ADDR_WIDTH-1 downto I*BUS_ADDR_WIDTH),
+        mst_rreq_len              => bsv_rreq_len((I+1)*BUS_LEN_WIDTH-1 downto I*BUS_LEN_WIDTH),
+        mst_rdat_valid            => bsv_rdat_valid(I),
+        mst_rdat_ready            => bsv_rdat_ready(I),
+        mst_rdat_data             => bsv_rdat_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH),
+        mst_rdat_last             => bsv_rdat_last(I)
+      );
+      
     uut : BusReadBenchmarker
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -189,14 +231,14 @@ begin
         bus_clk                   => bus_clk,
         bus_reset                 => bus_reset,
 
-        bus_rreq_valid            => bsv_rreq_valid(I),
-        bus_rreq_ready            => bsv_rreq_ready(I),
-        bus_rreq_addr             => bsv_rreq_addr((I+1)*BUS_ADDR_WIDTH-1 downto I*BUS_ADDR_WIDTH),
-        bus_rreq_len              => bsv_rreq_len((I+1)*BUS_LEN_WIDTH-1 downto I*BUS_LEN_WIDTH),
-        bus_rdat_valid            => bsv_rdat_valid(I),
-        bus_rdat_ready            => bsv_rdat_ready(I),
-        bus_rdat_data             => bsv_rdat_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH),
-        bus_rdat_last             => bsv_rdat_last(I),
+        bus_rreq_valid            => buf_rreq_valid(I),
+        bus_rreq_ready            => buf_rreq_ready(I),
+        bus_rreq_addr             => buf_rreq_addr((I+1)*BUS_ADDR_WIDTH-1 downto I*BUS_ADDR_WIDTH),
+        bus_rreq_len              => buf_rreq_len((I+1)*BUS_LEN_WIDTH-1 downto I*BUS_LEN_WIDTH),
+        bus_rdat_valid            => buf_rdat_valid(I),
+        bus_rdat_ready            => buf_rdat_ready(I),
+        bus_rdat_data             => buf_rdat_data((I+1)*BUS_DATA_WIDTH-1 downto I*BUS_DATA_WIDTH),
+        bus_rdat_last             => buf_rdat_last(I),
 
         reg_control               => reg_control(I),
         reg_status                => reg_status(I),
@@ -206,6 +248,7 @@ begin
         reg_base_addr_hi          => reg_base_addr_hi(I),
         reg_addr_mask_lo          => reg_addr_mask_lo(I),
         reg_addr_mask_hi          => reg_addr_mask_hi(I),
+        reg_cycles_per_word       => reg_cycles_per_word(I),
         reg_cycles                => reg_cycles(I)
       );
     end generate;
@@ -218,7 +261,7 @@ begin
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       ARB_METHOD                => "ROUND-ROBIN",
-      MAX_OUTSTANDING           => 1,
+      MAX_OUTSTANDING           => 2*PIPELINE_DEPTH,
       RAM_CONFIG                => "",
       SLV_REQ_SLICES            => false,
       MST_REQ_SLICE             => false,
@@ -253,6 +296,7 @@ begin
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       REQUEST_LATENCY           => REQUEST_LATENCY,
+      PIPELINE_DEPTH            => PIPELINE_DEPTH,
       SEED                      => 1337,
       RANDOM_REQUEST_TIMING     => false,
       RANDOM_RESPONSE_TIMING    => false
