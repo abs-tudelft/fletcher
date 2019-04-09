@@ -24,8 +24,7 @@ use work.Interconnect.all;
 use work.Streams.all;
 
 -- This unit benchmarks a memory interface in terms of latency and throughput
--- by reporting the sum of the latencies between requests/responses and the
--- total number of cycles of requesting a workload.
+-- by reporting the total number of cycles of requesting a workload.
 
 entity BusReadBenchmarker is
   generic (
@@ -48,18 +47,29 @@ entity BusReadBenchmarker is
     bus_rdat_ready              : out std_logic;
     bus_rdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_rdat_last               : in  std_logic;
-
+    
     -- Control / status registers
     reg_control                 : in  std_logic_vector(31 downto 0);
     reg_status                  : out std_logic_vector(31 downto 0);
 
     -- Configuration registers
+    
+    -- Burst length
     reg_burst_length            : in  std_logic_vector(31 downto 0);
+    
+    -- Maximum number of bursts
     reg_max_bursts              : in  std_logic_vector(31 downto 0);
+    
+    -- Base addresse
     reg_base_addr_lo            : in  std_logic_vector(31 downto 0);
     reg_base_addr_hi            : in  std_logic_vector(31 downto 0);
+    
+    -- Address mask
     reg_addr_mask_lo            : in  std_logic_vector(31 downto 0);
     reg_addr_mask_hi            : in  std_logic_vector(31 downto 0);
+    
+    -- Number of cycles to absorb a word, set 0 to always accept immediately
+    reg_cycles_per_word         : in  std_logic_vector(31 downto 0);
 
     -- Result registers
     reg_cycles                  : out std_logic_vector(31 downto 0);
@@ -94,6 +104,8 @@ architecture Behavioral of BusReadBenchmarker is
     burst_length                : unsigned(31 downto 0);
     -- Current request address
     addr                        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    -- Accept rate modifier
+    accept_cycles               : unsigned(31 downto 0);
     -- Measurements for workload
     cycles                      : unsigned(31 downto 0);
     num_requests                : unsigned(31 downto 0);
@@ -146,20 +158,24 @@ begin
     reg_burst_length,
     reg_base_addr_lo,
     reg_base_addr_hi,
+    reg_cycles_per_word,
     prng_valid,
     prng_data
   ) is
     variable v : regs_type;
+    
+    variable rdat_ready_v : std_logic;
   begin
     v := r;
     
-    -- Default outputs
+    -- Defaults
     bus_rreq_valid <= '0';
     bus_rreq_len   <= slv(r.burst_length(BUS_LEN_WIDTH-1 downto 0));
-    bus_rdat_ready <= '1';
     prng_ready     <= '0';
     reg_status     <= (others => '0');
-
+    
+    rdat_ready_v := '0';
+    
     -- States
     case r.state is
     
@@ -177,6 +193,7 @@ begin
           v.base_addr     := reg_base_addr_hi & reg_base_addr_lo;
           v.addr_mask     := reg_addr_mask_hi & reg_addr_mask_lo;
           v.addr          := reg_base_addr_hi & reg_base_addr_lo;
+          v.accept_cycles := u(reg_cycles_per_word);
         end if;
         
         -- When start goes low after it was high, start the actual benchmark
@@ -219,15 +236,26 @@ begin
           end if;
         end if;
         
+        -- If there is valid data on the bus...
+        if bus_rdat_valid = '1' then
+          if v.accept_cycles - 1 /= 0 then
+            v.accept_cycles := v.accept_cycles - 1;
+            rdat_ready_v := '0';
+          else
+            v.accept_cycles := u(reg_cycles_per_word);
+            rdat_ready_v := '1';
+          end if;
+        end if;
+                
         -- Keep track of how many responses have been delivered.
-        if bus_rdat_valid = '1' and bus_rdat_last = '1' then
+        if bus_rdat_valid = '1' and rdat_ready_v = '1' and bus_rdat_last = '1' then
           v.num_responses := r.num_responses - 1;
         end if;
         
         if v.num_responses = 0 then
           v.state := DONE;
         end if;
-        
+               
       when DONE =>
         reg_status(STATUS_DONE) <= '1';
         reg_cycles <= slv(r.cycles);
@@ -240,6 +268,9 @@ begin
         reg_status(STATUS_ERROR) <= '1';
 
     end case;
+    
+    bus_rdat_ready <= rdat_ready_v;
+    
     d <= v;
   end process;
   

@@ -150,7 +150,7 @@ package Interconnect is
       mst_rdat_last             : in  std_logic
     );
   end component;
-
+  
   component BusWriteBuffer is
     generic (
       BUS_ADDR_WIDTH            : natural;
@@ -226,6 +226,7 @@ package Interconnect is
       reg_base_addr_hi            : in  std_logic_vector(31 downto 0);
       reg_addr_mask_lo            : in  std_logic_vector(31 downto 0);
       reg_addr_mask_hi            : in  std_logic_vector(31 downto 0);
+      reg_cycles_per_word         : in  std_logic_vector(31 downto 0);
       reg_cycles                  : out std_logic_vector(31 downto 0);
       reg_checksum                : out std_logic_vector(31 downto 0)
     );
@@ -651,6 +652,7 @@ package Interconnect is
       RANDOM_REQUEST_TIMING     : boolean := true;
       RANDOM_RESPONSE_TIMING    : boolean := true;
       REQUEST_LATENCY           : natural := 1;
+      PIPELINE_DEPTH            : natural := 1;
       SREC_FILE                 : string := ""
     );
     port (
