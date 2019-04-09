@@ -127,7 +127,7 @@ begin
   begin
     slice_inst: StreamFIFO
       generic map (
-        DEPTH_LOG2              => depth_log2(MIN_DEPTH),
+        DEPTH                   => MIN_DEPTH,
         DATA_WIDTH              => DATA_WIDTH,
         RAM_CONFIG              => RAM_CONFIG
       )

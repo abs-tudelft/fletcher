@@ -17,6 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.Utils.all;
+
 package Streams is
 
   -----------------------------------------------------------------------------
@@ -40,23 +43,23 @@ package Streams is
 
   component StreamFIFOCounter is
     generic (
-      DEPTH_LOG2                : natural;
+      DEPTH                     : natural;
       XCLK_STAGES               : natural := 0
     );
     port (
       a_clk                     : in  std_logic;
       a_reset                   : in  std_logic;
       a_increment               : in  std_logic;
-      a_counter                 : out std_logic_vector(DEPTH_LOG2 downto 0);
+      a_counter                 : out std_logic_vector(log2ceil(DEPTH) downto 0);
       b_clk                     : in  std_logic;
       b_reset                   : in  std_logic;
-      b_counter                 : out std_logic_vector(DEPTH_LOG2 downto 0)
+      b_counter                 : out std_logic_vector(log2ceil(DEPTH) downto 0)
     );
   end component;
 
   component StreamFIFO is
     generic (
-      DEPTH_LOG2                : natural;
+      DEPTH                     : natural;
       DATA_WIDTH                : natural;
       XCLK_STAGES               : natural := 0;
       RAM_CONFIG                : string := ""
@@ -67,15 +70,15 @@ package Streams is
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
       in_data                   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      in_rptr                   : out std_logic_vector(DEPTH_LOG2 downto 0);
-      in_wptr                   : out std_logic_vector(DEPTH_LOG2 downto 0);
+      in_rptr                   : out std_logic_vector(log2ceil(DEPTH) downto 0);
+      in_wptr                   : out std_logic_vector(log2ceil(DEPTH) downto 0);
       out_clk                   : in  std_logic;
       out_reset                 : in  std_logic;
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
       out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      out_rptr                  : out std_logic_vector(DEPTH_LOG2 downto 0);
-      out_wptr                  : out std_logic_vector(DEPTH_LOG2 downto 0)
+      out_rptr                  : out std_logic_vector(log2ceil(DEPTH) downto 0);
+      out_wptr                  : out std_logic_vector(log2ceil(DEPTH) downto 0)
     );
   end component;
 
@@ -97,25 +100,6 @@ package Streams is
     );
   end component;
   
-    component StreamBuffer_NP2 is
-    generic (
-      DEPTH                     : natural;
-      DATA_WIDTH                : natural;
-      RAM_CONFIG                : string := ""
-    );
-    port (
-      clk                       : in  std_logic;
-      reset                     : in  std_logic;
-      in_valid                  : in  std_logic;
-      in_ready                  : out std_logic;
-      in_data                   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      out_valid                 : out std_logic;
-      out_ready                 : in  std_logic;
-      out_data                  : out std_logic_vector(DATA_WIDTH-1 downto 0)
-    );
-  end component;
-
-
   -----------------------------------------------------------------------------
   -- Component declarations for split & merge stream primitives
   -----------------------------------------------------------------------------

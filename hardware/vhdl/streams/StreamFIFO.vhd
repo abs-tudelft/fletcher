@@ -31,7 +31,7 @@ entity StreamFIFO is
   generic (
 
     -- FIFO depth represented as log2(depth).
-    DEPTH_LOG2                  : natural;
+    DEPTH                       : natural;
 
     -- Width of the stream data vector.
     DATA_WIDTH                  : natural;
@@ -58,8 +58,8 @@ entity StreamFIFO is
     in_data                     : in  std_logic_vector(DATA_WIDTH-1 downto 0);
 
     -- Read and write pointer synchronized to the input stream clock domain.
-    in_rptr                     : out std_logic_vector(DEPTH_LOG2 downto 0);
-    in_wptr                     : out std_logic_vector(DEPTH_LOG2 downto 0);
+    in_rptr                     : out std_logic_vector(log2ceil(DEPTH) downto 0);
+    in_wptr                     : out std_logic_vector(log2ceil(DEPTH) downto 0);
 
     -- Rising-edge sensitive clock and active-high synchronous reset for output
     -- stream. out_clk must be synchronous to in_clk if
@@ -72,13 +72,15 @@ entity StreamFIFO is
     out_data                    : out std_logic_vector(DATA_WIDTH-1 downto 0);
 
     -- Read and write pointer synchronized to the output stream clock domain.
-    out_rptr                    : out std_logic_vector(DEPTH_LOG2 downto 0);
-    out_wptr                    : out std_logic_vector(DEPTH_LOG2 downto 0)
+    out_rptr                    : out std_logic_vector(log2ceil(DEPTH) downto 0);
+    out_wptr                    : out std_logic_vector(log2ceil(DEPTH) downto 0)
 
   );
 end StreamFIFO;
 
 architecture Behavioral of StreamFIFO is
+
+  constant DEPTH_LOG2           : natural := log2ceil(DEPTH);
 
   -- Internal "copies" of the read and write pointers in both clock domains.
   signal in_rptr_s              : std_logic_vector(DEPTH_LOG2 downto 0);
@@ -131,7 +133,7 @@ begin
   -- Instantiate the write pointer counter.
   wptr_inst: StreamFIFOCounter
     generic map (
-      DEPTH_LOG2                => DEPTH_LOG2,
+      DEPTH                     => DEPTH,
       XCLK_STAGES               => XCLK_STAGES
     )
     port map (
@@ -145,10 +147,11 @@ begin
     );
 
   -- Instantiate the dual-port RAM representing the FIFO contents.
-  ram_inst: Ram1R1W
+  ram_inst: Ram1R1W_NP2
     generic map (
       WIDTH                     => DATA_WIDTH,
-      DEPTH_LOG2                => DEPTH_LOG2,
+      ADDR_WIDTH                => DEPTH_LOG2,
+      DEPTH                     => DEPTH,
       RAM_CONFIG                => RAM_CONFIG
     )
     port map (
@@ -177,7 +180,7 @@ begin
   -- Instantiate the read pointer counter.
   rptr_inst: StreamFIFOCounter
     generic map (
-      DEPTH_LOG2                => DEPTH_LOG2,
+      DEPTH                     => DEPTH,
       XCLK_STAGES               => XCLK_STAGES
     )
     port map (

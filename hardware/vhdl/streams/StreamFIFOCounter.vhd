@@ -17,14 +17,17 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.Utils.all;
+
 -- Counter for FIFO read/write pointers, including cross-clock synchronization
 -- logic.
 
 entity StreamFIFOCounter is
   generic (
 
-    -- FIFO depth represented as log2(depth).
-    DEPTH_LOG2                  : natural;
+    -- FIFO depth
+    DEPTH                       : natural;
 
     -- The amount of clock domain crossing synchronization registers required.
     -- If this is zero, the input and output clocks are assumed to be
@@ -43,7 +46,7 @@ entity StreamFIFOCounter is
     a_increment                 : in  std_logic;
 
     -- Counter value synchronized to the a_clk domain.
-    a_counter                   : out std_logic_vector(DEPTH_LOG2 downto 0);
+    a_counter                   : out std_logic_vector(log2ceil(DEPTH) downto 0);
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- other clock domain.
@@ -51,17 +54,23 @@ entity StreamFIFOCounter is
     b_reset                     : in  std_logic;
 
     -- Counter value synchronized to the b_clk domain.
-    b_counter                   : out std_logic_vector(DEPTH_LOG2 downto 0)
+    b_counter                   : out std_logic_vector(log2ceil(DEPTH) downto 0)
 
   );
 end StreamFIFOCounter;
 
 architecture Behavioral of StreamFIFOCounter is
-
+  -- Log2 of the depth
+  constant DEPTH_LOG2           : natural := log2ceil(DEPTH);
+  
   -- Internal "copy" of a_counter.
   signal a_counter_s            : std_logic_vector(DEPTH_LOG2 downto 0);
+  
+  signal a_counter_next_s       : std_logic_vector(DEPTH_LOG2 downto 0);
 
 begin
+
+  a_counter_next_s <= std_logic_vector(unsigned(a_counter_s) + 1);
 
   -- Instantiate the binary counter.
   cntr_proc: process (a_clk) is
@@ -70,7 +79,19 @@ begin
       if a_reset = '1' then
         a_counter_s <= (others => '0');
       elsif a_increment = '1' then
-        a_counter_s <= std_logic_vector(unsigned(a_counter_s) + 1);
+        -- Check if the depth is some power-of-two
+        if 2**log2ceil(DEPTH) = DEPTH then
+          -- Use power-of-two depth wrapping
+          a_counter_s <= std_logic_vector(unsigned(a_counter_s) + 1);
+        else
+          -- Use non-power-of-two depth wrapping
+          if a_counter_next_s(DEPTH_LOG2-1 downto 0) = slv(u(DEPTH-1, DEPTH_LOG2)) then
+            a_counter_s(DEPTH_LOG2) <= not a_counter_s(DEPTH_LOG2);
+            a_counter_s(DEPTH_LOG2-1 downto 0) <= (others => '0');
+          else
+            a_counter_s <= a_counter_next_s;
+          end if;
+        end if;
       end if;
     end if;
   end process;
