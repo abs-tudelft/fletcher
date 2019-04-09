@@ -179,7 +179,7 @@ begin
   reserved_if_accepted <= reserved + resize(signed("0" & ms_req_len), DEPTH_LOG2+2);
 
   -- If reserved_if_accepted is greater than the FIFO depth (or equal, for efficiency), do not accept the transfer.
-  fifo_ready <= '0' when reserved_if_accepted >= 2**DEPTH_LOG2 else '1';
+  fifo_ready <= '0' when reserved_if_accepted >= FIFO_DEPTH else '1';
 
   -- Maintain the FIFO reserved counter.
   reserved_ptr_proc: process (clk) is
@@ -196,8 +196,8 @@ begin
         if ms_req_valid = '1' and ms_req_ready = '1' then
 
           -- Check if the request burst length is not larger than the FIFO depth
-          assert unsigned(ms_req_len) < 2**DEPTH_LOG2
-            report "Violated burst length requirement. ms_req_len(=" & integer'image(int(ms_req_len)) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
+          assert unsigned(ms_req_len) < FIFO_DEPTH
+            report "Violated burst length requirement. ms_req_len(=" & integer'image(int(ms_req_len)) & ") < FIFO_DEPTH(=" & integer'image(FIFO_DEPTH) & ") not met, deadlock!"
             severity FAILURE;
 
           -- Increase amount of space reserved in the FIFO
@@ -255,7 +255,7 @@ begin
   -- Instantiate master port response register slice and FIFO.
   mst_rdat_buffer_inst: StreamBuffer
     generic map (
-      MIN_DEPTH                         => sel(MST_DAT_SLICE, 2, 0) + 2**DEPTH_LOG2,
+      MIN_DEPTH                         => sel(MST_DAT_SLICE, 2, 0) + FIFO_DEPTH,
       DATA_WIDTH                        => BPI(BPI'high),
       RAM_CONFIG                        => RAM_CONFIG
     )

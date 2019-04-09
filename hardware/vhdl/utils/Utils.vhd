@@ -116,7 +116,7 @@ package Utils is
   -- Returns the count with implicit '1' MSB of a one-hot encoded value
   function oh2cnt(a: in std_logic_vector) return unsigned;
 
-  -- 1-read 1-write RAM.
+  -- 1-read 1-write RAM, only supports power-of-two depths
   component Ram1R1W is
     generic (
       WIDTH                     : natural;
@@ -131,6 +131,26 @@ package Utils is
       r_clk                     : in  std_logic;
       r_ena                     : in  std_logic := '1';
       r_addr                    : in  std_logic_vector(DEPTH_LOG2-1 downto 0);
+      r_data                    : out std_logic_vector(WIDTH-1 downto 0)
+    );
+  end component;
+  
+  -- 1-read 1-write RAM, also supports non-power-of-two depths
+  component RAM1R1W_NP2 is
+    generic (
+      WIDTH                     : natural;
+      ADDR_WIDTH                : natural;
+      DEPTH                     : natural;
+      RAM_CONFIG                : string := ""
+    );
+    port (
+      w_clk                     : in  std_logic;
+      w_ena                     : in  std_logic;
+      w_addr                    : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+      w_data                    : in  std_logic_vector(WIDTH-1 downto 0);
+      r_clk                     : in  std_logic;
+      r_ena                     : in  std_logic := '1';
+      r_addr                    : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
       r_data                    : out std_logic_vector(WIDTH-1 downto 0)
     );
   end component;

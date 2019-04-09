@@ -439,7 +439,7 @@ begin
   begin
     fifo_inst: StreamFIFO
       generic map (
-        DEPTH_LOG2                      => log2ceil(ELEMENT_FIFO_DEPTH),
+        DEPTH                           => ELEMENT_FIFO_DEPTH,
         DATA_WIDTH                      => FEI(FEI'high),
         XCLK_STAGES                     => ELEMENT_FIFO_XCLK_STAGES,
         RAM_CONFIG                      => ELEMENT_FIFO_RAM_CONFIG
@@ -473,7 +473,7 @@ begin
   begin
     fifo_inst: StreamFIFO
       generic map (
-        DEPTH_LOG2                      => log2ceil(ELEMENT_FIFO_DEPTH),
+        DEPTH                           => ELEMENT_FIFO_DEPTH,
         DATA_WIDTH                      => FEI(FEI'high),
         XCLK_STAGES                     => ELEMENT_FIFO_XCLK_STAGES,
         RAM_CONFIG                      => ELEMENT_FIFO_RAM_CONFIG

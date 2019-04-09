@@ -35,6 +35,7 @@ proc add_utils {{source_dir ""}} {
   add_source $source_dir/utils/SimUtils.vhd
   add_source $source_dir/utils/Memory.vhd
   add_source $source_dir/utils/Ram1R1W.vhd
+  add_source $source_dir/utils/Ram1R1W_NP2.vhd
   add_source $source_dir/utils/Utils.vhd
 }
 
