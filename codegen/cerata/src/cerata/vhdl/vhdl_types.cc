@@ -68,7 +68,7 @@ std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   std::deque<FlatType> result;
   for (const auto &ft : list) {
     // If the type is abstract, resolve it to something meaningful in VHDL
-    if (ft.type_->IsAbstract()) {
+    if (ft.type_->IsAbstract() && !ft.type_->Is(Type::BOOLEAN)) {
       auto resolved = ResolveAbstract(ft);
       result.insert(result.end(), resolved.begin(), resolved.end());
     } else {

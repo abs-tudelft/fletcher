@@ -48,4 +48,12 @@ TEST(VHDL, ArrayArray) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
+TEST(VHDL, AllPortTypes) {
+  auto top = GetAllPortTypesComponent();
+  auto code = vhdl::Design(top);
+  std::cout << code.Generate().ToString();
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
 }  // namespace cerata
