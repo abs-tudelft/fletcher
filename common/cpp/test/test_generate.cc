@@ -12,18 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdlib>
+#include <arrow/api.h>
+
 #include "../src/fletcher/common/arrow-utils.h"
 
-#include "./test_schemas.h"
-#include "./test_recordbatches.h"
+#include "test_schemas.h"
+#include "test_recordbatches.h"
 
-int main() {
-  std::shared_ptr<arrow::Schema> schema;
-  std::shared_ptr<arrow::RecordBatch> recordbatch;
+namespace fletcher::test {
 
+void generateDebugFiles() {
   // TODO(johanpel): Create directories in a portable manner
   system("mkdir -p schemas");
   system("mkdir -p recordbatches");
+
+  std::shared_ptr<arrow::Schema> schema;
+  std::shared_ptr<arrow::RecordBatch> recordbatch;
 
   /* Primitive */
   schema = fletcher::test::GetPrimReadSchema();
@@ -74,6 +79,11 @@ int main() {
   fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
   recordbatch = fletcher::test::getFilterRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+}
 
+}
+
+int main() {
+  fletcher::test::generateDebugFiles();
   return EXIT_SUCCESS;
 }

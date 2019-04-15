@@ -48,6 +48,7 @@ if (FLETCHER_TESTS)
     find_package(GTest REQUIRED)
 
     set(TEST_GEN_HEADERS
+            test/test_generate.h
             test/test_schemas.h
             test/test_recordbatches.h)
 
@@ -62,7 +63,7 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER_COMMON}-generate-static ${LIB_ARROW})
 
     # Expose generation functions as an executable with main function
-    add_executable(${FLETCHER_COMMON}-generate ${COMMON_ALL} ${TEST_GEN_ALL} test/test-generate.cc)
+    add_executable(${FLETCHER_COMMON}-generate ${COMMON_ALL} ${TEST_GEN_ALL} test/test_generate.cc)
     target_link_libraries(${FLETCHER_COMMON}-generate ${LIB_ARROW})
 
     # Common library unit tests
