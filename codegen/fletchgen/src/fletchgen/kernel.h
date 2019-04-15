@@ -36,13 +36,13 @@ struct ArrowPort : public Port {
 };
 
 /**
- * @brief The Core component to be implemented by the user
+ * @brief The Kernel component to be implemented by the user
  */
-struct Core : Component {
+struct Kernel : Component {
   std::shared_ptr<SchemaSet> schema_set_;
 
-  explicit Core(std::string name, std::shared_ptr<SchemaSet> schemas);
-  static std::shared_ptr<Core> Make(std::shared_ptr<SchemaSet> schemas);
+  explicit Kernel(std::string name, std::shared_ptr<SchemaSet> schemas);
+  static std::shared_ptr<Kernel> Make(std::shared_ptr<SchemaSet> schemas);
 
   std::shared_ptr<ArrowPort> GetArrowPort(std::shared_ptr<arrow::Field> field);
   std::deque<std::shared_ptr<ArrowPort>> GetAllArrowPorts();

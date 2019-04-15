@@ -21,6 +21,7 @@
 
 #include "./logging.h"
 #include "./options.h"
+#include "./kernel.h"
 
 void GenerateSREC(const std::_MakeUniq<Options>::__single_object &options,
                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {

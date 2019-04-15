@@ -16,7 +16,7 @@
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/schema.h"
-#include "fletchgen/core.h"
+#include "fletchgen/kernel.h"
 
 namespace fletchgen {
 
@@ -37,7 +37,7 @@ std::shared_ptr<ArrowPort> ArrowPort::Make(std::shared_ptr<arrow::Field> field, 
   return std::make_shared<ArrowPort>(field->name(), field, mode, dir);
 }
 
-Core::Core(std::string name, std::shared_ptr<SchemaSet> schema_set)
+Kernel::Kernel(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
   for (const auto &s : schema_set_->schema_list_) {
     auto mode = fletcher::getMode(s);
@@ -50,11 +50,11 @@ Core::Core(std::string name, std::shared_ptr<SchemaSet> schema_set)
   }
 }
 
-std::shared_ptr<Core> Core::Make(std::shared_ptr<SchemaSet> schema_set) {
-  return std::make_shared<Core>("uc_" + schema_set->name(), schema_set);
+std::shared_ptr<Kernel> Kernel::Make(std::shared_ptr<SchemaSet> schema_set) {
+  return std::make_shared<Kernel>("uc_" + schema_set->name(), schema_set);
 }
 
-std::shared_ptr<ArrowPort> Core::GetArrowPort(std::shared_ptr<arrow::Field> field) {
+std::shared_ptr<ArrowPort> Kernel::GetArrowPort(std::shared_ptr<arrow::Field> field) {
   for (const auto &n : objects_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {
@@ -65,7 +65,7 @@ std::shared_ptr<ArrowPort> Core::GetArrowPort(std::shared_ptr<arrow::Field> fiel
   }
   throw std::runtime_error("Field " + field->name() + " did not generate an ArrowPort for Core " + name() + ".");
 }
-std::deque<std::shared_ptr<ArrowPort>> Core::GetAllArrowPorts() {
+std::deque<std::shared_ptr<ArrowPort>> Kernel::GetAllArrowPorts() {
   std::deque<std::shared_ptr<ArrowPort>> result;
   for (const auto &n : objects_) {
     auto ap = Cast<ArrowPort>(n);

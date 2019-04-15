@@ -28,10 +28,10 @@
 
 namespace fletchgen {
 
-TEST(Core, PrimRead) {
+TEST(Kernel, PrimRead) {
   auto schema = fletcher::test::GetPrimReadSchema();
-  auto set = SchemaSet::Make("PrimRead", {schema});
-  auto top = Core::Make(set);
+  auto set = SchemaSet::Make("PrimRead", std::deque({schema}));
+  auto top = Kernel::Make(set);
 
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();
@@ -39,10 +39,10 @@ TEST(Core, PrimRead) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(Core, StringRead) {
+TEST(Kernel, StringRead) {
   auto schema = fletcher::test::GetStringReadSchema();
-  auto set = SchemaSet::Make("StringRead", {schema});
-  auto top = Core::Make(set);
+  auto set = SchemaSet::Make("StringRead", std::deque({schema}));
+  auto top = Kernel::Make(set);
 
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();
@@ -50,10 +50,10 @@ TEST(Core, StringRead) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(Core, ListPrim) {
+TEST(Kernel, ListPrim) {
   auto schema = fletcher::test::GetListUint8Schema();
-  auto set = SchemaSet::Make("ListUint8", {schema});
-  auto top = Core::Make(set);
+  auto set = SchemaSet::Make("ListUint8", std::deque({schema}));
+  auto top = Kernel::Make(set);
 
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();
@@ -61,10 +61,10 @@ TEST(Core, ListPrim) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(Core, BigSchema) {
+TEST(Kernel, BigSchema) {
   auto schema = fletcher::test::GetBigSchema();
-  auto set = SchemaSet::Make("Big", {schema});
-  auto top = Core::Make(set);
+  auto set = SchemaSet::Make("Big", std::deque({schema}));
+  auto top = Kernel::Make(set);
 
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();

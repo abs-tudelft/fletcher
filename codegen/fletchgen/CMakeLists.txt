@@ -29,7 +29,7 @@ set(HEADERS
         src/fletchgen/array.h
         src/fletchgen/basic_types.h
         src/fletchgen/mantle.h
-        src/fletchgen/core.h
+        src/fletchgen/kernel.h
         src/fletchgen/constants.h
         src/fletchgen/logging.h
         src/fletchgen/options.h
@@ -44,7 +44,7 @@ set(SOURCES
         src/fletchgen/array.cc
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc
-        src/fletchgen/core.cc
+        src/fletchgen/kernel.cc
         src/fletchgen/logging.cc
         src/fletchgen/options.cc
 
@@ -85,7 +85,7 @@ if (FLETCHGEN_TESTS)
             test/fletchgen/test.cc
 
             # Front-ends
-            test/fletchgen/test_core.h
+            test/fletchgen/test_kernel.h
             test/fletchgen/test_mantle.h
             test/fletchgen/test_bus.h
 
