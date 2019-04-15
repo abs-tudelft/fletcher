@@ -34,7 +34,7 @@ Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
     : Component(std::move(name)), schema_set_(schema_set) {
 
   // Create and instantiate a Core
-  user_core_ = Core::Make(schema_set_);
+  user_core_ = Kernel::Make(schema_set_);
   auto ucinst = Instance::Make(user_core_);
   user_core_inst_ = ucinst.get();
   AddChild(std::move(ucinst));

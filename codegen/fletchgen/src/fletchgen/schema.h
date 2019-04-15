@@ -31,6 +31,7 @@ namespace fletchgen {
       : Named(std::move(name)), schema_list_(std::move(schema_list)) {}
 
   static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
+  static std::shared_ptr<SchemaSet> Make(std::string name, std::vector<std::shared_ptr<arrow::Schema>> schema_list);
 };
 
 }  // namespace fletchgen

@@ -19,13 +19,16 @@
 
 #include "./logging.h"
 
+std::string GetProgramName(char* argv0);
+
 struct Options {
   std::vector<std::string> schemas;
   std::string output_dir;
   std::string srec_out;
   std::string srec_sim_dump;
   std::vector<std::string> recordbatches;
-  std::string kernel_name;
+  std::vector<std::string> languages = {"vhdl"};
+  std::string kernel_name = "kernel";
   bool axi_top = false;
   bool sim_top = false;
   bool quiet = false;
@@ -41,5 +44,8 @@ struct Options {
   static int Parse(Options *options, int argc, char **argv);
 
   bool MustGenerateSREC();
+
+  bool MustGenerateVHDL();
+  bool MustGenerateDOT();
 
 };

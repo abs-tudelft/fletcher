@@ -16,7 +16,7 @@
 
 #include "./options.h"
 
-int Options::Parse(Options* options, int argc, char **argv) {
+int Options::Parse(Options *options, int argc, char **argv) {
 
   CLI::App app{"Fletchgen - The Fletcher Wrapper Generator"};
 
@@ -43,6 +43,12 @@ int Options::Parse(Options* options, int argc, char **argv) {
                  "File to dump memory contents to in SREC format after simulation.");
 
   // Output options:
+  app.add_option("-l,--language", options->languages,
+                 "Select the output languages for your design. Each type of output will be stored in a "
+                 "seperate subfolder (e.g. <output folder>/VHDL/...). Available languages:\n"
+                 "vhdl\tExport as VHDL files (default)."
+                 "dot\tExport as DOT graphs.");
+
   app.add_flag("--axi", options->axi_top,
                "Enable AXI top-level template output.");
   app.add_flag("--sim", options->sim_top,
@@ -69,4 +75,31 @@ bool Options::MustGenerateSREC() {
     }
   }
   return false;
+}
+
+static bool HasLanguage(std::vector<std::string> languages, std::string lang) {
+  for (const auto &l : languages) {
+    if (l == lang) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Options::MustGenerateVHDL() {
+  return HasLanguage(languages, "vhdl");
+}
+
+bool Options::MustGenerateDOT() {
+  return HasLanguage(languages, "dot");
+}
+
+std::string GetProgramName(char *argv0) {
+  auto arg = std::string(argv0);
+  size_t pos = arg.rfind('\\');
+  if (pos != std::string::npos) {
+    return arg.substr(pos+1);
+  } else {
+    return "fletchgen";
+  }
 }

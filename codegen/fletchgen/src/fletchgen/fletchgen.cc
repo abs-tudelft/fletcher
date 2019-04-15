@@ -14,6 +14,9 @@
 
 #include <iostream>
 
+#include <cerata/graphs.h>
+#include <cerata/vhdl/design.h>
+
 #include <fletcher/common/arrow-utils.h>
 #include <fletchgen/srec/recordbatch.h>
 
@@ -30,20 +33,45 @@ void GenerateSREC(const std::_MakeUniq<Options>::__single_object &options,
   auto srec_buffers = fletchgen::srec::writeRecordBatchToSREC(recordbatch.get(), options->srec_out);
 }
 
+std::shared_ptr<cerata::Component> GenerateKernel(const std::shared_ptr<fletchgen::SchemaSet>& schema_set) {
+  return fletchgen::Kernel::Make(schema_set);
+}
+
 int main(int argc, char **argv) {
+  std::string program_name = GetProgramName(argv[0]);
   // Start logging
-  fletchgen::logging::StartLogging(argv[0], fletchgen::logging::LOG_DEBUG, std::string(argv[0]) + ".log");
+  fletchgen::logging::StartLogging(program_name, fletchgen::logging::LOG_DEBUG, program_name + ".log");
 
   // Parse options
   auto options = std::make_unique<Options>();
   Options::Parse(options.get(), argc, argv);
 
   auto schemas = fletcher::readSchemasFromFiles(options->schemas);
+  auto schemaSet = fletchgen::SchemaSet::Make(options->kernel_name, schemas);
 
   // Run generation
+
+  // SREC output
   if (options->MustGenerateSREC()) {
     GenerateSREC(options, schemas);
   }
+
+  // Kernel level
+  LOG(INFO) << "Generating Kernel from SchemaSet";
+  auto kernel = GenerateKernel(schemaSet);
+
+  if (options->MustGenerateVHDL()) {
+    LOG(INFO) << "Generating VHDL language outputs.";
+
+    LOG(INFO) << "Writing VHDL Kernel file: " + options->kernel_name + ".vhd";
+    auto design = cerata::vhdl::Design(kernel);
+    auto kernel_source = std::ofstream(options->kernel_name + ".vhd");
+    kernel_source << design.Generate().ToString();
+    kernel_source.close();
+  }
+
+
+  LOG(INFO) << program_name + " completed.";
 
   // Shut down logging
   fletchgen::logging::StopLogging();

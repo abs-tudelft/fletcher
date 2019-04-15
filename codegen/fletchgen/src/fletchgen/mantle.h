@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "core.h"
+#include "kernel.h"
 
 namespace fletchgen {
 
@@ -25,7 +25,7 @@ using cerata::Instance;
  */
 struct Mantle : Component {
   /// The Core instantiated by this Mantle
-  std::shared_ptr<Core> user_core_;
+  std::shared_ptr<Kernel> user_core_;
   /// The actual instantiated Core
   Instance *user_core_inst_;
   /// The schema set on which this Mantle is based

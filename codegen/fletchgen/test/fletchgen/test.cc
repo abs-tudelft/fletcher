@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 
 #include "test_bus.h"
-#include "test_core.h"
+#include "test_kernel.h"
 #include "test_mantle.h"
 
 int main(int argc, char **argv) {
