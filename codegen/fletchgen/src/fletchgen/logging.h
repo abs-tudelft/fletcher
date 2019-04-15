@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <arrow/util/logging.h>
 
-/**
- * Wrap around Arrow's logging facility
- * We use Arrows logging for Fletchgen as well, because Arrow is a hard dependency for this tool anyway.
- */
+// This Fletchgen logging facility wraps around Arrow's logging facility
+// We use Arrows logging for Fletchgen as well, because Arrow is a hard dependency for this tool anyway.
 
 // Logging Macros
 #define LOG_INTERNAL(level) ::arrow::util::ArrowLog(__FILE__, __LINE__, level)
@@ -39,15 +39,11 @@ using LogLevel = arrow::util::ArrowLogLevel;
  * @param app_name  Name of the application.
  * @param file_name Name of the log file.
  */
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
-  arrow::util::ArrowLog::StartArrowLog(app_name, level, file_name);
-}
+void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name);
 
 /**
  * @brief Stop logging.
  */
-void StopLogging() {
-  arrow::util::ArrowLog::ShutDownArrowLog();
-}
+void StopLogging();
 
 }

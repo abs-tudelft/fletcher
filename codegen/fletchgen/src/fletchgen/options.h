@@ -17,6 +17,8 @@
 #include <vector>
 #include <string>
 
+#include "./logging.h"
+
 struct Options {
   std::vector<std::string> schemas;
   std::string output_dir;

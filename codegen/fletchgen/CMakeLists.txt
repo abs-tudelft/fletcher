@@ -42,6 +42,7 @@ set(SOURCES
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc
         src/fletchgen/core.cc
+        src/fletchgen/logging.cc
         src/fletchgen/options.cc
         )
 
