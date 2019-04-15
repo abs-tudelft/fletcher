@@ -31,6 +31,7 @@ set(HEADERS
         src/fletchgen/mantle.h
         src/fletchgen/core.h
         src/fletchgen/constants.h
+        src/fletchgen/logging.h
         src/fletchgen/options.h
         )
 

@@ -19,6 +19,8 @@
 #include <fletchgen/options.h>
 
 int main(int argc, char **argv) {
+  // Start logging
+  fletchgen::logging::StartLogging(argv[0], fletchgen::logging::LOG_DEBUG, std::string(argv[0]) + ".log");
 
   // Parse options
   auto options = std::make_unique<Options>();
@@ -27,5 +29,7 @@ int main(int argc, char **argv) {
   // Run generation
   // generation step goes here
 
+  // Shut down logging
+  fletchgen::logging::StopLogging();
   return 0;
 }
