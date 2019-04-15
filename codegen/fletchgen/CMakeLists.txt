@@ -33,6 +33,9 @@ set(HEADERS
         src/fletchgen/constants.h
         src/fletchgen/logging.h
         src/fletchgen/options.h
+
+        src/fletchgen/srec/recordbatch.h
+        src/fletchgen/srec/srec.h
         )
 
 set(SOURCES
@@ -44,6 +47,9 @@ set(SOURCES
         src/fletchgen/core.cc
         src/fletchgen/logging.cc
         src/fletchgen/options.cc
+
+        src/fletchgen/srec/recordbatch.cc
+        src/fletchgen/srec/srec.cc
         )
 
 set(THIRD_PARTY_HEADERS

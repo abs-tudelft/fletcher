@@ -14,9 +14,20 @@
 
 #include <iostream>
 
-#include <fletchgen/cli/CLI11.hpp>
-#include <fletchgen/logging.h>
-#include <fletchgen/options.h>
+#include <fletcher/common/arrow-utils.h>
+#include <fletchgen/srec/recordbatch.h>
+
+#include "./cli/CLI11.hpp"
+
+#include "./logging.h"
+#include "./options.h"
+
+void GenerateSREC(const std::_MakeUniq<Options>::__single_object &options,
+                  const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {
+  // TODO(johanpel): allow multiple recordbatches
+  auto recordbatch = fletcher::readRecordBatchFromFile(options->recordbatches[0], schemas[0]);
+  auto srec_buffers = fletchgen::srec::writeRecordBatchToSREC(recordbatch.get(), options->srec_out);
+}
 
 int main(int argc, char **argv) {
   // Start logging
@@ -26,8 +37,12 @@ int main(int argc, char **argv) {
   auto options = std::make_unique<Options>();
   Options::Parse(options.get(), argc, argv);
 
+  auto schemas = fletcher::readSchemasFromFiles(options->schemas);
+
   // Run generation
-  // generation step goes here
+  if (options->MustGenerateSREC()) {
+    GenerateSREC(options, schemas);
+  }
 
   // Shut down logging
   fletchgen::logging::StopLogging();

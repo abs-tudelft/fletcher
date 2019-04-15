@@ -20,7 +20,7 @@ int Options::Parse(Options* options, int argc, char **argv) {
 
   CLI::App app{"Fletchgen - The Fletcher Wrapper Generator"};
 
-// Required options:
+  // Required options:
   app.add_option("-i,--input", options->schemas,
                  "List of Flatbuffer files with Arrow Schemas to base wrapper on, comma seperated. "
                  "Example: --input file1.fbs file2.fbs file3.fbs")
@@ -29,11 +29,11 @@ int Options::Parse(Options* options, int argc, char **argv) {
   app.add_option("-o,--output_path", options->output_dir,
                  "Path to the output directory to place all files.");
 
-// Naming options:
+  // Naming options:
   app.add_option("-n,--kernel_name", options->kernel_name,
                  "Name of the accelerator kernel.");
 
-// Simulation options:
+  // Simulation options:
   app.add_option("-r,--recordbatch_input", options->recordbatches,
                  "List of Flatbuffer files with Arrow RecordBatches to convert to SREC format for simulation. "
                  "RecordBatches must adhere to and be in the same order as Arrow Schemas set with option --input.");
@@ -42,13 +42,13 @@ int Options::Parse(Options* options, int argc, char **argv) {
   app.add_option("-t,--srec_dump", options->srec_sim_dump,
                  "File to dump memory contents to in SREC format after simulation.");
 
-// Output options:
+  // Output options:
   app.add_flag("--axi", options->axi_top,
                "Enable AXI top-level template output.");
   app.add_flag("--sim", options->sim_top,
                "Enable simulation top-level template output.");
 
-// Other options:
+  // Other options:
   app.add_flag("-q,--quiet", options->quiet,
                "Surpress all stdout.");
   app.add_flag("-v,--verbose", options->verbose,
@@ -57,4 +57,16 @@ int Options::Parse(Options* options, int argc, char **argv) {
   CLI11_PARSE(app, argc, argv);
 
   return 0;
+}
+
+bool Options::MustGenerateSREC() {
+  if (!srec_out.empty()) {
+    if (schemas.size() == recordbatches.size()) {
+      return true;
+    } else {
+      LOG(WARNING) << "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.";
+      return false;
+    }
+  }
+  return false;
 }

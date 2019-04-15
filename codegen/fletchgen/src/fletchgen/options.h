@@ -38,5 +38,8 @@ struct Options {
    * @param argv    Argument values
    * @return        0 if successful, something else otherwise.
    */
-  static int Parse(Options* options, int argc, char **argv);
+  static int Parse(Options *options, int argc, char **argv);
+
+  bool MustGenerateSREC();
+
 };
