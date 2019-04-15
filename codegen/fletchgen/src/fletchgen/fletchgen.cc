@@ -14,7 +14,18 @@
 
 #include <iostream>
 
-int main() {
-  std::cout << "Hello, World!";
+#include <fletchgen/cli/CLI11.hpp>
+#include <fletchgen/logging.h>
+#include <fletchgen/options.h>
+
+int main(int argc, char **argv) {
+
+  // Parse options
+  auto options = std::make_unique<Options>();
+  Options::Parse(options.get(), argc, argv);
+
+  // Run generation
+  // generation step goes here
+
   return 0;
 }

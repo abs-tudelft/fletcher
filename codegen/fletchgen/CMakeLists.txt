@@ -31,6 +31,7 @@ set(HEADERS
         src/fletchgen/mantle.h
         src/fletchgen/core.h
         src/fletchgen/constants.h
+        src/fletchgen/options.h
         )
 
 set(SOURCES
@@ -40,12 +41,17 @@ set(SOURCES
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc
         src/fletchgen/core.cc
+        src/fletchgen/options.cc
+        )
+
+set(THIRD_PARTY_HEADERS
+        src/fletchgen/cli/CLI11.hpp
         )
 
 # Linking
 include_directories(src)
 
-add_library(${FLETCHGEN}-static STATIC ${HEADERS} ${SOURCES})
+add_library(${FLETCHGEN}-static STATIC ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES})
 target_link_libraries(${FLETCHGEN}-static ${LIB_ARROW})
 target_link_libraries(${FLETCHGEN}-static fletcher-common-static)
 
