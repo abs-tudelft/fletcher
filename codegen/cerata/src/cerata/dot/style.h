@@ -23,8 +23,7 @@
 #include "cerata/graphs.h"
 #include "cerata/nodes.h"
 
-namespace cerata {
-namespace dot {
+namespace cerata::dot {
 
 inline std::string tab(uint n) {
   return std::string(2 * n, ' ');
@@ -50,7 +49,7 @@ inline std::string awq(const std::string &attribute, const std::string &style) {
   }
 }
 
-std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph* graph);
+std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph);
 
 struct Palette {
   int num_colors;
@@ -179,13 +178,13 @@ struct Style {
 
   /// @brief Generate a HTML table cell from a type.
   std::string GenHTMLTableCell(const std::shared_ptr<Type> &t,
-                               const std::string& name,
+                               const std::string &name,
                                int level = 0);
 
   /// @brief Generate a DOT record cell from a type
-  std::string GenDotRecordCell(const std::shared_ptr<Type> &t,
-                               const std::string& name,
-                               int level = 0);
+  static std::string GenDotRecordCell(const std::shared_ptr<Type> &t,
+                                      const std::string &name,
+                                      int level = 0);
 
   /// @brief Get the label for a node.
   std::string GetLabel(const std::shared_ptr<Node> &n);
@@ -197,5 +196,4 @@ struct Style {
   static Style normal();
 };
 
-}  // namespace dot
-}  // namespace cerata
+}  // namespace cerata::dot

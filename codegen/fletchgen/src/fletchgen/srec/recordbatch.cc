@@ -51,23 +51,23 @@ std::vector<uint64_t> writeRecordBatchToSREC(arrow::RecordBatch *record_batch,
     fletcher::flattenArrayBuffers(&buffers, column);
   }
 
-  LOG(DEBUG) << "RecordBatch has " + std::to_string(buffers.size()) + " Arrow buffers.";
+  LOG(DEBUG, "RecordBatch has " + std::to_string(buffers.size()) + " Arrow buffers.");
   auto offsets = getBufferOffsets(buffers);
-  LOG(DEBUG) << "Contiguous size: " + std::to_string(offsets.back());
+  LOG(DEBUG, "Contiguous size: " + std::to_string(offsets.back()));
 
   // Generate a warning when stuff gets larger than a megabyte.
   if (offsets.back() > 1024 * 1024) {
-    LOG(WARNING) << "The recordbatch you are trying to serialize is very large. "
-                    "Use the SREC utility only for functional verification purposes in simulation.";
+    LOG(WARNING, "The recordbatch you are trying to serialize is very large. "
+                 "Use the SREC utility only for functional verification purposes in simulation.");
   }
 
   unsigned int i = 0;
   for (const auto &buf : buffers) {
     fletcher::HexView hv(0);
     hv.addData(buf->data(), static_cast<size_t>(buf->size()));
-    LOG(DEBUG) << "Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
+    LOG(DEBUG, "Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
         "Start address: " + std::to_string(offsets[i]) + "\n" +
-        hv.toString();
+        hv.toString());
     i++;
   }
 

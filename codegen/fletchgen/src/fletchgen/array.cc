@@ -106,7 +106,6 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
       //case arrow::Type::DICTIONARY: return 0;
       //case arrow::Type::UNION: return 0;
       throw std::domain_error("Arrow type " + type->ToString() + " not supported.");
-      return intl<0>();
 
       // Structs have no width
     case arrow::Type::STRUCT: return intl<0>();

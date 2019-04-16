@@ -35,35 +35,36 @@ using cerata::TypeMapper;
 #define BIT_DECL_FACTORY(NAME)        std::shared_ptr<Type> NAME();
 #define VEC_DECL_FACTORY(NAME, WIDTH) std::shared_ptr<Type> NAME();
 
-BIT_DECL_FACTORY(null);
-VEC_DECL_FACTORY(int8, 8);
-VEC_DECL_FACTORY(uint8, 8);
-VEC_DECL_FACTORY(int16, 16);
-VEC_DECL_FACTORY(uint16, 16);
-VEC_DECL_FACTORY(int32, 32);
-VEC_DECL_FACTORY(uint32, 32);
-VEC_DECL_FACTORY(int64, 64);
-VEC_DECL_FACTORY(uint64, 64);
-VEC_DECL_FACTORY(float8, 8);
-VEC_DECL_FACTORY(float16, 16);
-VEC_DECL_FACTORY(float32, 32);
-VEC_DECL_FACTORY(float64, 64);
-VEC_DECL_FACTORY(date32, 32);
-VEC_DECL_FACTORY(date64, 64);
-VEC_DECL_FACTORY(utf8c, 8);
-VEC_DECL_FACTORY(byte, 8);
-VEC_DECL_FACTORY(offset, 32);
-VEC_DECL_FACTORY(length, 32);
+BIT_DECL_FACTORY(null)
+VEC_DECL_FACTORY(int8, 8)
+VEC_DECL_FACTORY(uint8, 8)
+VEC_DECL_FACTORY(int16, 16)
+VEC_DECL_FACTORY(uint16, 16)
+VEC_DECL_FACTORY(int32, 32)
+VEC_DECL_FACTORY(uint32, 32)
+VEC_DECL_FACTORY(int64, 64)
+VEC_DECL_FACTORY(uint64, 64)
+VEC_DECL_FACTORY(float8, 8)
+VEC_DECL_FACTORY(float16, 16)
+VEC_DECL_FACTORY(float32, 32)
+VEC_DECL_FACTORY(float64, 64)
+VEC_DECL_FACTORY(date32, 32)
+VEC_DECL_FACTORY(date64, 64)
+VEC_DECL_FACTORY(utf8c, 8)
+VEC_DECL_FACTORY(byte, 8)
+VEC_DECL_FACTORY(offset, 32)
+VEC_DECL_FACTORY(length, 32)
 
 /// @brief Fletcher
 
 #define PARAM_DECL_FACTORY(NAME) std::shared_ptr<Node> NAME();
-PARAM_DECL_FACTORY(bus_addr_width);
-PARAM_DECL_FACTORY(bus_data_width);
-PARAM_DECL_FACTORY(bus_len_width);
-PARAM_DECL_FACTORY(bus_burst_step_len);
-PARAM_DECL_FACTORY(bus_burst_max_len);
-PARAM_DECL_FACTORY(index_width);
+
+PARAM_DECL_FACTORY(bus_addr_width)
+PARAM_DECL_FACTORY(bus_data_width)
+PARAM_DECL_FACTORY(bus_len_width)
+PARAM_DECL_FACTORY(bus_burst_step_len)
+PARAM_DECL_FACTORY(bus_burst_max_len)
+PARAM_DECL_FACTORY(index_width)
 
 std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
@@ -76,17 +77,17 @@ std::shared_ptr<Type> bus_clk(); ///< @brief Fletcher bus clock
 std::shared_ptr<Type> bus_reset(); ///< @brief Fletcher bus reset
 
 /// @brief Fletcher bus read request channel
-std::shared_ptr<Type> bus_read_request(std::shared_ptr<Node> addr_width = bus_addr_width(),
-                                       std::shared_ptr<Node> len_width = bus_len_width());
+std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node>& addr_width = bus_addr_width(),
+                                       const std::shared_ptr<Node>& len_width = bus_len_width());
 /// @brief Fletcher bus read data channel
-std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width = bus_data_width());
+std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node>& width = bus_data_width());
 
 /// @brief Fletcher bus write request channel
-std::shared_ptr<Type> bus_write_request(std::shared_ptr<Node> addr_width = bus_addr_width(),
-                                        std::shared_ptr<Node> len_width = bus_len_width());
+std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node>& addr_width = bus_addr_width(),
+                                        const std::shared_ptr<Node>& len_width = bus_len_width());
 
 /// @brief Fletcher bus write data channel
-std::shared_ptr<Type> bus_write_data(std::shared_ptr<Node> width = bus_data_width());
+std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node>& width = bus_data_width());
 
 std::shared_ptr<Type> cmd(); ///< @brief Fletcher command stream
 std::shared_ptr<Type> unlock(); ///< @brief Fletcher unlock stream

@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +32,8 @@
 
 namespace fletchgen {
 
-Mantle::Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set)
-    : Component(std::move(name)), schema_set_(schema_set) {
+Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
+    : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
   // Create and instantiate a Core
   user_core_ = Kernel::Make(schema_set_);

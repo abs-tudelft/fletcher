@@ -58,7 +58,7 @@ struct Artery : Component {
   /// The widths of all slave port arrays.
   std::deque<std::shared_ptr<Node>> slave_widths_;
 
-  Artery(std::string prefix,
+  Artery(const std::string& prefix,
          std::shared_ptr<Node> address_width,
          std::shared_ptr<Node> master_width,
          std::deque<std::shared_ptr<Node>> slave_widths);

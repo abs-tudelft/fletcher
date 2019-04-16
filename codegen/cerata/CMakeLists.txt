@@ -68,12 +68,12 @@ include_directories(src)
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 
 # Logging
-option(LOGGING_ARROW "Use Apache Arrow's logging facility." ON)
+option(LOGGING_ARROW "Use Apache Arrow's logging facility." OFF)
 
 if (LOGGING_ARROW)
     find_library(LIB_ARROW arrow)
     target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
-    add_compile_definitions(LOGGING_ARROW)
+    add_compile_definitions(LOG_ARROW)
 endif (LOGGING_ARROW)
 
 ########################################################################################################################

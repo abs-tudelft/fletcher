@@ -95,7 +95,7 @@ std::shared_ptr<Component> BusReadSerializer() {
 }
 
 Artery::Artery(
-    std::string prefix,
+    const std::string& prefix,
     std::shared_ptr<Node> address_width,
     std::shared_ptr<Node> master_width,
     std::deque<std::shared_ptr<Node>> slave_widths)
@@ -105,10 +105,10 @@ Artery::Artery(
       slave_widths_(std::move(slave_widths)) {
 
   if (address_width == nullptr) {
-    LOG(WARNING) << "Artery address width is not set.";
+    LOG(WARNING, "Artery address width is not set.");
   }
   if (master_width == nullptr) {
-    LOG(WARNING) << "Artery top-level data width is not set.";
+    LOG(WARNING, "Artery top-level data width is not set.");
   }
 
   AddObject(bus_addr_width());

@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "fletchgen/kernel.h"
+
 #include "fletcher/common/arrow-utils.h"
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/schema.h"
-#include "fletchgen/kernel.h"
 
 namespace fletchgen {
 
@@ -54,7 +55,7 @@ std::shared_ptr<Kernel> Kernel::Make(std::shared_ptr<SchemaSet> schema_set) {
   return std::make_shared<Kernel>(schema_set->name(), schema_set);
 }
 
-std::shared_ptr<ArrowPort> Kernel::GetArrowPort(std::shared_ptr<arrow::Field> field) {
+std::shared_ptr<ArrowPort> Kernel::GetArrowPort(const std::shared_ptr<arrow::Field>& field) {
   for (const auto &n : objects_) {
     auto ap = Cast<ArrowPort>(n);
     if (ap) {

@@ -71,4 +71,4 @@ struct File {
   void write(std::ostream &output);
 };
 
-}; // namespace fletchgen::srec
+} // namespace fletchgen::srec

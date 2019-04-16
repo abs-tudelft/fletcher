@@ -17,8 +17,7 @@
 
 #include "./srec.h"
 
-namespace fletchgen {
-namespace srec {
+namespace fletchgen::srec {
 
 Record::Record(const uint8_t *data, size_t length, uint32_t address)
     : length_(length), address_(address) {
@@ -104,5 +103,4 @@ void File::write(std::ostream &output) {
   }
 }
 
-}; // namespace srec
-}; // namespace fletchgen
+} // namespace fletchgen::srec

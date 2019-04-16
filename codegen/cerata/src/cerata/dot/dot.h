@@ -42,7 +42,7 @@ struct Grapher {
   std::string GenNodes(const Graph *graph, Node::NodeID id, int level = 0, bool nogroup = false);
   std::string GenGraph(const Graph *graph, int level = 0);
   std::string GenFile(const std::shared_ptr<Graph> &graph, const std::string& path);
-  std::string GenExpr(const std::shared_ptr<Node> &exp, const std::string& prefix = "", int level = 0);
+  static std::string GenExpr(const std::shared_ptr<Node> &exp, const std::string& prefix = "", int level = 0);
 };
 
 std::string NodeName(const std::shared_ptr<Node> &node, const std::string& suffix = "");

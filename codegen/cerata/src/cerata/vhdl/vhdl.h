@@ -32,6 +32,11 @@
 
 namespace cerata::vhdl {
 
+constexpr char DEFAULT_LIBS[] =
+    "library ieee;\n"
+    "use ieee.std_logic_1164.all;\n"
+    "use ieee.numeric_std.all;\n";
+
 class VHDLOutputGenerator : public OutputGenerator {
  public:
   explicit VHDLOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})

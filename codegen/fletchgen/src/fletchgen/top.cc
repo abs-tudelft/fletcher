@@ -12,4 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "top.h"
+#include "fletchgen/top.h"
+
+namespace fletchgen {
+
+}  // namespace fletchgen

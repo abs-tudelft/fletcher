@@ -12,27 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
+#include <cstdlib> // system()
 #include <string>
 
-#include "cerata/logging.h"
+std::string GetProgramName(char *argv0);
 
-namespace cerata {
-
-#ifdef LOG_ARROW
-
-#include <arrow/util/logging.h>
-
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
-  arrow::util::ArrowLog::StartArrowLog(app_name, level, file_name);
-}
-
-void StopLogging() {
-  arrow::util::ArrowLog::ShutDownArrowLog();
-}
-#else
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {}
-
-void StopLogging() {}
-#endif
-
-} // namespace cerata
+void CreateDir(const std::string& dir_name);

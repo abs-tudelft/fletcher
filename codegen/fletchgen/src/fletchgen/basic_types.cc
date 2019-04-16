@@ -49,25 +49,25 @@ using cerata::Stream;
     return result;                                                                   \
 }
 
-BIT_FACTORY(null);
-VEC_FACTORY(int8, 8);
-VEC_FACTORY(uint8, 8);
-VEC_FACTORY(int16, 16);
-VEC_FACTORY(uint16, 16);
-VEC_FACTORY(int32, 32);
-VEC_FACTORY(uint32, 32);
-VEC_FACTORY(int64, 64);
-VEC_FACTORY(uint64, 64);
-VEC_FACTORY(float8, 8);
-VEC_FACTORY(float16, 16);
-VEC_FACTORY(float32, 32);
-VEC_FACTORY(float64, 64);
-VEC_FACTORY(date32, 32);
-VEC_FACTORY(date64, 64);
-VEC_FACTORY(utf8c, 8);
-VEC_FACTORY(byte, 8);
-VEC_FACTORY(offset, 32);
-VEC_FACTORY(length, 32);
+BIT_FACTORY(null)
+VEC_FACTORY(int8, 8)
+VEC_FACTORY(uint8, 8)
+VEC_FACTORY(int16, 16)
+VEC_FACTORY(uint16, 16)
+VEC_FACTORY(int32, 32)
+VEC_FACTORY(uint32, 32)
+VEC_FACTORY(int64, 64)
+VEC_FACTORY(uint64, 64)
+VEC_FACTORY(float8, 8)
+VEC_FACTORY(float16, 16)
+VEC_FACTORY(float32, 32)
+VEC_FACTORY(float64, 64)
+VEC_FACTORY(date32, 32)
+VEC_FACTORY(date64, 64)
+VEC_FACTORY(utf8c, 8)
+VEC_FACTORY(byte, 8)
+VEC_FACTORY(offset, 32)
+VEC_FACTORY(length, 32)
 
 #define PARAM_FACTORY(NAME, TYPE, DEFAULT)                    \
 std::shared_ptr<Node> NAME() {                                \
@@ -75,12 +75,12 @@ std::shared_ptr<Node> NAME() {                                \
   return result;                                              \
 }                                                             \
 
-PARAM_FACTORY(bus_addr_width, integer(), intl<64>());
-PARAM_FACTORY(bus_data_width, integer(), intl<512>());
-PARAM_FACTORY(bus_len_width, integer(), intl<7>());
-PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>());
-PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>());
-PARAM_FACTORY(index_width, integer(), intl<32>());
+PARAM_FACTORY(bus_addr_width, integer(), intl<64>())
+PARAM_FACTORY(bus_data_width, integer(), intl<512>())
+PARAM_FACTORY(bus_len_width, integer(), intl<7>())
+PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>())
+PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>())
+PARAM_FACTORY(index_width, integer(), intl<32>())
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> acc_domain() {
@@ -133,7 +133,8 @@ std::shared_ptr<Type> last() {
 
 // Bus channel
 
-std::shared_ptr<Type> bus_read_request(std::shared_ptr<Node> addr_width, std::shared_ptr<Node> len_width) {
+std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width,
+                                       const std::shared_ptr<Node> &len_width) {
   static auto bus_addr = RecordField::Make("addr", Vector::Make("addr", addr_width));
   static auto bus_len = RecordField::Make("len", Vector::Make("len", len_width));
   static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
@@ -141,7 +142,8 @@ std::shared_ptr<Type> bus_read_request(std::shared_ptr<Node> addr_width, std::sh
   return bus_rreq;
 }
 
-std::shared_ptr<Type> bus_write_request(std::shared_ptr<Node> addr_width, std::shared_ptr<Node> len_width) {
+std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node> &addr_width,
+                                        const std::shared_ptr<Node> &len_width) {
   static auto bus_addr = RecordField::Make(Vector::Make("addr", addr_width));
   static auto bus_len = RecordField::Make(Vector::Make("len", len_width));
   static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
@@ -149,7 +151,7 @@ std::shared_ptr<Type> bus_write_request(std::shared_ptr<Node> addr_width, std::s
   return bus_wreq;
 }
 
-std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width) {
+std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node> &width) {
   auto bus_rdata = RecordField::Make(Vector::Make("data", width));
   auto bus_rlast = RecordField::Make(last());
   auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
@@ -157,7 +159,7 @@ std::shared_ptr<Type> bus_read_data(std::shared_ptr<Node> width) {
   return bus_rdat;
 }
 
-std::shared_ptr<Type> bus_write_data(std::shared_ptr<Node> width) {
+std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width) {
   auto bus_wdata = RecordField::Make(Vector::Make("data", width));
   auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", width / intl<8>()));
   auto bus_wlast = RecordField::Make("last", bit());
@@ -252,7 +254,7 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level) {
   // The ordering of the record fields in this function determines the order in which a nested stream is type converted
   // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented. Do not touch.
-  
+
   int epc = fletcher::getEPC(field);
 
   std::shared_ptr<Type> type;

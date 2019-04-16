@@ -27,7 +27,7 @@ namespace cerata::dot {
 void DOTOutputGenerator::Generate() {
   cerata::dot::Grapher dot;
   for (const auto &g : graphs_) {
-    LOG(INFO) << "Generating DOT output for Graph: " + g->name();
+    LOG(INFO, "Generating DOT output for Graph: " + g->name());
     dot.GenFile(g, subdir() + "/" + g->name() + ".dot");
   }
 }

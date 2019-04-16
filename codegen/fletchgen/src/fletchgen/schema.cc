@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +24,13 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::deque<std::sha
   return std::make_shared<SchemaSet>(name, schema_list);
 }
 
-std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name, std::vector<std::shared_ptr<arrow::Schema>> schema_list) {
+std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name,
+                                           const std::vector<std::shared_ptr<arrow::Schema>> &schema_list) {
   std::deque<std::shared_ptr<arrow::Schema>> dq;
-  for (const auto& schema : schema_list) {
+  for (const auto &schema : schema_list) {
     dq.push_back(schema);
   }
-  return Make(name, dq);
+  return Make(std::move(name), dq);
 }
 
 }  // namespace fletchgen

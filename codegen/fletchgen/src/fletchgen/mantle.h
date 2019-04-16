@@ -37,7 +37,7 @@ struct Mantle : Component {
   std::vector<Instance *> column_writers;
 
   /// @brief Construct a Mantle based on a SchemaSet
-  explicit Mantle(std::string name, const std::shared_ptr<SchemaSet> &schema_set);
+  explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);
 
   /// @brief Construct a Mantle and return a shared pointer to it.
   static std::shared_ptr<Mantle> Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set);

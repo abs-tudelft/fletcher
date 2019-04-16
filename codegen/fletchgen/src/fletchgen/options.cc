@@ -16,12 +16,13 @@
 
 #include "./options.h"
 
+namespace fletchgen {
 int Options::Parse(Options *options, int argc, char **argv) {
 
   CLI::App app{"Fletchgen - The Fletcher Wrapper Generator"};
 
   // Required options:
-  app.add_option("-i,--input", options->schemas,
+  app.add_option("-i,--input", options->schema_paths,
                  "List of Flatbuffer files with Arrow Schemas to base wrapper on, comma seperated. "
                  "Example: --input file1.fbs file2.fbs file3.fbs")
       ->required();
@@ -34,10 +35,10 @@ int Options::Parse(Options *options, int argc, char **argv) {
                  "Name of the accelerator kernel.");
 
   // Simulation options:
-  app.add_option("-r,--recordbatch_input", options->recordbatches,
+  app.add_option("-r,--recordbatch_input", options->recordbatch_paths,
                  "List of Flatbuffer files with Arrow RecordBatches to convert to SREC format for simulation. "
                  "RecordBatches must adhere to and be in the same order as Arrow Schemas set with option --input.");
-  app.add_option("-s,--recordbatch_output", options->srec_out,
+  app.add_option("-s,--recordbatch_output", options->srec_out_path,
                  "SREC simulation output file.");
   app.add_option("-t,--srec_dump", options->srec_sim_dump,
                  "File to dump memory contents to in SREC format after simulation.");
@@ -60,24 +61,24 @@ int Options::Parse(Options *options, int argc, char **argv) {
   app.add_flag("-v,--verbose", options->verbose,
                "More detailed information on stdout.");
 
-  CLI11_PARSE(app, argc, argv);
+  CLI11_PARSE(app, argc, argv)
 
   return 0;
 }
 
 bool Options::MustGenerateSREC() {
-  if (!srec_out.empty()) {
-    if (schemas.size() == recordbatches.size()) {
+  if (!srec_out_path.empty()) {
+    if (schema_paths.size() == recordbatch_paths.size()) {
       return true;
     } else {
-      LOG(WARNING) << "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.";
+      LOG(WARNING, "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.");
       return false;
     }
   }
   return false;
 }
 
-static bool HasLanguage(std::vector<std::string> languages, std::string lang) {
+static bool HasLanguage(const std::vector<std::string>& languages, const std::string& lang) {
   for (const auto &l : languages) {
     if (l == lang) {
       return true;
@@ -94,12 +95,8 @@ bool Options::MustGenerateDOT() {
   return HasLanguage(languages, "dot");
 }
 
-std::string GetProgramName(char *argv0) {
-  auto arg = std::string(argv0);
-  size_t pos = arg.rfind('\\');
-  if (pos != std::string::npos) {
-    return arg.substr(pos+1);
-  } else {
-    return "fletchgen";
-  }
+bool Options::MustGenerateDesign() {
+  return !schema_paths.empty();
 }
+
+} // namespace fletchgen

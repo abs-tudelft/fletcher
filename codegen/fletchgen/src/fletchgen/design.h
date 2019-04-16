@@ -15,24 +15,32 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+
 #include <arrow/api.h>
 
-#include "cerata/utils.h"
+#include <cerata/graphs.h>
+#include <cerata/logging.h>
+
+#include <fletcher/common/arrow-utils.h>
+
+#include "fletchgen/schema.h"
+#include "fletchgen/options.h"
+#include "fletchgen/kernel.h"
+#include "fletchgen/mantle.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
-/**
- * @brief A named set of schemas.
- */
-struct SchemaSet : public cerata::Named {
-  std::deque<std::shared_ptr<arrow::Schema>> schema_list_;
-
-  SchemaSet(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list)
-      : Named(std::move(name)), schema_list_(std::move(schema_list)) {}
-
-  static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
-  static std::shared_ptr<SchemaSet> Make(std::string name,
-                                         const std::vector<std::shared_ptr<arrow::Schema>> &schema_list);
+struct Design {
+  static Design GenerateFrom(const std::shared_ptr<Options>& opts);
+  std::shared_ptr<Options> options;
+  std::vector<std::shared_ptr<arrow::Schema>> schemas;
+  std::shared_ptr<SchemaSet> schema_set;
+  std::shared_ptr<cerata::Component> kernel;
+  std::shared_ptr<cerata::Component> mantle;
+  std::shared_ptr<cerata::Component> artery;
+  std::shared_ptr<cerata::Component> wrapper;
 };
 
-}  // namespace fletchgen
+}

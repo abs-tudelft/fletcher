@@ -12,27 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
+#include "fletchgen/utils.h"
 
-#include "cerata/logging.h"
-
-namespace cerata {
-
-#ifdef LOG_ARROW
-
-#include <arrow/util/logging.h>
-
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
-  arrow::util::ArrowLog::StartArrowLog(app_name, level, file_name);
+std::string GetProgramName(char *argv0) {
+  auto arg = std::string(argv0);
+  size_t pos = arg.rfind('\\');
+  if (pos != std::string::npos) {
+    return arg.substr(pos + 1);
+  } else {
+    return "fletchgen";
+  }
 }
 
-void StopLogging() {
-  arrow::util::ArrowLog::ShutDownArrowLog();
+void CreateDir(const std::string& dir_name) {
+  // TODO(johanpel): Create directories in a portable manner
+  system(("mkdir -p " + dir_name).c_str());
 }
-#else
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {}
-
-void StopLogging() {}
-#endif
-
-} // namespace cerata

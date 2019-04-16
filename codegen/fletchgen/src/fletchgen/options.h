@@ -19,15 +19,20 @@
 
 #include "cerata/logging.h"
 
-std::string GetProgramName(char* argv0);
+namespace fletchgen {
 
 struct Options {
-  std::vector<std::string> schemas;
+  /// @brief Paths to the schema files
+  std::vector<std::string> schema_paths;
+
+  /// @brief Output directory
   std::string output_dir;
-  std::string srec_out;
+
+  /// @brief SREC output path
+  std::string srec_out_path;
   std::string srec_sim_dump;
-  std::vector<std::string> recordbatches;
-  std::vector<std::string> languages = {"vhdl"};
+  std::vector<std::string> recordbatch_paths;
+  std::vector<std::string> languages = {"vhdl", "dot"};
   std::string kernel_name = "kernel";
   bool axi_top = false;
   bool sim_top = false;
@@ -43,9 +48,17 @@ struct Options {
    */
   static int Parse(Options *options, int argc, char **argv);
 
-  bool MustGenerateSREC();
+  // Option checkers:
 
+  /// @brief Return true if a design must be generated.
+  bool MustGenerateDesign();
+  /// @brief Return true if an SREC file must be generated.
+  bool MustGenerateSREC();
+  /// @brief Return true if the design must be outputted as VHDL.
   bool MustGenerateVHDL();
+  /// @brief Return true if the design must be outputted as DOT.
   bool MustGenerateDOT();
 
 };
+
+} // namespace fletchgen

@@ -44,7 +44,7 @@ struct Kernel : Component {
   explicit Kernel(std::string name, std::shared_ptr<SchemaSet> schemas);
   static std::shared_ptr<Kernel> Make(std::shared_ptr<SchemaSet> schemas);
 
-  std::shared_ptr<ArrowPort> GetArrowPort(std::shared_ptr<arrow::Field> field);
+  std::shared_ptr<ArrowPort> GetArrowPort(const std::shared_ptr<arrow::Field>& field);
   std::deque<std::shared_ptr<ArrowPort>> GetAllArrowPorts();
 };
 

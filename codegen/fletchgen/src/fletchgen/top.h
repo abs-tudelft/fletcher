@@ -18,6 +18,4 @@
 
 namespace fletchgen {
 
-
-
 }  // namespace fletchgen

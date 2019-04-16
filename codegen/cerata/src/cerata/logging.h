@@ -14,7 +14,7 @@
 
 #pragma once
 
-#ifdef LOGGING_ARROW
+#ifdef LOG_ARROW
 // Enable logging using Apache Arrows logging facility
 #include <arrow/util/logging.h>
 
@@ -29,17 +29,30 @@ constexpr arrow::util::ArrowLogLevel LOG_FATAL = arrow::util::ArrowLogLevel::ARR
 
 // Logging Macros
 #define LOG_INTERNAL(level) ::arrow::util::ArrowLog(__FILE__, __LINE__, level)
-#define LOG(level) LOG_INTERNAL(::arrow::util::ArrowLogLevel::ARROW_##level)
+#define LOG(level, msg) LOG_INTERNAL(::arrow::util::ArrowLogLevel::ARROW_##level) << msg
 
 using LogLevel = arrow::util::ArrowLogLevel;
 #else
+#include <iostream>
 // Default logging
-constexpr int LOG_DEBUG = -1,
-constexpr int LOG_INFO = 0,
-constexpr int LOG_WARNING = 1,
-constexpr int LOG_ERROR = 2,
-constexpr int LOG_FATAL = 3
+constexpr int LOG_DEBUG = -1;
+constexpr int LOG_INFO = 0;
+constexpr int LOG_WARNING = 1;
+constexpr int LOG_ERROR = 2;
+constexpr int LOG_FATAL = 3;
 using LogLevel = int;
+
+inline std::string level2str(int level) {
+  switch (level) {
+    default: return "DEBUG";
+    case 0: return "INFO";
+    case 1: return "WARNING";
+    case 2: return "ERROR";
+    case 3: return "FATAL";
+  }
+}
+
+#define LOG(level, msg) std::cerr << "[" + level2str(LOG_##level) + "]: " << msg << std::endl
 #endif
 
 namespace cerata {
