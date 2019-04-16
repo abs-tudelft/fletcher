@@ -1,3 +1,9 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +27,17 @@
 #include "cerata/vhdl/flatnode.h"
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/transformation.h"
+#include "cerata/output.h"
+#include "cerata/logging.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
-}  // namespace vhdl
-}  // namespace fletchgen
+class VHDLOutputGenerator : public OutputGenerator {
+ public:
+  explicit VHDLOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})
+      : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
+  void Generate() override;
+  std::string subdir() override { return "vhdl"; }
+};
+
+}  // namespace cerata::vhdl

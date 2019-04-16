@@ -20,6 +20,7 @@
 #include <vector>
 #include <sstream>
 
+#include "cerata/output.h"
 #include "cerata/graphs.h"
 #include "cerata/dot/style.h"
 
@@ -40,11 +41,19 @@ struct Grapher {
   std::string GenNode(const std::shared_ptr<Node> &n, int level = 0);
   std::string GenNodes(const Graph *graph, Node::NodeID id, int level = 0, bool nogroup = false);
   std::string GenGraph(const Graph *graph, int level = 0);
-  std::string GenFile(const std::shared_ptr<Graph> &graph, std::string path);
-  std::string GenExpr(const std::shared_ptr<Node> &exp, std::string prefix = "", int level = 0);
+  std::string GenFile(const std::shared_ptr<Graph> &graph, const std::string& path);
+  std::string GenExpr(const std::shared_ptr<Node> &exp, const std::string& prefix = "", int level = 0);
 };
 
-std::string NodeName(const std::shared_ptr<Node> &node, std::string suffix = "");
+std::string NodeName(const std::shared_ptr<Node> &node, const std::string& suffix = "");
+
+class DOTOutputGenerator : public OutputGenerator {
+ public:
+  explicit DOTOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})
+  : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
+  void Generate() override;
+  std::string subdir() override { return "dot"; }
+};
 
 }  // namespace dot
 }  // namespace cerata

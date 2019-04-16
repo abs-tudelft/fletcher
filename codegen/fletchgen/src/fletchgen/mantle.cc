@@ -110,7 +110,7 @@ std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<Sch
 }
 
 std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_set) {
-  return std::make_shared<Mantle>("FletcherCore:" + schema_set->name(), schema_set);
+  return std::make_shared<Mantle>(schema_set->name() + "_mantle", schema_set);
 }
 
 }  // namespace fletchgen

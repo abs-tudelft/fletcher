@@ -14,40 +14,47 @@
 
 #include <iostream>
 
+#include <cstdlib> // system()
+
+#include <cerata/logging.h>
 #include <cerata/graphs.h>
-#include <cerata/vhdl/design.h>
+
+#include <cerata/vhdl/vhdl.h>
+#include <cerata/dot/dot.h>
 
 #include <fletcher/common/arrow-utils.h>
-#include <fletchgen/srec/recordbatch.h>
 
-#include "./cli/CLI11.hpp"
+#include "fletchgen/cli/CLI11.hpp"
+#include "fletchgen/options.h"
 
-#include "./logging.h"
-#include "./options.h"
-#include "./kernel.h"
+#include "fletchgen/srec/recordbatch.h"
+#include "fletchgen/kernel.h"
+#include "fletchgen/mantle.h"
+#include "fletchgen/bus.h"
 
-void GenerateSREC(const std::_MakeUniq<Options>::__single_object &options,
+void CreateDir(std::string dir_name) {
+  // TODO(johanpel): Create directories in a portable manner
+  system(("mkdir -p " + dir_name).c_str());
+}
+
+void GenerateSREC(const std::unique_ptr<Options> &options,
                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {
   // TODO(johanpel): allow multiple recordbatches
   auto recordbatch = fletcher::readRecordBatchFromFile(options->recordbatches[0], schemas[0]);
   auto srec_buffers = fletchgen::srec::writeRecordBatchToSREC(recordbatch.get(), options->srec_out);
 }
 
-std::shared_ptr<cerata::Component> GenerateKernel(const std::shared_ptr<fletchgen::SchemaSet>& schema_set) {
-  return fletchgen::Kernel::Make(schema_set);
-}
-
 int main(int argc, char **argv) {
   std::string program_name = GetProgramName(argv[0]);
   // Start logging
-  fletchgen::logging::StartLogging(program_name, fletchgen::logging::LOG_DEBUG, program_name + ".log");
+  cerata::StartLogging(program_name, LOG_DEBUG, program_name + ".log");
 
   // Parse options
   auto options = std::make_unique<Options>();
   Options::Parse(options.get(), argc, argv);
 
   auto schemas = fletcher::readSchemasFromFiles(options->schemas);
-  auto schemaSet = fletchgen::SchemaSet::Make(options->kernel_name, schemas);
+  auto schema_set = fletchgen::SchemaSet::Make(options->kernel_name, schemas);
 
   // Run generation
 
@@ -56,24 +63,30 @@ int main(int argc, char **argv) {
     GenerateSREC(options, schemas);
   }
 
-  // Kernel level
-  LOG(INFO) << "Generating Kernel from SchemaSet";
-  auto kernel = GenerateKernel(schemaSet);
+  // Generate designs
+  LOG(INFO) << "Generating Kernel from SchemaSet.";
+  auto kernel = fletchgen::Kernel::Make(schema_set);
+  auto mantle = fletchgen::Mantle::Make(schema_set);
+  auto artery = fletchgen::Artery::Make(options->kernel_name, nullptr, nullptr, {});
 
   if (options->MustGenerateVHDL()) {
-    LOG(INFO) << "Generating VHDL language outputs.";
-
-    LOG(INFO) << "Writing VHDL Kernel file: " + options->kernel_name + ".vhd";
-    auto design = cerata::vhdl::Design(kernel);
-    auto kernel_source = std::ofstream(options->kernel_name + ".vhd");
-    kernel_source << design.Generate().ToString();
-    kernel_source.close();
+    // Create the VHDL output generator.
+    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, {kernel, mantle, artery});
+    // Make sure the subdirectory exists.
+    CreateDir(vhdl.subdir());
+    // Generate the output files.
+    vhdl.Generate();
   }
 
+  if (options->MustGenerateDOT()) {
+    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, {kernel, mantle, artery});
+    CreateDir(dot.subdir());
+    dot.Generate();
+  }
 
   LOG(INFO) << program_name + " completed.";
 
   // Shut down logging
-  fletchgen::logging::StopLogging();
+  cerata::StopLogging();
   return 0;
 }

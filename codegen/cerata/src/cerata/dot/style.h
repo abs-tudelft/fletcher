@@ -179,12 +179,12 @@ struct Style {
 
   /// @brief Generate a HTML table cell from a type.
   std::string GenHTMLTableCell(const std::shared_ptr<Type> &t,
-                               std::string name,
+                               const std::string& name,
                                int level = 0);
 
   /// @brief Generate a DOT record cell from a type
   std::string GenDotRecordCell(const std::shared_ptr<Type> &t,
-                               std::string name,
+                               const std::string& name,
                                int level = 0);
 
   /// @brief Get the label for a node.

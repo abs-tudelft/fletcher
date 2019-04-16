@@ -51,7 +51,7 @@ Kernel::Kernel(std::string name, std::shared_ptr<SchemaSet> schema_set)
 }
 
 std::shared_ptr<Kernel> Kernel::Make(std::shared_ptr<SchemaSet> schema_set) {
-  return std::make_shared<Kernel>("uc_" + schema_set->name(), schema_set);
+  return std::make_shared<Kernel>(schema_set->name(), schema_set);
 }
 
 std::shared_ptr<ArrowPort> Kernel::GetArrowPort(std::shared_ptr<arrow::Field> field) {

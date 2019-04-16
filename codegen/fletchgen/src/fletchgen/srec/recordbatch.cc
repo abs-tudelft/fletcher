@@ -17,12 +17,13 @@
 
 #include <arrow/api.h>
 
+#include "cerata/logging.h"
+
 #include "fletcher/common/arrow-utils.h"
 #include "fletcher/common/hex-view.h"
 
-#include "../logging.h"
-#include "./recordbatch.h"
-#include "./srec.h"
+#include "fletchgen/srec/recordbatch.h"
+#include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {
 

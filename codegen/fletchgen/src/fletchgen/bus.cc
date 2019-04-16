@@ -21,6 +21,7 @@
 #include "cerata/types.h"
 #include "cerata/edges.h"
 #include "cerata/arrays.h"
+#include "cerata/logging.h"
 
 #include "fletchgen/basic_types.h"
 
@@ -93,13 +94,23 @@ std::shared_ptr<Component> BusReadSerializer() {
   return ret;
 }
 
-Artery::Artery(std::shared_ptr<Node> address_width,
-               std::shared_ptr<Node> master_width,
-               std::deque<std::shared_ptr<Node>> slave_widths)
-    : Component("artery"),
+Artery::Artery(
+    std::string prefix,
+    std::shared_ptr<Node> address_width,
+    std::shared_ptr<Node> master_width,
+    std::deque<std::shared_ptr<Node>> slave_widths)
+    : Component(prefix + "_artery"),
       address_width_(std::move(address_width)),
       master_width_(std::move(master_width)),
       slave_widths_(std::move(slave_widths)) {
+
+  if (address_width == nullptr) {
+    LOG(WARNING) << "Artery address width is not set.";
+  }
+  if (master_width == nullptr) {
+    LOG(WARNING) << "Artery top-level data width is not set.";
+  }
+
   AddObject(bus_addr_width());
   AddObject(bus_data_width());
   // For each required slave width
@@ -147,10 +158,11 @@ Artery::Artery(std::shared_ptr<Node> address_width,
   }
 }
 
-std::shared_ptr<Artery> Artery::Make(std::shared_ptr<Node> address_width,
+std::shared_ptr<Artery> Artery::Make(std::string prefix,
+                                     std::shared_ptr<Node> address_width,
                                      std::shared_ptr<Node> master_width,
                                      std::deque<std::shared_ptr<Node>> slave_widths) {
-  return std::make_shared<Artery>(address_width, master_width, slave_widths);
+  return std::make_shared<Artery>(prefix, address_width, master_width, slave_widths);
 }
 
 std::shared_ptr<PortArray> ArteryInstance::read_data(const std::shared_ptr<Node> &width) {

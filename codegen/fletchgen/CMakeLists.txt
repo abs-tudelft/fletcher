@@ -19,6 +19,7 @@ if (NOT TARGET fletcher-common-static)
 endif ()
 
 # Cerata
+add_compile_definitions(LOGGING_ARROW)
 add_subdirectory(../cerata cerata)
 include_directories(../cerata/src)
 
@@ -31,7 +32,6 @@ set(HEADERS
         src/fletchgen/mantle.h
         src/fletchgen/kernel.h
         src/fletchgen/constants.h
-        src/fletchgen/logging.h
         src/fletchgen/options.h
 
         src/fletchgen/srec/recordbatch.h
@@ -45,7 +45,6 @@ set(SOURCES
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc
         src/fletchgen/kernel.cc
-        src/fletchgen/logging.cc
         src/fletchgen/options.cc
 
         src/fletchgen/srec/recordbatch.cc

@@ -18,15 +18,38 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <fstream>
 
+#include "cerata/logging.h"
 #include "cerata/edges.h"
 #include "cerata/nodes.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
 #include "cerata/vhdl/flatnode.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
-}  // namespace vhdl
-}  // namespace fletchgen
+void VHDLOutputGenerator::Generate() {
+  for (const auto& g : graphs_) {
+    if (g->IsComponent()) {
+      LOG(INFO) << "Transforming Component " + g->name() + " to VHDL compatible version.";
+      auto vhdl_design = Design(*Cast<Component>(g));
+
+      LOG(INFO) << "Generating VHDL sources for component " + g->name();
+      auto vhdl_source = vhdl_design.Generate();
+      vhdl_source.ToString();
+      auto vhdl_path = subdir() + "/" + g->name() + ".vhd";
+
+      LOG(INFO) << "Saving to: " + vhdl_path;
+      auto vhdl_file = std::ofstream(vhdl_path);
+      vhdl_file << vhdl_source.ToString();
+      vhdl_file.close();
+
+    } else {
+      LOG(WARNING) << "Graph " << g->name() << " is not a component. Skipping VHDL output generation.";
+    }
+  }
+}
+
+}  // namespace cerata::vhdl
+

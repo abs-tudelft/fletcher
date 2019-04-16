@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+
+#include "cerata/logging.h"
+
+namespace cerata {
+
+#ifdef LOGGING_ARROW
+
 #include <arrow/util/logging.h>
-
-#include "./logging.h"
-
-namespace fletchgen::logging {
 
 void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
   arrow::util::ArrowLog::StartArrowLog(app_name, level, file_name);
@@ -25,5 +29,10 @@ void StartLogging(const std::string &app_name, LogLevel level, const std::string
 void StopLogging() {
   arrow::util::ArrowLog::ShutDownArrowLog();
 }
+#else
+void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {}
 
-} // namespace fletchgen::logging
+void StopLogging() {}
+#endif
+
+} // namespace cerata

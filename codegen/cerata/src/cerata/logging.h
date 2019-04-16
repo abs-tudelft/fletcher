@@ -14,16 +14,11 @@
 
 #pragma once
 
+#ifdef LOGGING_ARROW
+// Enable logging using Apache Arrows logging facility
 #include <arrow/util/logging.h>
 
-// This Fletchgen logging facility wraps around Arrow's logging facility
-// We use Arrows logging for Fletchgen as well, because Arrow is a hard dependency for this tool anyway.
-
-// Logging Macros
-#define LOG_INTERNAL(level) ::arrow::util::ArrowLog(__FILE__, __LINE__, level)
-#define LOG(level) LOG_INTERNAL(::arrow::util::ArrowLogLevel::ARROW_##level)
-
-namespace fletchgen::logging {
+// This Cerata logging facility wraps around Arrow's logging facility
 
 // Logging levels
 constexpr arrow::util::ArrowLogLevel LOG_DEBUG = arrow::util::ArrowLogLevel::ARROW_DEBUG;
@@ -32,7 +27,22 @@ constexpr arrow::util::ArrowLogLevel LOG_WARNING = arrow::util::ArrowLogLevel::A
 constexpr arrow::util::ArrowLogLevel LOG_ERROR = arrow::util::ArrowLogLevel::ARROW_ERROR;
 constexpr arrow::util::ArrowLogLevel LOG_FATAL = arrow::util::ArrowLogLevel::ARROW_FATAL;
 
+// Logging Macros
+#define LOG_INTERNAL(level) ::arrow::util::ArrowLog(__FILE__, __LINE__, level)
+#define LOG(level) LOG_INTERNAL(::arrow::util::ArrowLogLevel::ARROW_##level)
+
 using LogLevel = arrow::util::ArrowLogLevel;
+#else
+// Default logging
+constexpr int LOG_DEBUG = -1,
+constexpr int LOG_INFO = 0,
+constexpr int LOG_WARNING = 1,
+constexpr int LOG_ERROR = 2,
+constexpr int LOG_FATAL = 3
+using LogLevel = int;
+#endif
+
+namespace cerata {
 
 /**
  * @brief Start logging.

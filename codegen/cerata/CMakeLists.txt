@@ -10,6 +10,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
 # Sources
 set(HEADERS
+        src/cerata/logging.h
+        src/cerata/utils.h
         src/cerata/arrays.h
         src/cerata/edges.h
         src/cerata/objects.h
@@ -17,7 +19,7 @@ set(HEADERS
         src/cerata/nodes.h
         src/cerata/graphs.h
         src/cerata/flattypes.h
-        src/cerata/utils.h
+        src/cerata/output.h
 
         src/cerata/vhdl/architecture.h
         src/cerata/vhdl/block.h
@@ -35,6 +37,8 @@ set(HEADERS
         )
 
 set(SOURCES
+        src/cerata/logging.cc
+        src/cerata/output.cc
         src/cerata/arrays.cc
         src/cerata/edges.cc
         src/cerata/objects.cc
@@ -62,6 +66,15 @@ include_directories(src)
 
 # Linking
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
+
+# Logging
+option(LOGGING_ARROW "Use Apache Arrow's logging facility." ON)
+
+if (LOGGING_ARROW)
+    find_library(LIB_ARROW arrow)
+    target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
+    add_compile_definitions(LOGGING_ARROW)
+endif (LOGGING_ARROW)
 
 ########################################################################################################################
 # TESTS

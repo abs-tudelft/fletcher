@@ -17,7 +17,7 @@
 #include <vector>
 #include <string>
 
-#include "./logging.h"
+#include "cerata/logging.h"
 
 std::string GetProgramName(char* argv0);
 
