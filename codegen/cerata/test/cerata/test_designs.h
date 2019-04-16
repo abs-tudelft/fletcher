@@ -77,17 +77,17 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   auto t_narrow = Vector::Make<2>();
   // Flat indices:
   auto tA = Record::Make("rec_A", {       // 0
-      RecordField::Make("q", t_wide),     // 1
-      RecordField::Make("r", t_narrow),   // 2
-      RecordField::Make("s", t_narrow),   // 3
-      RecordField::Make("t", t_wide),     // 4
+      RecField::Make("q", t_wide),     // 1
+      RecField::Make("r", t_narrow),   // 2
+      RecField::Make("s", t_narrow),   // 3
+      RecField::Make("t", t_wide),     // 4
   });
 
   auto tB = Record::Make("rec_B", {       // 0
-      RecordField::Make("u", t_wide),     // 1
-      RecordField::Make("v", t_narrow),   // 2
-      RecordField::Make("w", t_narrow),   // 3
-      RecordField::Make("x", t_wide),     // 4
+      RecField::Make("u", t_wide),     // 1
+      RecField::Make("v", t_narrow),   // 2
+      RecField::Make("w", t_narrow),   // 3
+      RecField::Make("x", t_wide),     // 4
   });
 
   // Create a type mapping from tA to tE
@@ -126,12 +126,12 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   auto t_narrow = Vector::Make<2>();
   // Flat indices:
   auto tA = Record::Make("rec_A", {       // 0
-      RecordField::Make("q", t_wide),     // 1
+      RecField::Make("q", t_wide),     // 1
   });
 
   auto tB = Record::Make("rec_B", {       // 0
-      RecordField::Make("r", t_narrow),   // 1
-      RecordField::Make("s", t_narrow),   // 2
+      RecField::Make("r", t_narrow),   // 1
+      RecField::Make("s", t_narrow),   // 2
   });
 
   // Create a type mapping from tA to tE
@@ -162,8 +162,8 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
 
 std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto r_type = Record::Make("rec", {
-      RecordField::Make("a", Vector::Make<8>()),
-      RecordField::Make("b", Vector::Make<32>())
+      RecField::Make("a", Vector::Make<8>()),
+      RecField::Make("b", Vector::Make<32>())
   });
   auto s_type = Stream::Make("stream", Vector::Make<16>());
 
@@ -181,6 +181,39 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto a_type = Component::Make("a", {par, clk_port, rst_port, b_port, v_port, r_port, s_port});
 
   return a_type;
+}
+
+std::shared_ptr<Component> GetExampleDesign() {
+  auto vec_width = Parameter::Make("vec_width", integer(), intl<32>());
+  // Construct a deeply nested type to showcase Cerata's capabilities.
+  auto my_type =
+      Record::Make("my_record_type", {RecField::Make("bit", bit()),
+                                      RecField::Make("vec", Vector::Make("my_parametrized_vec_type", vec_width)),
+                                      RecField::Make("stream", Stream::Make("d", Record::Make("other_rec_type", {
+                                          RecField::Make("substream", Stream::Make(Vector::Make<32>())),
+                                          RecField::Make("int", integer())})))});
+
+  // Construct two components with a port made from these types
+  auto my_array_size = Parameter::Make("array_size", integer());
+  auto my_comp = Component::Make("my_comp", {vec_width, PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
+  auto my_other_comp = Component::Make("my_other_comp", {vec_width, Port::Make("my_port", my_type)});
+
+  // Create a top level and add instances of each component
+  auto my_top = Component::Make("my_top_level");
+  auto my_inst = my_top->AddInstanceOf(my_comp);
+
+  // Create a bunch of instances and connect to other component
+  std::vector<Instance*> my_other_instances;
+  for (int i=0;i<10;i++) {
+    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp));
+    my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
+  }
+
+  // Throw the design at a VHDL backend with my_component as top-level
+  auto design = vhdl::Design(my_top);
+  std::cout << design.Generate().ToString();
+
+  return my_top;
 }
 
 }  // namespace cerata

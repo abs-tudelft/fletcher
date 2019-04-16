@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +14,11 @@
 
 #include "fletchgen/mantle.h"
 
-#include <arrow/api.h>
 #include <memory>
 #include <deque>
 #include <utility>
+
+#include <arrow/api.h>
 
 #include "fletcher/common/arrow-utils.h"
 
@@ -35,26 +34,26 @@ namespace fletchgen {
 Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
-  // Create and instantiate a Core
-  user_core_ = Kernel::Make(schema_set_);
-  auto ucinst = Instance::Make(user_core_);
-  user_core_inst_ = ucinst.get();
-  AddChild(std::move(ucinst));
+  // Create and instantiate a Kernel
+  kernel_ = Kernel::Make(schema_set_);
+  auto kinst = Instance::Make(kernel_);
+  kernel_inst_ = kinst.get();
+  AddChild(std::move(kinst));
 
   // Connect Fields
-  auto arrow_ports = user_core_->GetAllArrowPorts();
+  auto arrow_ports = kernel_->GetAllArrowPorts();
 
   // Instantiate ColumnReaders/Writers for each field.
   for (const auto &p : arrow_ports) {
     if (p->dir() == Port::IN) {
-      auto cr_inst = Instance::Make(p->field_->name() + "_cr_inst", ArrayReader());
-      auto config_node = cr_inst->GetNode(Node::PARAMETER, "CFG");
+      auto ar_inst = Instance::Make(p->field_->name() + "_ar_inst", ArrayReader());
+      auto config_node = ar_inst->GetNode(Node::PARAMETER, "CFG");
       config_node <<=
           cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));
-      column_readers.push_back(cr_inst.get());
-      AddChild(std::move(cr_inst));
+      array_readers_.push_back(ar_inst.get());
+      AddChild(std::move(ar_inst));
     } else {
-      // TODO(johanpel): ColumnWriters
+      // TODO(johanpel): ArrayWriters
     }
   }
 
@@ -62,17 +61,17 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
   for (size_t i = 0; i < arrow_ports.size(); i++) {
     if (arrow_ports[i]->IsInput()) {
       // Get the user core instance ports
-      auto uci_data_port = user_core_inst_->port(arrow_ports[i]->name());
-      auto uci_cmd_port = user_core_inst_->port(arrow_ports[i]->name() + "_cmd");
+      auto uci_data_port = kernel_inst_->port(arrow_ports[i]->name());
+      auto uci_cmd_port = kernel_inst_->port(arrow_ports[i]->name() + "_cmd");
       // Get the column reader ports
-      auto cr_data_port = column_readers[i]->port("out");
-      auto cr_cmd_port = column_readers[i]->port("cmd");
+      auto cr_data_port = array_readers_[i]->port("out");
+      auto cr_cmd_port = array_readers_[i]->port("cmd");
       // Connect the ports
       uci_data_port <<= cr_data_port;
       cr_cmd_port <<= uci_cmd_port;
     } else {
-      // TODO(johanpel): ColumnWriters
-      // TODO(johanpel): ColumnWriters
+      // TODO(johanpel): ArrayWriters
+      // TODO(johanpel): ArrayWriters
     }
   }
 
@@ -92,14 +91,14 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
   AddObject(bus_wreq_array);
   AddObject(bus_wdat_array);
 
-  for (const auto &cr : column_readers) {
+  for (const auto &cr : array_readers_) {
     auto cr_rreq = cr->port("bus_rreq");
     auto cr_rdat = cr->port("bus_rdat");
     bus_rreq_array->Append() <<= cr_rreq;
     cr_rdat <<= bus_rdat_array->Append();
   }
 
-  for (const auto &cw : column_writers) {
+  for (const auto &cw : array_writers_) {
     auto cw_wreq = cw->port("bus_wreq");
     auto cw_wdat = cw->port("bus_wdat");
     bus_wreq_array->Append() <<= cw_wreq;

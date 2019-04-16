@@ -18,5 +18,3 @@
 #include <string>
 
 std::string GetProgramName(char *argv0);
-
-void CreateDir(const std::string& dir_name);

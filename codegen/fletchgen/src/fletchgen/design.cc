@@ -21,19 +21,23 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   ret.options = opts;
 
   // Read schemas
-  LOG(INFO, "Reading schema set.");
+  LOG(INFO, "Reading schemas.");
   ret.schemas = fletcher::readSchemasFromFiles(ret.options->schema_paths);
+
+  for (size_t i = 0; i < ret.schemas.size(); i++)
+    LOG(INFO, "Schema " << i << " from " << ret.options->schema_paths[i] << "\n" << ret.schemas[i]->ToString());
+
   ret.schema_set = SchemaSet::Make(ret.options->kernel_name, ret.schemas);
 
   // Generate Fletcher interface components
   LOG(INFO, "Generating Kernel...");
-  auto kernel = Kernel::Make(ret.schema_set);
+  ret.kernel = Kernel::Make(ret.schema_set);
 
   LOG(INFO, "Generating Mantle...");
-  auto mantle = Mantle::Make(ret.schema_set);
+  ret.mantle = Mantle::Make(ret.schema_set);
 
   LOG(INFO, "Generating Artery...");
-  auto artery = Artery::Make(ret.options->kernel_name, nullptr, nullptr, {});
+  ret.artery = Artery::Make(ret.options->kernel_name, nullptr, nullptr, {});
 
   LOG(WARNING, "Generating Wrapper not yet implemented.");
   // TODO(johanpel) top level wrapper

@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/utils.h"
+#include "cerata/utils.h"
 
-std::string GetProgramName(char *argv0) {
-  auto arg = std::string(argv0);
-  size_t pos = arg.rfind('\\');
-  if (pos != std::string::npos) {
-    return arg.substr(pos + 1);
-  } else {
-    return "fletchgen";
-  }
+void cerata::CreateDir(const std::string &dir_name) {
+  // TODO(johanpel): Create directories in a portable manner
+  system(("mkdir -p " + dir_name).c_str());
 }

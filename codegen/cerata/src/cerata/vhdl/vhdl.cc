@@ -25,11 +25,14 @@
 #include "cerata/nodes.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
-#include "cerata/vhdl/flatnode.h"
+#include "cerata/utils.h"
 
 namespace cerata::vhdl {
 
 void VHDLOutputGenerator::Generate() {
+  // Make sure the subdirectory exists.
+  CreateDir(subdir());
+
   for (const auto& g : graphs_) {
     if (g->IsComponent()) {
       LOG(INFO, "Transforming Component " + g->name() + " to VHDL compatible version.");

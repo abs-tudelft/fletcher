@@ -18,8 +18,7 @@
 
 #include "cerata/graphs.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 struct Transformation {
   /**
@@ -33,5 +32,4 @@ struct Transformation {
   static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
 };
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

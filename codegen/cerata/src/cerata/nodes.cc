@@ -423,4 +423,11 @@ std::shared_ptr<Edge> Expression::AddSource(const std::shared_ptr<Node> &source)
   throw std::runtime_error("Cannot drive an expression node.");
 }
 
+std::string Term::ToString(Term::Dir dir) {
+  switch (dir) {
+    default: return "none";
+    case IN: return "in";
+    case OUT: return "out";
+  }
+}
 }  // namespace cerata

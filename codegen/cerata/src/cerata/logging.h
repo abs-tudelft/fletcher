@@ -44,15 +44,15 @@ using LogLevel = int;
 
 inline std::string level2str(int level) {
   switch (level) {
-    default: return "DEBUG";
-    case 0: return "INFO";
-    case 1: return "WARNING";
-    case 2: return "ERROR";
-    case 3: return "FATAL";
+    default: return "D";
+    case 0: return "I";
+    case 1: return "W";
+    case 2: return "E";
+    case 3: return "F";
   }
 }
 
-#define LOG(level, msg) std::cerr << "[" + level2str(LOG_##level) + "]: " << msg << std::endl
+#define LOG(level, msg) std::cerr << "[" << level2str(LOG_##level) + "]: " << msg << std::endl
 #endif
 
 namespace cerata {

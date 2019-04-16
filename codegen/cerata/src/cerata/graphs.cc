@@ -278,4 +278,11 @@ Graph &Component::AddChild(std::unique_ptr<Graph> child) {
   }
 }
 
+Instance* Component::AddInstanceOf(std::shared_ptr<cerata::Component> comp) {
+  auto i = Instance::Make(comp);
+  auto raw_ptr = i.get();
+  AddChild(std::move(i));
+  return raw_ptr;
+}
+
 }  // namespace cerata

@@ -21,10 +21,12 @@
 #include "cerata/edges.h"
 #include "cerata/types.h"
 #include "cerata/output.h"
+#include "cerata/utils.h"
 
 namespace cerata::dot {
 
 void DOTOutputGenerator::Generate() {
+  CreateDir(subdir());
   cerata::dot::Grapher dot;
   for (const auto &g : graphs_) {
     LOG(INFO, "Generating DOT output for Graph: " + g->name());

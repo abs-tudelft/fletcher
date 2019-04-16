@@ -30,15 +30,15 @@ TEST(Types, Flatten) {
   auto c = Stream::Make(b);
 
   auto d = Record::Make("inner", {
-      RecordField::Make("a", a),
-      RecordField::Make("b", b),
-      RecordField::Make("c", c)});
+      RecField::Make("a", a),
+      RecField::Make("b", b),
+      RecField::Make("c", c)});
 
   auto e = Stream::Make(c);
 
   auto f = Record::Make("outer", {
-      RecordField::Make("d", d),
-      RecordField::Make("e", e)});
+      RecField::Make("d", d),
+      RecField::Make("e", e)});
 
   auto flat = Flatten(f.get());
 
@@ -66,15 +66,15 @@ TEST(Types, Flatten) {
 TEST(Types, TypeMapper) {
   auto a = bit();
   auto b = Vector::Make<8>();
-  auto c = Record::Make("rec_K", {RecordField::Make("a", a),
-                                  RecordField::Make("b", b)});
+  auto c = Record::Make("rec_K", {RecField::Make("a", a),
+                                  RecField::Make("b", b)});
   auto d = Stream::Make(c);
 
   auto q = bit();
   auto r = Vector::Make<8>();
-  auto s = Record::Make("rec_L", {RecordField::Make("q", q),
-                                  RecordField::Make("r0", r),
-                                  RecordField::Make("r1", Stream::Make(r))});
+  auto s = Record::Make("rec_L", {RecField::Make("q", q),
+                                  RecField::Make("r0", r),
+                                  RecField::Make("r1", Stream::Make(r))});
   auto t = Stream::Make(s);
 
   TypeMapper conv(t.get(), d.get());

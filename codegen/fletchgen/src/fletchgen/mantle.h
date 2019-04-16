@@ -21,20 +21,20 @@ namespace fletchgen {
 using cerata::Instance;
 
 /**
- * @brief A component that wraps a user Core and all ColumnReaders/Writers resulting from a Schema set.
+ * @brief A component that wraps a Kernel and all ArrayReaders/Writers resulting from a Schema set.
  */
 struct Mantle : Component {
-  /// The Core instantiated by this Mantle
-  std::shared_ptr<Kernel> user_core_;
+  /// The Kernel instantiated by this Mantle
+  std::shared_ptr<Kernel> kernel_;
   /// The actual instantiated Core
-  Instance *user_core_inst_;
+  Instance *kernel_inst_;
   /// The schema set on which this Mantle is based
   std::shared_ptr<SchemaSet> schema_set_;
 
-  /// The ColumnReader instances
-  std::vector<Instance *> column_readers;
-  /// The ColumnWriter instances
-  std::vector<Instance *> column_writers;
+  /// The ArrayReader instances
+  std::vector<Instance *> array_readers_;
+  /// The ArrayWriter instances
+  std::vector<Instance *> array_writers_;
 
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);

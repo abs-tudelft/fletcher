@@ -126,6 +126,15 @@ struct Component : public Graph {
    */
   Graph &AddChild(std::unique_ptr<Graph> child) override;
 
+
+  /**
+   * @brief Add a child instance from a component.
+   * @param comp  The component to instantiate and add.
+   * @param inst  Optional pointer to the instance to store.
+   * @return      A reference to this Component if successful.
+   */
+  Instance* AddInstanceOf(std::shared_ptr<Component> comp);
+
   /**
   * @brief Gather all Instance graphs from this Component
   * @param graph The graph to gather from.

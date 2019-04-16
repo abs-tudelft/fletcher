@@ -58,7 +58,7 @@ std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr
       return (*r)->name();
     }
     case Type::INTEGER: {
-      return "natural";
+      return "integer";
     }
     case Type::STREAM: {
       auto stream = *Cast<Stream>(type);

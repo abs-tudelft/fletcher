@@ -221,27 +221,27 @@ std::optional<std::shared_ptr<Node>> Bit::width() const {
   return std::dynamic_pointer_cast<Node>(intl<1>());
 }
 
-RecordField::RecordField(std::string name, std::shared_ptr<Type> type)
+RecField::RecField(std::string name, std::shared_ptr<Type> type)
     : Named(std::move(name)), type_(std::move(type)) {}
 
-std::shared_ptr<RecordField> RecordField::Make(std::string name, std::shared_ptr<Type> type) {
-  return std::make_shared<RecordField>(name, type);
+std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type> type) {
+  return std::make_shared<RecField>(name, type);
 }
 
-std::shared_ptr<RecordField> RecordField::Make(std::shared_ptr<Type> type) {
-  return std::make_shared<RecordField>(type->name(), type);
+std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type) {
+  return std::make_shared<RecField>(type->name(), type);
 }
 
-std::shared_ptr<Type> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields) {
+std::shared_ptr<Type> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {
   return std::make_shared<Record>(name, fields);
 }
 
-Record &Record::AddField(const std::shared_ptr<RecordField> &field) {
+Record &Record::AddField(const std::shared_ptr<RecField> &field) {
   fields_.push_back(field);
   return *this;
 }
 
-Record::Record(std::string name, std::deque<std::shared_ptr<RecordField>> fields)
+Record::Record(std::string name, std::deque<std::shared_ptr<RecField>> fields)
     : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
 
 bool Clock::IsEqual(const Type *other) const {

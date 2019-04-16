@@ -242,14 +242,14 @@ class Vector : public Type {
 };
 
 /// @brief A Record field.
-class RecordField : public Named {
+class RecField : public Named {
  public:
   /// @brief RecordField constructor.
-  RecordField(std::string name, std::shared_ptr<Type> type);
+  RecField(std::string name, std::shared_ptr<Type> type);
   /// @brief Create a new RecordField, and return a shared pointer to it.
-  static std::shared_ptr<RecordField> Make(std::string name, std::shared_ptr<Type> type);
+  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type);
   /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-  static std::shared_ptr<RecordField> Make(std::shared_ptr<Type> type);
+  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
  private:
@@ -260,21 +260,21 @@ class RecordField : public Named {
 class Record : public Type {
  public:
   /// @brief Record constructor.
-  explicit Record(std::string name, std::deque<std::shared_ptr<RecordField>> fields = {});
+  explicit Record(std::string name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Create a new Record Type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecordField>> fields = {});
+  static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Add a RecordField to this Record.
-  Record &AddField(const std::shared_ptr<RecordField> &field);;
+  Record &AddField(const std::shared_ptr<RecField> &field);;
   /// @brief Return the RecordField at index i contained by this record.
-  std::shared_ptr<RecordField> field(size_t i) const { return fields_[i]; }
+  std::shared_ptr<RecField> field(size_t i) const { return fields_[i]; }
   /// @brief Return all fields contained by this record.
-  std::deque<std::shared_ptr<RecordField>> fields() const { return fields_; }
+  std::deque<std::shared_ptr<RecField>> fields() const { return fields_; }
   /// @brief Return the number of fields in this record.
   inline size_t num_fields() const { return fields_.size(); }
   /// @brief Determine if this Type is exactly equal to an other Type.
   bool IsEqual(const Type *other) const override;;
  private:
-  std::deque<std::shared_ptr<RecordField>> fields_;
+  std::deque<std::shared_ptr<RecField>> fields_;
 };
 
 /// @brief A Stream type.

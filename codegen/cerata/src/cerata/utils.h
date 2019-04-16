@@ -80,4 +80,6 @@ bool remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item
   }
 }
 
+void CreateDir(const std::string& dir_name);
+
 }  // namespace cerata

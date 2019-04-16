@@ -38,7 +38,7 @@ set(HEADERS
 
 set(SOURCES
         src/cerata/logging.cc
-        src/cerata/output.cc
+        src/cerata/utils.cc
         src/cerata/arrays.cc
         src/cerata/edges.cc
         src/cerata/objects.cc
@@ -46,6 +46,7 @@ set(SOURCES
         src/cerata/nodes.cc
         src/cerata/graphs.cc
         src/cerata/flattypes.cc
+        src/cerata/output.cc
 
         src/cerata/vhdl/architecture.cc
         src/cerata/vhdl/block.cc

@@ -22,7 +22,6 @@
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"
 #include "fletchgen/utils.h"
-
 #include "fletchgen/srec/recordbatch.h"
 
 void GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
@@ -46,6 +45,8 @@ int main(int argc, char **argv) {
   // Generate designs in Cerata
   if (options->MustGenerateDesign()) {
     design = fletchgen::Design::GenerateFrom(options);
+  } else {
+    return -1;
   }
 
   // Generate SREC output
@@ -57,11 +58,7 @@ int main(int argc, char **argv) {
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
     LOG(INFO, "Generating VHDL output.");
-    // Create the VHDL output generator.
     auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, {design.kernel, design.mantle, design.artery});
-    // Make sure the subdirectory exists.
-    CreateDir(vhdl.subdir());
-    // Generate the output files.
     vhdl.Generate();
   }
 
@@ -69,7 +66,6 @@ int main(int argc, char **argv) {
   if (options->MustGenerateDOT()) {
     LOG(INFO, "Generating DOT output.");
     auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, {design.kernel, design.mantle, design.artery});
-    CreateDir(dot.subdir());
     dot.Generate();
   }
 

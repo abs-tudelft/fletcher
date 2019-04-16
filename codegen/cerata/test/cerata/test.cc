@@ -22,7 +22,7 @@
 
 
 int main(int argc, char **argv) {
-
+  cerata::GetExampleDesign();
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

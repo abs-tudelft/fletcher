@@ -32,7 +32,7 @@ using cerata::integer;
 using cerata::Clock;
 using cerata::Reset;
 using cerata::Parameter;
-using cerata::RecordField;
+using cerata::RecField;
 using cerata::Record;
 using cerata::Stream;
 
@@ -135,8 +135,8 @@ std::shared_ptr<Type> last() {
 
 std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width,
                                        const std::shared_ptr<Node> &len_width) {
-  static auto bus_addr = RecordField::Make("addr", Vector::Make("addr", addr_width));
-  static auto bus_len = RecordField::Make("len", Vector::Make("len", len_width));
+  static auto bus_addr = RecField::Make("addr", Vector::Make("addr", addr_width));
+  static auto bus_len = RecField::Make("len", Vector::Make("len", len_width));
   static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
   static auto bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
   return bus_rreq;
@@ -144,35 +144,35 @@ std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width,
 
 std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node> &addr_width,
                                         const std::shared_ptr<Node> &len_width) {
-  static auto bus_addr = RecordField::Make(Vector::Make("addr", addr_width));
-  static auto bus_len = RecordField::Make(Vector::Make("len", len_width));
+  static auto bus_addr = RecField::Make(Vector::Make("addr", addr_width));
+  static auto bus_len = RecField::Make(Vector::Make("len", len_width));
   static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
   static auto bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
   return bus_wreq;
 }
 
 std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node> &width) {
-  auto bus_rdata = RecordField::Make(Vector::Make("data", width));
-  auto bus_rlast = RecordField::Make(last());
+  auto bus_rdata = RecField::Make(Vector::Make("data", width));
+  auto bus_rlast = RecField::Make(last());
   auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
   auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
   return bus_rdat;
 }
 
 std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width) {
-  auto bus_wdata = RecordField::Make(Vector::Make("data", width));
-  auto bus_wstrobe = RecordField::Make(Vector::Make("strobe", width / intl<8>()));
-  auto bus_wlast = RecordField::Make("last", bit());
+  auto bus_wdata = RecField::Make(Vector::Make("data", width));
+  auto bus_wstrobe = RecField::Make(Vector::Make("strobe", width / intl<8>()));
+  auto bus_wlast = RecField::Make("last", bit());
   auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
   auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
   return bus_wdat;
 }
 
 std::shared_ptr<Type> cmd() {
-  static auto firstidx = RecordField::Make(Vector::Make<32>("firstIdx"));
-  static auto lastidx = RecordField::Make(Vector::Make<32>("lastidx"));
-  static auto ctrl = RecordField::Make(Vector::Make("ctrl", {}));
-  static auto tag = RecordField::Make(Vector::Make<8>("tag"));
+  static auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
+  static auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));
+  static auto ctrl = RecField::Make(Vector::Make("ctrl", {}));
+  static auto tag = RecField::Make(Vector::Make<8>("tag"));
   static auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
   static auto cmd_stream = Stream::Make("command", cmd_record);
   return cmd_stream;
@@ -185,17 +185,17 @@ std::shared_ptr<Type> unlock() {
 }
 
 std::shared_ptr<Type> read_data() {
-  static auto d = RecordField::Make(incomplete_data());
-  static auto dv = RecordField::Make(dvalid());
-  static auto l = RecordField::Make(last());
+  static auto d = RecField::Make(incomplete_data());
+  static auto dv = RecField::Make(dvalid());
+  static auto l = RecField::Make(last());
   static auto data_record = Record::Make("arrow_read_data_rec", {d, dv, l});
   static auto data_stream = Stream::Make("arrow_read_data", data_record);
   return data_stream;
 }
 
 std::shared_ptr<Type> write_data() {
-  static auto d = RecordField::Make(incomplete_data());
-  static auto l = RecordField::Make(last());
+  static auto d = RecField::Make(incomplete_data());
+  static auto l = RecField::Make(last());
   static auto data_record = Record::Make("arrow_write_data_rec", {d, l});
   static auto data_stream = Stream::Make("arrow_write_data", data_record);
   return data_stream;
@@ -270,13 +270,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // as there is no explicit child field to place this metadata in.
       auto slave = Stream::Make(name,
                                 Record::Make("data", {
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last()),
-                                    RecordField::Make("data", byte())}),
+                                    RecField::Make("dvalid", dvalid()),
+                                    RecField::Make("last", last()),
+                                    RecField::Make("data", byte())}),
                                 "data", epc);
       type = Record::Make(name + "_rec", {
-          RecordField::Make("length", length()),
-          RecordField::Make("bytes", slave)
+          RecField::Make("length", length()),
+          RecField::Make("bytes", slave)
       });
       break;
     }
@@ -287,13 +287,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // as there is no explicit child field to place this metadata in.
       auto slave = Stream::Make(name,
                                 Record::Make("data", {
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last()),
-                                    RecordField::Make("data", utf8c())}),
+                                    RecField::Make("dvalid", dvalid()),
+                                    RecField::Make("last", last()),
+                                    RecField::Make("data", utf8c())}),
                                 "data", epc);
       type = Record::Make(name + "_rec", {
-          RecordField::Make("length", length()),
-          RecordField::Make("chars", slave)
+          RecField::Make("length", length()),
+          RecField::Make("chars", slave)
       });
       break;
     }
@@ -308,13 +308,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       auto element_type = GetStreamType(arrow_child, mode, level + 1);
       auto slave = Stream::Make(name,
                                 Record::Make("data", {
-                                    RecordField::Make("dvalid", dvalid()),
-                                    RecordField::Make("last", last()),
-                                    RecordField::Make("data", element_type)}),
+                                    RecField::Make("dvalid", dvalid()),
+                                    RecField::Make("last", last()),
+                                    RecField::Make("data", element_type)}),
                                 "data", epc);
       type = Record::Make(name + "_rec", {
-          RecordField::Make(length()),
-          RecordField::Make(arrow_child->name(), slave)
+          RecField::Make(length()),
+          RecField::Make(arrow_child->name(), slave)
       });
       break;
     }
@@ -324,10 +324,10 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       if (field->type()->num_children() < 1) {
         throw std::runtime_error("Encountered Arrow struct type without any children.");
       }
-      std::deque<std::shared_ptr<RecordField>> children;
+      std::deque<std::shared_ptr<RecField>> children;
       for (const auto &f : field->type()->children()) {
         auto child_type = GetStreamType(f, mode, level + 1);
-        children.push_back(RecordField::Make(f->name(), child_type));
+        children.push_back(RecField::Make(f->name(), child_type));
       }
       type = Record::Make(name + "_rec", children);
       break;
@@ -350,9 +350,9 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
     }
     // Create the stream record
     auto record = Record::Make("data", {
-        RecordField::Make("dvalid", dvalid()),
-        RecordField::Make("last", last()),
-        RecordField::Make(elements_name, type)});
+        RecField::Make("dvalid", dvalid()),
+        RecField::Make("last", last()),
+        RecField::Make(elements_name, type)});
     auto stream = Stream::Make(name, record, elements_name);
     stream->AddMapper(GetStreamTypeMapper(stream, mode));
     return stream;

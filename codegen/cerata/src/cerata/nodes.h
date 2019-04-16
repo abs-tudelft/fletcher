@@ -81,8 +81,8 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// @brief Return a human-readable string
   virtual std::string ToString();
 
-  void SetArray(const NodeArray* array) { array_ = array; }
-  std::optional<const NodeArray*> array() { return array_; }
+  void SetArray(const NodeArray *array) { array_ = array; }
+  std::optional<const NodeArray *> array() { return array_; }
 
  protected:
   /// Node type ID.
@@ -90,7 +90,7 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// The Type of this Node.
   std::shared_ptr<Type> type_;
   /// Parent if this belongs to an array
-  std::optional<const NodeArray*> array_ = {};
+  std::optional<const NodeArray *> array_ = {};
 };
 
 /**
@@ -102,8 +102,8 @@ struct MultiOutputNode : public Node {
 
   /// @brief MultiOutputNode constructor.
   MultiOutputNode(std::string name, Node::NodeID id, std::shared_ptr<Type> type) : Node(std::move(name),
-                                                                                    id,
-                                                                                    std::move(type)) {}
+                                                                                        id,
+                                                                                        std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
   std::deque<std::shared_ptr<Edge>> sources() const override { return {}; }
@@ -132,8 +132,8 @@ struct NormalNode : public MultiOutputNode {
 
   /// @brief NormalNode constructor.
   NormalNode(std::string name, Node::NodeID id, std::shared_ptr<Type> type) : MultiOutputNode(std::move(name),
-                                                                                          id,
-                                                                                          std::move(type)) {}
+                                                                                              id,
+                                                                                              std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
   std::deque<std::shared_ptr<Edge>> sources() const override;
@@ -320,6 +320,9 @@ class Term {
   inline bool IsInput() { return dir_ == IN; }
   /// @brief Return true if this Term is an output, false otherwise.
   inline bool IsOutput() { return dir_ == OUT; }
+
+  /// @brief Convert a Dir to a human-readable string.
+  static std::string ToString(Dir dir);
 
  private:
   Dir dir_;
