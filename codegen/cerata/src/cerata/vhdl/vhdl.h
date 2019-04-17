@@ -27,22 +27,18 @@
 #include "cerata/vhdl/flatnode.h"
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/transformation.h"
+#include "cerata/vhdl/defaults.h"
 #include "cerata/output.h"
 #include "cerata/logging.h"
 
 namespace cerata::vhdl {
-
-constexpr char DEFAULT_LIBS[] =
-    "library ieee;\n"
-    "use ieee.std_logic_1164.all;\n"
-    "use ieee.numeric_std.all;\n";
 
 class VHDLOutputGenerator : public OutputGenerator {
  public:
   explicit VHDLOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})
       : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
   void Generate() override;
-  std::string subdir() override { return "vhdl"; }
+  std::string subdir() override { return DEFAULT_SUBDIR; }
 };
 
 }  // namespace cerata::vhdl

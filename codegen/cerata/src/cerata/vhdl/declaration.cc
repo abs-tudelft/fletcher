@@ -60,6 +60,9 @@ std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr
     case Type::INTEGER: {
       return "integer";
     }
+    case Type::NATURAL: {
+      return "natural";
+    }
     case Type::STREAM: {
       auto stream = *Cast<Stream>(type);
       return Generate(stream->element_type().get());
@@ -126,7 +129,7 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   auto fn = FlatNode(sig);
   for (const auto &pair : fn.pairs()) {
     Line l;
-    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second.get());
+    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second.get()) << ";";
     ret << l;
   }
   return ret;
@@ -143,9 +146,9 @@ MultiBlock Decl::Generate(const Component* comp, bool entity) {
   Block h(ret.indent), f(ret.indent);
   Line hl, fl;
   if (entity) {
-    hl << "entity " + comp->name();
+    hl << "entity " + comp->name() + " is";
   } else {
-    hl << "component " + comp->name();
+    hl << "component " + comp->name() + " is";
   }
   h << hl;
   ret << h;

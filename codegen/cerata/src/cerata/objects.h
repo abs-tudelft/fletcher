@@ -36,7 +36,12 @@ class Object : public Named {
   explicit Object(std::string name, ID id) : Named(std::move(name)), obj_id_(id) {}
   virtual ~Object() = default;
 
+  /// @brief Return the object ID of this object.
   ID obj_id() const { return obj_id_; };
+  /// @brief Return true if this object is a node.
+  bool IsNode() const { return obj_id_ == NODE; }
+  /// @brief Return true if this object is an array.
+  bool IsArray() const { return obj_id_ == ARRAY; }
 
   virtual void SetParent(const Graph *parent);
   virtual std::optional<const Graph *> parent() const;

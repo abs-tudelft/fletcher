@@ -14,23 +14,13 @@
 
 #pragma once
 
-#include <memory>
-
-#include "cerata/graphs.h"
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/vhdl/block.h"
-#include "cerata/vhdl/defaults.h"
-
 namespace cerata::vhdl {
 
-struct Design {
-  std::shared_ptr<Component> comp;
-  std::string head;
+constexpr char DEFAULT_SUBDIR[] = "vhdl";
 
-  Design() = default;
-  explicit Design(std::shared_ptr<Component> component, std::string header = DEFAULT_LIBS)
-      : comp(std::move(component)), head(std::move(header)) {}
-  MultiBlock Generate();
-};
+constexpr char DEFAULT_LIBS[] =
+    "library ieee;\n"
+    "use ieee.std_logic_1164.all;\n"
+    "use ieee.numeric_std.all;\n";
 
-}  // namespace cerata::vhdl
+} // namespace cerata::vhdl

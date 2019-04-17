@@ -37,7 +37,7 @@ bool Type::IsAbstract() const {
   return Is(STRING) || Is(BOOLEAN) || Is(RECORD) || Is(STREAM);
 }
 
-bool Type::IsSynthPrim() const {
+bool Type::IsPhysical() const {
   return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
 }
 
@@ -168,6 +168,11 @@ std::shared_ptr<Type> integer() {
   return result;
 }
 
+std::shared_ptr<Type> natural() {
+  static std::shared_ptr<Type> result = std::make_shared<Natural>("natural");
+  return result;
+}
+
 std::shared_ptr<Type> boolean() {
   static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
   return result;
@@ -175,6 +180,10 @@ std::shared_ptr<Type> boolean() {
 
 std::shared_ptr<Type> Integer::Make(std::string name) {
   return std::make_shared<Integer>(name);
+}
+
+std::shared_ptr<Type> Natural::Make(std::string name) {
+  return std::make_shared<Natural>(name);
 }
 
 Boolean::Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
@@ -276,6 +285,14 @@ bool Vector::IsEqual(const Type *other) const {
     }
   }
   return false;
+}
+
+std::deque<std::shared_ptr<Node>> Vector::GetParameters() const {
+  if (width_) {
+    return std::deque({*width_});
+  } else {
+    return {};
+  }
 }
 
 bool Stream::IsEqual(const Type *other) const {

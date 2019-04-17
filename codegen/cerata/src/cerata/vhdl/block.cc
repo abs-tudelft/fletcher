@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <regex>
 
 namespace cerata {
 namespace vhdl {
@@ -57,19 +58,23 @@ std::string Block::str() const {
   std::stringstream ret;
   auto a = GetAlignments();
   for (const auto &l : lines) {
-    ret << tab(indent);
+    std::stringstream m;
+    m << tab(indent);
     for (size_t p = 0; p < l.parts.size(); p++) {
       auto align = a[p];
       auto plen = l.parts[p].length();
       auto diff = align - plen;
       if (diff != 0) {
         auto padding = std::string(diff, ' ');
-        ret << l.parts[p] + padding;
+        m << l.parts[p] + padding;
       } else {
-        ret << l.parts[p];
+        m << l.parts[p];
       }
     }
-    ret << "\n";
+    // strip trailing whitespace
+    ret << std::regex_replace(m.str(), std::regex("\\s+$"), std::string("")) + "\n";
+    //ret << m.str();
+    //ret << "\n";
   }
   return ret.str();
 }

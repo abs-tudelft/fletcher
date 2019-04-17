@@ -45,7 +45,7 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   }
 
   Line header_end;
-  header_end << "is begin";
+  header_end << "begin";
   ret << header_end;
 
   // Component instantiations
@@ -55,7 +55,11 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
     ret << inst_decl;
   }
 
-  // Signal connections
+  //TODO(johanpel): Signal connections
+
+  Line footer;
+  footer << "end architecture;";
+  ret << footer;
 
   return ret;
 }

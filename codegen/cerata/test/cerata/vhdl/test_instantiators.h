@@ -24,7 +24,7 @@
 
 namespace cerata {
 
-TEST(VHDL, TypeMapper) {
+TEST(VHDL_INST, TypeMapper) {
   auto top = GetTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
@@ -32,7 +32,7 @@ TEST(VHDL, TypeMapper) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(VHDL, ArrayTypeMapper) {
+TEST(VHDL_INST, ArrayTypeMapper) {
   auto top = GetArrayTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
@@ -40,7 +40,7 @@ TEST(VHDL, ArrayTypeMapper) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(VHDL, ArrayArray) {
+TEST(VHDL_INST, ArrayArray) {
   auto top = GetArrayToArrayComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
@@ -48,7 +48,7 @@ TEST(VHDL, ArrayArray) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
-TEST(VHDL, AllPortTypes) {
+TEST(VHDL_INST, AllPortTypes) {
   auto top = GetAllPortTypesComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();

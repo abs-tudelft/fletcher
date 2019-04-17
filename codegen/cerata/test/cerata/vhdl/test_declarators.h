@@ -25,12 +25,12 @@
 
 namespace cerata {
 
-TEST(VHDL, ComponentDecl) {
+TEST(VHDL_DECL, Component) {
   auto code = vhdl::Decl::Generate(GetAllPortTypesComponent().get());
   std::cout << code.ToString() << std::endl;
 }
 
-TEST(VHDL, ArrayPort) {
+TEST(VHDL_DECL, ArrayPort) {
   auto top = GetArrayComponent();
 
   auto code = vhdl::Design(top);

@@ -14,23 +14,13 @@
 
 #pragma once
 
-#include <memory>
-
-#include "cerata/graphs.h"
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/vhdl/block.h"
-#include "cerata/vhdl/defaults.h"
-
-namespace cerata::vhdl {
-
-struct Design {
-  std::shared_ptr<Component> comp;
-  std::string head;
-
-  Design() = default;
-  explicit Design(std::shared_ptr<Component> component, std::string header = DEFAULT_LIBS)
-      : comp(std::move(component)), head(std::move(header)) {}
-  MultiBlock Generate();
-};
-
-}  // namespace cerata::vhdl
+#include <cerata/arrays.h>
+#include <cerata/edges.h>
+#include <cerata/flattypes.h>
+#include <cerata/graphs.h>
+#include <cerata/logging.h>
+#include <cerata/nodes.h>
+#include <cerata/objects.h>
+#include <cerata/output.h>
+#include <cerata/types.h>
+#include <cerata/utils.h>

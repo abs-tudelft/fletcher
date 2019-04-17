@@ -21,41 +21,62 @@
 #include "cerata/utils.h"
 #include "cerata/nodes.h"
 #include "cerata/edges.h"
+#include "cerata/logging.h"
 
 namespace cerata {
+
+static void CopyParameterSources(std::shared_ptr<Component> comp, std::shared_ptr<Object> obj) {
+  auto ppar = Cast<Parameter>(obj);
+  if (ppar) {
+    auto par = *ppar;
+    // If the parameter node has edges
+    if (par->input()) {
+      // It has been assigned
+      auto edge = *par->input();
+      auto val = edge->src;
+      if (val) {
+        // Add the value to the node list
+        comp->AddObject(*val);
+      }
+    } else if (par->default_value) {
+      // Otherwise assign default value if any
+      par <<= *par->default_value;
+      comp->AddObject(*par->default_value);
+    }
+  }
+}
+
+static void AddAnyObjectParams(std::shared_ptr<Component> comp, std::shared_ptr<Object> obj) {
+  if (obj->IsNode()) {
+    auto node = *Cast<Node>(obj);
+    auto params = node->type()->GetParameters();
+    for (const auto& p : params) {
+      comp->AddObject(p);
+    }
+  }
+}
 
 std::shared_ptr<Component> Component::Make(std::string name, std::initializer_list<std::shared_ptr<Object>> objects) {
   auto ret = std::make_shared<Component>(name);
   for (const auto &object : objects) {
+    // Add the object to the graph.
+    ret->AddObject(object);
+
+    // Add any parameters of the types of all objects.
+    AddAnyObjectParams(ret, object);
     // If there are any parameter nodes, also add its input to the component graph
-    auto ppar = Cast<Parameter>(object);
-    if (ppar) {
-      auto par = *ppar;
-      ret->AddObject(par);
-      // If the parameter node has edges
-      if (par->input()) {
-        // It has been assigned
-        auto edge = *par->input();
-        auto val = edge->src;
-        if (val) {
-          // Add the value to the node list
-          ret->AddObject(*val);
-        }
-      } else if (par->default_value) {
-        // Otherwise assign default value if any
-        par <<= *par->default_value;
-        ret->AddObject(*par->default_value);
-      }
-    } else {
-      ret->AddObject(object);
-    }
+    CopyParameterSources(ret, object);
   }
   return ret;
 }
 
 Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
-  objects_.push_back(obj);
-  obj->SetParent(this);
+  if (!contains(objects_, obj)) {
+    objects_.push_back(obj);
+    obj->SetParent(this);
+  } else {
+    LOG(DEBUG, "Object " + obj->name() + " already exists on graph " + this->name() + ". Skipping...");
+  }
   return *this;
 }
 
@@ -176,7 +197,9 @@ std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
   return std::make_unique<Instance>(component->name() + "_inst", component);
 }
 
-Instance::Instance(std::string name, std::shared_ptr<Component> comp)
+Instance::Instance(std::string
+                   name, std::shared_ptr<Component>
+                   comp)
     : Graph(std::move(name), INSTANCE), component(std::move(comp)) {
   // Create a map that maps an "old" node to a "new" node.
   std::map<std::shared_ptr<Object>, std::shared_ptr<Object>> copies;
@@ -278,7 +301,7 @@ Graph &Component::AddChild(std::unique_ptr<Graph> child) {
   }
 }
 
-Instance* Component::AddInstanceOf(std::shared_ptr<cerata::Component> comp) {
+Instance *Component::AddInstanceOf(std::shared_ptr<cerata::Component> comp) {
   auto i = Instance::Make(comp);
   auto raw_ptr = i.get();
   AddChild(std::move(i));

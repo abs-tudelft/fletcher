@@ -15,6 +15,6 @@
 #include "cerata/utils.h"
 
 void cerata::CreateDir(const std::string &dir_name) {
-  // TODO(johanpel): Create directories in a portable manner
+  // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
   system(("mkdir -p " + dir_name).c_str());
 }

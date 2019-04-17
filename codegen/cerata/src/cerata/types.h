@@ -36,7 +36,7 @@ std::shared_ptr<Literal> intl();
  * @brief A type
  *
  * Types can logically be classified as follows.
- * - Concrete.
+ * - Physical.
  *      They can be immediately represented as bits in hardware.
  *
  * - Abstract.
@@ -53,12 +53,13 @@ class Type : public Named {
  public:
   /// @brief The Type ID. Used for convenient type checking.
   enum ID {
-    CLOCK,    ///< Concrete, primitive
-    RESET,    ///< Concrete, primitive
-    BIT,      ///< Concrete, primitive
+    CLOCK,    ///< Physical, primitive
+    RESET,    ///< Physical, primitive
+    BIT,      ///< Physical, primitive
     VECTOR,   ///< t.b.d.
 
     INTEGER,  ///< Abstract, primitive
+    NATURAL,  ///< Abstract, primitive
     STRING,   ///< Abstract, primitive
     BOOLEAN,  ///< Abstract, primitive
 
@@ -88,8 +89,8 @@ class Type : public Named {
 
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
-  /// @brief Return true if the Type is a synthesizable primitive, false otherwise.
-  bool IsSynthPrim() const;
+  /// @brief Return true if the Type has an immediate physical representation, false otherwise.
+  bool IsPhysical() const;
   /// @brief Return true if the Type is an abstract type, false otherwise.
   bool IsAbstract() const;
   /// @brief Return the width of the type, if it is synthesizable.
@@ -109,6 +110,9 @@ class Type : public Named {
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other) const;
 
+  /// @brief Obtain all Nodes that parametrize this type.
+  virtual std::deque<std::shared_ptr<Node>> GetParameters() const { return {}; }
+
  protected:
   ID id_;
   std::deque<std::shared_ptr<TypeMapper>> mappers_;
@@ -126,9 +130,7 @@ struct ClockDomain : public Named {
   static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
 };
 
-// Primitive types:
-
-// Synthesizable types:
+// Physical Primitive types:
 
 /// @brief Clock type.
 struct Clock : public Type {
@@ -170,7 +172,7 @@ struct Bit : public Type {
 /// @brief Return a generic static Bit type.
 std::shared_ptr<Type> bit();
 
-// Abstract primitive types:
+// Abstract Primitive types:
 
 /// @brief Integer type.
 struct Integer : public Type {
@@ -181,6 +183,16 @@ struct Integer : public Type {
 };
 /// @brief Return a generic static Integer type.
 std::shared_ptr<Type> integer();
+
+/// @brief Natural type.
+struct Natural : public Type {
+  /// @brief Integer type constructor.
+  explicit Natural(std::string name) : Type(std::move(name), Type::NATURAL) {}
+  /// @brief Create a new Integer type, and return a shared pointer to it.
+  static std::shared_ptr<Type> Make(std::string name);
+};
+/// @brief Return a generic static Integer type.
+std::shared_ptr<Type> natural();
 
 /// @brief Boolean type.
 struct Boolean : public Type {
@@ -239,6 +251,9 @@ class Vector : public Type {
   std::optional<std::shared_ptr<Node>> width() const override { return width_; }
   /// @brief Determine if this Type is exactly equal to an other Type.
   bool IsEqual(const Type *other) const override;
+
+  /// @brief Returns the width parameter of this vector, if any. Otherwise an empty deque.
+  std::deque<std::shared_ptr<Node>> GetParameters() const override;
 };
 
 /// @brief A Record field.
@@ -304,7 +319,7 @@ class Stream : public Type {
   std::string element_name() { return element_name_; }
 
   /// @brief Return the maximum number of elements per cycle this stream can deliver.
-  int epc() { return epc_; } // TODO(johanpel): this should probably become a node as well.
+  int epc() { return epc_; } // TODO(johanpel): turn EPC into a parameter or literal node
 
   /// @brief Determine if this Stream is exactly equal to another Stream.
   bool IsEqual(const Type *other) const override;

@@ -29,8 +29,10 @@ void DOTOutputGenerator::Generate() {
   CreateDir(subdir());
   cerata::dot::Grapher dot;
   for (const auto &g : graphs_) {
-    LOG(INFO, "Generating DOT output for Graph: " + g->name());
-    dot.GenFile(g, subdir() + "/" + g->name() + ".dot");
+    if (g != nullptr) {
+      LOG(INFO, "Generating DOT output for Graph: " + g->name());
+      dot.GenFile(g, subdir() + "/" + g->name() + ".dot");
+    }
   }
 }
 
@@ -140,7 +142,7 @@ std::string Grapher::GenEdges(const Graph *graph, int level) {
 }
 
 std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
-                                    const std::string& name,
+                                    const std::string &name,
                                     int level) {
   std::stringstream str;
   auto stream = Cast<Stream>(t);
@@ -204,7 +206,7 @@ std::string Style::GenHTMLTableCell(const std::shared_ptr<Type> &t,
 }
 
 std::string Style::GenDotRecordCell(const std::shared_ptr<Type> &t,
-                                    const std::string& name,
+                                    const std::string &name,
                                     int level) {
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
@@ -333,7 +335,7 @@ std::string Grapher::GenGraph(const Graph *graph, int level) {
   return ret.str();
 }
 
-std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, const std::string& path) {
+std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, const std::string &path) {
   std::string dot = GenGraph(graph.get());
   std::ofstream out(path);
   out << dot;
@@ -341,7 +343,7 @@ std::string Grapher::GenFile(const std::shared_ptr<Graph> &graph, const std::str
   return dot;
 }
 
-std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, const std::string& prefix, int level) {
+std::string Grapher::GenExpr(const std::shared_ptr<Node> &node, const std::string &prefix, int level) {
   std::stringstream str;
 
   std::string node_id;
@@ -410,7 +412,7 @@ std::deque<std::shared_ptr<Edge>> GetAllEdges(const Graph *graph) {
   return all_edges;
 }
 
-std::string NodeName(const std::shared_ptr<Node> &node, const std::string& suffix) {
+std::string NodeName(const std::shared_ptr<Node> &node, const std::string &suffix) {
   std::stringstream ret;
   if (node->parent()) {
     auto name = (*node->parent())->name();
