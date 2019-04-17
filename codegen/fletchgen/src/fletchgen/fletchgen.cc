@@ -58,14 +58,14 @@ int main(int argc, char **argv) {
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
     LOG(INFO, "Generating VHDL output.");
-    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, {design.kernel, design.mantle, design.artery});
+    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, design.GetAllComponents());
     vhdl.Generate();
   }
 
   // Generate DOT output
   if (options->MustGenerateDOT()) {
     LOG(INFO, "Generating DOT output.");
-    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, {design.kernel, design.mantle, design.artery});
+    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetAllComponents());
     dot.Generate();
   }
 

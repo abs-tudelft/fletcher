@@ -16,23 +16,39 @@
 
 #include <memory>
 #include <arrow/api.h>
+#include <cerata/api.h>
 
-#include "cerata/utils.h"
+#include "fletchgen/utils.h"
 
 namespace fletchgen {
+
+/**
+ * @brief An schema augmented with Fletcher specific functions and data
+ */
+class FletcherSchema {
+ public:
+  explicit FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name = "");
+  std::shared_ptr<arrow::Schema> arrow_schema() { return arrow_schema_; }
+  fletcher::Mode mode() const { return mode_; }
+  std::string name() const { return name_; }
+ private:
+  std::shared_ptr<arrow::Schema> arrow_schema_;
+  fletcher::Mode mode_;
+  std::string name_;
+};
 
 /**
  * @brief A named set of schemas.
  */
 struct SchemaSet : public cerata::Named {
-  std::deque<std::shared_ptr<arrow::Schema>> schema_list_;
-
-  SchemaSet(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list)
-      : Named(std::move(name)), schema_list_(std::move(schema_list)) {}
-
+  SchemaSet(std::string name, const std::deque<std::shared_ptr<arrow::Schema>> &schema_list);
   static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
   static std::shared_ptr<SchemaSet> Make(std::string name,
                                          const std::vector<std::shared_ptr<arrow::Schema>> &schema_list);
+  /// @brief Schemas of RecordBatches to read from.
+  std::deque<std::shared_ptr<FletcherSchema>> read_schemas;
+  /// @brief Schemas of RecordBatches to write to.
+  std::deque<std::shared_ptr<FletcherSchema>> write_schemas;
 };
 
 }  // namespace fletchgen

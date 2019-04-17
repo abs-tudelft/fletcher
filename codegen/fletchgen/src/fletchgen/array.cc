@@ -36,8 +36,7 @@ using cerata::bool_true;
 using cerata::bool_false;
 
 std::shared_ptr<Component> ArrayReader() {
-  // TODO(johanpel) as soon as the hardware has been refactored this should also be named ArrayReader
-  static auto ret = Component::Make("ColumnReader",
+  static auto ret = Component::Make("ArrayReader",
                                     {bus_addr_width(), bus_len_width(), bus_data_width(),
                                      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
                                      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),

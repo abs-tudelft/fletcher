@@ -33,7 +33,7 @@ namespace fletchgen {
 
 Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
-
+/*
   // Create and instantiate a Kernel
   kernel_ = Kernel::Make(schema_set_);
   auto kinst = Instance::Make(kernel_);
@@ -104,6 +104,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     bus_wreq_array->Append() <<= cw_wreq;
     bus_wdat_array->Append() <<= cw_wdat;
   }
+  */
 }
 
 std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set) {

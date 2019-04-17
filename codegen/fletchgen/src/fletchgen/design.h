@@ -29,6 +29,7 @@
 #include "fletchgen/kernel.h"
 #include "fletchgen/mantle.h"
 #include "fletchgen/bus.h"
+#include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
@@ -37,10 +38,14 @@ struct Design {
   std::shared_ptr<Options> options;
   std::vector<std::shared_ptr<arrow::Schema>> schemas;
   std::shared_ptr<SchemaSet> schema_set;
+  std::deque<std::shared_ptr<RecordBatchReader>> readers;
+  //std::deque<std::shared_ptr<RecordBatchWriter>> writers;
   std::shared_ptr<cerata::Component> kernel;
   std::shared_ptr<cerata::Component> mantle;
   std::shared_ptr<cerata::Component> artery;
   std::shared_ptr<cerata::Component> wrapper;
+
+  std::deque<std::shared_ptr<cerata::Graph>> GetAllComponents();
 };
 
 }

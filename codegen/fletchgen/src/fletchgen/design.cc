@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "fletchgen/design.h"
+#include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
@@ -21,27 +22,38 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   ret.options = opts;
 
   // Read schemas
-  LOG(INFO, "Reading schemas.");
+  LOG(INFO, "Reading Arrow Schema files.");
   ret.schemas = fletcher::readSchemasFromFiles(ret.options->schema_paths);
-
-  for (size_t i = 0; i < ret.schemas.size(); i++)
-    LOG(INFO, "Schema " << i << " from " << ret.options->schema_paths[i] << "\n" << ret.schemas[i]->ToString());
-
+  LOG(INFO, "Creating SchemaSet.");
   ret.schema_set = SchemaSet::Make(ret.options->kernel_name, ret.schemas);
 
-  // Generate Fletcher interface components
+  // Generate all RecordBatchReaders
+  for (const auto& fs : ret.schema_set->read_schemas) {
+    LOG(INFO, "Generating RecordBatchReader for Schema: " + fs->name());
+    auto reader = RecordBatchReader::Make(fs->name(), fs->arrow_schema());
+    ret.readers.push_back(reader);
+  }
+
   LOG(INFO, "Generating Kernel...");
-  ret.kernel = Kernel::Make(ret.schema_set);
+  ret.kernel = Kernel::Make(ret.options->kernel_name, ret.readers);
 
-  LOG(INFO, "Generating Mantle...");
-  ret.mantle = Mantle::Make(ret.schema_set);
+  //LOG(INFO, "Generating Mantle...");
+  //ret.mantle = Mantle::Make(ret.schema_set);
 
-  LOG(INFO, "Generating Artery...");
-  ret.artery = Artery::Make(ret.options->kernel_name, nullptr, nullptr, {});
+  //LOG(INFO, "Generating Artery...");
+  //ret.artery = Artery::Make(ret.options->kernel_name, nullptr, nullptr, {});
 
-  LOG(WARNING, "Generating Wrapper not yet implemented.");
+  //LOG(WARNING, "Generating Wrapper not yet implemented.");
   // TODO(johanpel) top level wrapper
 
+  return ret;
+}
+
+std::deque<std::shared_ptr<cerata::Graph>> Design::GetAllComponents() {
+  std::deque<std::shared_ptr<cerata::Graph>> ret;
+  // Insert readers
+  ret.insert(ret.begin(), readers.begin(), readers.end());
+  ret.push_back(kernel);
   return ret;
 }
 

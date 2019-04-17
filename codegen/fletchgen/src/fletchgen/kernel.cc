@@ -19,82 +19,29 @@
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/schema.h"
+#include "fletchgen/utils.h"
+#include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
 using cerata::Cast;
 
-static Port::Dir mode2dir(fletcher::Mode mode) {
-  if (mode == fletcher::Mode::READ) {
-    return Port::Dir::IN;
-  } else {
-    return Port::Dir::OUT;
-  }
-}
-
-ArrowPort::ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir)
-    : Port(std::move(name), GetStreamType(field, mode), dir), field_(std::move(field)) {}
-
-std::shared_ptr<ArrowPort> ArrowPort::Make(std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir) {
-  return std::make_shared<ArrowPort>(field->name(), field, mode, dir);
-}
-
-Kernel::Kernel(std::string name, std::shared_ptr<SchemaSet> schema_set)
-    : Component(std::move(name)), schema_set_(std::move(schema_set)) {
-  LOG(DEBUG, "Construction kernel from SchemaSet: " + schema_set_->name());
-
-  for (const auto &s : schema_set_->schema_list_) {
-    // Get mode/direction
-    auto mode = fletcher::getMode(s);
-    auto dir = mode2dir(mode);
-
-    // Get name, if available
-    auto schema_name = fletcher::getMeta(s, "fletcher_name");
-    if (schema_name.empty()) schema_name = "<Anonymous>";
-
-    // Show some debug information about the schema
-    LOG(DEBUG, "Schema " + schema_name + ", Direction: " + cerata::Term::ToString(dir));
-
-    // Iterate over all fields
-    for (const auto &f : s->fields()) {
-      // Check if we must ignore a field
-      if (!fletcher::mustIgnore(f)) {
-        LOG(DEBUG, "Hardware-izing field: " + f->name());
-        // Convert to and add an ArrowPort
-        AddObject(ArrowPort::Make(f, mode, dir));
-        // Add a command stream for the ArrayReader
-        AddObject(Port::Make(f->name() + "_cmd", cmd(), Port::OUT));
-      } else {
-        LOG(DEBUG, "Ignoring field " + f->name());
-      }
+Kernel::Kernel(std::string name,
+               std::deque<std::shared_ptr<RecordBatchReader>> readers,
+               std::deque<std::shared_ptr<RecordBatchReader>> writers)
+    : Component(std::move(name)) {
+  for (const auto &r : readers) {
+    auto field_ports = r->GetFieldPorts();
+    for (const auto &fp : field_ports) {
+      AddObject(fp->Copy());
     }
   }
 }
 
-std::shared_ptr<Kernel> Kernel::Make(std::shared_ptr<SchemaSet> schema_set) {
-  return std::make_shared<Kernel>(schema_set->name(), schema_set);
-}
-
-std::shared_ptr<ArrowPort> Kernel::GetArrowPort(const std::shared_ptr<arrow::Field> &field) {
-  for (const auto &n : objects_) {
-    auto ap = Cast<ArrowPort>(n);
-    if (ap) {
-      if ((*ap)->field_ == field) {
-        return *ap;
-      }
-    }
-  }
-  throw std::runtime_error("Field " + field->name() + " did not generate an ArrowPort for Core " + name() + ".");
-}
-std::deque<std::shared_ptr<ArrowPort>> Kernel::GetAllArrowPorts() {
-  std::deque<std::shared_ptr<ArrowPort>> result;
-  for (const auto &n : objects_) {
-    auto ap = Cast<ArrowPort>(n);
-    if (ap) {
-      result.push_back(*ap);
-    }
-  }
-  return result;
+std::shared_ptr<Kernel> Kernel::Make(std::string name,
+                                     std::deque<std::shared_ptr<RecordBatchReader>> readers,
+                                     std::deque<std::shared_ptr<RecordBatchReader>> writers) {
+  return std::make_shared<Kernel>(name, readers, writers);
 }
 
 }  // namespace fletchgen

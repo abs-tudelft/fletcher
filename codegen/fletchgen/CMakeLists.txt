@@ -35,6 +35,7 @@ set(HEADERS
         src/fletchgen/options.h
         src/fletchgen/design.h
         src/fletchgen/utils.h
+        src/fletchgen/recordbatch.h
 
         src/fletchgen/srec/recordbatch.h
         src/fletchgen/srec/srec.h
@@ -50,6 +51,7 @@ set(SOURCES
         src/fletchgen/options.cc
         src/fletchgen/design.cc
         src/fletchgen/utils.cc
+        src/fletchgen/recordbatch.cc
 
         src/fletchgen/srec/recordbatch.cc
         src/fletchgen/srec/srec.cc

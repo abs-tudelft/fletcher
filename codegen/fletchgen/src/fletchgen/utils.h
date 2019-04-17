@@ -16,5 +16,9 @@
 
 #include <cstdlib> // system()
 #include <string>
+#include <fletcher/common/arrow-utils.h>
+#include <cerata/nodes.h>
 
 std::string GetProgramName(char *argv0);
+
+cerata::Port::Dir mode2dir(fletcher::Mode mode);

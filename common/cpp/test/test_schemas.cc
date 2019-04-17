@@ -64,6 +64,7 @@ std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
 std::shared_ptr<arrow::Schema> GetStringReadSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Name", arrow::utf8(), false, metaEPC(4))};
   auto schema_meta = metaMode(Mode::READ);
+  schema_meta->Append("fletcher_name", "Strings");
   auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
   return schema;
 }

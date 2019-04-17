@@ -33,7 +33,7 @@ struct Options {
   std::string srec_sim_dump;
   std::vector<std::string> recordbatch_paths;
   std::vector<std::string> languages = {"vhdl", "dot"};
-  std::string kernel_name = "kernel";
+  std::string kernel_name = "Kernel";
   bool axi_top = false;
   bool sim_top = false;
   bool quiet = false;

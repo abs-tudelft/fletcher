@@ -20,6 +20,7 @@
 #include "cerata/graphs.h"
 
 #include "fletchgen/schema.h"
+#include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
@@ -27,25 +28,17 @@ using cerata::Port;
 using cerata::Component;
 
 /**
- * @brief A port derived from an Arrow field
- */
-struct ArrowPort : public Port {
-  std::shared_ptr<arrow::Field> field_;
-  ArrowPort(std::string name, std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir);
-  static std::shared_ptr<ArrowPort> Make(std::shared_ptr<arrow::Field> field, fletcher::Mode mode, Port::Dir dir);
-};
-
-/**
  * @brief The Kernel component to be implemented by the user
  */
 struct Kernel : Component {
+  explicit Kernel(std::string name,
+                  std::deque<std::shared_ptr<RecordBatchReader>> readers = {},
+                  std::deque<std::shared_ptr<RecordBatchReader>> writers = {});
+
+  static std::shared_ptr<Kernel> Make(std::string name,
+                                      std::deque<std::shared_ptr<RecordBatchReader>> readers = {},
+                                      std::deque<std::shared_ptr<RecordBatchReader>> writers = {});
   std::shared_ptr<SchemaSet> schema_set_;
-
-  explicit Kernel(std::string name, std::shared_ptr<SchemaSet> schemas);
-  static std::shared_ptr<Kernel> Make(std::shared_ptr<SchemaSet> schemas);
-
-  std::shared_ptr<ArrowPort> GetArrowPort(const std::shared_ptr<arrow::Field>& field);
-  std::deque<std::shared_ptr<ArrowPort>> GetAllArrowPorts();
 };
 
 }  // namespace fletchgen

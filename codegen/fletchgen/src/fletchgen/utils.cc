@@ -23,3 +23,11 @@ std::string GetProgramName(char *argv0) {
     return "fletchgen";
   }
 }
+
+cerata::Port::Dir mode2dir(fletcher::Mode mode) {
+  if (mode == fletcher::Mode::READ) {
+    return cerata::Port::Dir::IN;
+  } else {
+    return cerata::Port::Dir::OUT;
+  }
+}
