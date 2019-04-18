@@ -48,10 +48,10 @@ std::shared_ptr<Component> ArrayReader() {
                                      Port::Make(bus_reset()),
                                      Port::Make(acc_clk()),
                                      Port::Make(acc_reset()),
-                                     Port::Make("cmd", cmd(), Port::Dir::IN),
-                                     Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("bus_rreq", bus_read_request(), Port::Dir::OUT),
                                      Port::Make("bus_rdat", bus_read_data(), Port::Dir::IN),
+                                     Port::Make("cmd", cmd(), Port::Dir::IN),
+                                     Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("out", read_data(), Port::Dir::OUT)}
   );
   return ret;
@@ -93,9 +93,9 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
     case arrow::Type::UINT64: return intl<64>();
 
       // Lists:
-    case arrow::Type::LIST: return strl("INDEX_WIDTH");
-    case arrow::Type::BINARY: return strl("INDEX_WIDTH");
-    case arrow::Type::STRING: return strl("INDEX_WIDTH");
+    case arrow::Type::LIST: return strl("OFFSET_WIDTH");
+    case arrow::Type::BINARY: return strl("OFFSET_WIDTH");
+    case arrow::Type::STRING: return strl("OFFSET_WIDTH");
 
       // Others:
     default:

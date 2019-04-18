@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cerata/api.h>
+
 #include "fletchgen/recordbatch.h"
+#include "fletchgen/array.h"
 
 namespace fletchgen {
 
 using cerata::Cast;
+using cerata::Instance;
+using cerata::Component;
+using cerata::Port;
+using cerata::Literal;
 
 RecordBatchReader::RecordBatchReader(const std::string &name, const std::shared_ptr<arrow::Schema> &schema)
     : Component(name + "_RecordBatchReader") {
@@ -27,7 +34,7 @@ RecordBatchReader::RecordBatchReader(const std::string &name, const std::shared_
   auto schema_name = fletcher::getMeta(schema, "fletcher_name");
   if (schema_name.empty()) schema_name = "<Anonymous>";
 
-  // Iterate over all fields
+  // Iterate over all fields and add ArrayReader data and control ports.
   for (const auto &f : schema->fields()) {
     // Check if we must ignore a field
     if (!fletcher::mustIgnore(f)) {
@@ -39,6 +46,37 @@ RecordBatchReader::RecordBatchReader(const std::string &name, const std::shared_
     } else {
       LOG(DEBUG, "Ignoring field " + f->name());
     }
+  }
+
+  // Instantiate ColumnReaders/Writers for each field.
+  for (const auto &ap : GetFieldPorts(FieldPort::ARROW)) {
+    // Handle anything that must read from memory
+    if (ap->dir() == Port::IN) {
+      // Instantiate an ArrayReader
+      auto ar_inst = AddInstanceOf(ArrayReader(), ap->field_->name() + "_Instance");
+      // Generate a configuration string
+      auto config_string_node = ar_inst->GetNode(Node::PARAMETER, "CFG");
+      // Set the configuration string
+      config_string_node <<= cerata::strl(GenerateConfigString(ap->field_));
+      // Keep the instance pointer
+      readers_.push_back(ar_inst);
+    }
+  }
+
+  // Add bus
+  auto num_read_slaves = cerata::Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
+  auto bus_rreq_array = cerata::PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
+  auto bus_rdat_array = cerata::PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
+
+  AddObject(num_read_slaves);
+  AddObject(bus_rreq_array);
+  AddObject(bus_rdat_array);
+
+  for (const auto &cr : readers_) {
+    auto cr_rreq = cr->port("bus_rreq");
+    auto cr_rdat = cr->port("bus_rdat");
+    bus_rreq_array->Append() <<= cr_rreq;
+    cr_rdat <<= bus_rdat_array->Append();
   }
 }
 

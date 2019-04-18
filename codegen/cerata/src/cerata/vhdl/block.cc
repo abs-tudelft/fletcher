@@ -22,7 +22,7 @@ namespace cerata {
 namespace vhdl {
 
 static std::string tab(int n) {
-  return std::string(2 * n, ' ');
+  return std::string(static_cast<unsigned long>(2 * n), ' ');
 }
 
 Line &operator<<(Line &lhs, const std::string &str) {

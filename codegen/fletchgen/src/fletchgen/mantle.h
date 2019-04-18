@@ -24,17 +24,17 @@ using cerata::Instance;
  * @brief A component that wraps a Kernel and all ArrayReaders/Writers resulting from a Schema set.
  */
 struct Mantle : Component {
-  /// The Kernel instantiated by this Mantle
+  /// The Kernel to be instantiated by this Mantle
   std::shared_ptr<Kernel> kernel_;
-  /// The actual instantiated Core
+  /// The actual instantiated Kernel
   Instance *kernel_inst_;
   /// The schema set on which this Mantle is based
   std::shared_ptr<SchemaSet> schema_set_;
 
-  /// The ArrayReader instances
-  std::vector<Instance *> array_readers_;
+  /// The RecordBatchReader instances
+  std::vector<Instance *> readers_;
   /// The ArrayWriter instances
-  std::vector<Instance *> array_writers_;
+  std::vector<Instance *> writers_;
 
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);

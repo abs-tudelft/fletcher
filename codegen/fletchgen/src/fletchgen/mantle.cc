@@ -22,9 +22,6 @@
 
 #include "fletcher/common/arrow-utils.h"
 
-#include "cerata/edges.h"
-#include "cerata/nodes.h"
-
 #include "fletchgen/basic_types.h"
 #include "fletchgen/array.h"
 #include "fletchgen/schema.h"
@@ -42,20 +39,6 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   // Connect Fields
   auto arrow_ports = kernel_->GetAllArrowPorts();
-
-  // Instantiate ColumnReaders/Writers for each field.
-  for (const auto &p : arrow_ports) {
-    if (p->dir() == Port::IN) {
-      auto ar_inst = Instance::Make(p->field_->name() + "_ar_inst", ArrayReader());
-      auto config_node = ar_inst->GetNode(Node::PARAMETER, "CFG");
-      config_node <<=
-          cerata::Literal::Make(p->field_->name() + "_cfgstr", cerata::string(), GenerateConfigString(p->field_));
-      array_readers_.push_back(ar_inst.get());
-      AddChild(std::move(ar_inst));
-    } else {
-      // TODO(johanpel): ArrayWriters
-    }
-  }
 
   // Connect all Arrow data ports to the Core
   for (size_t i = 0; i < arrow_ports.size(); i++) {
@@ -75,35 +58,6 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     }
   }
 
-  auto num_read_slaves = cerata::Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_rreq_array = cerata::PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
-  auto bus_rdat_array = cerata::PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
-
-  auto num_write_slaves = cerata::Parameter::Make("NUM_WRITE_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_wreq_array = cerata::PortArray::Make("bus_wreq", bus_write_request(), num_write_slaves, Port::Dir::OUT);
-  auto bus_wdat_array = cerata::PortArray::Make("bus_wdat", bus_write_data(), num_write_slaves, Port::Dir::OUT);
-
-  AddObject(num_read_slaves);
-  AddObject(bus_rreq_array);
-  AddObject(bus_rdat_array);
-
-  AddObject(num_write_slaves);
-  AddObject(bus_wreq_array);
-  AddObject(bus_wdat_array);
-
-  for (const auto &cr : array_readers_) {
-    auto cr_rreq = cr->port("bus_rreq");
-    auto cr_rdat = cr->port("bus_rdat");
-    bus_rreq_array->Append() <<= cr_rreq;
-    cr_rdat <<= bus_rdat_array->Append();
-  }
-
-  for (const auto &cw : array_writers_) {
-    auto cw_wreq = cw->port("bus_wreq");
-    auto cw_wdat = cw->port("bus_wdat");
-    bus_wreq_array->Append() <<= cw_wreq;
-    bus_wdat_array->Append() <<= cw_wdat;
-  }
   */
 }
 

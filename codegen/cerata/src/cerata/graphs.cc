@@ -190,7 +190,11 @@ std::deque<std::shared_ptr<Node>> Graph::GetNodesOfTypes(std::initializer_list<N
 }
 
 std::unique_ptr<Instance> Instance::Make(std::string name, std::shared_ptr<Component> component) {
-  return std::make_unique<Instance>(name, component);
+  auto n = name;
+  if (name.empty()) {
+    n = component->name() + "_inst";
+  }
+  return std::make_unique<Instance>(n, component);
 }
 
 std::unique_ptr<Instance> Instance::Make(std::shared_ptr<Component> component) {
@@ -301,10 +305,10 @@ Graph &Component::AddChild(std::unique_ptr<Graph> child) {
   }
 }
 
-Instance *Component::AddInstanceOf(std::shared_ptr<cerata::Component> comp) {
-  auto i = Instance::Make(comp);
-  auto raw_ptr = i.get();
-  AddChild(std::move(i));
+Instance *Component::AddInstanceOf(std::shared_ptr<cerata::Component> comp, std::string name) {
+  auto inst = Instance::Make(name, comp);
+  auto raw_ptr = inst.get();
+  AddChild(std::move(inst));
   return raw_ptr;
 }
 
