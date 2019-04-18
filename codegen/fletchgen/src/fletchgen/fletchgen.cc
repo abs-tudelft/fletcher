@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cerata/logging.h>
-#include <cerata/graphs.h>
-#include <cerata/vhdl/vhdl.h>
-#include <cerata/dot/dot.h>
+#include <cerata/api.h>
 
 #include <fletcher/common/arrow-utils.h>
 

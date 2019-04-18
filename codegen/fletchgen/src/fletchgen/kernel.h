@@ -14,10 +14,11 @@
 
 #pragma once
 
-#include "fletcher/common/arrow-utils.h"
+#include <deque>
+#include <memory>
 
-#include "cerata/utils.h"
-#include "cerata/graphs.h"
+#include <cerata/api.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/recordbatch.h"

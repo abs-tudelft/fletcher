@@ -17,6 +17,7 @@ find_library(LIB_ARROW arrow)
 if (NOT TARGET fletcher-common-static)
     add_subdirectory(../../common/cpp fletcher-common)
 endif ()
+include_directories(../../common/cpp/src)
 
 # Cerata
 add_compile_definitions(LOGGING_ARROW)

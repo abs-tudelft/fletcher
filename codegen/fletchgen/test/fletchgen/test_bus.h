@@ -16,9 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
-#include "cerata/edges.h"
+#include <cerata/api.h>
 
 #include "fletchgen/bus.h"
 

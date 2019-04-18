@@ -4,9 +4,7 @@ project(fletcher-common)
 
 set(FLETCHER_COMMON fletcher-common)
 
-option(FLETCHER_PYTHON
-        "Build Fletcher for use in building pyfletcher"
-        OFF)
+option(FLETCHER_PYTHON "Build Fletcher for use in building pyfletcher" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
@@ -24,10 +22,11 @@ set(COMMON_SOURCES
         src/fletcher/common/hex-view.cc)
 
 set(COMMON_HEADERS
-        src/fletcher/common/status.h
         src/fletcher/common/arrow-utils.h
         src/fletcher/common/hex-view.h
-        src/fletcher/common/timer.h)
+        src/fletcher/common/status.h
+        src/fletcher/common/timer.h
+        src/fletcher/common/api.h)
 
 set(COMMON_ALL ${COMMON_SOURCES} ${COMMON_HEADERS})
 

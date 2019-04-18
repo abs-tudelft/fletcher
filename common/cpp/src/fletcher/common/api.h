@@ -14,17 +14,7 @@
 
 #pragma once
 
-#include <cerata/arrays.h>
-#include <cerata/edges.h>
-#include <cerata/flattypes.h>
-#include <cerata/graphs.h>
-#include <cerata/logging.h>
-#include <cerata/nodes.h>
-#include <cerata/objects.h>
-#include <cerata/output.h>
-#include <cerata/types.h>
-#include <cerata/utils.h>
-
-#include <cerata/vhdl/vhdl.h>
-
-#include <cerata/dot/dot.h>
+#include "fletcher/common/arrow-utils.h"
+#include "fletcher/common/hex-view.h"
+#include "fletcher/common/status.h"
+#include "fletcher/common/timer.h"
