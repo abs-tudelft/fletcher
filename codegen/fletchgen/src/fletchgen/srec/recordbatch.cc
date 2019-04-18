@@ -16,11 +16,8 @@
 #include <fstream>
 
 #include <arrow/api.h>
-
-#include "cerata/logging.h"
-
-#include "fletcher/common/arrow-utils.h"
-#include "fletcher/common/hex-view.h"
+#include <cerata/api.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/srec/srec.h"

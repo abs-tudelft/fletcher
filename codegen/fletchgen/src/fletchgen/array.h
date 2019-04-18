@@ -16,9 +16,7 @@
 
 #include <memory>
 
-#include "cerata/utils.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include <cerata/api.h>
 
 #include "fletchgen/basic_types.h"
 

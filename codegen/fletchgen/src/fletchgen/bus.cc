@@ -15,13 +15,7 @@
 #include "fletchgen/bus.h"
 
 #include <memory>
-#include <cerata/types.h>
-
-#include "cerata/graphs.h"
-#include "cerata/types.h"
-#include "cerata/edges.h"
-#include "cerata/arrays.h"
-#include "cerata/logging.h"
+#include <cerata/api.h>
 
 #include "fletchgen/basic_types.h"
 
@@ -63,6 +57,9 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      slaves_rreq_array,
                                      slaves_rdat_array
                                     });
+  ret->metadata["primitive"] = "true";
+  ret->metadata["library"] = "work";
+  ret->metadata["package"] = "Interconnect";
   return ret;
 }
 
@@ -87,6 +84,9 @@ std::shared_ptr<Component> BusReadSerializer() {
       Port::Make("slv_rreq", bus_read_request(aw, slw), Port::Dir::IN),
       Port::Make("slv_rdat", bus_read_data(sdw), Port::Dir::OUT),
   });
+  ret->metadata["primitive"] = "true";
+  ret->metadata["library"] = "work";
+  ret->metadata["package"] = "Interconnect";
   return ret;
 }
 

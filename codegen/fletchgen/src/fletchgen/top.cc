@@ -14,6 +14,8 @@
 
 #include "fletchgen/top.h"
 
+#include <cerata/api.h>
+
 namespace fletchgen {
 
 }  // namespace fletchgen

@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #include <cerata/api.h>
-
-#include <fletcher/common/arrow-utils.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"

@@ -22,7 +22,7 @@
 
 #include <arrow/api.h>
 #include <cerata/api.h>
-#include <fletcher/common/arrow-utils.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/utils.h"
 #include "fletchgen/basic_types.h"

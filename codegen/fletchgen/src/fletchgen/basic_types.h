@@ -14,15 +14,12 @@
 
 #pragma once
 
-#include <arrow/api.h>
 #include <string>
 #include <memory>
 #include <locale>
-
-#include "fletcher/common/arrow-utils.h"
-
-#include "cerata/types.h"
-#include "cerata/nodes.h"
+#include <arrow/api.h>
+#include <cerata/api.h>
+#include <fletcher/common/api.h>
 
 namespace fletchgen {
 

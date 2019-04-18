@@ -17,6 +17,8 @@
 #include "fletchgen/schema.h"
 
 #include <memory>
+#include <deque>
+#include <memory>
 
 namespace fletchgen {
 

@@ -15,6 +15,7 @@
 #pragma once
 
 #include <memory>
+#include <deque>
 #include <arrow/api.h>
 #include <cerata/api.h>
 

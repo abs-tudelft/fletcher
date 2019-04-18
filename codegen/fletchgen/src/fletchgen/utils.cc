@@ -14,6 +14,10 @@
 
 #include "fletchgen/utils.h"
 
+#include <cstdlib> // system()
+#include <fletcher/common/api.h>
+#include <cerata/api.h>
+
 std::string GetProgramName(char *argv0) {
   auto arg = std::string(argv0);
   size_t pos = arg.rfind('\\');

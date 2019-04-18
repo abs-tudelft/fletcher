@@ -23,10 +23,7 @@
 #pragma once
 
 #include <memory>
-
-#include "cerata/graphs.h"
-#include "cerata/types.h"
-#include "cerata/nodes.h"
+#include <cerata/api.h>
 
 #include "fletchgen/basic_types.h"
 

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <fletchgen/cli/CLI11.hpp>
+#include "fletchgen/options.h"
 
-#include "./options.h"
+#include <fletchgen/cli/CLI11.hpp>
 
 namespace fletchgen {
 int Options::Parse(Options *options, int argc, char **argv) {

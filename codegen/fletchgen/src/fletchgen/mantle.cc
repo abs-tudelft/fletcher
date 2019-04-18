@@ -17,10 +17,8 @@
 #include <memory>
 #include <deque>
 #include <utility>
-
-#include <arrow/api.h>
-
-#include "fletcher/common/arrow-utils.h"
+#include <cerata/api.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/array.h"

@@ -15,6 +15,7 @@
 #pragma once
 
 #include <memory>
+#include <cerata/api.h>
 
 namespace fletchgen {
 

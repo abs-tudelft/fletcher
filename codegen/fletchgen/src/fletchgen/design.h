@@ -16,12 +16,8 @@
 
 #include <memory>
 #include <vector>
-
 #include <arrow/api.h>
-
-#include <cerata/graphs.h>
-#include <cerata/logging.h>
-
+#include <cerata/api.h>
 #include <fletcher/common/arrow-utils.h>
 
 #include "fletchgen/schema.h"

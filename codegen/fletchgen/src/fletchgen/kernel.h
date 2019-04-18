@@ -16,7 +16,6 @@
 
 #include <deque>
 #include <memory>
-
 #include <cerata/api.h>
 #include <fletcher/common/api.h>
 

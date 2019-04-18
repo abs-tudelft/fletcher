@@ -42,7 +42,7 @@ MultiBlock Design::Generate() {
 
   // Figure out potential libs and packages used for primitive components.
   std::unordered_map<std::string, std::vector<std::string>> libs_and_packages;
-  for (const auto& c: GetAllUniqueComponents(comp.get())) {
+  for (const auto &c: GetAllUniqueComponents(comp.get())) {
     if (c->metadata.at("primitive") == "true") {
       std::string lib = c->metadata.at("library");
       std::string pkg = c->metadata.at("package");
@@ -56,12 +56,12 @@ MultiBlock Design::Generate() {
   }
 
   Block incl;
-  for (const auto& kv : libs_and_packages) {
+  for (const auto &kv : libs_and_packages) {
     incl << Line("library " + kv.first + ";");
-     for (const auto& pkg : kv.second) {
-       // TODO: consider also allowing non-all.
-       incl << Line("use " + kv.first + "." + pkg + ".all");
-     }
+    for (const auto &pkg : kv.second) {
+      // TODO: consider also allowing non-all.
+      incl << Line("use " + kv.first + "." + pkg + ".all");
+    }
   }
 
   ret << incl;
@@ -70,7 +70,6 @@ MultiBlock Design::Generate() {
 
   auto decl = Decl::Generate(comp.get(), true);
   auto arch = Arch::Generate(comp);
-
 
   ret << decl;
   ret << arch;

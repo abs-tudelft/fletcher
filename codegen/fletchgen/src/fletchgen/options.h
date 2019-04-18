@@ -16,8 +16,7 @@
 
 #include <vector>
 #include <string>
-
-#include "cerata/logging.h"
+#include <cerata/api.h>
 
 namespace fletchgen {
 
