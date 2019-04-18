@@ -129,43 +129,6 @@ std::shared_ptr<Type> last() {
   return result;
 }
 
-// Bus channel
-
-std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width,
-                                       const std::shared_ptr<Node> &len_width) {
-  static auto bus_addr = RecField::Make("addr", Vector::Make("addr", addr_width));
-  static auto bus_len = RecField::Make("len", Vector::Make("len", len_width));
-  static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
-  static auto bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
-  return bus_rreq;
-}
-
-std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node> &addr_width,
-                                        const std::shared_ptr<Node> &len_width) {
-  static auto bus_addr = RecField::Make(Vector::Make("addr", addr_width));
-  static auto bus_len = RecField::Make(Vector::Make("len", len_width));
-  static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
-  static auto bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
-  return bus_wreq;
-}
-
-std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node> &width) {
-  auto bus_rdata = RecField::Make(Vector::Make("data", width));
-  auto bus_rlast = RecField::Make(last());
-  auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
-  auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
-  return bus_rdat;
-}
-
-std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width) {
-  auto bus_wdata = RecField::Make(Vector::Make("data", width));
-  auto bus_wstrobe = RecField::Make(Vector::Make("strobe", width / intl<8>()));
-  auto bus_wlast = RecField::Make("last", bit());
-  auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
-  auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
-  return bus_wdat;
-}
-
 std::shared_ptr<Type> cmd() {
   static auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
   static auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));

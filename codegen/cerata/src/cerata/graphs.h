@@ -42,8 +42,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::deque<std::unique_ptr<Graph>> children;
   /// @brief Optional Graph parents
   std::deque<Graph *> parents;
-  /// @brief Optional metadata
-  std::unordered_map<std::string, std::string> metadata;
+  /// @brief KV storage for metadata of tools or specific backend implementations
+  std::unordered_map<std::string, std::string> meta;
 
   /// @brief Return true if this graph is a component, false otherwise.
   bool IsComponent() const { return id_ == COMPONENT; }

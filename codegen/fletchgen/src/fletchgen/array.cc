@@ -15,11 +15,9 @@
 #include "fletchgen/array.h"
 
 #include <memory>
+#include <cerata/api.h>
 
-#include "cerata/graphs.h"
-#include "cerata/types.h"
-
-#include "fletchgen/basic_types.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
@@ -54,9 +52,9 @@ std::shared_ptr<Component> ArrayReader() {
                                      Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("out", read_data(), Port::Dir::OUT)}
   );
-  ret->metadata["primitive"] = "true";
-  ret->metadata["library"] = "work";
-  ret->metadata["package"] = "Arrays";
+  ret->meta["primitive"] = "true";
+  ret->meta["library"] = "work";
+  ret->meta["package"] = "Arrays";
   return ret;
 }
 

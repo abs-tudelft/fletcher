@@ -30,8 +30,50 @@ using cerata::string;
 using cerata::strl;
 using cerata::boolean;
 using cerata::integer;
+using cerata::bit;
 using cerata::bool_true;
 using cerata::bool_false;
+using cerata::RecField;
+using cerata::Vector;
+using cerata::Record;
+using cerata::Stream;
+
+// Bus channel
+
+std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width,
+                                       const std::shared_ptr<Node> &len_width) {
+  static auto bus_addr = RecField::Make("addr", Vector::Make("addr", addr_width));
+  static auto bus_len = RecField::Make("len", Vector::Make("len", len_width));
+  static auto bus_rreq_record = Record::Make("rreq:rec", {bus_addr, bus_len});
+  static auto bus_rreq = Stream::Make("rreq:stream", bus_rreq_record);
+  return bus_rreq;
+}
+
+std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node> &addr_width,
+                                        const std::shared_ptr<Node> &len_width) {
+  static auto bus_addr = RecField::Make(Vector::Make("addr", addr_width));
+  static auto bus_len = RecField::Make(Vector::Make("len", len_width));
+  static auto bus_wreq_record = Record::Make("wreq:rec", {bus_addr, bus_len});
+  static auto bus_wreq = Stream::Make("wreq:stream", bus_wreq_record);
+  return bus_wreq;
+}
+
+std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node> &width) {
+  auto bus_rdata = RecField::Make(Vector::Make("data", width));
+  auto bus_rlast = RecField::Make(last());
+  auto bus_rdat_record = Record::Make("bus_rdat_rec", {bus_rdata, bus_rlast});
+  auto bus_rdat = Stream::Make("bus_rdat", bus_rdat_record);
+  return bus_rdat;
+}
+
+std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width) {
+  auto bus_wdata = RecField::Make(Vector::Make("data", width));
+  auto bus_wstrobe = RecField::Make(Vector::Make("strobe", width / intl<8>()));
+  auto bus_wlast = RecField::Make("last", bit());
+  auto bus_wdat_record = Record::Make("bus_wdat_rec", {bus_wdata, bus_wstrobe, bus_wlast});
+  auto bus_wdat = Stream::Make("bus_wdat", bus_wdat_record);
+  return bus_wdat;
+}
 
 std::shared_ptr<Component> BusReadArbiter() {
   auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
@@ -57,9 +99,9 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      slaves_rreq_array,
                                      slaves_rdat_array
                                     });
-  ret->metadata["primitive"] = "true";
-  ret->metadata["library"] = "work";
-  ret->metadata["package"] = "Interconnect";
+  ret->meta["primitive"] = "true";
+  ret->meta["library"] = "work";
+  ret->meta["package"] = "Interconnect";
   return ret;
 }
 
@@ -84,9 +126,9 @@ std::shared_ptr<Component> BusReadSerializer() {
       Port::Make("slv_rreq", bus_read_request(aw, slw), Port::Dir::IN),
       Port::Make("slv_rdat", bus_read_data(sdw), Port::Dir::OUT),
   });
-  ret->metadata["primitive"] = "true";
-  ret->metadata["library"] = "work";
-  ret->metadata["package"] = "Interconnect";
+  ret->meta["primitive"] = "true";
+  ret->meta["library"] = "work";
+  ret->meta["package"] = "Interconnect";
   return ret;
 }
 
@@ -169,4 +211,28 @@ std::shared_ptr<PortArray> ArteryInstance::read_request(const std::shared_ptr<No
   return porta("bus" + width->ToString() + "_rreq");
 }
 
+std::string BusChannel::fun2name(BusChannel::Function fun) {
+  switch (fun) {
+    case Function::READ_REQ: return "rreq";
+    case Function::READ_DAT: return "rdat";
+    case Function::WRITE_REQ: return "wreq";
+    case Function::WRITE_DAT: return "wdat";
+    default:
+      throw std::runtime_error("Compiler broke in " + std::string(__FILE__));
+  }
+}
+
+std::shared_ptr<Type> BusChannel::fun2type(BusChannel::Function fun,
+                                           size_t data_width,
+                                           size_t addr_width,
+                                           size_t len_width) {
+  switch (fun) {
+    case Function::READ_REQ: return bus_read_request(Literal::Make(addr_width), Literal::Make(len_width));
+    case Function::READ_DAT: return bus_read_data(Literal::Make(data_width));
+    case Function::WRITE_REQ: return bus_write_request(Literal::Make(addr_width), Literal::Make(len_width));
+    case Function::WRITE_DAT: return bus_write_data(Literal::Make(data_width));
+    default:
+      throw std::runtime_error("Compiler broke in " + std::string(__FILE__));
+  }
+}
 }  // namespace fletchgen

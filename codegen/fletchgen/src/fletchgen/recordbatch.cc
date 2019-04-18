@@ -17,6 +17,7 @@
 #include <cerata/api.h>
 
 #include "fletchgen/array.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
@@ -65,19 +66,19 @@ RecordBatchReader::RecordBatchReader(const std::string &name, const std::shared_
   }
 
   // Add bus
-  auto num_read_slaves = cerata::Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_rreq_array = cerata::PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
-  auto bus_rdat_array = cerata::PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
+  //auto num_read_slaves = cerata::Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
+  //auto bus_rreq_array = cerata::PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
+  //auto bus_rdat_array = cerata::PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
 
-  AddObject(num_read_slaves);
-  AddObject(bus_rreq_array);
-  AddObject(bus_rdat_array);
+  //AddObject(num_read_slaves);
+  //AddObject(bus_rreq_array);
+  //AddObject(bus_rdat_array);
 
   for (const auto &cr : readers_) {
     auto cr_rreq = cr->port("bus_rreq");
     auto cr_rdat = cr->port("bus_rdat");
-    bus_rreq_array->Append() <<= cr_rreq;
-    cr_rdat <<= bus_rdat_array->Append();
+    //bus_rreq_array->Append() <<= cr_rreq;
+    //cr_rdat <<= bus_rdat_array->Append();
   }
 }
 

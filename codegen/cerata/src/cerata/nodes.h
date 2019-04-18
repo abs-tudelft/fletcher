@@ -19,6 +19,7 @@
 #include <string>
 #include <memory>
 #include <deque>
+#include <unordered_map>
 
 #include "cerata/objects.h"
 #include "cerata/types.h"
@@ -78,11 +79,16 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// @brief Get the output edges of this Node.
   virtual std::deque<std::shared_ptr<Edge>> sinks() const { return {}; }
 
-  /// @brief Return a human-readable string
-  virtual std::string ToString();
-
+  /// @brief Set parent array.
   void SetArray(const NodeArray *array) { array_ = array; }
+  /// @brief Return parent array, if any.
   std::optional<const NodeArray *> array() { return array_; }
+
+  /// @brief KV storage for metadata of tools or specific backend implementations
+  std::unordered_map<std::string, std::string> meta;
+
+  /// @brief Return a human-readable string of this node.
+  virtual std::string ToString();
 
  protected:
   /// Node type ID.

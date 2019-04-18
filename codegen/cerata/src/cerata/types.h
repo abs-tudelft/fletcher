@@ -18,6 +18,7 @@
 #include <utility>
 #include <memory>
 #include <deque>
+#include <unordered_map>
 #include <string>
 
 #include "cerata/utils.h"
@@ -85,7 +86,7 @@ class Type : public Named {
   virtual bool IsEqual(const Type *other) const;
 
   /// @brief Shorthand for shared pointers.
-  bool IsEqual(const std::shared_ptr<Type>& other) const;
+  bool IsEqual(const std::shared_ptr<Type> &other) const;
 
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
@@ -112,6 +113,9 @@ class Type : public Named {
 
   /// @brief Obtain all Nodes that parametrize this type.
   virtual std::deque<std::shared_ptr<Node>> GetParameters() const { return {}; }
+
+  /// @brief KV storage for metadata of tools or specific backend implementations
+  std::unordered_map<std::string, std::string> meta;
 
  protected:
   ID id_;
