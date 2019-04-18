@@ -16,10 +16,8 @@
 
 #include <memory>
 
-#include "fletcher/common/arrow-utils.h"
-
-#include "cerata/nodes.h"
-#include "cerata/types.h"
+#include <cerata/api.h>
+#include <fletcher/common/arrow-utils.h>
 
 namespace fletchgen {
 
@@ -116,8 +114,8 @@ std::shared_ptr<Type> bus_reset() {
 
 // Data channel
 
-std::shared_ptr<Type> incomplete_data() {
-  static std::shared_ptr<Type> result = Vector::Make("data", {});
+std::shared_ptr<Type> datavec() {
+  static std::shared_ptr<Type> result = Vector::Make("data", cerata::strl("arcfg_userWidth(CFG, INDEX_WIDTH)"));
   return result;
 }
 
@@ -171,7 +169,7 @@ std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width) {
 std::shared_ptr<Type> cmd() {
   static auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
   static auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));
-  static auto ctrl = RecField::Make(Vector::Make("ctrl", {}));
+  static auto ctrl = RecField::Make(Vector::Make("ctrl", cerata::strl("arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)")));
   static auto tag = RecField::Make(Vector::Make<8>("tag"));
   static auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
   static auto cmd_stream = Stream::Make("command", cmd_record);
@@ -185,7 +183,7 @@ std::shared_ptr<Type> unlock() {
 }
 
 std::shared_ptr<Type> read_data() {
-  static auto d = RecField::Make(incomplete_data());
+  static auto d = RecField::Make(datavec());
   static auto dv = RecField::Make(dvalid());
   static auto l = RecField::Make(last());
   static auto data_record = Record::Make("arrow_read_data_rec", {d, dv, l});
@@ -194,7 +192,7 @@ std::shared_ptr<Type> read_data() {
 }
 
 std::shared_ptr<Type> write_data() {
-  static auto d = RecField::Make(incomplete_data());
+  static auto d = RecField::Make(datavec());
   static auto l = RecField::Make(last());
   static auto data_record = Record::Make("arrow_write_data_rec", {d, l});
   static auto data_stream = Stream::Make("arrow_write_data", data_record);
@@ -228,7 +226,7 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
   }
 
   size_t idx_stream = 0;
-  auto idx_data = IndexOfFlatType(conversion->flat_b(), incomplete_data().get());
+  auto idx_data = IndexOfFlatType(conversion->flat_b(), datavec().get());
   auto idx_dvalid = IndexOfFlatType(conversion->flat_b(), dvalid().get());
   auto idx_last = IndexOfFlatType(conversion->flat_b(), last().get());
 

@@ -17,8 +17,7 @@
 #include <vector>
 #include <string>
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 struct Line {
   Line()=default;
@@ -78,5 +77,4 @@ MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs);
 
 std::string ToString(std::vector<Block> blocks);
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

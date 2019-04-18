@@ -14,11 +14,12 @@
 
 #pragma once
 
-#include <optional>
-#include <string>
 #include <memory>
+#include <string>
+#include <optional>
 #include <utility>
 #include <deque>
+#include <unordered_map>
 
 #include "cerata/nodes.h"
 #include "cerata/arrays.h"
@@ -41,6 +42,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
   std::deque<std::unique_ptr<Graph>> children;
   /// @brief Optional Graph parents
   std::deque<Graph *> parents;
+  /// @brief Optional metadata
+  std::unordered_map<std::string, std::string> metadata;
 
   /// @brief Return true if this graph is a component, false otherwise.
   bool IsComponent() const { return id_ == COMPONENT; }
@@ -133,7 +136,7 @@ struct Component : public Graph {
    * @param inst  Optional pointer to the instance to store.
    * @return      A reference to this Component if successful.
    */
-  Instance* AddInstanceOf(std::shared_ptr<Component> comp);
+  Instance* AddInstanceOf(std::shared_ptr<Component> comp, std::string name="");
 
   /**
   * @brief Gather all Instance graphs from this Component

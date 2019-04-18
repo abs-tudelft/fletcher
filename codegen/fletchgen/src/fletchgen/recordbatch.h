@@ -31,6 +31,7 @@ namespace fletchgen {
 
 using cerata::Port;
 using cerata::Component;
+using cerata::Instance;
 using fletcher::Mode;
 
 /**
@@ -74,6 +75,8 @@ struct RecordBatchReader : public Component {
   std::shared_ptr<arrow::Schema> schema;
   std::shared_ptr<FieldPort> GetArrowPort(const std::shared_ptr<arrow::Field> &field);
   std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function>& function={});
+  std::deque<Instance*> readers_;
+  std::deque<Instance*> writers_;
 };
 
 } // namespace fletchgen
