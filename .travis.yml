@@ -11,7 +11,7 @@ env:
   global:
     # versions
     - ARROW_VERSION=0.13.0
-    - AWS_FPGA_VERSION=1.4.5
+    - AWS_FPGA_VERSION=1.4.8
     - CAPI_SNAP_VERSION=1.5.1
     - CAPI_PSLSE_VERSION=4.1
     - PSLVER=8
