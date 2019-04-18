@@ -73,11 +73,7 @@ std::shared_ptr<Component> BusReadSerializer() {
   auto sdw = Parameter::Make("SLAVE_DATA_WIDTH", integer(), {});
   auto slw = Parameter::Make("SLAVE_LEN_WIDTH", integer(), {});
   static auto ret = Component::Make("BusReadSerializer", {
-      aw,
-      mdw,
-      mlw,
-      sdw,
-      slw,
+      aw, mdw, mlw, sdw, slw,
       Parameter::Make("SLAVE_MAX_BURST", integer(), {}),
       Parameter::Make("ENABLE_FIFO", boolean(), bool_false()),
       Parameter::Make("SLV_REQ_SLICE_DEPTH", integer(), intl<2>()),
@@ -95,7 +91,7 @@ std::shared_ptr<Component> BusReadSerializer() {
 }
 
 Artery::Artery(
-    const std::string& prefix,
+    const std::string &prefix,
     std::shared_ptr<Node> address_width,
     std::shared_ptr<Node> master_width,
     std::deque<std::shared_ptr<Node>> slave_widths)

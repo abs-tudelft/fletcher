@@ -22,8 +22,7 @@
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/architecture.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 MultiBlock Design::Generate() {
   MultiBlock ret;
@@ -34,11 +33,40 @@ MultiBlock Design::Generate() {
   // Sanitize component
   Transformation::ResolvePortToPort(comp);
 
+  // Place header
   if (!head.empty()) {
     Block h;
     h << Line(head);
     ret << h;
   }
+
+  // Figure out potential libs and packages used for primitive components.
+  std::unordered_map<std::string, std::vector<std::string>> libs_and_packages;
+  for (const auto& c: GetAllUniqueComponents(comp.get())) {
+    if (c->metadata.at("primitive") == "true") {
+      std::string lib = c->metadata.at("library");
+      std::string pkg = c->metadata.at("package");
+      // Create the kv-pair if there is none yet
+      if (libs_and_packages.count(lib) == 0) {
+        libs_and_packages[lib] = std::vector<std::string>({pkg});
+      } else {
+        libs_and_packages[lib].push_back(pkg);
+      }
+    }
+  }
+
+  Block incl;
+  for (const auto& kv : libs_and_packages) {
+    incl << Line("library " + kv.first + ";");
+     for (const auto& pkg : kv.second) {
+       // TODO: consider also allowing non-all.
+       incl << Line("use " + kv.first + "." + pkg + ".all");
+     }
+  }
+
+  ret << incl;
+
+  // Place any libraries from subcomponents
 
   auto decl = Decl::Generate(comp.get(), true);
   auto arch = Arch::Generate(comp);
@@ -50,5 +78,4 @@ MultiBlock Design::Generate() {
   return ret;
 }
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

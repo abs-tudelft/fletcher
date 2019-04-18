@@ -54,6 +54,9 @@ std::shared_ptr<Component> ArrayReader() {
                                      Port::Make("unlock", unlock(), Port::Dir::OUT),
                                      Port::Make("out", read_data(), Port::Dir::OUT)}
   );
+  ret->metadata["primitive"] = "true";
+  ret->metadata["library"] = "work";
+  ret->metadata["package"] = "Arrays";
   return ret;
 }
 

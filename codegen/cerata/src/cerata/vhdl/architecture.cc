@@ -33,8 +33,13 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   // Component declarations
   auto components_used = GetAllUniqueComponents(comp.get());
   for (const auto &c : components_used) {
-    auto comp_decl = Decl::Generate(c);
-    ret << comp_decl;
+    // Check for metadata that this component is not marked primitive
+    // In this case, a library package has been added at the top of the design file.
+    if (c->metadata.at("primitive") != "true") {
+      // TODO(johanpel): generate packages with component declarations
+      auto comp_decl = Decl::Generate(c);
+      ret << comp_decl;
+    }
   }
 
   // Signal declarations
