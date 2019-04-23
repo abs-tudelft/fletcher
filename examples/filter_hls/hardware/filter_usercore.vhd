@@ -320,7 +320,7 @@ begin
   read_zipcode_cmd_lastIdx      <= read_cmd.lastIdx;
   write_first_name_cmd_lastIdx  <= write_cmd.lastIdx;
 
-  -- Synchronize the three command streams from the input columns
+  -- Synchronize the three command streams from the input arrays
   read_cmd_sync : StreamSync
     generic map (
       NUM_INPUTS => 1,

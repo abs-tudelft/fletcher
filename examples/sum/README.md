@@ -2,7 +2,7 @@
 
 This is a simple example with the goal of getting first-time users of
 Fletcher started with a project. The core of this example is an
-accumulator that sums all integers in a given Arrow column.
+accumulator that sums all integers in a given Arrow Array.
 
 Be sure to read the sources as well, they contain useful hints.
 
@@ -14,9 +14,9 @@ the tools are updated and their output changes. The goal is to track these
 changes into this example as quickly as possible, but it may lag behind.
 
 The main component of Fletcher is the
-[ColumnReader](../../hardware/vhdl/columns/ColumnReader.vhd).
-The column reader will transparently read rows of data from memory and
-provide them on its output. Multiple column readers are supported with the
+[ArrayReader](../../hardware/vhdl/arrays/ArrayReader.vhd).
+The array reader will transparently read rows of data from memory and
+provide them on its output. Multiple array readers are supported with the
 use of an [arbiter](../../hardware/vhdl/interconnect/BusReadArbiterVec.vhd),
 though only one reader is used in this example.
 Next to this, a controller is added, which communicates with the host software

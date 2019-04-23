@@ -452,7 +452,7 @@ begin
     m_result_quotient    => div_quotient
   );
 
-  -- Provide base address to ColumnReader
+  -- Provide base address to ArrayReader
   point_cmd_point_dimension_values_addr <= reg_point_dimension_values_addr;
   point_cmd_point_offsets_addr <= reg_point_offsets_addr;
   point_cmd_tag <= (others => '0');
@@ -487,10 +487,10 @@ begin
   begin
     -- Default values
 
-    -- No command to ColumnReader
+    -- No command to ArrayReader
     point_cmd_valid <= '0';
 
-    -- Do not accept values from the ColumnReader
+    -- Do not accept values from the ArrayReader
     point_out_ready <= '0';
     point_out_dimension_out_ready <= '0';
 
@@ -539,7 +539,7 @@ begin
           state_next <= SETUP;
         end if;
 
-      -- Set up the ColumnReader
+      -- Set up the ArrayReader
       when SETUP =>
         ctrl_done <= '0';
         ctrl_busy <= '1';
@@ -549,10 +549,10 @@ begin
           -- Reached iteration limit
           state_next <= DONE;
         else
-          -- Send address and row indices to the ColumnReader
+          -- Send address and row indices to the ArrayReader
           point_cmd_valid <= '1';
           if point_cmd_ready = '1' then
-            -- ColumnReader has received the command
+            -- ArrayReader has received the command
             state_next <= ACCUMULATING;
           end if;
         end if;

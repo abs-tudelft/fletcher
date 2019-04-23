@@ -72,11 +72,11 @@ begin
   reg_return0 <= std_logic_vector(accumulator(1*REG_WIDTH-1 downto 0*REG_WIDTH));
   reg_return1 <= std_logic_vector(accumulator(2*REG_WIDTH-1 downto 1*REG_WIDTH));
 
-  -- Provide base address to ColumnReader
+  -- Provide base address to ArrayReader
   weight_cmd_weight_values_addr <= reg_weight_values_addr;
   weight_cmd_tag <= (others => '0');
 
-  -- Set the first and last index on our column
+  -- Set the first and last index on our array
   weight_cmd_firstIdx <= idx_first;
   weight_cmd_lastIdx  <= idx_last;
 
@@ -84,9 +84,9 @@ begin
     weight_cmd_ready, weight_out_valid, weight_out_data, weight_out_last)
   begin
     -- Default values
-    -- No command to ColumnReader
+    -- No command to ArrayReader
     weight_cmd_valid <= '0';
-    -- Do not accept values from the ColumnReader
+    -- Do not accept values from the ArrayReader
     weight_out_ready <= '0';
     -- Retain accumulator value
     accumulator_next <= accumulator;
@@ -115,10 +115,10 @@ begin
         ctrl_done <= '0';
         ctrl_busy <= '1';
         ctrl_idle <= '0';
-        -- Send address and row indices to the ColumnReader
+        -- Send address and row indices to the ArrayReader
         weight_cmd_valid <= '1';
         if weight_cmd_ready = '1' then
-          -- ColumnReader has received the command
+          -- ArrayReader has received the command
           state_next <= RUNNING;
         end if;
 
@@ -131,7 +131,7 @@ begin
         if weight_out_valid = '1' then
           -- Sum the record to the accumulator
           accumulator_next <= accumulator + signed(weight_out_data);
-          -- Wait for last element from ColumnReader
+          -- Wait for last element from ArrayReader
           if weight_out_last = '1' then
             state_next <= DONE;
           end if;
