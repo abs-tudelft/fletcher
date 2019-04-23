@@ -18,12 +18,12 @@ if {![info exists ::env(FLETCHER_HARDWARE_DIR)]} {
 }
 
 # Load compilation script and utilities
-source $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
-source $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/compile.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/utils.tcl
 
 proc source_dir_or_default {source_dir} {
   if {$source_dir == ""} {
-    return $::env(FLETCHER_HARDWARE_DIR)/vhdl
+    return $::env(FLETCHER_HARDWARE_DIR)
   } else {
     return $source_dir
   }
@@ -81,14 +81,12 @@ proc add_streams {{source_dir ""}} {
 proc add_streams_tb {{source_dir ""}} {
   echo "- Streams library simulation support."
   set source_dir [source_dir_or_default $source_dir]
-
   # Simulation package
-  add_source $source_dir/streams/StreamSim.vhd -2008
-
+  add_source $source_dir/streams/test/StreamSim.vhd -2008
   # Stream endpoint models
-  add_source $source_dir/streams/StreamTbProd.vhd -2008
-  add_source $source_dir/streams/StreamTbMon.vhd -2008
-  add_source $source_dir/streams/StreamTbCons.vhd -2008
+  add_source $source_dir/streams/test/StreamTbProd.vhd -2008
+  add_source $source_dir/streams/test/StreamTbMon.vhd -2008
+  add_source $source_dir/streams/test/StreamTbCons.vhd -2008
 }
 
 proc add_interconnect {{source_dir ""}} {
@@ -98,7 +96,6 @@ proc add_interconnect {{source_dir ""}} {
   add_source $source_dir/interconnect/BusReadArbiter.vhd
   add_source $source_dir/interconnect/BusReadArbiterVec.vhd
   add_source $source_dir/interconnect/BusReadBuffer.vhd
-  
   add_source $source_dir/interconnect/BusWriteArbiter.vhd
   add_source $source_dir/interconnect/BusWriteArbiterVec.vhd
   add_source $source_dir/interconnect/BusWriteBuffer.vhd
@@ -107,31 +104,25 @@ proc add_interconnect {{source_dir ""}} {
 proc add_interconnect_tb {{source_dir ""}} {
   echo "- Bus infrastructure simulation support."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/interconnect/BusChecking.vhd
-  add_source $source_dir/interconnect/BusProtocolChecker.vhd
-
-  add_source $source_dir/interconnect/BusReadSlaveMock.vhd
-  add_source $source_dir/interconnect/BusReadMasterMock.vhd
-  
-  add_source $source_dir/interconnect/BusWriteSlaveMock.vhd
-  add_source $source_dir/interconnect/BusWriteMasterMock.vhd
-  
-  add_source $source_dir/interconnect/BusReadArbiter_tb.vhd
-  
+  add_source $source_dir/interconnect/test/BusChecking.vhd
+  add_source $source_dir/interconnect/test/BusProtocolChecker.vhd
+  add_source $source_dir/interconnect/test/BusReadSlaveMock.vhd
+  add_source $source_dir/interconnect/test/BusReadMasterMock.vhd
+  add_source $source_dir/interconnect/test/BusWriteSlaveMock.vhd
+  add_source $source_dir/interconnect/test/BusWriteMasterMock.vhd
+  add_source $source_dir/interconnect/test/BusReadArbiter_tb.vhd
 }
 
 proc add_buffers {{source_dir ""}} {
   echo "- Buffer Readers/Writers."
   set source_dir [source_dir_or_default $source_dir]
   add_source $source_dir/buffers/Buffers.vhd
-  
   add_source $source_dir/buffers/BufferReaderCmdGenBusReq.vhd
   add_source $source_dir/buffers/BufferReaderCmd.vhd
   add_source $source_dir/buffers/BufferReaderPost.vhd
   add_source $source_dir/buffers/BufferReaderRespCtrl.vhd
   add_source $source_dir/buffers/BufferReaderResp.vhd
   add_source $source_dir/buffers/BufferReader.vhd
-  
   add_source $source_dir/buffers/BufferWriterCmdGenBusReq.vhd
   add_source $source_dir/buffers/BufferWriterPrePadder.vhd
   add_source $source_dir/buffers/BufferWriterPreCmdGen.vhd
@@ -145,7 +136,6 @@ proc add_arrays {{source_dir ""}} {
   add_source $source_dir/arrays/ArrayConfigParse.vhd
   add_source $source_dir/arrays/ArrayConfig.vhd
   add_source $source_dir/arrays/Arrays.vhd
-  
   add_source $source_dir/arrays/ArrayReaderArb.vhd
   add_source $source_dir/arrays/ArrayReaderLevel.vhd
   add_source $source_dir/arrays/ArrayReaderList.vhd
@@ -156,7 +146,6 @@ proc add_arrays {{source_dir ""}} {
   add_source $source_dir/arrays/ArrayReaderStruct.vhd
   add_source $source_dir/arrays/ArrayReaderUnlockCombine.vhd
   add_source $source_dir/arrays/ArrayReader.vhd
-  
   add_source $source_dir/arrays/ArrayWriterArb.vhd
   add_source $source_dir/arrays/ArrayWriterListSync.vhd
   add_source $source_dir/arrays/ArrayWriterListPrim.vhd
@@ -174,7 +163,7 @@ proc add_wrapper {{source_dir ""}} {
 proc add_wrapper_tb {{source_dir ""}} {
   echo "- Wrapper simulation support."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/wrapper/UserCoreMock.vhd -2008
+  add_source $source_dir/wrapper/test/UserCoreMock.vhd -2008
 }
 
 # Add all sources

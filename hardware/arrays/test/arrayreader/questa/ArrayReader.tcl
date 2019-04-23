@@ -1,4 +1,4 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 # Simulate random ArrayReaders
 
@@ -7,7 +7,7 @@ proc gen_cr {{seed -1}} {
   exec rm -f ArrayReader_tb.vhd
 
   if {$seed == -1} {
-    exec python3 gen_tb.py > ArrayReader_tb.vhd
+    exec python3 ../gen_tb.py > ArrayReader_tb.vhd
   } else {
     echo "Seed = $seed"
     exec python3 gen_tb.py $seed > ArrayReader_tb.vhd
