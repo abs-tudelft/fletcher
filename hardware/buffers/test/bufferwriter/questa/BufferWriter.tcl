@@ -1,4 +1,4 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 proc print_cases {} {
   echo "Test case names:"
@@ -41,17 +41,17 @@ proc b {} {
 add_fletcher
 add_fletcher_tb
 
-add_source BufferWriter_tb.vhd -2008
-add_source BufferWriter_2x32in64outMB1_tc.vhd -2008
-add_source BufferWriter_4x16in64out_tc.vhd -2008
-add_source BufferWriter_8x1in64out_tc.vhd -2008
-add_source BufferWriter_8x64in512out_tc.vhd -2008
-add_source BufferWriter_32in32out_tc.vhd -2008
-add_source BufferWriter_32in64out_tc.vhd -2008
-add_source BufferWriter_Default_tc.vhd -2008
-add_source BufferWriter_IndexBS4_tc.vhd -2008
-add_source BufferWriter_IndexBuf_tc.vhd -2008
-add_source BusWriteArbiter_tb.vhd -2008
+add_source ../BufferWriter_tb.vhd -2008
+add_source ../BufferWriter_2x32in64outMB1_tc.vhd -2008
+add_source ../BufferWriter_4x16in64out_tc.vhd -2008
+add_source ../BufferWriter_8x1in64out_tc.vhd -2008
+add_source ../BufferWriter_8x64in512out_tc.vhd -2008
+add_source ../BufferWriter_32in32out_tc.vhd -2008
+add_source ../BufferWriter_32in64out_tc.vhd -2008
+add_source ../BufferWriter_Default_tc.vhd -2008
+add_source ../BufferWriter_IndexBS4_tc.vhd -2008
+add_source ../BufferWriter_IndexBuf_tc.vhd -2008
+add_source ../BusWriteArbiter_tb.vhd -2008
 
 echo "Testbench loaded, use \"t <name>\" to start BufferWriter test case, or b to start the bus infrastructure test."
 print_cases

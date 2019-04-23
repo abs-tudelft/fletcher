@@ -1,4 +1,4 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 proc t {} { 
   compile_sources
@@ -15,6 +15,6 @@ proc t {} {
 add_fletcher
 add_fletcher_tb
 
-add_source BufferReader_tc.vhd -2008
+add_source ../BufferReader_tc.vhd -2008
 
 t
