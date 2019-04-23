@@ -1,4 +1,4 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 proc test_listsync {} {
   compile_sources
@@ -30,8 +30,8 @@ proc test_prim {} {
 add_fletcher
 add_fletcher_tb
 
-add_source ArrayWriterListSync_tc.vhd -2008
-add_source listprim8epc4_tc.vhd -2008
-add_source prim32_tc.vhd -2008
+add_source ../ArrayWriterListSync_tc.vhd -2008
+add_source ../listprim8epc4_tc.vhd -2008
+add_source ../prim32_tc.vhd -2008
 
 test_prim
