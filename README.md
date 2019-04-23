@@ -70,7 +70,7 @@ supports the following features:
 
 ## Further reading
   * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator
-    converts Arrow schema's to wrappers around ColumnReaders/ColumnWriters.
+    converts Arrow schema's to wrappers around ArrayReaders/ArrayWriters.
     It also provides instantiation templates for your hardware accelerator
     implementation for a HDL or HLS design flow.
   * [Host-side run-time libraries](runtime) - How to integrate host-side
