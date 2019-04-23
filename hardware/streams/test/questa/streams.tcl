@@ -1,4 +1,4 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 proc simtest {{unit_name "*"} {tc_name "*"}} {
 
@@ -6,7 +6,7 @@ proc simtest {{unit_name "*"} {tc_name "*"}} {
     set tc_name ${unit_name}_${tc_name}
   }
 
-  set testcases [glob $::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/${tc_name}_tc.vhd]
+  set testcases [glob $::env(FLETCHER_HARDWARE_DIR)/streams/test/${unit_name}/${tc_name}_tc.vhd]
   set failures []
   set runs 0
   foreach testcase $testcases {
@@ -24,13 +24,13 @@ proc simtest {{unit_name "*"} {tc_name "*"}} {
     set siglist [list $tbsig $uutsig]
 
     # Add UUT and testbench to sources to compile.
-    foreach testbench [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/*_tb.vhd"] {
+    foreach testbench [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/streams/test/${unit_name}/*_tb.vhd"] {
       add_source $testbench
     }
-    foreach test_vector [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/*_tv.vhd"] {
+    foreach test_vector [glob -nocomplain "$::env(FLETCHER_HARDWARE_DIR)/streams/test/${unit_name}/*_tv.vhd"] {
       add_source $test_vector
     }
-    add_source $::env(FLETCHER_HARDWARE_DIR)/test/streams/${unit_name}/${tc_name}_tc.vhd
+    add_source $::env(FLETCHER_HARDWARE_DIR)/streams/test/${unit_name}/${tc_name}_tc.vhd
 
     compile_sources
 
