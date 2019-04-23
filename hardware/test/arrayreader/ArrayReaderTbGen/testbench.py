@@ -305,7 +305,7 @@ class Testbench(object):
     library work;
     use work.StreamSim.all;
     use work.Streams.all;
-    use work.Columns.all;
+    use work.Arrays.all;
     use work.Utils.all;
 
     entity {name} is
@@ -584,7 +584,7 @@ class Testbench(object):
 
             -- Check that length is nonzero.
             assert len > 0
-              report "ColumnReader requested burst length 0"
+              report "ArrayReader requested burst length 0"
               severity FAILURE;
 
             -- Accept the request.

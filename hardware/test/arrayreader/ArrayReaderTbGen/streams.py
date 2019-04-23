@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """This package contains a representation of streams as used by the
-ColumnReader and TableReader units."""
+ArrayReader and TableReader units."""
 
 from .lines import *
 from enum import Enum

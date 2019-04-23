@@ -2,8 +2,8 @@
 import random
 import sys
 
-from fletcher.fields import *
-from fletcher.columnreader import *
+from ArrayReaderTbGen.fields import *
+from ArrayReaderTbGen.arrayreader import *
 
 # Figure out a seed to use.
 if len(sys.argv) > 1:
@@ -18,14 +18,14 @@ else:
 # Seed the random generator with it.
 random.seed(seed)
 
-# Generate a random field for the column.
+# Generate a random field for the array.
 while True:
-    column = Field.randomized()
-    if not column.is_null():
+    array = Field.randomized()
+    if not array.is_null():
         break
 
 # Generate the reader.
-reader = ColumnReader(column, instance_prefix="")
+reader = ArrayReader(array, instance_prefix="")
 
 # Output the testbench.
 print(reader.testbench(

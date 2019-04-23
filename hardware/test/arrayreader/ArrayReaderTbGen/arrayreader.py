@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This package contains a python object representation for ColumnReaders, and
-the functions needed to generate a ColumnReader from an Arrow field
+"""This package contains a python object representation for ArrayReaders, and
+the functions needed to generate a ArrayReader from an Arrow field
 (represented as the objects in fields.py)."""
 
 from itertools import zip_longest
@@ -25,9 +25,9 @@ from .streams import *
 from .lines import *
 from .testbench import *
 
-__all__ = ["ColumnReader", "BUS_ADDR_WIDTH", "INDEX_WIDTH", "CMD_TAG_WIDTH"]
+__all__ = ["ArrayReader", "BUS_ADDR_WIDTH", "INDEX_WIDTH", "CMD_TAG_WIDTH"]
 
-# Define the generics used by ColumnReaders.
+# Define the generics used by ArrayReaders.
 BUS_ADDR_WIDTH = Generic("BUS_ADDR_WIDTH")
 BUS_LEN_WIDTH  = Generic("BUS_LEN_WIDTH")
 BUS_DATA_WIDTH = Generic("BUS_DATA_WIDTH")
@@ -36,7 +36,7 @@ CMD_TAG_WIDTH  = Generic("CMD_TAG_WIDTH")
 
 
 class ReaderLevel(Configurable):
-    """Represents an abstract ColumnReaderLevel(Level)."""
+    """Represents an abstract ArrayReaderLevel(Level)."""
 
     def __init__(self, **config):
         super().__init__(**config)
@@ -917,11 +917,11 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 
-entity {camelprefix}ColumnReader is
+entity {camelprefix}ArrayReader is
   generic (
 
     ---------------------------------------------------------------------------
@@ -949,7 +949,7 @@ entity {camelprefix}ColumnReader is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
     -- Enables or disables command stream tag system. When enabled, an
     -- additional output stream is created that returns tags supplied along
@@ -1012,9 +1012,9 @@ entity {camelprefix}ColumnReader is
     @out_ports
 
   );
-end {camelprefix}ColumnReader;
+end {camelprefix}ArrayReader;
 
-architecture Behavioral of {camelprefix}ColumnReader is
+architecture Behavioral of {camelprefix}ArrayReader is
 
   @defs
 
@@ -1023,7 +1023,7 @@ begin
   @arch
 
   -- Wrap an arbiter and register slices around the requested column reader.
-  {lowerprefix}inst: ColumnReaderLevel
+  {lowerprefix}inst: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -1072,7 +1072,7 @@ end Behavioral;
 """
 
 wrapper_component_template = """
-component {camelprefix}ColumnReader is
+component {camelprefix}ArrayReader is
   generic (
     BUS_ADDR_WIDTH              : natural := 32;
     BUS_LEN_WIDTH               : natural := 8;
@@ -1110,7 +1110,7 @@ end component;
 """
 
 uut_template_with_unlock = """
-  uut: ColumnReaderLevel
+  uut: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -1157,7 +1157,7 @@ uut_template_with_unlock = """
 """
 
 uut_template_without_unlock = """
-  uut: ColumnReaderLevel
+  uut: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -1198,12 +1198,12 @@ uut_template_without_unlock = """
     );
 """
 
-class ColumnReader(object):
-    """Represents a ColumnReader."""
+class ArrayReader(object):
+    """Represents a ArrayReader."""
 
     def __init__(self, field, instance_prefix=None, signal_prefix="", bus_clk_prefix="", main_clk_prefix="", **opts):
-        """Generates a ColumnReader for the given Arrow field. prefix
-        optionally specifies a name for the ColumnReader, which will be
+        """Generates a ArrayReader for the given Arrow field. prefix
+        optionally specifies a name for the ArrayReader, which will be
         prefixed to all signals and instance names in the generated code."""
         super().__init__()
 
@@ -1279,11 +1279,11 @@ class ColumnReader(object):
         return self.instance_prefix.lower()
 
     def cfg(self):
-        """Returns the cfg string representation of this ColumnReader."""
+        """Returns the cfg string representation of this ArrayReader."""
         return str(self.reader)
 
     def wrapper_body(self):
-        """Returns the VHDL entity and body for this ColumnReader's wrapper."""
+        """Returns the VHDL entity and body for this ArrayReader's wrapper."""
         return gen_template(
             wrapper_body_template,
             camelprefix = self._camel_prefix,
@@ -1296,7 +1296,7 @@ class ColumnReader(object):
         )
 
     def wrapper_component(self):
-        """Returns the VHDL entity and body for this ColumnReader's wrapper."""
+        """Returns the VHDL entity and body for this ArrayReader's wrapper."""
         return gen_template(
             wrapper_component_template,
             camelprefix = self.instance_prefix[:-1],
@@ -1305,7 +1305,7 @@ class ColumnReader(object):
         )
 
     def testbench(self, **kwargs):
-        """Generates a randomized testbench for this ColumnReader."""
+        """Generates a randomized testbench for this ArrayReader."""
 
         # Randomize any parameters not explicitly given.
         params = []
@@ -1330,7 +1330,7 @@ class ColumnReader(object):
 
         # Generate the testbench wrapper object.
         acc = "acc" if multi_clk else "bus"
-        tb = Testbench(self._camel_prefix + "ColumnReader_tb", {"bus", acc})
+        tb = Testbench(self._camel_prefix + "ArrayReader_tb", {"bus", acc})
 
         # Set constants.
         tb.set_const("BUS_ADDR_WIDTH",      addr_width)

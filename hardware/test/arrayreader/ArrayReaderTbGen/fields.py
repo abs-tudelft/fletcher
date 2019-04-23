@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """This package contains a python object representation of Arrow fields
-(= columns etc.) that includes defaults for all the configuration keys
-supported by the VHDL ColumnReader."""
+(= arrays etc.) that includes defaults for all the configuration keys
+supported by the VHDL ArrayReader."""
 
 import random
 from .configurable import *
@@ -115,7 +115,7 @@ class Field(Configurable):
 
     @classmethod
     def from_arrow(cls, *args, **kwargs):
-        """Returns a Field based on the given Arrow column, or something. Stub
+        """Returns a Field based on the given Arrow array, or something. Stub
         method for now. TODO: implement this."""
         raise NotImplemented()
 

@@ -20,4 +20,4 @@ from .configurable import *
 from .fields import *
 from .streams import *
 from .testbench import *
-from .columnreader import *
+from .arrayreader import *
