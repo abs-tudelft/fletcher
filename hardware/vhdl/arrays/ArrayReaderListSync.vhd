@@ -20,9 +20,9 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.Columns.all;
+use work.Arrays.all;
 
-entity ColumnReaderListSync is
+entity ArrayReaderListSync is
   generic (
 
     -- Width of a data element.
@@ -97,9 +97,9 @@ entity ColumnReaderListSync is
     out_count                   : out std_logic_vector(COUNT_WIDTH-1 downto 0)
 
   );
-end ColumnReaderListSync;
+end ArrayReaderListSync;
 
-architecture Behavioral of ColumnReaderListSync is
+architecture Behavioral of ArrayReaderListSync is
 
   -- Width of the requested count vector.
   constant REQ_COUNT_WIDTH      : natural := log2ceil(COUNT_MAX+1);
@@ -149,7 +149,7 @@ begin
 
   -- Decode the length input stream into a stream of element counts and last
   -- flags, as these things are determined only by the list length.
-  decoder_inst: ColumnReaderListSyncDecoder
+  decoder_inst: ArrayReaderListSyncDecoder
     generic map (
       LENGTH_WIDTH              => LENGTH_WIDTH,
       COUNT_MAX                 => COUNT_MAX,

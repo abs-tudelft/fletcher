@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 use work.SimUtils.all;
 
-entity ColumnWriter is
+entity ArrayWriter is
   generic (
 
     ---------------------------------------------------------------------------
@@ -64,10 +64,10 @@ entity ColumnWriter is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string := "listprim(8;epc=64)";
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -144,14 +144,14 @@ entity ColumnWriter is
     in_data                     : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnWriter;
+end ArrayWriter;
 
-architecture Behavioral of ColumnWriter is
+architecture Behavioral of ArrayWriter is
 begin
 
   -- pragma translate off
   process is begin
-    dumpStdOut("ColumnWriter");
+    dumpStdOut("ArrayWriter");
     dumpStdOut("--------------------------------------------------------------");
     dumpStdOut("Config            : " & CFG);
     dumpStdOut("User streams      : " & integer'image(arcfg_userCount(CFG)));
@@ -160,8 +160,8 @@ begin
   end process;
   -- pragma translate on
 
-  -- Wrap an arbiter and register slices around the requested column writer.
-  arb_inst: ColumnWriterArb
+  -- Wrap an arbiter and register slices around the requested array writer.
+  arb_inst: ArrayWriterArb
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

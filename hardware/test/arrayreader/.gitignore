@@ -1,5 +1,5 @@
 failures/
 work/
-ColumnReader_tb.vhd
+ArrayReader_tb.vhd
 transcript
 vsim.wlf

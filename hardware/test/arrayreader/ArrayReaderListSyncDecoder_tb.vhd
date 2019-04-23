@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.StreamSim.all;
-use work.Columns.all;
+use work.Arrays.all;
 
-entity ColumnReaderListSyncDecoder_tb is
-end ColumnReaderListSyncDecoder_tb;
+entity ArrayReaderListSyncDecoder_tb is
+end ArrayReaderListSyncDecoder_tb;
 
-architecture Behavioral of ColumnReaderListSyncDecoder_tb is
+architecture Behavioral of ArrayReaderListSyncDecoder_tb is
 
   constant LENGTH_WIDTH         : natural := 4;
   constant COUNT_MAX            : natural := 3;
@@ -80,7 +80,7 @@ begin
       out_data                  => inl_length
     );
 
-  uut: ColumnReaderListSyncDecoder
+  uut: ArrayReaderListSyncDecoder
     generic map (
       LENGTH_WIDTH              => LENGTH_WIDTH,
       COUNT_MAX                 => COUNT_MAX,

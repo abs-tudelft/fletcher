@@ -21,7 +21,7 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 
-entity ColumnReaderListSyncDecoder is
+entity ArrayReaderListSyncDecoder is
   generic (
 
     -- Width of the list length vector.
@@ -63,9 +63,9 @@ entity ColumnReaderListSyncDecoder is
     ctrl_count                  : out std_logic_vector(COUNT_WIDTH-1 downto 0)
 
   );
-end ColumnReaderListSyncDecoder;
+end ArrayReaderListSyncDecoder;
 
-architecture Behavioral of ColumnReaderListSyncDecoder is
+architecture Behavioral of ArrayReaderListSyncDecoder is
 
   -- Length input stream after the optional register slice.
   signal len_valid              : std_logic;

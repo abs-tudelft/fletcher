@@ -20,7 +20,7 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 
-entity ColumnReaderUnlockCombine is
+entity ArrayReaderUnlockCombine is
   generic (
 
     -- Enables or disables command stream tag system. When disabled, this unit
@@ -53,9 +53,9 @@ entity ColumnReaderUnlockCombine is
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
 
   );
-end ColumnReaderUnlockCombine;
+end ArrayReaderUnlockCombine;
 
-architecture Behavioral of ColumnReaderUnlockCombine is
+architecture Behavioral of ArrayReaderUnlockCombine is
 begin
 
   with_cmd_tag_gen: if CMD_TAG_ENABLE generate

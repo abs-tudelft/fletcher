@@ -19,11 +19,11 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 
-entity ColumnReaderStruct is
+entity ArrayReaderStruct is
   generic (
 
     ---------------------------------------------------------------------------
@@ -51,10 +51,10 @@ entity ColumnReaderStruct is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -131,9 +131,9 @@ entity ColumnReaderStruct is
     out_data                    : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnReaderStruct;
+end ArrayReaderStruct;
 
-architecture Behavioral of ColumnReaderStruct is
+architecture Behavioral of ArrayReaderStruct is
 
   -- Metrics and signals for child A.
   constant A_CFG                : string    := parse_arg(cfg, 0);
@@ -217,7 +217,7 @@ begin
   b_cmd_ctrl <= cmd_ctrl(CSI(1)-1 downto CSI(0));
 
   -- Combine the unlock streams.
-  unlock_inst: ColumnReaderUnlockCombine
+  unlock_inst: ArrayReaderUnlockCombine
     generic map (
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
@@ -311,7 +311,7 @@ begin
   end generate;
 
   -- Instantiate child A.
-  a_inst: ColumnReaderLevel
+  a_inst: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -357,7 +357,7 @@ begin
     );
 
   -- Instantiate child B.
-  b_inst: ColumnReaderLevel
+  b_inst: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

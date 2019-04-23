@@ -20,12 +20,12 @@ use ieee.math_real.all;
 library work;
 use work.Streams.all;
 use work.StreamSim.all;
-use work.Columns.all;
+use work.Arrays.all;
 
-entity ColumnReaderListSync_tb is
-end ColumnReaderListSync_tb;
+entity ArrayReaderListSync_tb is
+end ArrayReaderListSync_tb;
 
-architecture Behavioral of ColumnReaderListSync_tb is
+architecture Behavioral of ArrayReaderListSync_tb is
 
   constant ELEMENT_WIDTH        : natural := 4;
   constant LENGTH_WIDTH         : natural := 3;
@@ -143,7 +143,7 @@ begin
     );
 
   -- Instantiate UUT.
-  uut: ColumnReaderListSync
+  uut: ArrayReaderListSync
     generic map (
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       LENGTH_WIDTH              => LENGTH_WIDTH,

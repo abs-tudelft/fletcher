@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 use work.Buffers.all;
 
-entity ColumnWriterLevel is
+entity ArrayWriterLevel is
   generic (
 
     ---------------------------------------------------------------------------
@@ -55,10 +55,10 @@ entity ColumnWriterLevel is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -136,9 +136,9 @@ entity ColumnWriterLevel is
     in_data                     : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnWriterLevel;
+end ArrayWriterLevel;
 
-architecture Behavioral of ColumnWriterLevel is
+architecture Behavioral of ArrayWriterLevel is
 
   -- Determine what the command is for this level of hierarchy.
   constant CMD                  : string := parse_command(CFG);
@@ -211,7 +211,7 @@ begin
   -----------------------------------------------------------------------------
   arb_gen: if CMD = "arb" generate
   begin
-    arb_inst: ColumnWriterArb
+    arb_inst: ArrayWriterArb
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -260,11 +260,11 @@ begin
   end generate;
 
   -----------------------------------------------------------------------------
-  -- Null bitmap reader
+  -- Null bitmap writer
   -----------------------------------------------------------------------------
   --null_gen: if CMD = "null" generate
   --begin
-  --  null_inst: ColumnReaderNull
+  --  null_inst: ArrayWriterNull
   --    generic map (
   --      BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
   --      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -293,14 +293,38 @@ begin
   --      unlock_ready              => unlock_ready,
   --      unlock_tag                => unlock_tag,
   --
-  --      busReq_valid              => busReq_valid,
-  --      busReq_ready              => busReq_ready,
-  --      busReq_addr               => busReq_addr,
-  --      busReq_len                => busReq_len,
-  --      busResp_valid             => busResp_valid,
-  --      busResp_ready             => busResp_ready,
-  --      busResp_data              => busResp_data,
-  --      busResp_last              => busResp_last,
+  --    port map (
+  --      bus_clk                   => bus_clk,
+  --      bus_reset                 => bus_reset,
+  --      acc_clk                   => acc_clk,
+  --      acc_reset                 => acc_reset,
+  --
+  --      cmd_valid                 => cmd_valid,
+  --      cmd_ready                 => cmd_ready,
+  --      cmd_firstIdx              => cmd_firstIdx,
+  --      cmd_lastIdx               => cmd_lastIdx,
+  --      cmd_ctrl                  => cmd_ctrl,
+  --      cmd_tag                   => cmd_tag,
+  --
+  --      unlock_valid              => unlock_valid,
+  --      unlock_ready              => unlock_ready,
+  --      unlock_tag                => unlock_tag,
+  --
+  --      bus_wreq_valid            => bus_wreq_valid,
+  --      bus_wreq_ready            => bus_wreq_ready,
+  --      bus_wreq_addr             => bus_wreq_addr,
+  --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wdat_valid            => bus_wdat_valid,
+  --      bus_wdat_ready            => bus_wdat_ready,
+  --      bus_wdat_data             => bus_wdat_data,
+  --      bus_wdat_strobe           => bus_wdat_strobe,
+  --      bus_wdat_last             => bus_wdat_last,
+  --
+  --      in_valid                  => in_valid,
+  --      in_ready                  => in_ready,
+  --      in_last                   => in_last,
+  --      in_dvalid                 => in_dvalid,
+  --      in_data                   => in_data
   --
   --      out_valid                 => out_valid,
   --      out_ready                 => out_ready,
@@ -311,11 +335,11 @@ begin
   --end generate;
 
   -----------------------------------------------------------------------------
-  -- List reader
+  -- List Writer
   -----------------------------------------------------------------------------
   --list_gen: if CMD = "list" generate
   --begin
-  --  list_inst: ColumnReaderList
+  --  list_inst: ArrayReaderList
   --    generic map (
   --      BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
   --      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -344,14 +368,38 @@ begin
   --      unlock_ready              => unlock_ready,
   --      unlock_tag                => unlock_tag,
   --
-  --      busReq_valid              => busReq_valid,
-  --      busReq_ready              => busReq_ready,
-  --      busReq_addr               => busReq_addr,
-  --      busReq_len                => busReq_len,
-  --      busResp_valid             => busResp_valid,
-  --      busResp_ready             => busResp_ready,
-  --      busResp_data              => busResp_data,
-  --      busResp_last              => busResp_last,
+  --    port map (
+  --      bus_clk                   => bus_clk,
+  --      bus_reset                 => bus_reset,
+  --      acc_clk                   => acc_clk,
+  --      acc_reset                 => acc_reset,
+  --
+  --      cmd_valid                 => cmd_valid,
+  --      cmd_ready                 => cmd_ready,
+  --      cmd_firstIdx              => cmd_firstIdx,
+  --      cmd_lastIdx               => cmd_lastIdx,
+  --      cmd_ctrl                  => cmd_ctrl,
+  --      cmd_tag                   => cmd_tag,
+  --
+  --      unlock_valid              => unlock_valid,
+  --      unlock_ready              => unlock_ready,
+  --      unlock_tag                => unlock_tag,
+  --
+  --      bus_wreq_valid            => bus_wreq_valid,
+  --      bus_wreq_ready            => bus_wreq_ready,
+  --      bus_wreq_addr             => bus_wreq_addr,
+  --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wdat_valid            => bus_wdat_valid,
+  --      bus_wdat_ready            => bus_wdat_ready,
+  --      bus_wdat_data             => bus_wdat_data,
+  --      bus_wdat_strobe           => bus_wdat_strobe,
+  --      bus_wdat_last             => bus_wdat_last,
+  --
+  --      in_valid                  => in_valid,
+  --      in_ready                  => in_ready,
+  --      in_last                   => in_last,
+  --      in_dvalid                 => in_dvalid,
+  --      in_data                   => in_data
   --
   --      out_valid                 => out_valid,
   --      out_ready                 => out_ready,
@@ -366,7 +414,7 @@ begin
   -----------------------------------------------------------------------------
   listprim_gen: if CMD = "listprim" generate
   begin
-    listprim_inst: ColumnWriterListPrim
+    listprim_inst: ArrayWriterListPrim
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -415,11 +463,11 @@ begin
   end generate;
 
   -----------------------------------------------------------------------------
-  -- Struct reader
+  -- Struct writer
   -----------------------------------------------------------------------------
   --struct_gen: if CMD = "struct" generate
   --begin
-  --  struct_inst: ColumnReaderStruct
+  --  struct_inst: ArrayWriterStruct
   --    generic map (
   --      BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
   --      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -449,14 +497,21 @@ begin
   --      unlock_ready              => unlock_ready,
   --      unlock_tag                => unlock_tag,
   --
-  --      busReq_valid              => busReq_valid,
-  --      busReq_ready              => busReq_ready,
-  --      busReq_addr               => busReq_addr,
-  --      busReq_len                => busReq_len,
-  --      busResp_valid             => busResp_valid,
-  --      busResp_ready             => busResp_ready,
-  --      busResp_data              => busResp_data,
-  --      busResp_last              => busResp_last,
+  --      bus_wreq_valid            => bus_wreq_valid,
+  --      bus_wreq_ready            => bus_wreq_ready,
+  --      bus_wreq_addr             => bus_wreq_addr,
+  --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wdat_valid            => bus_wdat_valid,
+  --      bus_wdat_ready            => bus_wdat_ready,
+  --      bus_wdat_data             => bus_wdat_data,
+  --      bus_wdat_strobe           => bus_wdat_strobe,
+  --      bus_wdat_last             => bus_wdat_last,
+  --
+  --      in_valid                  => in_valid,
+  --      in_ready                  => in_ready,
+  --      in_last                   => in_last,
+  --      in_dvalid                 => in_dvalid,
+  --      in_data                   => in_data
   --
   --      out_valid                 => out_valid,
   --      out_ready                 => out_ready,

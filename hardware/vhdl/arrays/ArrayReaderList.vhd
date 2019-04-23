@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 use work.Buffers.all;
 
-entity ColumnReaderList is
+entity ArrayReaderList is
   generic (
 
     ---------------------------------------------------------------------------
@@ -52,10 +52,10 @@ entity ColumnReaderList is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -132,9 +132,9 @@ entity ColumnReaderList is
     out_data                    : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnReaderList;
+end ArrayReaderList;
 
-architecture Behavioral of ColumnReaderList is
+architecture Behavioral of ArrayReaderList is
 
   -- Output user stream serialization indices.
   constant OUI                  : nat_array := cumulative(arcfg_userWidths(CFG, INDEX_WIDTH));
@@ -193,7 +193,7 @@ architecture Behavioral of ColumnReaderList is
 begin
 
   -- Combine the unlock streams.
-  unlock_inst: ColumnReaderUnlockCombine
+  unlock_inst: ArrayReaderUnlockCombine
     generic map (
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
@@ -286,7 +286,7 @@ begin
   -- the list element stream (= the master user stream of child B) such that
   -- the last and dvalid flags are correct. The resulting stream is the second
   -- user stream we output.
-  list_sync_inst: ColumnReaderListSync
+  list_sync_inst: ArrayReaderListSync
     generic map (
       ELEMENT_WIDTH             => B_USER_WIDTHS(0),
       LENGTH_WIDTH              => INDEX_WIDTH,
@@ -399,7 +399,7 @@ begin
     );
 
   -- Instantiate child.
-  b_inst: ColumnReaderLevel
+  b_inst: ArrayReaderLevel
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

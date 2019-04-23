@@ -19,15 +19,15 @@ use ieee.math_real.all;
 
 library work;
 use work.Streams.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.SimUtils.all;
 
 --pragma simulation timeout 1 ms
 
-entity ColumnWriterListSync_tc is
-end ColumnWriterListSync_tc;
+entity ArrayWriterListSync_tc is
+end ArrayWriterListSync_tc;
 
-architecture Behavioral of ColumnWriterListSync_tc is
+architecture Behavioral of ArrayWriterListSync_tc is
 
   constant LEN_SEED             : positive := 16#BEE15#;
   constant ELEM_SEED            : positive := 16#F00D#;
@@ -279,7 +279,7 @@ begin
   end process;
 
   -- Instantiate UUT.
-  uut: ColumnWriterListSync
+  uut: ArrayWriterListSync
     generic map (
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       LENGTH_WIDTH              => LENGTH_WIDTH,

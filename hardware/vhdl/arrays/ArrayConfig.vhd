@@ -13,12 +13,12 @@
 -- limitations under the License.
 
 library work;
-use work.ColumnConfigParse.all;
+use work.ArrayConfigParse.all;
 use work.Utils.all;
 
-package ColumnConfig is
+package ArrayConfig is
 
-  -- The supported column reader configuration commands are listed and
+  -- The supported Array reader configuration commands are listed and
   -- documented below. Vectors are listed MSB first. Streams are listed in
   -- least significant order.
   --
@@ -44,7 +44,7 @@ package ColumnConfig is
   -- arb(<>)
   -----------------------------------------------------------------------------
   -- Constructs an intermediate bus arbiter and registers all streams. This is
-  -- automatically instantiated at the top level by ColumnReader.
+  -- automatically instantiated at the top level by ArrayReader.
   --
   -- Control vector:
   --   - <>
@@ -169,9 +169,9 @@ package ColumnConfig is
   function arcfg_userWidthMain(cfg: string; INDEX_WIDTH: natural) return natural;
   function arcfg_userWidthSecondary(cfg: string; INDEX_WIDTH: natural) return natural;
 
-end ColumnConfig;
+end ArrayConfig;
 
-package body ColumnConfig is
+package body ArrayConfig is
 
   -- Returns the control vector width for the given configuration.
   function arcfg_ctrlWidth(cfg: string; BUS_ADDR_WIDTH: natural) return natural is
@@ -468,4 +468,4 @@ package body ColumnConfig is
   end function;
 
 
-end ColumnConfig;
+end ArrayConfig;

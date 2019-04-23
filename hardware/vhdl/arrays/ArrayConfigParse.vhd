@@ -15,7 +15,7 @@
 library work;
 use work.Utils.all;
 
-package ColumnConfigParse is
+package ArrayConfigParse is
 
   -- Implementations of integer'image and integer'value, because these
   -- constructs are not supported everywhere. Only supports positive
@@ -38,9 +38,9 @@ package ColumnConfigParse is
   function parse_param(cfg: string; param: string; default_val: integer) return integer;
   function parse_param(cfg: string; param: string; default_val: boolean) return boolean;
 
-end ColumnConfigParse;
+end ArrayConfigParse;
 
-package body ColumnConfigParse is
+package body ArrayConfigParse is
 
   -- Implementations of integer'image and integer'value, because these
   -- constructs are not supported everywhere. Only supports positive
@@ -429,4 +429,4 @@ package body ColumnConfigParse is
     end if;
   end function;
 
-end ColumnConfigParse;
+end ArrayConfigParse;

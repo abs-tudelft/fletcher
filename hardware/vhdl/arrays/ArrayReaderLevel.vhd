@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 use work.Buffers.all;
 
-entity ColumnReaderLevel is
+entity ArrayReaderLevel is
   generic (
 
     ---------------------------------------------------------------------------
@@ -52,10 +52,10 @@ entity ColumnReaderLevel is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -132,9 +132,9 @@ entity ColumnReaderLevel is
     out_data                    : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnReaderLevel;
+end ArrayReaderLevel;
 
-architecture Behavioral of ColumnReaderLevel is
+architecture Behavioral of ArrayReaderLevel is
 
   -- Determine what the command is for this level of hierarchy.
   constant CMD                  : string  := parse_command(CFG);
@@ -219,7 +219,7 @@ begin
   -----------------------------------------------------------------------------
   arb_gen: if CMD = "arb" generate
   begin
-    arb_inst: ColumnReaderArb
+    arb_inst: ArrayReaderArb
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -270,7 +270,7 @@ begin
   -----------------------------------------------------------------------------
   null_gen: if CMD = "null" generate
   begin
-    null_inst: ColumnReaderNull
+    null_inst: ArrayReaderNull
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -321,7 +321,7 @@ begin
   -----------------------------------------------------------------------------
   list_gen: if CMD = "list" generate
   begin
-    list_inst: ColumnReaderList
+    list_inst: ArrayReaderList
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -372,7 +372,7 @@ begin
   -----------------------------------------------------------------------------
   listprim_gen: if CMD = "listprim" generate
   begin
-    list_inst: ColumnReaderListPrim
+    list_inst: ArrayReaderListPrim
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
@@ -423,7 +423,7 @@ begin
   -----------------------------------------------------------------------------
   struct_gen: if CMD = "struct" generate
   begin
-    struct_inst: ColumnReaderStruct
+    struct_inst: ArrayReaderStruct
       generic map (
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

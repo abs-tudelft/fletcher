@@ -2,8 +2,8 @@ source $::env(FLETCHER_HARDWARE_DIR)/test/fletcher.tcl
 
 proc test_listsync {} {
   compile_sources
-  simulate work.columnwriterlistsync_tc {{"Testbench" sim:/columnwriterlistsync_tc/*     }
-                                         {"UUT"       sim:/columnwriterlistsync_tc/uut/* }}
+  simulate work.arraywriterlistsync_tc {{"Testbench" sim:/arraywriterlistsync_tc/*     }
+                                         {"UUT"       sim:/arraywriterlistsync_tc/uut/* }}
   
 }
 
@@ -30,7 +30,7 @@ proc test_prim {} {
 add_fletcher
 add_fletcher_tb
 
-add_source ColumnWriterListSync_tc.vhd -2008
+add_source ArrayWriterListSync_tc.vhd -2008
 add_source listprim8epc4_tc.vhd -2008
 add_source prim32_tc.vhd -2008
 

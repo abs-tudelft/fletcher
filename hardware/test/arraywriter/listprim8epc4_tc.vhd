@@ -22,9 +22,9 @@ use work.Streams.all;
 use work.Utils.all;
 use work.SimUtils.all;
 use work.Arrow.all;
-use work.Columns.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
+use work.Arrays.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
 
 -- pragma simulation timeout 1 ms
 
@@ -96,7 +96,7 @@ architecture tb of listprim8epc4_tc is
   signal prim_dvalid          : std_logic;
   
  -----------------------------------------------------------------------------
-  -- Result ColumnWriter Interface
+  -- Result ArrayWriter Interface
   -----------------------------------------------------------------------------
   constant INDEX_WIDTH_RESULT        : natural := 32;
   constant VALUE_ELEM_WIDTH_RESULT   : natural := 32;
@@ -482,7 +482,7 @@ begin
   bus_wreq_ready <= '1';
   bus_wdat_ready <= '1';
   
-  uut : ColumnWriter
+  uut : ArrayWriter
     generic map (
       BUS_ADDR_WIDTH      => BUS_ADDR_WIDTH,    
       BUS_LEN_WIDTH       => BUS_LEN_WIDTH,     
@@ -525,7 +525,7 @@ begin
       in_data             => in_data
     );
     
-  result_cw : ColumnWriter
+  result_cw : ArrayWriter
   generic map (
     BUS_ADDR_WIDTH     => BUS_ADDR_WIDTH,
     BUS_LEN_WIDTH      => BUS_LEN_WIDTH,

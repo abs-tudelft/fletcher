@@ -20,9 +20,9 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.Columns.all;
+use work.Arrays.all;
 
-entity ColumnWriterListSync is
+entity ArrayWriterListSync is
   generic (
 
     ---------------------------------------------------------------------------
@@ -129,9 +129,9 @@ entity ColumnWriterListSync is
     oute_count                  : out std_logic_vector(COUNT_WIDTH-1 downto 0)
 
   );
-end ColumnWriterListSync;
+end ArrayWriterListSync;
 
-architecture Behavioral of ColumnWriterListSync is
+architecture Behavioral of ArrayWriterListSync is
 
   -- Width of the requested count vector.
   constant REQ_COUNT_WIDTH      : natural := log2ceil(COUNT_MAX+1);
@@ -359,7 +359,7 @@ begin
     normi_last                  <= ine_last;
 
     -- Generate a control stream to the normalizer.
-    list_sync_decoder_inst : ColumnReaderListSyncDecoder
+    list_sync_decoder_inst : ArrayReaderListSyncDecoder
       generic map (
         LENGTH_WIDTH            => LENGTH_WIDTH,
         COUNT_MAX               => COUNT_MAX,

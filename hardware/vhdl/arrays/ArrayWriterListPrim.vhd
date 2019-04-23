@@ -19,12 +19,12 @@ use ieee.numeric_std.all;
 library work;
 use work.Streams.all;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
-use work.Columns.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
+use work.Arrays.all;
 use work.Buffers.all;
 
-entity ColumnWriterListPrim is
+entity ArrayWriterListPrim is
   generic (
 
     ---------------------------------------------------------------------------
@@ -55,10 +55,10 @@ entity ColumnWriterListPrim is
     INDEX_WIDTH                 : natural := 32;
 
     ---------------------------------------------------------------------------
-    -- Column metrics and configuration
+    -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ColumnReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ColumnReaderConfig.vhd.
+    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayReaderConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
@@ -137,9 +137,9 @@ entity ColumnWriterListPrim is
     in_data                     : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
 
   );
-end ColumnWriterListPrim;
+end ArrayWriterListPrim;
 
-architecture Behavioral of ColumnWriterListPrim is
+architecture Behavioral of ArrayWriterListPrim is
 
   -- Input user stream serialization indices.
   constant IUI                  : nat_array := cumulative(arcfg_userWidths(CFG, INDEX_WIDTH));
@@ -209,7 +209,7 @@ architecture Behavioral of ColumnWriterListPrim is
 begin
 
   -- Combine the unlock streams.
-  unlock_inst: ColumnReaderUnlockCombine
+  unlock_inst: ArrayReaderUnlockCombine
     generic map (
       CMD_TAG_ENABLE            => CMD_TAG_ENABLE,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
@@ -233,7 +233,7 @@ begin
     );
 
   -- Instantiate the list synchronizer
-  sync_inst: ColumnWriterListSync
+  sync_inst: ArrayWriterListSync
     generic map (
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       LENGTH_WIDTH              => INDEX_WIDTH,

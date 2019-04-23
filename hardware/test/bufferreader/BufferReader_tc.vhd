@@ -31,7 +31,7 @@ use work.Wrapper.all;
 -- internal command stream and the bus request generator
 -- So normally if it ends, it should be somewhat okay in terms of how many
 -- elements it returns. Whether they are the right elements can be tested using
--- the columnreader test bench, or by setting the element size equal to the 
+-- the ArrayReader test bench, or by setting the element size equal to the 
 -- word size, but that is not a guarantee of proper functioning.
 entity BufferReader_tc is
   generic (

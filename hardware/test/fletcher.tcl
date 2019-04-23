@@ -139,29 +139,29 @@ proc add_buffers {{source_dir ""}} {
   add_source $source_dir/buffers/BufferWriter.vhd
 }
 
-proc add_columns {{source_dir ""}} {
-  echo "- Column Readers/Writers."
+proc add_arrays {{source_dir ""}} {
+  echo "- Array Readers/Writers."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/columns/ColumnConfigParse.vhd
-  add_source $source_dir/columns/ColumnConfig.vhd
-  add_source $source_dir/columns/Columns.vhd
+  add_source $source_dir/arrays/ArrayConfigParse.vhd
+  add_source $source_dir/arrays/ArrayConfig.vhd
+  add_source $source_dir/arrays/Arrays.vhd
   
-  add_source $source_dir/columns/ColumnReaderArb.vhd
-  add_source $source_dir/columns/ColumnReaderLevel.vhd
-  add_source $source_dir/columns/ColumnReaderList.vhd
-  add_source $source_dir/columns/ColumnReaderListPrim.vhd
-  add_source $source_dir/columns/ColumnReaderListSync.vhd
-  add_source $source_dir/columns/ColumnReaderListSyncDecoder.vhd
-  add_source $source_dir/columns/ColumnReaderNull.vhd
-  add_source $source_dir/columns/ColumnReaderStruct.vhd
-  add_source $source_dir/columns/ColumnReaderUnlockCombine.vhd
-  add_source $source_dir/columns/ColumnReader.vhd
+  add_source $source_dir/arrays/ArrayReaderArb.vhd
+  add_source $source_dir/arrays/ArrayReaderLevel.vhd
+  add_source $source_dir/arrays/ArrayReaderList.vhd
+  add_source $source_dir/arrays/ArrayReaderListPrim.vhd
+  add_source $source_dir/arrays/ArrayReaderListSync.vhd
+  add_source $source_dir/arrays/ArrayReaderListSyncDecoder.vhd
+  add_source $source_dir/arrays/ArrayReaderNull.vhd
+  add_source $source_dir/arrays/ArrayReaderStruct.vhd
+  add_source $source_dir/arrays/ArrayReaderUnlockCombine.vhd
+  add_source $source_dir/arrays/ArrayReader.vhd
   
-  add_source $source_dir/columns/ColumnWriterArb.vhd
-  add_source $source_dir/columns/ColumnWriterListSync.vhd
-  add_source $source_dir/columns/ColumnWriterListPrim.vhd
-  add_source $source_dir/columns/ColumnWriterLevel.vhd
-  add_source $source_dir/columns/ColumnWriter.vhd
+  add_source $source_dir/arrays/ArrayWriterArb.vhd
+  add_source $source_dir/arrays/ArrayWriterListSync.vhd
+  add_source $source_dir/arrays/ArrayWriterListPrim.vhd
+  add_source $source_dir/arrays/ArrayWriterLevel.vhd
+  add_source $source_dir/arrays/ArrayWriter.vhd
 }
 
 proc add_wrapper {{source_dir ""}} {
@@ -186,7 +186,7 @@ proc add_fletcher {{source_dir ""}} {
   add_streams $source_dir
   add_interconnect $source_dir
   add_buffers $source_dir
-  add_columns $source_dir
+  add_arrays $source_dir
   add_wrapper $source_dir
 }
 

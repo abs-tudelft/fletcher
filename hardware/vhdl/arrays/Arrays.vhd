@@ -18,14 +18,14 @@ use ieee.numeric_std.all;
 
 library work;
 use work.Utils.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
 
-package Columns is
+package Arrays is
   -----------------------------------------------------------------------------
-  -- ColumnWriter
+  -- ArrayWriter
   -----------------------------------------------------------------------------
-  component ColumnWriter is
+  component ArrayWriter is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -69,7 +69,7 @@ package Columns is
     );
   end component;
 
-  component ColumnWriterLevel is
+  component ArrayWriterLevel is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -113,7 +113,7 @@ package Columns is
     );
   end component;
 
-  component ColumnWriterArb is
+  component ArrayWriterArb is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -157,7 +157,7 @@ package Columns is
     );
   end component;
 
-  component ColumnWriterListPrim is
+  component ArrayWriterListPrim is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -201,7 +201,7 @@ package Columns is
     );
   end component;
 
-  component ColumnWriterListSync is
+  component ArrayWriterListSync is
     generic (
       ELEMENT_WIDTH             : positive;
       LENGTH_WIDTH              : positive;
@@ -242,9 +242,9 @@ package Columns is
   end component;
 
   -----------------------------------------------------------------------------
-  -- ColumnReader
+  -- ArrayReader
   -----------------------------------------------------------------------------
-  component ColumnReader is
+  component ArrayReader is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -286,7 +286,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderLevel is
+  component ArrayReaderLevel is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -328,7 +328,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderArb is
+  component ArrayReaderArb is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -370,7 +370,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderNull is
+  component ArrayReaderNull is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -412,7 +412,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderList is
+  component ArrayReaderList is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -454,50 +454,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderListPrim is
-    generic (
-      BUS_ADDR_WIDTH            : natural;
-      BUS_LEN_WIDTH             : natural;
-      BUS_DATA_WIDTH            : natural;
-      BUS_BURST_STEP_LEN        : natural;
-      BUS_BURST_MAX_LEN         : natural;
-      INDEX_WIDTH               : natural;
-      CFG                       : string;
-      CMD_TAG_ENABLE            : boolean := false;
-      CMD_TAG_WIDTH             : natural := 1
-    );
-    port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-
-      cmd_valid                 : in  std_logic;
-      cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector;
-      cmd_lastIdx               : in  std_logic_vector;
-      cmd_ctrl                  : in  std_logic_vector;
-      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      bus_rreq_valid            : out std_logic_vector;
-      bus_rreq_ready            : in  std_logic_vector;
-      bus_rreq_addr             : out std_logic_vector;
-      bus_rreq_len              : out std_logic_vector;
-      bus_rdat_valid            : in  std_logic_vector;
-      bus_rdat_ready            : out std_logic_vector;
-      bus_rdat_data             : in  std_logic_vector;
-      bus_rdat_last             : in  std_logic_vector;
-      out_valid                 : out std_logic_vector;
-      out_ready                 : in  std_logic_vector;
-      out_last                  : out std_logic_vector;
-      out_dvalid                : out std_logic_vector;
-      out_data                  : out std_logic_vector
-    );
-  end component;
-
-  component ColumnReaderStruct is
+  component ArrayReaderListPrim is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
@@ -540,7 +497,50 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderUnlockCombine is
+  component ArrayReaderStruct is
+    generic (
+      BUS_ADDR_WIDTH            : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_DATA_WIDTH            : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      INDEX_WIDTH               : natural;
+      CFG                       : string;
+      CMD_TAG_ENABLE            : boolean := false;
+      CMD_TAG_WIDTH             : natural := 1
+    );
+    port (
+      bus_clk                   : in  std_logic;
+      bus_reset                 : in  std_logic;
+      acc_clk                   : in  std_logic;
+      acc_reset                 : in  std_logic;
+
+      cmd_valid                 : in  std_logic;
+      cmd_ready                 : out std_logic;
+      cmd_firstIdx              : in  std_logic_vector;
+      cmd_lastIdx               : in  std_logic_vector;
+      cmd_ctrl                  : in  std_logic_vector;
+      cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unlock_valid              : out std_logic;
+      unlock_ready              : in  std_logic := '1';
+      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      bus_rreq_valid            : out std_logic_vector;
+      bus_rreq_ready            : in  std_logic_vector;
+      bus_rreq_addr             : out std_logic_vector;
+      bus_rreq_len              : out std_logic_vector;
+      bus_rdat_valid            : in  std_logic_vector;
+      bus_rdat_ready            : out std_logic_vector;
+      bus_rdat_data             : in  std_logic_vector;
+      bus_rdat_last             : in  std_logic_vector;
+      out_valid                 : out std_logic_vector;
+      out_ready                 : in  std_logic_vector;
+      out_last                  : out std_logic_vector;
+      out_dvalid                : out std_logic_vector;
+      out_data                  : out std_logic_vector
+    );
+  end component;
+
+  component ArrayReaderUnlockCombine is
     generic (
       CMD_TAG_ENABLE            : boolean;
       CMD_TAG_WIDTH             : natural
@@ -564,7 +564,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderListSync is
+  component ArrayReaderListSync is
     generic (
       ELEMENT_WIDTH             : natural;
       LENGTH_WIDTH              : natural;
@@ -596,7 +596,7 @@ package Columns is
     );
   end component;
 
-  component ColumnReaderListSyncDecoder is
+  component ArrayReaderListSyncDecoder is
     generic (
       LENGTH_WIDTH              : natural;
       COUNT_MAX                 : natural;
@@ -619,7 +619,7 @@ package Columns is
     );
   end component;
 
-end Columns;
+end Arrays;
 
-package body Columns is
-end Columns;
+package body Arrays is
+end Arrays;

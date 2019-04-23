@@ -21,9 +21,9 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.SimUtils.all;
-use work.Columns.all;
-use work.ColumnConfig.all;
-use work.ColumnConfigParse.all;
+use work.Arrays.all;
+use work.ArrayConfig.all;
+use work.ArrayConfigParse.all;
 use work.Interconnect.all;
 use work.BusChecking.all;
 
@@ -291,7 +291,7 @@ begin
       bus_wdat_last             => bus_wdat_last
     );
 
-  uut : ColumnWriter
+  uut : ArrayWriter
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
