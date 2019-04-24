@@ -1,3 +1,0 @@
-from .vhdre import RegexMatcher
-
-

@@ -28,7 +28,7 @@ use work.SimUtils.all;
 
 use work.arrow_regexp_pkg.all;
 
--- This UserCore matches regular expressions stored in a string column
+-- This UserCore matches regular expressions stored in a string array
 -- in the Apache Arrow format.
 --
 -- In our programming model it is required to have an interface to a
@@ -261,7 +261,7 @@ begin
   s_axi_arready                 <= not read_valid;
 
   -- Mux for reading
-  -- Might want to insert a reg slice before getting it to the ColumnReaders
+  -- Might want to insert a reg slice before getting it to the ArrayReaders
   -- and UserCore
   s_axi_rdata                   <= mm_regs(read_address);
   s_axi_rvalid                  <= read_valid;

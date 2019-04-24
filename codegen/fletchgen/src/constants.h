@@ -52,7 +52,7 @@ constexpr char
                      "\n"
                      "library work;\n"
                      "use work.Arrow.all;\n"
-                     "use work.Columns.all;\n"
+                     "use work.Arrays.all;\n"
                      "use work.Interconnect.all;\n"
                      "use work.Wrapper.all;\n";
 

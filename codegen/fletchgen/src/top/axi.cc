@@ -25,7 +25,7 @@ std::string generateAXITop(const std::shared_ptr<fletchgen::ColumnWrapper> &col_
     throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
   }
 
-  fletchgen::VHDLTemplate t(std::string(fhwd) + "/vhdl/axi/axi_top.vhdt");
+  fletchgen::VHDLTemplate t(std::string(fhwd) + "/axi/axi_top.vhdt");
 
   fletchgen::config::Config cfg = col_wrapper->configs()[0];
 

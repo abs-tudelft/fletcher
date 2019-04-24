@@ -21,7 +21,7 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 
 use work.SimUtils.all;
 

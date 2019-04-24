@@ -19,7 +19,7 @@ variables:
   stage: check
   image: $GHDL_IMAGE:$GHDL_TAG
   script:
-    - find hardware/vhdl -name "*.vhd" |
+    - find hardware -name "*.vhd" ! -path "*/test/*" |
       xargs ghdl -i -v --std=${STD:-08} |
       grep entity |
       sed -e 's/entity //' |
@@ -49,12 +49,3 @@ test-vhdl-08:
       xargs -i -t bash -c '
       ghdl -m --std=${STD:-08} -frelaxed-rules --ieee=synopsys {};
       ghdl -r --std=${STD:-08} --ieee=synopsys {} --stop-time=100ns'
-
-examples-fletchgen-stringread:
-  image: docker:latest
-  stage: examples
-  script:
-    - docker build -t fletchgen .
-    - docker run -v `pwd`/hardware/test/fletchgen/stringread:/src -v `pwd`/hardware:/hardware -e "FLETCHER_HARDWARE_DIR=/hardware" fletchgen -i src/test.fbs -o src/test_wrapper.vhd -n test -w test_wrapper -s src/test.fbs -d src/test.rb --sim src/sim_top.vhd -x src/test.srec
-    - sed -i -e 's/"src\/test.srec"/"src\/test\/fletchgen\/stringread\/test.srec"/' hardware/test/fletchgen/stringread/sim_top.vhd
-    - docker run -v `pwd`/hardware:/src $GHDL_IMAGE:$GHDL_TAG bash -c "shopt -s globstar && ghdl -i /src/**/*.vhd && ghdl -m --ieee=synopsys sim_top && ghdl -r -v --ieee=synopsys sim_top --stop-time=1ms"

@@ -9,6 +9,9 @@ read_ip [ list \
   $::env(CL_DIR)/design/ip/axi_interconnect_top/axi_interconnect_top.xci
 ]
 
+# Upgrade IP to latest version
+upgrade_ip [get_ips axi_interconnect_top]
+
 # Generate the IP used in cl_arrow
 generate_target all [get_files $::env(CL_DIR)/design/ip/axi_interconnect_top/axi_interconnect_top.xci]
 synth_ip [get_files $::env(CL_DIR)/design/ip/axi_interconnect_top/axi_interconnect_top.xci] -force

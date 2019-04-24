@@ -21,7 +21,7 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
 
@@ -89,38 +89,41 @@ architecture Implementation of fletcher_wrapper is
       REG_WIDTH                                  : natural
     );
     port(
-      weight_cmd_weight_values_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      weight_cmd_tag                             : out std_logic_vector(TAG_WIDTH-1 downto 0);
-      weight_cmd_lastIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      weight_cmd_firstIdx                        : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      weight_cmd_ready                           : in std_logic;
-      weight_cmd_valid                           : out std_logic;
-      weight_out_data                            : in std_logic_vector(63 downto 0);
+      weight_unlock_valid                        : in std_logic;
+      weight_unlock_tag                          : in std_logic_vector(TAG_WIDTH-1 downto 0);
+      weight_unlock_ready                        : out std_logic;
       weight_out_valid                           : in std_logic;
       weight_out_ready                           : out std_logic;
       weight_out_last                            : in std_logic;
+      weight_out_data                            : in std_logic_vector(63 downto 0);
+      weight_cmd_weight_values_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      weight_cmd_valid                           : out std_logic;
+      weight_cmd_tag                             : out std_logic_vector(TAG_WIDTH-1 downto 0);
+      weight_cmd_ready                           : in std_logic;
+      weight_cmd_lastIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      weight_cmd_firstIdx                        : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       -------------------------------------------------------------------------
-      acc_reset                                  : in std_logic;
-      acc_clk                                    : in std_logic;
+      reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       -------------------------------------------------------------------------
-      ctrl_done                                  : out std_logic;
-      ctrl_busy                                  : out std_logic;
-      ctrl_idle                                  : out std_logic;
-      ctrl_reset                                 : in std_logic;
+      reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+      reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
+      idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
+      idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
+      -------------------------------------------------------------------------
       ctrl_stop                                  : in std_logic;
       ctrl_start                                 : in std_logic;
+      ctrl_reset                                 : in std_logic;
+      ctrl_idle                                  : out std_logic;
+      ctrl_done                                  : out std_logic;
+      ctrl_busy                                  : out std_logic;
       -------------------------------------------------------------------------
-      idx_first                                  : in std_logic_vector(REG_WIDTH-1 downto 0);
-      idx_last                                   : in std_logic_vector(REG_WIDTH-1 downto 0);
-      reg_return0                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-      reg_return1                                : out std_logic_vector(REG_WIDTH-1 downto 0);
-      -------------------------------------------------------------------------
-      reg_weight_values_addr                     : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0)
+      acc_reset                                  : in std_logic;
+      acc_clk                                    : in std_logic
     );
   end component;
   -----------------------------------------------------------------------------
 
-  signal s_weight_bus_rdat_data                : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_weight_bus_rdat_ready               : std_logic;
   signal uctrl_done                            : std_logic;
   signal uctrl_busy                            : std_logic;
   signal uctrl_idle                            : std_logic;
@@ -130,26 +133,29 @@ architecture Implementation of fletcher_wrapper is
   signal uctrl_control                         : std_logic_vector(REG_WIDTH-1 downto 0);
   signal uctrl_status                          : std_logic_vector(REG_WIDTH-1 downto 0);
   signal s_weight_bus_rdat_last                : std_logic;
+  signal s_weight_bus_rdat_data                : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal s_weight_cmd_valid                    : std_logic;
-  signal s_weight_bus_rdat_ready               : std_logic;
   signal s_weight_bus_rdat_valid               : std_logic;
   signal s_weight_bus_rreq_len                 : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_weight_bus_rreq_ready               : std_logic;
+  signal s_weight_bus_rreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_weight_bus_rreq_valid               : std_logic;
   signal s_weight_cmd_ready                    : std_logic;
   signal s_weight_cmd_firstIdx                 : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_weight_cmd_lastIdx                  : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_weight_cmd_ctrl                     : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_weight_cmd_tag                      : std_logic_vector(TAG_WIDTH-1 downto 0);
+  signal s_weight_unlock_valid                 : std_logic;
+  signal s_weight_unlock_ready                 : std_logic;
+  signal s_weight_unlock_tag                   : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_weight_out_valid                    : std_logic_vector(0 downto 0);
   signal s_weight_out_ready                    : std_logic_vector(0 downto 0);
   signal s_weight_out_last                     : std_logic_vector(0 downto 0);
   signal s_weight_out_data                     : std_logic_vector(63 downto 0);
   signal s_weight_out_dvalid                   : std_logic_vector(0 downto 0);
-  signal s_weight_bus_rreq_valid               : std_logic;
-  signal s_weight_bus_rreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_weight_bus_rreq_ready               : std_logic;
   -----------------------------------------------------------------------------
-  signal s_bsv_rreq_len                        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal s_bsv_rreq_addr                       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_bsv_rreq_len                        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal s_bsv_rreq_ready                      : std_logic_vector(0 downto 0);
   signal s_bsv_rreq_valid                      : std_logic_vector(0 downto 0);
   -----------------------------------------------------------------------------
@@ -160,7 +166,7 @@ architecture Implementation of fletcher_wrapper is
 begin
   -- ColumnReader instance generated from Arrow schema field:
   -- weight: int64 not null
-  weight_read_inst: ColumnReader
+  weight_read_inst: ArrayReader
     generic map (
       CFG                                      => "prim(64)",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -181,6 +187,9 @@ begin
       cmd_lastIdx                              => s_weight_cmd_lastIdx,
       cmd_ctrl                                 => s_weight_cmd_ctrl,
       cmd_tag                                  => s_weight_cmd_tag,
+      unlock_valid                             => s_weight_unlock_valid,
+      unlock_ready                             => s_weight_unlock_ready,
+      unlock_tag                               => s_weight_unlock_tag,
       out_valid                                => s_weight_out_valid,
       out_ready                                => s_weight_out_ready,
       out_last                                 => s_weight_out_last,
@@ -243,6 +252,9 @@ begin
       weight_cmd_lastIdx                       => s_weight_cmd_lastIdx(INDEX_WIDTH-1 downto 0),
       weight_cmd_tag                           => s_weight_cmd_tag(TAG_WIDTH-1 downto 0),
       weight_cmd_weight_values_addr            => s_weight_cmd_ctrl(BUS_ADDR_WIDTH-1 downto 0),
+      weight_unlock_valid                      => s_weight_unlock_valid,
+      weight_unlock_ready                      => s_weight_unlock_ready,
+      weight_unlock_tag                        => s_weight_unlock_tag,
       idx_first                                => regs_in(5*REG_WIDTH-1 downto 4*REG_WIDTH),
       idx_last                                 => regs_in(6*REG_WIDTH-1 downto 5*REG_WIDTH),
       reg_return0                              => regs_out(3*REG_WIDTH-1 downto 2*REG_WIDTH),

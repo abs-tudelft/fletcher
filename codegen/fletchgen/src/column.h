@@ -31,7 +31,7 @@ using vhdl::nameFrom;
 namespace fletchgen {
 
 /**
- * @brief An instantiation of a Column(Reader/Writer) component
+ * @brief An instantiation of a Array(Reader/Writer) component
  */
 class Column : public Instantiation {
 

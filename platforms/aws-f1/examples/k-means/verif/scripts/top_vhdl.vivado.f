@@ -19,9 +19,9 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSerializer.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSlice.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/streams/StreamSync.vhd
 
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfigParse.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnConfig.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/Columns.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayConfigParse.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayConfig.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/Arrays.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/arrow/Arrow.vhd
 
@@ -36,16 +36,16 @@ ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadArbiter.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadArbiterVec.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/interconnect/BusReadBuffer.vhd
 
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderArb.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderLevel.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderList.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListPrim.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListSync.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderListSyncDecoder.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderNull.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderStruct.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReaderUnlockCombine.vhd
-${FLETCHER_HARDWARE_DIR}/vhdl/columns/ColumnReader.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderArb.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderLevel.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderList.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderListPrim.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderListSync.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderListSyncDecoder.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderNull.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderStruct.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReaderUnlockCombine.vhd
+${FLETCHER_HARDWARE_DIR}/vhdl/arrays/ArrayReader.vhd
 
 ${FLETCHER_HARDWARE_DIR}/vhdl/wrapper/Wrapper.vhd
 ${FLETCHER_HARDWARE_DIR}/vhdl/wrapper/UserCoreController.vhd

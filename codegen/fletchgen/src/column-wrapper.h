@@ -45,7 +45,7 @@ class SignalFromPort : public Signal, public DerivedFrom<Port> {
 };
 
 /**
- * @brief Wraps Column(Reader/Writer)s
+ * @brief Wraps Array(Reader/Writer)s
  */
 class ColumnWrapper : public StreamComponent {
  public:

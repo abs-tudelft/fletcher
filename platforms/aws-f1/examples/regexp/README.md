@@ -12,8 +12,8 @@ least try to build and run the "Hello World" example.
 
 On the master side, the bus arbiter/interconnect is connected to an 
 AXI interconnect that allows the PCI master interface of the Shell to 
-write to the DDR controllers (DMA), and allows the ColumnReaders
-to read from them.
+write to the DDR controllers (DMA), and allows the ArrayReaders to read from 
+them.
 
 Because the Amazon Shell does not provide any address translation 
 functionality, we have to make one copy of the Arrow buffers into the 
