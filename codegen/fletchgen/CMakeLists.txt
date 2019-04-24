@@ -55,8 +55,8 @@ set(SOURCES
         )
 
 set(RESOURCES
-        ../../hardware/vhdl/sim/sim_top.vhdt
-        ../../hardware/vhdl/axi/axi_top.vhdt)
+        ../../hardware/sim/sim_top.vhdt
+        ../../hardware/axi/axi_top.vhdt)
 
 add_library(${FLETCHGEN}-static ${HEADERS} ${SOURCES})
 
