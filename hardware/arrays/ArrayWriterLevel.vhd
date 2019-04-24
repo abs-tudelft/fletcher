@@ -91,7 +91,7 @@ entity ArrayWriterLevel is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets buffers,
     -- in all cases resulting in lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
     -- bitmap present flags, dependent on CFG.
@@ -162,7 +162,7 @@ begin
         BUS_BURST_STEP_LEN      => BUS_BURST_STEP_LEN,
         INDEX_WIDTH             => INDEX_WIDTH,
         ELEMENT_WIDTH           => strtoi(parse_arg(CFG, 0)),
-        IS_INDEX_BUFFER         => false,
+        IS_OFFSETS_BUFFER       => false,
         ELEMENT_COUNT_MAX       => 1,
         ELEMENT_COUNT_WIDTH     => 1,
         CMD_CTRL_WIDTH          => 1,

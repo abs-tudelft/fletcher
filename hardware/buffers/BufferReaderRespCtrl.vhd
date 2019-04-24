@@ -40,8 +40,8 @@ entity BufferReaderRespCtrl is
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural;
     
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Width of the internal command stream shift vector. Should equal
     -- max(1, log2(BUS_WIDTH / ELEMENT_WIDTH))
@@ -57,7 +57,7 @@ entity BufferReaderRespCtrl is
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
     -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- are indexed by this offsets buffer.
     CMD_CTRL_WIDTH              : natural;
 
     -- Command stream tag width. This tag is propagated to the outgoing command
@@ -84,9 +84,9 @@ entity BufferReaderRespCtrl is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
-    -- in all cases resulting in lastIdx - firstIdx elements. baseAddr is the
-    -- pointer to the first element in the buffer.
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets 
+    -- buffers, in all cases resulting in lastIdx - firstIdx elements. 
+    -- baseAddr is the pointer to the first element in the buffer.
     cmdIn_valid                 : in  std_logic;
     cmdIn_ready                 : out std_logic;
     cmdIn_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -298,7 +298,7 @@ begin
 
           v.element.real_last   := u(cmdIn_lastIdx);
                    
-          if IS_INDEX_BUFFER then
+          if IS_OFFSETS_BUFFER then
             if ICS_COUNT_WIDTH = 1 then
               v.element.idx_wa_Last := v.element.last;
             else
@@ -359,9 +359,9 @@ begin
             v.state             := DATA;
           end if;
           
-          -- Index buffers ----------------------------------------------------
+          -- Offsets buffers ----------------------------------------------------
           
-          if IS_INDEX_BUFFER then
+          if IS_OFFSETS_BUFFER then
             -- Set index burst element to 0
             v.element.ibe       := (others => '0');
             

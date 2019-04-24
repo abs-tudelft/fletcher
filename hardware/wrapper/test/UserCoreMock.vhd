@@ -58,7 +58,7 @@ entity UserCoreMock is
 
     SEED                        : positive;
 
-    IS_INDEX_BUFFER             : boolean;
+    IS_OFFSETS_BUFFER           : boolean;
 
     DATA_WIDTH                  : natural;
     INDEX_WIDTH                 : natural;
@@ -350,7 +350,7 @@ begin
               v.result          := v.result + u(in_data((I+1) * ELEMENT_WIDTH - 1 downto I * ELEMENT_WIDTH));
             end loop;
 
-            if IS_INDEX_BUFFER then
+            if IS_OFFSETS_BUFFER then
               v.elements        := v.elements + 1;
             else
               v.elements        := v.elements + u(in_count);

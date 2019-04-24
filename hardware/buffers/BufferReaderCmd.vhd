@@ -55,13 +55,13 @@ entity BufferReaderCmd is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
     -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- are indexed by this offsets buffer.
     CMD_CTRL_WIDTH              : natural;
 
     -- Command stream tag width. This tag is propagated to the outgoing command
@@ -94,7 +94,7 @@ entity BufferReaderCmd is
     ---------------------------------------------------------------------------
     -- Command stream input. firstIdx and lastIdx represent a range of elements
     -- to be fetched from memory. firstIdx is inclusive, lastIdx is exclusive
-    -- for normal buffers and inclusive for index buffers, in all cases
+    -- for normal buffers and inclusive for offsets buffers, in all cases
     -- resulting in lastIdx - firstIdx elements. baseAddr is the pointer to the
     -- first element in the buffer.
     cmdIn_valid                 : in  std_logic;
@@ -260,7 +260,7 @@ begin
       BUS_BURST_MAX_LEN                 => BUS_BURST_MAX_LEN / BUS_BPE,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER                 => IS_OFFSETS_BUFFER,
       CHECK_INDEX                       => true
     )
     port map (

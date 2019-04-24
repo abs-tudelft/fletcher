@@ -88,7 +88,7 @@ entity ArrayReaderListPrim is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets buffers,
     -- in all cases resulting in lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
     -- bitmap present flags, dependent on CFG.
@@ -145,7 +145,7 @@ architecture Behavioral of ArrayReaderListPrim is
   constant COUNT_WIDTH          : natural := log2ceil(COUNT_MAX+1);
   constant DATA_WIDTH           : natural := ELEMENT_WIDTH * COUNT_MAX;
 
-  -- Signals for index buffer reader.
+  -- Signals for offsets buffer reader.
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -214,7 +214,7 @@ begin
       unlock_tag                => unlock_tag
     );
 
-  -- Split the length stream from the index buffer reader in two. One will be
+  -- Split the length stream from the offsets buffer reader in two. One will be
   -- passed to the user, the other is passed to the ListSync instance.
   len_split_inst: StreamSync
     generic map (
@@ -315,7 +315,7 @@ begin
       out_count                 => out_data(OUI(2)-1 downto OUI(2)-COUNT_WIDTH)
     );
 
-  -- Instantiate index buffer reader.
+  -- Instantiate offsets buffer reader.
   a_inst: BufferReader
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -325,7 +325,7 @@ begin
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => INDEX_WIDTH,
-      IS_INDEX_BUFFER           => true,
+      IS_OFFSETS_BUFFER         => true,
       ELEMENT_COUNT_MAX         => 1,
       ELEMENT_COUNT_WIDTH       => 1,
       CMD_CTRL_WIDTH            => BUS_ADDR_WIDTH,
@@ -395,7 +395,7 @@ begin
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER           => false,
+      IS_OFFSETS_BUFFER         => false,
       ELEMENT_COUNT_MAX         => COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => COUNT_WIDTH,
       CMD_CTRL_WIDTH            => 1,
@@ -404,7 +404,7 @@ begin
       BUS_REQ_SLICE             => parse_param(CFG, "bus_req_slice", true),
       BUS_FIFO_DEPTH            => parse_param(CFG, "bus_fifo_depth", 16),
       BUS_FIFO_RAM_CONFIG       => parse_param(CFG, "bus_fifo_ram_config", ""),
-      CMD_OUT_SLICE             => false, -- not required for non-index buffer
+      CMD_OUT_SLICE             => false, -- not required for non-offsets buffer
       UNLOCK_SLICE              => parse_param(CFG, "unlock_slice", true),
       SHR2GB_SLICE              => parse_param(CFG, "shr2gb_slice", true),
       GB2FIFO_SLICE             => parse_param(CFG, "gb2fifo_slice", true),

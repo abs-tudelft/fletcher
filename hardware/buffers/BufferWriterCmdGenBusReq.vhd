@@ -62,8 +62,8 @@ entity BufferWriterCmdGenBusReq is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Wether or not this component should check if the first and last index
     -- are not equal

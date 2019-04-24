@@ -31,8 +31,8 @@ entity BufferReaderPost is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Maximum amount of elements per FIFO entry.
     ELEMENT_FIFO_COUNT_MAX      : natural;
@@ -45,7 +45,7 @@ entity BufferReaderPost is
     -- elements are returned LSB-aligned and LSB-first, along with a count
     -- field that indicates how many elements are valid. A best-effort approach
     -- is utilized; no guarantees are made about how many elements are actually
-    -- returned per cycle. This feature is not supported for index buffers.
+    -- returned per cycle. This feature is not supported for offsets buffers.
     ELEMENT_COUNT_MAX           : natural;
 
     -- Width of the vector indicating the number of valid elements. Must be at
@@ -56,7 +56,7 @@ entity BufferReaderPost is
     -- Timing configuration
     ---------------------------------------------------------------------------
     -- Whether a register slice should be inserted between the FIFO and the
-    -- post-processing logic (differential encoder for index buffers and
+    -- post-processing logic (differential encoder for offsets buffers and
     -- optional serialization).
     FIFO2POST_SLICE             : boolean;
 
@@ -93,7 +93,7 @@ entity BufferReaderPost is
     -- Output stream
     ---------------------------------------------------------------------------
     -- Buffer element stream output. element contains the data element for
-    -- normal buffers and the length for index buffers. last is asserted when
+    -- normal buffers and the length for offsets buffers. last is asserted when
     -- this is the last element for the current command.
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
@@ -204,7 +204,7 @@ begin
     );
 
   -- Connect the outS and outD streams directly for normal buffers.
-  normal_buffer_gen: if not IS_INDEX_BUFFER generate
+  normal_buffer_gen: if not IS_OFFSETS_BUFFER generate
   begin
     outD_valid  <= outS_valid;
     outS_ready  <= outD_ready;
@@ -213,9 +213,9 @@ begin
     outD_last   <= outS_last;
   end generate;
 
-  -- Differentially encode the stream for index buffers to turn index pairs
+  -- Differentially encode the stream for offsets buffers to turn offset pairs
   -- into lengths.
-  index_buffer_gen: if IS_INDEX_BUFFER generate
+  offsets_buffer_gen: if IS_OFFSETS_BUFFER generate
 
     -- Previous entry storage.
     signal prev_valid : std_logic;
@@ -227,7 +227,7 @@ begin
     -- code below will not synthesize correctly due to incorrect vector widths
     -- if this assertion fails.
     assert ELEMENT_COUNT_MAX = 1
-      report "Index buffers currently do not support multiple elements per cycle."
+      report "Offsets buffers currently do not support multiple elements per cycle."
       severity FAILURE;
 
     -- Save the previous entry.

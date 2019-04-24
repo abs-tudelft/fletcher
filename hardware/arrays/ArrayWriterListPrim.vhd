@@ -91,7 +91,7 @@ entity ArrayWriterListPrim is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be written to memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets buffers,
     -- in all cases resulting from lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
     -- bitmap present flags, depending on CFG.
@@ -170,7 +170,7 @@ architecture Behavioral of ArrayWriterListPrim is
   -- transfer.
   constant NORMALIZE            : boolean := parse_param(CFG, "normalize", false);
 
-  -- Signals for index buffer writer.
+  -- Signals for offsets buffer writer.
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -271,7 +271,7 @@ begin
       oute_count                => b_count
     );
 
-  -- Instantiate index buffer writer.
+  -- Instantiate offsets buffer writer.
   a_inst: BufferWriter
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -283,7 +283,7 @@ begin
       BUS_FIFO_DEPTH            => parse_param(CFG, "idx_bus_fifo_depth", 16),
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => INDEX_WIDTH,
-      IS_INDEX_BUFFER           => true,
+      IS_OFFSETS_BUFFER         => true,
       ELEMENT_COUNT_MAX         => 1,
       ELEMENT_COUNT_WIDTH       => 1,
       CMD_CTRL_WIDTH            => BUS_ADDR_WIDTH,
@@ -345,7 +345,7 @@ begin
       BUS_FIFO_DEPTH            => parse_param(CFG, "bus_fifo_depth", 16),
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER           => false,
+      IS_OFFSETS_BUFFER         => false,
       ELEMENT_COUNT_MAX         => COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => COUNT_WIDTH,
       CMD_CTRL_WIDTH            => 1,

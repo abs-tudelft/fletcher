@@ -45,8 +45,8 @@ entity BufferWriterPre is
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
@@ -218,7 +218,7 @@ begin
       INDEX_WIDTH               => INDEX_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
-      IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER         => IS_OFFSETS_BUFFER,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
       ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
@@ -258,12 +258,12 @@ begin
     );
 
   -----------------------------------------------------------------------------
-  -- Length accumulator for index buffers
+  -- Length accumulator for offsets buffers
   -----------------------------------------------------------------------------
 
-  -- For index buffers, the input is a length, which should be accumulated into
+  -- For offsets buffers, the input is a length, which should be accumulated into
   -- an offset. It should be reset when a new command is accepted.
-  idx_gen: if IS_INDEX_BUFFER generate
+  offs_gen: if IS_OFFSETS_BUFFER generate
 
     -- Length stream serialization indices
     constant LSI : nat_array := cumulative((
@@ -305,7 +305,7 @@ begin
     pad_acc_all(LSI(2)-1 downto LSI(1)) <= pad_tag;
     pad_acc_all(LSI(1)-1 downto LSI(0)) <= pad_data;
 
-    -- Instantiate a stream accumulator. If this is an index buffer,
+    -- Instantiate a stream accumulator. If this is an offsets buffer,
     -- ELEMENT_COUNT_MAX should be 1, the strobe should be one bit and we
     -- have one last bit. Skip accumulating if the strobe is low; this is
     -- padded data and not an actual length that we should use.
@@ -397,9 +397,9 @@ begin
 
   end generate;
 
-  -- For non-index buffers, we don't have to do anything, just forward the
+  -- For non-offsets buffers, we don't have to do anything, just forward the
   -- stream and invalidate the offset output forever.
-  not_idx_gen: if not(IS_INDEX_BUFFER) generate
+  not_offs_gen: if not(IS_OFFSETS_BUFFER) generate
     pad_ready                   <= oia_ready;
     oia_valid                   <= pad_valid;
     oia_dvalid                  <= '1';
@@ -563,7 +563,7 @@ begin
   end process;
 
   -- In simulation, make any data unkown if the strobe is low.
-  -- This is mainly done for index buffers which accumulate unkown and still
+  -- This is mainly done for offsets buffers which accumulate unkown and still
   -- generate a valid output.
   --pragma translate off
   process(shaped_data, int_out_strobe) is

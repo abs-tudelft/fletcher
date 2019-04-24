@@ -52,7 +52,7 @@ entity ArrayWriterListSync is
     -- stream. If this is set to false, the outl_length data is equal to
     -- inl_length. Note that it is always necessary to generate a handshake
     -- on this stream for every list, and that its last signal will be used
-    -- to terminate the index buffer and potentially the values buffer in case
+    -- to terminate the offsets buffer and potentially the values buffer in case
     -- ELEM_LAST_FROM_LENGTH is true.
     GENERATE_LENGTH             : boolean := true;
 

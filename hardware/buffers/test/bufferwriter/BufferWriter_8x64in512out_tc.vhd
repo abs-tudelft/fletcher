@@ -42,7 +42,7 @@ begin
     BUS_FIFO_DEPTH              =>         1,
     BUS_FIFO_THRES_SHIFT        =>         0,
     INDEX_WIDTH                 =>        32,
-    IS_INDEX_BUFFER             =>     false,
+    IS_OFFSETS_BUFFER           =>     false,
     ELEMENT_WIDTH               =>        64,
     ELEMENT_COUNT_MAX           =>         8,
     ELEMENT_COUNT_WIDTH         =>         3,

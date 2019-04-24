@@ -29,7 +29,7 @@ package Buffers is
       BUS_BURST_MAX_LEN         : natural := 16;
       INDEX_WIDTH               : natural := 32;
       ELEMENT_WIDTH             : natural := 8;
-      IS_INDEX_BUFFER           : boolean := false;
+      IS_OFFSETS_BUFFER         : boolean := false;
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
       CMD_CTRL_WIDTH            : natural := 1;
@@ -102,7 +102,7 @@ package Buffers is
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       CMD_CTRL_WIDTH            : natural;
       CMD_TAG_WIDTH             : natural;
       CMD_IN_SLICE              : boolean;
@@ -145,7 +145,7 @@ package Buffers is
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       CHECK_INDEX               : boolean
     );
     port (
@@ -172,7 +172,7 @@ package Buffers is
       BUS_BURST_STEP_LEN        : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ICS_SHIFT_WIDTH           : natural;
       ICS_COUNT_WIDTH           : natural;
       ELEMENT_FIFO_COUNT_MAX    : natural;
@@ -223,7 +223,7 @@ package Buffers is
   component BufferReaderRespCtrl is
     generic (
       INDEX_WIDTH               : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ICS_SHIFT_WIDTH           : natural;
       ICS_COUNT_WIDTH           : natural;
       BUS_DATA_WIDTH            : natural;
@@ -260,7 +260,7 @@ package Buffers is
   component BufferReaderPost is
     generic (
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ELEMENT_FIFO_COUNT_MAX    : natural;
       ELEMENT_FIFO_COUNT_WIDTH  : natural;
       ELEMENT_COUNT_MAX         : natural;
@@ -301,7 +301,7 @@ package Buffers is
       BUS_FIFO_THRES_SHIFT      : natural := 0;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ELEMENT_COUNT_MAX         : natural;
       ELEMENT_COUNT_WIDTH       : natural;
       CMD_CTRL_WIDTH            : natural;
@@ -352,7 +352,7 @@ package Buffers is
       BUS_DATA_WIDTH            : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_STROBE_WIDTH          : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ELEMENT_WIDTH             : natural;
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
@@ -395,7 +395,7 @@ package Buffers is
       INDEX_WIDTH               : natural;
       BUS_DATA_WIDTH            : natural;
       BUS_BURST_STEP_LEN        : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       ELEMENT_WIDTH             : natural;
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
@@ -443,7 +443,7 @@ package Buffers is
       STEPS_COUNT_MAX           : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       CHECK_INDEX               : boolean := false
     );
     port (

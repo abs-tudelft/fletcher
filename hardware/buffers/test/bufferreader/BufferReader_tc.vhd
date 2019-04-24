@@ -80,7 +80,7 @@ entity BufferReader_tc is
     ---------------------------------------------------------------------------
     -- MISC
     ---------------------------------------------------------------------------
-    IS_INDEX_BUFFER             : boolean := false;
+    IS_OFFSETS_BUFFER           : boolean := false;
 
     CMD_IN_SLICE                : boolean := false;
     BUS_REQ_SLICE               : boolean := false;
@@ -162,7 +162,7 @@ begin
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER         => IS_OFFSETS_BUFFER,
       ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
       CMD_IN_SLICE              => CMD_IN_SLICE,
@@ -240,7 +240,7 @@ begin
       MAX_LATENCY               => MAX_LATENCY,
       DEFAULT_LATENCY           => DEFAULT_LATENCY,
       RESP_TIMEOUT              => RESP_TIMEOUT,
-      IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER         => IS_OFFSETS_BUFFER,
       SEED                      => 1337,
       RESULT_LSHIFT             => 2,
       WAIT_FOR_PREV_LAST        => WAIT_FOR_PREV_LAST,

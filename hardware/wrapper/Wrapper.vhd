@@ -60,7 +60,7 @@ package Wrapper is
       RESP_TIMEOUT              : natural;
       WAIT_FOR_PREV_LAST        : boolean;
       SEED                      : positive;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       DATA_WIDTH                : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;

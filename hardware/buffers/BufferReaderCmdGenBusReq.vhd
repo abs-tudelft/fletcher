@@ -56,8 +56,8 @@ entity BufferReaderCmdGenBusReq is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Wether or not this component should check if the first and last index
     -- are not equal
@@ -78,7 +78,7 @@ entity BufferReaderCmdGenBusReq is
     ---------------------------------------------------------------------------
     -- Command stream input. firstIdx and lastIdx represent a range of elements
     -- to be fetched from memory. firstIdx is inclusive, lastIdx is exclusive
-    -- for normal buffers and inclusive for index buffers, in all cases
+    -- for normal buffers and inclusive for offsets buffers, in all cases
     -- resulting in lastIdx - firstIdx elements. baseAddr is the pointer to the
     -- first element in the buffer. implicit may be set for null bitmap readers
     -- if null count is zero; if it is set, no bus requests will be made, and
@@ -237,7 +237,7 @@ begin
             v.base_address      := unsigned(cmdIn_baseAddr);
 
             -- Determine what is to be loaded first
-            if (IS_INDEX_BUFFER) then
+            if (IS_OFFSETS_BUFFER) then
               v.index.current   := align_beq(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
             else
               v.index.current   := align_beq(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
@@ -251,7 +251,7 @@ begin
         if cmdIn_valid = '1' then
           if cmdIn_implicit = '0' then
             if cmdIn_firstIdx /= cmdIn_lastIdx or not CHECK_INDEX then
-              if IS_INDEX_BUFFER then
+              if IS_OFFSETS_BUFFER then
                 v.state         := INDEX;
               else
                 v.state         := PRE_STEP;
@@ -275,7 +275,7 @@ begin
 
         -- Back-pressure
         if busReq_ready = '1' then
-          -- Increase last index by 1 for index buffers
+          -- Increase last index by 1 for offsets buffers
           v.index.last          := v.index.last + 1;
           v.index.current       := first_index;
           v.state               := PRE_STEP;

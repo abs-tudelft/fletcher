@@ -40,9 +40,9 @@ entity BufferWriter_tb is
     BUS_FIFO_THRES_SHIFT        : natural  := 0;
 
     INDEX_WIDTH                 : natural  := 32;
-    IS_INDEX_BUFFER             : boolean  := true;
+    IS_OFFSETS_BUFFER           : boolean  := true;
 
-    ELEMENT_WIDTH               : natural  := sel(IS_INDEX_BUFFER, INDEX_WIDTH, 32);
+    ELEMENT_WIDTH               : natural  := sel(IS_OFFSETS_BUFFER, INDEX_WIDTH, 32);
     ELEMENT_COUNT_MAX           : natural  := 1;
     ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
 
@@ -50,7 +50,7 @@ entity BufferWriter_tb is
 
     NUM_COMMANDS                : natural  := 16;
     WAIT_FOR_UNLOCK             : boolean  := true;
-    KNOWN_LAST_INDEX            : boolean  := sel(IS_INDEX_BUFFER, false, true);
+    KNOWN_LAST_INDEX            : boolean  := sel(IS_OFFSETS_BUFFER, false, true);
     LAST_PROBABILITY            : real     := 1.0/512.0;
 
     CMD_CTRL_WIDTH              : natural  := 1;
@@ -141,12 +141,12 @@ architecture tb of BufferWriter_tb is
     rand_last       : in real
   ) is
   begin
-    -- For index buffers, first_index should start at zero
+    -- For offsets buffers, first_index should start at zero
     first_index             := (others => '0');
     last_index              := (others => '0');
 
     -- Otherwise
-    if not IS_INDEX_BUFFER then
+    if not IS_OFFSETS_BUFFER then
       first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
       if KNOWN_LAST_INDEX then
         last_index            := first_index + to_unsigned(max(1, natural(rand_last * AVG_RANGE_LEN)), INDEX_WIDTH);
@@ -307,7 +307,7 @@ begin
       current_index             := first_index;
 
       -- Index buffers automatically get a zero padded
-      if IS_INDEX_BUFFER then
+      if IS_OFFSETS_BUFFER then
         current_index           := current_index + 1;
       end if;
 
@@ -348,7 +348,7 @@ begin
 
         -- Randomize data
         for I in 0 to true_count-1  loop
-            if IS_INDEX_BUFFER then
+            if IS_OFFSETS_BUFFER then
               elem_val          := to_unsigned(1, ELEMENT_WIDTH);
             else
               uniform(seed1, seed2, rand);
@@ -504,8 +504,9 @@ begin
             -- Grab what is written
             elem_written          := u(bus_wdat_data((I+1) * ELEMENT_WIDTH-1 downto I * ELEMENT_WIDTH));
 
-            -- If this is an index buffer and its the first element, we expect it to be 0
-            if IS_INDEX_BUFFER then
+            -- If this is an offsets buffer and its the first element, 
+            -- we expect it to be 0
+            if IS_OFFSETS_BUFFER then
               elem_expected     := to_unsigned(index + I, ELEMENT_WIDTH);
             else
               uniform(seed1, seed2, rand);
@@ -591,7 +592,7 @@ begin
       BUS_FIFO_THRES_SHIFT      => BUS_FIFO_THRES_SHIFT,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER           => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER         => IS_OFFSETS_BUFFER,
       ELEMENT_COUNT_MAX         => ELEMENT_COUNT_MAX,
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH,
       CMD_CTRL_WIDTH            => CMD_CTRL_WIDTH,

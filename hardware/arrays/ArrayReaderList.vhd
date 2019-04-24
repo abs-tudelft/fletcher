@@ -88,7 +88,7 @@ entity ArrayReaderList is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets buffers,
     -- in all cases resulting in lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
     -- bitmap present flags, dependent on CFG.
@@ -139,7 +139,7 @@ architecture Behavioral of ArrayReaderList is
   -- Output user stream serialization indices.
   constant OUI                  : nat_array := cumulative(arcfg_userWidths(CFG, INDEX_WIDTH));
 
-  -- Signals for index buffer reader.
+  -- Signals for offsets buffer reader.
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -178,7 +178,7 @@ architecture Behavioral of ArrayReaderList is
 
   -- Command stream deserialization indices.
   constant CSI : nat_array := cumulative((
-	1 => b_cmd_ctrl'length, -- base address for offsets/index buffer
+	1 => b_cmd_ctrl'length, -- base address for offsets buffer
     0 => BUS_ADDR_WIDTH
   ));
 
@@ -216,7 +216,7 @@ begin
       unlock_tag                => unlock_tag
     );
 
-  -- Split the length stream from the index buffer reader in two. One will be
+  -- Split the length stream from the offsets buffer reader in two. One will be
   -- passed to the user, the other is passed to the ListSync instance.
   len_split_inst: StreamSync
     generic map (
@@ -328,7 +328,7 @@ begin
                       <= b_out_data(BUI(i+1)-1 downto BUI(i));
   end generate;
 
-  -- Instantiate index buffer reader.
+  -- Instantiate offsets buffer reader.
   a_inst: BufferReader
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
@@ -338,7 +338,7 @@ begin
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => INDEX_WIDTH,
-      IS_INDEX_BUFFER           => true,
+      IS_OFFSETS_BUFFER         => true,
       ELEMENT_COUNT_MAX         => 1,
       ELEMENT_COUNT_WIDTH       => 1,
       CMD_CTRL_WIDTH            => B_CTRL_WIDTH,

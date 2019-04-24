@@ -42,7 +42,7 @@ package Arrow is
       DEFAULT_LATENCY           : natural;
       RESP_TIMEOUT              : natural;
       SEED                      : positive;
-      IS_INDEX_BUFFER           : boolean;
+      IS_OFFSETS_BUFFER         : boolean;
       WAIT_FOR_PREV_LAST        : boolean;
       RESULT_LSHIFT             : natural;
       DATA_WIDTH                : natural;

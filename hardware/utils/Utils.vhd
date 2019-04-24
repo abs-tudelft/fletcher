@@ -23,7 +23,7 @@ package Utils is
   type nat_array is array (natural range <>) of natural;
 
   -- Takes a natural array of lengths and returns an index array with similar
-  -- semantics to Arrow index buffers. That is, the output is one entry longer
+  -- semantics to Arrow offsets buffers. That is, the output is one entry longer
   -- than the input, the first (low) entry is zero, the last (high) entry is
   -- the sum of the sizes array, and the values in between are the sum of the
   -- sizes array up to the index.

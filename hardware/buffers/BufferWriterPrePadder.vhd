@@ -43,8 +43,8 @@ entity BufferWriterPrePadder is
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
@@ -59,7 +59,7 @@ entity BufferWriterPrePadder is
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
     -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- are indexed by this offsets buffer.
     CMD_CTRL_WIDTH              : natural;
 
     -- Command stream tag width. This tag is propagated to the outgoing command
@@ -107,7 +107,7 @@ entity BufferWriterPrePadder is
     ---------------------------------------------------------------------------
     -- Output stream
     ---------------------------------------------------------------------------
-    -- If this is an index buffer;
+    -- If this is an offsets buffer;
     -- * out_clear is used to clear the accumulator ahead in the stream 
     -- * out_last_npad (last not padded) is used to assert the cmd_last signal
     --   of the command stream generator
@@ -300,10 +300,10 @@ begin
         end if;
         
         if vr.index.current = vr.index.first then
-          -- Advance state depending if this is an index buffer or not
-          if IS_INDEX_BUFFER then
+          -- Advance state depending if this is an offsets buffer or not
+          if IS_OFFSETS_BUFFER then
             -- If the first index is zero, then we are streaming in at the
-            -- start of the index buffer. If a user for whatever reason wants
+            -- start of the offsets buffer. If a user for whatever reason wants
             -- to write to some other index in the buffer, we don't prepepend
             -- a "zero", so the INDEX state can be skipped.
             if vr.index.first = 0 then
@@ -317,7 +317,7 @@ begin
       -------------------------------------------------------------------------
       when INDEX =>
       -------------------------------------------------------------------------
-        -- For index buffers, we insert one element
+        -- For offsets buffers, we insert one element
         vo.out_data             := slv(INDEX_ZERO);
         vo.out_count            := COUNT_ONE;
         vo.out_strobe           := STROBE_FIRST;

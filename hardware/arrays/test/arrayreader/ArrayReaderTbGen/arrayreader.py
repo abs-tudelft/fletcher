@@ -346,7 +346,7 @@ def _list_test_vectors(reader, memory, row_count, commands):
 
 
 class ListReaderLevel(ReaderLevel):
-    """A reader for a list index buffer."""
+    """A reader for a list offsets buffer."""
 
     def __init__(
         self,
@@ -981,7 +981,7 @@ entity {camelprefix}ArrayReader is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elements to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets buffers,
     -- in all cases resulting in lastIdx - firstIdx elements. The ctrl vector
     -- is a concatenation of the base address for each buffer and the null
     -- bitmap present flags, dependent on CFG.

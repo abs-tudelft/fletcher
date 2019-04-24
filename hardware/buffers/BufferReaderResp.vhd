@@ -40,8 +40,8 @@ entity BufferReaderResp is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean;
 
     -- Width of the internal command stream shift vector. Should equal
     -- max(1, log2(BUS_WIDTH / ELEMENT_WIDTH))
@@ -61,7 +61,7 @@ entity BufferReaderResp is
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
     -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- are indexed by this offsets buffer.
     CMD_CTRL_WIDTH              : natural;
 
     -- Command stream tag width. This tag is propagated to the outgoing command
@@ -117,7 +117,7 @@ entity BufferReaderResp is
     ---------------------------------------------------------------------------
     -- Output streams
     ---------------------------------------------------------------------------
-    -- Command stream output. This stream is only used for index buffers. For
+    -- Command stream output. This stream is only used for offsets buffers. For
     -- each command received at the input, an output command is also generated,
     -- using indices translated by the indices in the buffer:
     --   cmdout_firstIdx = cmdin_baseAddr[cmdin_firstIdx]
@@ -179,7 +179,7 @@ architecture Behavioral of BufferReaderResp is
   -- Stage A data and control information. This stage LSB-aligns the valid
   -- elements in the incoming bus word and synchronizes all relevant streams.
   -- Payload is synchronized with busRespP, ctrl, unlockB, and also cmdOutFirst
-  -- and cmdOutLast for index buffer readers.
+  -- and cmdOutLast for offsets buffer readers.
   signal stageA_valid           : std_logic;
   signal stageA_ready           : std_logic;
   signal stageA_data            : std_logic_vector(BUS_EPB*ELEMENT_WIDTH-1 downto 0);
@@ -286,7 +286,7 @@ begin
   ctrl_inst: BufferReaderRespCtrl
     generic map (
       INDEX_WIDTH                       => INDEX_WIDTH,
-      IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER                 => IS_OFFSETS_BUFFER,
       ICS_SHIFT_WIDTH                   => ICS_SHIFT_WIDTH,
       ICS_COUNT_WIDTH                   => ICS_COUNT_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH * BUS_BPE,
@@ -346,8 +346,8 @@ begin
   busRespP_ready <= busRespI_ready and not (stageA_implicit and ctrl_valid);
 
   -- Generate the synchronization logic and outgoing command stream if this is
-  -- an index buffer.
-  index_buffer_cmd_stream_gen: if IS_INDEX_BUFFER generate
+  -- an offsets buffer.
+  offsets_buffer_cmd_stream_gen: if IS_OFFSETS_BUFFER generate
 
     -- Copy of the first element in stageA_data_aligned, resized to the width
     -- of an index.
@@ -516,8 +516,8 @@ begin
 
   end generate;
 
-  -- Generate the synchronization logic if this is not an index buffer.
-  no_index_buffer_cmd_stream_gen: if not IS_INDEX_BUFFER generate
+  -- Generate the synchronization logic if this is not an offsets buffer.
+  no_offsets_buffer_cmd_stream_gen: if not IS_OFFSETS_BUFFER generate
     
     -- Control signal indicating whether we need to push this item into the
     -- FIFO.

@@ -266,7 +266,7 @@ class BytesField(Field):
             "fifo2post_slice":          False,
             "out_slice":                False,
 
-            # Default index buffer reader configuration.
+            # Default offsets buffer reader configuration.
             "idx_cmd_in_slice":         False,
             "idx_bus_req_slice":        True,
             "idx_bus_fifo_depth":       16,
@@ -378,7 +378,7 @@ class ListField(Field):
     def _config_defaults(self):
         return {
 
-            # Default index buffer reader configuration.
+            # Default offsets buffer reader configuration.
             "cmd_in_slice":             False,
             "bus_req_slice":            True,
             "bus_fifo_depth":           16,

@@ -22,7 +22,7 @@ use work.Utils.all;
 use work.Streams.all;
 use work.Buffers.all;
 
--- This unit generates first and last indices for index buffers, based on a
+-- This unit generates first and last indices for offsets buffers, based on a
 -- moving firstIdx
 entity BufferWriterPreCmdGen is
   generic (
@@ -63,7 +63,7 @@ entity BufferWriterPreCmdGen is
     -- asserted.
     --
     -- Contiunuous mode is useful to not generate seperate commands for each
-    -- list on the child buffer of this index buffer, and is generally 
+    -- list on the child buffer of this offsets buffer, and is generally 
     -- recommended.
     -- 
     -- The signals implicit, ctrl and tag are considered control information

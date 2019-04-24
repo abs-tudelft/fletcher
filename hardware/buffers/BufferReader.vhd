@@ -56,8 +56,8 @@ entity BufferReader is
     -- Buffer element width in bits.
     ELEMENT_WIDTH               : natural := 8;
 
-    -- Whether this is a normal buffer or an index buffer.
-    IS_INDEX_BUFFER             : boolean := false;
+    -- Whether this is a normal buffer or an offsets buffer.
+    IS_OFFSETS_BUFFER           : boolean := false;
 
     -- Maximum number of elements returned per cycle. When more than 1,
     -- elements are returned LSB-aligned and LSB-first, along with a count
@@ -74,7 +74,7 @@ entity BufferReader is
     -- Command stream control vector width. This vector is propagated to the
     -- outgoing command stream, but isn't used otherwise. It is intended for
     -- control flags and base addresses for BufferReaders reading buffers that
-    -- are indexed by this index buffer.
+    -- are indexed by this offsets buffer.
     CMD_CTRL_WIDTH              : natural := 1;
 
     -- Command stream tag width. This tag is propagated to the outgoing command
@@ -128,7 +128,7 @@ entity BufferReader is
     ELEMENT_FIFO_XCLK_STAGES    : natural := 0;
 
     -- Whether a register slice should be inserted between the FIFO and the
-    -- post-processing logic (differential encoder for index buffers and
+    -- post-processing logic (differential encoder for offsets buffers and
     -- optional serialization).
     FIFO2POST_SLICE             : boolean := true;
 
@@ -156,12 +156,12 @@ entity BufferReader is
     ---------------------------------------------------------------------------
     -- Command stream input (bus clock domain). firstIdx and lastIdx represent
     -- a range of elementss to be fetched from memory. firstIdx is inclusive,
-    -- lastIdx is exclusive for normal buffers and inclusive for index buffers,
-    -- in all cases resulting in lastIdx - firstIdx elements. baseAddr is the
-    -- pointer to the first element in the buffer. implicit may be set for null
-    -- bitmap readers if null count is zero; if it is set, no bus requests will
-    -- be made, and the unit will behave as if it receives all-one bus
-    -- responses. ctrl is passed to the outgoing command stream, and may
+    -- lastIdx is exclusive for normal buffers and inclusive for offsets 
+    -- buffers, in all cases resulting in lastIdx - firstIdx elements. baseAddr 
+    -- is the pointer to the first element in the buffer. implicit may be set 
+    -- for null bitmap readers if null count is zero; if it is set, no bus 
+    -- requests will be made, and the unit will behave as if it receives all-one
+    -- bus responses. ctrl is passed to the outgoing command stream, and may
     -- therefore be used for the base address and control information for
     -- indexed buffers. tag is passed to the unlock stream for chunk reference
     -- counting purposes.
@@ -175,8 +175,8 @@ entity BufferReader is
     cmdIn_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
     -- Command stream output (bus clock domain). This stream is only used for
-    -- index buffers. For each command received at the input, an output command
-    -- is also generated, using indices translated by the indices in the
+    -- offsets buffers. For each command received at the input, an output 
+    -- command is also generated, using indices translated by the indices in the
     -- buffer:
     --   cmdout_firstIdx = cmdin_baseAddr[cmdin_firstIdx]
     --   cmdout_lastIdx = cmdin_baseAddr[cmdin_lastIdx]
@@ -218,7 +218,7 @@ entity BufferReader is
     -- Output to accelerator
     ---------------------------------------------------------------------------
     -- Buffer element stream output (acc clock domain). element contains the
-    -- data element for normal buffers and the length for index buffers. last
+    -- data element for normal buffers and the length for offsets buffers. last
     -- is asserted when this is the last element for the current command.
     out_valid                   : out std_logic;
     out_ready                   : in  std_logic;
@@ -307,7 +307,7 @@ begin
       BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER                 => IS_OFFSETS_BUFFER,
       CMD_CTRL_WIDTH                    => CMD_CTRL_WIDTH,
       CMD_TAG_WIDTH                     => CMD_TAG_WIDTH,
       CMD_IN_SLICE                      => CMD_IN_SLICE,
@@ -385,7 +385,7 @@ begin
       BUS_BURST_STEP_LEN                => BUS_BURST_STEP_LEN,
       INDEX_WIDTH                       => INDEX_WIDTH,
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER                 => IS_OFFSETS_BUFFER,
       ICS_SHIFT_WIDTH                   => ICS_SHIFT_WIDTH,
       ICS_COUNT_WIDTH                   => ICS_COUNT_WIDTH,
       ELEMENT_FIFO_COUNT_MAX            => ELEMENT_FIFO_COUNT_MAX,
@@ -510,7 +510,7 @@ begin
   post_inst: BufferReaderPost
     generic map (
       ELEMENT_WIDTH                     => ELEMENT_WIDTH,
-      IS_INDEX_BUFFER                   => IS_INDEX_BUFFER,
+      IS_OFFSETS_BUFFER                 => IS_OFFSETS_BUFFER,
       ELEMENT_FIFO_COUNT_MAX            => ELEMENT_FIFO_COUNT_MAX,
       ELEMENT_FIFO_COUNT_WIDTH          => ELEMENT_FIFO_COUNT_WIDTH,
       ELEMENT_COUNT_MAX                 => ELEMENT_COUNT_MAX,
