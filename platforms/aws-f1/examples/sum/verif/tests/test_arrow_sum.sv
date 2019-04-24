@@ -24,23 +24,23 @@
  */
 
 // Register offsets & some default values:
-`define REG_STATUS          1
-`define   STATUS_BUSY       32'h00000002
-`define   STATUS_DONE       32'h00000005
-
 `define REG_CONTROL         0
 `define   CONTROL_START     32'h00000001
 `define   CONTROL_RESET     32'h00000004
 
-`define REG_RETURN_HI       3
+`define REG_STATUS          1
+`define   STATUS_BUSY       32'h00000002
+`define   STATUS_DONE       32'h00000005
+
 `define REG_RETURN_LO       2
+`define REG_RETURN_HI       3
 
-`define REG_OFF_ADDR_HI     7
-`define REG_OFF_ADDR_LO     6
-
-// Registers for first and last (exclusive) row index
 `define REG_FIRST_IDX       4
 `define REG_LAST_IDX        5
+
+// Buffer address
+`define REG_OFF_ADDR_LO     6
+`define REG_OFF_ADDR_HI     7
 
 `define NUM_REGISTERS       8
 
@@ -164,6 +164,7 @@ initial begin
   $display("[%t] : Starting UserCore", $realtime);
 
   // Start UserCore
+  tb.poke_bar1(.addr(4*`REG_CONTROL), .data(0));
   tb.poke_bar1(.addr(4*`REG_CONTROL), .data(`CONTROL_START));
 
   // Poll status at an interval of 1000 nsec

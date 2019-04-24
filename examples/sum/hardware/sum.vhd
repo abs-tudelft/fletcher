@@ -27,6 +27,9 @@ entity sum is
     REG_WIDTH                                  : natural
   );
   port(
+    weight_unlock_valid                        : in std_logic;
+    weight_unlock_tag                          : in std_logic_vector(TAG_WIDTH-1 downto 0);
+    weight_unlock_ready                        : out std_logic := '1';
     weight_cmd_weight_values_addr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     weight_cmd_tag                             : out std_logic_vector(TAG_WIDTH-1 downto 0);
     weight_cmd_lastIdx                         : out std_logic_vector(INDEX_WIDTH-1 downto 0);
