@@ -34,7 +34,7 @@ namespace fletchgen {
 Column::Column(const std::shared_ptr<arrow::Field> &field, Mode mode)
     : Instantiation(
     nameFrom({vhdl::makeIdentifier(field->name()), getModeString(mode), "inst"}),
-    mode == Mode::READ ? "ColumnReader" : "ColumnWriter"
+    mode == Mode::READ ? "ArrayReader" : "ArrayWriter"
 ), mode_(mode), field_(field) {
 
   top_stream_ = getArrowStream(field);
@@ -200,7 +200,7 @@ Value Column::dataWidth() {
 }
 
 std::string Column::toString() {
-  return "[COLUMN INSTANCE: " + comp_->entity()->name() + " of field " + field_->ToString() + "]";
+  return "[ARRAY INSTANCE: " + comp_->entity()->name() + " of field " + field_->ToString() + "]";
 }
 
 /**
@@ -208,7 +208,7 @@ std::string Column::toString() {
  */
 ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Value &data_width, const Value &ctrl_width)
     :
-    StreamComponent("ColumnReader"), DerivedFrom(column) {
+    StreamComponent("ArrayReader"), DerivedFrom(column) {
   /* Generics */
   entity()
       ->addGeneric(make_shared<Generic>(ce::CONFIG_STRING, "string", Value("\"ERROR: CONFIG STRING NOT SET\"")));
@@ -285,10 +285,10 @@ ColumnReader::ColumnReader(Column *column, const Value &user_streams, const Valu
 }
 
 /**
- * Generate a ColumnWriter
+ * Generate an ArrayWriter
  */
 ColumnWriter::ColumnWriter(Column *column, const Value &user_streams, const Value &data_width, Value &ctrl_width) :
-    StreamComponent("ColumnWriter"), DerivedFrom(column) {
+    StreamComponent("ArrayWriter"), DerivedFrom(column) {
   /* Generics */
   entity()->addGeneric(make_shared<Generic>(ce::BUS_ADDR_WIDTH, "natural", Value(ce::BUS_ADDR_WIDTH_DEFAULT)));
   entity()->addGeneric(make_shared<Generic>(ce::BUS_LEN_WIDTH, "natural", Value(ce::BUS_LEN_WIDTH_DEFAULT)));

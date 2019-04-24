@@ -42,7 +42,7 @@ ColumnWrapper::ColumnWrapper(std::vector<shared_ptr<arrow::Schema>> schemas,
   /* Generics */
   addGenerics();
 
-  /* Column(Readers/Writers) */
+  /* Array(Readers/Writers) */
   addColumns(createColumns());
 
   /* UserCore controller */
@@ -226,14 +226,14 @@ void ColumnWrapper::addRegisterPorts() {
 }
 
 std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
-  LOGD("Creating Column(Reader/Writer) instances.");
+  LOGD("Creating Array(Reader/Writer) instances.");
 
   std::vector<shared_ptr<Column>> columns;
   for (const auto &schema : schemas_) {
     for (int f = 0; f < schema->num_fields(); f++) {
       auto field = schema->field(f);
       if (!fletcher::mustIgnore(field)) {
-        LOGD("Creating column for [FIELD: " + field->ToString() + "]");
+        LOGD("Creating Array for [FIELD: " + field->ToString() + "]");
         auto column = make_shared<Column>(field, fletcher::getMode(schema));
         // Generate a comment to place above the instantiation
         column->setComment(
@@ -250,7 +250,7 @@ std::vector<shared_ptr<Column>> ColumnWrapper::createColumns() {
 
 void ColumnWrapper::addColumns(const std::vector<shared_ptr<Column>> &columns) {
   for (auto const &column : columns) {
-    LOGD("Adding instantiation of Column" + getModeString(column->mode()) + ": " + column->name());
+    LOGD("Adding instantiation of Array" + getModeString(column->mode()) + ": " + column->name());
     architecture()->addInstantiation(std::static_pointer_cast<Instantiation>(column));
   }
 }
@@ -313,7 +313,7 @@ string ColumnWrapper::toInfoString() {
   for (const auto &s : streams()) {
     ret += t(2) + s->toString() + "\n";
   }
-  ret += t(1) + "Column(Readers/Writers): \n";
+  ret += t(1) + "Array(Readers/Writers): \n";
   for (const auto &c : column_instances()) {
     ret += t(2) + c->toString() + "\n";
   }

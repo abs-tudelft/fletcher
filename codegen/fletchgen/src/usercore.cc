@@ -59,7 +59,7 @@ UserCore::UserCore(std::string name, ColumnWrapper *parent, int num_addr_regs, i
     addUserStreams(columns);
     addStreamPorts();
   } else {
-    throw std::runtime_error("Wrapper parent of UserCore contains no Column instances.");
+    throw std::runtime_error("Wrapper parent of UserCore contains no Array instances.");
   }
 
   setComment(t(1) + "-- Hardware Accelerated Function component.\n" +

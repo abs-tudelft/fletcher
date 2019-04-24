@@ -43,7 +43,7 @@ using fletchgen::Mode;
  * @section Introduction
  *
  * Fletchgen is Fletcher's wrapper generation tool. The tool will take an Apache Arrow Schema, and convert it into a
- * hardware description that wraps a bunch of ColumnReaders/Writers and generates an instantiation template for a
+ * hardware description that wraps a bunch of ArrayReaders/Writers and generates an instantiation template for a
  * hardware accelerator function operating on Arrow data.
  *
  * @section Components
