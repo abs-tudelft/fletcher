@@ -159,7 +159,8 @@ begin
       s_in_data <= in_data;
     end generate;
     no_epc_gen: if COUNT_MAX = 1 generate
-      s_in_data <= in_data(ELEMENT_WIDTH-1 downto 0);
+      s_in_data(ELEMENT_WIDTH) <= '1';
+      s_in_data(ELEMENT_WIDTH-1 downto 0) <= in_data;
     end generate;
 
     -- Instantiate the data buffer writer.
