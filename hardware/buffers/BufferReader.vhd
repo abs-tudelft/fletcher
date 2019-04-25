@@ -238,7 +238,7 @@ architecture Behavioral of BufferReader is
   constant ICS_SHIFT_WIDTH      : natural := max(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH));
   constant ICS_COUNT_WIDTH      : natural := max(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH) + 1);
 
-  -- Amount of elementss per bus beat.
+  -- Amount of elements per bus beat.
   constant BUS_EPB              : natural := max(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
 
   -- Width of the element FIFO in number of elements.

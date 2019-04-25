@@ -27,11 +27,19 @@ proc test_prim {} {
                            {"UUT"          sim:/prim32_tc/uut/* }}
 }
 
+proc test_prim_epc {} {
+  compile_sources
+  simulate work.prim32_epc_tc {{"Testbench"    sim:/prim32_epc_tc/*     }
+                               {"UUT"          sim:/prim32_epc_tc/uut/* }
+                               {"BufferWriter" sim:/prim32_epc_tc/uut/arb_inst/a_inst/prim_gen/buffer_writer_inst/* }}
+}
+
 add_fletcher
 add_fletcher_tb
 
 add_source ../ArrayWriterListSync_tc.vhd -2008
 add_source ../listprim8epc4_tc.vhd -2008
 add_source ../prim32_tc.vhd -2008
+add_source ../prim32_epc_tc.vhd -2008
 
-test_prim
+test_prim_epc

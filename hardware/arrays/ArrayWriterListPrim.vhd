@@ -57,13 +57,13 @@ entity ArrayWriterListPrim is
     ---------------------------------------------------------------------------
     -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ArrayReaderConfig.vhd.
+    -- Configures this ArrayWriterLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
     -- additional output stream is created that returns tags supplied along
-    -- with the command stream when all BufferReaders finish making bus
+    -- with the command stream when all BufferWriters finish making bus
     -- requests for the command. This can be used to support chunking later.
     CMD_TAG_ENABLE              : boolean := false;
 
@@ -77,7 +77,7 @@ entity ArrayWriterListPrim is
     -- Clock domains
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
-    -- bus and control logic side of the BufferReader.
+    -- bus and control logic side of the BufferWriter.
     bus_clk                     : in  std_logic;
     bus_reset                   : in  std_logic;
 
@@ -103,7 +103,7 @@ entity ArrayWriterListPrim is
     cmd_tag                     : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
     -- Unlock stream (bus clock domain). Produces the chunk tags supplied by
-    -- the command stream when all BufferReaders finish processing the command.
+    -- the command stream when all BufferWriters finish processing the command.
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
