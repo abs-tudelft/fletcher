@@ -57,13 +57,13 @@ entity ArrayWriterLevel is
     ---------------------------------------------------------------------------
     -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ArrayReaderConfig.vhd.
+    -- Configures this ArrayWriterLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
     -- additional output stream is created that returns tags supplied along
-    -- with the command stream when all BufferReaders finish making bus
+    -- with the command stream when all BufferWriters finish making bus
     -- requests for the command. This can be used to support chunking later.
     CMD_TAG_ENABLE              : boolean := false;
 
@@ -149,10 +149,21 @@ begin
   -- Primitive reader
   -----------------------------------------------------------------------------
   prim_gen: if CMD = "prim" generate
+    constant ELEMENT_WIDTH      : natural := strtoi(parse_arg(cfg, 0));
+    constant COUNT_MAX          : natural := parse_param(CFG, "epc", 1);
+    constant COUNT_WIDTH        : natural := log2ceil(COUNT_MAX+1);
+    signal s_in_data           : std_logic_vector(COUNT_WIDTH + COUNT_MAX*ELEMENT_WIDTH - 1 downto 0);
   begin
 
-    -- Instantiate the data buffer reader.
-    buffer_reader_inst: BufferWriter
+    epc_gen: if COUNT_MAX > 1 generate
+      s_in_data <= in_data;
+    end generate;
+    no_epc_gen: if COUNT_MAX = 1 generate
+      s_in_data <= in_data(ELEMENT_WIDTH-1 downto 0);
+    end generate;
+
+    -- Instantiate the data buffer writer.
+    buffer_writer_inst: BufferWriter
       generic map (      
         BUS_ADDR_WIDTH          => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH           => BUS_LEN_WIDTH,
@@ -163,8 +174,8 @@ begin
         INDEX_WIDTH             => INDEX_WIDTH,
         ELEMENT_WIDTH           => strtoi(parse_arg(CFG, 0)),
         IS_OFFSETS_BUFFER       => false,
-        ELEMENT_COUNT_MAX       => 1,
-        ELEMENT_COUNT_WIDTH     => 1,
+        ELEMENT_COUNT_MAX       => COUNT_MAX,
+        ELEMENT_COUNT_WIDTH     => COUNT_WIDTH,
         CMD_CTRL_WIDTH          => 1,
         CMD_TAG_WIDTH           => CMD_TAG_WIDTH,
         BUS_FIFO_DEPTH          => parse_param(CFG, "bus_fifo_depth", 16)
@@ -200,9 +211,9 @@ begin
 
         in_valid                => in_valid(0),
         in_ready                => in_ready(0),
-        in_data                 => in_data,
-        in_last                 => in_last(0),
-        in_count                => "1"
+        in_data                 => s_in_data(COUNT_MAX*ELEMENT_WIDTH-1 downto 0),
+        in_count                => s_in_data(COUNT_WIDTH + COUNT_MAX*ELEMENT_WIDTH - 1 downto COUNT_MAX*ELEMENT_WIDTH),
+        in_last                 => in_last(0)
       );
   end generate;
 
@@ -339,7 +350,7 @@ begin
   -----------------------------------------------------------------------------
   --list_gen: if CMD = "list" generate
   --begin
-  --  list_inst: ArrayReaderList
+  --  list_inst: ArrayWriterList
   --    generic map (
   --      BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
   --      BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
