@@ -380,6 +380,31 @@ package Streams is
     );
   end component;
 
+  component StreamPrefixSum is
+    generic (
+      DATA_WIDTH                : natural;
+      COUNT_MAX                 : natural;
+      COUNT_WIDTH               : natural;
+      LOOPBACK                  : boolean := true;
+      INPUT_NORMALIZED          : boolean := false
+    );
+    port (
+      clk                       : in  std_logic;
+      reset                     : in  std_logic;
+      in_initial                : in  std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_data                   : in  std_logic_vector(COUNT_MAX*DATA_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(COUNT_WIDTH-1 downto 0);
+      in_last                   : in  std_logic;
+      out_valid                 : out std_logic;
+      out_ready                 : in  std_logic;
+      out_data                  : out std_logic_vector(COUNT_MAX*DATA_WIDTH-1 downto 0);
+      out_count                 : out std_logic_vector(COUNT_WIDTH-1 downto 0);
+      out_last                  : out std_logic
+    );
+  end component;
+
   component StreamPseudoRandomGenerator is
     generic (
       DATA_WIDTH                : positive
