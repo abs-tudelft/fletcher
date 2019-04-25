@@ -23,7 +23,7 @@ package ArrayConfig is
   -- least significant order.
   --
   -----------------------------------------------------------------------------
-  -- prim(<width>)
+  -- prim(<width>;epc=1)
   -----------------------------------------------------------------------------
   -- Represents a BufferReader for a primitive data type. width specifies the
   -- bitwidth of the data type.
@@ -37,6 +37,8 @@ package ArrayConfig is
   --
   -- User streams:
   --   - Stream 0:
+  --       - count: log2ceil(epc+1) when epc > 1, otherwise 0
+  --         The number of elements valid in data.
   --       - data: width
   --         The data element.
   --
@@ -282,8 +284,15 @@ package body ArrayConfig is
 
   function arcfg_userWidthsPrim(cfg: string; INDEX_WIDTH: natural) return nat_array is
     variable res  : nat_array(0 downto 0);
+    constant width  : natural := strtoi(parse_arg(cfg, 0));
+    constant epc    : natural := parse_param(cfg, "epc", 1);
   begin
-    res(0) := strtoi(parse_arg(cfg, 0)); -- Element data
+    if epc > 1 then
+      res(0) := log2ceil(epc + 1) -- Number of elements valid
+              + width * epc;      -- data width times epc
+    else
+      res(0) := width;
+    end if;
     return res;
   end function;
 
@@ -399,7 +408,14 @@ package body ArrayConfig is
 
     if cmd = "prim" then
       if main then
-        cnt := cnt + strtoi(parse_arg(cfg, 0)); -- Element data
+        width := strtoi(parse_arg(cfg, 0));
+        epc := parse_param(cfg, "epc", 1);
+        if epc > 1 then
+          cnt := cnt + log2ceil(epc + 1); -- Number of elements valid
+          cnt := cnt + width * epc; -- epc elements
+        else
+          cnt := cnt + width;
+        end if;
       end if;
 
     elsif cmd = "arb" then
