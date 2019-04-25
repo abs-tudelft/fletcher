@@ -21,7 +21,7 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
 
@@ -192,9 +192,9 @@ architecture Implementation of stringwrite_wrapper is
   signal s_regs_in                             : std_logic_vector(NUM_USER_REGS*REG_WIDTH-1 downto 0);
 
 begin
-  -- ColumnWriter instance generated from Arrow schema field:
+  -- ArrayWriter instance generated from Arrow schema field:
   -- Str: string not null
-  Str_write_inst: ColumnWriter
+  Str_write_inst: ArrayWriter
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                            => BUS_LEN_WIDTH,
@@ -307,7 +307,7 @@ begin
       regs_out_en                              => s_regs_out_en
     );
 
-  -- Arbiter instance generated to serve 1 column writers.
+  -- Arbiter instance generated to serve 1 array writers.
   BusWriteArbiterVec_inst: BusWriteArbiterVec
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,

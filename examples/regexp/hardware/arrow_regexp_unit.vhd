@@ -20,15 +20,15 @@ library work;
 use work.Streams.all;
 use work.Utils.all;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.SimUtils.all;
 
 use work.arrow_regexp_pkg.all;
 
--- A component performing RegExp matching on an Apache Arrow Column
+-- A component performing RegExp matching on an Apache Arrow Array
 --
 -- This is a single unit doing the regular expression matching.
--- Here you can find the instantiation of the ColumnReader, which generates
+-- Here you can find the instantiation of the ArrayReader, which generates
 -- its internal structure according to a configuration string which can
 -- be derived from an Arrow Schema.
 entity arrow_regexp_unit is
@@ -99,7 +99,7 @@ architecture rtl of arrow_regexp_unit is
   signal r_matches              : std_logic_vector(NUM_REGEX*REG_WIDTH-1 downto 0);
 
   -----------------------------------------------------------------------------
-  -- ColumnReader Interface
+  -- ArrayReader Interface
   -----------------------------------------------------------------------------
   constant OFFSET_WIDTH         : natural := 32;
   constant VALUE_ELEM_WIDTH     : natural :=  8;
@@ -280,9 +280,9 @@ begin
   s_cmd.firstIdx                <= s_cmd_tmp(2 * BUS_ADDR_WIDTH + 2 * OFFSET_WIDTH - 1 downto 2 * BUS_ADDR_WIDTH + OFFSET_WIDTH);
 
   -----------------------------------------------------------------------------
-  -- ColumnReader
+  -- ArrayReader
   -----------------------------------------------------------------------------
-  cr: ColumnReader
+  cr: ArrayReader
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,

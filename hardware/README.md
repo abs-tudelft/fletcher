@@ -3,44 +3,44 @@
 ### Please note:
 If you are just getting started with Fletcher, you might want to use the 
 [Wrapper Generator](../codegen/fletchgen/README.md) to automatically generate a
-wrapper that instantiates ColumnReader/ColumnWriters and sets their 
+wrapper that instantiates ArrayReader/ArrayWriters and sets their 
 configuration. It is still worthwhile to read this page to get a basic 
 understanding of the interfaces.
 
 ## Hardware Guide
 
 Currently, the top-level component that you should use is called a 
-ColumnReader or a ColumnWriter, depending on whether you wanto read or write 
-data from/to an Arrow Column in a RecordBatch/Table.
+ArrayReader or a ArrayWriter, depending on whether you wanto read or write 
+data from/to an Arrow Array in a RecordBatch/Table.
 
 For reading, because elements in an Arrow Recordbatch/Table can be processed 
 in parallel, you are free to implement, for example:
 
-- One ColumnReader for each Arrow Column
-- Multiple ColumnReaders for each Arrow Column
-- One ColumnReader for just one of the Columns in a Table
-- Multiple ColumnReaders for each Arrow Column
+- One ArrayReader for each Arrow Array
+- Multiple ArrayReaders for each Arrow Array
+- One ArrayReader for just one of the Arrays in a Table
+- Multiple ArrayReaders for each Arrow Array
 
 For writing, this depends on the datatype. For primitive fixed-width types, it 
-is possible to have multiple ColumnWriters for a single column. However, for
+is possible to have multiple ArrayWriters for a single array. However, for
 variable length types (for example; strings), this is currently not possible.
 Of course you are free to build up the dataset in parallel and merge them later
 on your host system in software.
 
-To configure a ColumnReader/ColumnWriter, you must set the generics to the HDL 
+To configure a ArrayReader/ArrayWriter, you must set the generics to the HDL 
 component appropriately. Things like bus data width, bus address width,
 burst length, etc... should speak for itself. However, one important 
 generic is the configuration string.
 
-## ColumnReader/Writer configuration string
+## ArrayReader/Writer configuration string
 
-The configuration string provided to a ColumnReader/Writer is somewhat 
+The configuration string provided to a ArrayReader/Writer is somewhat 
 equivalent to an Arrow Schema. It conveys the same information about the
-layout/structure of the Column in memory. There are some additional 
+layout/structure of the Array in memory. There are some additional 
 options to tweak internals (like FIFO depths), but we will ignore them 
 for now.
 
-[ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd) contains an in-depth guide 
+[ArrayConfig.vhd](vhdl/arrays/ArrayConfig.vhd) contains an in-depth guide 
 on which entries of the config string are supported.
 
 **Make sure not to use any whitespace characters in the configuration 
@@ -78,44 +78,44 @@ For simplicity, assume all elements are non-nullable, except those of field A
 in the struct of field Z. 
 
 Suppose we would like to read from this RecordBatch in host memory. You can 
-instantiate three ColumnReaders using the following three configuration 
+instantiate three ArrayReaders using the following three configuration 
 strings:
 
 - X: "prim(32)"
 - Y: "listprim(8)"
 - Z" "struct(null(prim(32)),prim(64))"
 
-## ColumnReader/Writer interface
+## ArrayReader/Writer interface
 
-After you set the ColumnReader/Writer configuration string, the hardware
+After you set the ArrayReader/Writer configuration string, the hardware
 structure is generated.
 
-Each ColumnReader/Writer has the following streams:
+Each ArrayReader/Writer has the following streams:
 
-* From accelerator to ColumnReader/Writer:
-  * Command (cmd): To issue commands to the ColumnReader/Writer
+* From accelerator to ArrayReader/Writer:
+  * Command (cmd): To issue commands to the ArrayReader/Writer
 
-* From ColumnReader/Writer to accelerator:
+* From ArrayReader/Writer to accelerator:
   * Unlock:  To notify the accelerator the command has been executed.
 
-A ColumnReader additionaly has the following streams:
+A ArrayReader additionaly has the following streams:
 
-* From ColumnReader to host memory interface:
+* From ArrayReader to host memory interface:
   * Bus read request (bus_rreq): To issue burst read requests to the host
     memory.
-* From host memory interface to ColumnReader:
+* From host memory interface to ArrayReader:
   * Bus read data (bus_rdat): To receive requested data from host memory.
-* From ColumnReader to accelerator:
+* From ArrayReader to accelerator:
 * Data (out):
   * Streams of the datatype defined in the schema.
 
-For ColumnWriters:
+For ArrayWriters:
 
-* From ColumnReader to host memory interface:
+* From ArrayReader to host memory interface:
   * Bus write request (bus_wreq): To issue burst write requests to the host
     memory.
   * Bus write data (bus_wdat): To stream write data to host memory.
-* From accelerator to ColumnWriter
+* From accelerator to ArrayWriter
 * Data (in):
   * Streams of the datatype defined in the schema.
 
@@ -127,9 +127,9 @@ consumer may assert ready before any valid signal is asserted. For more detail,
 it is __highly recommended to read the AXI4 protocol specification chapter on 
 "Basic read and write transactions"__.
 
-### How to use a ColumnReader/ColumnWriter
+### How to use a ArrayReader/ArrayWriter
 
-For a ColumnReader:
+For a ArrayReader:
 
 1. Handshake a command on the Command stream (cmd). 
    - The _firstIdx_ and _lastIdx_ correspond to the first and (exclusively) last 
@@ -138,16 +138,16 @@ example, if you want to stream in elements 0, 1 and 2, you would issue the
 command with _firstIdx_ = 0 and _lastIdx_ = 3. 
    - Furthermore, you must supply the addresses of the Arrow
 buffers of the RecordBatch on the _ctrl_ port. This should be done in a 
-specific order seen in [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd). 
+specific order seen in [ArrayConfig.vhd](vhdl/arrays/ArrayConfig.vhd). 
    - Finally, you may provide a _tag_ with your command that will appear on the 
 unlock stream when the command is finished.
 
-2. The ColumnReader will now start requesting and receiving bursts through the
+2. The ArrayReader will now start requesting and receiving bursts through the
 bus request and data streams (bus_rreq and bus_rdat_.
 
 2. Absorb the data from the output stream (out).
    - The signals of all output streams are all concatenated onto this stream.
-   This is also explained in [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd).
+   This is also explained in [ArrayConfig.vhd](vhdl/arrays/ArrayConfig.vhd).
    More examples are at the end of this page.
    - The [Wrapper Generator](../codegen/fletchgen/README.md) automatically 
    "unwraps" these concatenated streams into more readable streams 
@@ -156,11 +156,11 @@ bus request and data streams (bus_rreq and bus_rdat_.
 3. Wait for the unlock stream (unlock) to deliver the tag of your command.
    - The command has now been successfully executed.
    
-For a ColumnWriter, the bus data stream is reversed, and the user is to supply
-the data to the ColumnWriter as an input stream (in). In terms of using the 
+For a ArrayWriter, the bus data stream is reversed, and the user is to supply
+the data to the ArrayWriter as an input stream (in). In terms of using the 
 command stream and unlock stream, the behaviour is similar. There is one 
 exception to the command stream. If you do not know (or care) in hardware how
-large your Column will be, you may set lastIdx = 0. In this case, the last 
+large your Array will be, you may set lastIdx = 0. In this case, the last 
 signal of the top-most input stream will determine the last index.
 
 ## Additional configuration string examples:
@@ -264,4 +264,4 @@ Assuming the null() examples are clear, we omit them in further examples.
 
 # More information
 
-For more in-depth information, check out [ColumnConfig.vhd](vhdl/columns/ColumnConfig.vhd)
+For more in-depth information, check out [ArrayConfig.vhd](vhdl/arrays/ArrayConfig.vhd)

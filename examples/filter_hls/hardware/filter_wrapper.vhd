@@ -21,7 +21,7 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
 
@@ -315,9 +315,9 @@ architecture Implementation of filter_wrapper is
   signal uctrl_busy                            : std_logic;
   signal uctrl_done                            : std_logic;
 begin
-  -- ColumnReader instance generated from Arrow schema field:
+  -- ArrayReader instance generated from Arrow schema field:
   -- read_first_name: string not null
-  read_first_name_read_inst: ColumnReader
+  read_first_name_read_inst: ArrayReader
     generic map (
       CFG                                      => "listprim(8)",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -356,9 +356,9 @@ begin
       bus_rdat_last                            => s_read_first_name_bus_rdat_last
     );
 
-  -- ColumnReader instance generated from Arrow schema field:
+  -- ArrayReader instance generated from Arrow schema field:
   -- read_last_name: string not null
-  read_last_name_read_inst: ColumnReader
+  read_last_name_read_inst: ArrayReader
     generic map (
       CFG                                      => "listprim(8)",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -397,9 +397,9 @@ begin
       bus_rdat_last                            => s_read_last_name_bus_rdat_last
     );
 
-  -- ColumnReader instance generated from Arrow schema field:
+  -- ArrayReader instance generated from Arrow schema field:
   -- read_zipcode: uint32 not null
-  read_zipcode_read_inst: ColumnReader
+  read_zipcode_read_inst: ArrayReader
     generic map (
       CFG                                      => "prim(32)",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -438,9 +438,9 @@ begin
       bus_rdat_last                            => s_read_zipcode_bus_rdat_last
     );
 
-  -- ColumnWriter instance generated from Arrow schema field:
+  -- ArrayWriter instance generated from Arrow schema field:
   -- write_first_name: string not null
-  write_first_name_write_inst: ColumnWriter
+  write_first_name_write_inst: ArrayWriter
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                            => BUS_LEN_WIDTH,
@@ -604,7 +604,7 @@ begin
       reg_write_first_name_values_addr         => regs_in(20*REG_WIDTH-1 downto 18*REG_WIDTH)
     );
 
-  -- Arbiter instance generated to serve 3 column readers.
+  -- Arbiter instance generated to serve 3 array readers.
   BusReadArbiterVec_inst: BusReadArbiterVec
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -633,7 +633,7 @@ begin
       mst_rdat_last                            => mst_rdat_last
     );
 
-  -- Arbiter instance generated to serve 1 column writers.
+  -- Arbiter instance generated to serve 1 array writers.
   BusWriteArbiterVec_inst: BusWriteArbiterVec
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,

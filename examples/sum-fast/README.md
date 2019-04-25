@@ -2,7 +2,7 @@
 
 This is an adapted version of the [simple summing](../sum/) example to
 take advantage of the resources available on the FPGA.
-The column reader is widened from 64 bits to 512 bits, making it return
+The array reader is widened from 64 bits to 512 bits, making it return
 eight elements per cycle. These are then summed in parallel using an adder tree.
 Additional logic was introduced to make this work for inputs which are not a
 multiple of eight rows.

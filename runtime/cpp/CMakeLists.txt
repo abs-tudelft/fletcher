@@ -118,5 +118,6 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER}-test ${FLETCHER})
     target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
 
+    include(GoogleTest)
     gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHER_TESTS)

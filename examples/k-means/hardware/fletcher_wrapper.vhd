@@ -21,7 +21,7 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Arrow.all;
-use work.Columns.all;
+use work.Arrays.all;
 use work.Interconnect.all;
 use work.Wrapper.all;
 use work.Utils.all;
@@ -181,9 +181,9 @@ architecture Implementation of fletcher_wrapper is
   signal s_bsv_rdat_data                       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal s_bsv_rdat_last                       : std_logic_vector(0 downto 0);
 begin
-  -- ColumnReader instance generated from Arrow schema field:
+  -- ArrayReader instance generated from Arrow schema field:
   -- point: list<dimension: double not null> not null
-  point_read_inst: ColumnReader
+  point_read_inst: ArrayReader
     generic map (
       CFG                                      => "listprim(" & integer'image(DATA_WIDTH) & ";epc=" & integer'image(EPC) & ")",
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -289,7 +289,7 @@ begin
       user_regs_out_en                         => regs_out_en(NUM_REGS - 1 downto (NUM_REGS-NUM_USER_REGS))
     );
 
-  -- Arbiter instance generated to serve 1 column readers.
+  -- Arbiter instance generated to serve 1 array readers.
   BusReadArbiterVec_inst: BusReadArbiterVec
     generic map (
       BUS_ADDR_WIDTH                           => BUS_ADDR_WIDTH,
@@ -336,7 +336,7 @@ begin
   regs_out_en(2)                               <='1';  -- ret 0
   regs_out_en(3)                               <='1';  -- ret 1
   regs_out_en(5 downto 4) <= (others => '0'); -- first & last
-  regs_out_en(9 downto 6) <= (others => '0'); -- column addresses
+  regs_out_en(9 downto 6) <= (others => '0'); -- array addresses
 
 end architecture;
 

@@ -20,7 +20,12 @@ use ieee.std_logic_misc.all;
 library work;
 use work.axi.all;
 
+-------------------------------------------------------------------------------
 -- AXI4 compatible top level for Fletcher generated accelerators.
+-------------------------------------------------------------------------------
+-- Requires an AXI4 port to host memory.
+-- Requires an AXI4-lite port from host for MMIO.
+-------------------------------------------------------------------------------
 entity axi_top is
   generic (
     -- Host bus properties
@@ -245,6 +250,8 @@ begin
   -----------------------------------------------------------------------------
   -- AXI read converter
   -----------------------------------------------------------------------------
+  -- Buffering bursts is disabled (ENABLE_FIFO=false) because BufferReaders
+  -- are already able to absorb full bursts.
   axi_read_conv_inst: axi_read_converter
     generic map (
       ADDR_WIDTH                => BUS_ADDR_WIDTH,
@@ -280,6 +287,8 @@ begin
   -----------------------------------------------------------------------------
   -- AXI write converter
   -----------------------------------------------------------------------------
+  -- Buffering bursts is disabled (ENABLE_FIFO=false) because BufferWriters
+  -- are already able to absorb full bursts.
   axi_write_conv_inst: axi_write_converter
     generic map (
       ADDR_WIDTH                => BUS_ADDR_WIDTH,

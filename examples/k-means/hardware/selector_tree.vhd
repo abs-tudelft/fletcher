@@ -131,7 +131,7 @@ begin
   begin
     lvl_gen: for idx in 0 to 2 ** lvl - 1 generate
 
-      -- First column passes down the user info
+      -- First array passes down the user info
       with_point: if idx = 0 generate
         signal upstream_path_a, upstream_path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
         signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) + TUSER_WIDTH downto 0);
@@ -171,7 +171,7 @@ begin
         intermediate_tuser(lvl) <= tmp_path_user(TUSER_WIDTH - 1 downto 0);
       end generate;
 
-      -- Rest of the columns
+      -- Rest of the arrays
       without_point: if idx > 0 generate
         signal upstream_path_a, upstream_path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) - 1 downto 0);
         signal path_a, path_b : std_logic_vector((log2ceil(OPERANTS) - lvl) downto 0);

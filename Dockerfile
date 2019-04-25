@@ -1,9 +1,9 @@
-ARG ARROW_VERSION=0.11.1
+ARG ARROW_VERSION=0.13.0
 FROM mbrobbel/libarrow:$ARROW_VERSION
 
 LABEL fletcher=
 
-ENV BUILD_PACKAGES cmake g++
+ENV BUILD_PACKAGES cmake g++ git
 
 WORKDIR fletcher
 ADD . .

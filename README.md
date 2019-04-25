@@ -1,5 +1,6 @@
 # Fletcher: A framework to integrate FPGA accelerators with Apache Arrow
 
+[![Build Status](https://travis-ci.org/johanpel/fletcher.svg?branch=master)](https://travis-ci.org/johanpel/fletcher)
 [![pipeline status](https://gitlab.com/mbrobbel/fletcher/badges/master/pipeline.svg)](https://gitlab.com/mbrobbel/fletcher/commits/master)
 
 Fletcher is a framework that helps to integrate FPGA accelerators with tools and
@@ -69,7 +70,7 @@ supports the following features:
 
 ## Further reading
   * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator
-    converts Arrow schema's to wrappers around ColumnReaders/ColumnWriters.
+    converts Arrow schema's to wrappers around ArrayReaders/ArrayWriters.
     It also provides instantiation templates for your hardware accelerator
     implementation for a HDL or HLS design flow.
   * [Host-side run-time libraries](runtime) - How to integrate host-side
