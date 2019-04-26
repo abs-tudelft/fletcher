@@ -382,11 +382,12 @@ package Streams is
 
   component StreamPrefixSum is
     generic (
-      DATA_WIDTH                : natural;
-      COUNT_MAX                 : natural;
-      COUNT_WIDTH               : natural;
-      LOOPBACK                  : boolean := true;
-      INPUT_NORMALIZED          : boolean := false
+      DATA_WIDTH                  : natural;
+      COUNT_MAX                   : natural;
+      COUNT_WIDTH                 : natural;
+      CTRL_WIDTH                  : natural  := 1;
+      LOOPBACK                    : boolean := true;
+      INPUT_NORMALIZED            : boolean := false
     );
     port (
       clk                       : in  std_logic;
