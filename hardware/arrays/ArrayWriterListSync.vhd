@@ -26,22 +26,34 @@ entity ArrayWriterListSync is
   generic (
 
     ---------------------------------------------------------------------------
-    -- I/O streams
+    -- Values stream
     ---------------------------------------------------------------------------
     -- Width of a data element.
-    ELEMENT_WIDTH               : natural := 32;
-
-    -- Width of the list length vector.
-    LENGTH_WIDTH                : natural := 32;
+    ELEMENT_WIDTH               : positive := 32;
 
     -- Maximum number of elements per clock.
-    COUNT_MAX                   : natural := 1;
+    COUNT_MAX                   : positive := 1;
 
     -- The number of bits in the count vectors. This must be at least
     -- ceil(log2(COUNT_MAX)) and must be at least 1. If COUNT_MAX is a power of
     -- two and this value equals log2(COUNT_MAX), a zero count implies that all
     -- entries are valid (i.e., there is an implicit '1' bit in front).
-    COUNT_WIDTH                 : natural := 1;
+    COUNT_WIDTH                 : positive := 1;
+
+    ---------------------------------------------------------------------------
+    -- Lengths stream
+    ---------------------------------------------------------------------------
+    -- Width of the list length vector.
+    LENGTH_WIDTH                : positive := 32;
+
+    -- Maximum number of elements per clock.
+    LCOUNT_MAX                  : positive := 1;
+
+    -- The number of bits in the count vectors. This must be at least
+    -- ceil(log2(COUNT_MAX)) and must be at least 1. If COUNT_MAX is a power of
+    -- two and this value equals log2(COUNT_MAX), a zero count implies that all
+    -- entries are valid (i.e., there is an implicit '1' bit in front).
+    LCOUNT_WIDTH                : positive := 1;
 
     ---------------------------------------------------------------------------
     -- Functional modifiers
@@ -54,7 +66,7 @@ entity ArrayWriterListSync is
     -- on this stream for every list, and that its last signal will be used
     -- to terminate the offsets buffer and potentially the values buffer in case
     -- ELEM_LAST_FROM_LENGTH is true.
-    GENERATE_LENGTH             : boolean := true;
+    GENERATE_LENGTH             : boolean := false;
 
     -- Whether to use the length stream to normalize the element stream output.
     -- This breaks up any element stream transfers that cross a list boundary.
@@ -68,14 +80,14 @@ entity ArrayWriterListSync is
     -- Whether to only output last on the element stream when the input length
     -- stream last is asserted as well. Set this to false only if you want to
     -- terminate the command after every list for some reason (like sharing one
-    -- BufferWriters with multiple index BufferWriters).
+    -- BufferWriter with multiple offsets BufferWriters).
     ELEM_LAST_FROM_LENGTH       : boolean := true;
 
     -- Note: the combination of NORMALIZE=true and ELEM_LAST_FROM_LENGTH=false
     -- should probably not be used, but in case you want to save some resources
     -- it might be used to share a single values BufferWriter over multiple
-    -- index BufferWriter.
-    -- Note: set the latter three settings to false to make the length and 
+    -- offsets BufferWriter.
+    -- Note: set the latter three settings to false to make the length and
     -- element stream completely disjoint.
 
     ---------------------------------------------------------------------------
@@ -103,7 +115,8 @@ entity ArrayWriterListSync is
     -- List length input stream.
     inl_valid                   : in  std_logic;
     inl_ready                   : out std_logic;
-    inl_length                  : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
+    inl_length                  : in  std_logic_vector(LCOUNT_MAX*LENGTH_WIDTH-1 downto 0);
+    inl_count                   : in  std_logic_vector(LCOUNT_WIDTH-1 downto 0);
     inl_last                    : in  std_logic;
 
     -- List element input stream.
@@ -117,7 +130,8 @@ entity ArrayWriterListSync is
     -- List length output stream.
     outl_valid                  : out std_logic;
     outl_ready                  : in  std_logic;
-    outl_length                 : out std_logic_vector(LENGTH_WIDTH-1 downto 0);
+    outl_length                 : out std_logic_vector(LCOUNT_MAX*LENGTH_WIDTH-1 downto 0);
+    outl_count                  : out std_logic_vector(LCOUNT_WIDTH-1 downto 0);
     outl_last                   : out std_logic;
 
     -- Element output stream.
@@ -139,7 +153,8 @@ architecture Behavioral of ArrayWriterListSync is
   -- Internal length output
   signal int_len_valid          : std_logic;
   signal int_len_ready          : std_logic;
-  signal int_len_length         : std_logic_vector(LENGTH_WIDTH-1 downto 0);
+  signal int_len_length         : std_logic_vector(LCOUNT_MAX*LENGTH_WIDTH-1 downto 0);
+  signal int_len_count          : std_logic_vector(LCOUNT_WIDTH-1 downto 0);
   signal int_len_last           : std_logic;
 
   -- Internal element output
@@ -157,7 +172,12 @@ begin
   -----------------------------------------------------------------------------
   --pragma translate off
   assert not(GENERATE_LENGTH and NORMALIZE)
-    report "GENERATE_LENGTH and NORMALIZE cannot be enabled at the same time"
+    report "GENERATE_LENGTH and NORMALIZE cannot be enabled at the same time."
+    severity failure;
+
+
+  assert not(NORMALIZE) or LCOUNT_MAX = 1
+    report "NORMALIZE can only be enabled when LCOUNT_MAX = 1."
     severity failure;
   --pragma translate on
 
@@ -169,6 +189,7 @@ begin
     int_len_valid               <= inl_valid;
     inl_ready                   <= int_len_ready;
     int_len_length              <= inl_length;
+    int_len_count               <= inl_count;
     int_len_last                <= inl_last;
 
     -- Internal element output
@@ -180,13 +201,14 @@ begin
     int_dat_count               <= ine_count;
   end generate;
 
-
   -----------------------------------------------------------------------------
   -- Generated length stream
   -----------------------------------------------------------------------------
   -- We do not want to use the lengths in the length stream input. Thus, we
   -- must determine the length stream based on the element stream and its last
   -- signal. A StreamElementCounter is used for this.
+  -- In this mode, the ListSync will never generate multiple lengths per cycle,
+  -- even if LCOUNT_MAX > 1.
   generate_length_gen: if GENERATE_LENGTH generate
     -- Input to the element counter
     signal eci_valid            : std_logic;
@@ -275,8 +297,11 @@ begin
         out_ready(0)            => int_len_ready
       );
 
-    int_len_length              <= eco_count;
-    int_len_last                <= inl_last;
+    -- We will always only generate a single length, make the count 1, and set
+    -- the generated length to the least significant position.
+    int_len_count(0)                        <= '1';
+    int_len_length(LENGTH_WIDTH-1 downto 0) <= eco_count;
+    int_len_last                            <= inl_last;
 
   end generate;
 
@@ -331,14 +356,10 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-
         in_valid(0)             => inl_valid,
-
         in_ready(0)             => inl_ready,
-
         out_valid(0)            => int_len_valid,
         out_valid(1)            => lsd_valid,
-
         out_ready(0)            => int_len_ready,
         out_ready(1)            => lsd_ready
       );
@@ -441,11 +462,115 @@ begin
   -- We want to close element stream only when the length stream has its last
   -- signal asserted as well.
   use_length_last_gen: if ELEM_LAST_FROM_LENGTH generate
-    signal both_last : std_logic;
+    signal both_last            : std_logic;
+        
+    -- Handshake for splitter to length counter
+    signal intc_len_valid       : std_logic;
+    signal intc_len_ready       : std_logic;
+    -- Handshake for splitter to length output
+    signal into_len_valid       : std_logic;
+    signal into_len_ready       : std_logic;
+    
+    -- Handshake for splitter to elem last counter
+    signal intc_dat_valid       : std_logic;
+    signal intc_dat_ready       : std_logic;
+    -- Handshake for splitter to elem last output
+    signal intd_dat_valid       : std_logic;
+    signal intd_dat_ready       : std_logic;
+    
+    -- Length count stream
+    signal len_list_valid       : std_logic;
+    signal len_list_ready       : std_logic;
+    signal len_list_count       : std_logic_vector(LENGTH_WIDTH-1 downto 0);
+    signal len_list_last        : std_logic;
+    
+    -- Element last count
+    signal elem_list_count      : unsigned(LENGTH_WIDTH-1 downto 0);
+    signal next_elem_list_count : unsigned(LENGTH_WIDTH-1 downto 0);
+    signal len_proceed          : std_logic;
   begin
 
+    -- Split the internal length stream into one to be counted, and another to
+    -- the output
+    len_split_inst : StreamSync
+      generic map (
+        NUM_INPUTS      => 1,
+        NUM_OUTPUTS     => 2
+      )
+      port map (
+        clk             => clk,
+        reset           => reset,
+        in_valid(0)     => int_len_valid,
+        in_ready(0)     => int_len_ready,
+        out_valid(0)    => intc_len_valid,
+        out_valid(1)    => into_len_valid,
+        out_ready(0)    => intc_len_ready,
+        out_ready(1)    => into_len_ready
+      );
+
+    -- Count how many list lengths were handshaked on the length stream
+    len_cnt_inst : StreamElementCounter
+      generic map (
+        IN_COUNT_MAX    => LCOUNT_MAX,
+        IN_COUNT_WIDTH  => LCOUNT_WIDTH,
+        OUT_COUNT_WIDTH => LENGTH_WIDTH,
+        OUT_COUNT_MAX   => 2**LENGTH_WIDTH-1
+      )
+      port map (
+        clk             => clk,
+        reset           => reset,
+        in_valid        => intc_len_valid,
+        in_ready        => intc_len_ready,
+        in_last         => int_len_last,
+        in_count        => int_len_count,
+        out_valid       => len_list_valid,
+        out_ready       => len_list_ready,
+        out_count       => len_list_count,
+        out_last        => len_list_last
+      );
+      
+    next_elem_list_count <= elem_list_count + 1;
+      
+    -- Count how many lists were handshaked on the element stream
+    count_elem_last: process(clk) is
+    begin
+      if rising_edge(clk) then
+        if int_dat_valid = '1' and int_dat_ready = '1' and int_dat_last = '1' then
+          elem_list_count <= next_elem_list_count;
+        end if;
+        if reset = '1' or len_list_ready = '1' then
+          elem_list_count <= (others => '0');
+        end if;
+      end if;
+    end process;
+    
+    -- The length stream may proceed as long as we didn't get a valid output 
+    -- from the length stream list counter.
+    len_proceed <= '1' when len_list_valid = '0'
+                       else '0';
+                       
+
+    len_list_ready <= '1' when (next_elem_list_count = unsigned(len_list_count) and int_dat_last = '1' and int_dat_valid='1' and int_dat_ready='1')
+                           else '0';
+    
+    -- Only enable the list output and advance it if both are last
+    both_last <= int_dat_last and int_len_last;
+
+    -- Connect the element stream output
+    oute_count                <= int_dat_count;
+    oute_dvalid               <= int_dat_dvalid;
+    oute_data                 <= int_dat_data;
+    -- Use the last signal from the length stream
+    oute_last                 <= '1' when next_elem_list_count = unsigned(len_list_count) and int_dat_last = '1'
+                                     else '0';
+
+    -- Connect the length stream output
+    outl_last                 <= int_len_last;
+    outl_count                <= int_len_count;
+    outl_length               <= int_len_length;
+
     -- Synchronize length and output stream.
-    last_sync_inst: StreamSync
+    last_from_len_syn_inst: StreamSync
       generic map (
         NUM_INPUTS => 2,
         NUM_OUTPUTS => 2
@@ -453,40 +578,27 @@ begin
       port map (
         clk                     => clk,
         reset                   => reset,
-        in_valid(0)             => int_len_valid,
+        in_valid(0)             => into_len_valid,
         in_valid(1)             => int_dat_valid,
-
-        in_ready(0)             => int_len_ready,
+        in_ready(0)             => into_len_ready,
         in_ready(1)             => int_dat_ready,
 
         -- Only use the length stream when the data last signal is asserted.
-        in_use(0)               => int_dat_last,
+        in_use(0)               => len_proceed,
+        -- Always use the values stream.
         in_use(1)               => '1',
-        
+
         -- Only enable the length stream when the data last signal is asserted.
-        out_enable(0)           => int_dat_last,
+        out_enable(0)           => len_proceed,
+        -- Always enable the values stream.
         out_enable(1)           => '1',
-        
+
         out_valid(0)            => outl_valid,
         out_valid(1)            => oute_valid,
 
         out_ready(0)            => outl_ready,
         out_ready(1)            => oute_ready
       );
-    
-    -- Only enable the list output and advance it if both are last
-    both_last                 <= int_dat_last and int_len_last;
-
-    -- Connect the element stream output
-    oute_count                <= int_dat_count;
-    oute_dvalid               <= int_dat_dvalid;
-    oute_data                 <= int_dat_data;
-    -- Use the last signal from the length stream
-    oute_last                 <= both_last;
-
-    -- Connect the length stream output
-    outl_last                 <= int_len_last;
-    outl_length               <= int_len_length;
 
   end generate;
 

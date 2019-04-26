@@ -2,8 +2,9 @@ source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 
 proc test_listsync {} {
   compile_sources
-  simulate work.arraywriterlistsync_tc {{"Testbench" sim:/arraywriterlistsync_tc/*     }
-                                         {"UUT"       sim:/arraywriterlistsync_tc/uut/* }}
+  simulate work.arraywriterlistsync_tc {{"Testbench"      sim:/arraywriterlistsync_tc/*     }
+                                        {"UUT"            sim:/arraywriterlistsync_tc/uut/* }
+                                        {"LastFromLength" sim:/arraywriterlistsync_tc/uut/use_length_last_gen/*}}
   
 }
 
