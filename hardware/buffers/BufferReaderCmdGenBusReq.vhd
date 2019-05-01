@@ -185,7 +185,9 @@ begin
   last_index                    <= align_aeq(r.index.last, log2floor(ELEMS_PER_STEP));
 
   -- Get the byte address of this index
-  byte_address                  <= r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT);
+  byte_address                  <= r.base_address + shift_left_with_neg(
+      resize(r.index.current, r.index.current'length + work.Utils.max(0, ITOBA_LSHIFT)),
+      ITOBA_LSHIFT);
 
   -----------------------------------------------------------------------------
   -- State machine sequential part
