@@ -227,6 +227,7 @@ begin
         out_last                => pss_last
       );
 
+    -- TODO: insert a slice after prefix sum stage
   end generate;
 
   -----------------------------------------------------------------------------
@@ -286,6 +287,7 @@ begin
   no_command_gen: if not IS_OFFSETS_BUFFER generate
     pad_res_valid <= pad_valid;
     pad_ready     <= pad_res_ready;
+    cmdOut_valid  <= '0';
   end generate;
 
   -- If this is an Offsets Buffer, generate a command stream for a child buffer

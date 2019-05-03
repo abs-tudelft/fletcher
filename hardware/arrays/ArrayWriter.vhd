@@ -72,7 +72,7 @@ entity ArrayWriter is
 
     -- Enables or disables command stream tag system. When enabled, an
     -- additional output stream is created that returns tags supplied along
-    -- with the command stream when all BufferReaders finish making bus
+    -- with the command stream when all BufferWriters finish making bus
     -- requests for the command. This can be used to support chunking later.
     CMD_TAG_ENABLE              : boolean := false;
 
@@ -112,7 +112,7 @@ entity ArrayWriter is
     cmd_tag                     : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
     -- Unlock stream (bus clock domain). Produces the chunk tags supplied by
-    -- the command stream when all BufferReaders finish processing the command.
+    -- the command stream when all BufferWriters finish processing the command.
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);

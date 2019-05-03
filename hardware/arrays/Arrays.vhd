@@ -203,41 +203,25 @@ package Arrays is
 
   component ArrayWriterListSync is
     generic (
-      ELEMENT_WIDTH             : positive;
       LENGTH_WIDTH              : positive;
-      COUNT_MAX                 : positive;
-      COUNT_WIDTH               : positive;
-      GENERATE_LENGTH           : boolean;
-      NORMALIZE                 : boolean;
-      ELEM_LAST_FROM_LENGTH     : boolean;
-      DATA_IN_SLICE             : boolean;
-      LEN_IN_SLICE              : boolean;
-      OUT_SLICE                 : boolean
+      LCOUNT_MAX                : positive := 1;
+      LCOUNT_WIDTH              : positive := 1
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-      inl_valid                 : in  std_logic;
-      inl_ready                 : out std_logic;
-      inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-      inl_last                  : in  std_logic;
-      ine_valid                 : in  std_logic;
-      ine_ready                 : out std_logic;
-      ine_dvalid                : in  std_logic;
-      ine_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      ine_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
-      ine_last                  : in  std_logic;
-      outl_valid                : out std_logic;
-      outl_ready                : in  std_logic;
-      outl_length               : out std_logic_vector(LENGTH_WIDTH-1 downto 0);
-      outl_last                 : out std_logic;
-      oute_valid                : out std_logic;
-      oute_ready                : in  std_logic;
-      oute_last                 : out std_logic;
-      oute_dvalid               : out std_logic;
-      oute_data                 : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      oute_count                : out std_logic_vector(COUNT_WIDTH-1 downto 0)
-
+      in_len_valid              : in  std_logic;
+      in_len_ready              : out std_logic;
+      in_len_count              : in  std_logic_vector(LCOUNT_WIDTH-1 downto 0);
+      in_len_last               : in  std_logic;
+      out_len_valid             : out std_logic;
+      out_len_ready             : in  std_logic;
+      in_val_valid              : in  std_logic;
+      in_val_ready              : out std_logic;
+      in_val_last               : in  std_logic;
+      out_val_valid             : out std_logic;
+      out_val_ready             : in  std_logic;
+      out_val_last              : out std_logic
     );
   end component;
 

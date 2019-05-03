@@ -3,9 +3,7 @@ source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
 proc test_listsync {} {
   compile_sources
   simulate work.arraywriterlistsync_tc {{"Testbench"      sim:/arraywriterlistsync_tc/*     }
-                                        {"UUT"            sim:/arraywriterlistsync_tc/uut/* }
-                                        {"LastFromLength" sim:/arraywriterlistsync_tc/uut/use_length_last_gen/*}}
-  
+                                        {"UUT"            sim:/arraywriterlistsync_tc/uut/* }}
 }
 
 proc test_listprim {} {
@@ -16,10 +14,10 @@ proc test_listprim {} {
                                   {"Arbiter inst" sim:/listprim8epc4_tc/uut/arb_inst/arb_gen/arb_inst/*}
                                   {"Level"        sim:/listprim8epc4_tc/uut/arb_inst/a_inst/*}
                                   {"ListPrim"     sim:/listprim8epc4_tc/uut/arb_inst/a_inst/listprim_gen/listprim_inst/*}
-                                  {"ListSync"     sim:/listprim8epc4_tc/uut/arb_inst/a_inst/listprim_gen/listprim_inst/sync_inst/*}
+                                  {"ListSync"     sim:/listprim8epc4_tc/uut/arb_inst/a_inst/listprim_gen/listprim_inst/len_last_gen/sync_inst/*}
                                   {"Writer A"     sim:/listprim8epc4_tc/uut/arb_inst/a_inst/listprim_gen/listprim_inst/a_inst/*}
                                   {"Writer B"     sim:/listprim8epc4_tc/uut/arb_inst/a_inst/listprim_gen/listprim_inst/b_inst/*}}
-  
+
 }
 
 proc test_prim {} {
