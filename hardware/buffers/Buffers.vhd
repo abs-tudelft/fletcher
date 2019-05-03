@@ -357,8 +357,7 @@ package Buffers is
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
       CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural;
-      NORM_SLICE                : boolean := true
+      CMD_TAG_WIDTH             : natural
     );
     port (
       clk                       : in  std_logic;
@@ -416,6 +415,7 @@ package Buffers is
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
       in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_dvalid                 : in  std_logic;
       in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
       in_last                   : in  std_logic;
       out_valid                 : out std_logic;
