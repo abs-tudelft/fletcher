@@ -54,11 +54,7 @@ entity StreamPrefixSum is
     -- Whether to loop back the last sum value to the input unless last was
     -- asserted in the previous handshake, or in_clear is asserted in the 
     -- current.
-    LOOPBACK                    : boolean := true;
-    
-    -- Whether the input stream is already normalized (i.e. for every input
-    -- the in_count is equal to IN_COUNT_MAX, except when in_last is asserted.
-    INPUT_NORMALIZED            : boolean := false
+    LOOPBACK                    : boolean := false
   );
   port (
   
@@ -78,7 +74,6 @@ entity StreamPrefixSum is
     in_valid                    : in  std_logic;
     in_ready                    : out std_logic;
     in_clear                    : in  std_logic                                           := '0';
-    in_skip                     : in  std_logic_vector(COUNT_MAX-1 downto 0)              := (others => '0');
     in_initial                  : in  std_logic_vector(DATA_WIDTH-1 downto 0)             := (others => '0');
     in_data                     : in  std_logic_vector(COUNT_MAX*DATA_WIDTH-1 downto 0);
     in_ctrl                     : in  std_logic_vector(CTRL_WIDTH-1 downto 0)             := (others => '0');
@@ -99,20 +94,14 @@ entity StreamPrefixSum is
 end StreamPrefixSum;
 
 architecture Behavioral of StreamPrefixSum is
-  
-  -- Normalized input stream
+  -- Array representation of input values
   type arr_t is array(natural range <>) of unsigned(DATA_WIDTH-1 downto 0);  
   
-  signal norm_valid             : std_logic;
-  signal norm_ready             : std_logic;
-  signal norm_data              : std_logic_vector(COUNT_MAX*DATA_WIDTH-1 downto 0);
-  signal norm_count             : std_logic_vector(COUNT_WIDTH-1 downto 0);
-  signal norm_skip              : std_logic_vector(COUNT_MAX-1 downto 0);
-  signal norm_last              : std_logic;
-  signal norm_clear             : std_logic;
-  signal norm_ctrl              : std_logic_vector(CTRL_WIDTH-1 downto 0);
-  signal norm_initial           : std_logic_vector(DATA_WIDTH-1 downto 0);
-  signal norm_array             : arr_t(COUNT_MAX-1 downto 0); 
+  -- Input array
+  signal in_array               : arr_t(COUNT_MAX-1 downto 0);
+    
+  -- One hot encoded in_count
+  signal in_skip                : std_logic_vector(COUNT_MAX-1 downto 0);
   
   -- State machine types and signals
   type state_type is record
@@ -131,78 +120,14 @@ architecture Behavioral of StreamPrefixSum is
   signal r : state_type;
   signal d : state_type;
   signal i : input_type;
-  
+    
 begin
 
-  -- If the input is not normalized already, first reshape it to be normalized.
-  reshape_gen: if not INPUT_NORMALIZED generate
-    -- Control stream indices
-    constant LSI : nat_array := cumulative((
-      3 => CTRL_WIDTH,  -- control
-      2 => COUNT_MAX,   -- skip
-      1 => DATA_WIDTH,  -- initial
-      0 => 1            -- clear
-    ));
-    
-    signal s_in_ctrl   : std_logic_vector(LSI(4)-1 downto 0);
-    signal s_norm_ctrl : std_logic_vector(LSI(4)-1 downto 0);
-
-  begin
-    -- Serialize control info
-    s_in_ctrl(LSI(4)-1 downto LSI(3)) <= in_ctrl;
-    s_in_ctrl(LSI(3)-1 downto LSI(2)) <= in_skip;
-    s_in_ctrl(LSI(2)-1 downto LSI(1)) <= in_initial;
-    s_in_ctrl(                LSI(0)) <= in_clear;
-
-    reshaper_inst: StreamReshaper
-    generic map (
-      ELEMENT_WIDTH   => DATA_WIDTH,
-      IN_COUNT_MAX    => COUNT_MAX,
-      IN_COUNT_WIDTH  => COUNT_WIDTH,
-      OUT_COUNT_MAX   => COUNT_MAX,
-      OUT_COUNT_WIDTH => COUNT_WIDTH,
-      CTRL_WIDTH      => LSI(4)
-    )
-    port map (
-      clk        => clk,
-      reset      => reset,
-      din_valid  => in_valid,
-      din_ready  => in_ready,
-      din_data   => in_data,
-      din_count  => in_count,
-      din_last   => in_last,
-      cin_ctrl   => s_in_ctrl,
-      out_valid  => norm_valid,
-      out_ready  => norm_ready,
-      out_dvalid => open,
-      out_data   => norm_data,
-      out_count  => norm_count,
-      out_last   => norm_last,
-      out_ctrl   => s_norm_ctrl
-    );
-
-   -- Deserialize control information
-   norm_ctrl    <= s_in_ctrl(LSI(4)-1 downto LSI(3));
-   norm_skip    <= s_in_ctrl(LSI(3)-1 downto LSI(2));
-   norm_initial <= s_in_ctrl(LSI(2)-1 downto LSI(1));
-   norm_clear   <= s_in_ctrl(                LSI(0));
-    
-  end generate;
-  -- The input is already normalized.
-  no_reshape_gen: if INPUT_NORMALIZED generate
-      norm_valid   <= in_valid;
-      in_ready     <= norm_ready;
-      norm_data    <= in_data;
-      norm_skip    <= in_skip;
-      norm_count   <= in_count;
-      norm_last    <= in_last;
-      norm_clear   <= in_clear;
-      norm_initial <= in_initial;
-  end generate;
+  in_skip <= not(work.Utils.cnt2oh(unsigned(in_count), COUNT_MAX));
 
   -- Represent input data as array
   input_deserialize: for I in 0 to COUNT_MAX-1 generate
-    norm_array(I) <= unsigned(norm_data((I+1)*DATA_WIDTH-1 downto I*DATA_WIDTH));
+    in_array(I) <= unsigned(in_data((I+1)*DATA_WIDTH-1 downto I*DATA_WIDTH));
   end generate;
   
   -- Sequential
@@ -224,14 +149,20 @@ begin
   -- Combinatorial
   comb: process(
     r,
-    norm_array, norm_data, norm_valid, norm_count, norm_last, norm_initial, norm_clear, norm_skip,
+    reset,
+    in_valid, in_array, in_last, in_initial, in_clear, in_skip,
     out_ready
   ) is 
     variable v : state_type;
   begin
     v := r;
-    -- Input side is ready by default.
-    i.ready <= '1';
+    
+    -- Input side is ready by default, unless its being reset.
+    if reset /= '1' then    
+      i.ready <= '1';
+    else
+      i.ready <= '0';
+    end if;
     
     -- Stall input if output is valid but not handshaked.
     if r.valid = '1' and out_ready = '0' then
@@ -239,50 +170,50 @@ begin
     end if;
     
     -- If the output is handshaked, but there is no new data
-    if r.valid = '1' and out_ready = '1' and norm_valid = '0' then
+    if r.valid = '1' and out_ready = '1' and in_valid = '0' then
       -- Invalidate the output.
       v.valid                   := '0';
     end if;
     
     -- If the input is valid, and the output has no data or is handshaked
     -- we may advance the stream.
-    if norm_valid = '1' and
+    if in_valid = '1' and
        (r.valid = '0' or (r.valid = '1' and out_ready = '1'))
     then
       v.valid := '1';
-      v.ctrl  := norm_ctrl;
-      v.last  := norm_last;
-      v.count := norm_count;
+      v.ctrl  := in_ctrl;
+      v.last  := in_last;
+      v.count := in_count;
       
       -- For loopback mode
       if LOOPBACK then
         -- If this is the first handshake after reset or last, or when clear is,
         -- asserted, use the initial value for the first sum.
-        if r.first = '1' or norm_clear = '1' then
-          v.sum(0) := unsigned(norm_initial) + norm_array(0);
+        if r.first = '1' or in_clear = '1' then
+          v.sum(0) := unsigned(in_initial) + in_array(0);
           v.first := '0';
         else
           -- Otherwise get the last sum from the previous prefix sum for the 
           -- first sum
-          v.sum(0) := r.sum(COUNT_MAX-1) + norm_array(0);
+          v.sum(0) := r.sum(COUNT_MAX-1) + in_array(0);
         end if;
         
         -- When this is the last handshake, the next handshake will be a first
         -- handshake again.
-        if (norm_last = '1') then
+        if (in_last = '1') then
           v.first := '1';
         end if;
       else
         -- If no loopback mode, just calculate the prefix sum of this MEPC
         -- handshake.
-        v.sum(0) := unsigned(norm_initial);
+        v.sum(0) := unsigned(in_initial);
       end if;
       
       -- Calculate prefix sums.
       prefix_sum: for I in 1 to COUNT_MAX-1 loop
         -- Only add when we shouldn't skip at some position.
-        if norm_skip(I) = '0' then
-          v.sum(I) := norm_array(I) + v.sum(I-1);
+        if in_skip(I) = '0' then
+          v.sum(I) := in_array(I) + v.sum(I-1);
         else 
           v.sum(I) := v.sum(I-1);
         end if;
@@ -293,7 +224,7 @@ begin
     d <= v;
     
     -- Outputs not to be registered.
-    norm_ready <= i.ready;
+    in_ready <= i.ready;
   end process;
   
   

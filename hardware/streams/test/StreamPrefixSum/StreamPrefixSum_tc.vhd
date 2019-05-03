@@ -53,6 +53,8 @@ begin
     reset <= '0';
     wait for 10 us;
     
+    -- TODO: vary count and dvalid
+    
     stream_tb_push("a", X"00000201");
     stream_tb_push("a", X"00000403");
     stream_tb_push("a", X"00000605");
@@ -60,9 +62,12 @@ begin
     stream_tb_push("a", X"00000A09");
     stream_tb_push("a", X"00000C0B");
     
-    stream_tb_expect("b", X"0A060301", 10 us);
-    stream_tb_expect("b", X"241C150F", 10 us);
-    stream_tb_expect("b", X"4E42372D", 10 us);
+    stream_tb_expect("b", X"03030301", 10 us);
+    stream_tb_expect("b", X"0A0A0A06", 10 us);
+    stream_tb_expect("b", X"1515150F", 10 us);
+    stream_tb_expect("b", X"2424241C", 10 us);
+    stream_tb_expect("b", X"3737372D", 10 us);
+    stream_tb_expect("b", X"4E4E4E42", 10 us);
    
     stream_tb_complete;
     wait;
