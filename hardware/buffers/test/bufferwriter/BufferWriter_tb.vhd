@@ -25,7 +25,8 @@ use work.Buffers.all;
 use work.SimUtils.all;
 
 -------------------------------------------------------------------------------
--- This testbench is used to check the functionality of the BufferWriter.
+-- This testbench is used to verify the functionality of the BufferWriter.
+-------------------------------------------------------------------------------
 entity BufferWriter_tb is
   generic (
     TEST_NAME                   : string   := "";
@@ -131,7 +132,7 @@ architecture tb of BufferWriter_tb is
 
   procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is
   begin
-    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
+    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: W[" & ii(int(a)) & "] =?= E[" & ii(int(b)) & "]");
   end print_elem_check;
 
   procedure generate_command(
@@ -294,6 +295,9 @@ begin
 
     in_valid                    <= '0';
     in_last                     <= '0';
+    
+    -- Wait for reset
+    wait until rising_edge(acc_clk) and (acc_reset /= '1');
 
     loop
       in_valid                  <= '0';
@@ -306,7 +310,7 @@ begin
 
       current_index             := first_index;
 
-      -- Index buffers automatically get a zero padded
+      -- Offsets buffers automatically get a zero padded
       if IS_OFFSETS_BUFFER then
         current_index           := current_index + 1;
       end if;
