@@ -316,6 +316,8 @@ class Term {
   /// Terminator direction.
   enum Dir { NONE, IN, OUT };
 
+  static Dir Invert(Dir dir);
+
   /// @brief Return the direction of this terminator.
   inline Dir dir() const { return dir_; };
 

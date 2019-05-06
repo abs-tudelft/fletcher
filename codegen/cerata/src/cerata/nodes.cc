@@ -430,4 +430,10 @@ std::string Term::ToString(Term::Dir dir) {
     case OUT: return "out";
   }
 }
+
+Term::Dir Term::Invert(Term::Dir dir) {
+  if (dir == IN) { return OUT; }
+  if (dir == OUT) { return IN; }
+  return NONE;
+}
 }  // namespace cerata

@@ -38,9 +38,15 @@ class Node;
 struct FlatType {
   FlatType() = default;
   FlatType(const Type *t, std::deque<std::string> prefix, std::string name, int level);
+  /// @brief A pointer to the original type.
   const Type *type_;
+  /// @brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
+  /// @brief Name parts of this flattened type.
   std::deque<std::string> name_parts_;
+  /// @brief Whether to invert this flattened type if it would be on a terminator node.
+  bool invert_ = false;
+  /// @brief Return the name of this flattened type, constructed from the name parts.
   std::string name(std::string root = "", std::string sep = ":") const;
 };
 

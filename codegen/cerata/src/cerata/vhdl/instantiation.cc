@@ -19,8 +19,6 @@
 #include "cerata/arrays.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
-
-#include "cerata/vhdl/flatnode.h"
 #include "cerata/vhdl/vhdl_types.h"
 
 namespace cerata {

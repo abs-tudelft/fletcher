@@ -24,13 +24,12 @@
 #include "cerata/nodes.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
-#include "cerata/vhdl/flatnode.h"
 #include "cerata/vhdl/vhdl_types.h"
 
 namespace cerata {
 namespace vhdl {
 
-std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr<Node>>& multiplier) {
+std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr<Node>> &multiplier) {
   switch (type->id()) {
     default: {
       if (!multiplier) {
@@ -45,9 +44,9 @@ std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr
       if (width) {
         auto wnode = (*width);
         if (!multiplier) {
-          return "std_logic_vector(" + (wnode-1)->ToString() + " downto 0)";
+          return "std_logic_vector(" + (wnode - 1)->ToString() + " downto 0)";
         } else {
-          return "std_logic_vector(" + (*multiplier * wnode -1)->ToString() + " downto 0)";
+          return "std_logic_vector(" + (*multiplier * wnode - 1)->ToString() + " downto 0)";
         }
       } else {
         return "<incomplete type>";
@@ -102,7 +101,13 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir()) + " " << Generate(ft.type_);
+    l << ft.name(port_name_prefix) << " : ";
+    if (ft.invert_) {
+      l << ToString(Term::Invert(port->dir())) + " ";
+    } else {
+      l << ToString(port->dir()) + " ";
+    }
+    l << Generate(ft.type_);
     ret << l;
   }
   return ret;
@@ -118,7 +123,13 @@ Block Decl::Generate(const std::shared_ptr<PortArray> &port, int depth) {
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : " << ToString(port->dir()) + " " << Generate(ft.type_, port->size());
+    l << ft.name(port_name_prefix) << " : ";
+    if (ft.invert_) {
+      l << ToString(Term::Invert(port->dir())) + " ";
+    } else {
+      l << ToString(port->dir()) + " ";
+    }
+    l << Generate(ft.type_, port->size());
     ret << l;
   }
   return ret;
@@ -126,16 +137,22 @@ Block Decl::Generate(const std::shared_ptr<PortArray> &port, int depth) {
 
 Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   Block ret(depth);
-  auto fn = FlatNode(sig);
-  for (const auto &pair : fn.pairs()) {
+  // Flatten the type of this port
+  auto flat_types = FilterForVHDL(Flatten(sig->type().get()));
+  // Sort by nesting level
+  std::sort(flat_types.begin(), flat_types.end());
+  // Generate signal decl for every flat type
+  for (const auto &ft : flat_types) {
     Line l;
-    l << "signal " + pair.first.ToString() << " : " << Generate(pair.second.get()) << ";";
+    auto sig_name_prefix = sig->name();
+    l << "signal " + ft.name(sig_name_prefix) << " : ";
+    l << Generate(ft.type_);
     ret << l;
   }
   return ret;
 }
 
-MultiBlock Decl::Generate(const Component* comp, bool entity) {
+MultiBlock Decl::Generate(const Component *comp, bool entity) {
   MultiBlock ret(1);
 
   if (entity) {

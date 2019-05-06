@@ -24,7 +24,6 @@
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/design.h"
-#include "cerata/vhdl/flatnode.h"
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/transformation.h"
 #include "cerata/vhdl/defaults.h"

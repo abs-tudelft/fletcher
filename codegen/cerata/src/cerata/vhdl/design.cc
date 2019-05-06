@@ -59,7 +59,7 @@ MultiBlock Design::Generate() {
   for (const auto &kv : libs_and_packages) {
     incl << Line("library " + kv.first + ";");
     for (const auto &pkg : kv.second) {
-      // TODO: consider also allowing non-all.
+      // TODO(johanpel): consider also allowing non-all.
       incl << Line("use " + kv.first + "." + pkg + ".all");
     }
   }

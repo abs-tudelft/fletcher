@@ -58,6 +58,7 @@ std::deque<FlatType> ResolveAbstract(const FlatType &ft) {
     v.type_ = valid().get();
     r.name_parts_.emplace_back("ready");
     r.type_ = ready().get();
+    r.invert_ = true;
     result.push_back(v);
     result.push_back(r);
   }

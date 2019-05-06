@@ -25,7 +25,6 @@ set(HEADERS
         src/cerata/vhdl/block.h
         src/cerata/vhdl/declaration.h
         src/cerata/vhdl/design.h
-        src/cerata/vhdl/flatnode.h
         src/cerata/vhdl/identifier.h
         src/cerata/vhdl/instantiation.h
         src/cerata/vhdl/transformation.h
@@ -52,7 +51,6 @@ set(SOURCES
         src/cerata/vhdl/block.cc
         src/cerata/vhdl/declaration.cc
         src/cerata/vhdl/design.cc
-        src/cerata/vhdl/flatnode.cc
         src/cerata/vhdl/identifier.cc
         src/cerata/vhdl/instantiation.cc
         src/cerata/vhdl/transformation.cc
