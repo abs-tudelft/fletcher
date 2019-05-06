@@ -23,6 +23,21 @@
 namespace fletchgen {
 
 using cerata::Component;
+using cerata::intl;
+
+/// @brief Return the width of the control data of this field.
+std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field>& field);
+
+// Default streams of ArrayReaders/ArrayWriters
+
+///< @brief Fletcher command stream
+std::shared_ptr<Type> cmd(const std::shared_ptr<Node>& ctrl_width = intl<1>(), const std::shared_ptr<Node>& tag_width = intl<1>());
+///< @brief Fletcher unlock stream
+std::shared_ptr<Type> unlock(const std::shared_ptr<Node>& tag_width = intl<1>());
+///< @brief Fletcher read data
+std::shared_ptr<Type> read_data(std::shared_ptr<Node> data_width = intl<1>());
+///< @brief Fletcher write data
+std::shared_ptr<Type> write_data(std::shared_ptr<Node> data_width = intl<1>());
 
 /// @brief Types for ArrayReader/Writer configuration string.
 enum class ConfigType {
@@ -54,9 +69,31 @@ ConfigType GetConfigType(const arrow::DataType *type);
  * @param level Nesting level for recursive calls to this function.
  * @return      The string.
  */
-std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level=0);
+std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level = 0);
+
+/**
+ * @brief Get a type mapper for an Arrow::Field-based stream to an ArrayReader/Writer stream.
+ *
+ * These type mappers can be automatically deduced based on the generic Fletcher types being used.
+ *
+ * @param stream_type   The stream type.
+ * @param mode          Whether the stream is used for reading or writing.
+ * @return              A TypeMapper that can map the Arrow data stream to an ArrayReader/Writer stream.
+ */
+std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
+
+/**
+ * @brief Convert an Arrow::Field into a stream type.
+ * @param field The Arrow::Field to convert.
+ * @param mode Whether this stream is used for reading or writing.
+ * @param level Nesting level.
+ * @return The Stream Type.
+ */
+std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level = 0);
 
 /// @brief Return a ArrayReader component.
-std::shared_ptr<Component> ArrayReader();
+std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width = intl<1>(),
+                                       const std::shared_ptr<Node>& ctrl_width = intl<1>(),
+                                       const std::shared_ptr<Node>& tag_width = intl<1>());
 
 }  // namespace fletchgen

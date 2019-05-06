@@ -29,6 +29,10 @@ namespace fletchgen {
 class FletcherSchema {
  public:
   explicit FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name = "");
+  static std::shared_ptr<FletcherSchema> Make(const std::shared_ptr<arrow::Schema> &arrow_schema,
+                                              const std::string &schema_name = "") {
+    return std::make_shared<FletcherSchema>(arrow_schema, schema_name);
+  }
   std::shared_ptr<arrow::Schema> arrow_schema() { return arrow_schema_; }
   fletcher::Mode mode() const { return mode_; }
   std::string name() const { return name_; }

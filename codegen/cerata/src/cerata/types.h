@@ -65,7 +65,7 @@ class Type : public Named {
     BOOLEAN,  ///< Abstract, primitive
 
     RECORD,   ///< Abstract, nested
-    STREAM,   ///< Abstract, nested
+    STREAM    ///< Abstract, nested
   };
 
   /**

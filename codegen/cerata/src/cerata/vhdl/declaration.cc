@@ -26,8 +26,7 @@
 #include "cerata/graphs.h"
 #include "cerata/vhdl/vhdl_types.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr<Node>> &multiplier) {
   switch (type->id()) {
@@ -146,7 +145,7 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
     Line l;
     auto sig_name_prefix = sig->name();
     l << "signal " + ft.name(sig_name_prefix) << " : ";
-    l << Generate(ft.type_);
+    l << Generate(ft.type_) + ";";
     ret << l;
   }
   return ret;
@@ -240,5 +239,4 @@ MultiBlock Decl::Generate(const Component *comp, bool entity) {
   return ret;
 }
 
-}  // namespace vhdl
-}  // namespace fletchgen
+}  // namespace cerata::vhdl

@@ -28,48 +28,30 @@
 
 namespace fletchgen {
 
-TEST(Kernel, PrimRead) {
-  auto schema = fletcher::test::GetPrimReadSchema();
-  auto set = SchemaSet::Make("PrimRead", std::deque({schema}));
-  auto top = Kernel::Make(set);
-
+static void TestReadKernel(const std::string& test_name, const std::shared_ptr<arrow::Schema>& schema) {
+  auto fs = FletcherSchema::Make(schema);
+  auto rbr = RecordBatchReader::Make(fs);
+  auto top = Kernel::Make("Test" + test_name, {rbr});
   auto design = cerata::vhdl::Design(top);
   std::cout << design.Generate().ToString();
   cerata::dot::Grapher dot;
   std::cout << dot.GenFile(top, "graph.dot");
+}
+
+TEST(Kernel, PrimRead) {
+  TestReadKernel("PrimRead", fletcher::test::GetPrimReadSchema());
 }
 
 TEST(Kernel, StringRead) {
-  auto schema = fletcher::test::GetStringReadSchema();
-  auto set = SchemaSet::Make("StringRead", std::deque({schema}));
-  auto top = Kernel::Make(set);
-
-  auto design = cerata::vhdl::Design(top);
-  std::cout << design.Generate().ToString();
-  cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  TestReadKernel("StringRead", fletcher::test::GetStringReadSchema());
 }
 
 TEST(Kernel, ListPrim) {
-  auto schema = fletcher::test::GetListUint8Schema();
-  auto set = SchemaSet::Make("ListUint8", std::deque({schema}));
-  auto top = Kernel::Make(set);
-
-  auto design = cerata::vhdl::Design(top);
-  std::cout << design.Generate().ToString();
-  cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  TestReadKernel("ListUint8", fletcher::test::GetListUint8Schema());
 }
 
 TEST(Kernel, BigSchema) {
-  auto schema = fletcher::test::GetBigSchema();
-  auto set = SchemaSet::Make("Big", std::deque({schema}));
-  auto top = Kernel::Make(set);
-
-  auto design = cerata::vhdl::Design(top);
-  std::cout << design.Generate().ToString();
-  cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  TestReadKernel("Big", fletcher::test::GetBigSchema());
 }
 
 }

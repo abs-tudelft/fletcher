@@ -48,7 +48,7 @@ TEST(Bus, Artery) {
   auto comp = Component::Make("comp", {a, b, c, d, e, f});
 
   // Create an artery able to handle these ports
-  auto artery = Artery::Make(intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
+  auto artery = Artery::Make("", intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
 
   // Instaniate component and artery
   auto comp_inst = Instance::Make(comp);

@@ -29,7 +29,7 @@
 
 namespace cerata {
 
-std::string FlatType::name(std::string root, std::string sep) const {
+std::string FlatType::name(const std::string& root, const std::string& sep) const {
   std::stringstream ret;
   ret << root;
   for (const auto &p : name_parts_) {
@@ -38,7 +38,7 @@ std::string FlatType::name(std::string root, std::string sep) const {
   return ret.str();
 }
 
-FlatType::FlatType(const Type *t, std::deque<std::string> prefix, std::string name, int level) : type_(t) {
+FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string& name, int level) : type_(t) {
   name_parts_ = std::move(prefix);
   name_parts_.push_back(name);
 }
@@ -64,7 +64,7 @@ void FlattenStream(std::deque<FlatType> *list,
 void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
-             std::string name) {
+             const std::string& name) {
   FlatType result;
   if (parent) {
     result.nesting_level_ = (*parent).nesting_level_ + 1;

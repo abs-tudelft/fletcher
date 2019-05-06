@@ -32,7 +32,6 @@ set(HEADERS
         src/fletchgen/basic_types.h
         src/fletchgen/mantle.h
         src/fletchgen/kernel.h
-        src/fletchgen/constants.h
         src/fletchgen/options.h
         src/fletchgen/design.h
         src/fletchgen/utils.h

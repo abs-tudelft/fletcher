@@ -30,7 +30,7 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   // Generate all RecordBatchReaders
   for (const auto& fs : ret.schema_set->read_schemas) {
     LOG(INFO, "Generating RecordBatchReader for Schema: " + fs->name());
-    auto reader = RecordBatchReader::Make(fs->name(), fs->arrow_schema());
+    auto reader = RecordBatchReader::Make(fs);
     ret.readers.push_back(reader);
   }
 

@@ -14,6 +14,7 @@
 
 #include "cerata/vhdl/instantiation.h"
 
+#include "cerata/logging.h"
 #include "cerata/edges.h"
 #include "cerata/nodes.h"
 #include "cerata/arrays.h"
@@ -21,8 +22,7 @@
 #include "cerata/graphs.h"
 #include "cerata/vhdl/vhdl_types.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 static bool IsInputTerminator(const std::shared_ptr<Object> &obj) {
   auto t = Cast<Term>(obj);
@@ -151,10 +151,10 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
         auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array);
         ret << mpblock;
         // Increase the offset on the left side.
-        a_offset = a_offset + (b_width ? *b_width : intl<0>());
+        a_offset = a_offset + (b_width ? *b_width : intl<1>());
       }
       // Increase the offset on the right side.
-      b_offset = b_offset + (a_width ? *a_width : intl<0>());
+      b_offset = b_offset + (a_width ? *a_width : intl<1>());
     }
   }
   return ret;
@@ -262,5 +262,4 @@ MultiBlock Inst::Generate(const Graph *graph) {
   return ret;
 }
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

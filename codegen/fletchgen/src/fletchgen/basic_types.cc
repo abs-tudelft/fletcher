@@ -15,6 +15,7 @@
 #include "fletchgen/basic_types.h"
 
 #include <memory>
+#include <cmath>
 
 #include <cerata/api.h>
 #include <fletcher/common/arrow-utils.h>
@@ -33,6 +34,7 @@ using cerata::Parameter;
 using cerata::RecField;
 using cerata::Record;
 using cerata::Stream;
+using cerata::Literal;
 
 // Create basic types similar to Arrow cpp/type.cc for convenience
 #define BIT_FACTORY(NAME)                                               \
@@ -113,9 +115,17 @@ std::shared_ptr<Type> bus_reset() {
 }
 
 // Data channel
+std::shared_ptr<Type> data(std::shared_ptr<Node> width) {
+  std::shared_ptr<Type> result = Vector::Make("data", width);
+  // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
+  result->meta["array_data"] = "true";
+  return result;
+}
 
-std::shared_ptr<Type> datavec() {
-  static std::shared_ptr<Type> result = Vector::Make("data", cerata::strl("arcfg_userWidth(CFG, INDEX_WIDTH)"));
+std::shared_ptr<Type> count(std::shared_ptr<Node> width) {
+  std::shared_ptr<Type> result = Vector::Make("count", width);
+  // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
+  result->meta["array_data"] = "true";
   return result;
 }
 
@@ -127,39 +137,6 @@ std::shared_ptr<Type> dvalid() {
 std::shared_ptr<Type> last() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("last");
   return result;
-}
-
-std::shared_ptr<Type> cmd() {
-  static auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
-  static auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));
-  static auto ctrl = RecField::Make(Vector::Make("ctrl", cerata::strl("arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)")));
-  static auto tag = RecField::Make(Vector::Make<8>("tag"));
-  static auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
-  static auto cmd_stream = Stream::Make("command", cmd_record);
-  return cmd_stream;
-}
-
-std::shared_ptr<Type> unlock() {
-  static auto tag = Vector::Make<8>("tag");
-  static std::shared_ptr<Type> unlock_stream = Stream::Make("unlock", tag, "tag");
-  return unlock_stream;
-}
-
-std::shared_ptr<Type> read_data() {
-  static auto d = RecField::Make(datavec());
-  static auto dv = RecField::Make(dvalid());
-  static auto l = RecField::Make(last());
-  static auto data_record = Record::Make("arrow_read_data_rec", {d, dv, l});
-  static auto data_stream = Stream::Make("arrow_read_data", data_record);
-  return data_stream;
-}
-
-std::shared_ptr<Type> write_data() {
-  static auto d = RecField::Make(datavec());
-  static auto l = RecField::Make(last());
-  static auto data_record = Record::Make("arrow_write_data_rec", {d, l});
-  static auto data_stream = Stream::Make("arrow_write_data", data_record);
-  return data_stream;
 }
 
 std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type) {
@@ -177,149 +154,6 @@ std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_
     case arrow::Type::FLOAT: return float32();
     case arrow::Type::DOUBLE: return float64();
     default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
-  }
-}
-
-std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
-  std::shared_ptr<TypeMapper> conversion;
-  if (mode == fletcher::Mode::READ) {
-    conversion = std::make_shared<TypeMapper>(stream_type.get(), read_data().get());
-  } else {
-    conversion = std::make_shared<TypeMapper>(stream_type.get(), write_data().get());
-  }
-
-  size_t idx_stream = 0;
-  auto idx_data = IndexOfFlatType(conversion->flat_b(), datavec().get());
-  auto idx_dvalid = IndexOfFlatType(conversion->flat_b(), dvalid().get());
-  auto idx_last = IndexOfFlatType(conversion->flat_b(), last().get());
-
-  auto flat_stream = conversion->flat_a();
-  for (size_t i = 0; i < flat_stream.size(); i++) {
-    auto t = flat_stream[i].type_;
-    if (t->Is(Type::STREAM)) {
-      conversion->Add(i, idx_stream);
-    } else if (t == dvalid().get()) {
-      conversion->Add(i, idx_dvalid);
-    } else if (t == last().get()) {
-      conversion->Add(i, idx_last);
-    } else if (t->Is(Type::RECORD)) {
-      // do nothing
-    } else {
-      // If it's not any of the default control signals on the stream, it must be data.
-      conversion->Add(i, idx_data);
-    }
-  }
-  return conversion;
-}
-
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level) {
-  // The ordering of the record fields in this function determines the order in which a nested stream is type converted
-  // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented. Do not touch.
-
-  int epc = fletcher::getEPC(field);
-
-  std::shared_ptr<Type> type;
-
-  auto arrow_id = field->type()->id();
-  auto name = field->name();
-
-  switch (arrow_id) {
-
-    case arrow::Type::BINARY: {
-      // Special case: binary type has a length stream and bytes stream.
-      // The EPC is assumed to relate to the list elements,
-      // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name,
-                                Record::Make("data", {
-                                    RecField::Make("dvalid", dvalid()),
-                                    RecField::Make("last", last()),
-                                    RecField::Make("data", byte())}),
-                                "data", epc);
-      type = Record::Make(name + "_rec", {
-          RecField::Make("length", length()),
-          RecField::Make("bytes", slave)
-      });
-      break;
-    }
-
-    case arrow::Type::STRING: {
-      // Special case: string type has a length stream and utf8 character stream.
-      // The EPC is assumed to relate to the list elements,
-      // as there is no explicit child field to place this metadata in.
-      auto slave = Stream::Make(name,
-                                Record::Make("data", {
-                                    RecField::Make("dvalid", dvalid()),
-                                    RecField::Make("last", last()),
-                                    RecField::Make("data", utf8c())}),
-                                "data", epc);
-      type = Record::Make(name + "_rec", {
-          RecField::Make("length", length()),
-          RecField::Make("chars", slave)
-      });
-      break;
-    }
-
-      // Lists
-    case arrow::Type::LIST: {
-      if (field->type()->num_children() != 1) {
-        throw std::runtime_error("Encountered Arrow list type with other than 1 child.");
-      }
-
-      auto arrow_child = field->type()->child(0);
-      auto element_type = GetStreamType(arrow_child, mode, level + 1);
-      auto slave = Stream::Make(name,
-                                Record::Make("data", {
-                                    RecField::Make("dvalid", dvalid()),
-                                    RecField::Make("last", last()),
-                                    RecField::Make("data", element_type)}),
-                                "data", epc);
-      type = Record::Make(name + "_rec", {
-          RecField::Make(length()),
-          RecField::Make(arrow_child->name(), slave)
-      });
-      break;
-    }
-
-      // Structs
-    case arrow::Type::STRUCT: {
-      if (field->type()->num_children() < 1) {
-        throw std::runtime_error("Encountered Arrow struct type without any children.");
-      }
-      std::deque<std::shared_ptr<RecField>> children;
-      for (const auto &f : field->type()->children()) {
-        auto child_type = GetStreamType(f, mode, level + 1);
-        children.push_back(RecField::Make(f->name(), child_type));
-      }
-      type = Record::Make(name + "_rec", children);
-      break;
-    }
-
-      // Non-nested types
-    default: {
-      type = GenTypeFrom(field->type());
-      break;
-    }
-  }
-
-  // If this is a top level field, create a stream out of it
-  if (level == 0) {
-    // Element name is empty by default.
-    std::string elements_name;
-    // Check if the type is nested. If it is not nested, the give the elements the name "data"
-    if (!type->IsNested()) {
-      elements_name = "data";
-    }
-    // Create the stream record
-    auto record = Record::Make("data", {
-        RecField::Make("dvalid", dvalid()),
-        RecField::Make("last", last()),
-        RecField::Make(elements_name, type)});
-    auto stream = Stream::Make(name, record, elements_name);
-    stream->AddMapper(GetStreamTypeMapper(stream, mode));
-    return stream;
-  } else {
-    // Otherwise just return the type
-    return type;
   }
 }
 

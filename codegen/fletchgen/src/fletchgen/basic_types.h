@@ -65,18 +65,14 @@ PARAM_DECL_FACTORY(index_width)
 
 std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
-std::shared_ptr<Type> datavec(); ///< @brief Fletcher data
+std::shared_ptr<Type> data(std::shared_ptr<Node> width); ///< @brief Fletcher data
+std::shared_ptr<Type> count(std::shared_ptr<Node> width); ///< @brief Fletcher count
 std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
 std::shared_ptr<Type> last(); ///< @brief Fletcher last
 std::shared_ptr<Type> acc_clk(); ///< @brief Fletcher accelerator clock
 std::shared_ptr<Type> acc_reset(); ///< @brief Fletcher accelerator reset
 std::shared_ptr<Type> bus_clk(); ///< @brief Fletcher bus clock
 std::shared_ptr<Type> bus_reset(); ///< @brief Fletcher bus reset
-
-std::shared_ptr<Type> cmd(); ///< @brief Fletcher command stream
-std::shared_ptr<Type> unlock(); ///< @brief Fletcher unlock stream
-std::shared_ptr<Type> read_data(); ///< @brief Fletcher read data
-std::shared_ptr<Type> write_data(); ///< @brief Fletcher write data
 
 /**
  * @brief Convert an arrow::DataType to a Fletcher Type.
@@ -87,25 +83,5 @@ std::shared_ptr<Type> write_data(); ///< @brief Fletcher write data
  * @return              The corresponding Type
  */
 std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type);
-
-/**
- * @brief Convert an Arrow::Field into a stream type.
- * @param field The Arrow::Field to convert.
- * @param mode Whether this stream is used for reading or writing.
- * @param level Nesting level.
- * @return The Stream Type.
- */
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level = 0);
-
-/**
- * @brief Get a type mapper for an Arrow::Field-based stream to a ColumnReader/ColumnWriter stream.
- *
- * These type mappers can be automatically deduced based on the generic Fletcher types being used.
- *
- * @param stream_type   The stream type.
- * @param mode          Whether the stream is used for reading or writing.
- * @return              A TypeMapper that can map the Arrow data stream to a ColumnReader/Writer stream.
- */
-std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode);
 
 }  // namespace fletchgen
