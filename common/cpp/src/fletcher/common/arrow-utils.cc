@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -174,6 +176,16 @@ int getEPC(const std::shared_ptr<arrow::Field> &field) {
     epc = stoi(strepc);
   }
   return epc;
+}
+
+std::shared_ptr<arrow::KeyValueMetadata> MakeRequiredMeta(std::string schema_name, Mode mode) {
+  std::vector<std::string> keys = {"fletcher_name", "fletcher_mode"};
+  std::vector<std::string> values = {std::move(schema_name)};
+  if (mode == Mode::READ)
+    values.emplace_back("read");
+  else
+    values.emplace_back("write");
+  return std::make_shared<arrow::KeyValueMetadata>(keys, values);
 }
 
 std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode) {

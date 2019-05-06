@@ -102,6 +102,8 @@ int getEPC(const std::shared_ptr<arrow::Field> &field);
  */
 bool mustIgnore(const std::shared_ptr<arrow::Field>& field);
 
+std::shared_ptr<arrow::KeyValueMetadata> MakeRequiredMeta(std::string schema_name, Mode schema_mode);
+
 /// @brief Generate Arrow key-value metadata to determine the mode (read/write) of a field.
 std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode);
 

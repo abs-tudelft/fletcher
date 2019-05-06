@@ -28,8 +28,7 @@ std::shared_ptr<arrow::Schema> GetListUint8Schema() {
       arrow::field("list", arrow::list(std::make_shared<arrow::Field>("number", arrow::uint8(), false)), false)
   };
 
-  auto schema = std::make_shared<arrow::Schema>(schema_fields,
-                                                metaMode(fletcher::Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(fletcher::Mode::READ));
 
   return schema;
 }
@@ -40,8 +39,8 @@ std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
       arrow::field("primread", arrow::uint8(), false)
   };
 
-  // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::READ));
+  auto schema = std::make_shared<arrow::Schema>(schema_fields,
+                                                fletcher::MakeRequiredMeta("PrimRead", Mode::READ));
 
   return schema;
 }
@@ -63,9 +62,7 @@ std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
 
 std::shared_ptr<arrow::Schema> GetStringReadSchema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {arrow::field("Name", arrow::utf8(), false, metaEPC(4))};
-  auto schema_meta = metaMode(Mode::READ);
-  schema_meta->Append("fletcher_name", "Strings");
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::MakeRequiredMeta("StringRead", Mode::READ));
   return schema;
 }
 
@@ -173,7 +170,6 @@ std::shared_ptr<arrow::Schema> genFilterWriteSchema() {
   auto schema = std::make_shared<arrow::Schema>(schema_fields, metaMode(Mode::WRITE));
   return schema;
 }
-
 
 }  // namespace test
 }  // namespace fletcher
