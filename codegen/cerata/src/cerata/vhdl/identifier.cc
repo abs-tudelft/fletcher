@@ -18,8 +18,7 @@
 #include <vector>
 #include <deque>
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 std::string Identifier::ToString() const {
   std::string ret;
@@ -66,5 +65,8 @@ Identifier Identifier::operator+(const std::string &rhs) const {
   return ret;
 }
 
-}  // namespace vhdl
-}  // namespace cerata
+std::string to_upper(std::string str) {
+  for (auto & ch: str) ch = std::toupper(ch);
+  return str;
+}
+}  // namespace cerata::vhdl

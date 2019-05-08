@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +39,7 @@ class Node;
  */
 struct FlatType {
   FlatType() = default;
-  FlatType(const Type *t, std::deque<std::string> prefix, const std::string& name, int level);
+  FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level);
   /// @brief A pointer to the original type.
   const Type *type_;
   /// @brief Nesting level in a type hierarchy.
@@ -47,7 +49,7 @@ struct FlatType {
   /// @brief Whether to invert this flattened type if it would be on a terminator node.
   bool invert_ = false;
   /// @brief Return the name of this flattened type, constructed from the name parts.
-  std::string name(const std::string& root = "", const std::string& sep = ":") const;
+  std::string name(const std::string &root = "", const std::string &sep = ":") const;
 };
 
 bool operator<(const FlatType &a, const FlatType &b);
@@ -68,7 +70,7 @@ void FlattenStream(std::deque<FlatType> *list,
 void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
-             const std::string& name);
+             const std::string &name);
 
 /// @brief Flatten and return a list of FlatTypes.
 std::deque<FlatType> Flatten(const Type *type);
@@ -78,7 +80,6 @@ bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *t
 
 /// @brief Return the index of some Type in a list of FlatTypes.
 size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
-
 
 /// @brief Convert a list of FlatTypes to a human-readable string.
 std::string ToString(std::deque<FlatType> flat_type_list);
@@ -105,6 +106,9 @@ class MappingMatrix {
       ret(i, i) = 1;
     }
   }
+
+  size_t height() { return height_; }
+  size_t width() { return width_; }
 
   T &get(size_t y, size_t x) {
     if (y >= height_ || x >= width_) {
@@ -157,7 +161,7 @@ class MappingMatrix {
         ret.emplace_back(y, val);
       }
     }
-    std::sort(ret.begin(), ret.end(), [](const auto& x, const auto& y)->bool{
+    std::sort(ret.begin(), ret.end(), [](const auto &x, const auto &y) -> bool {
       return x.second < y.second;
     });
     return ret;
@@ -173,7 +177,7 @@ class MappingMatrix {
         ret.emplace_back(x, val);
       }
     }
-    std::sort(ret.begin(), ret.end(), [](const auto& x, const auto& y)->bool{
+    std::sort(ret.begin(), ret.end(), [](const auto &x, const auto &y) -> bool {
       return x.second < y.second;
     });
     return ret;
@@ -200,6 +204,7 @@ class MappingMatrix {
       for (size_t x = 0; x < width_; x++) {
         ret << std::setw(3) << std::right << std::to_string(get(y, x)) << " ";
       }
+      ret << "\n";
     }
     return ret.str();
   }
@@ -233,13 +238,13 @@ struct MappingPair {
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
    * @return                    The total width on side A.
    */
-  std::shared_ptr<Node> width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment={}) const;
+  std::shared_ptr<Node> width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment = {}) const;
   /**
    * @brief Return the total width of the types on side B.
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
    * @return                    The total width on side B.
    */
-  std::shared_ptr<Node> width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment={}) const;
+  std::shared_ptr<Node> width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment = {}) const;
 
   /// @brief Generate a human-readable version of this MappingPair
   std::string ToString() const;
@@ -263,10 +268,13 @@ class TypeMapper : public Named {
   /// @brief Construct a new TypeMapper from some type to itself, and return a smart pointer to it.
   static std::shared_ptr<TypeMapper> Make(const Type *a);
   /// @brief Construct a new TypeMapper from some type to another type, and automatically determine the type mapping.
-  static std::shared_ptr<TypeMapper> MakeImplicit(const Type *a, const Type *b);;
+  static std::shared_ptr<TypeMapper> MakeImplicit(const Type *a, const Type *b);
+  /// @brief Construct a new, empty TypeMapper between two types.
+  static std::shared_ptr<TypeMapper> Make(const Type *a, const Type *b);
 
   TypeMapper &Add(size_t a, size_t b);
   MappingMatrix<size_t> map_matrix();
+  void SetMappingMatrix(MappingMatrix<size_t> map_matrix);
 
   std::deque<FlatType> flat_a() const;
   std::deque<FlatType> flat_b() const;

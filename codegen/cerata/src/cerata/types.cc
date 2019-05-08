@@ -45,26 +45,46 @@ bool Type::IsNested() const {
   return (id_ == Type::STREAM) || (id_ == Type::RECORD);
 }
 
-std::string Type::ToString() const {
+std::string Type::ToString(bool show_meta) const {
+  std::string ret;
   switch (id_) {
-    case CLOCK  : return name() + ":Clock";
-    case RESET  : return name() + ":Reset";
-    case BIT    : return name() + ":Bit";
-    case VECTOR : return name() + ":Vector";
-    case INTEGER: return name() + ":Natural";
-    case STRING : return name() + ":String";
-    case BOOLEAN: return name() + ":Boolean";
-    case RECORD : return name() + ":Record";
-    case STREAM : return name() + ":Stream";
+    case CLOCK  : ret = name() + ":Clock";
+      break;
+    case RESET  : ret = name() + ":Reset";
+      break;
+    case BIT    : ret = name() + ":Bit";
+      break;
+    case VECTOR : ret = name() + ":Vector";
+      break;
+    case INTEGER: ret = name() + ":Natural";
+      break;
+    case STRING : ret = name() + ":String";
+      break;
+    case BOOLEAN: ret = name() + ":Boolean";
+      break;
+    case RECORD : ret = name() + ":Record";
+      break;
+    case STREAM : ret = name() + ":Stream";
+      break;
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
+  // Append metadata
+  if (show_meta && !meta.empty() ) {
+    ret += "[";
+    for (const auto& k : meta) {
+      ret += k.first + "=" + k.second;
+      ret += ", ";
+    }
+    ret += "]";
+  }
+  return ret;
 }
 
 std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
   return mappers_;
 }
 
-void Type::AddMapper(std::shared_ptr<TypeMapper> mapper) {
+void Type::AddMapper(const std::shared_ptr<TypeMapper>& mapper) {
   Type *other = (Type *) mapper->b();
   if (mapper->a() != this) {
     throw std::runtime_error("Type converter does not convert from " + name());
@@ -91,6 +111,7 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) co
     }
   }
   // Implicit type mappers maybe be generated in two cases; if it's exactly the same type or if its an equal type.
+  // TODO(johanpel): clarify previous statement
   if (other == this) {
     // Generate a type mapper to itself using the TypeMapper constructor.
     return TypeMapper::Make(this);
@@ -132,18 +153,18 @@ std::shared_ptr<Type> Vector::Make(std::string name, std::optional<std::shared_p
   return std::make_shared<Vector>(name, bit(), width);
 }
 
-std::shared_ptr<Type> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
+std::shared_ptr<Stream> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
   return std::make_shared<Stream>(name, element_type, "data", epc);
 }
 
-std::shared_ptr<Type> Stream::Make(std::string name,
+std::shared_ptr<Stream> Stream::Make(std::string name,
                                    std::shared_ptr<Type> element_type,
                                    std::string element_name,
                                    int epc) {
   return std::make_shared<Stream>(name, element_type, element_name, epc);
 }
 
-std::shared_ptr<Type> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
+std::shared_ptr<Stream> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
   return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "data", epc);
 }
 
@@ -241,7 +262,7 @@ std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type) {
   return std::make_shared<RecField>(type->name(), type);
 }
 
-std::shared_ptr<Type> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {
+std::shared_ptr<Record> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {
   return std::make_shared<Record>(name, fields);
 }
 
@@ -301,6 +322,11 @@ bool Stream::IsEqual(const Type *other) const {
     return eq;
   }
   return false;
+}
+
+void Stream::SetElementType(std::shared_ptr<Type> type) {
+  mappers_ = {};
+  element_type_ = type;
 }
 
 bool Record::IsEqual(const Type *other) const {

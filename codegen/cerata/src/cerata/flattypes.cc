@@ -29,7 +29,7 @@
 
 namespace cerata {
 
-std::string FlatType::name(const std::string& root, const std::string& sep) const {
+std::string FlatType::name(const std::string &root, const std::string &sep) const {
   std::stringstream ret;
   ret << root;
   for (const auto &p : name_parts_) {
@@ -38,7 +38,7 @@ std::string FlatType::name(const std::string& root, const std::string& sep) cons
   return ret.str();
 }
 
-FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string& name, int level) : type_(t) {
+FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level) : type_(t) {
   name_parts_ = std::move(prefix);
   name_parts_.push_back(name);
 }
@@ -64,7 +64,7 @@ void FlattenStream(std::deque<FlatType> *list,
 void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
-             const std::string& name) {
+             const std::string &name) {
   FlatType result;
   if (parent) {
     result.nesting_level_ = (*parent).nesting_level_ + 1;
@@ -136,6 +136,11 @@ TypeMapper::TypeMapper(const Type *a, const Type *b)
       matrix_(i, i) = 1;
     }
   }
+}
+
+std::shared_ptr<TypeMapper> TypeMapper::Make(const Type *a, const Type *b) {
+  auto ret = std::make_shared<TypeMapper>(a, b);
+  return ret;
 }
 
 std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(const Type *a, const Type *b) {
@@ -258,33 +263,37 @@ std::shared_ptr<TypeMapper> TypeMapper::Make(const Type *a) {
   return std::make_shared<TypeMapper>(a, a);
 }
 
+void TypeMapper::SetMappingMatrix(MappingMatrix<size_t> map_matrix) {
+  matrix_ = std::move(map_matrix);
+}
+
 std::string MappingPair::ToString() const {
   std::stringstream ret;
   ret << "MappingPair: " << std::endl;
   for (size_t i = 0; i < std::max(a.size(), b.size()); i++) {
     if (i < a.size()) {
-      ret << " i: " << std::setw(3) << index_a(i);
-      ret << " o: " << std::setw(3) << offset_a(i);
-      ret << std::setw(20) << flat_type_a(i).name();
-      ret << std::setw(20) << flat_type_a(i).type_->ToString();
+      ret << " idx: " << std::setw(3) << index_a(i);
+      ret << " off: " << std::setw(3) << offset_a(i);
+      ret << std::setw(30) << flat_type_a(i).name();
+      ret << std::setw(30) << flat_type_a(i).type_->ToString();
     } else {
-      ret << std::setw(54) << " ";
+      ret << std::setw(74) << " ";
     }
     ret << " --> ";
     if (i < b.size()) {
-      ret << " i: " << std::setw(3) << index_b(i);
-      ret << " o: " << std::setw(3) << offset_b(i);
-      ret << std::setw(20) << flat_type_b(i).name();
-      ret << std::setw(20) << flat_type_b(i).type_->ToString();
+      ret << " idx: " << std::setw(3) << index_b(i);
+      ret << " off: " << std::setw(3) << offset_b(i);
+      ret << std::setw(30) << flat_type_b(i).name();
+      ret << std::setw(30) << flat_type_b(i).type_->ToString();
     } else {
-      ret << std::setw(54) << " ";
+      ret << std::setw(74) << " ";
     }
     ret << std::endl;
   }
   // output total width of both sides
-  ret << " w: " << std::setw(50) << width_a()->ToString();
+  ret << " w: " << std::setw(74) << width_a()->ToString();
   ret << "     ";
-  ret << " w: " << std::setw(50) << width_b()->ToString();
+  ret << " w: " << std::setw(74) << width_b()->ToString();
   ret << std::endl;
   return ret.str();
 }

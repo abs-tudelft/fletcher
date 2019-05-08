@@ -19,11 +19,13 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include <algorithm>
 
 #include "cerata/edges.h"
 #include "cerata/nodes.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
+#include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
 
 namespace cerata::vhdl {
@@ -77,7 +79,7 @@ std::string Decl::Generate(const Type *type, const std::optional<std::shared_ptr
 Block Decl::Generate(const std::shared_ptr<Parameter> &par, int depth) {
   Block ret(depth);
   Line l;
-  l << par->name() << " : " << Generate(par->type().get());
+  l << to_upper(par->name()) << " : " << Generate(par->type().get());
   if (par->value()) {
     auto val = *par->value();
     l << " := " << val->ToString();
@@ -204,7 +206,7 @@ MultiBlock Decl::Generate(const Component *comp, bool entity) {
     // Process ports
     for (const auto &port : ports) {
       auto g = Decl::Generate(port, ret.indent + 2);
-      if (port != ports.back()) {
+      if (port != ports.back() || !array_ports.empty()) {
         g << ";";
       } else {
         g <<= ";";

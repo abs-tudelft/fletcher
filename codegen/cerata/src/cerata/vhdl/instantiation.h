@@ -37,7 +37,9 @@ struct Inst {
                                    const std::string &lh_prefix,
                                    const std::string &rh_prefix,
                                    bool a_is_array,
-                                   bool b_is_array);
+                                   bool b_is_array,
+                                   bool enable_valid,
+                                   bool enable_ready);
 
   static Block GeneratePortMappingPair(std::deque<MappingPair> pairs,
                                        const std::shared_ptr<Node> &a,

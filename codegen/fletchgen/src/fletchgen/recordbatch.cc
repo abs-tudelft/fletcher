@@ -30,38 +30,42 @@ using cerata::Literal;
 using cerata::intl;
 
 RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema)
-    : Component(fletcher_schema->name() + "_Reader"), schema_(fletcher_schema) {
+    : Component(fletcher_schema->name() + "_Reader"), fletcher_schema_(fletcher_schema) {
   // Get Arrow Schema
-  auto as = schema_->arrow_schema();
-
+  auto as = fletcher_schema_->arrow_schema();
   // Get mode/direction
   auto mode = fletcher::getMode(as);
-
-  // Add all top-level ports
-  AddKernelSidePorts(as, mode);
-
-  // Add and connect all bus interfaces for ArrayReaders
-  AddBusInterfaces();
+  // Add and connect all array readers and resulting ports
+  AddArrayReaders(as, mode);
+  // Add and connect all bus interfaces
+  ConnectMemoryInterface();
 }
-void RecordBatchReader::AddBusInterfaces() {// Add bus interfaces
+void RecordBatchReader::ConnectMemoryInterface() {
+  // Add default nodes
+  AddObject(bus_addr_width());
+  AddObject(bus_data_width());
+  AddObject(bus_len_width());
+  AddObject(bus_burst_step_len());
+  AddObject(bus_burst_max_len());
+
+  // Add bus interface count parameter, and request and data channel
   auto num_read_slaves = Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
   auto bus_rreq_array = PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
   auto bus_rdat_array = PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
-
   AddObject(num_read_slaves);
   AddObject(bus_rreq_array);
   AddObject(bus_rdat_array);
 
   // Connect bus interface
-  for (const auto &cr : readers_) {
-    auto cr_rreq = cr->port("bus_rreq");
-    auto cr_rdat = cr->port("bus_rdat");
-    bus_rreq_array->Append() <<= cr_rreq;
-    cr_rdat <<= bus_rdat_array->Append();
+  for (const auto &ar : reader_instances_) {
+    auto ar_rreq = ar->port("bus_rreq");
+    auto ar_rdat = ar->port("bus_rdat");
+    bus_rreq_array->Append() <<= ar_rreq;
+    ar_rdat <<= bus_rdat_array->Append();
   }
 }
 
-void RecordBatchReader::AddKernelSidePorts(const std::shared_ptr<arrow::Schema> &as, const Mode &mode) {
+void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as, const Mode &mode) {
   // Iterate over all fields and add ArrayReader data and control ports.
   for (const auto &f : as->fields()) {
     // Check if we must ignore a field
@@ -85,6 +89,8 @@ void RecordBatchReader::AddKernelSidePorts(const std::shared_ptr<arrow::Schema> 
       arrow_port <<= array_reader->port("out");
       // Drive the ArrayReader command port from the top-level command port
       array_reader->port("cmd") <<= command_port;
+      // Remember where the ArrayReader is
+      reader_instances_.push_back(array_reader);
     } else {
       LOG(DEBUG, "Ignoring field " + f->name());
     }

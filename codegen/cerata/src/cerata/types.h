@@ -101,11 +101,11 @@ class Type : public Named {
   /// @brief Return the Type ID.
   inline ID id() const { return id_; }
   /// @brief Return the Type ID as a human-readable string.
-  std::string ToString() const;
+  std::string ToString(bool show_meta = false) const;
   /// @brief Return possible type mappers.
   std::deque<std::shared_ptr<TypeMapper>> mappers() const;
   /// @brief Add a type mapper.
-  void AddMapper(std::shared_ptr<TypeMapper> mapper);
+  void AddMapper(const std::shared_ptr<TypeMapper> &mapper);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const Type *other) const;
   /// @brief Get a mapper to another type, if it exists.
@@ -281,7 +281,7 @@ class Record : public Type {
   /// @brief Record constructor.
   explicit Record(std::string name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Create a new Record Type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields = {});
+  static std::shared_ptr<Record> Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Add a RecordField to this Record.
   Record &AddField(const std::shared_ptr<RecField> &field);;
   /// @brief Return the RecordField at index i contained by this record.
@@ -308,17 +308,21 @@ class Stream : public Type {
    */
   Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
   /// @brief Create a smart pointer to a new Stream type. Stream name will be stream:\<type name\>, the elements "data".
-  static std::shared_ptr<Type> Make(std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(std::shared_ptr<Type> element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named "data".
-  static std::shared_ptr<Type> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type.
-  static std::shared_ptr<Type> Make(std::string name,
-                                    std::shared_ptr<Type> element_type,
-                                    std::string element_name,
-                                    int epc = 1);
+  static std::shared_ptr<Stream> Make(std::string name,
+                                      std::shared_ptr<Type> element_type,
+                                      std::string element_name,
+                                      int epc = 1);
 
+  /// @brief Set the type of the elements of this stream. Forgets any existing mappers.
+  void SetElementType(std::shared_ptr<Type> type);
   /// @brief Return the type of the elements of this stream.
   std::shared_ptr<Type> element_type() const { return element_type_; }
+  /// @brief Set the name of the elements of this stream.
+  void SetElementName(std::string name) { element_name_ = name; }
   /// @brief Return the name of the elements of this stream.
   std::string element_name() { return element_name_; }
 
@@ -348,7 +352,7 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   return result;
 }
 
-/// @brief Cast a raw pointer to a Type to a typically less abstract Type T.
+/// @brief Cast a raw pointer of a Type to a typically more specific Type T.
 template<typename T>
 std::optional<const T *> Cast(const Type *type) {
   auto result = dynamic_cast<const T *>(type);
@@ -358,7 +362,17 @@ std::optional<const T *> Cast(const Type *type) {
   return result;
 }
 
-/// @brief Cast a raw reference to a Type to a typically less abstract Type T.
+/// @brief Cast a raw pointer of a Type to a typically more specific Type T.
+template<typename T>
+std::optional<T *> Cast(Type *type) {
+  auto result = dynamic_cast<T *>(type);
+  if (result == nullptr) {
+    return {};
+  }
+  return result;
+}
+
+/// @brief Cast a raw reference to a Type to a typically more specific Type T.
 template<typename T>
 std::optional<const T &> Cast(const Type &type) {
   auto result = dynamic_cast<T &>(type);

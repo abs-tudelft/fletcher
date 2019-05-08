@@ -19,12 +19,10 @@
 #include "cerata/graphs.h"
 #include "cerata/vhdl/block.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 struct Arch {
   static MultiBlock Generate(const std::shared_ptr<Component> &comp);
 };
 
-}  // namespace vhdl
-}  // namespace fletchgen
+}  // namespace cerata::vhdl

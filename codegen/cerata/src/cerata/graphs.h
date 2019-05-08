@@ -73,6 +73,8 @@ struct Graph : public Named, public std::enable_shared_from_this<Graph> {
     return ret;
   }
 
+  /// @brief Get all objects
+  std::deque<std::shared_ptr<Object>> objects() { return objects_; }
   /// @brief Get a NodeArray object of a specific type with a specific name
   std::shared_ptr<NodeArray> GetArray(Node::NodeID node_id, const std::string &array_name) const;
   /// @brief Get a Node of a specific type with a specific name

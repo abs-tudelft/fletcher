@@ -21,8 +21,7 @@
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/instantiation.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   MultiBlock ret;
@@ -69,5 +68,4 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   return ret;
 }
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

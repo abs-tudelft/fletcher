@@ -20,8 +20,7 @@
 
 #include "cerata/types.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 std::shared_ptr<Type> valid() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("valid");
@@ -80,5 +79,4 @@ std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   return result;
 }
 
-}  // namespace vhdl
-}  // namespace fletchgen
+}  // namespace cerata::vhdl

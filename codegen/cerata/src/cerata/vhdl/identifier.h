@@ -17,9 +17,11 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <algorithm>
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
+
+std::string to_upper(std::string str);
 
 /**
  * @brief A VHDL Identifier convenience structure.
@@ -47,5 +49,4 @@ class Identifier {
   std::deque<std::string> parts_;
 };
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

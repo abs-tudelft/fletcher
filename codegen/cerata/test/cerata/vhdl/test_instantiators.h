@@ -28,32 +28,30 @@ TEST(VHDL_INST, TypeMapper) {
   auto top = GetTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+}
+
+TEST(VHDL_INST, StreamTypeMapper) {
+  auto top = GetStreamConcatComponent();
+  auto code = vhdl::Design(top);
+  code.Generate().ToString();
 }
 
 TEST(VHDL_INST, ArrayTypeMapper) {
   auto top = GetArrayTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 TEST(VHDL_INST, ArrayArray) {
   auto top = GetArrayToArrayComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 TEST(VHDL_INST, AllPortTypes) {
   auto top = GetAllPortTypesComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
 }
 
 }  // namespace cerata

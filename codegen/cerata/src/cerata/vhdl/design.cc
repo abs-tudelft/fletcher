@@ -33,6 +33,9 @@ MultiBlock Design::Generate() {
   // Sanitize component
   Transformation::ResolvePortToPort(comp);
 
+  // Transform streams to make use of valid/ready
+  Transformation::ResolveStreams(comp);
+
   // Place header
   if (!head.empty()) {
     Block h;
@@ -62,7 +65,7 @@ MultiBlock Design::Generate() {
     incl << Line("library " + kv.first + ";");
     for (const auto &pkg : kv.second) {
       // TODO(johanpel): consider also allowing non-all.
-      incl << Line("use " + kv.first + "." + pkg + ".all");
+      incl << Line("use " + kv.first + "." + pkg + ".all;");
     }
   }
 

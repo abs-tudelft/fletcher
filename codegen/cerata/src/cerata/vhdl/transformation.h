@@ -26,10 +26,17 @@ struct Transformation {
    *
    * In VHDL, port-to-port connections of instances are not supported.
    *
-   * @param comp    The component to transform
-   * @return        The transformed component
+   * @param comp  The component to transform.
+   * @return      The transformed component.
    */
   static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
+
+  /**
+   * @brief Transforms the component, materializing the abstract Stream type by adding a valid and ready signal.
+   * @param comp  The component to transform.
+   * @return      The transformed component.
+   */
+  static std::shared_ptr<Component> ResolveStreams(std::shared_ptr<Component> comp);
 };
 
 }  // namespace cerata::vhdl

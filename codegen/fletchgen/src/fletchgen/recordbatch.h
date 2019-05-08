@@ -32,6 +32,12 @@ using fletcher::Mode;
 
 /**
  * @brief A port derived from an Arrow field
+ *
+ * We currently derive only two ports from Arrow fields; a data port and a command port. This structure just helps us
+ * remember what function the port has and from what field it was derived. If a FlatType of the type of this port was
+ * marked with "array_data" in the Type metadata, it signifies that this FlatType constitutes to the data width on an
+ * ArrayReader/Writer. I.e. the port is not a dvalid or last but some other type concatenated onto the
+ * ArrayReader/Writer data output/input.
  */
 struct FieldPort : public Port {
   enum Function {
@@ -59,26 +65,30 @@ struct FieldPort : public Port {
  * @brief A RecordBatchReader aggregating ArrayReaders
  *
  * We implement this component to obtain a hardware structure that is logically consistent with the input of Fletchgen.
- * That is, the user supplies a Schema for each RecordBatch, and therefore it seems logical to generate a level of
+ * That is, the user supplies a Schema for each RecordBatch, and therefore it is logical to generate a level of
  * hierarchy representing the Schema itself.
  *
  * It doesn't do anything in a functional sense, but some features that one might think of in the future are:
  * - operate all ArrayReaders with a single Command stream.
- * - profile at the RecordBatch level
+ * - profile bus utilization at the RecordBatch level
  * - ...
  */
 struct RecordBatchReader : public Component {
-  std::shared_ptr<FletcherSchema> schema_;
-  std::deque<Instance *> readers_;
+  std::shared_ptr<FletcherSchema> fletcher_schema_;
+  std::deque<Instance *> reader_instances_;
 
   explicit RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
-  void AddKernelSidePorts(const std::shared_ptr<arrow::Schema> &as, const Mode &mode);
-  void AddBusInterfaces();
+  /// @brief Adds all ArrayReaders, unconcatenates ports and connects it to the top-level of this component.
+  void AddArrayReaders(const std::shared_ptr<arrow::Schema> &as, const Mode &mode);
+  /// @brief Connect all memory interfaces of all ArrayReaders.
+  void ConnectMemoryInterface();
 
   static std::shared_ptr<RecordBatchReader> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
+  /// @brief Obtain all ports derived from an Arrow field with a specific function.
   std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function> &function = {});
+  /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
   std::shared_ptr<FieldPort> GetArrowPort(const std::shared_ptr<arrow::Field> &field);
 
 };

@@ -20,9 +20,23 @@
 #include "cerata/arrays.h"
 #include "cerata/types.h"
 #include "cerata/graphs.h"
+#include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
 
 namespace cerata::vhdl {
+
+static std::string lit2vhdl(std::shared_ptr<Literal> lit) {
+  switch (lit->type()->id()) {
+    default:return lit->ToString();
+    case Type::STRING:
+      // If it is a string enclose it within quotes
+      return "\"" + lit->ToString() + "\"";
+    case Type::BOOLEAN:
+      // Convert to VHDL boolean
+      if (lit->bool_val_) return "true";
+      else return "false";
+  }
+}
 
 static bool IsInputTerminator(const std::shared_ptr<Object> &obj) {
   auto t = Cast<Term>(obj);
@@ -36,12 +50,22 @@ static bool IsInputTerminator(const std::shared_ptr<Object> &obj) {
 Block Inst::GenerateGenericMap(const std::shared_ptr<Parameter> &par) {
   Block ret;
   Line l;
-  l << par->name() << " => ";
+  l << to_upper(par->name()) << " => ";
+  std::shared_ptr<Node> val;
+  // Check what value to apply, either an assigned value or a default value
   if (par->value()) {
-    auto val = *par->value();
-    l << val->ToString();
+    val = *par->value();
   } else if (par->default_value) {
-    l << (*par->default_value)->ToString();
+    val = (*par->default_value);
+  }
+  // Check if some value existed at all
+  if (val != nullptr) {
+    // If it is a literal, make it VHDL compatible
+    if (val->IsLiteral()) {
+      l << lit2vhdl(*Cast<Literal>(val));
+    } else {
+      l << val->ToString();
+    }
   }
   ret << l;
   return ret;
@@ -55,7 +79,9 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
                                 const std::string &lh_prefix,
                                 const std::string &rh_prefix,
                                 bool a_is_array,
-                                bool b_is_array) {
+                                bool b_is_array,
+                                bool enable_valid,
+                                bool enable_ready) {
   Block ret;
 
   std::shared_ptr<Node> next_offset_a;
@@ -85,7 +111,10 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       v += "(" + offset_b->ToString() + ")";
       r += "(" + offset_b->ToString() + ")";
     }
-    ret << v << r;
+    if (enable_valid)
+      ret << v;
+    if (enable_ready)
+      ret << r;
   } else if (p.flat_type_a(0).type_->Is(Type::RECORD)) {
     // Don't output anything for the abstract record type.
   } else {
@@ -148,7 +177,7 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array);
+        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array, true, true);
         ret << mpblock;
         // Increase the offset on the left side.
         a_offset = a_offset + (b_width ? *b_width : intl<1>());

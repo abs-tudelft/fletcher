@@ -160,6 +160,47 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   return top;
 }
 
+std::shared_ptr<Component> GetStreamConcatComponent() {
+  // Flat indices:
+  auto tA = Stream::Make("split",                                          // 0
+                         Record::Make("a", {                               // 1
+                             RecField::Make("other", bit()),               // 2
+                             RecField::Make("child", Stream::Make("se",    // 3
+                                                                  bit()))  // 4
+                         }));
+
+  auto tB = Stream::Make("concat",  // 0
+                         bit(),     // 1
+                         "data");
+
+  // Create a type mapping from tA to tB
+  auto mapper = std::make_shared<TypeMapper>(tA.get(), tB.get());
+  mapper->Add(0, 0);
+  mapper->Add(2, 1);
+  mapper->Add(3, 0);
+  mapper->Add(4, 1);
+  tA->AddMapper(mapper);
+
+  // Ports
+  auto pA = Port::Make("A", tA, Port::OUT);
+  auto pB = Port::Make("B", tB, Port::OUT);
+
+  // Components and instantiations
+  auto x_comp = Component::Make("X", {pA});
+  auto y_comp = Component::Make("Y", {pB});
+  y_comp->meta["primitive"] = "true";
+  y_comp->meta["library"] = "test";
+  y_comp->meta["package"] = "test";
+  auto y = Instance::Make(y_comp);
+  auto yr = y.get();
+  x_comp->AddChild(std::move(y));
+
+  // Connect ports
+  x_comp->port("A") <<= yr->port("B");
+
+  return x_comp;
+}
+
 std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto r_type = Record::Make("rec", {
       RecField::Make("a", Vector::Make<8>()),
@@ -195,7 +236,8 @@ std::shared_ptr<Component> GetExampleDesign() {
 
   // Construct two components with a port made from these types
   auto my_array_size = Parameter::Make("array_size", integer());
-  auto my_comp = Component::Make("my_comp", {vec_width, PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
+  auto
+      my_comp = Component::Make("my_comp", {vec_width, PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
   auto my_other_comp = Component::Make("my_other_comp", {vec_width, Port::Make("my_port", my_type)});
 
   // Create a top level and add instances of each component
@@ -203,8 +245,8 @@ std::shared_ptr<Component> GetExampleDesign() {
   auto my_inst = my_top->AddInstanceOf(my_comp);
 
   // Create a bunch of instances and connect to other component
-  std::vector<Instance*> my_other_instances;
-  for (int i=0;i<10;i++) {
+  std::vector<Instance *> my_other_instances;
+  for (int i = 0; i < 10; i++) {
     my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp));
     my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
   }

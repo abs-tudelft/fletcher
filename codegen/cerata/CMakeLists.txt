@@ -20,6 +20,7 @@ set(HEADERS
         src/cerata/graphs.h
         src/cerata/flattypes.h
         src/cerata/output.h
+        src/cerata/transform.h
 
         src/cerata/vhdl/architecture.h
         src/cerata/vhdl/block.h
@@ -46,6 +47,7 @@ set(SOURCES
         src/cerata/graphs.cc
         src/cerata/flattypes.cc
         src/cerata/output.cc
+        src/cerata/transform.cc
 
         src/cerata/vhdl/architecture.cc
         src/cerata/vhdl/block.cc
