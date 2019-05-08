@@ -23,40 +23,56 @@
 #include "fletchgen/basic_types.h"
 #include "fletchgen/array.h"
 #include "fletchgen/schema.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
 Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
-/*
-  // Create and instantiate a Kernel
-  kernel_ = Kernel::Make(schema_set_);
-  auto kinst = Instance::Make(kernel_);
-  kernel_inst_ = kinst.get();
-  AddChild(std::move(kinst));
+  // Create and add every RecordBatchReader/Writer
+  for (const auto &fs : schema_set_->read_schemas) {
+    auto rbr = RecordBatchReader::Make(fs);
+    auto rbr_inst = Instance::Make(rbr);
+    rb_reader_instances_.push_back(rbr_inst.get());
+    AddChild(std::move(rbr_inst));
+  }
 
-  // Connect Fields
-  auto arrow_ports = kernel_->GetAllArrowPorts();
+  // Create and add the kernel
+  kernel_ = Kernel::Make(schema_set_->name(), reader_components());
+  auto ki = Instance::Make(kernel_);
+  kernel_inst_ = ki.get();
+  AddChild(std::move(ki));
 
-  // Connect all Arrow data ports to the Core
-  for (size_t i = 0; i < arrow_ports.size(); i++) {
-    if (arrow_ports[i]->IsInput()) {
-      // Get the user core instance ports
-      auto uci_data_port = kernel_inst_->port(arrow_ports[i]->name());
-      auto uci_cmd_port = kernel_inst_->port(arrow_ports[i]->name() + "_cmd");
-      // Get the column reader ports
-      auto cr_data_port = array_readers_[i]->port("out");
-      auto cr_cmd_port = array_readers_[i]->port("cmd");
-      // Connect the ports
-      uci_data_port <<= cr_data_port;
-      cr_cmd_port <<= uci_cmd_port;
-    } else {
-      // TODO(johanpel): ArrayWriters
-      // TODO(johanpel): ArrayWriters
+  // Connect all Arrow field derived
+  for (const auto &r : rb_reader_instances_) {
+    auto field_ports = r->GetAll<FieldPort>();
+    for (const auto &fp : field_ports) {
+      if (fp->function_ == FieldPort::Function::ARROW) {
+        kernel_inst_->port(fp->name()) <<= fp;
+      } else if (fp->function_ == FieldPort::Function::COMMAND) {
+        fp <<= kernel_inst_->port(fp->name());
+      }
     }
   }
 
-  */
+  // Create and add the bus read arbiter
+  auto brai = Instance::Make(BusReadArbiter());
+  auto bra_inst = brai.get();
+  AddChild(std::move(brai));
+
+  // Connect all buses
+  for (const auto &r : rb_reader_instances_) {
+    // Connect all request channels
+    for (const auto& req : r->porta("bus_rreq")->nodes()) {
+      bra_inst->porta("bsv_rreq")->Append() <<= req;
+    }
+    for (const auto& dat : r->porta("bus_rdat")->nodes()) {
+      dat <<= bra_inst->porta("bsv_rdat")->Append();
+    }
+  }
+
+  // arrays aan arrays, veel plezier morgen!
+
 }
 
 std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set) {
@@ -65,6 +81,14 @@ std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<Sch
 
 std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_set) {
   return std::make_shared<Mantle>(schema_set->name() + "_mantle", schema_set);
+}
+
+std::deque<std::shared_ptr<RecordBatchReader>> Mantle::reader_components() {
+  std::deque<std::shared_ptr<RecordBatchReader>> result;
+  for (const auto &r : rb_reader_instances_) {
+    result.push_back(*cerata::Cast<RecordBatchReader>(r->component));
+  }
+  return result;
 }
 
 }  // namespace fletchgen

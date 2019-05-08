@@ -86,14 +86,12 @@ if (FLETCHGEN_TESTS)
     find_package(GTest REQUIRED)
 
     set(TEST_SOURCES
-            # Intermeditate
             test/fletchgen/test.cc
-
-            # Front-ends
+            test/fletchgen/test_utils.h
+            test/fletchgen/test_recordbatch.h
             test/fletchgen/test_kernel.h
             test/fletchgen/test_mantle.h
             test/fletchgen/test_bus.h
-
             )
 
     add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})

@@ -141,8 +141,6 @@ static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
       auto flat_a = new_mapper->flat_a();
       auto flat_b = new_mapper->flat_b();
 
-      LOG(DEBUG, "Old:\n" + mapper->ToString());
-
       size_t old_row = 0;
       size_t old_col = 0;
       size_t new_row = 0;
@@ -191,8 +189,6 @@ static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
 
       // Set the mapping matrix of the new mapper to the new matrix
       new_mapper->SetMappingMatrix(new_matrix);
-
-      LOG(DEBUG, "New:\n" + new_mapper->ToString());
 
       // Add the mapper to the type
       stream_type->AddMapper(new_mapper);

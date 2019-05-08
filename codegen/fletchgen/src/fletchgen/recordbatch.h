@@ -57,6 +57,8 @@ struct FieldPort : public Port {
   static std::shared_ptr<FieldPort> MakeArrowPort(std::shared_ptr<arrow::Field> field, Mode mode, bool invert);
   static std::shared_ptr<FieldPort> MakeCommandPort(std::shared_ptr<arrow::Field> field, cerata::Term::Dir dir);
 
+  std::shared_ptr<Object> Copy() const override;
+
   /// @brief Return the width of the data of this field.
   std::shared_ptr<Node> data_width();
 };

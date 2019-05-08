@@ -16,6 +16,7 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 #include "cerata/utils.h"
 
@@ -46,6 +47,9 @@ class Object : public Named {
   virtual void SetParent(const Graph *parent);
   virtual std::optional<const Graph *> parent() const;
   virtual std::shared_ptr<Object> Copy() const = 0;
+
+  /// @brief KV storage for metadata of tools or specific backend implementations
+  std::unordered_map<std::string, std::string> meta;
  protected:
   ID obj_id_;
   /// An optional parent Graph to which this Object belongs. Initially no value.

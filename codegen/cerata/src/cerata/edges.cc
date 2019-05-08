@@ -20,15 +20,18 @@
 
 #include "cerata/graphs.h"
 #include "cerata/nodes.h"
+#include "cerata/logging.h"
 
 namespace cerata {
 
 std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src) {
   // Check for potential errors
   if (src == nullptr) {
-    throw std::runtime_error("Source node is null");
+    LOG(ERROR, "Source node is null");
+    return nullptr;
   } else if (dst == nullptr) {
-    throw std::runtime_error("Destination node is null");
+    LOG(ERROR, "Destination node is null");
+    return nullptr;
   }
 
   // Check if the types can be mapped onto each other

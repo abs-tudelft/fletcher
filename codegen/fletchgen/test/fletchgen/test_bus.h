@@ -20,6 +20,8 @@
 
 #include "fletchgen/bus.h"
 
+#include "./test_utils.h"
+
 namespace fletchgen {
 
 using cerata::intl;
@@ -28,11 +30,11 @@ using cerata::Port;
 
 TEST(Bus, BusReadArbiter) {
   auto top = BusReadArbiter();
-
   auto design = cerata::vhdl::Design(top);
-  std::cout << design.Generate().ToString();
-  cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  auto code = design.Generate().ToString();
+  std::cerr.flush();
+  std::cout << code << std::endl;
+  VHDL_DUMP_TEST(code);
 }
 
 TEST(Bus, Artery) {
@@ -48,7 +50,7 @@ TEST(Bus, Artery) {
   auto comp = Component::Make("comp", {a, b, c, d, e, f});
 
   // Create an artery able to handle these ports
-  auto artery = Artery::Make("", intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
+  auto artery = Artery::Make("test", intl<64>(), intl<512>(), {intl<8>(), intl<32>(), intl<128>()});
 
   // Instaniate component and artery
   auto comp_inst = Instance::Make(comp);

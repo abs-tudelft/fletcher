@@ -30,7 +30,7 @@ using cerata::Literal;
 using cerata::intl;
 
 RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema)
-    : Component(fletcher_schema->name() + "_Reader"), fletcher_schema_(fletcher_schema) {
+    : Component(fletcher_schema->name() + "_RecordBatchReader"), fletcher_schema_(fletcher_schema) {
   // Get Arrow Schema
   auto as = fletcher_schema_->arrow_schema();
   // Get mode/direction
@@ -163,6 +163,10 @@ std::shared_ptr<Node> FieldPort::data_width() {
     }
   }
   return width;
+}
+
+std::shared_ptr<cerata::Object> FieldPort::Copy() const {
+  return std::make_shared<FieldPort>(name(), function_, field_, type(), dir());
 }
 
 } // namespace fletchgen

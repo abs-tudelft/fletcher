@@ -15,7 +15,6 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <fstream>
 
 #include "test_schemas.h"
 
@@ -28,11 +27,7 @@
 #include "fletchgen/schema.h"
 #include "fletchgen/recordbatch.h"
 
-// Macro to save the test to some VHDL files that can be used to syntax check the tests with e.g. GHDL
-// At some point the reverse might be more interesting - load the test cases from file into the test.
-#define VHDL_DUMP_TEST(str) \
-  std::ofstream(std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) \
-  + "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".vhd") << str
+#include "./test_utils.h"
 
 namespace fletchgen {
 

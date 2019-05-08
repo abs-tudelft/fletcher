@@ -25,9 +25,24 @@
 
 #include "fletchgen/mantle.h"
 
-#include "test_schemas.h"
-#include "test_bus.h"
+#include "./test_utils.h"
+
 
 namespace fletchgen {
+
+static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
+  auto set = SchemaSet::Make("test", std::vector({schema}));
+  auto mantle = Mantle::Make(set);
+  auto design = cerata::vhdl::Design(mantle);
+  auto code = design.Generate().ToString();
+  std::cerr.flush();
+  std::cout << code << std::endl;
+  VHDL_DUMP_TEST(code);
+}
+
+TEST(Mantle, StringRead) {
+  TestReadMantle(fletcher::test::GetStringReadSchema());
+}
+
 
 }

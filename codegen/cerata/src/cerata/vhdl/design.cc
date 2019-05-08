@@ -54,7 +54,11 @@ MultiBlock Design::Generate() {
         if (libs_and_packages.count(lib) == 0) {
           libs_and_packages[lib] = std::vector<std::string>({pkg});
         } else {
-          libs_and_packages[lib].push_back(pkg);
+          // If the package has not been added already, add it
+          if (std::find(std::begin(libs_and_packages[lib]), std::end(libs_and_packages[lib]), pkg)
+              != std::end(libs_and_packages[lib])) {
+            libs_and_packages[lib].push_back(pkg);
+          }
         }
       }
     }

@@ -33,7 +33,9 @@ Kernel::Kernel(std::string name,
   for (const auto &r : readers) {
     auto field_ports = r->GetFieldPorts();
     for (const auto &fp : field_ports) {
-      AddObject(fp->Copy());
+      auto copied_port = *Cast<FieldPort>(fp->Copy());
+      copied_port->InvertDirection();
+      AddObject(copied_port);
     }
   }
 }

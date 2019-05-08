@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "kernel.h"
+#include "fletchgen/kernel.h"
 
 namespace fletchgen {
 
@@ -32,9 +32,12 @@ struct Mantle : Component {
   std::shared_ptr<SchemaSet> schema_set_;
 
   /// The RecordBatchReader instances
-  std::vector<Instance *> readers_;
-  /// The ArrayWriter instances
-  std::vector<Instance *> writers_;
+  std::vector<Instance *> rb_reader_instances_;
+  /// The RecordBatchWriter instances
+  std::vector<Instance *> rb_writer_instances_;
+
+  /// @brief Return all RecordBatchReader components.
+  std::deque<std::shared_ptr<RecordBatchReader>> reader_components();
 
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);

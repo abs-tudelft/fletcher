@@ -84,9 +84,6 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// @brief Return parent array, if any.
   std::optional<const NodeArray *> array() { return array_; }
 
-  /// @brief KV storage for metadata of tools or specific backend implementations
-  std::unordered_map<std::string, std::string> meta;
-
   /// @brief Return a human-readable string of this node.
   virtual std::string ToString();
 
@@ -332,7 +329,7 @@ class Term {
   /// @brief Convert a Dir to a human-readable string.
   static std::string ToString(Dir dir);
 
- private:
+ protected:
   Dir dir_;
 };
 
@@ -344,6 +341,7 @@ struct Port : public NormalNode, public Term {
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   std::shared_ptr<Object> Copy() const override;
+  void InvertDirection();
 };
 
 /**

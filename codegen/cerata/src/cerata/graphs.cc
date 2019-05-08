@@ -50,7 +50,7 @@ static void AddAnyObjectParams(std::shared_ptr<Component> comp, std::shared_ptr<
   if (obj->IsNode()) {
     auto node = *Cast<Node>(obj);
     auto params = node->type()->GetParameters();
-    for (const auto& p : params) {
+    for (const auto &p : params) {
       comp->AddObject(p);
     }
   }
@@ -84,7 +84,9 @@ std::shared_ptr<NodeArray> Graph::GetArray(Node::NodeID node_id, const std::stri
   for (const auto &a : GetAll<NodeArray>()) {
     if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  throw std::runtime_error("NodeArray " + array_name + " does not exist on Graph " + this->name());
+  LOG(ERROR, "NodeArray " + array_name + " does not exist on Graph " + this->name());
+  // TODO(johanpel): use std::optional
+  return nullptr;
 }
 
 std::shared_ptr<Node> Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
@@ -94,8 +96,9 @@ std::shared_ptr<Node> Graph::GetNode(Node::NodeID node_id, const std::string &no
         return n;
       }
   }
-  throw std::runtime_error(
-      "Node " + node_name + " does not exist on Graph " + this->name());
+
+  LOG(ERROR, "Node " + node_name + " does not exist on Graph " + this->name());
+  return nullptr;
 }
 
 Graph &Graph::AddChild(std::unique_ptr<Graph> child) {
