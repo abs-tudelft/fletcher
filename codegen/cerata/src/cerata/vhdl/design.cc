@@ -34,7 +34,7 @@ MultiBlock Design::Generate() {
   Transformation::ResolvePortToPort(comp);
 
   // Transform streams to make use of valid/ready
-  Transformation::ResolveStreams(comp);
+  Transformation::ExpandStreams(comp);
 
   // Place header
   if (!head.empty()) {

@@ -24,11 +24,13 @@ namespace cerata::vhdl {
 
 std::shared_ptr<Type> valid() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("valid");
+  result->meta["VHDL:ExpandStream"] = "valid";
   return result;
 }
 
 std::shared_ptr<Type> ready() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("ready");
+  result->meta["VHDL:ExpandStream"] = "ready";
   return result;
 }
 
@@ -48,29 +50,12 @@ Port::Dir Reverse(Port::Dir dir) {
   }
 }
 
-std::deque<FlatType> ResolveAbstract(const FlatType &ft) {
-  std::deque<FlatType> result;
-  if (ft.type_->Is(Type::STREAM)) {
-    auto v = ft;
-    auto r = ft;
-    v.name_parts_.emplace_back("valid");
-    v.type_ = valid().get();
-    r.name_parts_.emplace_back("ready");
-    r.type_ = ready().get();
-    r.invert_ = true;
-    result.push_back(v);
-    result.push_back(r);
-  }
-  return result;
-}
-
 std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   std::deque<FlatType> result;
   for (const auto &ft : list) {
-    // If the type is abstract, resolve it to something meaningful in VHDL
+    // If the type is abstract, we can't represent it, so it is filtered out
     if (ft.type_->IsAbstract() && !ft.type_->Is(Type::BOOLEAN)) {
-      auto resolved = ResolveAbstract(ft);
-      result.insert(result.end(), resolved.begin(), resolved.end());
+
     } else {
       // Otherwise VHDL can express the type already
       result.push_back(ft);

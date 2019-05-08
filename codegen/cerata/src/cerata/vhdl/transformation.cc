@@ -51,6 +51,7 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
         }
         // Dealing with two port nodes that are not on the component itself. VHDL cannot handle port-to-port connections
         // of instances. Insert a signal in between and add it to the component.
+        LOG(DEBUG, "VHDL:  Resolving " + (*edge->src)->ToString() + " --> " + (*edge->dst)->ToString());
         std::string prefix;
         if ((*edge->dst)->parent()) {
           prefix = (*(*edge->dst)->parent())->name() + "_";
@@ -76,109 +77,142 @@ std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Com
  *
  * @param flattened_type  The flattened type to add valid and ready signals to.
  */
-static void AddValidReady(const std::deque<FlatType> &flattened_type) {
+static void ExpandStream(const std::deque<FlatType> &flattened_type) {
   // Iterate over the flattened types
   for (auto &ft : flattened_type) {
     // If we encounter a stream type
     if (ft.type_->Is(Type::STREAM)) {
       Stream *st = (Stream *) *Cast<Stream>(ft.type_);
-      if (st->meta.count("VHDL:ResolvedStream") == 0) {
+      // Check if we didn't expand the type already.
+      if (st->meta.count("VHDL:ExpandStream") == 0) {
         // Create a new record to hold valid, ready and the original element type
         auto new_elem_type = Record::Make(st->name() + "_vr");
-        // Add valid and ready ports to a record
+        // Mark the record
+        new_elem_type->meta["VHDL:ExpandStream"] = "record";
+        // Add valid, ready and original type to the record and set the new element type
         new_elem_type->AddField(RecField::Make("valid", valid()));
-        new_elem_type->AddField(RecField::Make("ready", ready()));
-        // Add the original type to the record, without a field name
+        new_elem_type->AddField(RecField::Make("ready", ready(), true));
         new_elem_type->AddField(RecField::Make("", st->element_type()));
-        // Set the new element type
         st->SetElementType(new_elem_type);
-        // Mark the type to remember we've resolved it
-        st->meta["VHDL:ResolvedStream"] = "true";
+        // Mark the stream itself to remember we've expanded it.
+        st->meta["VHDL:ExpandStream"] = "stream";
       }
     }
   }
 }
 
-static void ResolveMappers(const std::shared_ptr<Stream> &stream_type) {
+static bool IsExpanded(const Type *t, const std::string &str = "") {
+  if (t->meta.count("VHDL:ExpandStream") > 0) {
+    if (str.empty()) {
+      return true;
+    } else if (t->meta.at("VHDL:ExpandStream") == str) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
+  // TODO(johanpel): Generalize this expansion functionality and add it to Cerata.
   // Before doing anything, obtain the original mappers of this stream type.
   auto mappers = stream_type->mappers();
-  LOG(DEBUG, "VHDL:   Stream type has " << mappers.size() << " mapper(s).");
 
-  // Iterate over all previously existing mappers.
-  for (const auto &mapper: mappers) {
-    // Apply insertion of ready and valid to every stream type in the flattened type.
-    AddValidReady(mapper->flat_a());
-    AddValidReady(mapper->flat_b());
+  if (mappers.empty()) {
+    // Stream type has no mappers, just expand it.
+    ExpandStream(Flatten(stream_type.get()));
+  } else {
+    LOG(DEBUG, "VHDL:     Stream type has " << mappers.size() << " mapper(s). Expand mappers...");
+    // Iterate over all previously existing mappers.
+    for (const auto &mapper: mappers) {
+      // Apply insertion of ready and valid to every stream type in the flattened type.
+      ExpandStream(mapper->flat_a());
+      ExpandStream(mapper->flat_b());
+      // We have to be careful here because AddValidReady *could* and probably will invalidate some type pointers of the
+      // flat types. Also, we need to recreate the mappers, otherwise any existing node connections that are based on the
+      // mapper are now invalid.
 
-    // We have to be careful here because AddValidReady *could* and probably will invalidate some type pointers of the
-    // flat types. Also, we need to recreate the mappers, otherwise any existing node connections that are based on the
-    // mapper are now invalid.
+      // Get a copy of the old matrix.
+      auto old_matrix = mapper->map_matrix();
+      // Create a new mapper
+      auto new_mapper = TypeMapper::Make(stream_type.get(), mapper->b());
+      // Get the properly sized matrix
+      auto new_matrix = new_mapper->map_matrix();
+      // Get the flattened type
+      auto flat_a = new_mapper->flat_a();
+      auto flat_b = new_mapper->flat_b();
 
-    // Get a copy of the old matrix.
-    auto old_matrix = mapper->map_matrix();
+      LOG(DEBUG, "Old:\n" + mapper->ToString());
 
-    // Create a new mapper
-    auto new_mapper = TypeMapper::Make(stream_type.get(), mapper->b());
+      size_t old_row = 0;
+      size_t old_col = 0;
+      size_t new_row = 0;
+      size_t new_col = 0;
 
-    // Get the properly sized matrix
-    auto new_matrix = new_mapper->map_matrix();
-
-    // To obtain the new mapping matrix, we iterate over the new mapping matrix in a row-wise fashion. When we see a
-    // stream, we copy over the original row to the new rows containing the record, valid and ready.
-    auto flat_a = new_mapper->flat_a();
-    auto flat_b = new_mapper->flat_b();
-
-    size_t old_row = 0;
-    size_t row = 0;
-    size_t old_col = 0;
-    size_t col = 0;
-
-    while (row < new_matrix.height()) {
-      while (col < new_matrix.width()) {
-      if ((flat_a[row].type_->Is(Type::STREAM) && flat_b[col].type_->Is(Type::STREAM))
-        || ()
-        || ())
-      {
-          new_matrix(row, col) = old_matrix(old_row, col);  // Retain old stream mapping for any other transformations
-          new_matrix(row + 1, col + 1) = old_matrix(old_row, col); // Record
-          new_matrix(row + 2, col + 2) = old_matrix(old_row, col); // Valid
-          new_matrix(row + 3, col + 3) = old_matrix(old_row, col); // Ready
-      } else {
-        // Copy over the columns
-        for (size_t col = 0; col < old_matrix.width(); col++) {
-          new_matrix(row, col) = old_matrix(old_row, col);
+      while (new_row < new_matrix.height()) {
+        auto at = flat_a[new_row].type_;
+        while (new_col < new_matrix.width()) {
+          auto bt = flat_b[new_col].type_;
+          // Figure out if we're dealing with a matching, expanded type on both sides.
+          if (IsExpanded(at, "stream") && IsExpanded(bt, "stream")) {
+            new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
+            new_col += 4; // Skip over record, valid and ready
+          } else if (IsExpanded(at, "record") && IsExpanded(bt, "record")) {
+            new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
+            new_col += 3; // Skip over valid and ready
+          } else if (IsExpanded(at, "valid") && IsExpanded(bt, "valid")) {
+            new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
+            new_col += 2; // Skip over ready
+          } else if (IsExpanded(at, "ready") && IsExpanded(bt, "ready")) {
+            new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
+            new_col += 1;
+          } else {
+            // We're not dealing with a *matching* expanded type. However, if the A side was expanded and the type is
+            // not matching, we shouldn't make a copy. That will happen later on.
+            if (!IsExpanded(at)) {
+              new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
+            }
+            new_col += 1;
+          }
+          // If this is the last expanded column, move to the next column in the old matrix
+          if (!IsExpanded(bt) || IsExpanded(bt, "ready")) {
+            old_col += 1;
+          }
         }
-        row++;
+        old_col = 0;
+        new_col = 0;
+
+        // Only move to the next row of the old matrix when we see the last expanded type or if it's not an expanded type
+        // at all.
+        if (!IsExpanded(at) || IsExpanded(at, "ready")) {
+          old_row += 1;
+        }
+        new_row += 1;
       }
-      old_row++;
-    }
 
-    new_mapper->SetMappingMatrix(new_matrix);
+      // Set the mapping matrix of the new mapper to the new matrix
+      new_mapper->SetMappingMatrix(new_matrix);
 
-    LOG(DEBUG, "Old:\n" + mapper->ToString());
-    LOG(DEBUG, "New:\n" + new_mapper->ToString());
+      LOG(DEBUG, "New:\n" + new_mapper->ToString());
 
-    // Iterate over the columns of the old matrix
-    for (size_t col = 0; col < mapper->map_matrix().width(); col++) {
-
+      // Add the mapper to the type
+      stream_type->AddMapper(new_mapper);
     }
   }
 }
 
-std::shared_ptr<Component> Transformation::ResolveStreams(std::shared_ptr<Component> comp) {
+std::shared_ptr<Component> Transformation::ExpandStreams(std::shared_ptr<Component> comp) {
   std::deque<std::shared_ptr<Type>> types;
   GetAllObjectTypesRecursive(&types, comp);
 
   LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   for (const auto &t : types) {
-    LOG(DEBUG, "VHDL: Checking type: " + t->ToString());
     if (t->Is(Type::STREAM)) {
       auto st = *Cast<Stream>(t);
       // Only resolve the Stream Type if it wasn't resolved already
-      if (st->meta.count("VHDL:ResolvedStream") == 0) {
-        LOG(DEBUG, "VHDL: Must resolve " + st->ToString());
+      if (st->meta.count("VHDL:ExpandStream") == 0) {
+        LOG(DEBUG, "VHDL:   Expand stream type " + st->ToString());
         // Resolve the mappers of this Stream type.
-        ResolveMappers(st);
+        ExpandMappers(st);
       }
     }
   }

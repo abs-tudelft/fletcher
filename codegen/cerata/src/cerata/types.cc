@@ -48,23 +48,23 @@ bool Type::IsNested() const {
 std::string Type::ToString(bool show_meta) const {
   std::string ret;
   switch (id_) {
-    case CLOCK  : ret = name() + ":Clock";
+    case CLOCK  : ret = name() + ":Clk";
       break;
-    case RESET  : ret = name() + ":Reset";
+    case RESET  : ret = name() + ":Rec";
       break;
     case BIT    : ret = name() + ":Bit";
       break;
-    case VECTOR : ret = name() + ":Vector";
+    case VECTOR : ret = name() + ":Vec";
       break;
-    case INTEGER: ret = name() + ":Natural";
+    case INTEGER: ret = name() + ":Int";
       break;
-    case STRING : ret = name() + ":String";
+    case STRING : ret = name() + ":Str";
       break;
-    case BOOLEAN: ret = name() + ":Boolean";
+    case BOOLEAN: ret = name() + ":Bo";
       break;
-    case RECORD : ret = name() + ":Record";
+    case RECORD : ret = name() + ":Rec";
       break;
-    case STREAM : ret = name() + ":Stream";
+    case STREAM : ret = name() + ":Stm";
       break;
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
@@ -251,15 +251,15 @@ std::optional<std::shared_ptr<Node>> Bit::width() const {
   return std::dynamic_pointer_cast<Node>(intl<1>());
 }
 
-RecField::RecField(std::string name, std::shared_ptr<Type> type)
-    : Named(std::move(name)), type_(std::move(type)) {}
+RecField::RecField(std::string name, std::shared_ptr<Type> type, bool invert)
+    : Named(std::move(name)), type_(std::move(type)), invert_(invert) {}
 
-std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type> type) {
-  return std::make_shared<RecField>(name, type);
+std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type> type, bool invert) {
+  return std::make_shared<RecField>(name, type, invert);
 }
 
-std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type) {
-  return std::make_shared<RecField>(type->name(), type);
+std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type, bool invert) {
+  return std::make_shared<RecField>(type->name(), type, invert);
 }
 
 std::shared_ptr<Record> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {

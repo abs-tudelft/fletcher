@@ -21,8 +21,7 @@
 #include "cerata/flattypes.h"
 #include "cerata/nodes.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 // VHDL specific type data
 
@@ -71,5 +70,4 @@ struct Range {
   }
 };
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

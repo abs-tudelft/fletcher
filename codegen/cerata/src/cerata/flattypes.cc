@@ -38,7 +38,8 @@ std::string FlatType::name(const std::string &root, const std::string &sep) cons
   return ret.str();
 }
 
-FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level) : type_(t) {
+FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level, bool invert)
+    : type_(t), invert_(invert) {
   name_parts_ = std::move(prefix);
   name_parts_.push_back(name);
 }
@@ -49,23 +50,27 @@ bool operator<(const FlatType &a, const FlatType &b) {
 
 void FlattenRecord(std::deque<FlatType> *list,
                    const Record *record,
-                   const std::optional<FlatType> &parent) {
+                   const std::optional<FlatType> &parent,
+                   bool invert) {
   for (const auto &f : record->fields()) {
-    Flatten(list, f->type().get(), parent, f->name());
+    Flatten(list, f->type().get(), parent, f->name(), invert != f->invert());
   }
 }
 
 void FlattenStream(std::deque<FlatType> *list,
                    const Stream *stream,
-                   const std::optional<FlatType> &parent) {
-  Flatten(list, stream->element_type().get(), parent, "");
+                   const std::optional<FlatType> &parent,
+                   bool invert) {
+  Flatten(list, stream->element_type().get(), parent, "", invert);
 }
 
 void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
-             const std::string &name) {
+             const std::string &name,
+             bool invert) {
   FlatType result;
+  result.invert_ = invert;
   if (parent) {
     result.nesting_level_ = (*parent).nesting_level_ + 1;
     result.name_parts_ = (*parent).name_parts_;
@@ -77,9 +82,9 @@ void Flatten(std::deque<FlatType> *list,
   list->push_back(result);
 
   switch (type->id()) {
-    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result);
+    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result, invert);
       break;
-    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result);
+    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result, invert);
       break;
     default:break;
   }
@@ -87,7 +92,7 @@ void Flatten(std::deque<FlatType> *list,
 
 std::deque<FlatType> Flatten(const Type *type) {
   std::deque<FlatType> result;
-  Flatten(&result, type, {}, "");
+  Flatten(&result, type, {}, "", false);
   return result;
 }
 

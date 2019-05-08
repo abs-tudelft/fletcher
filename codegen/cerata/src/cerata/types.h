@@ -264,15 +264,20 @@ class Vector : public Type {
 class RecField : public Named {
  public:
   /// @brief RecordField constructor.
-  RecField(std::string name, std::shared_ptr<Type> type);
+  RecField(std::string name, std::shared_ptr<Type> type, bool invert=false);
   /// @brief Create a new RecordField, and return a shared pointer to it.
-  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type);
+  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type, bool invert=false);
   /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type);
+  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert=false);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
+  // @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
+  bool invert() { return invert_; }
  private:
+  // @brief The type of the field.
   std::shared_ptr<Type> type_;
+  // @brief Whether this individual field should be inverted w.r.t. the top level type on graph edges.
+  bool invert_;
 };
 
 /// @brief A Record type containing zero or more RecordFields.

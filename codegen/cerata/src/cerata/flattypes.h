@@ -39,7 +39,7 @@ class Node;
  */
 struct FlatType {
   FlatType() = default;
-  FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level);
+  FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level, bool invert);
   /// @brief A pointer to the original type.
   const Type *type_;
   /// @brief Nesting level in a type hierarchy.
@@ -59,18 +59,21 @@ bool operator<(const FlatType &a, const FlatType &b);
 /// @brief Flatten a Record.
 void FlattenRecord(std::deque<FlatType> *list,
                    const Record *record,
-                   const std::optional<FlatType> &parent);
+                   const std::optional<FlatType> &parent,
+                   bool invert);
 
 /// @brief Flatten a Stream.
 void FlattenStream(std::deque<FlatType> *list,
                    const Stream *stream,
-                   const std::optional<FlatType> &parent);
+                   const std::optional<FlatType> &parent,
+                   bool invert);
 
 /// @brief Flatten any Type.
 void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
-             const std::string &name);
+             const std::string &name,
+             bool invert);
 
 /// @brief Flatten and return a list of FlatTypes.
 std::deque<FlatType> Flatten(const Type *type);

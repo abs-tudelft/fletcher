@@ -35,13 +35,19 @@ RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &flet
   auto as = fletcher_schema_->arrow_schema();
   // Get mode/direction
   auto mode = fletcher::getMode(as);
+  // Add default port nodes
+  AddObject(Port::Make(bus_clk()));
+  AddObject(Port::Make(bus_reset()));
+  AddObject(Port::Make(acc_clk()));
+  AddObject(Port::Make(acc_reset()));
   // Add and connect all array readers and resulting ports
   AddArrayReaders(as, mode);
   // Add and connect all bus interfaces
   ConnectMemoryInterface();
 }
+
 void RecordBatchReader::ConnectMemoryInterface() {
-  // Add default nodes
+  // Add default parameter nodes
   AddObject(bus_addr_width());
   AddObject(bus_data_width());
   AddObject(bus_len_width());
@@ -89,6 +95,11 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       arrow_port <<= array_reader->port("out");
       // Drive the ArrayReader command port from the top-level command port
       array_reader->port("cmd") <<= command_port;
+      // Drive the clocks and resets
+      array_reader->port("acc_clk") <<= port("acc_clk");
+      array_reader->port("acc_reset") <<= port("acc_reset");
+      array_reader->port("bus_clk") <<= port("bus_clk");
+      array_reader->port("bus_reset") <<= port("bus_reset");
       // Remember where the ArrayReader is
       reader_instances_.push_back(array_reader);
     } else {

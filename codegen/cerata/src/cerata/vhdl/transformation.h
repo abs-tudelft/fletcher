@@ -32,11 +32,11 @@ struct Transformation {
   static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
 
   /**
-   * @brief Transforms the component, materializing the abstract Stream type by adding a valid and ready signal.
+   * @brief Transforms the component, materialize the abstract Stream type by expanding it with a ready and valid bit.
    * @param comp  The component to transform.
    * @return      The transformed component.
    */
-  static std::shared_ptr<Component> ResolveStreams(std::shared_ptr<Component> comp);
+  static std::shared_ptr<Component> ExpandStreams(std::shared_ptr<Component> comp);
 };
 
 }  // namespace cerata::vhdl

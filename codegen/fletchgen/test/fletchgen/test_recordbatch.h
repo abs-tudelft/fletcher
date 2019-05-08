@@ -45,7 +45,7 @@ static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) 
   std::cout << code << std::endl;
   VHDL_DUMP_TEST(code);
   cerata::dot::Grapher dot;
-  std::cout << dot.GenFile(rbr, "graph.dot");
+  dot.GenFile(rbr, "graph.dot");
 }
 
 TEST(RecordBatch, StringRead) {

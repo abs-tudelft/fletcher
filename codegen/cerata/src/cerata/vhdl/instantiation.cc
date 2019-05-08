@@ -79,9 +79,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
                                 const std::string &lh_prefix,
                                 const std::string &rh_prefix,
                                 bool a_is_array,
-                                bool b_is_array,
-                                bool enable_valid,
-                                bool enable_ready) {
+                                bool b_is_array) {
   Block ret;
 
   std::shared_ptr<Node> next_offset_a;
@@ -94,27 +92,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
   next_offset_b = offset_b + (a_width ? *a_width : intl<0>());
 
   if (p.flat_type_a(0).type_->Is(Type::STREAM)) {
-    // Output valid and ready signals for this abstract type.
-    Line v;
-    Line r;
-    v << p.flat_type_a(ia).name(lh_prefix) + "_valid";
-    r << p.flat_type_a(ia).name(lh_prefix) + "_ready";
-    if ((p.num_b() > 1) || a_is_array) {
-      v += "(" + offset_a->ToString() + ")";
-      r += "(" + offset_a->ToString() + ")";
-    }
-    v << " => ";
-    r << " => ";
-    v << p.flat_type_b(ib).name(rh_prefix) + "_valid";
-    r << p.flat_type_b(ib).name(rh_prefix) + "_ready";
-    if ((p.num_a() > 1) || b_is_array) {
-      v += "(" + offset_b->ToString() + ")";
-      r += "(" + offset_b->ToString() + ")";
-    }
-    if (enable_valid)
-      ret << v;
-    if (enable_ready)
-      ret << r;
+    // Don't output anything for the abstract stream type.
   } else if (p.flat_type_a(0).type_->Is(Type::RECORD)) {
     // Don't output anything for the abstract record type.
   } else {
@@ -177,7 +155,7 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array, true, true);
+        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array);
         ret << mpblock;
         // Increase the offset on the left side.
         a_offset = a_offset + (b_width ? *b_width : intl<1>());

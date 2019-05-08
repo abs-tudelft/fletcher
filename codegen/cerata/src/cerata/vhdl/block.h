@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 namespace cerata::vhdl {
 
@@ -31,6 +32,9 @@ struct Block {
   explicit Block(int indent=0) : indent(indent) {}
   std::vector<Line> lines;
   std::vector<size_t> GetAlignments() const;
+  void reverse() {
+    std::reverse(lines.begin(), lines.end());
+  }
   std::string str() const;
   int indent = 0;
 };
