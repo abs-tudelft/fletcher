@@ -27,8 +27,8 @@ namespace fletchgen {
 using cerata::Cast;
 
 Kernel::Kernel(std::string name,
-               std::deque<std::shared_ptr<RecordBatchReader>> readers,
-               std::deque<std::shared_ptr<RecordBatchReader>> writers)
+               const std::deque<std::shared_ptr<RecordBatchReader>>& readers,
+               const std::deque<std::shared_ptr<RecordBatchReader>>& writers)
     : Component(std::move(name)) {
   for (const auto &r : readers) {
     auto field_ports = r->GetFieldPorts();

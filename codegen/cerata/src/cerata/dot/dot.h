@@ -24,8 +24,7 @@
 #include "cerata/graphs.h"
 #include "cerata/dot/style.h"
 
-namespace cerata {
-namespace dot {
+namespace cerata::dot {
 
 /**
  * @brief Dot graph output generator.
@@ -55,5 +54,4 @@ class DOTOutputGenerator : public OutputGenerator {
   std::string subdir() override { return "dot"; }
 };
 
-}  // namespace dot
-}  // namespace cerata
+}  // namespace cerata::dot

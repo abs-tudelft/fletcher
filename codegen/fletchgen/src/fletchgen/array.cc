@@ -94,7 +94,7 @@ std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
                                      Port::Make(bus_reset()),
                                      Port::Make(acc_clk()),
                                      Port::Make(acc_reset()),
-                                     BusChannel::Make(BusChannel::Function::READ, Port::Dir::OUT, BusSpec()),
+                                     BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec()),
                                      Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
                                      Port::Make("unlock", unlock(tag_width), Port::Dir::OUT),
                                      Port::Make("out", read_data(std::move(data_width)), Port::Dir::OUT)}

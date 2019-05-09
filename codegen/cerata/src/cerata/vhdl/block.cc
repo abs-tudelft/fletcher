@@ -18,8 +18,7 @@
 #include <sstream>
 #include <regex>
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 static std::string tab(int n) {
   return std::string(static_cast<unsigned long>(2 * n), ' ');
@@ -165,5 +164,4 @@ std::string ToString(std::vector<Block> blocks) {
   return ret.str();
 }
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

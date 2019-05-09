@@ -74,13 +74,13 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       // Drive the ArrayReader command port from the top-level command port
       array_reader->port("cmd") <<= command_port;
       // Copy over the ArrayReader's bus channels
-      auto bus = *Cast<BusChannel>(array_reader->port("bus")->Copy());
+      auto bus = *Cast<BusPort>(array_reader->port("bus")->Copy());
       // Give the new bus port a unique name
       bus->SetName(f->name() + "_" + bus->name());
       // Add them to the RecordBatchReader
       AddObject(bus);
       // Remember the port
-      bus_channels_.push_back(bus.get());
+      bus_ports_.push_back(bus);
       // Connect them to the ArrayReader
       bus <<= array_reader->port("bus");
       // Remember where the ArrayReader is

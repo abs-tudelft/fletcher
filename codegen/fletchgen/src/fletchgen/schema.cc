@@ -58,4 +58,5 @@ FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schem
   // Show some debug information about the schema
   LOG(DEBUG, "Schema " + name() + ", Direction: " + cerata::Term::ToString(mode2dir(mode_)));
 }
+
 }  // namespace fletchgen

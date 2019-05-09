@@ -17,6 +17,7 @@
 #include <string>
 #include <memory>
 
+#include "cerata/logging.h"
 #include "cerata/graphs.h"
 #include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/declaration.h"
@@ -30,10 +31,9 @@ MultiBlock Design::Generate() {
   // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing,
   // in case multiple back ends are processing the graph. This currently modifies the original structure.
 
-  // Sanitize component
+  // Resolve VHDL specific problems
+  LOG(DEBUG, "VHDL: Transforming Cerata graph to VHDL-compatible.");
   Resolve::ResolvePortToPort(comp);
-
-  // Transform streams to make use of valid/ready
   Resolve::ExpandStreams(comp);
 
   // Place header

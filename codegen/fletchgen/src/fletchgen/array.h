@@ -26,14 +26,15 @@ using cerata::Component;
 using cerata::intl;
 
 /// @brief Return the width of the control data of this field.
-std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field>& field);
+std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field);
 
 // Default streams of ArrayReaders/ArrayWriters
 
 ///< @brief Fletcher command stream
-std::shared_ptr<Type> cmd(const std::shared_ptr<Node>& ctrl_width = intl<1>(), const std::shared_ptr<Node>& tag_width = intl<1>());
+std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl<1>(),
+                          const std::shared_ptr<Node> &tag_width = intl<1>());
 ///< @brief Fletcher unlock stream
-std::shared_ptr<Type> unlock(const std::shared_ptr<Node>& tag_width = intl<1>());
+std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl<1>());
 ///< @brief Fletcher read data
 std::shared_ptr<Type> read_data(std::shared_ptr<Node> data_width = intl<1>());
 ///< @brief Fletcher write data
@@ -93,7 +94,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
 /// @brief Return a ArrayReader component.
 std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width = intl<1>(),
-                                       const std::shared_ptr<Node>& ctrl_width = intl<1>(),
-                                       const std::shared_ptr<Node>& tag_width = intl<1>());
+                                       const std::shared_ptr<Node> &ctrl_width = intl<1>(),
+                                       const std::shared_ptr<Node> &tag_width = intl<1>());
 
 }  // namespace fletchgen

@@ -50,10 +50,14 @@ struct BusSpec {
   size_t len_width = 8;
   size_t burst_step = 1;
   size_t max_burst = 128;
+
+  std::string ToString() const;
 };
 
-/// @brief Bus channel
-struct BusChannel : public Port {
+bool operator==(const BusSpec &lhs, const BusSpec &rhs);
+
+/// @brief Bus port
+struct BusPort : public Port {
   enum class Function {
     READ,
     WRITE
@@ -61,10 +65,10 @@ struct BusChannel : public Port {
 
   BusSpec spec_;
 
-  BusChannel(Function fun, Port::Dir dir, BusSpec spec)
+  BusPort(Function fun, Port::Dir dir, BusSpec spec)
       : Port(fun2name(fun), fun2type(fun, spec), dir), function_(fun), spec_(spec) {}
 
-  static std::shared_ptr<BusChannel> Make(Function fun, Port::Dir dir, BusSpec spec);
+  static std::shared_ptr<BusPort> Make(Function fun, Port::Dir dir, BusSpec spec);
 
   static std::string fun2name(Function fun);
   static std::shared_ptr<Type> fun2type(Function fun, BusSpec spec);
@@ -79,44 +83,12 @@ std::shared_ptr<Component> BusReadArbiter();
 std::shared_ptr<Component> BusWriteSerializer();
 std::shared_ptr<Component> BusWriteArbiter();
 
-/**
- * @brief A component used to route multiple bus request and data channels onto a single master port.
- */
-struct Artery : Component {
-  /// The address width of all request ports.
-  std::shared_ptr<Node> address_width_;
-  /// The width of the master port.
-  std::shared_ptr<Node> master_width_;
-  /// The widths of all slave port arrays.
-  std::deque<std::shared_ptr<Node>> slave_widths_;
-
-  Artery(const std::string &prefix,
-         std::shared_ptr<Node> address_width,
-         std::shared_ptr<Node> master_width,
-         std::deque<std::shared_ptr<Node>> slave_widths);
-
-  static std::shared_ptr<Artery> Make(std::string prefix,
-                                      std::shared_ptr<Node> address_width,
-                                      std::shared_ptr<Node> master_width,
-                                      std::deque<std::shared_ptr<Node>> slave_widths);
-};
-
-/**
- * @brief An instance of an Artery component.
- */
-struct ArteryInstance : Instance {
-  explicit ArteryInstance(std::string name, const std::shared_ptr<Artery> &comp)
-      : Instance(std::move(name), std::dynamic_pointer_cast<Component>(comp)) {}
-  static std::unique_ptr<ArteryInstance> Make(const std::shared_ptr<Artery> &comp) {
-    return std::make_unique<ArteryInstance>(comp->name() + "_inst", comp);
-  }
-  std::shared_ptr<PortArray> read_data(const std::shared_ptr<Node> &width);
-  std::shared_ptr<PortArray> read_request(const std::shared_ptr<Node> &width);
-
-  template<int W>
-  std::shared_ptr<PortArray> read_data() {
-    return read_data(cerata::intl<W>());
-  }
-};
-
 }  // namespace fletchgen
+
+// Inject a specialization of std::hash for BusSpec
+template<>
+struct std::hash<fletchgen::BusSpec> {
+  size_t operator()(fletchgen::BusSpec const &s) const noexcept {
+    return s.data_width + s.addr_width + s.len_width + s.burst_step + s.max_burst;
+  }
+};

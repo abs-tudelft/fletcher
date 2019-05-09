@@ -20,8 +20,7 @@
 #include <vector>
 #include <sstream>
 
-namespace cerata {
-namespace dot {
+namespace cerata::dot {
 
 Style Style::normal() {
   static Style ret;
@@ -276,5 +275,4 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
   return sb.ToString();
 }
 
-}  // namespace dot
-}  // namespace cerata
+}  // namespace cerata::dot

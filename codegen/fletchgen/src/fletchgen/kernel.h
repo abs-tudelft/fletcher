@@ -32,8 +32,8 @@ using cerata::Component;
  */
 struct Kernel : Component {
   explicit Kernel(std::string name,
-                  std::deque<std::shared_ptr<RecordBatchReader>> readers = {},
-                  std::deque<std::shared_ptr<RecordBatchReader>> writers = {});
+                  const std::deque<std::shared_ptr<RecordBatchReader>>& readers = {},
+                  const std::deque<std::shared_ptr<RecordBatchReader>>& writers = {});
 
   static std::shared_ptr<Kernel> Make(std::string name,
                                       std::deque<std::shared_ptr<RecordBatchReader>> readers = {},

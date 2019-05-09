@@ -83,7 +83,7 @@ struct RecordBatchReader : public Component {
 
   std::shared_ptr<FletcherSchema> fletcher_schema_;
   std::deque<Instance *> reader_instances_ = {};
-  std::deque<BusChannel*> bus_channels_ = {};
+  std::deque<std::shared_ptr<BusPort>> bus_ports_ = {};
  public:
   explicit RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema);
   static std::shared_ptr<RecordBatchReader> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
@@ -91,7 +91,7 @@ struct RecordBatchReader : public Component {
   std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; };
   std::deque<Instance *> reader_instances() const { return reader_instances_; };
 
-  std::deque<BusChannel*> bus_channels() const { return bus_channels_; }
+  std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
 
   /// @brief Obtain all ports derived from an Arrow field with a specific function.
   std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function> &function = {}) const;

@@ -14,6 +14,7 @@
 
 #include "fletchgen/mantle.h"
 
+#include <unordered_map>
 #include <memory>
 #include <deque>
 #include <utility>
@@ -39,9 +40,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   // Create and add the kernel
   kernel_ = Kernel::Make(schema_set_->name(), reader_components());
-  auto ki = Instance::Make(kernel_);
-  kernel_inst_ = ki.get();
-  AddChild(std::move(ki));
+  kernel_inst_ = AddInstanceOf(kernel_);
 
   // Connect all Arrow field derived
   for (const auto &r : rb_reader_instances_) {
@@ -55,15 +54,42 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     }
   }
 
-  std::deque<std::tuple<std::string, std::shared_ptr<BusChannel>>> channels;
+  std::deque<BusSpec> bus_specs;
+  std::deque<std::shared_ptr<BusPort>> bus_ports;
 
-  // Obtain all bus channels
+  // For all the bus interfaces, figure out which unique bus specifications there are.
   for (const auto &rbri : rb_reader_instances_) {
     // Figure out what bus channels the component has
     auto rbr = *Cast<RecordBatchReader>(rbri->component);
-    for (const auto &bc : rbr->bus_channels()) {
-      bc->name();
+    for (const auto &b : rbr->bus_ports()) {
+      bool add_spec = true;
+      for (const auto &spec : bus_specs) {
+        if (spec == b->spec_) {
+          add_spec = false;
+          break;
+        }
+      }
+      if (add_spec) {
+        bus_specs.push_back(b->spec_);
+      }
+      bus_ports.push_back(b);
     }
+  }
+
+  // Generate a BusArbiterVec for every unique bus specification
+  for (const auto &spec : bus_specs) {
+    LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
+    auto arbiter = AddInstanceOf(BusReadArbiter());
+    arbiter->par(bus_addr_width()->name()) <<= Literal::Make(spec.addr_width);
+    arbiter->par(bus_data_width()->name()) <<= Literal::Make(spec.data_width);
+    arbiter->par(bus_len_width()->name()) <<= Literal::Make(spec.len_width);
+    arbiters_[spec] = arbiter;
+  }
+
+  // Connect bus ports to the arbiters
+  for (const auto &bp : bus_ports) {
+    auto arb = arbiters_.at(bp->spec_);
+    arb->porta("bsv")->Append() <<= bp;
   }
 
 }

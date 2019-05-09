@@ -14,7 +14,12 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <memory>
+#include <cerata/api.h>
+
 #include "fletchgen/kernel.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
@@ -30,6 +35,8 @@ struct Mantle : Component {
   Instance *kernel_inst_;
   /// The schema set on which this Mantle is based
   std::shared_ptr<SchemaSet> schema_set_;
+
+  std::unordered_map<BusSpec, Instance*> arbiters_;
 
   /// The RecordBatchReader instances
   std::vector<Instance *> rb_reader_instances_;

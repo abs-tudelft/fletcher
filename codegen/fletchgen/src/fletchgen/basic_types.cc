@@ -115,14 +115,14 @@ std::shared_ptr<Type> bus_reset() {
 }
 
 // Data channel
-std::shared_ptr<Type> data(std::shared_ptr<Node> width) {
+std::shared_ptr<Type> data(const std::shared_ptr<Node>& width) {
   std::shared_ptr<Type> result = Vector::Make("data", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta["array_data"] = "true";
   return result;
 }
 
-std::shared_ptr<Type> count(std::shared_ptr<Node> width) {
+std::shared_ptr<Type> count(const std::shared_ptr<Node>& width) {
   std::shared_ptr<Type> result = Vector::Make("count", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta["array_data"] = "true";

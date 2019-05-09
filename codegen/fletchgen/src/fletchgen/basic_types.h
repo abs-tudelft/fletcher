@@ -65,8 +65,8 @@ PARAM_DECL_FACTORY(index_width)
 
 std::shared_ptr<ClockDomain> acc_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
-std::shared_ptr<Type> data(std::shared_ptr<Node> width); ///< @brief Fletcher data
-std::shared_ptr<Type> count(std::shared_ptr<Node> width); ///< @brief Fletcher count
+std::shared_ptr<Type> data(const std::shared_ptr<Node>& width); ///< @brief Fletcher data
+std::shared_ptr<Type> count(const std::shared_ptr<Node>& width); ///< @brief Fletcher count
 std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
 std::shared_ptr<Type> last(); ///< @brief Fletcher last
 std::shared_ptr<Type> acc_clk(); ///< @brief Fletcher accelerator clock

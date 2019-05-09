@@ -39,7 +39,6 @@ using cerata::Record;
 using cerata::Stream;
 
 // Bus types
-
 std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width,
                                const std::shared_ptr<Node> &len_width,
                                const std::shared_ptr<Node> &data_width) {
@@ -97,7 +96,7 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
                                      Port::Make(bus_clk()),
                                      Port::Make(bus_reset()),
-                                     Port::Make("mst_rreq", bus_read(), Port::Dir::OUT),
+                                     Port::Make("mst", bus_read(), Port::Dir::OUT),
                                      slaves_read_array,
                                     });
   ret->meta["primitive"] = "true";
@@ -131,79 +130,12 @@ std::shared_ptr<Component> BusReadSerializer() {
   return ret;
 }
 
-Artery::Artery(
-    const std::string &prefix,
-    std::shared_ptr<Node> address_width,
-    std::shared_ptr<Node> master_width,
-    std::deque<std::shared_ptr<Node>> slave_widths)
-    : Component(prefix + "_artery"),
-      address_width_(std::move(address_width)),
-      master_width_(std::move(master_width)),
-      slave_widths_(std::move(slave_widths)) {
-
-  if (address_width == nullptr) {
-    LOG(WARNING, "Artery address width is not set.");
-  }
-  if (master_width == nullptr) {
-    LOG(WARNING, "Artery top-level data width is not set.");
-  }
-
-  AddObject(bus_addr_width());
-  AddObject(bus_data_width());
-  // For each required slave width
-  for (const auto &slave_width : slave_widths_) {
-    // Create parameters
-    auto num_slaves_par = Parameter::Make("NUM_SLV_W" + slave_width->ToString(), integer());
-    AddObject(num_slaves_par);
-
-    // Create ports
-    auto read_array = PortArray::Make("bus" + slave_width->ToString() + "_rreq",
-                                      bus_read(),
-                                      num_slaves_par,
-                                      Port::IN);
-    AddObject(read_array);
-
-    // Create a bus read arbiter vector instance
-    auto read_arb = Instance::Make("arb_" + slave_width->ToString(), BusReadArbiter());
-
-    // Set its parameters
-    read_arb->par("bus_addr_width") <<= address_width_;
-    read_arb->par("bus_data_width") <<= slave_width;
-
-    // Connect its ports
-    read_arb->porta("bsv")->Append() <<= read_array->Append();
-
-    // Create a bus read serializer for other widths than master.
-    if (slave_width != master_width_) {
-      // Create bus read serializer
-      auto read_ser = Instance::Make("ser_" + slave_width->ToString(), BusReadSerializer());
-      // Connet
-      read_ser->port("slv") <<= read_arb->port("mst");
-      AddChild(std::move(read_ser));
-    } else {
-
-    }
-
-    AddChild(std::move(read_arb));
-  }
+bool operator==(const BusSpec &lhs, const BusSpec &rhs) {
+  return (lhs.data_width == rhs.data_width) && (lhs.addr_width == rhs.addr_width) && (lhs.len_width == rhs.len_width) &&
+      (lhs.burst_step == rhs.burst_step) && (lhs.max_burst == rhs.max_burst);
 }
 
-std::shared_ptr<Artery> Artery::Make(std::string prefix,
-                                     std::shared_ptr<Node> address_width,
-                                     std::shared_ptr<Node> master_width,
-                                     std::deque<std::shared_ptr<Node>> slave_widths) {
-  return std::make_shared<Artery>(prefix, address_width, master_width, slave_widths);
-}
-
-std::shared_ptr<PortArray> ArteryInstance::read_data(const std::shared_ptr<Node> &width) {
-  return porta("bus" + width->ToString() + "_rdat");
-}
-
-std::shared_ptr<PortArray> ArteryInstance::read_request(const std::shared_ptr<Node> &width) {
-  return porta("bus" + width->ToString() + "_rreq");
-}
-
-std::string BusChannel::fun2name(BusChannel::Function fun) {
+std::string BusPort::fun2name(BusPort::Function fun) {
   switch (fun) {
     case Function::READ: return "bus";
     case Function::WRITE: return "bus";
@@ -211,7 +143,7 @@ std::string BusChannel::fun2name(BusChannel::Function fun) {
   }
 }
 
-std::shared_ptr<Type> BusChannel::fun2type(BusChannel::Function fun, BusSpec spec) {
+std::shared_ptr<Type> BusPort::fun2type(BusPort::Function fun, BusSpec spec) {
   switch (fun) {
     case Function::READ:
       return bus_read(Literal::Make(spec.addr_width),
@@ -225,13 +157,25 @@ std::shared_ptr<Type> BusChannel::fun2type(BusChannel::Function fun, BusSpec spe
   }
 }
 
-std::shared_ptr<BusChannel> BusChannel::Make(BusChannel::Function fun, Port::Dir dir, BusSpec spec) {
-  return std::make_shared<BusChannel>(fun, dir, spec);
+std::shared_ptr<BusPort> BusPort::Make(BusPort::Function fun, Port::Dir dir, BusSpec spec) {
+  return std::make_shared<BusPort>(fun, dir, spec);
 }
 
-std::shared_ptr<cerata::Object> BusChannel::Copy() const {
+std::shared_ptr<cerata::Object> BusPort::Copy() const {
   auto result = Make(function_, dir_, spec_);
   result->SetType(type());
   return result;
+}
+
+std::string BusSpec::ToString() const {
+  std::stringstream str;
+  str << "BusSpec[";
+  str << "addr:" << addr_width;
+  str << ", len:" << len_width;
+  str << ", dat:" << data_width;
+  str << ", step:" << burst_step;
+  str << ", max:" << max_burst;
+  str << "]";
+  return str.str();
 }
 }  // namespace fletchgen

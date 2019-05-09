@@ -25,8 +25,7 @@
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/vhdl_types.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 struct Inst {
   static Block GenerateMappingPair(const MappingPair &p,
@@ -48,5 +47,4 @@ struct Inst {
   static Block GenerateGenericMap(const std::shared_ptr<Parameter> &par);
 };
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl

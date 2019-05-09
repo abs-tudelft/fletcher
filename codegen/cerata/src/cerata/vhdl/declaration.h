@@ -24,8 +24,7 @@
 
 #include "cerata/vhdl/block.h"
 
-namespace cerata {
-namespace vhdl {
+namespace cerata::vhdl {
 
 struct Decl {
   static std::string Generate(const Type *type, const std::optional<std::shared_ptr<Node>> &multiplier = {});
@@ -36,5 +35,4 @@ struct Decl {
   static MultiBlock Generate(const Component *comp, bool entity = false);
 };
 
-}  // namespace vhdl
-}  // namespace cerata
+}  // namespace cerata::vhdl
