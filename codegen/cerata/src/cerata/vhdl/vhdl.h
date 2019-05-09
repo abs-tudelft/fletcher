@@ -19,7 +19,7 @@
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/design.h"
 #include "cerata/vhdl/instantiation.h"
-#include "cerata/vhdl/transformation.h"
+#include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/defaults.h"
 #include "cerata/output.h"
 #include "cerata/logging.h"

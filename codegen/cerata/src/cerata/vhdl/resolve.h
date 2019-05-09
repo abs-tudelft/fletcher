@@ -20,7 +20,7 @@
 
 namespace cerata::vhdl {
 
-struct Transformation {
+struct Resolve {
   /**
    * @brief Transforms the component, inserting signals between port-to-port connections of instances.
    *

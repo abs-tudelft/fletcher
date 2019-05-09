@@ -34,32 +34,43 @@ using cerata::Cast;
 // Bus channel types:
 
 /// @brief Fletcher bus read request channel
-std::shared_ptr<Type> bus_read_request(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
-                                       const std::shared_ptr<Node> &len_width = bus_len_width());
-/// @brief Fletcher bus read data channel
-std::shared_ptr<Type> bus_read_data(const std::shared_ptr<Node> &width = bus_data_width());
+std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
+                               const std::shared_ptr<Node> &len_width = bus_len_width(),
+                               const std::shared_ptr<Node> &data_width = bus_data_width());
 
 /// @brief Fletcher bus write request channel
-std::shared_ptr<Type> bus_write_request(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
-                                        const std::shared_ptr<Node> &len_width = bus_len_width());
+std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
+                                const std::shared_ptr<Node> &len_width = bus_len_width(),
+                                const std::shared_ptr<Node> &data_width = bus_data_width());
 
-/// @brief Fletcher bus write data channel
-std::shared_ptr<Type> bus_write_data(const std::shared_ptr<Node> &width = bus_data_width());
+/// @brief Bus specification
+struct BusSpec {
+  size_t data_width = 512;
+  size_t addr_width = 64;
+  size_t len_width = 8;
+  size_t burst_step = 1;
+  size_t max_burst = 128;
+};
 
-// Bus channel
+/// @brief Bus channel
 struct BusChannel : public Port {
   enum class Function {
-    READ_REQ,
-    READ_DAT,
-    WRITE_REQ,
-    WRITE_DAT
-  } function;
+    READ,
+    WRITE
+  } function_;
 
-  BusChannel(Function fun, Port::Dir dir, size_t data_width = 512, size_t addr_width = 64, size_t len_width = 8)
-      : Port(fun2name(fun), fun2type(fun, data_width, addr_width, len_width), dir), function(fun) {}
+  BusSpec spec_;
+
+  BusChannel(Function fun, Port::Dir dir, BusSpec spec)
+      : Port(fun2name(fun), fun2type(fun, spec), dir), function_(fun), spec_(spec) {}
+
+  static std::shared_ptr<BusChannel> Make(Function fun, Port::Dir dir, BusSpec spec);
 
   static std::string fun2name(Function fun);
-  static std::shared_ptr<Type> fun2type(Function fun, size_t data_width, size_t addr_width, size_t len_width);
+  static std::shared_ptr<Type> fun2type(Function fun, BusSpec spec);
+
+  std::shared_ptr<Object> Copy() const override;
+
 };
 
 std::shared_ptr<Component> BusReadSerializer();

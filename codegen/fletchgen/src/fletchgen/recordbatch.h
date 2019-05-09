@@ -22,6 +22,7 @@
 #include "fletchgen/utils.h"
 #include "fletchgen/basic_types.h"
 #include "fletchgen/schema.h"
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
@@ -76,23 +77,26 @@ struct FieldPort : public Port {
  * - ...
  */
 struct RecordBatchReader : public Component {
-  std::shared_ptr<FletcherSchema> fletcher_schema_;
-  std::deque<Instance *> reader_instances_;
-
-  explicit RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema);
-
+ protected:
   /// @brief Adds all ArrayReaders, unconcatenates ports and connects it to the top-level of this component.
   void AddArrayReaders(const std::shared_ptr<arrow::Schema> &as, const Mode &mode);
-  /// @brief Connect all memory interfaces of all ArrayReaders.
-  void ConnectMemoryInterface();
 
+  std::shared_ptr<FletcherSchema> fletcher_schema_;
+  std::deque<Instance *> reader_instances_ = {};
+  std::deque<BusChannel*> bus_channels_ = {};
+ public:
+  explicit RecordBatchReader(const std::shared_ptr<FletcherSchema> &fletcher_schema);
   static std::shared_ptr<RecordBatchReader> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
-  /// @brief Obtain all ports derived from an Arrow field with a specific function.
-  std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function> &function = {});
-  /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
-  std::shared_ptr<FieldPort> GetArrowPort(const std::shared_ptr<arrow::Field> &field);
+  std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; };
+  std::deque<Instance *> reader_instances() const { return reader_instances_; };
 
+  std::deque<BusChannel*> bus_channels() const { return bus_channels_; }
+
+  /// @brief Obtain all ports derived from an Arrow field with a specific function.
+  std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function> &function = {}) const;
+  /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
+  std::shared_ptr<FieldPort> GetArrowPort(const std::shared_ptr<arrow::Field> &field) const;
 };
 
 } // namespace fletchgen

@@ -66,7 +66,7 @@ struct Edge : public Named {
  * @param src The source node.
  * @return The edge connecting the nodes.
  */
-std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src);
+std::shared_ptr<Edge> Connect(const std::shared_ptr<Node>& dst, const std::shared_ptr<Node>& src);
 
 /// @brief Shorthand for Connect
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);

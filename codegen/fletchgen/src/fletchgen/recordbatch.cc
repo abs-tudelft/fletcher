@@ -42,33 +42,6 @@ RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &flet
   AddObject(Port::Make(acc_reset()));
   // Add and connect all array readers and resulting ports
   AddArrayReaders(as, mode);
-  // Add and connect all bus interfaces
-  ConnectMemoryInterface();
-}
-
-void RecordBatchReader::ConnectMemoryInterface() {
-  // Add default parameter nodes
-  AddObject(bus_addr_width());
-  AddObject(bus_data_width());
-  AddObject(bus_len_width());
-  AddObject(bus_burst_step_len());
-  AddObject(bus_burst_max_len());
-
-  // Add bus interface count parameter, and request and data channel
-  auto num_read_slaves = Parameter::Make("NUM_READ_SLAVES", cerata::integer(), cerata::intl<0>());
-  auto bus_rreq_array = PortArray::Make("bus_rreq", bus_read_request(), num_read_slaves, Port::Dir::OUT);
-  auto bus_rdat_array = PortArray::Make("bus_rdat", bus_read_data(), num_read_slaves, Port::Dir::IN);
-  AddObject(num_read_slaves);
-  AddObject(bus_rreq_array);
-  AddObject(bus_rdat_array);
-
-  // Connect bus interface
-  for (const auto &ar : reader_instances_) {
-    auto ar_rreq = ar->port("bus_rreq");
-    auto ar_rdat = ar->port("bus_rdat");
-    bus_rreq_array->Append() <<= ar_rreq;
-    ar_rdat <<= bus_rdat_array->Append();
-  }
 }
 
 void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as, const Mode &mode) {
@@ -76,7 +49,7 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
   for (const auto &f : as->fields()) {
     // Check if we must ignore a field
     if (!fletcher::mustIgnore(f)) {
-      LOG(DEBUG, "Hardware-izing field: " + f->name());
+      LOG(DEBUG, "Instantiating ArrayReader for field: " + f->name());
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatchReader.
       auto arrow_port = FieldPort::MakeArrowPort(f, mode, true);
       AddObject(arrow_port);
@@ -91,15 +64,25 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       auto cfg_node = array_reader->GetNode(Node::PARAMETER, "CFG");
       // Set the configuration string for this field
       cfg_node <<= cerata::strl(GenerateConfigString(f));
-      // Drive the Arrow port with the ArrayReader output port
-      arrow_port <<= array_reader->port("out");
-      // Drive the ArrayReader command port from the top-level command port
-      array_reader->port("cmd") <<= command_port;
       // Drive the clocks and resets
       array_reader->port("acc_clk") <<= port("acc_clk");
       array_reader->port("acc_reset") <<= port("acc_reset");
       array_reader->port("bus_clk") <<= port("bus_clk");
       array_reader->port("bus_reset") <<= port("bus_reset");
+      // Drive the RecordBatch Arrow output port with the ArrayReader output port
+      arrow_port <<= array_reader->port("out");
+      // Drive the ArrayReader command port from the top-level command port
+      array_reader->port("cmd") <<= command_port;
+      // Copy over the ArrayReader's bus channels
+      auto bus = *Cast<BusChannel>(array_reader->port("bus")->Copy());
+      // Give the new bus port a unique name
+      bus->SetName(f->name() + "_" + bus->name());
+      // Add them to the RecordBatchReader
+      AddObject(bus);
+      // Remember the port
+      bus_channels_.push_back(bus.get());
+      // Connect them to the ArrayReader
+      bus <<= array_reader->port("bus");
       // Remember where the ArrayReader is
       reader_instances_.push_back(array_reader);
     } else {
@@ -108,7 +91,7 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
   }
 }
 
-std::shared_ptr<FieldPort> RecordBatchReader::GetArrowPort(const std::shared_ptr<arrow::Field> &field) {
+std::shared_ptr<FieldPort> RecordBatchReader::GetArrowPort(const std::shared_ptr<arrow::Field> &field) const {
   for (const auto &n : objects_) {
     auto ap = Cast<FieldPort>(n);
     if (ap) {
@@ -120,7 +103,7 @@ std::shared_ptr<FieldPort> RecordBatchReader::GetArrowPort(const std::shared_ptr
   throw std::runtime_error("Field " + field->name() + " did not generate an ArrowPort for Core " + name() + ".");
 }
 
-std::deque<std::shared_ptr<FieldPort>> RecordBatchReader::GetFieldPorts(const std::optional<FieldPort::Function> &function) {
+std::deque<std::shared_ptr<FieldPort>> RecordBatchReader::GetFieldPorts(const std::optional<FieldPort::Function> &function) const {
   std::deque<std::shared_ptr<FieldPort>> result;
   for (const auto &n : objects_) {
     auto ap = Cast<FieldPort>(n);

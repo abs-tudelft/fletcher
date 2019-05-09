@@ -18,7 +18,7 @@
 #include <memory>
 
 #include "cerata/graphs.h"
-#include "cerata/vhdl/transformation.h"
+#include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/architecture.h"
 
@@ -31,10 +31,10 @@ MultiBlock Design::Generate() {
   // in case multiple back ends are processing the graph. This currently modifies the original structure.
 
   // Sanitize component
-  Transformation::ResolvePortToPort(comp);
+  Resolve::ResolvePortToPort(comp);
 
   // Transform streams to make use of valid/ready
-  Transformation::ExpandStreams(comp);
+  Resolve::ExpandStreams(comp);
 
   // Place header
   if (!head.empty()) {

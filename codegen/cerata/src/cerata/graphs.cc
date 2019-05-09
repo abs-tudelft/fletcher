@@ -84,9 +84,8 @@ std::shared_ptr<NodeArray> Graph::GetArray(Node::NodeID node_id, const std::stri
   for (const auto &a : GetAll<NodeArray>()) {
     if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  LOG(ERROR, "NodeArray " + array_name + " does not exist on Graph " + this->name());
+  throw std::logic_error("NodeArray " + array_name + " does not exist on Graph " + this->name());
   // TODO(johanpel): use std::optional
-  return nullptr;
 }
 
 std::shared_ptr<Node> Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
@@ -96,9 +95,7 @@ std::shared_ptr<Node> Graph::GetNode(Node::NodeID node_id, const std::string &no
         return n;
       }
   }
-
-  LOG(ERROR, "Node " + node_name + " does not exist on Graph " + this->name());
-  return nullptr;
+  throw std::logic_error("Node " + node_name + " does not exist on Graph " + this->name());
 }
 
 Graph &Graph::AddChild(std::unique_ptr<Graph> child) {

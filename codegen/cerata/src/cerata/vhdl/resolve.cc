@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/vhdl/transformation.h"
+#include "cerata/vhdl/resolve.h"
 
 #include <memory>
 #include <deque>
@@ -27,7 +27,7 @@
 
 namespace cerata::vhdl {
 
-std::shared_ptr<Component> Transformation::ResolvePortToPort(std::shared_ptr<Component> comp) {
+std::shared_ptr<Component> Resolve::ResolvePortToPort(std::shared_ptr<Component> comp) {
   std::deque<Node *> resolved;
   LOG(DEBUG, "VHDL: Resolve port-to-port connections...");
   for (const auto &inst : comp->GetAllInstances()) {
@@ -112,14 +112,14 @@ static bool IsExpanded(const Type *t, const std::string &str = "") {
   return false;
 }
 
-static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
+static void ExpandMappers(Stream *stream_type) {
   // TODO(johanpel): Generalize this expansion functionality and add it to Cerata.
   // Before doing anything, obtain the original mappers of this stream type.
   auto mappers = stream_type->mappers();
 
   if (mappers.empty()) {
     // Stream type has no mappers, just expand it.
-    ExpandStream(Flatten(stream_type.get()));
+    ExpandStream(Flatten(stream_type));
   } else {
     LOG(DEBUG, "VHDL:     Stream type has " << mappers.size() << " mapper(s). Expand mappers...");
     // Iterate over all previously existing mappers.
@@ -134,7 +134,7 @@ static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
       // Get a copy of the old matrix.
       auto old_matrix = mapper->map_matrix();
       // Create a new mapper
-      auto new_mapper = TypeMapper::Make(stream_type.get(), mapper->b());
+      auto new_mapper = TypeMapper::Make(stream_type, mapper->b());
       // Get the properly sized matrix
       auto new_matrix = new_mapper->map_matrix();
       // Get the flattened type
@@ -196,9 +196,9 @@ static void ExpandMappers(const std::shared_ptr<Stream> &stream_type) {
   }
 }
 
-std::shared_ptr<Component> Transformation::ExpandStreams(std::shared_ptr<Component> comp) {
-  std::deque<std::shared_ptr<Type>> types;
-  GetAllObjectTypesRecursive(&types, comp);
+std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> comp) {
+  std::deque<Type *> types;
+  GetAllTypesRecursive(&types, comp);
 
   LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   for (const auto &t : types) {

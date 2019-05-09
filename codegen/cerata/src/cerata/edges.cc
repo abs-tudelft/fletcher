@@ -24,7 +24,7 @@
 
 namespace cerata {
 
-std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> src) {
+std::shared_ptr<Edge> Connect(const std::shared_ptr<Node>& dst, const std::shared_ptr<Node>& src) {
   // Check for potential errors
   if (src == nullptr) {
     LOG(ERROR, "Source node is null");
@@ -57,16 +57,6 @@ std::shared_ptr<Edge> Connect(std::shared_ptr<Node> dst, std::shared_ptr<Node> s
       }
     }
   }
-
-  // Defer to ArrayNodes if applicable
-
-  /*if (src->IsArray()) {
-    auto sa = *Cast<ArrayNode>(src);
-    return sa->Append(dst);
-  } else if (dst->IsArray()) {
-    auto da = *Cast<ArrayNode>(dst);
-    return da->Append(src);
-  }*/
 
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);

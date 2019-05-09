@@ -16,6 +16,7 @@
 #include <memory>
 
 #include "cerata/transform.h"
+#include "cerata/types.h"
 
 namespace cerata {
 
@@ -68,6 +69,30 @@ void GetAllObjectTypesRecursive(std::deque<std::shared_ptr<Type>> *types,
     if (o->IsArray()) {
       auto a = *Cast<NodeArray>(o);
       types->push_back(a->type());
+    }
+  }
+}
+
+void GetAllTypesRecursive(std::deque<Type *> *types,
+                          const std::shared_ptr<Component> &top_component) {
+  if (types == nullptr) {
+    throw std::runtime_error("Types deque is nullptr.");
+  }
+  std::deque<std::shared_ptr<Object>> objects;
+  GetAllObjectsRecursive(&objects, top_component);
+
+  for (const auto &o : objects) {
+    std::deque<FlatType> ft;
+    if (o->IsNode()) {
+      auto n = *Cast<Node>(o);
+      ft = Flatten(n->type().get());
+    } else if (o->IsArray()) {
+      auto a = *Cast<NodeArray>(o);
+      ft = Flatten(a->type().get());
+    }
+    for (const auto& f : ft) {
+      // Drop the const qualifier, because this function is probably used to transform the type.
+      types->push_back(const_cast<Type*>(f.type_));
     }
   }
 }

@@ -39,12 +39,12 @@ TEST(Bus, BusReadArbiter) {
 
 TEST(Bus, Artery) {
   // Create a bunch of read data ports
-  auto a = Port::Make("a", bus_read_data(intl<8>()));
-  auto b = Port::Make("b", bus_read_data(intl<8>()));
-  auto c = Port::Make("c", bus_read_data(intl<8>()));
-  auto d = Port::Make("d", bus_read_data(intl<32>()));
-  auto e = Port::Make("e", bus_read_data(intl<32>()));
-  auto f = Port::Make("f", bus_read_data(intl<128>()));
+  auto a = Port::Make("a", bus_read(intl<8>()));
+  auto b = Port::Make("b", bus_read(intl<8>()));
+  auto c = Port::Make("c", bus_read(intl<8>()));
+  auto d = Port::Make("d", bus_read(intl<32>()));
+  auto e = Port::Make("e", bus_read(intl<32>()));
+  auto f = Port::Make("f", bus_read(intl<128>()));
 
   // Create a component with the ports
   auto comp = Component::Make("comp", {a, b, c, d, e, f});

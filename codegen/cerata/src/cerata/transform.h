@@ -41,11 +41,19 @@ void GetAllObjectsRecursive(std::deque<std::shared_ptr<Object>> *objects,
                             const std::shared_ptr<Component> &top_component);
 
 /**
- * @brief Recursively add all types used in a component and its sub-components.
+ * @brief Recursively add all object types used in a component and its sub-components. Does not include subtypes.
  * @param types The deque types to append to.
  * @param graph The top-level component.
  */
 void GetAllObjectTypesRecursive(std::deque<std::shared_ptr<Type>> *types,
                                 const std::shared_ptr<Component> &top_component);
+
+/**
+ * @brief Recursively add all types used in a component and its sub-components, including subtypes.
+ * @param types The deque types to append to.
+ * @param graph The top-level component.
+ */
+void GetAllTypesRecursive(std::deque<Type *> *types,
+                          const std::shared_ptr<Component> &top_component);
 
 } // namespace cerata

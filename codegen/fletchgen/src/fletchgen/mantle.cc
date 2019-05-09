@@ -55,23 +55,16 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     }
   }
 
-  // Create and add the bus read arbiter
-  auto brai = Instance::Make(BusReadArbiter());
-  auto bra_inst = brai.get();
-  AddChild(std::move(brai));
+  std::deque<std::tuple<std::string, std::shared_ptr<BusChannel>>> channels;
 
-  // Connect all buses
-  for (const auto &r : rb_reader_instances_) {
-    // Connect all request channels
-    for (const auto& req : r->porta("bus_rreq")->nodes()) {
-      bra_inst->porta("bsv_rreq")->Append() <<= req;
-    }
-    for (const auto& dat : r->porta("bus_rdat")->nodes()) {
-      dat <<= bra_inst->porta("bsv_rdat")->Append();
+  // Obtain all bus channels
+  for (const auto &rbri : rb_reader_instances_) {
+    // Figure out what bus channels the component has
+    auto rbr = *Cast<RecordBatchReader>(rbri->component);
+    for (const auto &bc : rbr->bus_channels()) {
+      bc->name();
     }
   }
-
-  // arrays aan arrays, veel plezier morgen!
 
 }
 

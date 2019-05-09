@@ -236,8 +236,8 @@ std::shared_ptr<Component> GetExampleDesign() {
 
   // Construct two components with a port made from these types
   auto my_array_size = Parameter::Make("array_size", integer());
-  auto
-      my_comp = Component::Make("my_comp", {vec_width, PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
+  auto my_comp =
+      Component::Make("my_comp", {vec_width, PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
   auto my_other_comp = Component::Make("my_other_comp", {vec_width, Port::Make("my_port", my_type)});
 
   // Create a top level and add instances of each component
@@ -247,13 +247,9 @@ std::shared_ptr<Component> GetExampleDesign() {
   // Create a bunch of instances and connect to other component
   std::vector<Instance *> my_other_instances;
   for (int i = 0; i < 10; i++) {
-    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp));
+    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp, "my_inst_" + std::to_string(i)));
     my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
   }
-
-  // Throw the design at a VHDL backend with my_component as top-level
-  auto design = vhdl::Design(my_top);
-  std::cout << design.Generate().ToString();
 
   return my_top;
 }

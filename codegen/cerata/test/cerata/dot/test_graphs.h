@@ -32,4 +32,10 @@ TEST(Dot, Component) {
   std::cout << dot.GenFile(top, "graph.dot");
 }
 
+TEST(Example, DOT) {
+  auto top = GetExampleDesign();
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
 }  // namespace cerata
