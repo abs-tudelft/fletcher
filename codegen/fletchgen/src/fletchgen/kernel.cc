@@ -21,6 +21,7 @@
 #include "fletchgen/schema.h"
 #include "fletchgen/utils.h"
 #include "fletchgen/recordbatch.h"
+#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 
@@ -30,6 +31,10 @@ Kernel::Kernel(std::string name,
                const std::deque<std::shared_ptr<RecordBatchReader>>& readers,
                const std::deque<std::shared_ptr<RecordBatchReader>>& writers)
     : Component(std::move(name)) {
+  // Add MMIO
+  AddObject(MmioPort::Make(Port::Dir::IN));
+
+  // Add reader ports
   for (const auto &r : readers) {
     auto field_ports = r->GetFieldPorts();
     for (const auto &fp : field_ports) {

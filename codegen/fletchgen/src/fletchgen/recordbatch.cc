@@ -36,10 +36,8 @@ RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &flet
   // Get mode/direction
   auto mode = fletcher::getMode(as);
   // Add default port nodes
-  AddObject(Port::Make(bus_clk()));
-  AddObject(Port::Make(bus_reset()));
-  AddObject(Port::Make(acc_clk()));
-  AddObject(Port::Make(acc_reset()));
+  AddObject(Port::Make(bus_cr()));
+  AddObject(Port::Make(kernel_cr()));
   // Add and connect all array readers and resulting ports
   AddArrayReaders(as, mode);
 }
@@ -65,10 +63,8 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       // Set the configuration string for this field
       cfg_node <<= cerata::strl(GenerateConfigString(f));
       // Drive the clocks and resets
-      array_reader->port("acc_clk") <<= port("acc_clk");
-      array_reader->port("acc_reset") <<= port("acc_reset");
-      array_reader->port("bus_clk") <<= port("bus_clk");
-      array_reader->port("bus_reset") <<= port("bus_reset");
+      array_reader->port("kcd") <<= port("kcd");
+      array_reader->port("bcd") <<= port("bcd");
       // Drive the RecordBatch Arrow output port with the ArrayReader output port
       arrow_port <<= array_reader->port("out");
       // Drive the ArrayReader command port from the top-level command port
@@ -131,7 +127,7 @@ std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(std::shared_ptr<arrow::Field
 }
 
 std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(std::shared_ptr<arrow::Field> field, cerata::Term::Dir dir) {
-  return std::make_shared<FieldPort>("cmd_" + field->name(), COMMAND, field, cmd(ctrl_width(field)), dir);
+  return std::make_shared<FieldPort>(field->name() + "_cmd", COMMAND, field, cmd(ctrl_width(field)), dir);
 }
 
 std::shared_ptr<Node> FieldPort::data_width() {

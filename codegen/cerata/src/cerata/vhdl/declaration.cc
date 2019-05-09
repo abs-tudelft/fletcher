@@ -94,13 +94,11 @@ Block Decl::Generate(const std::shared_ptr<Port> &port, int depth) {
   Block ret(depth);
   // Filter out abstract types and flatten
   auto flat_types = FilterForVHDL(Flatten(port->type().get()));
-  // Sort by nesting level
-  std::sort(flat_types.begin(), flat_types.end());
-  //
+
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : ";
+    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
     if (ft.invert_) {
       l << ToString(Term::Invert(port->dir())) + " ";
     } else {
@@ -116,13 +114,11 @@ Block Decl::Generate(const std::shared_ptr<PortArray> &port, int depth) {
   Block ret(depth);
   // Flatten the type of this port
   auto flat_types = FilterForVHDL(Flatten(port->type().get()));
-  // Sort by nesting level
-  std::sort(flat_types.begin(), flat_types.end());
 
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port->name();
-    l << ft.name(port_name_prefix) << " : ";
+    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
     if (ft.invert_) {
       l << ToString(Term::Invert(port->dir())) + " ";
     } else {
@@ -138,13 +134,12 @@ Block Decl::Generate(const std::shared_ptr<Signal> &sig, int depth) {
   Block ret(depth);
   // Flatten the type of this port
   auto flat_types = FilterForVHDL(Flatten(sig->type().get()));
-  // Sort by nesting level
-  std::sort(flat_types.begin(), flat_types.end());
+
   // Generate signal decl for every flat type
   for (const auto &ft : flat_types) {
     Line l;
     auto sig_name_prefix = sig->name();
-    l << "signal " + ft.name(sig_name_prefix) << " : ";
+    l << "signal " + ft.name(NamePart(sig_name_prefix, true)) << " : ";
     l << Generate(ft.type_) + ";";
     ret << l;
   }

@@ -30,7 +30,7 @@ void DOTOutputGenerator::Generate() {
   cerata::dot::Grapher dot;
   for (const auto &g : graphs_) {
     if (g != nullptr) {
-      LOG(INFO, "Generating DOT output for Graph: " + g->name());
+      LOG(INFO, "DOT: Generating output for Graph: " + g->name());
       dot.GenFile(g, subdir() + "/" + g->name() + ".dot");
     }
   }

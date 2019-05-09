@@ -97,7 +97,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
     // Don't output anything for the abstract record type.
   } else {
     Line l;
-    l << p.flat_type_a(ia).name(lh_prefix);
+    l << p.flat_type_a(ia).name(NamePart(lh_prefix, true));
     if ((p.num_b() > 1) || a_is_array) {
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_a->ToString() + ")";
@@ -106,7 +106,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       }
     }
     l << " => ";
-    l << p.flat_type_b(ib).name(rh_prefix);
+    l << p.flat_type_b(ib).name(NamePart(rh_prefix, true));
     if ((p.num_a() > 1) || b_is_array) {
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_b->ToString() + ")";

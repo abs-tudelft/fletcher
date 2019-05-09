@@ -251,6 +251,9 @@ class Vector : public Type {
     return result;
   }
 
+  /// @brief Create a new Vector Type of some width.
+  static std::shared_ptr<Type> Make(unsigned int width);
+
   /// @brief Return a pointer to the node representing the width of this vector, if specified.
   std::optional<std::shared_ptr<Node>> width() const override { return width_; }
   /// @brief Determine if this Type is exactly equal to an other Type.
@@ -271,14 +274,21 @@ class RecField : public Named {
   static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert=false);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
-  // @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
-  bool invert() { return invert_; }
+  /// @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
+  bool invert() const { return invert_; }
+  /// @brief Return true if in name generation of this field name for flattened types a separator should be placed.
+  bool sep() const { return sep_; }
+  void NoSep() { sep_ = false; }
+  void UseSep() { sep_ = true; }
+  /// @brief Metadata for back-end implementations
+  std::unordered_map<std::string, std::string> meta;
  private:
-  // @brief The type of the field.
   std::shared_ptr<Type> type_;
-  // @brief Whether this individual field should be inverted w.r.t. the top level type on graph edges.
   bool invert_;
+  bool sep_;
 };
+
+std::shared_ptr<RecField> NoSep(std::shared_ptr<RecField> field);
 
 /// @brief A Record type containing zero or more RecordFields.
 class Record : public Type {

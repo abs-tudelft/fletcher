@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,20 +26,22 @@ std::string Identifier::ToString() const {
   std::string ret;
   for (const auto &p : parts_) {
     ret += p;
-    if (p != parts_.back()) {
-      ret += separator_;
+    if (separator_) {
+      if (p != parts_.back()) {
+        ret +=* separator_;
+      }
     }
   }
   return ret;
 }
 
-Identifier::Identifier(std::initializer_list<std::string> parts, char sep) : separator_(sep) {
+Identifier::Identifier(std::initializer_list<std::string> parts, std::optional<char> sep) : separator_(std::move(sep)) {
   for (const auto &p : parts) {
     parts_.push_back(p);
   }
 }
 
-Identifier::Identifier(std::deque<std::string> parts, char sep) : separator_(sep) {
+Identifier::Identifier(std::deque<std::string> parts, std::optional<char> sep) : separator_(std::move(sep)) {
   parts_ = std::move(parts);
 }
 

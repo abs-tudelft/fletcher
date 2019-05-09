@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 #include <deque>
@@ -30,9 +31,9 @@ class Identifier {
  public:
   Identifier() = default;
   /// @brief Construct an identifier from a bunch of strings.
-  Identifier(std::initializer_list<std::string> parts, char sep = '_');
+  Identifier(std::initializer_list<std::string> parts, std::optional<char> sep = '_');
   /// @brief Construct an identifier from a bunch of strings.
-  explicit Identifier(std::deque<std::string> parts, char sep = '_');
+  explicit Identifier(std::deque<std::string> parts, std::optional<char> sep = '_');
   /// @brief Append a part to the Identifier.
   Identifier &append(const std::string &part);
   /// @brief Append a part to the Identifier.
@@ -44,7 +45,7 @@ class Identifier {
   std::string ToString() const;
  private:
   /// @brief The separator character between different parts of the identifier.
-  char separator_ = '_';
+  std::optional<char> separator_ = '_';
   /// @brief The parts of the identifier.
   std::deque<std::string> parts_;
 };

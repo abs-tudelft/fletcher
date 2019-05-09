@@ -48,7 +48,7 @@ std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width,
   auto rreq = Stream::Make("rreq:str", rreq_record);
 
   auto rdata = RecField::Make(Vector::Make("data", data_width));
-  auto rlast = RecField::Make(last());
+  auto rlast = RecField::Make("last", last());
   auto rdat_record = Record::Make("rdat:rec", {rdata, rlast});
   auto rdat = Stream::Make("rdat:str", rdat_record);
 
@@ -68,7 +68,7 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
 
   auto wdata = RecField::Make(Vector::Make("data", data_width));
   auto wstrobe = RecField::Make(Vector::Make("strobe", data_width / intl<8>()));
-  auto wlast = RecField::Make("last", bit());
+  auto wlast = RecField::Make("last", last());
   auto wdat_record = Record::Make("wdat:rec", {wdata, wstrobe, wlast});
   auto wdat = Stream::Make("wdat:stm", wdat_record);
 
@@ -78,7 +78,7 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
   return w;
 }
 
-std::shared_ptr<Component> BusReadArbiter() {
+std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
   auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
   auto slaves_read_array = PortArray::Make("bsv", bus_read(), nslaves, Port::Dir::IN);
 
@@ -94,9 +94,8 @@ std::shared_ptr<Component> BusReadArbiter() {
                                      Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
                                      Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
                                      Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
-                                     Port::Make(bus_clk()),
-                                     Port::Make(bus_reset()),
-                                     Port::Make("mst", bus_read(), Port::Dir::OUT),
+                                     Port::Make(bus_cr()),
+                                     BusPort::Make("mst", BusPort::Function::READ, Port::Dir::OUT, spec),
                                      slaves_read_array,
                                     });
   ret->meta["primitive"] = "true";
@@ -119,8 +118,7 @@ std::shared_ptr<Component> BusReadSerializer() {
       Parameter::Make("SLV_DAT_SLICE_DEPTH", integer(), intl<2>()),
       Parameter::Make("MST_REQ_SLICE_DEPTH", integer(), intl<2>()),
       Parameter::Make("MST_DAT_SLICE_DEPTH", integer(), intl<2>()),
-      Port::Make(bus_clk()),
-      Port::Make(bus_reset()),
+      Port::Make(bus_cr()),
       Port::Make("mst", bus_read(aw, mlw, mdw), Port::Dir::OUT),
       Port::Make("slv", bus_read(aw, slw, sdw), Port::Dir::OUT),
   });
@@ -157,14 +155,28 @@ std::shared_ptr<Type> BusPort::fun2type(BusPort::Function fun, BusSpec spec) {
   }
 }
 
+std::shared_ptr<BusPort> BusPort::Make(std::string name, BusPort::Function fun, Port::Dir dir, BusSpec spec) {
+  return std::make_shared<BusPort>(fun, dir, spec, name);
+}
+
 std::shared_ptr<BusPort> BusPort::Make(BusPort::Function fun, Port::Dir dir, BusSpec spec) {
   return std::make_shared<BusPort>(fun, dir, spec);
 }
 
 std::shared_ptr<cerata::Object> BusPort::Copy() const {
-  auto result = Make(function_, dir_, spec_);
+  auto result = Make(name(), function_, dir_, spec_);
   result->SetType(type());
   return result;
+}
+
+std::string BusSpec::ToShortString() const {
+  std::stringstream str;
+  str << "A" << addr_width;
+  str << "L" << len_width;
+  str << "D" << data_width;
+  str << "S" << burst_step;
+  str << "M" << max_burst;
+  return str.str();
 }
 
 std::string BusSpec::ToString() const {
@@ -178,4 +190,5 @@ std::string BusSpec::ToString() const {
   str << "]";
   return str.str();
 }
+
 }  // namespace fletchgen

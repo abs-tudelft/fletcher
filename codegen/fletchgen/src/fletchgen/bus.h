@@ -52,6 +52,7 @@ struct BusSpec {
   size_t max_burst = 128;
 
   std::string ToString() const;
+  std::string ToShortString() const;
 };
 
 bool operator==(const BusSpec &lhs, const BusSpec &rhs);
@@ -65,9 +66,10 @@ struct BusPort : public Port {
 
   BusSpec spec_;
 
-  BusPort(Function fun, Port::Dir dir, BusSpec spec)
-      : Port(fun2name(fun), fun2type(fun, spec), dir), function_(fun), spec_(spec) {}
+  BusPort(Function fun, Port::Dir dir, BusSpec spec, const std::string &name = "")
+      : Port(name.empty() ? fun2name(fun) : name, fun2type(fun, spec), dir), function_(fun), spec_(spec) {}
 
+  static std::shared_ptr<BusPort> Make(std::string name, Function fun, Port::Dir dir, BusSpec spec);
   static std::shared_ptr<BusPort> Make(Function fun, Port::Dir dir, BusSpec spec);
 
   static std::string fun2name(Function fun);
@@ -78,7 +80,7 @@ struct BusPort : public Port {
 };
 
 std::shared_ptr<Component> BusReadSerializer();
-std::shared_ptr<Component> BusReadArbiter();
+std::shared_ptr<Component> BusReadArbiter(BusSpec spec = BusSpec());
 
 std::shared_ptr<Component> BusWriteSerializer();
 std::shared_ptr<Component> BusWriteArbiter();

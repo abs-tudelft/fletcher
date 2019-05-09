@@ -34,28 +34,30 @@ namespace cerata::vhdl {
 void VHDLOutputGenerator::Generate() {
   // Make sure the subdirectory exists.
   CreateDir(subdir());
-
+  size_t num_graphs = 0;
   for (const auto &g : graphs_) {
     if ((g != nullptr)) {
       if (g->IsComponent()) {
-        LOG(INFO, "Transforming Component " + g->name() + " to VHDL compatible version.");
+        LOG(INFO, "VHDL: Transforming Component " + g->name() + " to VHDL-compatible version.");
         auto vhdl_design = Design(*Cast<Component>(g), DEFAULT_LIBS);
 
-        LOG(INFO, "Generating VHDL sources for component " + g->name());
+        LOG(INFO, "VHDL: Generating sources for component " + g->name());
         auto vhdl_source = vhdl_design.Generate();
         vhdl_source.ToString();
         auto vhdl_path = subdir() + "/" + g->name() + ".vhd";
 
-        LOG(INFO, "Saving to: " + vhdl_path);
+        LOG(INFO, "VHDL: Saving to: " + vhdl_path);
         auto vhdl_file = std::ofstream(vhdl_path);
         vhdl_file << vhdl_source.ToString();
         vhdl_file.close();
 
+        num_graphs++;
       } else {
-        LOG(WARNING, "Graph " << g->name() << " is not a component. Skipping VHDL output generation.");
+        LOG(WARNING, "VHDL: Graph " << g->name() << " is not a component. Skipping output generation.");
       }
     }
   }
+  LOG(INFO, "VHDL: Generated output for " << num_graphs << " graphs.");
 }
 
 }  // namespace cerata::vhdl

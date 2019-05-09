@@ -90,10 +90,8 @@ std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
                                      Parameter::Make("CFG", string(), strl("\"\"")),
                                      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
                                      Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>()),
-                                     Port::Make(bus_clk()),
-                                     Port::Make(bus_reset()),
-                                     Port::Make(acc_clk()),
-                                     Port::Make(acc_reset()),
+                                     Port::Make(bus_cr()),
+                                     Port::Make(kernel_cr()),
                                      BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec()),
                                      Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
                                      Port::Make("unlock", unlock(tag_width), Port::Dir::OUT),
@@ -322,7 +320,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
                                     RecField::Make("data", element_type)}),
                                 "slave_stream", epc);
       type = Record::Make(name + "_rec", {
-          RecField::Make(length()),
+          RecField::Make("length", length()),
           RecField::Make(arrow_child->name(), slave)
       });
       break;

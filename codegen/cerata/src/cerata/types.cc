@@ -252,7 +252,7 @@ std::optional<std::shared_ptr<Node>> Bit::width() const {
 }
 
 RecField::RecField(std::string name, std::shared_ptr<Type> type, bool invert)
-    : Named(std::move(name)), type_(std::move(type)), invert_(invert) {}
+    : Named(std::move(name)), type_(std::move(type)), invert_(invert), sep_(true) {}
 
 std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type> type, bool invert) {
   return std::make_shared<RecField>(name, type, invert);
@@ -260,6 +260,11 @@ std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type>
 
 std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type, bool invert) {
   return std::make_shared<RecField>(type->name(), type, invert);
+}
+
+std::shared_ptr<RecField> NoSep(std::shared_ptr<RecField> field) {
+  field->NoSep();
+  return field;
 }
 
 std::shared_ptr<Record> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {
@@ -314,6 +319,10 @@ std::deque<std::shared_ptr<Node>> Vector::GetParameters() const {
   } else {
     return {};
   }
+}
+
+std::shared_ptr<Type> Vector::Make(unsigned int width) {
+  return Make("vec_" + std::to_string(width), Literal::Make(width));
 }
 
 bool Stream::IsEqual(const Type *other) const {

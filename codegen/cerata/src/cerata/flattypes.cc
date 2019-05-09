@@ -29,23 +29,35 @@
 
 namespace cerata {
 
-std::string FlatType::name(const std::string &root, const std::string &sep) const {
+std::string FlatType::name(const NamePart &root, const std::string &sep) const {
   std::stringstream ret;
-  ret << root;
-  for (const auto &p : name_parts_) {
-    ret << "_" + p;
+  if (root.sep && !name_parts_.empty()) {
+    ret << root.str + sep;
+  } else {
+    ret << root.str;
+  }
+  for (size_t p = 0; p < name_parts_.size(); p++) {
+    if ((p != name_parts_.size() - 1) && name_parts_[p].sep) {
+      ret << name_parts_[p].str + sep;
+    } else {
+      ret << name_parts_[p].str;
+    }
   }
   return ret.str();
 }
 
-FlatType::FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level, bool invert)
+FlatType::FlatType(const Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert)
     : type_(t), invert_(invert) {
   name_parts_ = std::move(prefix);
-  name_parts_.push_back(name);
+  name_parts_.emplace_back(name, true);
 }
 
 bool operator<(const FlatType &a, const FlatType &b) {
-  return a.nesting_level_ < b.nesting_level_;
+  if (a.nesting_level_ == b.nesting_level_) {
+    return a.name() < b.name();
+  } else {
+    return a.nesting_level_ < b.nesting_level_;
+  }
 }
 
 void FlattenRecord(std::deque<FlatType> *list,
@@ -53,7 +65,7 @@ void FlattenRecord(std::deque<FlatType> *list,
                    const std::optional<FlatType> &parent,
                    bool invert) {
   for (const auto &f : record->fields()) {
-    Flatten(list, f->type().get(), parent, f->name(), invert != f->invert());
+    Flatten(list, f->type().get(), parent, f->name(), invert != f->invert(), f->sep());
   }
 }
 
@@ -68,7 +80,8 @@ void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
              const std::string &name,
-             bool invert) {
+             bool invert,
+             bool sep) {
   FlatType result;
   result.invert_ = invert;
   if (parent) {
@@ -77,7 +90,7 @@ void Flatten(std::deque<FlatType> *list,
   }
   result.type_ = type;
   if (!name.empty()) {
-    result.name_parts_.push_back(name);
+    result.name_parts_.emplace_back(name, sep);
   }
   list->push_back(result);
 
@@ -100,7 +113,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
   std::stringstream ret;
   for (size_t i = 0; i < flat_type_list.size(); i++) {
     const auto &ft = flat_type_list[i];
-    auto name = ft.name(ft.nesting_level_ == 0 ? "(root)" : "");
+    auto name = ft.name(ft.nesting_level_ == 0 ? NamePart("(root)") : NamePart());
     ret << std::setw(3) << std::right << i << " :"
         << std::setw(32) << std::left
         << std::string(static_cast<unsigned long>(2 * ft.nesting_level_), ' ') + name << " | "

@@ -28,6 +28,7 @@ include_directories(../cerata/src)
 set(HEADERS
         src/fletchgen/schema.h
         src/fletchgen/bus.h
+        src/fletchgen/mmio.h
         src/fletchgen/array.h
         src/fletchgen/basic_types.h
         src/fletchgen/mantle.h
@@ -44,6 +45,7 @@ set(HEADERS
 set(SOURCES
         src/fletchgen/schema.cc
         src/fletchgen/bus.cc
+        src/fletchgen/mmio.cc
         src/fletchgen/array.cc
         src/fletchgen/basic_types.cc
         src/fletchgen/mantle.cc

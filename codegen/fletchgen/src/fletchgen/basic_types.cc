@@ -83,46 +83,40 @@ PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>())
 PARAM_FACTORY(index_width, integer(), intl<32>())
 
 // Create basic clock domains
-std::shared_ptr<ClockDomain> acc_domain() {
-  static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
+std::shared_ptr<ClockDomain> kernel_domain() {
+  static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("kcd");
   return result;
 }
 
 std::shared_ptr<ClockDomain> bus_domain() {
-  static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("acc");
+  static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("bcd");
   return result;
 }
 
 // Create basic clocks & resets
-std::shared_ptr<Type> acc_clk() {
-  static std::shared_ptr<Type> result = std::make_shared<Clock>("acc_clk", acc_domain());
+std::shared_ptr<Type> kernel_cr() {
+  static std::shared_ptr<Type> result = Record::Make("kcd", {
+      RecField::Make("clk", std::make_shared<Clock>("kcd_clk", kernel_domain())),
+      RecField::Make("reset", std::make_shared<Reset>("kcd_reset", kernel_domain()))});
   return result;
 }
 
-std::shared_ptr<Type> acc_reset() {
-  static std::shared_ptr<Type> result = std::make_shared<Reset>("acc_reset", acc_domain());
-  return result;
-}
-
-std::shared_ptr<Type> bus_clk() {
-  static std::shared_ptr<Type> result = std::make_shared<Clock>("bus_clk", acc_domain());
-  return result;
-}
-
-std::shared_ptr<Type> bus_reset() {
-  static std::shared_ptr<Type> result = std::make_shared<Reset>("bus_reset", acc_domain());
+std::shared_ptr<Type> bus_cr() {
+  static std::shared_ptr<Type> result = Record::Make("bcd", {
+      RecField::Make("clk", std::make_shared<Clock>("bcd_clk", bus_domain())),
+      RecField::Make("reset", std::make_shared<Reset>("bcd_reset", bus_domain()))});
   return result;
 }
 
 // Data channel
-std::shared_ptr<Type> data(const std::shared_ptr<Node>& width) {
+std::shared_ptr<Type> data(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("data", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta["array_data"] = "true";
   return result;
 }
 
-std::shared_ptr<Type> count(const std::shared_ptr<Node>& width) {
+std::shared_ptr<Type> count(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("count", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta["array_data"] = "true";

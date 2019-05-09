@@ -25,11 +25,18 @@
 #include "fletchgen/array.h"
 #include "fletchgen/schema.h"
 #include "fletchgen/bus.h"
+#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 
 Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
+
+  // Add default ports
+  AddObject(Port::Make(bus_cr()));
+  AddObject(Port::Make(kernel_cr()));
+  AddObject(Port::Make(mmio()));
+
   // Create and add every RecordBatchReader/Writer
   for (const auto &fs : schema_set_->read_schemas) {
     auto rbr = RecordBatchReader::Make(fs);
@@ -84,6 +91,10 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     arbiter->par(bus_data_width()->name()) <<= Literal::Make(spec.data_width);
     arbiter->par(bus_len_width()->name()) <<= Literal::Make(spec.len_width);
     arbiters_[spec] = arbiter;
+    auto master = *Cast<BusPort>(arbiter->port("mst")->Copy());
+    master->SetName(spec.ToShortString());
+    master <<= arbiter->port("mst");
+    AddObject(master);
   }
 
   // Connect bus ports to the arbiters
@@ -91,7 +102,6 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     auto arb = arbiters_.at(bp->spec_);
     arb->porta("bsv")->Append() <<= bp;
   }
-
 }
 
 std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set) {
@@ -99,7 +109,7 @@ std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<Sch
 }
 
 std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_set) {
-  return std::make_shared<Mantle>(schema_set->name() + "_mantle", schema_set);
+  return std::make_shared<Mantle>(schema_set->name() + "_Mantle", schema_set);
 }
 
 std::deque<std::shared_ptr<RecordBatchReader>> Mantle::reader_components() {

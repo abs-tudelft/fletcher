@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,22 +34,29 @@ class Record;
 class Stream;
 class Node;
 
+struct NamePart {
+  NamePart()=default;
+  explicit NamePart(std::string part, bool append_sep = true) : str(std::move(part)), sep(append_sep) {}
+  std::string str = "";
+  bool sep = false;
+};
+
 /**
  * @brief A flattened type.
  */
 struct FlatType {
   FlatType() = default;
-  FlatType(const Type *t, std::deque<std::string> prefix, const std::string &name, int level, bool invert);
+  FlatType(const Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
   /// @brief A pointer to the original type.
   const Type *type_;
   /// @brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
   /// @brief Name parts of this flattened type.
-  std::deque<std::string> name_parts_;
+  std::deque<NamePart> name_parts_;
   /// @brief Whether to invert this flattened type if it would be on a terminator node.
   bool invert_ = false;
   /// @brief Return the name of this flattened type, constructed from the name parts.
-  std::string name(const std::string &root = "", const std::string &sep = ":") const;
+  std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
 };
 
 bool operator<(const FlatType &a, const FlatType &b);
@@ -71,7 +80,8 @@ void Flatten(std::deque<FlatType> *list,
              const Type *type,
              const std::optional<FlatType> &parent,
              const std::string &name,
-             bool invert);
+             bool invert,
+             bool sep=true);
 
 /// @brief Flatten and return a list of FlatTypes.
 std::deque<FlatType> Flatten(const Type *type);
