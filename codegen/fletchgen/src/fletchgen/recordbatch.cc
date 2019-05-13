@@ -52,8 +52,11 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       auto arrow_port = FieldPort::MakeArrowPort(f, mode, true);
       AddObject(arrow_port);
       // Add a command port for the ArrayReader
-      auto command_port = FieldPort::MakeCommandPort(f, Port::IN);
+      auto command_port = FieldPort::MakeCommandPort(f);
       AddObject(command_port);
+      // Add an unlock port for the ArrayReader
+      auto unlock_port = FieldPort::MakeUnlockPort(f);
+      AddObject(unlock_port);
       // Instantiate an ArrayReader
       auto array_reader = AddInstanceOf(
           ArrayReader(arrow_port->data_width(), ctrl_width(f)),
@@ -69,6 +72,8 @@ void RecordBatchReader::AddArrayReaders(const std::shared_ptr<arrow::Schema> &as
       arrow_port <<= array_reader->port("out");
       // Drive the ArrayReader command port from the top-level command port
       array_reader->port("cmd") <<= command_port;
+      // Drive the unlock port with the ArrayReader
+      unlock_port <<= array_reader->port("unl");
       // Copy over the ArrayReader's bus channels
       auto bus = *Cast<BusPort>(array_reader->port("bus")->Copy());
       // Give the new bus port a unique name
@@ -126,8 +131,12 @@ std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(std::shared_ptr<arrow::Field
   return std::make_shared<FieldPort>(field->name(), ARROW, field, GetStreamType(field, mode), dir);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(std::shared_ptr<arrow::Field> field, cerata::Term::Dir dir) {
-  return std::make_shared<FieldPort>(field->name() + "_cmd", COMMAND, field, cmd(ctrl_width(field)), dir);
+std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(std::shared_ptr<arrow::Field> field) {
+  return std::make_shared<FieldPort>(field->name() + "_cmd", COMMAND, field, cmd(ctrl_width(field), tag_width(field)), Dir::IN);
+}
+
+std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(std::shared_ptr<arrow::Field> field) {
+  return std::make_shared<FieldPort>(field->name() + "_unl", UNLOCK, field, unlock(tag_width(field)), Dir::OUT);
 }
 
 std::shared_ptr<Node> FieldPort::data_width() {

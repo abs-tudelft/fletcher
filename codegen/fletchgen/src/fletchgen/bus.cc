@@ -80,7 +80,11 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
 
 std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
   auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
-  auto slaves_read_array = PortArray::Make("bsv", bus_read(), nslaves, Port::Dir::IN);
+  auto slaves_read_array = PortArray::Make("bsv",
+                                           BusPort::Make("bsv_base", BusPort::Function::READ, Port::Dir::IN, spec),
+                                           nslaves);
+  auto mst = BusPort::Make("mst", BusPort::Function::READ, Port::Dir::OUT, spec);
+  mst->SetType(slaves_read_array->base()->type());
 
   static auto ret = Component::Make("BusReadArbiterVec",
                                     {bus_addr_width(),
@@ -95,7 +99,7 @@ std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
                                      Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
                                      Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
                                      Port::Make(bus_cr()),
-                                     BusPort::Make("mst", BusPort::Function::READ, Port::Dir::OUT, spec),
+                                     mst,
                                      slaves_read_array,
                                     });
   ret->meta["primitive"] = "true";

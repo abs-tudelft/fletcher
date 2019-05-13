@@ -20,19 +20,23 @@
 
 namespace cerata {
 
-void GetAllComponentsRecursive(std::deque<std::shared_ptr<Component>> *components,
-                               const std::shared_ptr<Component> &top_component) {
-  if (components == nullptr) {
+void GetAllGraphsRecursive(std::deque<Graph *> *graphs,
+                           const std::shared_ptr<Graph> &top_graph) {
+  if (graphs == nullptr) {
     throw std::runtime_error("Cannot append to nullptr deque of graphs.");
   }
   // If the top_graph is a Component it can have Instances, apply this function recursively to the components of the
   // instances.
-  auto comp = Cast<Component>(top_component);
+  auto comp = Cast<Component>(top_graph);
   if (comp) {
+    // Insert all instances
     auto instances = (*comp)->GetAllInstances();
+    graphs->insert(graphs->end(), instances.begin(), instances.end());
+
+    // Iterate over all instance components
     for (const auto &inst : instances) {
-      components->push_back(inst->component);
-      GetAllComponentsRecursive(components, inst->component);
+      graphs->push_back(inst->component.get());
+      GetAllGraphsRecursive(graphs, inst->component);
     }
   }
 }
@@ -43,12 +47,12 @@ void GetAllObjectsRecursive(std::deque<std::shared_ptr<Object>> *objects,
     throw std::runtime_error("Objects deque is nullptr.");
   }
   // First obtain all components.
-  std::deque<std::shared_ptr<Component>> components = {top_component};
-  GetAllComponentsRecursive(&components, top_component);
+  std::deque<Graph *> graphs = {top_component.get()};
+  GetAllGraphsRecursive(&graphs, top_component);
 
   // Copy all pointers to the objects
-  for (const auto &comp : components) {
-    auto comp_objs = comp->objects();
+  for (const auto &graph : graphs) {
+    auto comp_objs = graph->objects();
     objects->insert(objects->end(), comp_objs.begin(), comp_objs.end());
   }
 }
@@ -90,11 +94,15 @@ void GetAllTypesRecursive(std::deque<Type *> *types,
       auto a = *Cast<NodeArray>(o);
       ft = Flatten(a->type().get());
     }
-    for (const auto& f : ft) {
+    for (const auto &f : ft) {
       // Drop the const qualifier, because this function is probably used to transform the type.
-      types->push_back(const_cast<Type*>(f.type_));
+      auto t = const_cast<Type *>(f.type_);
+      types->push_back(t);
     }
   }
+  // Filter out duplicates.
+  auto i = std::unique(types->begin(), types->end());
+  types->resize(std::distance(types->begin(), i));
 }
 
 } // namespace cerata

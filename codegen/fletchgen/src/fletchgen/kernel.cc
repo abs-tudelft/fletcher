@@ -31,6 +31,13 @@ Kernel::Kernel(std::string name,
                const std::deque<std::shared_ptr<RecordBatchReader>>& readers,
                const std::deque<std::shared_ptr<RecordBatchReader>>& writers)
     : Component(std::move(name)) {
+
+  // Add address width
+  AddObject(bus_addr_width());
+
+  // Add CR
+  AddObject(Port::Make(kernel_cr()));
+
   // Add MMIO
   AddObject(MmioPort::Make(Port::Dir::IN));
 

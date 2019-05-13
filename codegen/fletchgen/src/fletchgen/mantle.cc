@@ -33,21 +33,29 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
   // Add default ports
-  AddObject(Port::Make(bus_cr()));
-  AddObject(Port::Make(kernel_cr()));
-  AddObject(Port::Make(mmio()));
+  auto bcr = Port::Make(bus_cr());
+  auto kcr = Port::Make(kernel_cr());
+  auto regs = MmioPort::Make(Port::Dir::IN);
+  AddObject(bcr);
+  AddObject(kcr);
+  AddObject(regs);
+
+  AddObject(bus_addr_width());
 
   // Create and add every RecordBatchReader/Writer
   for (const auto &fs : schema_set_->read_schemas) {
     auto rbr = RecordBatchReader::Make(fs);
-    auto rbr_inst = Instance::Make(rbr);
-    rb_reader_instances_.push_back(rbr_inst.get());
-    AddChild(std::move(rbr_inst));
+    auto rbr_inst = AddInstanceOf(rbr);
+    rb_reader_instances_.push_back(rbr_inst);
+    rbr_inst->port("kcd") <<= kcr;
+    rbr_inst->port("bcd") <<= bcr;
   }
 
   // Create and add the kernel
   kernel_ = Kernel::Make(schema_set_->name(), reader_components());
   kernel_inst_ = AddInstanceOf(kernel_);
+  kernel_inst_->port("kcd") <<= kcr;
+  kernel_inst_->port("mmio") <<= regs;
 
   // Connect all Arrow field derived
   for (const auto &r : rb_reader_instances_) {
@@ -57,6 +65,8 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
         kernel_inst_->port(fp->name()) <<= fp;
       } else if (fp->function_ == FieldPort::Function::COMMAND) {
         fp <<= kernel_inst_->port(fp->name());
+      } else if (fp->function_ == FieldPort::Function::UNLOCK) {
+        kernel_inst_->port(fp->name()) <<= fp;
       }
     }
   }
@@ -66,40 +76,42 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   // For all the bus interfaces, figure out which unique bus specifications there are.
   for (const auto &rbri : rb_reader_instances_) {
-    // Figure out what bus channels the component has
-    auto rbr = *Cast<RecordBatchReader>(rbri->component);
-    for (const auto &b : rbr->bus_ports()) {
-      bool add_spec = true;
-      for (const auto &spec : bus_specs) {
-        if (spec == b->spec_) {
-          add_spec = false;
-          break;
-        }
-      }
-      if (add_spec) {
-        bus_specs.push_back(b->spec_);
-      }
+    auto all_bus_ports = rbri->GetAll<BusPort>();
+    for (const auto &b : all_bus_ports) {
+      bus_specs.push_back(b->spec_);
       bus_ports.push_back(b);
     }
+    // Leave only unique bus specs
+    auto last = std::unique(bus_specs.begin(), bus_specs.end());
+    bus_specs.erase(last, bus_specs.end());
   }
 
   // Generate a BusArbiterVec for every unique bus specification
   for (const auto &spec : bus_specs) {
     LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
-    auto arbiter = AddInstanceOf(BusReadArbiter());
+    auto arbiter = AddInstanceOf(BusReadArbiter(spec));
     arbiter->par(bus_addr_width()->name()) <<= Literal::Make(spec.addr_width);
     arbiter->par(bus_data_width()->name()) <<= Literal::Make(spec.data_width);
     arbiter->par(bus_len_width()->name()) <<= Literal::Make(spec.len_width);
     arbiters_[spec] = arbiter;
+    // Copy the master side of the bus arbiter
     auto master = *Cast<BusPort>(arbiter->port("mst")->Copy());
-    master->SetName(spec.ToShortString());
+    // TODO(johanpel): actually support multiple bus specs
+    //master->SetName(spec.ToShortString());
+    // Connect the ports
     master <<= arbiter->port("mst");
     AddObject(master);
+    arbiter->port("bcd") <<= bcr;
   }
 
   // Connect bus ports to the arbiters
   for (const auto &bp : bus_ports) {
+    // Get the arbiter port
     auto arb = arbiters_.at(bp->spec_);
+    auto arb_port = arb->porta("bsv");
+    // Generate a mapper. TODO(johanpel): make sure bus ports with same spec can map automatically
+    auto mapper = TypeMapper::MakeImplicit(bp->type().get(), arb_port->type().get());
+    bp->type()->AddMapper(mapper);
     arb->porta("bsv")->Append() <<= bp;
   }
 }

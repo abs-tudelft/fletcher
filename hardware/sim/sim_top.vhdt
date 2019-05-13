@@ -24,9 +24,6 @@ entity sim_top is
   generic (
     -- Accelerator properties
     INDEX_WIDTH                 : natural := 32;
-    NUM_ARROW_BUFFERS           : natural := ${NUM_ARROW_BUFFERS};
-    NUM_USER_REGS               : natural := ${NUM_USER_REGS};
-    NUM_REGS                    : natural := ${NUM_REGS};
     REG_WIDTH                   : natural := 32;
     TAG_WIDTH                   : natural := 1;
 
@@ -65,10 +62,27 @@ architecture Behavorial of sim_top is
       TAG_WIDTH                 : natural
     );
     port(
-      acc_clk                   : in std_logic;
-      acc_reset                 : in std_logic;
-      bus_clk                   : in std_logic;
-      bus_reset                 : in std_logic;
+      bcd_clk                   : in std_logic;
+      bcd_reset                 : in std_logic;
+      kcd_clk                   : in std_logic;
+      kcd_reset                 : in std_logic;
+      mmio_awvalid              : in  std_logic;
+      mmio_awready              : out std_logic;
+      mmio_awaddr               : in  std_logic_vector(31 downto 0);
+      mmio_wvalid               : in  std_logic;
+      mmio_wready               : out std_logic;
+      mmio_wdata                : in  std_logic_vector(31 downto 0);
+      mmio_wstrb                : in  std_logic_vector(3 downto 0);
+      mmio_bvalid               : in  std_logic;
+      mmio_bready               : out std_logic;
+      mmio_bresp                : in  std_logic_vector(1 downto 0);
+      mmio_arvalid              : in  std_logic;
+      mmio_arready              : out std_logic;
+      mmio_araddr               : in  std_logic_vector(31 downto 0);
+      mmio_ardata               : in  std_logic_vector(31 downto 0);
+      mmio_rvalid               : in  std_logic;
+      mmio_rready               : out std_logic;
+      mmio_rresp                : in  std_logic_vector(1 downto 0);
       mst_rreq_valid            : out std_logic;
       mst_rreq_ready            : in std_logic;
       mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -76,19 +90,16 @@ architecture Behavorial of sim_top is
       mst_rdat_valid            : in std_logic;
       mst_rdat_ready            : out std_logic;
       mst_rdat_data             : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_rdat_last             : in std_logic;
-      mst_wreq_valid            : out std_logic;
-      mst_wreq_ready            : in std_logic;
-      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_wdat_valid            : out std_logic;
-      mst_wdat_ready            : in std_logic;
-      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      mst_wdat_last             : out std_logic;
-      regs_in                   : in std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-      regs_out                  : out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-      regs_out_en               : out std_logic_vector(NUM_REGS-1 downto 0)
+      mst_rdat_last             : in std_logic
+      --mst_wreq_valid            : out std_logic;
+      --mst_wreq_ready            : in std_logic;
+      --mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      --mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      --mst_wdat_valid            : out std_logic;
+      --mst_wdat_ready            : in std_logic;
+      --mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      --mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      --mst_wdat_last             : out std_logic
     );
   end component;
   -----------------------------------------------------------------------------
@@ -109,7 +120,27 @@ architecture Behavorial of sim_top is
   -- Fletcher bus signals
   signal bus_clk                : std_logic;
   signal bus_reset              : std_logic;
-  
+
+  -- MMIO signals
+  signal mmio_awvalid           : std_logic;
+  signal mmio_awready           : std_logic;
+  signal mmio_awaddr            : std_logic_vector(31 downto 0);
+  signal mmio_wvalid            : std_logic;
+  signal mmio_wready            : std_logic;
+  signal mmio_wdata             : std_logic_vector(31 downto 0);
+  signal mmio_wstrb             : std_logic_vector(3 downto 0);
+  signal mmio_bvalid            : std_logic;
+  signal mmio_bready            : std_logic;
+  signal mmio_bresp             : std_logic_vector(1 downto 0);
+  signal mmio_arvalid           : std_logic;
+  signal mmio_arready           : std_logic;
+  signal mmio_araddr            : std_logic_vector(31 downto 0);
+  signal mmio_ardata            : std_logic_vector(31 downto 0);
+  signal mmio_rvalid            : std_logic;
+  signal mmio_rready            : std_logic;
+  signal mmio_rresp             : std_logic_vector(1 downto 0);
+
+  -- Memory interface signals
   signal bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal bus_rreq_valid         : std_logic;
@@ -128,12 +159,6 @@ architecture Behavorial of sim_top is
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
 
-  -- MMIO registers
-  signal regs_in                : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-  signal regs                   : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-  signal regs_out               : std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0);
-  signal regs_out_en            : std_logic_vector(NUM_REGS-1 downto 0);
-  
   -- Write to MMIO register by index
   procedure mmio_write(idx  : in  natural;
                        data : in  std_logic_vector(REG_WIDTH-1 downto 0);
@@ -141,7 +166,7 @@ architecture Behavorial of sim_top is
   is begin
     regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH) <= data;
   end mmio_write;
-  
+
   -- Procedure to easily write to a user register
   procedure uc_reg_write(idx  : in  natural;
                          data : in  std_logic_vector(REG_WIDTH-1 downto 0);
@@ -149,15 +174,15 @@ architecture Behavorial of sim_top is
   is begin
     mmio_write(4+idx, data, regs);
   end uc_reg_write;
-  
+
   -- Read from MMIO register by index
   procedure mmio_read(idx  : in  natural;
                       data : out std_logic_vector(REG_WIDTH-1 downto 0);
                       signal regs : in  std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0))
   is begin
     data := regs((idx+1)*REG_WIDTH-1 downto idx*REG_WIDTH);
-  end mmio_read;  
-  
+  end mmio_read;
+
   -- Procedure to easily read from a user register
   procedure uc_reg_read(idx  : in  natural;
                         data : out std_logic_vector(REG_WIDTH-1 downto 0);
@@ -165,22 +190,22 @@ architecture Behavorial of sim_top is
   is begin
     mmio_read(4+idx, data, regs);
   end uc_reg_read;
-  
-  procedure uc_start(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
-  begin 
-    mmio_write(REG_CONTROL, X"00000001", regs); 
+
+  procedure uc_start(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is
+  begin
+    mmio_write(REG_CONTROL, X"00000001", regs);
   end uc_start;
-  
+
   procedure uc_stop (signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is
-  begin 
-    mmio_write(REG_CONTROL, X"00000002", regs); 
+  begin
+    mmio_write(REG_CONTROL, X"00000002", regs);
   end uc_stop;
-  
-  procedure uc_reset(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is 
-  begin 
-    mmio_write(REG_CONTROL, X"00000004", regs); 
+
+  procedure uc_reset(signal regs: out std_logic_vector(NUM_REGS*REG_WIDTH-1 downto 0)) is
+  begin
+    mmio_write(REG_CONTROL, X"00000004", regs);
   end uc_reset;
-  
+
 begin
 
   -- Typical stimuli process:
@@ -188,51 +213,51 @@ begin
     variable read_data : std_logic_vector(REG_WIDTH-1 downto 0);
   begin
     wait until acc_reset = '1' and bus_reset = '1';
-    
+
     -- 1. Reset the user core
     uc_reset(regs_in);
     wait until rising_edge(acc_clk);
-    
-    
+
+
     -- 2. Write addresses of the arrow buffers in the SREC file.
 ${SREC_BUFFER_ADDRESSES}
-   
+
     -- 3. Writes any user core registers.
     --
     -- Here you can write, for example, the first and last index
-    -- 
+    --
     -- Example:
     -- First index in user reg 0
     -- uc_reg_write(0, X"00000000"); wait until rising_edge(acc_clk);
     -- Last index in user reg 0
     -- uc_reg_write(1, X"00000010"); wait until rising_edge(acc_clk);
-    
-    -- 4. Start the user core.    
+
+    -- 4. Start the user core.
     uc_start(regs_in);
     wait until rising_edge(acc_clk);
-    
+
     -- 5. Poll for completion
     loop
       wait until rising_edge(acc_clk);
-      
+
       -- Read from the status register.
       mmio_read(REG_STATUS, read_data, regs);
-      
+
       -- Stop polling when done bit is asserted.
       exit when read_data(2) = '1';
     end loop;
-    
+
     -- 6. Read return register
     mmio_read(REG_RETURN0, read_data, regs);
     report "Return register 0: " & integer'image(to_integer(unsigned(read_data)));
-    
+
     mmio_read(REG_RETURN0, read_data, regs);
     report "Return register 1: " & integer'image(to_integer(unsigned(read_data)));
-    
+
     -- 7. Finish and stop simulation
     report "Stimuli done.";
     clock_stop <= true;
-    
+
     wait;
   end process;
 
@@ -260,7 +285,7 @@ ${SREC_BUFFER_ADDRESSES}
     bus_reset <= '0';
     wait;
   end process;
-  
+
   regs_out_proc: process(acc_clk) is
   begin
     if rising_edge(acc_clk) then
@@ -271,7 +296,7 @@ ${SREC_BUFFER_ADDRESSES}
       end loop;
     end if;
   end process;
-  
+
   rmem_inst: BusReadSlaveMock
   generic map (
     BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
@@ -294,7 +319,7 @@ ${SREC_BUFFER_ADDRESSES}
     rdat_data                   => bus_rdat_data,
     rdat_last                   => bus_rdat_last
   );
-  
+
   wmem_inst: BusWriteSlaveMock
   generic map (
     BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
@@ -340,10 +365,27 @@ ${SREC_BUFFER_ADDRESSES}
       TAG_WIDTH                 => TAG_WIDTH
     )
     port map (
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
+      kcd_clk                   => acc_clk,
+      kcd_reset                 => acc_reset,
+      bcd_clk                   => bus_clk,
+      bcd_reset                 => bus_reset,
+      mmio_awvalid              => mmio_awvalid,
+      mmio_awready              => mmio_awready,
+      mmio_awaddr               => mmio_awaddr,
+      mmio_wvalid               => mmio_wvalid,
+      mmio_wready               => mmio_wready,
+      mmio_wdata                => mmio_wdata,
+      mmio_wstrb                => mmio_wstrb,
+      mmio_bvalid               => mmio_bvalid,
+      mmio_bready               => mmio_bready,
+      mmio_bresp                => mmio_bresp,
+      mmio_arvalid              => mmio_arvalid,
+      mmio_arready              => mmio_arready,
+      mmio_araddr               => mmio_araddr,
+      mmio_ardata               => mmio_ardata,
+      mmio_rvalid               => mmio_rvalid,
+      mmio_rready               => mmio_rready,
+      mmio_rresp                => mmio_rresp,
       mst_rreq_valid            => bus_rreq_valid,
       mst_rreq_ready            => bus_rreq_ready,
       mst_rreq_addr             => bus_rreq_addr,
@@ -351,19 +393,16 @@ ${SREC_BUFFER_ADDRESSES}
       mst_rdat_valid            => bus_rdat_valid,
       mst_rdat_ready            => bus_rdat_ready,
       mst_rdat_data             => bus_rdat_data,
-      mst_rdat_last             => bus_rdat_last,
-      mst_wreq_valid            => bus_wreq_valid,
-      mst_wreq_ready            => bus_wreq_ready,
-      mst_wreq_addr             => bus_wreq_addr,
-      mst_wreq_len              => bus_wreq_len,
-      mst_wdat_valid            => bus_wdat_valid,
-      mst_wdat_ready            => bus_wdat_ready,
-      mst_wdat_data             => bus_wdat_data,
-      mst_wdat_strobe           => bus_wdat_strobe,
-      mst_wdat_last             => bus_wdat_last,
-      regs_in                   => regs_in,
-      regs_out                  => regs_out,
-      regs_out_en               => regs_out_en
+      mst_rdat_last             => bus_rdat_last
+      --mst_wreq_valid            => bus_wreq_valid,
+      --mst_wreq_ready            => bus_wreq_ready,
+      --mst_wreq_addr             => bus_wreq_addr,
+      --mst_wreq_len              => bus_wreq_len,
+      --mst_wdat_valid            => bus_wdat_valid,
+      --mst_wdat_ready            => bus_wdat_ready,
+      --mst_wdat_data             => bus_wdat_data,
+      --mst_wdat_strobe           => bus_wdat_strobe,
+      --mst_wdat_last             => bus_wdat_last
     );
 
 end architecture;

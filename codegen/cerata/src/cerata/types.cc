@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,11 +101,11 @@ void Type::AddMapper(const std::shared_ptr<TypeMapper>& mapper) {
   }
 }
 
-std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const std::shared_ptr<Type> &other) const {
+std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const std::shared_ptr<Type> &other) {
   return GetMapper(other.get());
 }
 
-std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) const {
+std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other) {
   // Search for an explicit type mapper.
   for (const auto &m : mappers_) {
     if (m->CanConvert(this, other)) {
@@ -111,7 +113,7 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) co
     }
   }
   // Implicit type mappers maybe be generated in two cases; if it's exactly the same type or if its an equal type.
-  // TODO(johanpel): clarify previous statement
+  // TODO(johanpel): clarify previous comment
   if (other == this) {
     // Generate a type mapper to itself using the TypeMapper constructor.
     return TypeMapper::Make(this);
@@ -122,6 +124,14 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const Type *other) co
   }
   // There is no mapper
   return {};
+}
+
+void Type::RemoveMappersTo(Type *other) {
+  for (auto m = mappers_.begin(); m < mappers_.end(); m++) {
+    if ((*m)->CanConvert(this, other)) {
+      mappers_.erase(m);
+    }
+  }
 }
 
 bool Type::IsEqual(const Type *other) const {
@@ -334,8 +344,14 @@ bool Stream::IsEqual(const Type *other) const {
 }
 
 void Stream::SetElementType(std::shared_ptr<Type> type) {
+  // Invalidate mappers that point to this type on the other side
+  for (auto& mapper : mappers_) {
+    mapper->b()->RemoveMappersTo(this);
+  }
+  // Invalidate all mappers from this type
   mappers_ = {};
-  element_type_ = type;
+  // Set the new element type
+  element_type_ = std::move(type);
 }
 
 bool Record::IsEqual(const Type *other) const {

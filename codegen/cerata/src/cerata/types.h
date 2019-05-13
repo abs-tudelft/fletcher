@@ -51,6 +51,8 @@ std::shared_ptr<Literal> intl();
  *
  */
 class Type : public Named {
+  // TODO(johanpel): When this class is inherited by some custom type in front-end tools, there should be some way
+  // to define how a back-end emits that custom type.
  public:
   /// @brief The Type ID. Used for convenient type checking.
   enum ID {
@@ -107,9 +109,11 @@ class Type : public Named {
   /// @brief Add a type mapper.
   void AddMapper(const std::shared_ptr<TypeMapper> &mapper);
   /// @brief Get a mapper to another type, if it exists.
-  std::optional<std::shared_ptr<TypeMapper>> GetMapper(const Type *other) const;
+  std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other);
+  /// @brief Remove all mappers to a specific type
+  void RemoveMappersTo(Type *other);
   /// @brief Get a mapper to another type, if it exists.
-  std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other) const;
+  std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other);
 
   /// @brief Obtain all Nodes that parametrize this type.
   virtual std::deque<std::shared_ptr<Node>> GetParameters() const { return {}; }

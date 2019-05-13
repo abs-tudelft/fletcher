@@ -30,6 +30,7 @@ using cerata::Parameter;
 using cerata::PortArray;
 using cerata::integer;
 using cerata::Cast;
+using cerata::Type;
 
 // Bus channel types:
 

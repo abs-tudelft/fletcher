@@ -46,6 +46,15 @@ std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field) {
   return width * bus_addr_width();
 }
 
+std::shared_ptr<Node> tag_width(const std::shared_ptr<arrow::Field> &field) {
+  auto meta_val = fletcher::getMeta(field, "tag_width");
+  if (meta_val.empty()) {
+    return intl<1>();
+  } else {
+    return Literal::Make(std::stoi(meta_val));
+  }
+}
+
 std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width, const std::shared_ptr<Node> &tag_width) {
   auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
   auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));
@@ -57,8 +66,8 @@ std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width, const std::sh
 }
 
 std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width) {
-  static auto tag = Vector::Make("tag", tag_width);
-  static std::shared_ptr<Type> unlock_stream = Stream::Make("unlock", tag, "tag");
+  auto tag = Vector::Make("tag", tag_width);
+  std::shared_ptr<Type> unlock_stream = Stream::Make("unlock", tag, "tag");
   return unlock_stream;
 }
 
@@ -94,7 +103,7 @@ std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
                                      Port::Make(kernel_cr()),
                                      BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec()),
                                      Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
-                                     Port::Make("unlock", unlock(tag_width), Port::Dir::OUT),
+                                     Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
                                      Port::Make("out", read_data(std::move(data_width)), Port::Dir::OUT)}
   );
   ret->meta["primitive"] = "true";

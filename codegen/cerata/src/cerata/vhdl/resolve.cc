@@ -113,7 +113,7 @@ static bool IsExpanded(const Type *t, const std::string &str = "") {
 }
 
 static void ExpandMappers(Stream *stream_type) {
-  // TODO(johanpel): Generalize this expansion functionality and add it to Cerata.
+  // TODO(johanpel): Generalize this type expansion functionality and add it to Cerata.
   // Before doing anything, obtain the original mappers of this stream type.
   auto mappers = stream_type->mappers();
 
@@ -197,10 +197,10 @@ static void ExpandMappers(Stream *stream_type) {
 }
 
 std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> comp) {
+  LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   std::deque<Type *> types;
   GetAllTypesRecursive(&types, comp);
 
-  LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   for (const auto &t : types) {
     if (t->Is(Type::STREAM)) {
       auto st = *Cast<Stream>(t);

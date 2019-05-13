@@ -43,7 +43,8 @@ using fletcher::Mode;
 struct FieldPort : public Port {
   enum Function {
     ARROW,
-    COMMAND
+    COMMAND,
+    UNLOCK
   } function_;
 
   std::shared_ptr<arrow::Field> field_;
@@ -56,7 +57,8 @@ struct FieldPort : public Port {
       : Port(std::move(name), std::move(type), dir), function_(function), field_(std::move(field)) {}
 
   static std::shared_ptr<FieldPort> MakeArrowPort(std::shared_ptr<arrow::Field> field, Mode mode, bool invert);
-  static std::shared_ptr<FieldPort> MakeCommandPort(std::shared_ptr<arrow::Field> field, cerata::Term::Dir dir);
+  static std::shared_ptr<FieldPort> MakeCommandPort(std::shared_ptr<arrow::Field> field);
+  static std::shared_ptr<FieldPort> MakeUnlockPort(std::shared_ptr<arrow::Field> field);
 
   std::shared_ptr<Object> Copy() const override;
 

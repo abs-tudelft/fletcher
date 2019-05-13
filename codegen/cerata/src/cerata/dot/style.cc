@@ -130,9 +130,9 @@ Config Config::normal() {
   ret.nodes.ports = true;
   ret.nodes.expressions = false;
 
-  ret.nodes.expand.record = true;
-  ret.nodes.expand.stream = true;
-  ret.nodes.expand.expression = true;
+  ret.nodes.expand.record = false;
+  ret.nodes.expand.stream = false;
+  ret.nodes.expand.expression = false;
 
   ret.nodes.types.clock = true;
   ret.nodes.types.reset = true;

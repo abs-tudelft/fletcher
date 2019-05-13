@@ -39,10 +39,13 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
 
 std::deque<std::shared_ptr<cerata::Graph>> Design::GetAllComponents() {
   std::deque<std::shared_ptr<cerata::Graph>> ret;
-  // Insert readers
-  ret.insert(ret.begin(), readers.begin(), readers.end());
-  ret.push_back(kernel);
+  // Mantle
   ret.push_back(mantle);
+  // Kernel
+  ret.push_back(kernel);
+  // Readers
+  ret.insert(ret.end(), readers.begin(), readers.end());
+
   return ret;
 }
 

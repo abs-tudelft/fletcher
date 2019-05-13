@@ -14,7 +14,7 @@
 
 #include "fletchgen/options.h"
 
-#include <fletchgen/cli/CLI11.hpp>
+#include <CLI/CLI11.hpp>
 
 namespace fletchgen {
 int Options::Parse(Options *options, int argc, char **argv) {

@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,6 +112,10 @@ PortArray::PortArray(std::string name, std::shared_ptr<Type> type, std::shared_p
     : NodeArray(std::move(name), Node::PORT, Port::Make(name, std::move(type), dir), std::move(size)),
       Term(dir) {}
 
+PortArray::PortArray(std::string name, std::shared_ptr<Port> base, std::shared_ptr<Node> size)
+    : NodeArray(std::move(name), Node::PORT, base, std::move(size)),
+      Term(base->dir()) {}
+
 std::shared_ptr<PortArray> PortArray::Make(std::string name,
                                            std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
@@ -128,6 +134,11 @@ std::shared_ptr<Object> PortArray::Copy() const {
     //ret->Append();
   }
   return ret;
+}
+std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
+                                           std::shared_ptr<Port> base,
+                                           const std::shared_ptr<Node> &size) {
+  return std::make_shared<PortArray>(name, std::move(base), size);
 }
 
 }  // namespace cerata

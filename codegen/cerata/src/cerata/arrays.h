@@ -81,8 +81,8 @@ class NodeArray : public Object {
  */
 class PortArray : public NodeArray, public Term {
  public:
-  /// @brief Construct a new ArrayPort.
   PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir);
+  PortArray(std::string name, std::shared_ptr<Port> base, std::shared_ptr<Node> size);
 
   /// @brief Get a smart pointer to a new ArrayPort.
   static std::shared_ptr<PortArray> Make(std::string name,
@@ -93,6 +93,11 @@ class PortArray : public NodeArray, public Term {
   static std::shared_ptr<PortArray> Make(std::shared_ptr<Type> type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
+
+  /// @brief Get a smart pointer to a new ArrayPort with a base type other than the default Port.
+  static std::shared_ptr<PortArray> Make(const std::string& name,
+                                         std::shared_ptr<Port> base,
+                                         const std::shared_ptr<Node>& size);
 
   /// @brief Make a copy of this port array
   std::shared_ptr<Object> Copy() const override;

@@ -28,6 +28,9 @@ using cerata::intl;
 /// @brief Return the width of the control data of this field.
 std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field);
 
+/// @brief Return the tag width of this field. Settable through Arrow metadata. Default = 1.
+std::shared_ptr<Node> tag_width(const std::shared_ptr<arrow::Field> &field);
+
 // Default streams of ArrayReaders/ArrayWriters
 
 ///< @brief Fletcher command stream

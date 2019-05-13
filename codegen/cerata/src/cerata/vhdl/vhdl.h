@@ -21,6 +21,8 @@
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/defaults.h"
+#include "cerata/vhdl/template.h"
+
 #include "cerata/output.h"
 #include "cerata/logging.h"
 

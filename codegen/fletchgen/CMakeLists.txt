@@ -40,6 +40,9 @@ set(HEADERS
 
         src/fletchgen/srec/recordbatch.h
         src/fletchgen/srec/srec.h
+
+        src/fletchgen/top/sim.h
+        src/fletchgen/top/axi.h
         )
 
 set(SOURCES
@@ -57,10 +60,13 @@ set(SOURCES
 
         src/fletchgen/srec/recordbatch.cc
         src/fletchgen/srec/srec.cc
+
+        src/fletchgen/top/sim.cc
+        src/fletchgen/top/axi.cc
         )
 
 set(THIRD_PARTY_HEADERS
-        src/fletchgen/cli/CLI11.hpp
+        src/CLI/CLI11.hpp
         )
 
 # Linking

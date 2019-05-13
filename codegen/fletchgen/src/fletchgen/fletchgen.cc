@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
 #include <cerata/api.h>
 #include <fletcher/common/api.h>
 
@@ -19,12 +20,14 @@
 #include "fletchgen/design.h"
 #include "fletchgen/utils.h"
 #include "fletchgen/srec/recordbatch.h"
+#include "fletchgen/top/sim.h"
 
-void GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                  const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {
+std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
+                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {
   // TODO(johanpel): allow multiple recordbatches
   auto recordbatch = fletcher::readRecordBatchFromFile(options->recordbatch_paths[0], schemas[0]);
   auto srec_buffers = fletchgen::srec::writeRecordBatchToSREC(recordbatch.get(), options->srec_out_path);
+  return srec_buffers;
 }
 
 int main(int argc, char **argv) {
@@ -38,6 +41,8 @@ int main(int argc, char **argv) {
 
   fletchgen::Design design;
 
+  std::vector<uint64_t> srec_buffers;
+
   // Generate designs in Cerata
   if (options->MustGenerateDesign()) {
     design = fletchgen::Design::GenerateFrom(options);
@@ -48,7 +53,7 @@ int main(int argc, char **argv) {
   // Generate SREC output
   if (options->MustGenerateSREC()) {
     LOG(INFO, "Generating SREC output.");
-    GenerateSREC(design.options, design.schemas);
+    srec_buffers = GenerateSREC(design.options, design.schemas);
   }
 
   // Generate VHDL output
@@ -67,6 +72,12 @@ int main(int argc, char **argv) {
 
   // Generate simulation top level
   if (options->sim_top) {
+    auto sim_file = std::ofstream("vhdl/sim_top.vhd");
+    fletchgen::top::GenerateSimTop(design.mantle,
+                                   {&sim_file},
+                                   options->srec_out_path,
+                                   srec_buffers,
+                                   options->srec_sim_dump);
     LOG(WARNING, "Generating simulation top-level not yet implemented.");
   }
 

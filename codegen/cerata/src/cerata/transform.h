@@ -29,8 +29,8 @@ namespace cerata {
  * @param components    The deque of components to append to.
  * @param top_component The top-level component.
  */
-void GetAllComponentsRecursive(std::deque<std::shared_ptr<Component>> *components,
-                               const std::shared_ptr<Component> &top_component);
+void GetAllGraphsRecursive(std::deque<std::shared_ptr<Component>> *components,
+                           const std::shared_ptr<Component> &top_component);
 
 /**
  * @brief Get all objects from a component and its sub-components.

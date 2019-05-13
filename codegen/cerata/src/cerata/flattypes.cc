@@ -142,7 +142,7 @@ size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *
   return static_cast<size_t>(-1);
 }
 
-TypeMapper::TypeMapper(const Type *a, const Type *b)
+TypeMapper::TypeMapper(Type *a, Type *b)
     : Named(a->name() + "_to_" + b->name()),
       fa_(Flatten(a)), fb_(Flatten(b)),
       a_(a), b_(b),
@@ -156,12 +156,12 @@ TypeMapper::TypeMapper(const Type *a, const Type *b)
   }
 }
 
-std::shared_ptr<TypeMapper> TypeMapper::Make(const Type *a, const Type *b) {
+std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a, Type *b) {
   auto ret = std::make_shared<TypeMapper>(a, b);
   return ret;
 }
 
-std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(const Type *a, const Type *b) {
+std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(Type *a, Type *b) {
   auto ret = std::make_shared<TypeMapper>(a, b);
   if (a->IsEqual(b)) {
     for (size_t i = 0; i < ret->flat_a().size(); i++) {
@@ -277,7 +277,7 @@ std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
   return pairs;
 }
 
-std::shared_ptr<TypeMapper> TypeMapper::Make(const Type *a) {
+std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a) {
   return std::make_shared<TypeMapper>(a, a);
 }
 

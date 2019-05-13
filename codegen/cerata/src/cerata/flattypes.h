@@ -270,18 +270,18 @@ class TypeMapper : public Named {
  private:
   std::deque<FlatType> fa_;
   std::deque<FlatType> fb_;
-  const Type *a_;
-  const Type *b_;
+  Type *a_;
+  Type *b_;
   MappingMatrix<size_t> matrix_;
  public:
   /// @brief TypeMapper constructor. Constructs an empty type mapping.
-  TypeMapper(const Type *a, const Type *b);
+  TypeMapper(Type *a, Type *b);
   /// @brief Construct a new TypeMapper from some type to itself, and return a smart pointer to it.
-  static std::shared_ptr<TypeMapper> Make(const Type *a);
+  static std::shared_ptr<TypeMapper> Make(Type *a);
   /// @brief Construct a new TypeMapper from some type to another type, and automatically determine the type mapping.
-  static std::shared_ptr<TypeMapper> MakeImplicit(const Type *a, const Type *b);
+  static std::shared_ptr<TypeMapper> MakeImplicit(Type *a, Type *b);
   /// @brief Construct a new, empty TypeMapper between two types.
-  static std::shared_ptr<TypeMapper> Make(const Type *a, const Type *b);
+  static std::shared_ptr<TypeMapper> Make(Type *a, Type *b);
 
   TypeMapper &Add(size_t a, size_t b);
   MappingMatrix<size_t> map_matrix();
@@ -289,8 +289,8 @@ class TypeMapper : public Named {
 
   std::deque<FlatType> flat_a() const;
   std::deque<FlatType> flat_b() const;
-  const Type *a() const { return a_; }
-  const Type *b() const { return b_; }
+  Type *a() const { return a_; }
+  Type *b() const { return b_; }
 
   /// @brief Return true if this TypeMapper can map type a to type b.
   bool CanConvert(const Type *a, const Type *b) const;

@@ -31,6 +31,7 @@ set(HEADERS
         src/cerata/vhdl/resolve.h
         src/cerata/vhdl/vhdl.h
         src/cerata/vhdl/vhdl_types.h
+        src/cerata/vhdl/template.h
 
         src/cerata/dot/dot.h
         src/cerata/dot/style.h
@@ -58,6 +59,7 @@ set(SOURCES
         src/cerata/vhdl/resolve.cc
         src/cerata/vhdl/vhdl.cc
         src/cerata/vhdl/vhdl_types.cc
+        src/cerata/vhdl/template.cc
 
         src/cerata/dot/dot.cc
         src/cerata/dot/style.cc

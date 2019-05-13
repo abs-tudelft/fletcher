@@ -28,7 +28,7 @@ namespace cerata {
 Node::Node(std::string name, Node::NodeID id, std::shared_ptr<Type> type)
     : Object(std::move(name), Object::NODE), node_id_(id), type_(std::move(type)) {}
 
-std::string Node::ToString() {
+std::string Node::ToString() const {
   return name();
 }
 
@@ -125,7 +125,7 @@ std::shared_ptr<Edge> NormalNode::AddSource(const std::shared_ptr<Node> &source)
   return Connect(shared_from_this(), source);
 }
 
-std::string Literal::ToString() {
+std::string Literal::ToString() const {
   if (storage_type_ == BOOL) {
     return std::to_string(bool_val_);
   } else if (storage_type_ == STRING) {
@@ -406,8 +406,8 @@ std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, const std::opt
   }
 }
 
-std::string Expression::ToString() {
-  auto min = Minimize(shared_from_this());
+std::string Expression::ToString() const {
+  auto min = Minimize(std::const_pointer_cast<Node>(shared_from_this()));
   auto mine = Cast<Expression>(min);
   if (mine) {
     auto ls = (*mine)->lhs->ToString();
@@ -427,7 +427,7 @@ std::shared_ptr<Edge> Expression::AddSource(const std::shared_ptr<Node> &source)
   throw std::runtime_error("Cannot drive an expression node.");
 }
 
-std::string Term::ToString(Term::Dir dir) {
+std::string Term::str(Term::Dir dir) {
   switch (dir) {
     default: return "none";
     case IN: return "in";

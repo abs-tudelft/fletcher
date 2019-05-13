@@ -85,7 +85,7 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   std::optional<const NodeArray *> array() { return array_; }
 
   /// @brief Return a human-readable string of this node.
-  virtual std::string ToString();
+  virtual std::string ToString() const;
 
  protected:
   /// Node type ID.
@@ -214,7 +214,7 @@ struct Literal : public MultiOutputNode {
   inline std::deque<std::shared_ptr<Edge>> sinks() const override { return outputs_; }
 
   /// @brief Convert the Literal value to a human-readable string.
-  std::string ToString() override;
+  std::string ToString() const override;
 };
 
 /**
@@ -247,7 +247,7 @@ struct Expression : public MultiOutputNode {
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Minimize the expression and convert it to a human-readable string.
-  std::string ToString() override;
+  std::string ToString() const override;
 };
 
 std::string ToString(Expression::Operation operation);
@@ -327,7 +327,7 @@ class Term {
   inline bool IsOutput() { return dir_ == OUT; }
 
   /// @brief Convert a Dir to a human-readable string.
-  static std::string ToString(Dir dir);
+  static std::string str(Dir dir);
 
  protected:
   Dir dir_;
@@ -343,22 +343,6 @@ struct Port : public NormalNode, public Term {
   std::shared_ptr<Object> Copy() const override;
   void InvertDirection();
 };
-
-/**
- * @brief Cast a Node to some (typically) less generic Node type T.
- * @tparam T    The new Node type.
- * @param obj   The Node to cast.
- * @return      Optionally, the Node casted to T, if successful.
- */
-template<typename T>
-std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Node> &obj) {
-  auto result = std::dynamic_pointer_cast<T>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return {};
-  }
-}
 
 /**
  * @brief Cast a Node to some (typically) less generic Node type T.
