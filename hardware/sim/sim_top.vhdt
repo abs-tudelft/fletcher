@@ -114,12 +114,12 @@ architecture Behavorial of sim_top is
   signal clock_stop             : boolean := false;
 
   -- Accelerator signals
-  signal acc_clk                : std_logic;
-  signal acc_reset              : std_logic;
+  signal kcd_clk                : std_logic;
+  signal kcd_reset              : std_logic;
 
   -- Fletcher bus signals
-  signal bus_clk                : std_logic;
-  signal bus_reset              : std_logic;
+  signal bcd_clk                : std_logic;
+  signal bcd_reset              : std_logic;
 
   -- MMIO signals
   signal mmio_awvalid           : std_logic;
@@ -212,11 +212,11 @@ begin
   stimuli_proc : process is
     variable read_data : std_logic_vector(REG_WIDTH-1 downto 0);
   begin
-    wait until acc_reset = '1' and bus_reset = '1';
+    wait until kcd_reset = '1' and bcd_reset = '1';
 
     -- 1. Reset the user core
     uc_reset(regs_in);
-    wait until rising_edge(acc_clk);
+    wait until rising_edge(kcd_clk);
 
 
     -- 2. Write addresses of the arrow buffers in the SREC file.
@@ -228,17 +228,17 @@ ${SREC_BUFFER_ADDRESSES}
     --
     -- Example:
     -- First index in user reg 0
-    -- uc_reg_write(0, X"00000000"); wait until rising_edge(acc_clk);
+    -- uc_reg_write(0, X"00000000"); wait until rising_edge(kcd_clk);
     -- Last index in user reg 0
-    -- uc_reg_write(1, X"00000010"); wait until rising_edge(acc_clk);
+    -- uc_reg_write(1, X"00000010"); wait until rising_edge(kcd_clk);
 
     -- 4. Start the user core.
     uc_start(regs_in);
-    wait until rising_edge(acc_clk);
+    wait until rising_edge(kcd_clk);
 
     -- 5. Poll for completion
     loop
-      wait until rising_edge(acc_clk);
+      wait until rising_edge(kcd_clk);
 
       -- Read from the status register.
       mmio_read(REG_STATUS, read_data, regs);
@@ -264,11 +264,11 @@ ${SREC_BUFFER_ADDRESSES}
   clk_proc: process is
   begin
     if not clock_stop then
-      acc_clk <= '1';
-      bus_clk <= '1';
+      kcd_clk <= '1';
+      bcd_clk <= '1';
       wait for 5 ns;
-      acc_clk <= '0';
-      bus_clk <= '0';
+      kcd_clk <= '0';
+      bcd_clk <= '0';
       wait for 5 ns;
     else
       wait;
@@ -277,18 +277,18 @@ ${SREC_BUFFER_ADDRESSES}
 
   reset_proc: process is
   begin
-    acc_reset <= '1';
-    bus_reset <= '1';
+    kcd_reset <= '1';
+    bcd_reset <= '1';
     wait for 50 ns;
-    wait until rising_edge(acc_clk);
-    acc_reset <= '0';
-    bus_reset <= '0';
+    wait until rising_edge(kcd_clk);
+    kcd_reset <= '0';
+    bcd_reset <= '0';
     wait;
   end process;
 
-  regs_out_proc: process(acc_clk) is
+  regs_out_proc: process(kcd_clk) is
   begin
-    if rising_edge(acc_clk) then
+    if rising_edge(kcd_clk) then
       for I in 0 to NUM_REGS-1 loop
         if regs_out_en(I) = '1' then
           regs((I+1)*REG_WIDTH-1 downto I * REG_WIDTH) <= regs_out((I+1)*REG_WIDTH-1 downto I * REG_WIDTH);
@@ -308,8 +308,8 @@ ${SREC_BUFFER_ADDRESSES}
     SREC_FILE                   => "${READ_SREC_PATH}"
   )
   port map (
-    clk                         => bus_clk,
-    reset                       => bus_reset,
+    clk                         => bcd_clk,
+    reset                       => bcd_reset,
     rreq_valid                  => bus_rreq_valid,
     rreq_ready                  => bus_rreq_ready,
     rreq_addr                   => bus_rreq_addr,
@@ -332,8 +332,8 @@ ${SREC_BUFFER_ADDRESSES}
     SREC_FILE                   => "${DUMP_SREC_PATH}"
   )
   port map (
-    clk                         => bus_clk,
-    reset                       => bus_reset,
+    clk                         => bcd_clk,
+    reset                       => bcd_reset,
     wreq_valid                  => bus_wreq_valid,
     wreq_ready                  => bus_wreq_ready,
     wreq_addr                   => bus_wreq_addr,
@@ -365,10 +365,10 @@ ${SREC_BUFFER_ADDRESSES}
       TAG_WIDTH                 => TAG_WIDTH
     )
     port map (
-      kcd_clk                   => acc_clk,
-      kcd_reset                 => acc_reset,
-      bcd_clk                   => bus_clk,
-      bcd_reset                 => bus_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
       mmio_awvalid              => mmio_awvalid,
       mmio_awready              => mmio_awready,
       mmio_awaddr               => mmio_awaddr,

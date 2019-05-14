@@ -143,13 +143,13 @@ entity BufferReader is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -314,8 +314,8 @@ begin
       BUS_REQ_SLICE                     => BUS_REQ_SLICE
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       cmdIn_valid                       => cmdIn_valid,
       cmdIn_ready                       => cmdIn_ready,
@@ -356,8 +356,8 @@ begin
       SLV_DAT_SLICE                     => false
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       slv_rreq_valid                    => intBusReq_valid,
       slv_rreq_ready                    => intBusReq_ready,
@@ -398,8 +398,8 @@ begin
       UNLOCK_SLICE                      => UNLOCK_SLICE
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       busResp_valid                     => intBusResp_valid,
       busResp_ready                     => intBusResp_ready,
@@ -445,15 +445,15 @@ begin
         RAM_CONFIG                      => ELEMENT_FIFO_RAM_CONFIG
       )
       port map (
-        in_clk                          => bus_clk,
-        in_reset                        => bus_reset,
+        in_clk                          => bcd_clk,
+        in_reset                        => bcd_reset,
 
         in_valid                        => fifoIn_valid,
         in_ready                        => fifoIn_ready,
         in_data                         => fei_sData,
 
-        out_clk                         => acc_clk,
-        out_reset                       => acc_reset,
+        out_clk                         => kcd_clk,
+        out_reset                       => kcd_reset,
 
         out_valid                       => fifoOut_valid,
         out_ready                       => fifoOut_ready,
@@ -479,15 +479,15 @@ begin
         RAM_CONFIG                      => ELEMENT_FIFO_RAM_CONFIG
       )
       port map (
-        in_clk                          => bus_clk,
-        in_reset                        => bus_reset,
+        in_clk                          => bcd_clk,
+        in_reset                        => bcd_reset,
 
         in_valid                        => fifoIn_valid,
         in_ready                        => fifoIn_ready,
         in_data                         => fei_sData,
 
-        out_clk                         => acc_clk,
-        out_reset                       => acc_reset,
+        out_clk                         => kcd_clk,
+        out_reset                       => kcd_reset,
 
         out_valid                       => fifoOut_valid,
         out_ready                       => fifoOut_ready,
@@ -519,8 +519,8 @@ begin
       OUT_SLICE                         => OUT_SLICE
     )
     port map (
-      clk                               => acc_clk,
-      reset                             => acc_reset,
+      clk                               => kcd_clk,
+      reset                             => kcd_reset,
 
       fifoOut_valid                     => fifoOut_valid,
       fifoOut_ready                     => fifoOut_ready,

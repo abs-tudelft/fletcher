@@ -968,13 +968,13 @@ entity {camelprefix}ArrayReader is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -1036,10 +1036,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1084,10 +1084,10 @@ component {camelprefix}ArrayReader is
     CMD_TAG_WIDTH               : natural := 1
   );
   port (
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     @cmd_ports
 
@@ -1123,10 +1123,10 @@ uut_template_with_unlock = """
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => {acc}_clk,
-      acc_reset                 => {acc}_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => {acc}_clk,
+      kcd_reset                 => {acc}_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1170,10 +1170,10 @@ uut_template_without_unlock = """
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => {acc}_clk,
-      acc_reset                 => {acc}_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => {kcd}_clk,
+      kcd_reset                 => {kcd}_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1201,7 +1201,7 @@ uut_template_without_unlock = """
 class ArrayReader(object):
     """Represents a ArrayReader."""
 
-    def __init__(self, field, instance_prefix=None, signal_prefix="", bus_clk_prefix="", main_clk_prefix="", **opts):
+    def __init__(self, field, instance_prefix=None, signal_prefix="", bcd_clk_prefix="", main_clk_prefix="", **opts):
         """Generates a ArrayReader for the given Arrow field. prefix
         optionally specifies a name for the ArrayReader, which will be
         prefixed to all signals and instance names in the generated code."""
@@ -1225,9 +1225,9 @@ class ArrayReader(object):
             signal_prefix += "_"
         self.signal_prefix = signal_prefix
 
-        if bus_clk_prefix and not bus_clk_prefix[-1] == "_":
-            bus_clk_prefix += "_"
-        self.bus_clk_prefix = bus_clk_prefix
+        if bcd_clk_prefix and not bcd_clk_prefix[-1] == "_":
+            bcd_clk_prefix += "_"
+        self.bcd_clk_prefix = bcd_clk_prefix
 
         if main_clk_prefix and not main_clk_prefix[-1] == "_":
             main_clk_prefix += "_"

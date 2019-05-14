@@ -141,9 +141,12 @@ static void ExpandMappers(Type *type) {
       LOG(DEBUG, "VHDL:     Type " << type->ToString()
                                    << " has " << mappers.size() << " mapper(s). Expand types and mappers...");
 
+      LOG(DEBUG, mapper->ToString());
       // Apply insertion of ready and valid to every stream type in the flattened type.
       ExpandStream(mapper->flat_a());
+      mapper->a()->meta["VHDL:ExpandStreamDone"] = "true";
       ExpandStream(mapper->flat_b());
+      mapper->b()->meta["VHDL:ExpandStreamDone"] = "true";
       // We have to be careful here because AddValidReady *could* and probably will invalidate some type pointers of the
       // flat types. Also, we need to recreate the mappers, otherwise any existing node connections that are based on
       // the mapper are now invalid.
@@ -171,24 +174,28 @@ static void ExpandMappers(Type *type) {
           if (IsExpanded(at, "stream") && IsExpanded(bt, "stream")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
             new_col += 4; // Skip over record, valid and ready
+            old_col += 1;
           } else if (IsExpanded(at, "record") && IsExpanded(bt, "record")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
             new_col += 3; // Skip over valid and ready
+            old_col += 1;
           } else if (IsExpanded(at, "valid") && IsExpanded(bt, "valid")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
             new_col += 2; // Skip over ready
+            old_col += 1;
           } else if (IsExpanded(at, "ready") && IsExpanded(bt, "ready")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
             new_col += 1;
           } else {
             // We're not dealing with a *matching* expanded type. However, if the A side was expanded and the type is
-            // not matching, we shouldn't make a copy. That will happen later on.
+            // not matching, we shouldn't make a copy. That will happen later on, on another row.
             if (!IsExpanded(at)) {
               new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
             }
             new_col += 1;
           }
-          // If this is the last expanded column, move to the next column in the old matrix
+          // If this column was not expanded, or if it was the last expanded column, move to the next column in the old
+          // matrix.
           if (!IsExpanded(bt) || IsExpanded(bt, "ready")) {
             old_col += 1;
           }
@@ -209,6 +216,8 @@ static void ExpandMappers(Type *type) {
 
       // Add the mapper to the type
       type->AddMapper(new_mapper);
+
+      LOG(DEBUG, new_mapper->ToString());
     }
   }
 }
@@ -219,7 +228,7 @@ std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> com
   GetAllTypesRecursive(&types, comp);
 
   for (const auto &t : types) {
-    if (t->meta.count("VHDL:ExpandStream") == 0) {
+    if (t->meta.count("VHDL:ExpandStreamDone") == 0) {
       // Resolve the mappers of this Stream type.
       ExpandMappers(t);
     }

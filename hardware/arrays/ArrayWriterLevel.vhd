@@ -78,13 +78,13 @@ entity ArrayWriterLevel is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -170,10 +170,10 @@ begin
         BUS_FIFO_DEPTH          => parse_param(CFG, "bus_fifo_depth", 16)
       )
       port map (
-        bus_clk                 => bus_clk,
-        bus_reset               => bus_reset,
-        acc_clk                 => acc_clk,
-        acc_reset               => acc_reset,
+        bcd_clk                 => bcd_clk,
+        bcd_reset               => bcd_reset,
+        kcd_clk                 => kcd_clk,
+        kcd_reset               => kcd_reset,
 
         cmdIn_valid             => cmd_valid,
         cmdIn_ready             => cmd_ready,
@@ -225,10 +225,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -277,10 +277,10 @@ begin
   --      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
   --    )
   --    port map (
-  --      bus_clk                   => bus_clk,
-  --      bus_reset                 => bus_reset,
-  --      acc_clk                   => acc_clk,
-  --      acc_reset                 => acc_reset,
+  --      bcd_clk                   => bcd_clk,
+  --      bcd_reset                 => bcd_reset,
+  --      kcd_clk                   => kcd_clk,
+  --      kcd_reset                 => kcd_reset,
   --
   --      cmd_valid                 => cmd_valid,
   --      cmd_ready                 => cmd_ready,
@@ -294,10 +294,10 @@ begin
   --      unlock_tag                => unlock_tag,
   --
   --    port map (
-  --      bus_clk                   => bus_clk,
-  --      bus_reset                 => bus_reset,
-  --      acc_clk                   => acc_clk,
-  --      acc_reset                 => acc_reset,
+  --      bcd_clk                   => bcd_clk,
+  --      bcd_reset                 => bcd_reset,
+  --      kcd_clk                   => kcd_clk,
+  --      kcd_reset                 => kcd_reset,
   --
   --      cmd_valid                 => cmd_valid,
   --      cmd_ready                 => cmd_ready,
@@ -352,10 +352,10 @@ begin
   --      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
   --    )
   --    port map (
-  --      bus_clk                   => bus_clk,
-  --      bus_reset                 => bus_reset,
-  --      acc_clk                   => acc_clk,
-  --      acc_reset                 => acc_reset,
+  --      bcd_clk                   => bcd_clk,
+  --      bcd_reset                 => bcd_reset,
+  --      kcd_clk                   => kcd_clk,
+  --      kcd_reset                 => kcd_reset,
   --
   --      cmd_valid                 => cmd_valid,
   --      cmd_ready                 => cmd_ready,
@@ -369,10 +369,10 @@ begin
   --      unlock_tag                => unlock_tag,
   --
   --    port map (
-  --      bus_clk                   => bus_clk,
-  --      bus_reset                 => bus_reset,
-  --      acc_clk                   => acc_clk,
-  --      acc_reset                 => acc_reset,
+  --      bcd_clk                   => bcd_clk,
+  --      bcd_reset                 => bcd_reset,
+  --      kcd_clk                   => kcd_clk,
+  --      kcd_reset                 => kcd_reset,
   --
   --      cmd_valid                 => cmd_valid,
   --      cmd_ready                 => cmd_ready,
@@ -428,10 +428,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -481,10 +481,10 @@ begin
   --      CMD_TAG_WIDTH             => CMD_TAG_WIDTH
   --    )
   --    port map (
-  --      bus_clk                   => bus_clk,
-  --      bus_reset                 => bus_reset,
-  --      acc_clk                   => acc_clk,
-  --      acc_reset                 => acc_reset,
+  --      bcd_clk                   => bcd_clk,
+  --      bcd_reset                 => bcd_reset,
+  --      kcd_clk                   => kcd_clk,
+  --      kcd_reset                 => kcd_reset,
   --
   --      cmd_valid                 => cmd_valid,
   --      cmd_ready                 => cmd_ready,

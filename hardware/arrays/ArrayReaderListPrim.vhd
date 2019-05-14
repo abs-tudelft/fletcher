@@ -75,13 +75,13 @@ entity ArrayReaderListPrim is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -197,8 +197,8 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      clk                       => bus_clk,
-      reset                     => bus_reset,
+      clk                       => bcd_clk,
+      reset                     => bcd_reset,
 
       a_unlock_valid            => a_unlock_valid,
       a_unlock_ready            => a_unlock_ready,
@@ -222,8 +222,8 @@ begin
       NUM_OUTPUTS               => 2
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       in_valid(0)               => a_out_valid,
       in_ready(0)               => a_out_ready,
@@ -259,8 +259,8 @@ begin
         DATA_WIDTH              => LSI(LSI'high)
       )
       port map (
-        clk                     => acc_clk,
-        reset                   => acc_reset,
+        clk                     => kcd_clk,
+        reset                   => kcd_reset,
 
         in_valid                => ulen_valid,
         in_ready                => ulen_ready,
@@ -295,8 +295,8 @@ begin
       OUT_SLICE                 => parse_param(CFG, "data_out_slice", true)
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       inl_valid                 => len_valid,
       inl_ready                 => len_ready,
@@ -345,10 +345,10 @@ begin
       OUT_SLICE                 => false
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmdIn_valid               => cmd_valid,
       cmdIn_ready               => cmd_ready,
@@ -415,10 +415,10 @@ begin
       OUT_SLICE                 => parse_param(CFG, "out_slice", true)
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmdIn_valid               => b_cmd_valid,
       cmdIn_ready               => b_cmd_ready,

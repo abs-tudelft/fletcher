@@ -49,10 +49,10 @@ package Buffers is
       OUT_SLICE                 : boolean := true
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
 
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
@@ -308,10 +308,10 @@ package Buffers is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);

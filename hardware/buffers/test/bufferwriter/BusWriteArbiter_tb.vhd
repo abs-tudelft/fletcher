@@ -338,8 +338,8 @@ begin
       SLV_DAT_SLICES            => true
     )
     port map (
-      bus_clk                   => clk,
-      bus_reset                 => reset,
+      bcd_clk                   => clk,
+      bcd_reset                 => reset,
 
       mst_wreq_valid            => a2s_wreq_valid,
       mst_wreq_ready            => a2s_wreq_ready,

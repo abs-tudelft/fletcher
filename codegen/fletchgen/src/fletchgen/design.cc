@@ -42,9 +42,9 @@ std::deque<std::shared_ptr<cerata::Graph>> Design::GetAllComponents() {
   // Mantle
   ret.push_back(mantle);
   // Kernel
-  //ret.push_back(kernel);
+  ret.push_back(kernel);
   // Readers
-  //ret.insert(ret.end(), readers.begin(), readers.end());
+  ret.insert(ret.end(), readers.begin(), readers.end());
 
   return ret;
 }

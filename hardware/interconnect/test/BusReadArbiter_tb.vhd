@@ -318,8 +318,8 @@ begin
       SLV_DAT_SLICES            => false
     )
     port map (
-      bus_clk                   => clk,
-      bus_reset                 => reset,
+      bcd_clk                   => clk,
+      bcd_reset                 => reset,
 
       mst_rreq_valid            => a2s_rreq_valid,
       mst_rreq_ready            => a2s_rreq_ready,

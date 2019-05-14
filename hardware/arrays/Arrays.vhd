@@ -39,10 +39,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -83,10 +83,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -127,10 +127,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -171,10 +171,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -257,10 +257,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -299,10 +299,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -341,10 +341,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -383,10 +383,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -425,10 +425,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -467,10 +467,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
 
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
@@ -510,10 +510,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
 
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;

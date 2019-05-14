@@ -109,13 +109,13 @@ entity BufferWriter is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferWriter.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -281,8 +281,8 @@ begin
       NUM_OUTPUTS => 3
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
       in_valid(0)               => cmdIn_valid,
       in_ready(0)               => cmdIn_ready,
       out_valid(0)              => cmdIn_valid_pre,
@@ -314,8 +314,8 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       cmdIn_valid               => cmdIn_valid_pre,
       cmdIn_ready               => cmdIn_ready_pre,
@@ -360,8 +360,8 @@ begin
       NUM_OUTPUTS => 2
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
       in_valid(0)               => pre_valid,
       in_ready(0)               => pre_ready,
       out_valid(0)              => writebuf_valid,
@@ -396,8 +396,8 @@ begin
         OUT_COUNT_MAX               => BUS_BURST_STEP_LEN
       )
       port map (
-        clk                         => acc_clk,
-        reset                       => acc_reset,
+        clk                         => kcd_clk,
+        reset                       => kcd_reset,
         in_valid                    => word_valid,
         in_ready                    => word_ready,
         in_last                     => word_last,
@@ -433,8 +433,8 @@ begin
         OUT_COUNT_MAX               => BUS_BURST_MAX_LEN / BUS_BURST_STEP_LEN
       )
       port map (
-        clk                         => acc_clk,
-        reset                       => acc_reset,
+        clk                         => kcd_clk,
+        reset                       => kcd_reset,
         in_valid                    => step_valid,
         in_ready                    => step_ready,
         in_last                     => step_last,
@@ -473,8 +473,8 @@ begin
       CHECK_INDEX               => false
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
       cmdIn_valid               => cmdIn_valid_bus,
       cmdIn_ready               => cmdIn_ready_bus,
       cmdIn_firstIdx            => cmdIn_firstIdx,
@@ -506,8 +506,8 @@ begin
       SLV_LAST_MODE             => "generate"
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
       
       full                      => buffer_full,
       empty                     => buffer_empty,
@@ -551,8 +551,8 @@ begin
       DATA_WIDTH                => CMD_TAG_WIDTH
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       in_valid                  => cmdIn_valid_unl,
       in_ready                  => cmdIn_ready_unl,
@@ -571,8 +571,8 @@ begin
       NUM_OUTPUTS => 2
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       in_valid(0)               => int_bus_wdat_valid,
       in_valid(1)               => unl_i_valid,
@@ -609,8 +609,8 @@ begin
       DATA_WIDTH                => CMD_TAG_WIDTH
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
 
       -- Only valid when last_in_cmd is high
       in_valid                  => unl_o_valid,

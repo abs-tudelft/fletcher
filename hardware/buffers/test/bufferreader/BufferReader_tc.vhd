@@ -98,10 +98,10 @@ entity BufferReader_tc is
 end BufferReader_tc;
 
 architecture tb of BufferReader_tc is
-  signal bus_clk                : std_logic                                               := '0';
-  signal bus_reset              : std_logic                                               := '0';
-  signal acc_clk                : std_logic                                               := '0';
-  signal acc_reset              : std_logic                                               := '0';
+  signal bcd_clk                : std_logic                                               := '0';
+  signal bcd_reset              : std_logic                                               := '0';
+  signal kcd_clk                : std_logic                                               := '0';
+  signal kcd_reset              : std_logic                                               := '0';
   signal cmdIn_valid            : std_logic                                               := '0';
   signal cmdIn_ready            : std_logic                                               := '0';
   signal cmdIn_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0)                := (others => '0');
@@ -179,10 +179,10 @@ begin
       OUT_SLICE                 => OUT_SLICE
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
       cmdIn_valid               => cmdIn_valid,
       cmdIn_ready               => cmdIn_ready,
       cmdIn_firstIdx            => cmdIn_firstIdx,
@@ -218,8 +218,8 @@ begin
       SREC_FILE                 => ""
     )
     port map (
-      clk                       => bus_clk,
-      reset                     => bus_reset,
+      clk                       => bcd_clk,
+      reset                     => bcd_reset,
       rreq_valid                => bus_rreq_valid,
       rreq_ready                => bus_rreq_ready,
       rreq_addr                 => bus_rreq_addr,
@@ -251,8 +251,8 @@ begin
       ELEMENT_COUNT_WIDTH       => ELEMENT_COUNT_WIDTH
     )
     port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
       start                     => user_start,
       done                      => user_done,
       incorrect                 => user_incorrect,
@@ -272,11 +272,11 @@ begin
   -- Clock generation
   TbClock <= not TbClock after TbPeriod/2 when TbSimEnded /= '1' else '0';
 
-  bus_clk <= TbClock;
-  acc_clk <= TbClock;
+  bcd_clk <= TbClock;
+  kcd_clk <= TbClock;
 
-  bus_reset <= TbReset;
-  acc_reset <= TbReset;
+  bcd_reset <= TbReset;
+  kcd_reset <= TbReset;
 
   end_condition <= user_done or user_timeout;
 
