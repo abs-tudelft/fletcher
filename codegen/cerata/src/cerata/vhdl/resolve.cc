@@ -129,7 +129,6 @@ static void ExpandMappers(Type *type) {
     auto ft = Flatten(type);
     // Stream type has no mappers, just expand it, if it has streams.
     if (HasStream(ft)) {
-      LOG(DEBUG, "VHDL:     Expanding " << type->ToString());
       ExpandStream(ft);
     }
   } else {
@@ -138,10 +137,6 @@ static void ExpandMappers(Type *type) {
       if (!HasStream(mapper->flat_a()) && !HasStream(mapper->flat_b())) {
         continue;
       }
-      LOG(DEBUG, "VHDL:     Type " << type->ToString()
-                                   << " has " << mappers.size() << " mapper(s). Expand types and mappers...");
-
-      LOG(DEBUG, mapper->ToString());
       // Apply insertion of ready and valid to every stream type in the flattened type.
       ExpandStream(mapper->flat_a());
       mapper->a()->meta["VHDL:ExpandStreamDone"] = "true";
@@ -216,8 +211,6 @@ static void ExpandMappers(Type *type) {
 
       // Add the mapper to the type
       type->AddMapper(new_mapper);
-
-      LOG(DEBUG, new_mapper->ToString());
     }
   }
 }

@@ -186,7 +186,7 @@ std::shared_ptr<Stream> Stream::Make(std::string name,
 }
 
 std::shared_ptr<Stream> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
-  return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "data", epc);
+  return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "", epc);
 }
 
 Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc)

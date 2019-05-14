@@ -38,6 +38,7 @@ RecordBatchReader::RecordBatchReader(const std::shared_ptr<FletcherSchema> &flet
   // Add default port nodes
   AddObject(Port::Make(bus_cr()));
   AddObject(Port::Make(kernel_cr()));
+  AddObject(bus_addr_width());
   // Add and connect all array readers and resulting ports
   AddArrayReaders(as, mode);
 }

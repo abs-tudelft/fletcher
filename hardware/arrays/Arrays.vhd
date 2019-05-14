@@ -267,9 +267,9 @@ package Arrays is
       cmd_lastIdx               : in  std_logic_vector;
       cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unl_valid                 : out std_logic;
+      unl_ready                 : in  std_logic := '1';
+      unl_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_rreq_valid            : out std_logic;
       bus_rreq_ready            : in  std_logic;
       bus_rreq_addr             : out std_logic_vector;

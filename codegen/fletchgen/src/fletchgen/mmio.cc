@@ -42,13 +42,13 @@ std::shared_ptr<Type> mmio(MmioSpec spec) {
           RecField::Make("strb", Vector::Make(spec.data_width / 8))
       })))),
       NoSep(RecField::Make("b", Stream::Make(Record::Make("b", {
-          RecField::Make("resp", Vector::Make(2))})))),
+          RecField::Make("resp", Vector::Make(2))})), true)),
       NoSep(RecField::Make("ar", Stream::Make(Record::Make("ar", {
-          RecField::Make("addr", Vector::Make(spec.addr_width)),
-          RecField::Make("data", Vector::Make(spec.data_width))
+          RecField::Make("addr", Vector::Make(spec.addr_width))
       })))),
       NoSep(RecField::Make("r", Stream::Make(Record::Make("r", {
-          RecField::Make("resp", Vector::Make(2))})))),
+          RecField::Make("data", Vector::Make(spec.data_width)),
+          RecField::Make("resp", Vector::Make(2))})), true)),
   });
   return result;
 }
