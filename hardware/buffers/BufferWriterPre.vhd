@@ -390,7 +390,7 @@ begin
     );
 
   -- Unconcatenate the values and strobe bit of the reshaped stream.
-  res_data_strobe_concat_gen: for e in 0 to ELEMENT_COUNT_MAX-1 generate
+  res_data_strobe_concat_gen: for e in 0 to BE_COUNT_MAX-1 generate
     res_strobe(e) <= res_data_strobe((e+1)*(ELEMENT_WIDTH+1)-1);
     res_data((e+1)*ELEMENT_WIDTH-1 downto e*ELEMENT_WIDTH) <=
       res_data_strobe((e+1)*(ELEMENT_WIDTH+1)-2 downto e*(ELEMENT_WIDTH+1));
