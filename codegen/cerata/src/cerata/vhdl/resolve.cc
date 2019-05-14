@@ -92,7 +92,7 @@ static void ExpandStream(const std::deque<FlatType> &flattened_type) {
         // Add valid, ready and original type to the record and set the new element type
         new_elem_type->AddField(RecField::Make("valid", valid()));
         new_elem_type->AddField(RecField::Make("ready", ready(), true));
-        new_elem_type->AddField(RecField::Make("", st->element_type()));
+        new_elem_type->AddField(RecField::Make(st->element_name(), st->element_type()));
         st->SetElementType(new_elem_type);
         // Mark the stream itself to remember we've expanded it.
         st->meta["VHDL:ExpandStream"] = "stream";
@@ -112,29 +112,46 @@ static bool IsExpanded(const Type *t, const std::string &str = "") {
   return false;
 }
 
-static void ExpandMappers(Stream *stream_type) {
+static bool HasStream(const std::deque<FlatType> &fts) {
+  for (const auto &ft : fts) {
+    if (ft.type_->Is(Type::STREAM)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void ExpandMappers(Type *type) {
   // TODO(johanpel): Generalize this type expansion functionality and add it to Cerata.
   // Before doing anything, obtain the original mappers of this stream type.
-  auto mappers = stream_type->mappers();
-
+  auto mappers = type->mappers();
   if (mappers.empty()) {
-    // Stream type has no mappers, just expand it.
-    ExpandStream(Flatten(stream_type));
+    auto ft = Flatten(type);
+    // Stream type has no mappers, just expand it, if it has streams.
+    if (HasStream(ft)) {
+      LOG(DEBUG, "VHDL:     Expanding " << type->ToString());
+      ExpandStream(ft);
+    }
   } else {
-    LOG(DEBUG, "VHDL:     Stream type has " << mappers.size() << " mapper(s). Expand mappers...");
     // Iterate over all previously existing mappers.
     for (const auto &mapper: mappers) {
+      if (!HasStream(mapper->flat_a()) && !HasStream(mapper->flat_b())) {
+        continue;
+      }
+      LOG(DEBUG, "VHDL:     Type " << type->ToString()
+                                   << " has " << mappers.size() << " mapper(s). Expand types and mappers...");
+
       // Apply insertion of ready and valid to every stream type in the flattened type.
       ExpandStream(mapper->flat_a());
       ExpandStream(mapper->flat_b());
       // We have to be careful here because AddValidReady *could* and probably will invalidate some type pointers of the
-      // flat types. Also, we need to recreate the mappers, otherwise any existing node connections that are based on the
-      // mapper are now invalid.
+      // flat types. Also, we need to recreate the mappers, otherwise any existing node connections that are based on
+      // the mapper are now invalid.
 
       // Get a copy of the old matrix.
       auto old_matrix = mapper->map_matrix();
       // Create a new mapper
-      auto new_mapper = TypeMapper::Make(stream_type, mapper->b());
+      auto new_mapper = TypeMapper::Make(type, mapper->b());
       // Get the properly sized matrix
       auto new_matrix = new_mapper->map_matrix();
       // Get the flattened type
@@ -191,7 +208,7 @@ static void ExpandMappers(Stream *stream_type) {
       new_mapper->SetMappingMatrix(new_matrix);
 
       // Add the mapper to the type
-      stream_type->AddMapper(new_mapper);
+      type->AddMapper(new_mapper);
     }
   }
 }
@@ -202,14 +219,9 @@ std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> com
   GetAllTypesRecursive(&types, comp);
 
   for (const auto &t : types) {
-    if (t->Is(Type::STREAM)) {
-      auto st = *Cast<Stream>(t);
-      // Only resolve the Stream Type if it wasn't resolved already
-      if (st->meta.count("VHDL:ExpandStream") == 0) {
-        LOG(DEBUG, "VHDL:   Expand stream type " + st->ToString());
-        // Resolve the mappers of this Stream type.
-        ExpandMappers(st);
-      }
+    if (t->meta.count("VHDL:ExpandStream") == 0) {
+      // Resolve the mappers of this Stream type.
+      ExpandMappers(t);
     }
   }
 

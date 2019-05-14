@@ -107,7 +107,7 @@ class Type : public Named {
   /// @brief Return possible type mappers.
   std::deque<std::shared_ptr<TypeMapper>> mappers() const;
   /// @brief Add a type mapper.
-  void AddMapper(const std::shared_ptr<TypeMapper> &mapper);
+  void AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing=true);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other);
   /// @brief Remove all mappers to a specific type

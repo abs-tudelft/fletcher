@@ -341,7 +341,7 @@ struct Port : public NormalNode, public Term {
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   std::shared_ptr<Object> Copy() const override;
-  void InvertDirection();
+  std::shared_ptr<Port> InvertDirection();
 };
 
 /**

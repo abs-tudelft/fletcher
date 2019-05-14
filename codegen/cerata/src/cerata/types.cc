@@ -71,9 +71,9 @@ std::string Type::ToString(bool show_meta) const {
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
   // Append metadata
-  if (show_meta && !meta.empty() ) {
+  if (show_meta && !meta.empty()) {
     ret += "[";
-    for (const auto& k : meta) {
+    for (const auto &k : meta) {
       ret += k.first + "=" + k.second;
       ret += ", ";
     }
@@ -86,8 +86,19 @@ std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
   return mappers_;
 }
 
-void Type::AddMapper(const std::shared_ptr<TypeMapper>& mapper) {
+void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing) {
   Type *other = (Type *) mapper->b();
+
+  // Check if a mapper doesn't already exists
+  if (GetMapper(other)) {
+    if (!remove_existing) {
+      throw std::runtime_error(
+          "Mapper already exists to convert from " + this->ToString(true) + " to " + other->ToString(true));
+    } else {
+      RemoveMappersTo(other);
+    }
+  }
+
   if (mapper->a() != this) {
     throw std::runtime_error("Type converter does not convert from " + name());
   }
@@ -164,13 +175,13 @@ std::shared_ptr<Type> Vector::Make(std::string name, std::optional<std::shared_p
 }
 
 std::shared_ptr<Stream> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
-  return std::make_shared<Stream>(name, element_type, "data", epc);
+  return std::make_shared<Stream>(name, element_type, "", epc);
 }
 
 std::shared_ptr<Stream> Stream::Make(std::string name,
-                                   std::shared_ptr<Type> element_type,
-                                   std::string element_name,
-                                   int epc) {
+                                     std::shared_ptr<Type> element_type,
+                                     std::string element_name,
+                                     int epc) {
   return std::make_shared<Stream>(name, element_type, element_name, epc);
 }
 
@@ -345,7 +356,7 @@ bool Stream::IsEqual(const Type *other) const {
 
 void Stream::SetElementType(std::shared_ptr<Type> type) {
   // Invalidate mappers that point to this type on the other side
-  for (auto& mapper : mappers_) {
+  for (auto &mapper : mappers_) {
     mapper->b()->RemoveMappersTo(this);
   }
   // Invalidate all mappers from this type

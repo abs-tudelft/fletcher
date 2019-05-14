@@ -80,28 +80,27 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
 
 std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
   auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
-  auto slaves_read_array = PortArray::Make("bsv",
-                                           BusPort::Make("bsv_base", BusPort::Function::READ, Port::Dir::IN, spec),
-                                           nslaves);
   auto mst = BusPort::Make("mst", BusPort::Function::READ, Port::Dir::OUT, spec);
-  mst->SetType(slaves_read_array->base()->type());
+  mst->type()->meta["DEBUG_CONSTRUCT"] = std::string(__FILE__) + ":" + std::to_string(__LINE__);
+  auto slaves_read_array = PortArray::Make("bsv", (*Cast<BusPort>(mst->Copy()))->InvertDirection(), nslaves);
 
-  static auto ret = Component::Make("BusReadArbiterVec",
-                                    {bus_addr_width(),
-                                     bus_len_width(),
-                                     bus_data_width(),
-                                     nslaves,
-                                     Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
-                                     Parameter::Make("MAX_OUTSTANDING", integer(), intl<4>()),
-                                     Parameter::Make("RAM_CONFIG", string(), strl("")),
-                                     Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
-                                     Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
-                                     Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
-                                     Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
-                                     Port::Make(bus_cr()),
-                                     mst,
-                                     slaves_read_array,
-                                    });
+
+  auto ret = Component::Make("BusReadArbiterVec",
+                             {bus_addr_width(),
+                              bus_len_width(),
+                              bus_data_width(),
+                              nslaves,
+                              Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
+                              Parameter::Make("MAX_OUTSTANDING", integer(), intl<4>()),
+                              Parameter::Make("RAM_CONFIG", string(), strl("")),
+                              Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
+                              Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
+                              Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
+                              Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
+                              Port::Make(bus_cr()),
+                              mst,
+                              slaves_read_array,
+                             });
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
   ret->meta["package"] = "Interconnect";

@@ -46,7 +46,7 @@ std::string FlatType::name(const NamePart &root, const std::string &sep) const {
   return ret.str();
 }
 
-FlatType::FlatType(const Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert)
+FlatType::FlatType(Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert)
     : type_(t), invert_(invert) {
   name_parts_ = std::move(prefix);
   name_parts_.emplace_back(name, true);
@@ -77,7 +77,7 @@ void FlattenStream(std::deque<FlatType> *list,
 }
 
 void Flatten(std::deque<FlatType> *list,
-             const Type *type,
+             Type *type,
              const std::optional<FlatType> &parent,
              const std::string &name,
              bool invert,
@@ -103,7 +103,7 @@ void Flatten(std::deque<FlatType> *list,
   }
 }
 
-std::deque<FlatType> Flatten(const Type *type) {
+std::deque<FlatType> Flatten(Type *type) {
   std::deque<FlatType> result;
   Flatten(&result, type, {}, "", false);
   return result;
@@ -119,7 +119,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
         << std::string(static_cast<unsigned long>(2 * ft.nesting_level_), ' ') + name << " | "
         << std::setw(24) << std::left << ft.type_->name() << " | "
         << std::setw(3) << std::right << ft.nesting_level_ << " | "
-        << std::setw(8) << std::left << ft.type_->ToString() << std::endl;
+        << std::setw(8) << std::left << ft.type_->ToString(true) << std::endl;
   }
   return ret.str();
 }

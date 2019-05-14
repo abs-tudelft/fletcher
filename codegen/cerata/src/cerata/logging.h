@@ -52,7 +52,7 @@ inline std::string level2str(int level) {
   }
 }
 
-#define LOG(level, msg) std::cout << "[" << level2str(LOG_##level) + "]: " << msg << std::endl
+#define LOG(level, msg) std::cerr << "[" << level2str(LOG_##level) + "]: " << msg << std::endl
 #endif
 
 namespace cerata {

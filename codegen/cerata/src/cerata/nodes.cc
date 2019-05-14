@@ -211,8 +211,9 @@ Port::Port(std::string
            dir)
     : NormalNode(std::move(name), Node::PORT, std::move(type)), Term(dir) {}
 
-void Port::InvertDirection() {
+std::shared_ptr<Port> Port::InvertDirection() {
   dir_ = Term::Invert(dir_);
+  return *Cast<Port>(shared_from_this());
 }
 
 std::shared_ptr<Object> Parameter::Copy() const {

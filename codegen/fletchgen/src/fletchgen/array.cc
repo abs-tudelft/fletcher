@@ -89,22 +89,24 @@ std::shared_ptr<Type> write_data(std::shared_ptr<Node> width) {
 }
 
 std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
-                                       const std::shared_ptr<Node>& ctrl_width,
+                                       const std::shared_ptr<Node> &ctrl_width,
                                        const std::shared_ptr<Node> &tag_width) {
-  static auto ret = Component::Make("ArrayReader",
-                                    {bus_addr_width(), bus_len_width(), bus_data_width(),
-                                     Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
-                                     Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
-                                     Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
-                                     Parameter::Make("CFG", string(), strl("\"\"")),
-                                     Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
-                                     Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>()),
-                                     Port::Make(bus_cr()),
-                                     Port::Make(kernel_cr()),
-                                     BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec()),
-                                     Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
-                                     Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
-                                     Port::Make("out", read_data(std::move(data_width)), Port::Dir::OUT)}
+  auto bus = BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec());
+  bus->type()->meta["DEBUG_CONSTRUCT"] = std::string(__FILE__) + ":" + std::to_string(__LINE__);
+  auto ret = Component::Make("ArrayReader",
+                             {bus_addr_width(), bus_len_width(), bus_data_width(),
+                              Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
+                              Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
+                              Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
+                              Parameter::Make("CFG", string(), strl("\"\"")),
+                              Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
+                              Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>()),
+                              Port::Make(bus_cr()),
+                              Port::Make(kernel_cr()),
+                              bus,
+                              Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
+                              Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
+                              Port::Make("out", read_data(std::move(data_width)), Port::Dir::OUT)}
   );
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
@@ -285,7 +287,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
                                     RecField::Make("last", last()),
                                     RecField::Make("count", count(count_width)),
                                     RecField::Make("data", data(data_width))}),
-                                "slave_stream", epc);
+                                "", epc);
       type = Record::Make(name + "_rec", {
           RecField::Make("length", length()),
           RecField::Make("bytes", slave)
@@ -306,7 +308,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
                                     RecField::Make("last", last()),
                                     RecField::Make("count", count(count_width)),
                                     RecField::Make("data", data(data_width))}),
-                                "slave_stream", epc);
+                                "", epc);
       type = Record::Make(name + "_rec", {
           RecField::Make("length", length()),
           RecField::Make("chars", slave)
@@ -327,7 +329,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
                                     RecField::Make("dvalid", dvalid()),
                                     RecField::Make("last", last()),
                                     RecField::Make("data", element_type)}),
-                                "slave_stream", epc);
+                                "", epc);
       type = Record::Make(name + "_rec", {
           RecField::Make("length", length()),
           RecField::Make(arrow_child->name(), slave)

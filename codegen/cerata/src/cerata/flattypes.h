@@ -46,9 +46,9 @@ struct NamePart {
  */
 struct FlatType {
   FlatType() = default;
-  FlatType(const Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
+  FlatType(Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
   /// @brief A pointer to the original type.
-  const Type *type_;
+  Type *type_;
   /// @brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
   /// @brief Name parts of this flattened type.
@@ -77,14 +77,14 @@ void FlattenStream(std::deque<FlatType> *list,
 
 /// @brief Flatten any Type.
 void Flatten(std::deque<FlatType> *list,
-             const Type *type,
+             Type *type,
              const std::optional<FlatType> &parent,
              const std::string &name,
              bool invert,
              bool sep=true);
 
 /// @brief Flatten and return a list of FlatTypes.
-std::deque<FlatType> Flatten(const Type *type);
+std::deque<FlatType> Flatten(Type *type);
 
 /// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
 bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
