@@ -75,6 +75,7 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER_COMMON}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHER_COMMON}-test ${FLETCHER_COMMON}-static)
     target_link_libraries(${FLETCHER_COMMON}-test GTest::GTest GTest::Main)
+    target_include_directories(${FLETCHER_COMMON}-test PUBLIC src)
 
     gtest_discover_tests(${FLETCHER_COMMON}-test)
 

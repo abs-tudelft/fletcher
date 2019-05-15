@@ -95,7 +95,6 @@ int main(int argc, char **argv) {
                                    srec_buf_offsets,
                                    options->srec_sim_dump,
                                    first_last_indices);
-    LOG(WARNING, "Generating simulation top-level not yet implemented.");
   }
 
   // Generate AXI top level

@@ -46,9 +46,9 @@ int Options::Parse(Options *options, int argc, char **argv) {
   // Output options:
   app.add_option("-l,--language", options->languages,
                  "Select the output languages for your design. Each type of output will be stored in a "
-                 "seperate subfolder (e.g. <output folder>/VHDL/...). Available languages:\n"
-                 "vhdl\tExport as VHDL files (default)."
-                 "dot\tExport as DOT graphs.");
+                 "seperate subfolder (e.g. <output folder>/vhdl/...). Available languages:\n"
+                 "\t* vhdl\tExport as VHDL files (default).\n"
+                 "\t* dot\tExport as DOT graphs.");
 
   app.add_option("-f,--force", options->override_kernels,
                  "Force overwriting kernel component if it exists already."

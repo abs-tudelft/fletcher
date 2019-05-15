@@ -8,7 +8,7 @@ option(FLETCHER_PYTHON
         "Build Fletcher for use in building pyfletcher"
         OFF)
 
-#Only needed when building for Python
+# Only needed when building for Python
 set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
 
 set(FLETCHER fletcher)
@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 if (FLETCHER_PYTHON)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
     message("Building for Pyfletcher")
-endif()
+endif ()
 
 set(SOURCES
         src/fletcher/platform.cc
@@ -48,15 +48,15 @@ set_target_properties(${FLETCHER} PROPERTIES PUBLIC_HEADER src/fletcher/api.h)
 if (FLETCHER_PYTHON)
     find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
     include_directories(${PYARROW_DIR}/include)
-else()
+else ()
     find_library(LIB_ARROW arrow)
-endif()
+endif ()
 message(${LIB_ARROW})
 
 # Common library (static), if not already built
 if (NOT TARGET fletcher-common)
     add_subdirectory(../../common/cpp fletcher-common)
-endif()
+endif ()
 
 # For now, we want to include all symbols from the common static library into the runtime shared library.
 # At some point they should be exposed more programatically (in the api header, for example).
@@ -103,10 +103,10 @@ if (FLETCHER_TESTS)
     find_package(GTest REQUIRED)
 
     if (FLETCHER_ECHO)
-      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
+        set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
     else ()
-      add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
-      set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
+        add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
+        set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
     endif ()
 
     set(TEST_SOURCES test/test.cpp)
@@ -116,6 +116,7 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
     target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHER}-test ${FLETCHER})
+    target_include_directories(${FLETCHER}-test PUBLIC src)
     target_include_directories(${FLETCHER}-test PUBLIC ../../platforms/echo/runtime/src)
 
     include(GoogleTest)

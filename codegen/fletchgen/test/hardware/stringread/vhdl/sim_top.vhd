@@ -30,12 +30,12 @@ entity sim_top is
     TAG_WIDTH                   : natural := 1;
 
     -- Host bus properties
-    BUS_ADDR_WIDTH              : natural := ${BUS_ADDR_WIDTH};
-    BUS_DATA_WIDTH              : natural := ${BUS_DATA_WIDTH};
-    BUS_STROBE_WIDTH            : natural := ${BUS_STROBE_WIDTH};
-    BUS_LEN_WIDTH               : natural := ${BUS_LEN_WIDTH};
-    BUS_BURST_MAX_LEN           : natural := ${BUS_BURST_MAX_LEN};
-    BUS_BURST_STEP_LEN          : natural := ${BUS_BURST_STEP_LEN};
+    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_DATA_WIDTH              : natural := 512;
+    BUS_STROBE_WIDTH            : natural := 64;
+    BUS_LEN_WIDTH               : natural := 8;
+    BUS_BURST_MAX_LEN           : natural := 64;
+    BUS_BURST_STEP_LEN          : natural := 1;
 
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural := 32;
@@ -48,7 +48,7 @@ architecture Behavorial of sim_top is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  component ${FLETCHER_WRAPPER_NAME} is
+  component Kernel_Mantle is
     generic(
       BUS_ADDR_WIDTH            : natural
     );
@@ -310,9 +310,15 @@ begin
     mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink);
 
     -- 2. Write addresses of the arrow buffers in the SREC file.
-${SREC_BUFFER_ADDRESSES}
+    mmio_write(6, X"00000000", mmio_source, mmio_sink);
+    mmio_write(7, X"00000000",  mmio_source, mmio_sink);
+    mmio_write(8, X"00000080", mmio_source, mmio_sink);
+    mmio_write(9, X"00000000",  mmio_source, mmio_sink);
+
     -- 3. Write recordbatch bounds.
-${SREC_FIRSTLAST_INDICES}
+    mmio_write(4, X"00000000", mmio_source, mmio_sink);
+    mmio_write(5, X"0000001a",  mmio_source, mmio_sink);
+
     -- 4. Write any kernel-specific registers.
     -- <kernel specific registers reading/writing goes here>
 
@@ -381,7 +387,7 @@ ${SREC_FIRSTLAST_INDICES}
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "${READ_SREC_PATH}"
+    SREC_FILE                   => "output/stringread.srec"
   )
   port map (
     clk                         => bcd_clk,
@@ -405,7 +411,7 @@ ${SREC_FIRSTLAST_INDICES}
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "${DUMP_SREC_PATH}"
+    SREC_FILE                   => "srec_write.dat"
   )
   port map (
     clk                         => bcd_clk,
@@ -425,7 +431,7 @@ ${SREC_FIRSTLAST_INDICES}
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
-  ${FLETCHER_WRAPPER_INST_NAME} : ${FLETCHER_WRAPPER_NAME}
+  Kernel_Mantle_inst : Kernel_Mantle
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH
     )

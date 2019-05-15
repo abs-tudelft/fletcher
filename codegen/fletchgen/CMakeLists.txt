@@ -20,7 +20,7 @@ endif ()
 include_directories(../../common/cpp/src)
 
 # Cerata
-add_compile_definitions(LOGGING_ARROW)
+# add_compile_definitions(LOGGING_ARROW)
 add_subdirectory(../cerata cerata)
 include_directories(../cerata/src)
 
