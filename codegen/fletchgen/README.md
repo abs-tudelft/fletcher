@@ -121,4 +121,4 @@ going to use in your kernel implementation.
 
 You can generate a simulation top level and provide a Flatbuffer file with a RecordBatch to the simulation environment. 
 You can use this to debug your designs in simulation, independent of an FPGA platform specific simulation environment. 
-[An example is shown here.](../../hardware/test/fletchgen/stringread).
+[An example is shown here.](test/hardware/stringread).
