@@ -24,7 +24,7 @@
 
 namespace fletchgen::srec {
 
-std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
+std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   size_t addr = 0;
   std::vector<size_t> ret;
 
@@ -39,17 +39,21 @@ std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   return ret;
 }
 
-std::vector<uint64_t> writeRecordBatchToSREC(arrow::RecordBatch *record_batch,
-                                             const std::string &srec_fname) {
+std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<arrow::RecordBatch>>& recordbatches,
+                                               const std::string &srec_fname) {
 
   std::vector<arrow::Buffer *> buffers;
-  for (int c = 0; c < record_batch->num_columns(); c++) {
-    auto column = record_batch->column(c);
-    fletcher::flattenArrayBuffers(&buffers, column);
+
+  // Get pointers to all buffers of all recordbatches
+  for (const auto& rb : recordbatches) {
+    for (int c = 0; c < rb->num_columns(); c++) {
+      auto column = rb->column(c);
+      fletcher::flattenArrayBuffers(&buffers, column);
+    }
   }
 
-  LOG(DEBUG, "RecordBatch has " + std::to_string(buffers.size()) + " Arrow buffers.");
-  auto offsets = getBufferOffsets(buffers);
+  LOG(DEBUG, "RecordBatches have " + std::to_string(buffers.size()) + " Arrow Buffers.");
+  auto offsets = GetBufferOffsets(buffers);
   LOG(DEBUG, "Contiguous size: " + std::to_string(offsets.back()));
 
   // Generate a warning when stuff gets larger than a megabyte.

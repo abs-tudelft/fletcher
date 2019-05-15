@@ -31,30 +31,53 @@
 
 namespace cerata::vhdl {
 
+bool FileExists (const std::string& name) {
+  std::ifstream f(name.c_str());
+  return f.good();
+}
+
 void VHDLOutputGenerator::Generate() {
   // Make sure the subdirectory exists.
   CreateDir(subdir());
   size_t num_graphs = 0;
-  for (const auto &g : graphs_) {
-    if ((g != nullptr)) {
-      if (g->IsComponent()) {
-        LOG(INFO, "VHDL: Transforming Component " + g->name() + " to VHDL-compatible version.");
-        auto vhdl_design = Design(*Cast<Component>(g), DEFAULT_LIBS);
+  for (const auto &o : outputs_) {
+    if ((o.graph != nullptr)) {
+      if (o.graph->IsComponent()) {
+        LOG(INFO, "VHDL: Transforming Component " + o.graph->name() + " to VHDL-compatible version.");
+        auto vhdl_design = Design(*Cast<Component>(o.graph), DEFAULT_LIBS);
 
-        LOG(INFO, "VHDL: Generating sources for component " + g->name());
+        LOG(INFO, "VHDL: Generating sources for component " + o.graph->name());
         auto vhdl_source = vhdl_design.Generate();
         vhdl_source.ToString();
-        auto vhdl_path = subdir() + "/" + g->name() + ".vhd";
+        auto vhdl_path = subdir() + "/" + o.graph->name() + ".vhd";
 
-        LOG(INFO, "VHDL: Saving to: " + vhdl_path);
-        auto vhdl_file = std::ofstream(vhdl_path);
-        vhdl_file << vhdl_source.ToString();
-        vhdl_file.close();
+        bool overwrite = false;
+
+        if (o.meta.count("overwrite") > 0) {
+          if (o.meta.at("overwrite") == "true") {
+            overwrite = true;
+          }
+        }
+
+        LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
+        if (!FileExists(vhdl_path) || overwrite) {
+          auto vhdl_file = std::ofstream(vhdl_path);
+          vhdl_file << vhdl_source.ToString();
+          vhdl_file.close();
+        } else {
+          LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
+          // Save as a vhdt file.
+          auto vhdl_file = std::ofstream(vhdl_path + "t");
+          vhdl_file << vhdl_source.ToString();
+          vhdl_file.close();
+        }
 
         num_graphs++;
       } else {
-        LOG(WARNING, "VHDL: Graph " << g->name() << " is not a component. Skipping output generation.");
+        LOG(WARNING, "VHDL: Graph " << o.graph->name() << " is not a component. Skipping output generation.");
       }
+    } else {
+      throw std::runtime_error("Graph is nullptr.");
     }
   }
   LOG(INFO, "VHDL: Generated output for " << num_graphs << " graphs.");

@@ -18,19 +18,18 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-  use work.Utils.all;
-  use work.AXI.all;
-  use work.Streams.all;
+use work.Utils.all;
+use work.AXI.all;
+use work.Streams.all;
 
--- Provides an AXI4-lite slave MMIO to a serialized std_logic_vector compatible
--- for use as Fletcher MMIO.
+-- Provides an AXI4-lite slave to write to / read from a set of registers.
 entity axi_mmio is
   generic (
     ---------------------------------------------------------------------------
     -- Bus metrics and configuration
     ---------------------------------------------------------------------------
-    BUS_ADDR_WIDTH              : natural;
-    BUS_DATA_WIDTH              : natural;
+    BUS_ADDR_WIDTH              : natural := 32;
+    BUS_DATA_WIDTH              : natural := 32;
     
     ---------------------------------------------------------------------------
     -- Register configuration
@@ -41,7 +40,8 @@ entity axi_mmio is
     
     -- Register read/write configuration:
     -- Each character in this string will determine whether its corresponding
-    -- register is Write-Only (W), Read-Only (R) or Bidirectional (B).
+    -- register is Write-Only (W), Read-Only (R) or Bidirectional (B) as seen
+    -- from the master of the AXI4-lite bus.
     --
     -- Example : 0..3 write only, 4..5 read only 6..7 bidi
     -- Register: 0 1 2 3 4 5 6 7
@@ -205,14 +205,14 @@ begin
         
         -- Check for each register if it needs to be reset
         if (REG_RESET /= "") then
-          for I in 0 to NUM_REGS-1 loop
+          for I in REG_RESET'range loop
               if (REG_RESET(i) /= 'Y') then
-                r.regs(i) <= (others => '0');
+                r.regs(i-REG_RESET'low) <= (others => '0');
               end if;
           end loop;
         else
-          for I in 0 to NUM_REGS-1 loop
-            r.regs(i) <= (others => '0');
+          for I in REG_RESET'range loop
+            r.regs(i-REG_RESET'low) <= (others => '0');
           end loop;
         end if;
       end if;
@@ -272,7 +272,7 @@ begin
           o.bresp := RESP_OK;
           
           -- Write only if register is writeable
-          if (REG_CONFIG = "") or (REG_CONFIG(idx) = 'W') or (REG_CONFIG(idx) = 'B') then
+          if (REG_CONFIG = "") or (REG_CONFIG(idx+REG_CONFIG'low) = 'W') or (REG_CONFIG(idx+REG_CONFIG'low) = 'B') then
             v.regs(idx) := int_s_axi_wdata;
           else
             -- If not writable, generate a warning in simulation            
@@ -305,7 +305,7 @@ begin
         o.rresp := RESP_OK;
                 
         -- Check if register is readable
-        if (REG_CONFIG = "") or (REG_CONFIG(idx) = 'R') or (REG_CONFIG(idx) = 'B') then
+        if (REG_CONFIG = "") or (REG_CONFIG(idx+REG_CONFIG'low) = 'R') or (REG_CONFIG(idx+REG_CONFIG'low) = 'B') then
           o.rdata := r.regs(idx);
         else
           -- Respond with DEADBEEF if not readable

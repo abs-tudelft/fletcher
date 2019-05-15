@@ -20,11 +20,11 @@
 
 namespace cerata {
 
-OutputGenerator::OutputGenerator(std::string root_dir, std::deque<std::shared_ptr<Graph>> graphs)
-    : root_dir_(std::move(root_dir)), graphs_(std::move(graphs)) {}
+OutputGenerator::OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs)
+    : root_dir_(std::move(root_dir)), outputs_(std::move(outputs)) {}
 
-OutputGenerator &OutputGenerator::AddGraph(std::shared_ptr<cerata::Graph> graph) {
-  graphs_.push_back(graph);
+OutputGenerator &OutputGenerator::AddOutput(OutputSpec output) {
+  outputs_.push_back(output);
   return *this;
 }
 

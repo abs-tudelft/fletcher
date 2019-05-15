@@ -50,6 +50,11 @@ int Options::Parse(Options *options, int argc, char **argv) {
                  "vhdl\tExport as VHDL files (default)."
                  "dot\tExport as DOT graphs.");
 
+  app.add_option("-f,--force", options->override_kernels,
+                 "Force overwriting kernel component if it exists already."
+                 "If this flag is not used and the kernel source exists already in the specified path, the output "
+                 "filename will be <kernel>.vhdt and is always overwritten.");
+
   app.add_flag("--axi", options->axi_top,
                "Enable AXI top-level template output.");
   app.add_flag("--sim", options->sim_top,
@@ -78,7 +83,7 @@ bool Options::MustGenerateSREC() {
   return false;
 }
 
-static bool HasLanguage(const std::vector<std::string>& languages, const std::string& lang) {
+static bool HasLanguage(const std::vector<std::string> &languages, const std::string &lang) {
   for (const auto &l : languages) {
     if (l == lang) {
       return true;

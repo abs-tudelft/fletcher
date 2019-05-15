@@ -23,11 +23,26 @@
 #include "fletchgen/top/sim.h"
 
 std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas) {
-  // TODO(johanpel): allow multiple recordbatches
-  auto recordbatch = fletcher::readRecordBatchFromFile(options->recordbatch_paths[0], schemas[0]);
-  auto srec_buffers = fletchgen::srec::writeRecordBatchToSREC(recordbatch.get(), options->srec_out_path);
-  return srec_buffers;
+                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
+                                   std::vector<std::pair<uint32_t, uint32_t>>* firstlastidx=nullptr) {
+  if (options->recordbatch_paths.size() != schemas.size()) {
+    throw std::runtime_error("Number of schemas does not correspond to number of RecordBatches.");
+  }
+
+  std::deque<std::shared_ptr<arrow::RecordBatch>> recordbatches;
+  for (size_t i=0;i<schemas.size();i++) {
+    auto rb = fletcher::readRecordBatchFromFile(options->recordbatch_paths[i], schemas[i]);
+    recordbatches.push_back(rb);
+  }
+
+  auto srec_buffer_offsets = fletchgen::srec::WriteRecordBatchesToSREC(recordbatches, options->srec_out_path);
+
+  if (firstlastidx != nullptr) {
+    for (const auto& rb : recordbatches) {
+      (*firstlastidx).emplace_back(0, rb->num_rows());
+    }
+  }
+  return srec_buffer_offsets;
 }
 
 int main(int argc, char **argv) {
@@ -41,7 +56,8 @@ int main(int argc, char **argv) {
 
   fletchgen::Design design;
 
-  std::vector<uint64_t> srec_buffers;
+  std::vector<uint64_t> srec_buf_offsets;
+  std::vector<std::pair<uint32_t, uint32_t>> first_last_indices;
 
   // Generate designs in Cerata
   if (options->MustGenerateDesign()) {
@@ -53,20 +69,20 @@ int main(int argc, char **argv) {
   // Generate SREC output
   if (options->MustGenerateSREC()) {
     LOG(INFO, "Generating SREC output.");
-    srec_buffers = GenerateSREC(design.options, design.schemas);
+    srec_buf_offsets = GenerateSREC(design.options, design.schemas, &first_last_indices);
   }
 
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
     LOG(INFO, "Generating VHDL output.");
-    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, design.GetAllComponents());
+    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, design.GetOutputSpec());
     vhdl.Generate();
   }
 
   // Generate DOT output
   if (options->MustGenerateDOT()) {
     LOG(INFO, "Generating DOT output.");
-    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetAllComponents());
+    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
     dot.Generate();
   }
 
@@ -76,8 +92,9 @@ int main(int argc, char **argv) {
     fletchgen::top::GenerateSimTop(design.mantle,
                                    {&sim_file},
                                    options->srec_out_path,
-                                   srec_buffers,
-                                   options->srec_sim_dump);
+                                   srec_buf_offsets,
+                                   options->srec_sim_dump,
+                                   first_last_indices);
     LOG(WARNING, "Generating simulation top-level not yet implemented.");
   }
 

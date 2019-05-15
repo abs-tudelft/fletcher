@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cerata/api.h>
+
 #include "fletchgen/design.h"
 #include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
+
+using OutputSpec=cerata::OutputGenerator::OutputSpec;
 
 fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options> &opts) {
   Design ret;
@@ -37,16 +41,27 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   return ret;
 }
 
-std::deque<std::shared_ptr<cerata::Graph>> Design::GetAllComponents() {
-  std::deque<std::shared_ptr<cerata::Graph>> ret;
+std::deque<OutputSpec> Design::GetOutputSpec() {
+  std::deque<OutputSpec> ret;
+
   // Mantle
-  ret.push_back(mantle);
+  OutputSpec omantle(mantle);
+  omantle.meta["overwrite"] = "true";
+  ret.push_back(omantle);
+
   // Kernel
-  //ret.push_back(kernel);
+  OutputSpec okernel(kernel);
+  okernel.meta["overwrite"] = "false";
+  ret.push_back(okernel);
+
   // Readers
-  ret.insert(ret.end(), readers.begin(), readers.end());
+  for (const auto& r : readers) {
+    OutputSpec oreader(r);
+    oreader.meta["overwrite"] = "true";
+    ret.push_back(oreader);
+  }
 
   return ret;
 }
 
-}
+} // namespace fletchgen

@@ -24,12 +24,21 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
                            const std::vector<std::ostream *> &outputs,
                            const std::string &read_srec_path,
                            std::vector<uint64_t> buffers,
-                           const std::string &dump_srec_path) {
+                           const std::string &dump_srec_path,
+                           const std::vector<std::pair<uint32_t, uint32_t>> &firstlastidx) {
+  // Fletcher hardware dir
   const char *fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
   if (fhwd == nullptr) {
     throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
   }
 
+  // Number of default registers
+  constexpr int ndefault = 4;
+
+  // Number of first/last indices
+  size_t nfl = firstlastidx.size();
+
+  // Template file for simulation top-level
   cerata::vhdl::Template t(std::string(fhwd) + "/sim/sim_top.vhdt");
 
   // Bus properties
@@ -40,13 +49,6 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
   t.replace("BUS_BURST_STEP_LEN", 1);
   t.replace("BUS_BURST_MAX_LEN", 64);
 
-  // MMIO properties
-  t.replace("MMIO_ADDR_WIDTH", 32);
-  t.replace("MMIO_DATA_WIDTH", 32);
-
-  // Arrow properties
-  t.replace("ARROW_INDEX_WIDTH", 32);
-
   // Do not change this order, TODO: fix this in replacement code
   t.replace("FLETCHER_WRAPPER_NAME", mantle->name());
   t.replace("FLETCHER_WRAPPER_INST_NAME", mantle->name() + "_inst");
@@ -56,32 +58,47 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
 
   if (!buffers.empty()) {
     std::stringstream bufstr;
-
-    for (unsigned int i = 0; i < buffers.size() - 1; i++) {
+    // Loop over all buffer offsets.
+    // We skip the last offset as it is the next empty part of the memory in the SREC file.
+    for (unsigned int i = 0; i < buffers.size()-1; i++) {
+      // Get the low and high part of the address
       auto addr = buffers[i];
-      auto msb = (uint32_t) (addr >> 32u);
-      auto lsb = (uint32_t) (addr & 0xFFFFFFFF);
+      auto addr_lo = (uint32_t) (addr & 0xFFFFFFFF);
+      auto addr_hi = (uint32_t) (addr >> 32u);
+      bufstr << "    mmio_write("
+             << std::dec << 2 * i + (ndefault + 2 * nfl) << ", "
+             << "X\"" << std::setfill('0') << std::setw(8) << std::hex << addr_lo << "\","
+             << " mmio_source, mmio_sink);"
+             << std::endl;
 
-      bufstr << "    mmio_write(" << std::dec << 2 * i + 6 << ", X\"" << std::setfill('0') << std::setw(8) << std::hex
-             << lsb << "\", regs_in);" << std::endl;
-      bufstr << "    wait until rising_edge(acc_clk);" << std::endl;
-      bufstr << "    mmio_write(" << std::dec << 2 * i + 1 + 6 << ", X\"" << std::setfill('0') << std::setw(8)
-             << std::hex << msb << "\", regs_in);" << std::endl;
-      bufstr << "    wait until rising_edge(acc_clk);" << std::endl;
+      bufstr << "    mmio_write("
+             << std::dec << 2 * i + (ndefault + 2 * nfl) + 1 << ", "
+             << "X\"" << std::setfill('0') << std::setw(8) << std::hex << addr_hi << "\", "
+             << " mmio_source, mmio_sink);"
+             << std::endl;
     }
     t.replace("SREC_BUFFER_ADDRESSES", bufstr.str());
   } else {
-    t.replace("SREC_BUFFER_ADDRESSES", "    -- No RecordBatch/SREC was supplied to Fletchgen. \n"
-                                       "    -- Register buffer addresses here. Example: \n"
-                                       "    -- uc_reg_write(0, X\"00000000\", regs_in); -- LSBs of first buffer address \n"
-                                       "    -- wait until rising_edge(acc_clk);\n"
-                                       "    -- uc_reg_write(1, X\"00000000\", regs_in); -- MSBs of first buffer address\n"
-                                       "    -- wait until rising_edge(acc_clk);\n"
-                                       "    -- uc_reg_write(2, X\"000000c0\", regs_in); -- LSBS of second buffer address\n"
-                                       "    -- wait until rising_edge(acc_clk);\n"
-                                       "    -- uc_reg_write(3, X\"00000000\", regs_in); -- MSBs of second buffer address\n"
-                                       "    -- wait until rising_edge(acc_clk);"
-                                       "    -- etc...\n");
+    t.replace("SREC_BUFFER_ADDRESSES", "    -- No RecordBatch/SREC was supplied to Fletchgen. \n");
+  }
+  if (!firstlastidx.empty()) {
+    std::stringstream flstr;
+    for (unsigned int i = 0; i < firstlastidx.size(); i++) {
+      flstr << "    mmio_write("
+            << std::dec << 2 * i + (ndefault) << ", "
+            << "X\"" << std::setfill('0') << std::setw(8) << std::hex << firstlastidx[i].first << "\","
+            << " mmio_source, mmio_sink);"
+            << std::endl;
+
+      flstr << "    mmio_write("
+            << std::dec << 2 * i + (ndefault) + 1 << ", "
+            << "X\"" << std::setfill('0') << std::setw(8) << std::hex << firstlastidx[i].second << "\", "
+            << " mmio_source, mmio_sink);"
+            << std::endl;
+    }
+    t.replace("SREC_FIRSTLAST_INDICES", flstr.str());
+  } else {
+    t.replace("SREC_FIRSTLAST_INDICES", "    -- No RecordBatch/SREC was supplied to Fletchgen. \n");
   }
 
   for (auto &o : outputs) {

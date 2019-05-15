@@ -24,7 +24,7 @@ namespace fletchgen::srec {
  * @param buffers The buffers.
  * @return The required size of the contiguous space.
  */
-std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers);
+std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers);
 
 /**
  * @brief Write an arrow::RecordBatch to an SREC file.
@@ -33,6 +33,7 @@ std::vector<uint64_t> getBufferOffsets(std::vector<arrow::Buffer *> &buffers);
  * @param srec_fname The file name of the SREC file.
  * @return A vector with the buffer offsets in the SREC file.
  */
-std::vector<uint64_t> writeRecordBatchToSREC(arrow::RecordBatch *record_batch, const std::string &srec_fname);
+std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<arrow::RecordBatch>>& recordbatches,
+                                               const std::string &srec_fname);
 
 } // namespace fletchgen::srec

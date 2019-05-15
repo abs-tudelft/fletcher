@@ -39,7 +39,7 @@ struct Design {
   std::shared_ptr<Mantle> mantle;
   std::shared_ptr<cerata::Component> wrapper;
 
-  std::deque<std::shared_ptr<cerata::Graph>> GetAllComponents();
+  std::deque<cerata::OutputGenerator::OutputSpec> GetOutputSpec();
 };
 
 }

@@ -26,6 +26,7 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
                            const std::vector<std::ostream *> &outputs,
                            const std::string &read_srec_path,
                            std::vector<uint64_t> buffers,
-                           const std::string &dump_srec_path);
+                           const std::string &dump_srec_path,
+                           const std::vector<std::pair<uint32_t, uint32_t>>& firstlastidx={});
 
 }

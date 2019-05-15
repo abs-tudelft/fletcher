@@ -30,8 +30,8 @@ namespace cerata::vhdl {
 
 class VHDLOutputGenerator : public OutputGenerator {
  public:
-  explicit VHDLOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})
-      : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
+  explicit VHDLOutputGenerator(std::string root_dir, std::deque<OutputGenerator::OutputSpec> outputs = {})
+      : OutputGenerator(std::move(root_dir), std::move(outputs)) {}
   void Generate() override;
   std::string subdir() override { return DEFAULT_SUBDIR; }
 };

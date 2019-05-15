@@ -48,7 +48,7 @@ std::string NodeName(const std::shared_ptr<Node> &node, const std::string& suffi
 
 class DOTOutputGenerator : public OutputGenerator {
  public:
-  explicit DOTOutputGenerator(std::string root_dir, std::deque<std::shared_ptr<cerata::Graph>> graphs = {})
+  explicit DOTOutputGenerator(std::string root_dir, std::deque<OutputGenerator::OutputSpec> graphs = {})
   : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
   void Generate() override;
   std::string subdir() override { return "dot"; }

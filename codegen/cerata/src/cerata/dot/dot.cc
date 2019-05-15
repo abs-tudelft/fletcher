@@ -28,10 +28,10 @@ namespace cerata::dot {
 void DOTOutputGenerator::Generate() {
   CreateDir(subdir());
   cerata::dot::Grapher dot;
-  for (const auto &g : graphs_) {
-    if (g != nullptr) {
-      LOG(INFO, "DOT: Generating output for Graph: " + g->name());
-      dot.GenFile(g, subdir() + "/" + g->name() + ".dot");
+  for (const auto &o : outputs_) {
+    if (o.graph != nullptr) {
+      LOG(INFO, "DOT: Generating output for Graph: " + o.graph->name());
+      dot.GenFile(o.graph, subdir() + "/" + o.graph->name() + ".dot");
     }
   }
 }

@@ -37,6 +37,7 @@ struct Options {
   bool sim_top = false;
   bool quiet = false;
   bool verbose = false;
+  bool override_kernels = false;
 
   /**
    * @brief Parse command line options and store the result
