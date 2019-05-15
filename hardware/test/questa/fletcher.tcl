@@ -76,6 +76,7 @@ proc add_streams {{source_dir ""}} {
   add_source $source_dir/streams/StreamAccumulator.vhd
   add_source $source_dir/streams/StreamElementCounter.vhd
   add_source $source_dir/streams/StreamPseudoRandomGenerator.vhd
+  add_source $source_dir/streams/StreamPrefixSum.vhd
 }
 
 proc add_streams_tb {{source_dir ""}} {

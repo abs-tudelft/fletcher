@@ -55,7 +55,7 @@ entity StreamElementCounter is
     in_ready                    : out std_logic;
     in_last                     : in  std_logic;
     in_count                    : in  std_logic_vector(IN_COUNT_WIDTH-1 downto 0);
-    in_dvalid                   : in  std_logic;
+    in_dvalid                   : in  std_logic := '1';
 
     -- Output stream.
     out_valid                   : out std_logic;

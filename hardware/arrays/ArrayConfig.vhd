@@ -23,7 +23,7 @@ package ArrayConfig is
   -- least significant order.
   --
   -----------------------------------------------------------------------------
-  -- prim(<width>)
+  -- prim(<width>;epc=1)
   -----------------------------------------------------------------------------
   -- Represents a BufferReader for a primitive data type. width specifies the
   -- bitwidth of the data type.
@@ -37,6 +37,8 @@ package ArrayConfig is
   --
   -- User streams:
   --   - Stream 0:
+  --       - count: log2ceil(epc+1) when epc > 1, otherwise 0
+  --         The number of elements valid in data.
   --       - data: width
   --         The data element.
   --
@@ -101,12 +103,14 @@ package ArrayConfig is
   --   - Remaining streams: <>(1+)
   --
   -----------------------------------------------------------------------------
-  -- listprim(<width>;epc=1)
+  -- listprim(<width>;lepc=1,epc=1)
   -----------------------------------------------------------------------------
   -- Constructs a list reader for a primitive, non-nullable data type. width
   -- specifies the bitwidth of the list element data type. The advantage of this
   -- construct over list(prim(width)) is that multiple elements can be returned
   -- per cycle, specified by the epc parameter.
+  -- For ArrayWriters, multiple list lengths per cycle can also be supplied
+  -- using the lepc parameter.
   --
   -- Control vector:
   --   - dataBaseAddr: BUS_ADDR_WIDTH
@@ -118,8 +122,10 @@ package ArrayConfig is
   --
   -- User streams:
   --   - Master stream:
-  --       - length: INDEX_WIDTH
-  --         Length for this list.
+  --       - count: log2ceil(lepc+1)
+  --         The number of lengths valid in length.
+  --       - length: INDEX_WIDTH*lepc
+  --         List lengths.
   --
   --   - Secondary stream:
   --       - count: log2ceil(epc+1)
@@ -282,8 +288,15 @@ package body ArrayConfig is
 
   function arcfg_userWidthsPrim(cfg: string; INDEX_WIDTH: natural) return nat_array is
     variable res  : nat_array(0 downto 0);
+    constant width  : natural := strtoi(parse_arg(cfg, 0));
+    constant epc    : natural := parse_param(cfg, "epc", 1);
   begin
-    res(0) := strtoi(parse_arg(cfg, 0)); -- Element data
+    if epc > 1 then
+      res(0) := log2ceil(epc + 1) -- Number of elements valid
+              + width * epc;      -- data width times epc
+    else
+      res(0) := width;
+    end if;
     return res;
   end function;
 
@@ -317,11 +330,13 @@ package body ArrayConfig is
   function arcfg_userWidthsListPrim(cfg: string; INDEX_WIDTH: natural) return nat_array is
     variable res    : nat_array(1 downto 0);
     constant width  : natural := strtoi(parse_arg(cfg, 0));
+    constant lepc   : natural := parse_param(cfg, "lepc", 1);
     constant epc    : natural := parse_param(cfg, "epc", 1);
   begin
-    res(0) := INDEX_WIDTH;      -- List length
-    res(1) := log2ceil(epc + 1) -- Number of elements valid
-            + width * epc;      -- epc data lengths
+    res(0) := log2ceil(lepc + 1)  -- Number of lengths valid
+            + INDEX_WIDTH * lepc; -- List lengths
+    res(1) := log2ceil(epc + 1)   -- Number of elements valid
+            + width * epc;        -- epc data lengths
     return res;
   end function;
 
@@ -393,13 +408,21 @@ package body ArrayConfig is
     constant cmd    : string := parse_command(cfg);
     variable cnt    : natural;
     variable epc    : natural;
+    variable lepc   : natural;
     variable width  : natural;
   begin
     cnt := 0;
 
     if cmd = "prim" then
       if main then
-        cnt := cnt + strtoi(parse_arg(cfg, 0)); -- Element data
+        width := strtoi(parse_arg(cfg, 0));
+        epc := parse_param(cfg, "epc", 1);
+        if epc > 1 then
+          cnt := cnt + log2ceil(epc + 1); -- Number of elements valid
+          cnt := cnt + width * epc; -- epc elements
+        else
+          cnt := cnt + width;
+        end if;
       end if;
 
     elsif cmd = "arb" then
@@ -424,14 +447,17 @@ package body ArrayConfig is
     elsif cmd = "listprim" then
 
       if main then
-        cnt := cnt + INDEX_WIDTH; -- List length
+        lepc := parse_param(cfg, "lepc", 1);
+
+        cnt := cnt + log2ceil(lepc + 1); -- Number of lengths valid
+        cnt := cnt + INDEX_WIDTH * lepc; -- All lengths
       end if;
       if secondary then
         width := strtoi(parse_arg(cfg, 0));
         epc := parse_param(cfg, "epc", 1);
 
         cnt := cnt + log2ceil(epc + 1); -- Number of elements valid
-        cnt := cnt + width * epc; -- epc elements
+        cnt := cnt + width * epc;       -- All elements
       end if;
 
     elsif cmd = "struct" then
