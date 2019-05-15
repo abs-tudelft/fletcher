@@ -277,8 +277,8 @@ begin
 
     a_valid     <= in_valid(0);
     in_ready(0) <= a_ready;
-    a_length    <= in_data(IUI(1)-COUNT_WIDTH-1 downto 0);
-    a_count     <= in_data(IUI(1)-1 downto IUI(1)-COUNT_WIDTH);
+    a_length    <= in_data(IUI(1)-LCOUNT_WIDTH-1 downto 0);
+    a_count     <= in_data(IUI(1)-1 downto IUI(1)-LCOUNT_WIDTH);
     a_last      <= in_last(0);
   end generate;
 

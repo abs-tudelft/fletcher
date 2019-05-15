@@ -41,7 +41,7 @@ entity ArrayReaderListPrim is
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
-    
+
     -- Maximum number of beats in a burst.
     BUS_BURST_MAX_LEN           : natural := 16;
 
@@ -143,6 +143,8 @@ architecture Behavioral of ArrayReaderListPrim is
   constant ELEMENT_WIDTH        : natural := strtoi(parse_arg(cfg, 0));
   constant COUNT_MAX            : natural := parse_param(CFG, "epc", 1);
   constant COUNT_WIDTH          : natural := log2ceil(COUNT_MAX+1);
+  constant LCOUNT_MAX           : natural := parse_param(CFG, "lepc", 1);
+  constant LCOUNT_WIDTH         : natural := log2ceil(LCOUNT_MAX+1);
   constant DATA_WIDTH           : natural := ELEMENT_WIDTH * COUNT_MAX;
 
   -- Signals for offsets buffer reader.
@@ -151,6 +153,7 @@ architecture Behavioral of ArrayReaderListPrim is
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   signal a_unlock_ignoreChild   : std_logic;
 
+  signal a_out_count            : std_logic_vector(LCOUNT_WIDTH-1 downto 0);
   signal a_out_valid            : std_logic;
   signal a_out_ready            : std_logic;
   signal a_out_last             : std_logic;
@@ -239,8 +242,9 @@ begin
 
     -- Serialization indices for the buffer.
     constant LSI : nat_array := cumulative((
-      1 => 1, -- a_out_last
-      0 => a_out_length'length
+      2 => 1, -- a_out_last
+      1 => a_out_length'length,
+      0 => a_out_count'length
     ));
 
     signal ulen_serialized      : std_logic_vector(LSI(LSI'high)-1 downto 0);
@@ -249,8 +253,9 @@ begin
   begin
 
     -- Serialize the input.
-    ulen_serialized(                LSI(1)) <= a_out_last;
-    ulen_serialized(LSI(1)-1 downto LSI(0)) <= a_out_length;
+    ulen_serialized(                LSI(2)) <= a_out_last;
+    ulen_serialized(LSI(2)-1 downto LSI(1)) <= a_out_length;
+    ulen_serialized(LSI(1)-1 downto LSI(0)) <= a_out_count;
 
     -- Instantiate the buffer.
     len_buffer_inst: StreamBuffer
@@ -272,8 +277,10 @@ begin
       );
 
     -- Deserialize the output.
-    out_last(0)                      <= out_serialized(                LSI(1));
-    out_data(OUI(1)-1 downto OUI(0)) <= out_serialized(LSI(1)-1 downto LSI(0));
+    out_last(0)                                   <= out_serialized(                LSI(2)); -- last
+
+    out_data(OUI(1)-LCOUNT_WIDTH-1 downto 0)      <= out_serialized(LSI(2)-1 downto LSI(1)); -- length
+    out_data(OUI(1)-1 downto OUI(1)-LCOUNT_WIDTH) <= out_serialized(LSI(1)-1 downto LSI(0)); -- count
 
     -- The element count for the length stream is always 1.
     out_dvalid(0) <= '1';
@@ -316,6 +323,9 @@ begin
     );
 
   -- Instantiate offsets buffer reader.
+  -- At the moment, length output count is always 1.
+  a_out_count <= "1";
+
   a_inst: BufferReader
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,

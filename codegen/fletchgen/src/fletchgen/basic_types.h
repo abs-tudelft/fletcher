@@ -50,7 +50,6 @@ VEC_DECL_FACTORY(date64, 64)
 VEC_DECL_FACTORY(utf8c, 8)
 VEC_DECL_FACTORY(byte, 8)
 VEC_DECL_FACTORY(offset, 32)
-VEC_DECL_FACTORY(length, 32)
 
 /// @brief Fletcher
 
@@ -66,6 +65,7 @@ PARAM_DECL_FACTORY(index_width)
 std::shared_ptr<ClockDomain> kernel_domain(); ///< @brief Fletcher accelerator clock domain
 std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
 std::shared_ptr<Type> data(const std::shared_ptr<Node>& width); ///< @brief Fletcher data
+std::shared_ptr<Type> length(const std::shared_ptr<Node>& width); ///< @brief Fletcher length
 std::shared_ptr<Type> count(const std::shared_ptr<Node>& width); ///< @brief Fletcher count
 std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
 std::shared_ptr<Type> last(); ///< @brief Fletcher last

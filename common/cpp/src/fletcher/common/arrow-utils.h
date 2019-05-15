@@ -89,11 +89,11 @@ std::string getMeta(const std::shared_ptr<arrow::Schema> &schema, const std::str
 Mode getMode(const std::shared_ptr<arrow::Schema> &schema);
 
 /**
- * @brief Obtain Elements-Per-Cycle metadata from field, if any.
- * @param field A field optionally holding the metadata about the Elements-Per-Cycle.
- * @return The Elements-Per-Cycle from the field metadata, if it exists. Returns 1 otherwise.
+ * @brief Obtain metadata and convert to integer.
+ * @param field A field
+ * @return The integer the field represents, if it exists. Returns default_to otherwise.
  */
-int getEPC(const std::shared_ptr<arrow::Field> &field);
+int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int default_to);
 
 /**
  * @brief Check if a field should be ignored in Fletcher.

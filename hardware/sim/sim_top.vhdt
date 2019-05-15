@@ -106,6 +106,8 @@ architecture Behavorial of sim_top is
   constant CONTROL_STOP         : std_logic_vector(31 downto 0) := X"00000002";
   constant CONTROL_RESET        : std_logic_vector(31 downto 0) := X"00000004";
 
+  constant STATUS_IDLE          : std_logic_vector(31 downto 0) := X"00000001";
+  constant STATUS_BUSY          : std_logic_vector(31 downto 0) := X"00000002";
   constant STATUS_DONE          : std_logic_vector(31 downto 0) := X"00000004";
 
   -- Sim signals
@@ -253,10 +255,12 @@ architecture Behavorial of sim_top is
     source.araddr <= (others => 'U');
     -- Read channel
     loop
-      data := sink.rdata;
       source.rready <= '1';
       wait until rising_edge(sink.clk);
-      exit when sink.rvalid = '1';
+      if sink.rvalid = '1' then
+        data := sink.rdata;
+        exit;
+      end if;
     end loop;
     source.rready <= '0';
   end procedure;
@@ -289,7 +293,8 @@ begin
 
   -- Typical stimuli process:
   stimuli_proc : process is
-    variable read_data : std_logic_vector(REG_WIDTH-1 downto 0);
+    variable read_data        : std_logic_vector(REG_WIDTH-1 downto 0) := X"DEADBEEF";
+    variable read_data_masked : std_logic_vector(REG_WIDTH-1 downto 0);
   begin
     mmio_source.awvalid <= '0';
     mmio_source.wvalid <= '0';
@@ -318,18 +323,26 @@ ${SREC_FIRSTLAST_INDICES}
 
     -- 6. Poll for completion
     loop
-      wait until rising_edge(kcd_clk);
+      -- Wait a bunch of cycles.
+      for I in 0 to 128 loop
+        wait until rising_edge(kcd_clk);
+      end loop;
+      
+      -- Read the status register.
       mmio_read(REG_STATUS, read_data, mmio_source, mmio_sink);
-      exit when read_data & STATUS_DONE = STATUS_DONE;
+      
+      -- Check if we're done.
+      read_data_masked := read_data and STATUS_DONE;
+      exit when read_data_masked = STATUS_DONE;
     end loop;
 
-    -- 7. Read return register
+    -- 7. Read return register.
     mmio_read(REG_RETURN0, read_data, mmio_source, mmio_sink);
     dumpStdOut("Return register 0: " & ii(u(read_data)));
     mmio_read(REG_RETURN1, read_data, mmio_source, mmio_sink);
     dumpStdOut("Return register 1: " & ii(u(read_data)));
     
-    -- 8. Finish and stop simulation
+    -- 8. Finish and stop simulation.
     report "Stimuli done.";
     clock_stop <= true;
 

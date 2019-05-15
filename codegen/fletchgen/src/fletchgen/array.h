@@ -39,9 +39,9 @@ std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl<1>(),
 ///< @brief Fletcher unlock stream
 std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl<1>());
 ///< @brief Fletcher read data
-std::shared_ptr<Type> read_data(std::shared_ptr<Node> data_width = intl<1>());
+std::shared_ptr<Type> read_data(const std::shared_ptr<Node>& data_width = intl<1>());
 ///< @brief Fletcher write data
-std::shared_ptr<Type> write_data(std::shared_ptr<Node> data_width = intl<1>());
+std::shared_ptr<Type> write_data(const std::shared_ptr<Node>& data_width = intl<1>());
 
 /// @brief Types for ArrayReader/Writer configuration string.
 enum class ConfigType {
@@ -96,7 +96,7 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
 std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level = 0);
 
 /// @brief Return a ArrayReader component.
-std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width = intl<1>(),
+std::shared_ptr<Component> ArrayReader(const std::shared_ptr<Node>& data_width = intl<1>(),
                                        const std::shared_ptr<Node> &ctrl_width = intl<1>(),
                                        const std::shared_ptr<Node> &tag_width = intl<1>());
 

@@ -167,13 +167,13 @@ bool mustIgnore(const std::shared_ptr<arrow::Field> &field) {
   return ret;
 }
 
-int getEPC(const std::shared_ptr<arrow::Field> &field) {
-  int epc = 1;
-  auto strepc = getMeta(field, "epc");
+int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int default_to) {
+  int ret = default_to;
+  auto strepc = getMeta(field, key);
   if (!strepc.empty()) {
-    epc = stoi(strepc);
+    ret = stoi(strepc);
   }
-  return epc;
+  return ret;
 }
 
 std::shared_ptr<arrow::KeyValueMetadata> MakeRequiredMeta(std::string schema_name, Mode mode) {

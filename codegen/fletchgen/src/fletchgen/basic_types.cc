@@ -67,7 +67,6 @@ VEC_FACTORY(date64, 64)
 VEC_FACTORY(utf8c, 8)
 VEC_FACTORY(byte, 8)
 VEC_FACTORY(offset, 32)
-VEC_FACTORY(length, 32)
 
 #define PARAM_FACTORY(NAME, TYPE, DEFAULT)                    \
 std::shared_ptr<Node> NAME() {                                \
@@ -116,6 +115,15 @@ std::shared_ptr<Type> data(const std::shared_ptr<Node> &width) {
   return result;
 }
 
+// Length channel
+std::shared_ptr<Type> length(const std::shared_ptr<Node> &width) {
+  std::shared_ptr<Type> result = Vector::Make("length", width);
+  // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
+  result->meta["array_data"] = "true";
+  return result;
+}
+
+
 std::shared_ptr<Type> count(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("count", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
@@ -134,8 +142,8 @@ std::shared_ptr<Type> last() {
 }
 
 std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type) {
+    // Only need to cover fixed-width data types in this function
   switch (arrow_type->id()) {
-    case arrow::Type::LIST: return length();
     case arrow::Type::UINT8: return uint8();
     case arrow::Type::UINT16: return uint16();
     case arrow::Type::UINT32: return uint32();

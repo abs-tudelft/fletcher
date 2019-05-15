@@ -71,8 +71,8 @@ std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width) {
   return unlock_stream;
 }
 
-std::shared_ptr<Type> read_data(std::shared_ptr<Node> width) {
-  static auto d = RecField::Make(data(std::move(width)));
+std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &width) {
+  static auto d = RecField::Make(data(width));
   static auto dv = RecField::Make(dvalid());
   static auto l = RecField::Make(last());
   static auto data_record = Record::Make("ar_data_rec", {d, dv, l});
@@ -80,15 +80,15 @@ std::shared_ptr<Type> read_data(std::shared_ptr<Node> width) {
   return data_stream;
 }
 
-std::shared_ptr<Type> write_data(std::shared_ptr<Node> width) {
-  static auto d = RecField::Make(data(std::move(width)));
+std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &width) {
+  static auto d = RecField::Make(data(width));
   static auto l = RecField::Make(last());
   static auto data_record = Record::Make("ar_data_rec", {d, l});
   static auto data_stream = Stream::Make("ar_data_stream", data_record);
   return data_stream;
 }
 
-std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
+std::shared_ptr<Component> ArrayReader(const std::shared_ptr<Node> &data_width,
                                        const std::shared_ptr<Node> &ctrl_width,
                                        const std::shared_ptr<Node> &tag_width) {
   auto bus = BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec());
@@ -106,7 +106,7 @@ std::shared_ptr<Component> ArrayReader(std::shared_ptr<Node> data_width,
                               bus,
                               Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
                               Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
-                              Port::Make("out", read_data(std::move(data_width)), Port::Dir::OUT)}
+                              Port::Make("out", read_data(data_width), Port::Dir::OUT)}
   );
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
@@ -187,7 +187,8 @@ std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int
     level++;
   }
 
-  int epc = fletcher::getEPC(field);
+  int epc = fletcher::GetIntMeta(field, "epc", 1);
+  int lepc = fletcher::GetIntMeta(field, "lepc", 1);
 
   if (ct == ConfigType::PRIM) {
     auto w = GetWidth(field->type().get());
@@ -208,8 +209,17 @@ std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int
     level++;
   }
 
+  if (epc > 1 || lepc > 1) {
+    ret += ";";
+  }
   if (epc > 1) {
-    ret += ";epc=" + std::to_string(epc);
+    ret += "epc=" + std::to_string(epc);
+    if (lepc > 1) {
+      ret += ",";
+    }
+  }
+  if (lepc > 1) {
+    ret += "lepc=" + std::to_string(epc);
   }
 
   // Append children
@@ -266,7 +276,8 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
   // WARNING: Modifications to this function must be reflected in the manual hardware implementation of Fletcher
   // components! See: hardware/arrays/ArrayConfig.vhd
 
-  int epc = fletcher::getEPC(field);
+  int epc = fletcher::GetIntMeta(field, "epc", 1);
+  int lepc = fletcher::GetIntMeta(field, "lepc", 1);
 
   std::shared_ptr<Type> type;
 
@@ -278,18 +289,21 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: binary type has a length stream and byte stream. The EPC is assumed to relate to the list
       // values, as there is no explicit child field to place this metadata in.
 
-      std::shared_ptr<Node> count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> e_count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> l_count_width = Literal::Make(static_cast<int>(ceil(log2(lepc + 1))));
       std::shared_ptr<Node> data_width = Literal::Make(epc * 8);
+      std::shared_ptr<Node> length_width = Literal::Make(lepc * 32);
 
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {
                                     RecField::Make("dvalid", dvalid()),
                                     RecField::Make("last", last()),
-                                    RecField::Make("count", count(count_width)),
-                                    RecField::Make("data", data(data_width))}),
-                                "", epc);
+                                    RecField::Make("data", data(data_width)),
+                                    RecField::Make("count", count(e_count_width))
+                                }), "", epc);
       type = Record::Make(name + "_rec", {
-          RecField::Make("length", length()),
+          RecField::Make("length", length(length_width)),
+          RecField::Make("count", count(l_count_width)),
           RecField::Make("bytes", slave)
       });
       break;
@@ -299,18 +313,22 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
       // Special case: string type has a length stream and utf8 character stream. The EPC is assumed to relate to the
       // list values, as there is no explicit child field to place this metadata in.
 
+      std::shared_ptr<Node> e_count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> l_count_width = Literal::Make(static_cast<int>(ceil(log2(lepc + 1))));
       std::shared_ptr<Node> count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
       std::shared_ptr<Node> data_width = Literal::Make(epc * 8);
+      std::shared_ptr<Node> length_width = Literal::Make(lepc * 32);
 
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {
                                     RecField::Make("dvalid", dvalid()),
                                     RecField::Make("last", last()),
-                                    RecField::Make("count", count(count_width)),
-                                    RecField::Make("data", data(data_width))}),
-                                "", epc);
+                                    RecField::Make("data", data(data_width)),
+                                    RecField::Make("count", count(count_width))
+                                }), "", epc);
       type = Record::Make(name + "_rec", {
-          RecField::Make("length", length()),
+          RecField::Make("length", length(length_width)),
+          RecField::Make("count", count(l_count_width)),
           RecField::Make("chars", slave)
       });
       break;
@@ -324,6 +342,8 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       auto arrow_child = field->type()->child(0);
       auto element_type = GetStreamType(arrow_child, mode, level + 1);
+      std::shared_ptr<Node> length_width = Literal::Make(32);
+
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {
                                     RecField::Make("dvalid", dvalid()),
@@ -331,7 +351,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
                                     RecField::Make("data", element_type)}),
                                 "", epc);
       type = Record::Make(name + "_rec", {
-          RecField::Make("length", length()),
+          RecField::Make("length", length(length_width)),
           RecField::Make(arrow_child->name(), slave)
       });
       break;
