@@ -85,26 +85,33 @@ std::shared_ptr<Component> BusArbiter(BusSpec spec) {
 
   auto slaves_array = PortArray::Make("bsv", (*Cast<BusPort>(mst->Copy()))->InvertDirection(), nslaves);
 
-  auto ret = Component::Make(std::string("Bus") + (spec.function == BusFunction::READ ? "Read" : "Write") + "ArbiterVec",
-                             {bus_addr_width(),
-                              bus_len_width(),
-                              bus_data_width(),
-                              nslaves,
-                              Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
-                              Parameter::Make("MAX_OUTSTANDING", integer(), intl<4>()),
-                              Parameter::Make("RAM_CONFIG", string(), strl("")),
-                              Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
-                              Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
-                              Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
-                              Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
-                              Port::Make(bus_cr()),
-                              mst,
-                              slaves_array,
-                             });
+  std::deque<std::shared_ptr<cerata::Object>> objects;
+  objects.insert(objects.end(), {bus_addr_width(), bus_len_width(), bus_data_width()});
+  if (spec.function == BusFunction::WRITE) {
+    objects.push_back(bus_strobe_width());
+  }
+  objects.insert(objects.end(), {
+      nslaves,
+      Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
+      Parameter::Make("MAX_OUTSTANDING", integer(), intl<4>()),
+      Parameter::Make("RAM_CONFIG", string(), strl("")),
+      Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
+      Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
+      Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
+      Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
+      Port::Make(bus_cr()),
+      mst,
+      slaves_array,
+  });
+
+  auto name = std::string("Bus") + (spec.function == BusFunction::READ ? "Read" : "Write") + "ArbiterVec";
+  auto ret = Component::Make(name, objects);
+
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
   ret->meta["package"] = "Interconnect";
-  return ret;
+  return
+      ret;
 }
 
 std::shared_ptr<Component> BusReadSerializer() {

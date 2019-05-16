@@ -20,7 +20,7 @@ namespace fletcher {
 namespace test {
 
 std::shared_ptr<arrow::RecordBatch> getStringRB();
-std::shared_ptr<arrow::RecordBatch> getUint8RB();
+std::shared_ptr<arrow::RecordBatch> getInt8RB();
 std::shared_ptr<arrow::RecordBatch> getListUint8RB();
 std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
 std::shared_ptr<arrow::RecordBatch> getInt64ListRB();

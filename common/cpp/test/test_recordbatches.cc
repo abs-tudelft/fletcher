@@ -55,11 +55,11 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getUint8RB() {
-  std::vector<uint8_t> numbers = {1, 3, 3, 7};
+std::shared_ptr<arrow::RecordBatch> getInt8RB() {
+  std::vector<int8_t> numbers = {-1, 3, -3, 7};
 
   // Make a string builder
-  arrow::UInt8Builder int_builder;
+  arrow::Int8Builder int_builder;
 
   int_builder.AppendValues(numbers);
 

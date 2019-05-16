@@ -88,7 +88,7 @@ architecture Implementation of Kernel is
   type reg_array_t is array(natural range <>) of std_logic_vector(31 downto 0);
   signal rreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
   signal rreg_array             : reg_array_t(0 to NUM_REGS-1);
-  signal rreg_en                : std_logic_vector(9 downto 0);
+  signal rreg_en                : std_logic_vector(NUM_REGS-1 downto 0);
   
   signal wreg_array             : reg_array_t(0 to NUM_REGS-1);
   signal wreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
@@ -197,7 +197,7 @@ begin
     -- without communicating with host software.
     Name_cmd_ctrl <= wreg_array( REG_VALUES_BUF_HI) & wreg_array( REG_VALUES_BUF_LO)   -- Values buffer
                    & wreg_array(REG_OFFSETS_BUF_HI) & wreg_array(REG_OFFSETS_BUF_LO);  -- Offsets buffer
-
+                   
     -- Validate the command.
     Name_cmd_valid <= '1';
 

@@ -371,17 +371,18 @@ begin
     );
   BusWriteArbiterVec_inst : BusWriteArbiterVec
     generic map (
-      NUM_SLAVE_PORTS => 1,
-      BUS_ADDR_WIDTH  => 64,
-      BUS_LEN_WIDTH   => 8,
-      BUS_DATA_WIDTH  => 512,
-      ARB_METHOD      => "ROUND-ROBIN",
-      MAX_OUTSTANDING => 4,
-      RAM_CONFIG      => "",
-      SLV_REQ_SLICES  => true,
-      MST_REQ_SLICE   => true,
-      MST_DAT_SLICE   => true,
-      SLV_DAT_SLICES  => true
+      NUM_SLAVE_PORTS  => 1,
+      BUS_ADDR_WIDTH   => 64,
+      BUS_LEN_WIDTH    => 8,
+      BUS_DATA_WIDTH   => 512,
+      BUS_STROBE_WIDTH => 64,
+      ARB_METHOD       => "ROUND-ROBIN",
+      MAX_OUTSTANDING  => 4,
+      RAM_CONFIG       => "",
+      SLV_REQ_SLICES   => true,
+      MST_REQ_SLICE    => true,
+      MST_DAT_SLICE    => true,
+      SLV_DAT_SLICES   => true
     )
     port map (
       bcd_clk                      => bcd_clk,

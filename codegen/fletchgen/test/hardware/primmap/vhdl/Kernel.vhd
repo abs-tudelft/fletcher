@@ -18,6 +18,8 @@ use ieee.numeric_std.all;
 
 library work;
 use work.Axi.all;
+use work.Utils.all;
+use work.SimUtils.all;
 
 entity Kernel is
   generic (
@@ -45,9 +47,9 @@ entity Kernel is
     mmio_rresp                    : out std_logic_vector(1 downto 0);
     PrimRead_number_valid         : in  std_logic;
     PrimRead_number_ready         : out std_logic;
-    PrimRead_number_data_dvalid   : in  std_logic;
-    PrimRead_number_data_last     : in  std_logic;
-    PrimRead_number_data_data     : in  std_logic_vector(7 downto 0);
+    PrimRead_number_dvalid        : in  std_logic;
+    PrimRead_number_last          : in  std_logic;
+    PrimRead_number               : in  std_logic_vector(7 downto 0);
     PrimRead_number_cmd_valid     : out std_logic;
     PrimRead_number_cmd_ready     : in  std_logic;
     PrimRead_number_cmd_firstIdx  : out std_logic_vector(31 downto 0);
@@ -59,9 +61,9 @@ entity Kernel is
     PrimRead_number_unl_tag       : in  std_logic_vector(0 downto 0);
     PrimWrite_number_valid        : out std_logic;
     PrimWrite_number_ready        : in  std_logic;
-    PrimWrite_number_data_dvalid  : out std_logic;
-    PrimWrite_number_data_last    : out std_logic;
-    PrimWrite_number_data_data    : out std_logic_vector(7 downto 0);
+    PrimWrite_number_dvalid       : out std_logic;
+    PrimWrite_number_last         : out std_logic;
+    PrimWrite_number              : out std_logic_vector(7 downto 0);
     PrimWrite_number_cmd_valid    : out std_logic;
     PrimWrite_number_cmd_ready    : in  std_logic;
     PrimWrite_number_cmd_firstIdx : out std_logic_vector(31 downto 0);
@@ -75,6 +77,39 @@ entity Kernel is
 end entity;
 
 architecture Implementation of Kernel is
+  -- Registers used:
+  constant REG_CONTROL                 : natural :=  0;
+  constant REG_STATUS                  : natural :=  1;
+  constant REG_RETURN0                 : natural :=  2;
+  constant REG_RETURN1                 : natural :=  3;
+  constant REG_PRIMREAD_FIRSTIDX       : natural :=  4;
+  constant REG_PRIMREAD_LASTIDX        : natural :=  5;
+  constant REG_PRIMWRITE_FIRSTIDX      : natural :=  6;
+  constant REG_PRIMWRITE_LASTIDX       : natural :=  7;
+  constant REG_PRIMREAD_NUMBER_BUF_LO  : natural :=  8;
+  constant REG_PRIMREAD_NUMBER_BUF_HI  : natural :=  9;
+  constant REG_PRIMWRITE_NUMBER_BUF_LO : natural := 10;
+  constant REG_PRIMWRITE_NUMBER_BUF_HI : natural := 11;
+
+  constant REG_WIDTH            : natural := 32;
+  constant NUM_REGS             : natural := 12;
+  constant MAX_STR_LEN          : natural := 128;
+
+  type reg_array_t is array(natural range <>) of std_logic_vector(31 downto 0);
+  signal rreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
+  signal rreg_array             : reg_array_t(0 to NUM_REGS-1);
+  signal rreg_en                : std_logic_vector(NUM_REGS-1 downto 0);
+  
+  signal wreg_array             : reg_array_t(0 to NUM_REGS-1);
+  signal wreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
+
+  signal stat_done              : std_logic;
+  signal stat_busy              : std_logic;
+  signal stat_idle              : std_logic;
+  signal ctrl_reset             : std_logic;
+  signal ctrl_stop              : std_logic;
+  signal ctrl_start             : std_logic;
+begin
   -- Instantiate the AXI mmio component to communicate with host more easily 
   -- through registers.
   axi_mmio_inst : axi_mmio
@@ -134,78 +169,88 @@ architecture Implementation of Kernel is
   
   process is
     variable idx : natural := 0;
+    variable number_read    : signed(7 downto 0);
+    variable number_written : signed(7 downto 0);
   begin
     -- Initial outputs
-    ctrl_busy <= '0';
-    ctrl_done <= '0';
-    ctrl_idle <= '0';
+    stat_busy <= '0';
+    stat_done <= '0';
+    stat_idle <= '0';
     
-    primread_cmd_valid <= '0';
-    primwrite_cmd_valid <= '0';
+    PrimRead_number_cmd_valid <= '0';
+    PrimWrite_number_cmd_valid <= '0';
     
-    primread_out_ready <= '0';
-    primwrite_in_valid <= '0';
-    primwrite_in_last  <= '0';
+    PrimRead_number_ready <= '0';
+    PrimWrite_number_valid <= '0';
+    PrimWrite_number_last  <= '0';
     
     -- Wait for reset to go low and start to go high.
     loop
-      wait until rising_edge(acc_clk);
+      wait until rising_edge(kcd_clk);
       exit when ctrl_reset = '0' and ctrl_start = '1';
     end loop;
     
-    ctrl_busy <= '1';
+    stat_busy <= '1';
         
-    -- Issue the commands
-    primread_cmd_firstIdx <= (others => '0');
-    primread_cmd_lastIdx <= std_logic_vector(to_unsigned(4, INDEX_WIDTH));
-    primread_cmd_primread_values_addr <= reg_primread_values_addr;
-    primread_cmd_valid <= '1';
+    -- Issue the command
+    PrimRead_number_cmd_firstIdx  <= wreg_array(REG_PRIMREAD_FIRSTIDX);
+    PrimRead_number_cmd_lastIdx   <= wreg_array(REG_PRIMREAD_LASTIDX);
+    PrimRead_number_cmd_ctrl      <= wreg_array(REG_PRIMREAD_NUMBER_BUF_HI) & wreg_array(REG_PRIMREAD_NUMBER_BUF_LO);
+    PrimRead_number_cmd_valid     <= '1';
 
     -- Wait for read command to be accepted.
     loop
-      wait until rising_edge(acc_clk);
-      exit when primread_cmd_ready = '1';
+      wait until rising_edge(kcd_clk);
+      exit when PrimRead_number_cmd_ready = '1';
     end loop;
-    primread_cmd_valid <= '0';    
+    
+    PrimRead_number_cmd_valid <= '0';    
 
-    primwrite_cmd_firstIdx <= (others => '0');
-    primwrite_cmd_lastIdx <= std_logic_vector(to_unsigned(4, INDEX_WIDTH));
-    -- Write to some buffer that should normally be preallocated and passed
-    -- through registers
-    primwrite_cmd_primwrite_values_addr <= X"0000000000000000";
-    primwrite_cmd_valid <= '1';
+    PrimWrite_number_cmd_firstIdx  <= wreg_array(REG_PRIMREAD_FIRSTIDX);
+    PrimWrite_number_cmd_lastIdx   <= wreg_array(REG_PRIMREAD_LASTIDX);
+    PrimWrite_number_cmd_ctrl      <= wreg_array(REG_PRIMREAD_NUMBER_BUF_HI) & wreg_array(REG_PRIMREAD_NUMBER_BUF_LO);
+    PrimWrite_number_cmd_valid     <= '1';
     
     -- Wait for write command to be accepted.
     loop
-      wait until rising_edge(acc_clk);
-      exit when primwrite_cmd_ready = '1';
+      wait until rising_edge(kcd_clk);
+      exit when PrimWrite_number_cmd_ready = '1';
     end loop;
-    primwrite_cmd_valid <= '0';
+    PrimWrite_number_cmd_valid <= '0';
     
     -- Receive the primitives
     loop 
-      primread_out_ready <= '1';
+      PrimRead_number_ready <= '1';
       loop
-        wait until rising_edge(acc_clk);
-        exit when primread_out_valid = '1';
+        wait until rising_edge(kcd_clk);
+        exit when PrimRead_number_valid = '1';
       end loop;
-      primread_out_ready <= '0';
+      PrimRead_number_ready <= '0';
       
-      -- Add one to the input and put it on the output.
-      primwrite_in_data <= std_logic_vector(unsigned(primread_out_data)+1);
+      -- Convert to signed integer
+      number_read := signed(PrimRead_number);
+      
+      -- Take the absolute value. ABS is awesome.
+      number_written := abs(number_read);
+      
+      -- Put the absolute value on the output.
+      PrimWrite_number <= std_logic_vector(number_written);
       
       -- Check if this is the last primitive
       if (idx = 3) then
-        primwrite_in_last <= '1';
+        PrimWrite_number_last <= '1';
       end if;
       
-      -- Wait for handshake
-      primwrite_in_valid <= '1';
+      -- Validate the input and wait for handshake
+      PrimWrite_number_valid <= '1';
       loop
-        wait until rising_edge(acc_clk);
-        exit when primwrite_in_ready = '1';
+        wait until rising_edge(kcd_clk);
+        exit when PrimWrite_number_ready = '1';
       end loop;
-      primwrite_in_valid <= '0';
+      
+      dumpStdOut("Read number: " & ii(number_read) & ". Wrote number " & ii(number_written));
+      
+      PrimWrite_number_valid <= '0';
       
       idx := idx + 1;
       exit when idx = 4;
@@ -214,12 +259,12 @@ architecture Implementation of Kernel is
     -- Wait a few extra cycles ... 
     -- (normally you should use unlock stream for this)
     for I in 0 to 128 loop
-        wait until rising_edge(acc_clk);
+        wait until rising_edge(kcd_clk);
     end loop;
     
     -- Signal done to the usercore controller
-    ctrl_busy <= '0';
-    ctrl_done <= '1';
+    stat_busy <= '0';
+    stat_done <= '1';
     wait;
   end process;
-end Behavioral;
+end Implementation;

@@ -33,7 +33,7 @@ void generateDebugFiles() {
   /* Primitive */
   schema = fletcher::test::GetPrimReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/primread.fbs");
-  recordbatch = fletcher::test::getUint8RB();
+  recordbatch = fletcher::test::getInt8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
 
   schema = fletcher::test::GetPrimWriteSchema();
