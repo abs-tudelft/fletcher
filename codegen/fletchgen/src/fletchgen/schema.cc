@@ -20,15 +20,11 @@
 
 namespace fletchgen {
 
-SchemaSet::SchemaSet(std::string name, const std::deque<std::shared_ptr<arrow::Schema>>& schema_list)
+SchemaSet::SchemaSet(std::string name, const std::deque<std::shared_ptr<arrow::Schema>> &schema_list)
     : Named(std::move(name)) {
   for (const auto &s : schema_list) {
     auto fs = std::make_shared<FletcherSchema>(s);
-    if (fs->mode() == fletcher::Mode::READ) {
-      read_schemas.push_back(fs);
-    } else {
-      write_schemas.push_back(fs);
-    }
+    schemas.push_back(fs);
   }
 }
 
@@ -46,11 +42,11 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name,
 }
 
 FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name)
-    : arrow_schema_(arrow_schema), mode_(fletcher::getMode(arrow_schema)) {
+    : arrow_schema_(arrow_schema), mode_(fletcher::GetMode(arrow_schema)) {
   // If no name given
   if (schema_name.empty()) {
     // Get name from metadata, if available
-    name_ = fletcher::getMeta(arrow_schema_, "fletcher_name");
+    name_ = fletcher::GetMeta(arrow_schema_, "fletcher_name");
     if (name_.empty()) {
       name_ = "<AnonSchema>";
     }

@@ -76,17 +76,17 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
                          const std::shared_ptr<arrow::Field> &field);
 
 /// @brief From the metadata of an Arrow Field, obtain the value of a specific key.
-std::string getMeta(const std::shared_ptr<arrow::Field> &field, const std::string &key);
+std::string GetMeta(const std::shared_ptr<arrow::Field> &field, const std::string &key);
 
 /// @brief From the metadata of an Arrow Schema, obtain the value of a specific key.
-std::string getMeta(const std::shared_ptr<arrow::Schema> &schema, const std::string &key);
+std::string GetMeta(const std::shared_ptr<arrow::Schema> &schema, const std::string &key);
 
 /**
  * @brief Return the schema operational mode (read or write) from the metadata, if any.
  * @param schema The Arrow Schema to inspect.
  * @return The schema operational mode, if any. Default = READ.
  */
-Mode getMode(const std::shared_ptr<arrow::Schema> &schema);
+Mode GetMode(const std::shared_ptr<arrow::Schema> &schema);
 
 /**
  * @brief Obtain metadata and convert to integer.
@@ -139,7 +139,7 @@ void writeRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbat
  * @param schema The expected schema of the data.
  * @return A smart pointer to the arrow::RecordBatch. Throws a runtime_error if something goes wrong.
  */
-std::shared_ptr<arrow::RecordBatch> readRecordBatchFromFile(const std::string &file_name,
+std::shared_ptr<arrow::RecordBatch> ReadRecordBatchFromFile(const std::string &file_name,
                                                             const std::shared_ptr<arrow::Schema> &schema);
 
 /**

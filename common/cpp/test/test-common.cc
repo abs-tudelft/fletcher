@@ -42,7 +42,7 @@ TEST(common_arrow_utils, appendExpectedBuffersFromField) {
 TEST(common_arrow_utils, RecordBatchFileRoundTrip) {
   auto wrb = fletcher::test::getStringRB();
   fletcher::writeRecordBatchToFile(wrb, "test-common.rb");
-  auto rrb = fletcher::readRecordBatchFromFile("test-common.rb", wrb->schema());
+  auto rrb = fletcher::ReadRecordBatchFromFile("test-common.rb", wrb->schema());
   ASSERT_TRUE(wrb->Equals(*rrb));
 }
 

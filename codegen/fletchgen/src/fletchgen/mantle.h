@@ -29,30 +29,26 @@ using cerata::Instance;
  * @brief A component that wraps a Kernel and all ArrayReaders/Writers resulting from a Schema set.
  */
 struct Mantle : Component {
-  /// The Kernel to be instantiated by this Mantle
-  std::shared_ptr<Kernel> kernel_;
-  /// The actual instantiated Kernel
-  Instance *kernel_inst_;
-  /// The schema set on which this Mantle is based
-  std::shared_ptr<SchemaSet> schema_set_;
-
-  std::unordered_map<BusSpec, Instance*> arbiters_;
-
-  /// The RecordBatchReader instances
-  std::vector<Instance *> rb_reader_instances_;
-  /// The RecordBatchWriter instances
-  std::vector<Instance *> rb_writer_instances_;
-
-  /// @brief Return all RecordBatchReader components.
-  std::deque<std::shared_ptr<RecordBatchReader>> reader_components();
-
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);
-
   /// @brief Construct a Mantle and return a shared pointer to it.
   static std::shared_ptr<Mantle> Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set);
   /// @brief Construct a Mantle and return a shared pointer to it.
   static std::shared_ptr<Mantle> Make(const std::shared_ptr<SchemaSet> &schema_set);
+
+  /// @brief Return all RecordBatchReader components.
+  std::deque<std::shared_ptr<RecordBatch>> recordbatch_components();
+
+  /// The Kernel to be instantiated by this Mantle.
+  std::shared_ptr<Kernel> kernel_;
+  /// The actual instantiated Kernel.
+  Instance *kernel_inst_;
+  /// The schema set on which this Mantle is based.
+  std::shared_ptr<SchemaSet> schema_set_;
+  /// The bus arbiters instantiated by this mantle for a specific bus specification.
+  std::unordered_map<BusSpec, Instance*> arbiters_;
+  /// The RecordBatch instances.
+  std::vector<Instance *> recordbatch_instances;
 };
 
 }  // namespace fletchgen

@@ -32,7 +32,7 @@ namespace fletchgen {
 
 static void TestReadKernel(const std::string& test_name, const std::shared_ptr<arrow::Schema>& schema) {
   auto fs = FletcherSchema::Make(schema);
-  auto rbr = RecordBatchReader::Make(fs);
+  auto rbr = RecordBatch::Make(fs);
   auto top = Kernel::Make("Test" + test_name, {rbr});
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();

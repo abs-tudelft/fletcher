@@ -51,9 +51,7 @@ struct SchemaSet : public cerata::Named {
   static std::shared_ptr<SchemaSet> Make(std::string name,
                                          const std::vector<std::shared_ptr<arrow::Schema>> &schema_list);
   /// @brief Schemas of RecordBatches to read from.
-  std::deque<std::shared_ptr<FletcherSchema>> read_schemas;
-  /// @brief Schemas of RecordBatches to write to.
-  std::deque<std::shared_ptr<FletcherSchema>> write_schemas;
+  std::deque<std::shared_ptr<FletcherSchema>> schemas;
 };
 
 }  // namespace fletchgen

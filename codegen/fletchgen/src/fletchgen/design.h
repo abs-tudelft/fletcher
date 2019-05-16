@@ -34,7 +34,7 @@ struct Design {
   std::shared_ptr<Options> options;
   std::vector<std::shared_ptr<arrow::Schema>> schemas;
   std::shared_ptr<SchemaSet> schema_set;
-  std::deque<std::shared_ptr<RecordBatchReader>> readers;
+  std::deque<std::shared_ptr<RecordBatch>> readers;
   std::shared_ptr<Kernel> kernel;
   std::shared_ptr<Mantle> mantle;
   std::shared_ptr<cerata::Component> wrapper;

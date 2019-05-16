@@ -78,14 +78,14 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
   return w;
 }
 
-std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
+std::shared_ptr<Component> BusArbiter(BusSpec spec) {
   auto nslaves = Parameter::Make("NUM_SLAVE_PORTS", integer(), intl<0>());
-  auto mst = BusPort::Make("mst", BusPort::Function::READ, Port::Dir::OUT, spec);
-  mst->type()->meta["DEBUG_CONSTRUCT"] = std::string(__FILE__) + ":" + std::to_string(__LINE__);
-  auto slaves_read_array = PortArray::Make("bsv", (*Cast<BusPort>(mst->Copy()))->InvertDirection(), nslaves);
 
+  auto mst = BusPort::Make("mst", Port::Dir::OUT, spec);
 
-  auto ret = Component::Make("BusReadArbiterVec",
+  auto slaves_array = PortArray::Make("bsv", (*Cast<BusPort>(mst->Copy()))->InvertDirection(), nslaves);
+
+  auto ret = Component::Make(std::string("Bus") + (spec.function == BusFunction::READ ? "Read" : "Write") + "ArbiterVec",
                              {bus_addr_width(),
                               bus_len_width(),
                               bus_data_width(),
@@ -99,7 +99,7 @@ std::shared_ptr<Component> BusReadArbiter(BusSpec spec) {
                               Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
                               Port::Make(bus_cr()),
                               mst,
-                              slaves_read_array,
+                              slaves_array,
                              });
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
@@ -133,41 +133,19 @@ std::shared_ptr<Component> BusReadSerializer() {
 
 bool operator==(const BusSpec &lhs, const BusSpec &rhs) {
   return (lhs.data_width == rhs.data_width) && (lhs.addr_width == rhs.addr_width) && (lhs.len_width == rhs.len_width) &&
-      (lhs.burst_step == rhs.burst_step) && (lhs.max_burst == rhs.max_burst);
+      (lhs.burst_step == rhs.burst_step) && (lhs.max_burst == rhs.max_burst) && (lhs.function == rhs.function);
 }
 
-std::string BusPort::fun2name(BusPort::Function fun) {
-  switch (fun) {
-    case Function::READ: return "bus";
-    case Function::WRITE: return "bus";
-    default:throw std::runtime_error("Unknown Bus function.");
-  }
+std::shared_ptr<BusPort> BusPort::Make(std::string name, Port::Dir dir, BusSpec spec) {
+  return std::make_shared<BusPort>(dir, spec, name);
 }
 
-std::shared_ptr<Type> BusPort::fun2type(BusPort::Function fun, BusSpec spec) {
-  switch (fun) {
-    case Function::READ:
-      return bus_read(Literal::Make(spec.addr_width),
-                      Literal::Make(spec.len_width),
-                      Literal::Make(spec.data_width));
-    case Function::WRITE:
-      return bus_write(Literal::Make(spec.addr_width),
-                       Literal::Make(spec.len_width),
-                       Literal::Make(spec.data_width));
-    default:throw std::runtime_error("Unknown Bus function.");
-  }
-}
-
-std::shared_ptr<BusPort> BusPort::Make(std::string name, BusPort::Function fun, Port::Dir dir, BusSpec spec) {
-  return std::make_shared<BusPort>(fun, dir, spec, name);
-}
-
-std::shared_ptr<BusPort> BusPort::Make(BusPort::Function fun, Port::Dir dir, BusSpec spec) {
-  return std::make_shared<BusPort>(fun, dir, spec);
+std::shared_ptr<BusPort> BusPort::Make(Port::Dir dir, BusSpec spec) {
+  return std::make_shared<BusPort>(dir, spec);
 }
 
 std::shared_ptr<cerata::Object> BusPort::Copy() const {
-  auto result = Make(name(), function_, dir_, spec_);
+  auto result = Make(name(), dir_, spec_);
   result->SetType(type());
   return result;
 }
@@ -185,13 +163,28 @@ std::string BusSpec::ToShortString() const {
 std::string BusSpec::ToString() const {
   std::stringstream str;
   str << "BusSpec[";
-  str << "addr:" << addr_width;
+  str << "fun:" << (function == BusFunction::READ ? "read" : "write");
+  str << ", addr:" << addr_width;
   str << ", len:" << len_width;
   str << ", dat:" << data_width;
   str << ", step:" << burst_step;
   str << ", max:" << max_burst;
   str << "]";
   return str.str();
+}
+
+std::shared_ptr<Type> BusSpec::ToType() {
+  switch (function) {
+    case BusFunction::READ:
+      return bus_read(Literal::Make(addr_width),
+                      Literal::Make(len_width),
+                      Literal::Make(data_width));
+    case BusFunction::WRITE:
+      return bus_write(Literal::Make(addr_width),
+                       Literal::Make(len_width),
+                       Literal::Make(data_width));
+    default:throw std::runtime_error("Unknown Bus function.");
+  }
 }
 
 }  // namespace fletchgen

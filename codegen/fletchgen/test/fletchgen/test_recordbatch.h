@@ -33,7 +33,7 @@ namespace fletchgen {
 
 static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) {
   auto fs = FletcherSchema::Make(schema);
-  auto rbr = RecordBatchReader::Make(fs);
+  auto rbr = RecordBatch::Make(fs);
   auto design = cerata::vhdl::Design(rbr);
   auto code = design.Generate().ToString();
   std::cerr.flush();

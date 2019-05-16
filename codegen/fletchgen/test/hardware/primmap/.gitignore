@@ -1,5 +1,3 @@
-*
-!.gitignore
-!primmap.vhd
-!primmap.tcl
-!README.md
+work
+vsim.wlf
+transcript

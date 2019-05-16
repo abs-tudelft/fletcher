@@ -76,6 +76,7 @@ std::shared_ptr<Node> NAME() {                                \
 
 PARAM_FACTORY(bus_addr_width, integer(), intl<64>())
 PARAM_FACTORY(bus_data_width, integer(), intl<512>())
+PARAM_FACTORY(bus_strobe_width, integer(), intl<64>())
 PARAM_FACTORY(bus_len_width, integer(), intl<8>())
 PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>())
 PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>())

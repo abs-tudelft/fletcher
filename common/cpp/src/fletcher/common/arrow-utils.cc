@@ -123,7 +123,7 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
   }
 }
 
-std::string getMeta(const std::shared_ptr<arrow::Schema> &schema, const std::string &key) {
+std::string GetMeta(const std::shared_ptr<arrow::Schema> &schema, const std::string &key) {
   if (schema->metadata() != nullptr) {
     std::unordered_map<std::string, std::string> meta;
     schema->metadata()->ToUnorderedMap(&meta);
@@ -137,7 +137,7 @@ std::string getMeta(const std::shared_ptr<arrow::Schema> &schema, const std::str
   return "";
 }
 
-std::string getMeta(const std::shared_ptr<arrow::Field> &field, const std::string &key) {
+std::string GetMeta(const std::shared_ptr<arrow::Field> &field, const std::string &key) {
   if (field->metadata() != nullptr) {
     std::unordered_map<std::string, std::string> meta;
     field->metadata()->ToUnorderedMap(&meta);
@@ -151,9 +151,9 @@ std::string getMeta(const std::shared_ptr<arrow::Field> &field, const std::strin
   return "";
 }
 
-Mode getMode(const std::shared_ptr<arrow::Schema> &schema) {
+Mode GetMode(const std::shared_ptr<arrow::Schema> &schema) {
   Mode mode = Mode::READ;
-  if (getMeta(schema, "fletcher_mode") == "write") {
+  if (GetMeta(schema, "fletcher_mode") == "write") {
     mode = Mode::WRITE;
   }
   return mode;
@@ -161,7 +161,7 @@ Mode getMode(const std::shared_ptr<arrow::Schema> &schema) {
 
 bool mustIgnore(const std::shared_ptr<arrow::Field> &field) {
   bool ret = false;
-  if (getMeta(field, "fletcher_ignore") == "true") {
+  if (GetMeta(field, "fletcher_ignore") == "true") {
     ret = true;
   }
   return ret;
@@ -169,7 +169,7 @@ bool mustIgnore(const std::shared_ptr<arrow::Field> &field) {
 
 int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int default_to) {
   int ret = default_to;
-  auto strepc = getMeta(field, key);
+  auto strepc = GetMeta(field, key);
   if (!strepc.empty()) {
     ret = stoi(strepc);
   }
@@ -265,7 +265,7 @@ void writeRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbat
   }
 }
 
-std::shared_ptr<arrow::RecordBatch> readRecordBatchFromFile(const std::string &file_name,
+std::shared_ptr<arrow::RecordBatch> ReadRecordBatchFromFile(const std::string &file_name,
                                                             const std::shared_ptr<arrow::Schema> &schema) {
   std::shared_ptr<arrow::RecordBatch> recordbatch_to_read;
   std::shared_ptr<arrow::io::ReadableFile> fis;

@@ -57,6 +57,7 @@ VEC_DECL_FACTORY(offset, 32)
 
 PARAM_DECL_FACTORY(bus_addr_width)
 PARAM_DECL_FACTORY(bus_data_width)
+PARAM_DECL_FACTORY(bus_strobe_width)
 PARAM_DECL_FACTORY(bus_len_width)
 PARAM_DECL_FACTORY(bus_burst_step_len)
 PARAM_DECL_FACTORY(bus_burst_max_len)

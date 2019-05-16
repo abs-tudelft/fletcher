@@ -42,27 +42,32 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   AddObject(bus_addr_width());
 
-  // Create and add every RecordBatchReader/Writer
-  for (const auto &fs : schema_set_->read_schemas) {
-    auto rbr = RecordBatchReader::Make(fs);
-    auto rbr_inst = AddInstanceOf(rbr);
-    rb_reader_instances_.push_back(rbr_inst);
-    rbr_inst->port("kcd") <<= kcr;
-    rbr_inst->port("bcd") <<= bcr;
+  // Create and add every RecordBatch/Writer
+  for (const auto &fs : schema_set_->schemas) {
+    auto rb = RecordBatch::Make(fs);
+    auto rb_inst = AddInstanceOf(rb);
+    recordbatch_instances.push_back(rb_inst);
+    rb_inst->port("kcd") <<= kcr;
+    rb_inst->port("bcd") <<= bcr;
   }
 
   // Create and add the kernel
-  kernel_ = Kernel::Make(schema_set_->name(), reader_components());
+  kernel_ = Kernel::Make(schema_set_->name(), recordbatch_components());
   kernel_inst_ = AddInstanceOf(kernel_);
   kernel_inst_->port("kcd") <<= kcr;
   kernel_inst_->port("mmio") <<= regs;
 
-  // Connect all Arrow field derived
-  for (const auto &r : rb_reader_instances_) {
+  // Connect all Arrow field derived ports
+  for (const auto &r : recordbatch_instances) {
     auto field_ports = r->GetAll<FieldPort>();
     for (const auto &fp : field_ports) {
       if (fp->function_ == FieldPort::Function::ARROW) {
-        kernel_inst_->port(fp->name()) <<= fp;
+        // If the port is an output, it's an input for the kernel and vice versa
+        if (fp->dir() == cerata::Term::Dir::OUT) {
+          kernel_inst_->port(fp->name()) <<= fp;
+        } else {
+          fp <<= kernel_inst_->port(fp->name());
+        }
       } else if (fp->function_ == FieldPort::Function::COMMAND) {
         fp <<= kernel_inst_->port(fp->name());
       } else if (fp->function_ == FieldPort::Function::UNLOCK) {
@@ -75,21 +80,22 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
   std::deque<std::shared_ptr<BusPort>> bus_ports;
 
   // For all the bus interfaces, figure out which unique bus specifications there are.
-  for (const auto &rbri : rb_reader_instances_) {
-    auto all_bus_ports = rbri->GetAll<BusPort>();
-    for (const auto &b : all_bus_ports) {
+  for (const auto &r : recordbatch_instances) {
+    auto r_bus_ports = r->GetAll<BusPort>();
+    for (const auto &b : r_bus_ports) {
       bus_specs.push_back(b->spec_);
       bus_ports.push_back(b);
     }
-    // Leave only unique bus specs
-    auto last = std::unique(bus_specs.begin(), bus_specs.end());
-    bus_specs.erase(last, bus_specs.end());
   }
+
+  // Leave only unique bus specs
+  auto last = std::unique(bus_specs.begin(), bus_specs.end());
+  bus_specs.erase(last, bus_specs.end());
 
   // Generate a BusArbiterVec for every unique bus specification
   for (const auto &spec : bus_specs) {
     LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
-    auto arbiter = AddInstanceOf(BusReadArbiter(spec));
+    auto arbiter = AddInstanceOf(BusArbiter(spec));
     arbiter->par(bus_addr_width()->name()) <<= Literal::Make(spec.addr_width);
     arbiter->par(bus_data_width()->name()) <<= Literal::Make(spec.data_width);
     arbiter->par(bus_len_width()->name()) <<= Literal::Make(spec.len_width);
@@ -121,13 +127,13 @@ std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<Sch
 }
 
 std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_set) {
-  return std::make_shared<Mantle>(schema_set->name() + "_Mantle", schema_set);
+  return std::make_shared<Mantle>("Mantle", schema_set);
 }
 
-std::deque<std::shared_ptr<RecordBatchReader>> Mantle::reader_components() {
-  std::deque<std::shared_ptr<RecordBatchReader>> result;
-  for (const auto &r : rb_reader_instances_) {
-    result.push_back(*cerata::Cast<RecordBatchReader>(r->component));
+std::deque<std::shared_ptr<RecordBatch>> Mantle::recordbatch_components() {
+  std::deque<std::shared_ptr<RecordBatch>> result;
+  for (const auto &r : recordbatch_instances) {
+    result.push_back(*cerata::Cast<RecordBatch>(r->component));
   }
   return result;
 }

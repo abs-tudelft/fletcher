@@ -119,7 +119,7 @@ struct Component : public Graph {
   explicit Component(std::string name) : Graph(std::move(name), COMPONENT) {}
 
   /// @brief Construct a Component with initial nodes
-  static std::shared_ptr<Component> Make(std::string name, std::initializer_list<std::shared_ptr<Object>> nodes);
+  static std::shared_ptr<Component> Make(std::string name, std::deque<std::shared_ptr<Object>> nodes);
 
   /// @brief Construct an empty Component with only a name.
   static std::shared_ptr<Component> Make(std::string name) { return Make(std::move(name), {}); }

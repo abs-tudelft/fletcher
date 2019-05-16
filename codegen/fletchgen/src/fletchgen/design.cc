@@ -34,8 +34,8 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   LOG(INFO, "Generating Mantle...");
   ret.mantle = Mantle::Make(ret.schema_set);
   ret.kernel = ret.mantle->kernel_;
-  for (const auto rbri : ret.mantle->rb_reader_instances_) {
-    ret.readers.push_back(*Cast<RecordBatchReader>(rbri->component));
+  for (const auto rbri : ret.mantle->recordbatch_instances) {
+    ret.readers.push_back(*Cast<RecordBatch>(rbri->component));
   }
 
   return ret;

@@ -28,21 +28,20 @@ namespace fletchgen {
 using cerata::Cast;
 
 Kernel::Kernel(std::string name,
-               const std::deque<std::shared_ptr<RecordBatchReader>>& readers,
-               const std::deque<std::shared_ptr<RecordBatchReader>>& writers)
+               const std::deque<std::shared_ptr<RecordBatch>>& recordbatches)
     : Component(std::move(name)) {
 
   // Add address width
   AddObject(bus_addr_width());
 
-  // Add CR
+  // Add clock/reset
   AddObject(Port::Make(kernel_cr()));
 
   // Add MMIO
   AddObject(MmioPort::Make(Port::Dir::IN));
 
-  // Add reader ports
-  for (const auto &r : readers) {
+  // Add ports derived from arrow fields
+  for (const auto &r : recordbatches) {
     auto field_ports = r->GetFieldPorts();
     for (const auto &fp : field_ports) {
       auto copied_port = *Cast<FieldPort>(fp->Copy());
@@ -53,9 +52,8 @@ Kernel::Kernel(std::string name,
 }
 
 std::shared_ptr<Kernel> Kernel::Make(std::string name,
-                                     std::deque<std::shared_ptr<RecordBatchReader>> readers,
-                                     std::deque<std::shared_ptr<RecordBatchReader>> writers) {
-  return std::make_shared<Kernel>(name, readers, writers);
+                                     std::deque<std::shared_ptr<RecordBatch>> recordbatches) {
+  return std::make_shared<Kernel>(name, recordbatches);
 }
 
 }  // namespace fletchgen

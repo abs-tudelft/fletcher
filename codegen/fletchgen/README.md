@@ -1,13 +1,13 @@
-# Fletchgen: The Fletcher Interface Generator
+# Fletchgen: The Fletcher Design Generator
 Fletchgen is a command-line utility that generates the upper layers of a hardware design, including simulation and 
 platform-specific top-levels, based on Arrow Schemas and Recordbatches. 
 
 Currently, the overall structure of a Fletcher hardware design is as follows:
 
 * For each Arrow Field, an ArrayReader/Writer is instantiated.
-* For each Arrow Schema, a RecordBatchReader/Writer is generated and wrapper around all ArrayReader/Writer instances.
+* For each Arrow Schema, a RecordBatch/Writer is generated and wrapper around all ArrayReader/Writer instances.
 * For the combination of all Arrow Schemas, a Kernel is generated.
-* All RecordBatchReader/Writers and the Kernel is wrapped by a Mantle. The Mantle also instantiate the required 
+* All RecordBatch/Writers and the Kernel is wrapped by a Mantle. The Mantle also instantiate the required 
   memory bus interconnection logic.
 
 # Prerequisites

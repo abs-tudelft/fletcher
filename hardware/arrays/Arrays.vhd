@@ -49,9 +49,9 @@ package Arrays is
       cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unl_valid                 : out std_logic;
+      unl_ready                 : in  std_logic := '1';
+      unl_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_wreq_valid            : out std_logic;
       bus_wreq_ready            : in  std_logic;
       bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);

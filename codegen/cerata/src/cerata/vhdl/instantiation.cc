@@ -98,6 +98,9 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
   } else {
     Line l;
     l << p.flat_type_a(ia).name(NamePart(lh_prefix, true));
+
+    // if right side is concatenated onto the left side
+    // or the left side is an array (right is also concatenated onto the left side)
     if ((p.num_b() > 1) || a_is_array) {
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_a->ToString() + ")";
@@ -108,7 +111,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
     l << " => ";
     l << p.flat_type_b(ib).name(NamePart(rh_prefix, true));
     if ((p.num_a() > 1) || b_is_array) {
-      if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
+      if (p.flat_type_b(ib).type_->Is(Type::BIT)) {
         l += "(" + offset_b->ToString() + ")";
       } else {
         l += "(" + (next_offset_b - 1)->ToString() + " downto " + offset_b->ToString() + ")";
@@ -140,6 +143,12 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
   if (b->array()) {
     b_array = true;
     b_idx = (*b->array())->IndexOf(b);
+  }
+  if (a->type()->meta.count("VHDL:ForceStreamVector") > 0) {
+    a_array = true;
+  }
+  if (b->type()->meta.count("VHDL:ForceStreamVector") > 0) {
+    b_array = true;
   }
   // Loop over all pairs
   for (const auto &pair: pairs) {

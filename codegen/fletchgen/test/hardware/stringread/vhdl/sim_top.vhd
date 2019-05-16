@@ -48,7 +48,7 @@ architecture Behavorial of sim_top is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  component Kernel_Mantle is
+  component Mantle is
     generic(
       BUS_ADDR_WIDTH            : natural
     );
@@ -82,15 +82,15 @@ architecture Behavorial of sim_top is
       mst_rdat_ready            : out std_logic;
       mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       mst_rdat_last             : in  std_logic
-      --mst_wreq_valid            : out std_logic;
-      --mst_wreq_ready            : in std_logic;
-      --mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      --mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      --mst_wdat_valid            : out std_logic;
-      --mst_wdat_ready            : in std_logic;
-      --mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      --mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      --mst_wdat_last             : out std_logic
+      mst_wreq_valid            : out std_logic;
+      mst_wreq_ready            : in std_logic;
+      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_wdat_valid            : out std_logic;
+      mst_wdat_ready            : in std_logic;
+      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_last             : out std_logic
     );
   end component;
   -----------------------------------------------------------------------------
@@ -387,7 +387,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "output/stringread.srec"
+    SREC_FILE                   => "outputs/names.srec"
   )
   port map (
     clk                         => bcd_clk,
@@ -431,7 +431,7 @@ begin
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
-  Kernel_Mantle_inst : Kernel_Mantle
+  Mantle_inst : Mantle
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH
     )
@@ -465,15 +465,15 @@ begin
       mst_rdat_ready            => bus_rdat_ready,
       mst_rdat_data             => bus_rdat_data,
       mst_rdat_last             => bus_rdat_last
-      --mst_wreq_valid            => bus_wreq_valid,
-      --mst_wreq_ready            => bus_wreq_ready,
-      --mst_wreq_addr             => bus_wreq_addr,
-      --mst_wreq_len              => bus_wreq_len,
-      --mst_wdat_valid            => bus_wdat_valid,
-      --mst_wdat_ready            => bus_wdat_ready,
-      --mst_wdat_data             => bus_wdat_data,
-      --mst_wdat_strobe           => bus_wdat_strobe,
-      --mst_wdat_last             => bus_wdat_last
+      mst_wreq_valid            => bus_wreq_valid,
+      mst_wreq_ready            => bus_wreq_ready,
+      mst_wreq_addr             => bus_wreq_addr,
+      mst_wreq_len              => bus_wreq_len,
+      mst_wdat_valid            => bus_wdat_valid,
+      mst_wdat_ready            => bus_wdat_ready,
+      mst_wdat_data             => bus_wdat_data,
+      mst_wdat_strobe           => bus_wdat_strobe,
+      mst_wdat_last             => bus_wdat_last
     );
 
 end architecture;

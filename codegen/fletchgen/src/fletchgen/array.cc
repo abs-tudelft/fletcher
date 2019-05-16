@@ -17,10 +17,13 @@
 #include <memory>
 #include <cmath>
 #include <cerata/api.h>
+#include <fletcher/common/api.h>
 
 #include "fletchgen/bus.h"
 
 namespace fletchgen {
+
+using fletcher::Mode;
 
 using cerata::Parameter;
 using cerata::Literal;
@@ -47,7 +50,7 @@ std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field) {
 }
 
 std::shared_ptr<Node> tag_width(const std::shared_ptr<arrow::Field> &field) {
-  auto meta_val = fletcher::getMeta(field, "tag_width");
+  auto meta_val = fletcher::GetMeta(field, "tag_width");
   if (meta_val.empty()) {
     return intl<1>();
   } else {
@@ -72,42 +75,76 @@ std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width) {
 }
 
 std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &width) {
-  static auto d = RecField::Make(data(width));
-  static auto dv = RecField::Make(dvalid());
-  static auto l = RecField::Make(last());
-  static auto data_record = Record::Make("ar_data_rec", {d, dv, l});
-  static auto data_stream = Stream::Make("ar_data_stream", data_record);
+  auto d = RecField::Make(data(width));
+  auto dv = RecField::Make(dvalid());
+  auto l = RecField::Make(last());
+  auto data_record = Record::Make("arr_data_rec", {d, dv, l});
+  auto data_stream = Stream::Make("arr_data_stm", data_record);
+  data_stream->meta["VHDL:ForceStreamVector"] = "true";
   return data_stream;
 }
 
 std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &width) {
-  static auto d = RecField::Make(data(width));
-  static auto l = RecField::Make(last());
-  static auto data_record = Record::Make("ar_data_rec", {d, l});
-  static auto data_stream = Stream::Make("ar_data_stream", data_record);
+  auto d = RecField::Make(data(width));
+  auto dv = RecField::Make(dvalid());
+  auto l = RecField::Make(last());
+  auto data_record = Record::Make("arr_data_rec", {d, dv, l});
+  auto data_stream = Stream::Make("arr_data_stm", data_record);
+  data_stream->meta["VHDL:ForceStreamVector"] = "true";
   return data_stream;
 }
 
-std::shared_ptr<Component> ArrayReader(const std::shared_ptr<Node> &data_width,
-                                       const std::shared_ptr<Node> &ctrl_width,
-                                       const std::shared_ptr<Node> &tag_width) {
-  auto bus = BusPort::Make(BusPort::Function::READ, Port::Dir::OUT, BusSpec());
-  bus->type()->meta["DEBUG_CONSTRUCT"] = std::string(__FILE__) + ":" + std::to_string(__LINE__);
-  auto ret = Component::Make("ArrayReader",
-                             {bus_addr_width(), bus_len_width(), bus_data_width(),
-                              Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
-                              Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
-                              Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
-                              Parameter::Make("CFG", string(), strl("\"\"")),
-                              Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
-                              Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>()),
-                              Port::Make(bus_cr()),
-                              Port::Make(kernel_cr()),
-                              bus,
-                              Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
-                              Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
-                              Port::Make("out", read_data(data_width), Port::Dir::OUT)}
-  );
+std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
+                                 const std::shared_ptr<Node> &ctrl_width,
+                                 const std::shared_ptr<Node> &tag_width,
+                                 Mode mode) {
+  std::shared_ptr<BusPort> bus;
+  std::shared_ptr<Port> data;
+
+  BusSpec spec{};
+
+  if (mode == Mode::READ) {
+    spec.function = BusFunction::READ;
+    data = Port::Make("out", read_data(data_width), Port::Dir::OUT);
+    bus = BusPort::Make(Port::Dir::OUT, spec);
+  } else {
+    spec.function = BusFunction::WRITE;
+    data = Port::Make("in", write_data(data_width), Port::Dir::IN);
+    bus = BusPort::Make(Port::Dir::OUT, spec);
+  }
+
+  std::string name = mode == Mode::READ ? "ArrayReader" : "ArrayWriter";
+
+  std::deque<std::shared_ptr<cerata::Object>> objects;
+
+  // Insert some parameters
+  objects.insert(objects.end(), {bus_addr_width(), bus_len_width(), bus_data_width()});
+
+  // Insert bus strobe width for writers
+  if (mode == Mode::WRITE) {
+    objects.push_back(bus_strobe_width());
+  }
+
+  // Insert other parameters
+  objects.insert(objects.end(), {
+      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
+      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
+      Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
+      Parameter::Make("CFG", string(), strl("\"\"")),
+      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
+      Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>())});
+
+  // Insert ports
+  objects.insert(objects.end(), {
+      Port::Make(bus_cr()),
+      Port::Make(kernel_cr()),
+      bus,
+      Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
+      Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
+      data});
+
+  auto ret = Component::Make(name, objects);
+
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
   ret->meta["package"] = "Arrays";
@@ -236,13 +273,9 @@ std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int
   return ret;
 }
 
-std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type, fletcher::Mode mode) {
-  std::shared_ptr<TypeMapper> conversion;
-  if (mode == fletcher::Mode::READ) {
-    conversion = std::make_shared<TypeMapper>(stream_type.get(), read_data().get());
-  } else {
-    conversion = std::make_shared<TypeMapper>(stream_type.get(), write_data().get());
-  }
+std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type,
+                                                const std::shared_ptr<Type> &other) {
+  auto conversion = TypeMapper::Make(stream_type.get(), other.get());
 
   size_t idx_stream = 0;
   // Unused: size_t idx_record = 1;
@@ -382,17 +415,13 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
   if (level == 0) {
     // Element name is empty by default.
     std::string elements_name;
-    // Check if the type is nested. If it is not nested, the give the elements the name "data"
-    if (!type->IsNested()) {
-      elements_name = "data";
-    }
+
     // Create the stream record
     auto record = Record::Make("data", {
         RecField::Make("dvalid", dvalid()),
         RecField::Make("last", last()),
-        RecField::Make(elements_name, type)});
-    auto stream = Stream::Make(name, record, elements_name);
-    stream->AddMapper(GetStreamTypeMapper(stream, mode));
+        RecField::Make("", type)});
+    auto stream = Stream::Make(name, record);
     return stream;
   } else {
     // Otherwise just return the type

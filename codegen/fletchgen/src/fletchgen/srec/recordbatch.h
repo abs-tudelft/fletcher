@@ -17,7 +17,20 @@
 #include <vector>
 #include <arrow/api.h>
 
+#include "fletchgen/options.h"
+
 namespace fletchgen::srec {
+
+/**
+ * @brief Generate and save an SREC file from a bunch of recordbatches and schemas.
+ * @param options       Fletchgen options.
+ * @param schemas       Schemas.
+ * @param firstlastidx  A vector to store Fletcher command stream first and last indices of a RecordBatch.
+ * @return              A vector of buffer addresses in the SREC.
+ */
+std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
+                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
+                                   std::vector<std::pair<uint32_t, uint32_t>>* firstlastidx=nullptr);
 
 /**
  * @brief Calculate buffer offsets if all buffers would be stored contiguously.

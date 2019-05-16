@@ -56,7 +56,7 @@ static void AddAnyObjectParams(std::shared_ptr<Component> comp, std::shared_ptr<
   }
 }
 
-std::shared_ptr<Component> Component::Make(std::string name, std::initializer_list<std::shared_ptr<Object>> objects) {
+std::shared_ptr<Component> Component::Make(std::string name, std::deque<std::shared_ptr<Object>> objects) {
   auto ret = std::make_shared<Component>(name);
   for (const auto &object : objects) {
     // Add the object to the graph.

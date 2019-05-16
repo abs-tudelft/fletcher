@@ -32,7 +32,38 @@ using cerata::integer;
 using cerata::Cast;
 using cerata::Type;
 
-// Bus channel types:
+// Bus channel classes:
+
+enum class BusFunction {
+  READ,
+  WRITE
+};
+
+/// @brief Bus specification
+struct BusSpec {
+  size_t data_width = 512;
+  size_t addr_width = 64;
+  size_t len_width = 8;
+  size_t burst_step = 1;
+  size_t max_burst = 128;
+  BusFunction function = BusFunction::READ;
+
+  std::shared_ptr<Type> ToType();
+  std::string ToString() const;
+  std::string ToShortString() const;
+};
+
+bool operator==(const BusSpec &lhs, const BusSpec &rhs);
+
+/// @brief Bus port
+struct BusPort : public Port {
+  BusSpec spec_;
+  BusPort(Port::Dir dir, BusSpec spec, const std::string &name = "")
+      : Port(name.empty() ? "bus" : name, spec.ToType(), dir), spec_(spec) {}
+  static std::shared_ptr<BusPort> Make(std::string name, Port::Dir dir, BusSpec spec);
+  static std::shared_ptr<BusPort> Make(Port::Dir dir, BusSpec spec);
+  std::shared_ptr<Object> Copy() const override;
+};
 
 /// @brief Fletcher bus read request channel
 std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
@@ -44,45 +75,24 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width = bus_ad
                                 const std::shared_ptr<Node> &len_width = bus_len_width(),
                                 const std::shared_ptr<Node> &data_width = bus_data_width());
 
-/// @brief Bus specification
-struct BusSpec {
-  size_t data_width = 512;
-  size_t addr_width = 64;
-  size_t len_width = 8;
-  size_t burst_step = 1;
-  size_t max_burst = 128;
-
-  std::string ToString() const;
-  std::string ToShortString() const;
-};
-
-bool operator==(const BusSpec &lhs, const BusSpec &rhs);
-
-/// @brief Bus port
-struct BusPort : public Port {
-  enum class Function {
-    READ,
-    WRITE
-  } function_;
-
-  BusSpec spec_;
-
-  BusPort(Function fun, Port::Dir dir, BusSpec spec, const std::string &name = "")
-      : Port(name.empty() ? fun2name(fun) : name, fun2type(fun, spec), dir), function_(fun), spec_(spec) {}
-
-  static std::shared_ptr<BusPort> Make(std::string name, Function fun, Port::Dir dir, BusSpec spec);
-  static std::shared_ptr<BusPort> Make(Function fun, Port::Dir dir, BusSpec spec);
-
-  static std::string fun2name(Function fun);
-  static std::shared_ptr<Type> fun2type(Function fun, BusSpec spec);
-
-  std::shared_ptr<Object> Copy() const override;
-
-};
+/**
+ * @brief Return a Cerata component model of a BusArbiter.
+ *
+ * This model corresponds to either:
+ *    [`hardware/interconnect/BusReadArbiterVec.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/interconnect/BusReadArbiterVec.vhd)
+ * or [`hardware/interconnect/BusWriteArbiterVec.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/interconnect/BusWriteArbiterVec.vhd)
+ * depending on the function parameter.
+ *
+ * Changes to the implementation of this component in the HDL source must be reflected in the implementation of this
+ * function.
+ *
+ * @param function  The function of the arbiter, either BusPort::Function::READ or BusPort::Function::WRITE.
+ * @param spec      The bus specification.
+ * @return          A Bus(Read/Write)Arbiter Cerata component model.
+ */
+std::shared_ptr<Component> BusArbiter(BusSpec spec = BusSpec());
 
 std::shared_ptr<Component> BusReadSerializer();
-std::shared_ptr<Component> BusReadArbiter(BusSpec spec = BusSpec());
-
 std::shared_ptr<Component> BusWriteSerializer();
 std::shared_ptr<Component> BusWriteArbiter();
 

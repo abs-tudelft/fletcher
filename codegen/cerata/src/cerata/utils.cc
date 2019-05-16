@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "cerata/logging.h"
 #include "cerata/utils.h"
 
 void cerata::CreateDir(const std::string &dir_name) {
   // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
-  system(("mkdir -p " + dir_name).c_str());
+  int ret = system(("mkdir -p " + dir_name).c_str());
+  if (ret == -1) {
+    LOG(ERROR, "Could not create directory.");
+  }
 }

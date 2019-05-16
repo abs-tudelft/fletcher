@@ -123,7 +123,8 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other) {
       return m;
     }
   }
-  // Implicit type mappers maybe be generated in two cases; if it's exactly the same type or if its an equal type.
+  // Implicit type mappers maybe be generated in two cases; if it's exactly the same type object,
+  // or if its an equal type, where the flattened types are compared.
   // TODO(johanpel): clarify previous comment
   if (other == this) {
     // Generate a type mapper to itself using the TypeMapper constructor.
@@ -193,7 +194,11 @@ Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type,
     : Type(type_name, Type::STREAM),
       element_type_(std::move(element_type)),
       element_name_(std::move(element_name)),
-      epc_(epc) {}
+      epc_(epc) {
+  if (element_type_ == nullptr) {
+    throw std::runtime_error("Stream element type cannot be nullptr.");
+  }
+}
 
 std::shared_ptr<Type> bit() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");

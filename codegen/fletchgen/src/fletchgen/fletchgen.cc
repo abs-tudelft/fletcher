@@ -16,34 +16,12 @@
 #include <cerata/api.h>
 #include <fletcher/common/api.h>
 
+#include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"
 #include "fletchgen/utils.h"
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
-
-std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
-                                   std::vector<std::pair<uint32_t, uint32_t>>* firstlastidx=nullptr) {
-  if (options->recordbatch_paths.size() != schemas.size()) {
-    throw std::runtime_error("Number of schemas does not correspond to number of RecordBatches.");
-  }
-
-  std::deque<std::shared_ptr<arrow::RecordBatch>> recordbatches;
-  for (size_t i=0;i<schemas.size();i++) {
-    auto rb = fletcher::readRecordBatchFromFile(options->recordbatch_paths[i], schemas[i]);
-    recordbatches.push_back(rb);
-  }
-
-  auto srec_buffer_offsets = fletchgen::srec::WriteRecordBatchesToSREC(recordbatches, options->srec_out_path);
-
-  if (firstlastidx != nullptr) {
-    for (const auto& rb : recordbatches) {
-      (*firstlastidx).emplace_back(0, rb->num_rows());
-    }
-  }
-  return srec_buffer_offsets;
-}
 
 int main(int argc, char **argv) {
   // Start logging
@@ -54,9 +32,11 @@ int main(int argc, char **argv) {
   auto options = std::make_shared<fletchgen::Options>();
   fletchgen::Options::Parse(options.get(), argc, argv);
 
+  // The resulting design.
   fletchgen::Design design;
-
+  // Buffer offsets in a potential SREC memory contents for memory model in simulation
   std::vector<uint64_t> srec_buf_offsets;
+  // First and last indices of every RecordBatch.
   std::vector<std::pair<uint32_t, uint32_t>> first_last_indices;
 
   // Generate designs in Cerata
@@ -69,7 +49,7 @@ int main(int argc, char **argv) {
   // Generate SREC output
   if (options->MustGenerateSREC()) {
     LOG(INFO, "Generating SREC output.");
-    srec_buf_offsets = GenerateSREC(design.options, design.schemas, &first_last_indices);
+    srec_buf_offsets = fletchgen::srec::GenerateSREC(design.options, design.schemas, &first_last_indices);
   }
 
   // Generate VHDL output

@@ -36,27 +36,19 @@ std::shared_ptr<arrow::Schema> GetListUint8Schema() {
 std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("primread", arrow::uint8(), false)
+      arrow::field("number", arrow::uint8(), false)
   };
-
-  auto schema = std::make_shared<arrow::Schema>(schema_fields,
-                                                fletcher::MakeRequiredMeta("PrimRead", Mode::READ));
-
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::MakeRequiredMeta("PrimRead", Mode::READ));
   return schema;
 }
 
 std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("primwrite", arrow::uint8(), false)
+      arrow::field("number", arrow::uint8(), false)
   };
-
-  // Create some metadata
-  auto schema_meta = metaMode(Mode::WRITE);
-
   // Create the schema
-  auto schema = std::make_shared<arrow::Schema>(schema_fields, schema_meta);
-
+  auto schema = std::make_shared<arrow::Schema>(schema_fields, fletcher::MakeRequiredMeta("PrimWrite", Mode::WRITE));
   return schema;
 }
 

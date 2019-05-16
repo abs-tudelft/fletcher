@@ -19,10 +19,42 @@
 #include <cerata/api.h>
 #include <fletcher/common/api.h>
 
+#include "fletchgen/options.h"
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {
+
+std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
+                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
+                                   std::vector<std::pair<uint32_t, uint32_t>> *firstlastidx) {
+  if (options->recordbatch_paths.size() != schemas.size()) {
+    throw std::runtime_error("Number of schemas does not correspond to number of RecordBatches.");
+  }
+
+  std::deque<std::shared_ptr<arrow::RecordBatch>> recordbatches;
+  for (size_t i = 0; i < schemas.size(); i++) {
+    // Only read RecordBatch files for Read schemas, and add their contents to the SREC file
+    if (fletcher::GetMode(schemas[i]) == fletcher::Mode::READ) {
+      auto rb = fletcher::ReadRecordBatchFromFile(options->recordbatch_paths[i], schemas[i]);
+      recordbatches.push_back(rb);
+      if (firstlastidx != nullptr) {
+        // Read schemas are assumed to go over the whole range for automatic simulation top-level generation.
+        (*firstlastidx).emplace_back(0, rb->num_rows());
+      }
+    } else {
+      // Write schemas just get firstidx and lastidx set to 0.
+      if (firstlastidx != nullptr) {
+        (*firstlastidx).emplace_back(0, 0);
+      }
+    }
+  }
+
+  // Generate the SREC file
+  auto srec_buffer_offsets = fletchgen::srec::WriteRecordBatchesToSREC(recordbatches, options->srec_out_path);
+
+  return srec_buffer_offsets;
+}
 
 std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   size_t addr = 0;
@@ -39,13 +71,13 @@ std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
   return ret;
 }
 
-std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<arrow::RecordBatch>>& recordbatches,
+std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<arrow::RecordBatch>> &recordbatches,
                                                const std::string &srec_fname) {
 
   std::vector<arrow::Buffer *> buffers;
 
   // Get pointers to all buffers of all recordbatches
-  for (const auto& rb : recordbatches) {
+  for (const auto &rb : recordbatches) {
     for (int c = 0; c < rb->num_columns(); c++) {
       auto column = rb->column(c);
       fletcher::flattenArrayBuffers(&buffers, column);
