@@ -26,46 +26,46 @@ entity Kernel is
     BUS_ADDR_WIDTH : integer := 64
   );
   port (
-    kcd_clk           : in  std_logic;
-    kcd_reset         : in  std_logic;
-    mmio_awvalid      : in  std_logic;
-    mmio_awready      : out std_logic;
-    mmio_awaddr       : in  std_logic_vector(31 downto 0);
-    mmio_wvalid       : in  std_logic;
-    mmio_wready       : out std_logic;
-    mmio_wdata        : in  std_logic_vector(31 downto 0);
-    mmio_wstrb        : in  std_logic_vector(3 downto 0);
-    mmio_bvalid       : out std_logic;
-    mmio_bready       : in  std_logic;
-    mmio_bresp        : out std_logic_vector(1 downto 0);
-    mmio_arvalid      : in  std_logic;
-    mmio_arready      : out std_logic;
-    mmio_araddr       : in  std_logic_vector(31 downto 0);
-    mmio_rvalid       : out std_logic;
-    mmio_rready       : in  std_logic;
-    mmio_rdata        : out std_logic_vector(31 downto 0);
-    mmio_rresp        : out std_logic_vector(1 downto 0);
-    Name_valid        : in  std_logic;
-    Name_ready        : out std_logic;
-    Name_dvalid       : in  std_logic;
-    Name_last         : in  std_logic;
-    Name_count        : in  std_logic_vector(0 downto 0);
-    Name_length       : in  std_logic_vector(31 downto 0);
-    Name_chars_valid  : in  std_logic;
-    Name_chars_ready  : out std_logic;
-    Name_chars_dvalid : in  std_logic;
-    Name_chars_last   : in  std_logic;
-    Name_chars_count  : in  std_logic_vector(2 downto 0);
-    Name_chars_data   : in  std_logic_vector(31 downto 0);
-    Name_cmd_valid    : out std_logic;
-    Name_cmd_ready    : in  std_logic;
-    Name_cmd_firstIdx : out std_logic_vector(31 downto 0);
-    Name_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    Name_cmd_ctrl     : out std_logic_vector(2*bus_addr_width-1 downto 0);
-    Name_cmd_tag      : out std_logic_vector(0 downto 0);
-    Name_unl_valid    : in  std_logic;
-    Name_unl_ready    : out std_logic;
-    Name_unl_tag      : in  std_logic_vector(0 downto 0)
+    kcd_clk                      : in  std_logic;
+    kcd_reset                    : in  std_logic;
+    mmio_awvalid                 : in  std_logic;
+    mmio_awready                 : out std_logic;
+    mmio_awaddr                  : in  std_logic_vector(31 downto 0);
+    mmio_wvalid                  : in  std_logic;
+    mmio_wready                  : out std_logic;
+    mmio_wdata                   : in  std_logic_vector(31 downto 0);
+    mmio_wstrb                   : in  std_logic_vector(3 downto 0);
+    mmio_bvalid                  : out std_logic;
+    mmio_bready                  : in  std_logic;
+    mmio_bresp                   : out std_logic_vector(1 downto 0);
+    mmio_arvalid                 : in  std_logic;
+    mmio_arready                 : out std_logic;
+    mmio_araddr                  : in  std_logic_vector(31 downto 0);
+    mmio_rvalid                  : out std_logic;
+    mmio_rready                  : in  std_logic;
+    mmio_rdata                   : out std_logic_vector(31 downto 0);
+    mmio_rresp                   : out std_logic_vector(1 downto 0);
+    StringRead_Name_valid        : in  std_logic;
+    StringRead_Name_ready        : out std_logic;
+    StringRead_Name_dvalid       : in  std_logic;
+    StringRead_Name_last         : in  std_logic;
+    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
+    StringRead_Name_length       : in  std_logic_vector(31 downto 0);
+    StringRead_Name_chars_valid  : in  std_logic;
+    StringRead_Name_chars_ready  : out std_logic;
+    StringRead_Name_chars_dvalid : in  std_logic;
+    StringRead_Name_chars_last   : in  std_logic;
+    StringRead_Name_chars_count  : in  std_logic_vector(2 downto 0);
+    StringRead_Name_chars_data   : in  std_logic_vector(31 downto 0);
+    StringRead_Name_cmd_valid    : out std_logic;
+    StringRead_Name_cmd_ready    : in  std_logic;
+    StringRead_Name_cmd_firstIdx : out std_logic_vector(31 downto 0);
+    StringRead_Name_cmd_lastidx  : out std_logic_vector(31 downto 0);
+    StringRead_Name_cmd_ctrl     : out std_logic_vector(2*bus_addr_width-1 downto 0);
+    StringRead_Name_cmd_tag      : out std_logic_vector(0 downto 0);
+    StringRead_Name_unl_valid    : in  std_logic;
+    StringRead_Name_unl_ready    : out std_logic;
+    StringRead_Name_unl_tag      : in  std_logic_vector(0 downto 0)
   );
 end entity;
 architecture Implementation of Kernel is
@@ -151,7 +151,7 @@ begin
   
   -- We don't use the return registers for this kernel. Put some random data.
   rreg_array(REG_RETURN0) <= X"42001337";
-  rreg_array(REG_RETURN1) <= X"FEEDC4F3";
+  rreg_array(REG_RETURN1) <= X"0DDF00D5";
   
   -- Connect the control bits  
   ctrl_start <= wreg_array(REG_CONTROL)(0);
@@ -176,9 +176,9 @@ begin
     stat_done <= '0';
     
     -- Initial Fletcher streams handshake signals
-    Name_cmd_valid <= '0';
-    Name_ready <= '0';
-    Name_chars_ready <= '0';
+    StringRead_Name_cmd_valid <= '0';
+    StringRead_Name_ready <= '0';
+    StringRead_Name_chars_ready <= '0';
 
     -- Wait for reset to go low and start to go high.
     loop
@@ -189,68 +189,68 @@ begin
     stat_busy <= '1';
 
     -- Issue the command:
-    Name_cmd_firstIdx <= wreg_array(REG_STRINGS_FIRSTIDX);
-    Name_cmd_lastIdx  <= wreg_array(REG_STRINGS_LASTIDX);
+    StringRead_Name_cmd_firstIdx <= wreg_array(REG_STRINGS_FIRSTIDX);
+    StringRead_Name_cmd_lastIdx  <= wreg_array(REG_STRINGS_LASTIDX);
 
     -- The addresses can be taken from the registers, but they are passed
     -- through the user core. In this way, the user can create new buffers
     -- without communicating with host software.
-    Name_cmd_ctrl <= wreg_array( REG_VALUES_BUF_HI) & wreg_array( REG_VALUES_BUF_LO)   -- Values buffer
+    StringRead_Name_cmd_ctrl <= wreg_array( REG_VALUES_BUF_HI) & wreg_array( REG_VALUES_BUF_LO)   -- Values buffer
                    & wreg_array(REG_OFFSETS_BUF_HI) & wreg_array(REG_OFFSETS_BUF_LO);  -- Offsets buffer
                    
     -- Validate the command.
-    Name_cmd_valid <= '1';
+    StringRead_Name_cmd_valid <= '1';
 
     -- Wait for command to be accepted.
     loop
       wait until rising_edge(kcd_clk);
-      exit when Name_cmd_ready = '1';
+      exit when StringRead_Name_cmd_ready = '1';
     end loop;
-    Name_cmd_valid <= '0';
+    StringRead_Name_cmd_valid <= '0';
 
     loop
       -- Receive a string length
 
       -- Wait for valid length
-      Name_ready <= '1';
+      StringRead_Name_ready <= '1';
       loop
         wait until rising_edge(kcd_clk);
-        exit when Name_valid = '1';
+        exit when StringRead_Name_valid = '1';
       end loop;
 
       -- Save the string length, reset the current character and the string
       current_char := 0;
-      string_length := to_integer(unsigned(Name_length));
+      string_length := to_integer(unsigned(StringRead_Name_length));
       for I in 1 to MAX_STR_LEN loop
         str(I) := nul;
       end loop;
 
       -- Check if this is the last string
-      is_last := Name_last = '1';
+      is_last := StringRead_Name_last = '1';
 
       -- Not ready to receive a new length at the moment.
-      Name_ready <= '0';
+      StringRead_Name_ready <= '0';
 
       -- dumpStdOut("Received a string length of " & integer'image(string_length));
 
       -- Obtain all string characters
       loop
 
-        Name_chars_ready <= '1';
+        StringRead_Name_chars_ready <= '1';
 
         -- Wait for handshake
         loop
           wait until rising_edge(kcd_clk);
-          exit when Name_chars_valid = '1';
+          exit when StringRead_Name_chars_valid = '1';
         end loop;
 
         -- Check the number of characters delivered
-        num_chars := to_integer(unsigned(Name_chars_count));
+        num_chars := to_integer(unsigned(StringRead_Name_chars_count));
 
         -- For each character in the output
         for I in 0 to num_chars-1 loop
           -- Convert the std_logic_vector part to a character
-          int_char := to_integer(unsigned(Name_chars_data(8*(i+1)-1 downto 8*i)));
+          int_char := to_integer(unsigned(StringRead_Name_chars_data(8*(i+1)-1 downto 8*i)));
           char := character'val(int_char);
 
           -- Set the character in the string
@@ -260,12 +260,12 @@ begin
         end loop;
 
         -- check if this is the last (bunch of) characters
-        is_last_char := Name_chars_last = '1';
+        is_last_char := StringRead_Name_chars_last = '1';
 
         exit when is_last_char;
       end loop;
 
-      Name_chars_ready <= '0';
+      StringRead_Name_chars_ready <= '0';
 
       -- Check if the string length and the number of characters received is
       -- correct
