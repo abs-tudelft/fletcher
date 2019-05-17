@@ -32,16 +32,16 @@ std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle,
   Template t(std::string(fhwd) + "/axi/axi_top.vhdt");
 
   // Bus properties
-  t.replace("BUS_ADDR_WIDTH", 64);
-  t.replace("BUS_DATA_WIDTH", 512);
-  t.replace("BUS_STROBE_WIDTH", 512/8);
-  t.replace("BUS_LEN_WIDTH", 8);
-  t.replace("BUS_BURST_STEP_LEN", 1);
-  t.replace("BUS_BURST_MAX_LEN", 64);
+  t.Replace("BUS_ADDR_WIDTH", 64);
+  t.Replace("BUS_DATA_WIDTH", 512);
+  t.Replace("BUS_STROBE_WIDTH", 512 / 8);
+  t.Replace("BUS_LEN_WIDTH", 8);
+  t.Replace("BUS_BURST_STEP_LEN", 1);
+  t.Replace("BUS_BURST_MAX_LEN", 64);
 
   // MMIO properties
-  t.replace("MMIO_ADDR_WIDTH", 32);
-  t.replace("MMIO_DATA_WIDTH", 32);
+  t.Replace("MMIO_ADDR_WIDTH", 32);
+  t.Replace("MMIO_DATA_WIDTH", 32);
 
   // Do not change this order, TODO: fix this in replacement code
   t.replace("FLETCHER_WRAPPER_NAME", mantle->name());

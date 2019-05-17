@@ -41,6 +41,24 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name,
   return Make(std::move(name), dq);
 }
 
+bool SchemaSet::RequiresReading() {
+  for (const auto& fs : schemas) {
+    if (fs->mode() == fletcher::Mode::READ){
+      return true;
+    }
+  }
+  return false;
+}
+
+bool SchemaSet::RequiresWriting() {
+  for (const auto& fs : schemas) {
+    if (fs->mode() == fletcher::Mode::WRITE){
+      return true;
+    }
+  }
+  return false;
+}
+
 FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name)
     : arrow_schema_(arrow_schema), mode_(fletcher::GetMode(arrow_schema)) {
   // If no name given

@@ -50,7 +50,11 @@ struct SchemaSet : public cerata::Named {
   static std::shared_ptr<SchemaSet> Make(std::string name, std::deque<std::shared_ptr<arrow::Schema>> schema_list);
   static std::shared_ptr<SchemaSet> Make(std::string name,
                                          const std::vector<std::shared_ptr<arrow::Schema>> &schema_list);
-  /// @brief Schemas of RecordBatches to read from.
+  /// @brief Determine whether this schemaset requires reading from memory.
+  bool RequiresReading();;
+  /// @brief Determine whether this schemaset requires writing to memory.
+  bool RequiresWriting();
+  /// @brief Schemas of RecordBatches.
   std::deque<std::shared_ptr<FletcherSchema>> schemas;
 };
 

@@ -33,10 +33,12 @@ struct trloc {
 /// @brief Class to hold and modify a VHDL template file.
 class Template {
  public:
-  ///@brief Construct a VHDL template file holder.
+  /// @brief Construct a VHDL template file holder.
   explicit Template(const std::string &filename);
+  /// @brief Mark the locations of all replacable template strings.
+  void Analyze();
   ///@brief Replace a template replacement string with some number.
-  void replace(const std::string &str, int with);
+  void Replace(const std::string &str, int with);
   ///@brief Replace a template replacement string with some other string.
   void replace(const std::string &str, const std::string &with);
   ///@brief Return the file as a string.

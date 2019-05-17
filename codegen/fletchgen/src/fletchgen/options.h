@@ -28,8 +28,8 @@ struct Options {
   std::string output_dir;
 
   /// @brief SREC output path
-  std::string srec_out_path = "srec_read.dat";
-  std::string srec_sim_dump = "srec_write.dat";
+  std::string srec_out_path = "\"\"";
+  std::string srec_sim_dump = "\"\"";
   std::vector<std::string> recordbatch_paths;
   std::vector<std::string> languages = {"vhdl", "dot"};
   std::string kernel_name = "Kernel";
