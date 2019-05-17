@@ -24,79 +24,79 @@ namespace fletcher {
 
 UserCore::UserCore(std::shared_ptr<Context> context) : _context(std::move(context)) {}
 
-bool UserCore::implementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
+bool UserCore::ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
   // TODO(johanpel): Implement checking if the platform implements the same Schema
   ARROW_LOG(INFO) << schema->ToString();
   return true;
 }
 
-Status UserCore::reset() {
-  platform()->writeMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
-  return platform()->writeMMIO(FLETCHER_REG_CONTROL, 0);
+Status UserCore::Reset() {
+  platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
+  return platform()->WriteMMIO(FLETCHER_REG_CONTROL, 0);
 }
 
-Status UserCore::setRange(int32_t first, int32_t last) {
+Status UserCore::SetRange(int32_t first, int32_t last) {
   if (first >= last) {
     ARROW_LOG(ERROR) << "Row range invalid: [ " + std::to_string(first) + ", " + std::to_string(last) + " )";
     return Status::ERROR();
   }
 
   Status ret;
-  if (!platform()->writeMMIO(FLETCHER_REG_FIRSTIDX, static_cast<uint32_t>(first)).ok()) {
+  if (!platform()->WriteMMIO(FLETCHER_REG_FIRSTIDX, static_cast<uint32_t>(first)).ok()) {
     ret = Status::ERROR();
   }
-  if (!platform()->writeMMIO(FLETCHER_REG_LASTIDX, static_cast<uint32_t>(last)).ok()) {
+  if (!platform()->WriteMMIO(FLETCHER_REG_LASTIDX, static_cast<uint32_t>(last)).ok()) {
     ret = Status::ERROR();
   }
   return Status::OK();
 }
 
-Status UserCore::setArguments(std::vector<uint32_t> arguments) {
+Status UserCore::SetArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    platform()->writeMMIO(FLETCHER_REG_BUFFER_OFFSET + _context->num_buffers() * 2 + i, arguments[i]);
+    platform()->WriteMMIO(FLETCHER_REG_BUFFER_OFFSET + _context->num_buffers() * 2 + i, arguments[i]);
   }
 
   return Status::OK();
 }
 
-Status UserCore::start() {
-  return platform()->writeMMIO(FLETCHER_REG_CONTROL, ctrl_start);
+Status UserCore::Start() {
+  return platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_start);
 }
 
-Status UserCore::getStatus(uint32_t *status) {
-  return platform()->readMMIO(FLETCHER_REG_STATUS, status);
+Status UserCore::GetStatus(uint32_t *status) {
+  return platform()->ReadMMIO(FLETCHER_REG_STATUS, status);
 }
 
-Status UserCore::getReturn(uint32_t *ret0, uint32_t *ret1) {
-  if (platform()->readMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
-    if (platform()->readMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
+Status UserCore::GetReturn(uint32_t *ret0, uint32_t *ret1) {
+  if (platform()->ReadMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
+    if (platform()->ReadMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
       return Status::OK();
     }
   }
   return Status::ERROR();
 }
 
-Status UserCore::waitForFinish() {
-  return waitForFinish(0);
+Status UserCore::WaitForFinished() {
+  return WaitForFinished(0);
 }
 
-Status UserCore::waitForFinish(unsigned int poll_interval_usec) {
+Status UserCore::WaitForFinished(unsigned int poll_interval_usec) {
   uint32_t status = 0;
   if (poll_interval_usec == 0) {
     do {
-      platform()->readMMIO(FLETCHER_REG_STATUS, &status);
+      platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   } else {
     do {
       usleep(poll_interval_usec);
-      platform()->readMMIO(FLETCHER_REG_STATUS, &status);
+      platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   }
   return Status::OK();
 }
 
 std::shared_ptr<Platform> UserCore::platform() {
-  return _context->platform;
+  return _context->platform_;
 }
 
 std::shared_ptr<Context> UserCore::context() {

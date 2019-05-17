@@ -71,10 +71,10 @@ cdef class UserCore:
             True if compatible, False otherwise.
 
         """
-        return self.usercore.get().implementsSchema(pyarrow_unwrap_schema(schema))
+        return self.usercore.get().ImplementsSchema(pyarrow_unwrap_schema(schema))
 
     def reset(self):
-        check_fletcher_status(self.usercore.get().reset())
+        check_fletcher_status(self.usercore.get().Reset())
 
     def set_range(self, uint32_t first, uint32_t last):
         """Set the first (inclusive) and last (exclusive) column to process.
@@ -84,7 +84,7 @@ cdef class UserCore:
             last (int):
 
         """
-        check_fletcher_status(self.usercore.get().setRange(first, last))
+        check_fletcher_status(self.usercore.get().SetRange(first, last))
 
     def set_arguments(self, list arguments):
         """Set the parameters of the UserCore.
@@ -97,14 +97,14 @@ cdef class UserCore:
         for argument in arguments:
             cpp_arguments.push_back(argument)
 
-        self.usercore.get().setArguments(cpp_arguments)
+        self.usercore.get().SetArguments(cpp_arguments)
 
     def start(self):
-        check_fletcher_status(self.usercore.get().start())
+        check_fletcher_status(self.usercore.get().Start())
 
     def get_status(self):
         cdef uint32_t status
-        check_fletcher_status(self.usercore.get().getStatus(&status))
+        check_fletcher_status(self.usercore.get().GetStatus(&status))
         return status
 
     def get_return(self, np.dtype nptype):
@@ -121,7 +121,7 @@ cdef class UserCore:
         cdef uint32_t lo
         cdef uint64_t ret
 
-        check_fletcher_status(self.usercore.get().getReturn(&lo, &hi))
+        check_fletcher_status(self.usercore.get().GetReturn(&lo, &hi))
         ret = (<uint64_t>hi << 32) + lo
 
         scalar = np.uint64(ret)
@@ -136,7 +136,7 @@ cdef class UserCore:
             poll_interval_usec (int): Polling interval in microseconds.
 
         """
-        check_fletcher_status(self.usercore.get().waitForFinish(poll_interval_usec))
+        check_fletcher_status(self.usercore.get().WaitForFinish(poll_interval_usec))
 
     def get_platform(self):
         """Get associated platform.

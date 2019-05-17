@@ -35,11 +35,13 @@ set(HEADERS
         src/fletcher/context.h
         src/fletcher/usercore.h)
 
-# CPP runtime library uses global C header
+include_directories(src)
+
+# CPP runtime library uses global C runtime header
 set(GLOBAL_C_HEADER
         ../../common/c/src/fletcher/fletcher.h)
 
-add_library(${FLETCHER} SHARED ${COMMON_HEADERS} ${HEADERS} ${SOURCES})
+add_library(${FLETCHER} SHARED ${GLOBAL_C_HEADER} ${HEADERS} ${SOURCES})
 
 set_target_properties(${FLETCHER} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${FLETCHER} PROPERTIES SOVERSION 1)

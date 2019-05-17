@@ -52,15 +52,15 @@ TEST(Types, Flatten) {
   ASSERT_EQ(flat[7].type_, c.get());
   ASSERT_EQ(flat[8].type_, b.get());
 
-  ASSERT_EQ(flat[0].name("x", "_"), "x");
-  ASSERT_EQ(flat[1].name("x", "_"), "x_d");
-  ASSERT_EQ(flat[2].name("x", "_"), "x_d_a");
-  ASSERT_EQ(flat[3].name("x", "_"), "x_d_b");
-  ASSERT_EQ(flat[4].name("x", "_"), "x_d_c");
-  ASSERT_EQ(flat[5].name("x", "_"), "x_d_c");
-  ASSERT_EQ(flat[6].name("x", "_"), "x_e");
-  ASSERT_EQ(flat[7].name("x", "_"), "x_e");
-  ASSERT_EQ(flat[8].name("x", "_"), "x_e");
+  ASSERT_EQ(flat[0].name(NamePart("x"), "_"), "x");
+  ASSERT_EQ(flat[1].name(NamePart("x"), "_"), "x_d");
+  ASSERT_EQ(flat[2].name(NamePart("x"), "_"), "x_d_a");
+  ASSERT_EQ(flat[3].name(NamePart("x"), "_"), "x_d_b");
+  ASSERT_EQ(flat[4].name(NamePart("x"), "_"), "x_d_c");
+  ASSERT_EQ(flat[5].name(NamePart("x"), "_"), "x_d_c");
+  ASSERT_EQ(flat[6].name(NamePart("x"), "_"), "x_e");
+  ASSERT_EQ(flat[7].name(NamePart("x"), "_"), "x_e");
+  ASSERT_EQ(flat[8].name(NamePart("x"), "_"), "x_e");
 }
 
 TEST(Types, TypeMapper) {

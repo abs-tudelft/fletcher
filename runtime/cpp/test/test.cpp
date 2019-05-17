@@ -35,7 +35,7 @@ TEST(Platform, EchoPlatform) {
 
   // Create
   ASSERT_TRUE(fletcher::Platform::Make("echo", &platform).ok());
-  ASSERT_EQ(platform->getName(), "echo");
+  ASSERT_EQ(platform->name(), "echo");
 
   // Init
   // Make echo quiet
@@ -46,23 +46,23 @@ TEST(Platform, EchoPlatform) {
 
   // Malloc / free
   da_t a;
-  ASSERT_TRUE(platform->deviceMalloc(&a, 1024).ok());
-  ASSERT_TRUE(platform->deviceFree(a).ok());
+  ASSERT_TRUE(platform->DeviceMalloc(&a, 1024).ok());
+  ASSERT_TRUE(platform->DeviceFree(a).ok());
 
   // MMIO:
-  ASSERT_TRUE(platform->writeMMIO(0, 0).ok());
+  ASSERT_TRUE(platform->WriteMMIO(0, 0).ok());
   uint32_t val;
-  ASSERT_TRUE(platform->readMMIO(0, &val).ok());
+  ASSERT_TRUE(platform->ReadMMIO(0, &val).ok());
   uint64_t val64;
-  ASSERT_TRUE(platform->readMMIO64(0, &val64).ok());
+  ASSERT_TRUE(platform->ReadMMIO64(0, &val64).ok());
 
   // Buffers:
   char buffer[128];
-  ASSERT_TRUE(platform->copyHostToDevice(reinterpret_cast<uint8_t *>(buffer), 0, sizeof(buffer)).ok());
-  ASSERT_TRUE(platform->copyDeviceToHost(0, reinterpret_cast<uint8_t *>(buffer), sizeof(buffer)).ok());
+  ASSERT_TRUE(platform->CopyHostToDevice(reinterpret_cast<uint8_t *>(buffer), 0, sizeof(buffer)).ok());
+  ASSERT_TRUE(platform->CopyDeviceToHost(0, reinterpret_cast<uint8_t *>(buffer), sizeof(buffer)).ok());
 
   // Terminate:
-  ASSERT_TRUE(platform->terminate().ok());
+  ASSERT_TRUE(platform->Terminate().ok());
 
 }
 
@@ -124,15 +124,15 @@ TEST(Context, ContextFunctions) {
   std::shared_ptr<fletcher::Context> context;
   ASSERT_TRUE(fletcher::Context::Make(&context, platform).ok());
 
-  ASSERT_TRUE(context->queueRecordBatch(rb).ok());
+  ASSERT_TRUE(context->QueueRecordBatch(rb).ok());
 
   ASSERT_EQ(context->num_buffers(), 8);
 
   // Write buffers
-  ASSERT_TRUE(context->enable().ok());
+  ASSERT_TRUE(context->Enable().ok());
 
   // Terminate:
-  ASSERT_TRUE(platform->terminate().ok());
+  ASSERT_TRUE(platform->Terminate().ok());
 }
 
 int main(int argc, char **argv) {

@@ -35,39 +35,39 @@ class UserCore {
   explicit UserCore(std::shared_ptr<Context> context);
 
   /// @brief Check if the Schema of this UserCore is compatible with another Schema
-  bool implementsSchema(const std::shared_ptr<arrow::Schema> &schema);
+  bool ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema);
 
   /// @brief Reset the UserCore
-  Status reset();
+  Status Reset();
 
   /// @brief Set the first (inclusive) and last (exclusive) column to process
-  Status setRange(int32_t first, int32_t last);
+  Status SetRange(int32_t first, int32_t last);
 
   /// @brief Set the parameters of the UserCore
-  Status setArguments(std::vector<uint32_t> arguments);
+  Status SetArguments(std::vector<uint32_t> arguments);
 
   /// @brief Start the UserCore
-  Status start();
+  Status Start();
 
   /// @brief Read the status register of the UserCore
-  Status getStatus(uint32_t *status);
+  Status GetStatus(uint32_t *status);
 
   /// @brief Read the return registers of the UserCore
-  Status getReturn(uint32_t *ret0, uint32_t *ret1);
+  Status GetReturn(uint32_t *ret0, uint32_t *ret1);
 
   /**
    * @brief A blocking function that waits for the UserCore to finish
    *
    * Polls with an interval of poll_interval_usec microseconds.
    */
-  Status waitForFinish(unsigned int poll_interval_usec);
+  Status WaitForFinished(unsigned int poll_interval_usec);
 
   /**
    * @brief A blocking function that waits for the UserCore to finish
    *
    * Polls at maximum speed.
    */
-  Status waitForFinish();
+  Status WaitForFinished();
 
   std::shared_ptr<Platform> platform();
   std::shared_ptr<Context> context();

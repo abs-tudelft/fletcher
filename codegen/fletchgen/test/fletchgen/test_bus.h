@@ -28,8 +28,8 @@ using cerata::intl;
 using cerata::Instance;
 using cerata::Port;
 
-TEST(Bus, BusReadArbiter) {
-  auto top = BusReadArbiter();
+TEST(Bus, BusArbiter) {
+  auto top = BusArbiter();
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();
   std::cerr.flush();
