@@ -57,6 +57,16 @@ architecture Behavorial of sim_top is
       bcd_reset                 : in  std_logic;
       kcd_clk                   : in  std_logic;
       kcd_reset                 : in  std_logic;
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in  std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in  std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in  std_logic;
+
+
       mmio_awvalid              : in  std_logic;
       mmio_awready              : out std_logic;
       mmio_awaddr               : in  std_logic_vector(31 downto 0);
@@ -73,24 +83,7 @@ architecture Behavorial of sim_top is
       mmio_rvalid               : out std_logic;
       mmio_rready               : in  std_logic;
       mmio_rdata                : out std_logic_vector(31 downto 0);
-      mmio_rresp                : out std_logic_vector(1 downto 0);
-      mst_rreq_valid            : out std_logic;
-      mst_rreq_ready            : in  std_logic;
-      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_rdat_valid            : in  std_logic;
-      mst_rdat_ready            : out std_logic;
-      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_rdat_last             : in  std_logic
-      mst_wreq_valid            : out std_logic;
-      mst_wreq_ready            : in std_logic;
-      mst_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      mst_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      mst_wdat_valid            : out std_logic;
-      mst_wdat_ready            : in std_logic;
-      mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-      mst_wdat_last             : out std_logic
+      mmio_rresp                : out std_logic_vector(1 downto 0)
     );
   end component;
   -----------------------------------------------------------------------------
@@ -387,7 +380,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "outputs/names.srec"
+    SREC_FILE                   => "input/names.srec"
   )
   port map (
     clk                         => bcd_clk,
@@ -402,30 +395,8 @@ begin
     rdat_last                   => bus_rdat_last
   );
 
-  wmem_inst: BusWriteSlaveMock
-  generic map (
-    BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
-    BUS_LEN_WIDTH               => BUS_LEN_WIDTH,
-    BUS_DATA_WIDTH              => BUS_DATA_WIDTH,
-    BUS_STROBE_WIDTH            => BUS_STROBE_WIDTH,
-    SEED                        => 1337,
-    RANDOM_REQUEST_TIMING       => false,
-    RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "srec_write.dat"
-  )
-  port map (
-    clk                         => bcd_clk,
-    reset                       => bcd_reset,
-    wreq_valid                  => bus_wreq_valid,
-    wreq_ready                  => bus_wreq_ready,
-    wreq_addr                   => bus_wreq_addr,
-    wreq_len                    => bus_wreq_len,
-    wdat_valid                  => bus_wdat_valid,
-    wdat_ready                  => bus_wdat_ready,
-    wdat_data                   => bus_wdat_data,
-    wdat_strobe                 => bus_wdat_strobe,
-    wdat_last                   => bus_wdat_last
-  );
+
+
 
 
   -----------------------------------------------------------------------------
@@ -440,6 +411,16 @@ begin
       kcd_reset                 => kcd_reset,
       bcd_clk                   => bcd_clk,
       bcd_reset                 => bcd_reset,
+      mst_rreq_valid            => bus_rreq_valid,
+      mst_rreq_ready            => bus_rreq_ready,
+      mst_rreq_addr             => bus_rreq_addr,
+      mst_rreq_len              => bus_rreq_len,
+      mst_rdat_valid            => bus_rdat_valid,
+      mst_rdat_ready            => bus_rdat_ready,
+      mst_rdat_data             => bus_rdat_data,
+      mst_rdat_last             => bus_rdat_last,
+
+
       mmio_awvalid              => mmio_awvalid,
       mmio_awready              => mmio_awready,
       mmio_awaddr               => mmio_awaddr,
@@ -456,24 +437,7 @@ begin
       mmio_rvalid               => mmio_rvalid,
       mmio_rready               => mmio_rready,
       mmio_rdata                => mmio_rdata,
-      mmio_rresp                => mmio_rresp,
-      mst_rreq_valid            => bus_rreq_valid,
-      mst_rreq_ready            => bus_rreq_ready,
-      mst_rreq_addr             => bus_rreq_addr,
-      mst_rreq_len              => bus_rreq_len,
-      mst_rdat_valid            => bus_rdat_valid,
-      mst_rdat_ready            => bus_rdat_ready,
-      mst_rdat_data             => bus_rdat_data,
-      mst_rdat_last             => bus_rdat_last
-      mst_wreq_valid            => bus_wreq_valid,
-      mst_wreq_ready            => bus_wreq_ready,
-      mst_wreq_addr             => bus_wreq_addr,
-      mst_wreq_len              => bus_wreq_len,
-      mst_wdat_valid            => bus_wdat_valid,
-      mst_wdat_ready            => bus_wdat_ready,
-      mst_wdat_data             => bus_wdat_data,
-      mst_wdat_strobe           => bus_wdat_strobe,
-      mst_wdat_last             => bus_wdat_last
+      mmio_rresp                => mmio_rresp
     );
 
 end architecture;
