@@ -366,7 +366,7 @@ template<typename T>
 std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
   auto result = std::dynamic_pointer_cast<T>(type);
   if (result == nullptr) {
-    return {};
+    return std::nullopt;
   }
   return result;
 }
@@ -376,7 +376,7 @@ template<typename T>
 std::optional<const T *> Cast(const Type *type) {
   auto result = dynamic_cast<const T *>(type);
   if (result == nullptr) {
-    return {};
+    return std::nullopt;
   }
   return result;
 }
@@ -386,7 +386,7 @@ template<typename T>
 std::optional<T *> Cast(Type *type) {
   auto result = dynamic_cast<T *>(type);
   if (result == nullptr) {
-    return {};
+    return std::nullopt;
   }
   return result;
 }
@@ -396,7 +396,7 @@ template<typename T>
 std::optional<const T &> Cast(const Type &type) {
   auto result = dynamic_cast<T &>(type);
   if (&result == nullptr) {
-    return {};
+    return std::nullopt;
   }
   return result;
 }

@@ -188,7 +188,7 @@ std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Graph> &obj) {
   if (result != nullptr) {
     return result;
   } else {
-    return {};
+    return std::nullopt;
   }
 }
 
@@ -204,7 +204,7 @@ std::optional<std::unique_ptr<T>> Cast(const std::unique_ptr<Graph> &obj) {
   if (result != nullptr) {
     return result;
   } else {
-    return {};
+    return std::nullopt;
   }
 }
 
@@ -220,7 +220,7 @@ std::optional<T *> Cast(Graph *obj) {
   if (result != nullptr) {
     return result;
   } else {
-    return {};
+    return std::nullopt;
   }
 }
 
@@ -236,7 +236,7 @@ std::optional<const T *> Cast(const Graph *obj) {
   if (result != nullptr) {
     return result;
   } else {
-    return {};
+    return std::nullopt;
   }
 }
 
