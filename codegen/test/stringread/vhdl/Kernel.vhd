@@ -99,6 +99,7 @@ architecture Implementation of Kernel is
   signal ctrl_reset             : std_logic;
   signal ctrl_stop              : std_logic;
   signal ctrl_start             : std_logic;
+  signal not_kcd_reset          : std_logic;
 
 begin
   -- Instantiate the AXI mmio component to communicate with host more easily 
@@ -114,7 +115,7 @@ begin
     )
     port map (
       clk                => kcd_clk,
-      reset_n            => not(kcd_reset),
+      reset_n            => not_kcd_reset,
       s_axi_awvalid      => mmio_awvalid,
       s_axi_awready      => mmio_awready,
       s_axi_awaddr       => mmio_awaddr,
@@ -136,6 +137,9 @@ begin
       regs_in            => rreg_concat,
       regs_in_en         => rreg_en
     );
+
+  -- Flip reset
+  not_kcd_reset <= not(kcd_reset);
 
   -- Turn signals into something more readable
   write_regs_unconcat: for I in 0 to NUM_REGS-1 generate
