@@ -84,6 +84,13 @@ include_directories(../cerata/src)
 target_link_libraries(${FLETCHGEN} cerata)
 
 # Fletcher Common static library
+
+# Enable tests for the common library before adding
+if (FLETCHGEN_TESTS)
+    set(FLETCHER_TESTS ON)
+endif ()
+
+# Add the common library
 add_subdirectory(../../common/cpp fletcher-common)
 include_directories(../../common/cpp/src)
 include_directories(../../common/c/src)
@@ -100,6 +107,7 @@ install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fle
 ##############################################################################
 if (FLETCHGEN_TESTS)
     enable_testing()
+    include(../../BuildGTest.cmake)
     include(GoogleTest)
     find_package(GTest REQUIRED)
 

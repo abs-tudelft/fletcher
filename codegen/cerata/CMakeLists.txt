@@ -77,8 +77,10 @@ add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 ########################################################################################################################
 # TESTS
 ########################################################################################################################
+option(CERATA_TESTS "Build tests" OFF)
 if (CERATA_TESTS)
     enable_testing()
+    include(../../BuildGTest.cmake)
     include(GoogleTest)
     find_package(GTest REQUIRED)
 

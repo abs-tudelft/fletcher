@@ -103,6 +103,7 @@ install(FILES ${GLOBAL_C_HEADER}
 ##############################################################################
 if (FLETCHER_TESTS)
     enable_testing()
+    include(../../BuildGTest.cmake)
     include(GoogleTest)
     find_package(GTest REQUIRED)
 
