@@ -297,7 +297,7 @@ begin
     in_last                     <= '0';
     
     -- Wait for reset
-    wait until rising_edge(acc_clk) and (acc_reset /= '1');
+    wait until rising_edge(kcd_clk) and (kcd_reset /= '1');
 
     loop
       in_valid                  <= '0';

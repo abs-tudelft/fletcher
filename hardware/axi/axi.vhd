@@ -27,10 +27,10 @@ package axi is
       SLV_BUS_DATA_WIDTH        : natural
     );
     port (
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-      bus_clk                   : in  std_logic;
-      bus_reset_n               : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset_n               : in  std_logic;
       m_axi_araddr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       m_axi_arlen               : out std_logic_vector(7 downto 0);
       m_axi_arvalid             : out std_logic;

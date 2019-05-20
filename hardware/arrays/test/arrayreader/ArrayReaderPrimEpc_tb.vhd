@@ -27,10 +27,10 @@ entity ArrayReaderPrimEpc_tb is
 end ArrayReaderPrimEpc_tb;
 
 architecture Behavioral of ArrayReaderPrimEpc_tb is
-  signal bus_clk                : std_logic;
-  signal bus_reset              : std_logic;
-  signal acc_clk                : std_logic;
-  signal acc_reset              : std_logic;
+  signal bcd_clk                : std_logic;
+  signal bcd_reset              : std_logic;
+  signal kcd_clk                : std_logic;
+  signal kcd_reset              : std_logic;
   signal cmd_valid              : std_logic;
   signal cmd_ready              : std_logic;
   signal cmd_firstIdx           : std_logic_vector(31 downto 0);
@@ -60,11 +60,11 @@ begin
   clk_proc: process is
   begin
     if not clock_stop then
-      acc_clk <= '1';
-      bus_clk <= '1';
+      kcd_clk <= '1';
+      bcd_clk <= '1';
       wait for 5 ns;
-      acc_clk <= '0';
-      bus_clk <= '0';
+      kcd_clk <= '0';
+      bcd_clk <= '0';
       wait for 5 ns;
     else
       wait;
@@ -73,12 +73,12 @@ begin
 
   reset_proc: process is
   begin
-    acc_reset <= '1';
-    bus_reset <= '1';
+    kcd_reset <= '1';
+    bcd_reset <= '1';
     wait for 50 ns;
-    wait until rising_edge(acc_clk);
-    acc_reset <= '0';
-    bus_reset <= '0';
+    wait until rising_edge(kcd_clk);
+    kcd_reset <= '0';
+    bcd_reset <= '0';
     wait;
   end process;
 
@@ -95,10 +95,10 @@ begin
       CMD_TAG_WIDTH             => 1
     )
     port map (
-      bus_clk                   => bus_clk ,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk ,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
       cmd_firstIdx              => cmd_firstIdx,

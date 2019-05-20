@@ -21,10 +21,10 @@ entity UserCoreController is
     REG_WIDTH                 : natural := 32
   );
   port (
-    acc_clk                   : in  std_logic;
-    acc_reset                 : in  std_logic;
-    bus_clk                   : in  std_logic;
-    bus_reset                 : in  std_logic;
+    kcd_clk                   : in  std_logic;
+    kcd_reset                 : in  std_logic;
+    bcd_clk                   : in  std_logic;
+    bcd_reset                 : in  std_logic;
     status                    : out  std_logic_vector(REG_WIDTH-1 downto 0);
     control                   : in  std_logic_vector(REG_WIDTH-1 downto 0);
     start                     : out std_logic;
@@ -60,11 +60,11 @@ architecture Behavioral of UserCoreController is
   
 begin
   --TODO: implement clock crossings
-  ctrl_seq_proc: process(bus_clk) is
+  ctrl_seq_proc: process(bcd_clk) is
   begin
-    if rising_edge(bus_clk) then
+    if rising_edge(bcd_clk) then
       r <= d;
-      if acc_reset = '1' then
+      if kcd_reset = '1' then
         r <= state_init;
       end if;
     end if;
