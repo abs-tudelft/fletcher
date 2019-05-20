@@ -19,7 +19,7 @@
 #include <locale>
 #include <arrow/api.h>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
 namespace fletchgen {
 

@@ -18,13 +18,10 @@
 #include <vector>
 #include <memory>
 
-#include <arrow/util/logging.h>
-#include <arrow/record_batch.h>
+#include <arrow/api.h>
+#include <fletcher/common.h>
 
-#include "fletcher/common/status.h"
-#include "fletcher/common/arrow-utils.h"
-
-#include "./context.h"
+#include "fletcher/context.h"
 
 namespace fletcher {
 
@@ -37,8 +34,8 @@ DeviceArray::DeviceArray(std::shared_ptr<arrow::Array> array,
   if (field != nullptr) {
     flattenArrayBuffers(&host_buffers, host_array, field);
   } else {
-    ARROW_LOG(WARNING) << "Flattening of array buffers without field specification may lead to discrepancy between "
-                          "hardware and software implementation.";
+    FLETCHER_LOG(WARNING, "Flattening of array buffers without field specification may lead to discrepancy between "
+                          "hardware and software implementation.");
     flattenArrayBuffers(&host_buffers, host_array);
   }
   buffers.reserve(buffers.size());
@@ -64,7 +61,7 @@ Status Context::PrepareArray(const std::shared_ptr<arrow::Array> &array,
   // If so, we can refer to the cached version. Since Arrow Arrays are immutable, we don't have to make a copy.
   for (const auto &a : device_arrays_) {
     if (array == a->host_array) {
-      ARROW_LOG(WARNING) << array->type()->ToString() + " array already queued to device. Duplicating reference.";
+      FLETCHER_LOG(WARNING, array->type()->ToString() + " array already queued to device. Duplicating reference.");
       device_arrays_.push_back(a);
       device_arrays_.back()->field = field;
       return Status::OK();
@@ -83,8 +80,8 @@ Status Context::CacheArray(const std::shared_ptr<arrow::Array> &array,
   bool queued = false;
   for (size_t i = 0; i < array_cnt && !queued; i++) {
     if (array == device_arrays_[i]->host_array) {
-      ARROW_LOG(WARNING) << array->type()->ToString() + " array already queued to device."
-                                                        " Ensuring caching and duplicating reference.";
+      FLETCHER_LOG(WARNING, array->type()->ToString() + " array already queued to device."
+                                                        " Ensuring caching and duplicating reference.");
       device_arrays_[i]->memory = DeviceArray::CACHE;
       device_arrays_.push_back(device_arrays_[i]);
       device_arrays_.back()->field = field;
@@ -119,13 +116,13 @@ Status Context::Enable() {
           if (buffer.mode == Mode::READ) {
             // Buffers for reading:
             platform_->PrepareHostBuffer(buffer.host_address,
-                                        &buffer.device_address,
-                                        buffer.size,
-                                        &buffer.was_alloced).ewf();
+                                         &buffer.device_address,
+                                         buffer.size,
+                                         &buffer.was_alloced).ewf();
           } else {
             // TODO(johanpel): Solve this for platforms such as SNAP
             if (platform_->name() == "snap") {
-              buffer.device_address = (da_t)buffer.host_address;
+              buffer.device_address = (da_t) buffer.host_address;
               buffer.was_alloced = false;
             } else {
               platform_->DeviceMalloc(&buffer.device_address, static_cast<size_t>(buffer.size)).ewf();
@@ -140,8 +137,8 @@ Status Context::Enable() {
         for (auto &buffer : array->buffers) {
           if (buffer.mode == Mode::READ) {
             platform_->CacheHostBuffer(buffer.host_address,
-                                      &buffer.device_address,
-                                      buffer.size).ewf();
+                                       &buffer.device_address,
+                                       buffer.size).ewf();
             buffer.was_alloced = true;
           } else {
             // Simply allocate buffers for writing:

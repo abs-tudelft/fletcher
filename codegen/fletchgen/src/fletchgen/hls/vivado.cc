@@ -12,27 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "fletchgen/hls/vivado.h"
+
+#include <memory>
 #include <string>
 
-#include "cerata/logging.h"
+#include "fletchgen/schema.h"
+#include "fletchgen/kernel.h"
 
-namespace cerata {
+std::string fletchgen::hls::GenerateVivadoHLSTemplate(const std::shared_ptr<Kernel> &kernel) {
+  std::stringstream str;
 
-#ifdef LOG_ARROW
+  std::vector<Argument> args;
 
-#include <arrow/util/logging.h>
+  auto ports = kernel->GetAll<FieldPort>();
 
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
-  arrow::util::ArrowLog::StartArrowLog(app_name, level, file_name);
+  for (const auto &p : ports) {
+    Argument arg;
+    arg.name = p->name();
+    for (const auto &f : p->field_->Flatten()) {
+      std::cout << f->ToString() << std::endl;
+    }
+  }
+
+  return str.str();
 }
-
-void StopLogging() {
-  arrow::util::ArrowLog::ShutDownArrowLog();
-}
-#else
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {}
-
-void StopLogging() {}
-#endif
-
-} // namespace cerata

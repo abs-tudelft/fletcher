@@ -75,7 +75,7 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
     objects_.push_back(obj);
     obj->SetParent(this);
   } else {
-    LOG(DEBUG, "Object " + obj->name() + " already exists on graph " + this->name() + ". Skipping...");
+    CERATA_LOG(DEBUG, "Object " + obj->name() + " already exists on graph " + this->name() + ". Skipping...");
   }
   return *this;
 }

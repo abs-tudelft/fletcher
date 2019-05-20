@@ -14,6 +14,10 @@
 
 #pragma once
 
+/**
+ * This file contains the Fletcher run-time global C header.
+ */
+
 #include <stdint.h>
 
 #define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"

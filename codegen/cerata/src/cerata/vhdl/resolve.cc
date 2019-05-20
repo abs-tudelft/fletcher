@@ -29,7 +29,7 @@ namespace cerata::vhdl {
 
 std::shared_ptr<Component> Resolve::ResolvePortToPort(std::shared_ptr<Component> comp) {
   std::deque<Node *> resolved;
-  LOG(DEBUG, "VHDL: Resolve port-to-port connections...");
+  CERATA_LOG(DEBUG, "VHDL: Resolve port-to-port connections...");
   for (const auto &inst : comp->GetAllInstances()) {
     for (const auto &port : inst->GetAll<Port>()) {
       for (const auto &edge : port->sinks()) {
@@ -51,7 +51,7 @@ std::shared_ptr<Component> Resolve::ResolvePortToPort(std::shared_ptr<Component>
         }
         // Dealing with two port nodes that are not on the component itself. VHDL cannot handle port-to-port connections
         // of instances. Insert a signal in between and add it to the component.
-        LOG(DEBUG, "VHDL:  Resolving " + (*edge->src)->ToString() + " --> " + (*edge->dst)->ToString());
+        CERATA_LOG(DEBUG, "VHDL:  Resolving " + (*edge->src)->ToString() + " --> " + (*edge->dst)->ToString());
         std::string prefix;
         if ((*edge->dst)->parent()) {
           prefix = (*(*edge->dst)->parent())->name() + "_";
@@ -216,7 +216,7 @@ static void ExpandMappers(Type *type) {
 }
 
 std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> comp) {
-  LOG(DEBUG, "VHDL: Materialize stream abstraction...");
+  CERATA_LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   std::deque<Type *> types;
   GetAllTypesRecursive(&types, comp);
 

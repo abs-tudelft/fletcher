@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./test_schemas.h"
+#include <fletcher/common.h>
+
+#include "fletcher/test_schemas.h"
 
 #include <arrow/api.h>
 #include <memory>
 #include <vector>
 
-#include "../src/fletcher/common/arrow-utils.h"
-
 namespace fletcher {
-namespace test {
 
 std::shared_ptr<arrow::Schema> GetListUint8Schema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
@@ -163,5 +162,4 @@ std::shared_ptr<arrow::Schema> genFilterWriteSchema() {
   return schema;
 }
 
-}  // namespace test
 }  // namespace fletcher

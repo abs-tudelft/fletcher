@@ -1,5 +1,5 @@
-# Cerata 
-<small><i></i></small>
+# Cerata
+A library for high-level structural hardware design.
 
 Cerata is a library that allows you to describe hardware structures with abstract and nested types as graphs. 
 Cerata's graphs are like an intermediate representation for these structures. 
@@ -15,12 +15,10 @@ reflect on designs that were generated, for whatever purpose. Examples include: 
 streams or optimizing bus infrastructures. 
 
 Currently, there is no front-end language for Cerata, or a storage format for the intermediate representation. 
-At the moment its main use case/application is in the wrapper generator of Fletcher.
 
 ## C++ example
 ```cpp
-  auto my_type = Stream::Make("my_stream_type", Vector
-  auto  = Port::Make("B", data, Term::IN);
+
 ```
 
 ## Overview

@@ -18,7 +18,7 @@
 #include <cmath>
 
 #include <cerata/api.h>
-#include <fletcher/common/arrow-utils.h>
+#include <fletcher/common.h>
 
 namespace fletchgen {
 

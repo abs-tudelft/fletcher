@@ -22,7 +22,7 @@
 #include <arrow/io/api.h>
 #include <arrow/ipc/api.h>
 
-#include "./arrow-utils.h"
+#include "fletcher/arrow-utils.h"
 
 namespace fletcher {
 

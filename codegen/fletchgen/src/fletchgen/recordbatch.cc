@@ -46,8 +46,8 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
   for (const auto &f : fs->arrow_schema()->fields()) {
     // Check if we must ignore a field
     if (!fletcher::mustIgnore(f)) {
-      LOG(DEBUG, "Instantiating Array " << (fs->mode() == Mode::READ ? "Reader" : "Writer")
-                                        << " for schema: " << fs->name() << " : " << f->name());
+      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fs->mode() == Mode::READ ? "Reader" : "Writer")
+                                                 << " for schema: " << fs->name() << " : " << f->name());
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatch.
       auto arrow_port = FieldPort::MakeArrowPort(fs, f, fs->mode(), true);
       AddObject(arrow_port);
@@ -60,7 +60,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
       AddObject(unlock_port);
       // Instantiate an ArrayReader or Writer
       auto array_rw = AddInstanceOf(Array(arrow_port->data_width(), ctrl_width(f), tag_width(f), fs->mode()),
-                                 f->name() + "_inst");
+                                    f->name() + "_inst");
       // Generate a configuration string for the ArrayReader
       auto cfg_node = array_rw->GetNode(Node::PARAMETER, "CFG");
       // Set the configuration string for this field
@@ -100,7 +100,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
       // Remember where the ArrayReader/Writer is
       array_instances_.push_back(array_rw);
     } else {
-      LOG(DEBUG, "Ignoring field " + f->name());
+      FLETCHER_LOG(DEBUG, "Ignoring field " + f->name());
     }
   }
 }

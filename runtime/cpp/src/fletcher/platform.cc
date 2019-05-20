@@ -13,15 +13,16 @@
 // limitations under the License.
 
 #include "fletcher/platform.h"
-#include "fletcher/common/status.h"
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <iomanip>
 #include <sstream>
+#include <arrow/api.h>
+#include <fletcher/common.h>
 
-#include <arrow/util/logging.h>
+#include "fletcher/status.h"
 
 namespace fletcher {
 
@@ -50,7 +51,7 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
     // Could not open shared library
     platform = nullptr;
     if (!quiet) {
-      ARROW_LOG(ERROR) << dlerror();
+      FLETCHER_LOG(ERROR, dlerror());
     }
     return Status::NO_PLATFORM();
   }
@@ -90,12 +91,12 @@ Status Platform::Link(void *handle, bool quiet) {
       return Status::OK();
     } else {
       if (!quiet) {
-        ARROW_LOG(ERROR) << err;
+        FLETCHER_LOG(ERROR, err);
       }
       return Status::ERROR();
     }
   } else {
-    ARROW_LOG(ERROR) << "Cannot link FPGA platform functions. Invalid handle.";
+    FLETCHER_LOG(ERROR, "Cannot link FPGA platform functions. Invalid handle.");
     return Status::ERROR();
   }
 }

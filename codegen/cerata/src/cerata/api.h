@@ -18,7 +18,6 @@
 #include <cerata/edges.h>
 #include <cerata/flattypes.h>
 #include <cerata/graphs.h>
-#include <cerata/logging.h>
 #include <cerata/types.h>
 #include <cerata/nodes.h>
 #include <cerata/objects.h>

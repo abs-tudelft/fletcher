@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include "test_schemas.h"
+#include "fletcher/test_schemas.h"
 
 #include "cerata/vhdl/vhdl.h"
 #include "cerata/dot/dot.h"
@@ -42,19 +42,19 @@ static void TestReadKernel(const std::string& test_name, const std::shared_ptr<a
 }
 
 TEST(Kernel, PrimRead) {
-  TestReadKernel("PrimRead", fletcher::test::GetPrimReadSchema());
+  TestReadKernel("PrimRead", fletcher::GetPrimReadSchema());
 }
 
 TEST(Kernel, StringRead) {
-  TestReadKernel("StringRead", fletcher::test::GetStringReadSchema());
+  TestReadKernel("StringRead", fletcher::GetStringReadSchema());
 }
 
 TEST(Kernel, ListPrim) {
-  TestReadKernel("ListUint8", fletcher::test::GetListUint8Schema());
+  TestReadKernel("ListUint8", fletcher::GetListUint8Schema());
 }
 
 TEST(Kernel, BigSchema) {
-  TestReadKernel("Big", fletcher::test::GetBigSchema());
+  TestReadKernel("Big", fletcher::GetBigSchema());
 }
 
 }

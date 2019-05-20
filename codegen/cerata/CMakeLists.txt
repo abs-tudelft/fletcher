@@ -1,3 +1,6 @@
+##############################################################################
+# Configuration
+##############################################################################
 cmake_minimum_required(VERSION 3.10)
 project(cerata)
 
@@ -8,9 +11,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
+##############################################################################
+# Targets
+##############################################################################
 # Sources
 set(HEADERS
-        src/cerata/logging.h
         src/cerata/utils.h
         src/cerata/arrays.h
         src/cerata/edges.h
@@ -21,6 +26,7 @@ set(HEADERS
         src/cerata/flattypes.h
         src/cerata/output.h
         src/cerata/transform.h
+        src/cerata/logging.h
 
         src/cerata/vhdl/architecture.h
         src/cerata/vhdl/block.h
@@ -38,7 +44,6 @@ set(HEADERS
         )
 
 set(SOURCES
-        src/cerata/logging.cc
         src/cerata/utils.cc
         src/cerata/arrays.cc
         src/cerata/edges.cc
@@ -67,17 +72,7 @@ set(SOURCES
 
 include_directories(src)
 
-# Linking
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
-
-# Logging
-option(LOGGING_ARROW "Use Apache Arrow's logging facility." OFF)
-
-if (LOGGING_ARROW)
-    find_library(LIB_ARROW arrow)
-    target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
-    add_compile_definitions(LOG_ARROW)
-endif (LOGGING_ARROW)
 
 ########################################################################################################################
 # TESTS

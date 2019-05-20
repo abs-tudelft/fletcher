@@ -14,7 +14,7 @@
 
 #pragma once
 
-namespace fletcher::test {
+namespace fletcher {
 
 void generateDebugFiles();
 

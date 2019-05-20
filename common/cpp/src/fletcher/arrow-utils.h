@@ -149,5 +149,4 @@ std::shared_ptr<arrow::RecordBatch> ReadRecordBatchFromFile(const std::string &f
  */
 std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names);
 
-
 }  // namespace fletcher

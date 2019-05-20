@@ -24,7 +24,7 @@ Template::Template(const std::string &filename) {
   if (!ifs.is_open()) {
     throw std::runtime_error("Could not open VHDL template file " + filename);
   } else {
-    LOG(DEBUG, "Opened template file " + filename);
+    CERATA_LOG(DEBUG, "Opened template file " + filename);
   }
   std::string line;
   while (std::getline(ifs, line)) {

@@ -18,7 +18,6 @@
 #include <memory>
 
 namespace fletcher {
-namespace test {
 
 /// @brief Generate a schema of a list with uint8 primitives.
 std::shared_ptr<arrow::Schema> GetListUint8Schema();
@@ -55,5 +54,4 @@ std::shared_ptr<arrow::Schema> genFilterReadSchema();
 /// #brief An write schema for the filter example
 std::shared_ptr<arrow::Schema> genFilterWriteSchema();
 
-}
-}
+} // namespace fletcher

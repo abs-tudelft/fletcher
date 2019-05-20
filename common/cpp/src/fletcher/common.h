@@ -14,18 +14,7 @@
 
 #pragma once
 
-#include <arrow/record_batch.h>
-
-namespace fletcher {
-namespace test {
-
-std::shared_ptr<arrow::RecordBatch> getStringRB();
-std::shared_ptr<arrow::RecordBatch> getInt8RB();
-std::shared_ptr<arrow::RecordBatch> getListUint8RB();
-std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
-std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
-std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB();
-std::shared_ptr<arrow::RecordBatch> getFilterRB();
-
-}  // namespace test
-}  // namespace fletcher
+#include "fletcher/arrow-utils.h"
+#include "fletcher/hex-view.h"
+#include "fletcher/timer.h"
+#include "fletcher/logging.h"

@@ -19,6 +19,6 @@ void cerata::CreateDir(const std::string &dir_name) {
   // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
   int ret = system(("mkdir -p " + dir_name).c_str());
   if (ret == -1) {
-    LOG(ERROR, "Could not create directory.");
+    CERATA_LOG(ERROR, "Could not create directory.");
   }
 }

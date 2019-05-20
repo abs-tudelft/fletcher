@@ -42,8 +42,8 @@ std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name,
 }
 
 bool SchemaSet::RequiresReading() {
-  for (const auto& fs : schemas) {
-    if (fs->mode() == fletcher::Mode::READ){
+  for (const auto &fs : schemas) {
+    if (fs->mode() == fletcher::Mode::READ) {
       return true;
     }
   }
@@ -51,8 +51,8 @@ bool SchemaSet::RequiresReading() {
 }
 
 bool SchemaSet::RequiresWriting() {
-  for (const auto& fs : schemas) {
-    if (fs->mode() == fletcher::Mode::WRITE){
+  for (const auto &fs : schemas) {
+    if (fs->mode() == fletcher::Mode::WRITE) {
       return true;
     }
   }
@@ -70,7 +70,7 @@ FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schem
     }
   }
   // Show some debug information about the schema
-  LOG(DEBUG, "Schema " + name() + ", Direction: " + cerata::Term::str(mode2dir(mode_)));
+  FLETCHER_LOG(DEBUG, "Schema " + name() + ", Direction: " + cerata::Term::str(mode2dir(mode_)));
 }
 
 }  // namespace fletchgen

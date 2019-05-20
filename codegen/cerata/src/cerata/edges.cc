@@ -27,10 +27,10 @@ namespace cerata {
 std::shared_ptr<Edge> Connect(const std::shared_ptr<Node>& dst, const std::shared_ptr<Node>& src) {
   // Check for potential errors
   if (src == nullptr) {
-    LOG(ERROR, "Source node is null");
+    CERATA_LOG(ERROR, "Source node is null");
     return nullptr;
   } else if (dst == nullptr) {
-    LOG(ERROR, "Destination node is null");
+    CERATA_LOG(ERROR, "Destination node is null");
     return nullptr;
   }
 

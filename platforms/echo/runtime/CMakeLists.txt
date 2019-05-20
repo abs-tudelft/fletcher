@@ -24,5 +24,3 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
-
-message("[FLETCHER] After running installation, please refresh your dynamic library cache (e.g. sudo ldconfig).")

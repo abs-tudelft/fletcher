@@ -14,10 +14,16 @@
 
 #pragma once
 
-#include <string>
-#include <fletcher/common.h>
-#include <cerata/api.h>
+#include <arrow/record_batch.h>
 
-std::string GetProgramName(char *argv0);
+namespace fletcher {
 
-cerata::Port::Dir mode2dir(fletcher::Mode mode);
+std::shared_ptr<arrow::RecordBatch> getStringRB();
+std::shared_ptr<arrow::RecordBatch> getInt8RB();
+std::shared_ptr<arrow::RecordBatch> getListUint8RB();
+std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
+std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
+std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB();
+std::shared_ptr<arrow::RecordBatch> getFilterRB();
+
+} //namespace fletcher

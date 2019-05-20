@@ -41,7 +41,7 @@ static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
 }
 
 TEST(Mantle, StringRead) {
-  TestReadMantle(fletcher::test::GetStringReadSchema());
+  TestReadMantle(fletcher::GetStringReadSchema());
 }
 
 

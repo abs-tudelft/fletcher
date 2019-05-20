@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include "test_schemas.h"
+#include "fletcher/test_schemas.h"
 
 #include "cerata/vhdl/vhdl.h"
 #include "cerata/dot/dot.h"
@@ -44,7 +44,7 @@ static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) 
 }
 
 TEST(RecordBatch, StringRead) {
-  TestRecordBatchReader(fletcher::test::GetStringReadSchema());
+  TestRecordBatchReader(fletcher::GetStringReadSchema());
 }
 
 }

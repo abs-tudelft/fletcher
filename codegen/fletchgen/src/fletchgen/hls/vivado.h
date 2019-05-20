@@ -14,7 +14,19 @@
 
 #pragma once
 
-#include "fletcher/common/arrow-utils.h"
-#include "fletcher/common/hex-view.h"
-#include "fletcher/common/status.h"
-#include "fletcher/common/timer.h"
+#include <string>
+#include <memory>
+
+#include "fletchgen/schema.h"
+#include "fletchgen/kernel.h"
+
+namespace fletchgen::hls {
+
+struct Argument {
+  std::string type;
+  std::string name;
+};
+
+std::string GenerateVivadoHLSTemplate(const std::shared_ptr<Kernel>& set);
+
+} //namespace fletchgen::hls

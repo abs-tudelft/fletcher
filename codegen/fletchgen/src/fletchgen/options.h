@@ -21,23 +21,34 @@
 namespace fletchgen {
 
 struct Options {
-  /// @brief Paths to the schema files
+  /// Paths to the schema files
   std::vector<std::string> schema_paths;
 
-  /// @brief Output directory
-  std::string output_dir;
+  /// Paths to RecordBatches
+  std::vector<std::string> recordbatch_paths;
 
-  /// @brief SREC output path
+  /// Output directory
+  std::string output_dir = ".";
+
+  /// Output languages
+  std::vector<std::string> languages = {"vhdl", "dot"};
+
+  /// SREC output path
   std::string srec_out_path = "\"\"";
   std::string srec_sim_dump = "\"\"";
-  std::vector<std::string> recordbatch_paths;
-  std::vector<std::string> languages = {"vhdl", "dot"};
+
+  /// Name of the Kernel
   std::string kernel_name = "Kernel";
+
   bool axi_top = false;
   bool sim_top = false;
+  bool override_kernels = false;
+
+  /// Vivado HLS template
+  bool vivado_hls = false;
+
   bool quiet = false;
   bool verbose = false;
-  bool override_kernels = false;
 
   /**
    * @brief Parse command line options and store the result

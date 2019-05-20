@@ -26,12 +26,12 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   ret.options = opts;
 
   // Read schemas
-  LOG(INFO, "Reading Arrow Schema files.");
+  FLETCHER_LOG(INFO, "Reading Arrow Schema files.");
   ret.schemas = fletcher::readSchemasFromFiles(ret.options->schema_paths);
-  LOG(INFO, "Creating SchemaSet.");
+  FLETCHER_LOG(INFO, "Creating SchemaSet.");
   ret.schema_set = SchemaSet::Make(ret.options->kernel_name, ret.schemas);
 
-  LOG(INFO, "Generating Mantle...");
+  FLETCHER_LOG(INFO, "Generating Mantle...");
   ret.mantle = Mantle::Make(ret.schema_set);
   ret.kernel = ret.mantle->kernel_;
   for (const auto rbri : ret.mantle->recordbatch_instances) {

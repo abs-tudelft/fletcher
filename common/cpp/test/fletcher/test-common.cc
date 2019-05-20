@@ -15,23 +15,21 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <gtest/gtest.h>
+#include <fletcher/common.h>
 
-#include "gtest/gtest.h"
-
-#include "fletcher/common/arrow-utils.h"
-
-#include "./test_schemas.h"
-#include "./test_recordbatches.h"
+#include "fletcher/test_schemas.h"
+#include "fletcher/test_recordbatches.h"
 
 TEST(common_arrow_utils, appendExpectedBuffersFromField) {
   // List of uint8's
-  auto schema = fletcher::test::GetListUint8Schema();
+  auto schema = fletcher::GetListUint8Schema();
   std::vector<std::string> bufs;
   fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
   ASSERT_EQ(bufs[0], "list_offsets");
-  ASSERT_EQ(bufs[1], "uint8_values");
+  ASSERT_EQ(bufs[1], "number_values");
 
-  schema = fletcher::test::GetStringReadSchema();
+  schema = fletcher::GetStringReadSchema();
   // String is essentially a list of non-nullable utf8 bytes
   std::vector<std::string> bufs2;
   fletcher::appendExpectedBuffersFromField(&bufs2, schema->field(0));
@@ -40,7 +38,7 @@ TEST(common_arrow_utils, appendExpectedBuffersFromField) {
 }
 
 TEST(common_arrow_utils, RecordBatchFileRoundTrip) {
-  auto wrb = fletcher::test::getStringRB();
+  auto wrb = fletcher::getStringRB();
   fletcher::writeRecordBatchToFile(wrb, "test-common.rb");
   auto rrb = fletcher::ReadRecordBatchFromFile("test-common.rb", wrb->schema());
   ASSERT_TRUE(wrb->Equals(*rrb));
@@ -48,7 +46,7 @@ TEST(common_arrow_utils, RecordBatchFileRoundTrip) {
 
 TEST(common_arrow_utils, flattenArrayBuffers_string) {
   // Test flattening of array buffers with field
-  auto rb = fletcher::test::getStringRB();
+  auto rb = fletcher::getStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer*> buffers;
@@ -61,7 +59,7 @@ TEST(common_arrow_utils, flattenArrayBuffers_string) {
 
 TEST(common_arrow_utils, flattenArrayBuffers_string_noField) {
   // Test flattening of array buffers without field
-  auto rb = fletcher::test::getStringRB();
+  auto rb = fletcher::getStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer*> buffers;
@@ -74,7 +72,7 @@ TEST(common_arrow_utils, flattenArrayBuffers_string_noField) {
 
 TEST(common_arrow_utils, flattenArrayBuffers_list) {
   // Test flattening of array buffers without field
-  auto rb = fletcher::test::getListUint8RB();
+  auto rb = fletcher::getListUint8RB();
   auto la = std::dynamic_pointer_cast<arrow::ListArray>(rb->column(0));
   auto va = std::dynamic_pointer_cast<arrow::UInt8Array>(la->values());
 

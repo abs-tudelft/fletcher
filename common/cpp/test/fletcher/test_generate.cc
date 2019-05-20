@@ -15,75 +15,81 @@
 #include <cstdlib>
 #include <arrow/api.h>
 
-#include "../src/fletcher/common/arrow-utils.h"
+#include "fletcher/arrow-utils.h"
 
-#include "test_schemas.h"
-#include "test_recordbatches.h"
+#include "fletcher/test_schemas.h"
+#include "fletcher/test_recordbatches.h"
 
-namespace fletcher::test {
+namespace fletcher {
 
 void generateDebugFiles() {
   // TODO(johanpel): Create directories in a portable manner
-  system("mkdir -p schemas");
-  system("mkdir -p recordbatches");
+  int ret = system("mkdir -p schemas");
+  if (ret == -1) {
+    throw std::runtime_error("Could not create directory for schemas");
+  }
+  ret = system("mkdir -p recordbatches");
+  if (ret == -1) {
+    throw std::runtime_error("Could not create directory for recordbatches");
+  }
 
   std::shared_ptr<arrow::Schema> schema;
   std::shared_ptr<arrow::RecordBatch> recordbatch;
 
   /* Primitive */
-  schema = fletcher::test::GetPrimReadSchema();
+  schema = fletcher::GetPrimReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/primread.fbs");
-  recordbatch = fletcher::test::getInt8RB();
+  recordbatch = fletcher::getInt8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
 
-  schema = fletcher::test::GetPrimWriteSchema();
+  schema = fletcher::GetPrimWriteSchema();
   fletcher::writeSchemaToFile(schema, "schemas/primwrite.fbs");
 
   /* String */
-  schema = fletcher::test::GetStringReadSchema();
+  schema = fletcher::GetStringReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/stringread.fbs");
-  recordbatch = fletcher::test::getStringRB();
+  recordbatch = fletcher::getStringRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/names.rb");
 
-  schema = fletcher::test::GetStringWriteSchema();
+  schema = fletcher::GetStringWriteSchema();
   fletcher::writeSchemaToFile(schema, "schemas/stringwrite.fbs");
 
   /* List of UInt8 */
-  schema = fletcher::test::GetListUint8Schema();
+  schema = fletcher::GetListUint8Schema();
   fletcher::writeSchemaToFile(schema, "schemas/listuint8.fbs");
-  recordbatch = fletcher::test::getListUint8RB();
+  recordbatch = fletcher::getListUint8RB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
 
   /* List of Float64 */
-  schema = fletcher::test::genFloatListSchema();
+  schema = fletcher::genFloatListSchema();
   fletcher::writeSchemaToFile(schema, "schemas/listfloat64.fbs");
-  recordbatch = fletcher::test::getFloat64ListRB();
+  recordbatch = fletcher::getFloat64ListRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
 
   /* List of Int64 (length 2) */
-  schema = fletcher::test::genIntListSchema();
+  schema = fletcher::genIntListSchema();
   fletcher::writeSchemaToFile(schema, "schemas/listint64short.fbs");
-  recordbatch = fletcher::test::getInt64ListRB();
+  recordbatch = fletcher::getInt64ListRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
 
   /* List of Int64 (length 8) */
-  schema = fletcher::test::genIntListSchema();
+  schema = fletcher::genIntListSchema();
   fletcher::writeSchemaToFile(schema, "schemas/listint64long.fbs");
-  recordbatch = fletcher::test::getInt64ListWideRB();
+  recordbatch = fletcher::getInt64ListWideRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
 
   /* Filter example */
-  schema = fletcher::test::genFilterReadSchema();
+  schema = fletcher::genFilterReadSchema();
   fletcher::writeSchemaToFile(schema, "schemas/filter_read.fbs");
-  schema = fletcher::test::genFilterWriteSchema();
+  schema = fletcher::genFilterWriteSchema();
   fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
-  recordbatch = fletcher::test::getFilterRB();
+  recordbatch = fletcher::getFilterRB();
   fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
 }
 
 }
 
 int main() {
-  fletcher::test::generateDebugFiles();
+  fletcher::generateDebugFiles();
   return EXIT_SUCCESS;
 }

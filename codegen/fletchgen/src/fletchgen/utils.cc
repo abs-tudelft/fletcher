@@ -15,7 +15,7 @@
 #include "fletchgen/utils.h"
 
 #include <cstdlib> // system()
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 #include <cerata/api.h>
 
 std::string GetProgramName(char *argv0) {

@@ -14,19 +14,19 @@
 
 #include <fstream>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
-#include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"
 #include "fletchgen/utils.h"
+#include "fletchgen/hls/vivado.h"
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
 
 int main(int argc, char **argv) {
   // Start logging
   std::string program_name = GetProgramName(argv[0]);
-  cerata::StartLogging(program_name, LOG_DEBUG, program_name + ".log");
+  fletcher::StartLogging(program_name, LOG_DEBUG, program_name + ".log");
 
   // Parse options
   auto options = std::make_shared<fletchgen::Options>();
@@ -48,20 +48,20 @@ int main(int argc, char **argv) {
 
   // Generate SREC output
   if (options->MustGenerateSREC()) {
-    LOG(INFO, "Generating SREC output.");
+    FLETCHER_LOG(INFO, "Generating SREC output.");
     srec_buf_offsets = fletchgen::srec::GenerateSREC(design.options, design.schemas, &first_last_indices);
   }
 
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
-    LOG(INFO, "Generating VHDL output.");
+    FLETCHER_LOG(INFO, "Generating VHDL output.");
     auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, design.GetOutputSpec());
     vhdl.Generate();
   }
 
   // Generate DOT output
   if (options->MustGenerateDOT()) {
-    LOG(INFO, "Generating DOT output.");
+    FLETCHER_LOG(INFO, "Generating DOT output.");
     auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
     dot.Generate();
   }
@@ -77,15 +77,24 @@ int main(int argc, char **argv) {
                                    first_last_indices);
   }
 
-  // Generate AXI top level
-  if (options->axi_top) {
-    LOG(WARNING, "Generating AXI top-level not yet implemented.");
+  // Generate Vivado HLS template
+  if (options->vivado_hls) {
+    auto hls_template_path = options->output_dir + "/vivado_hls/" + options->kernel_name + ".cpp";
+    FLETCHER_LOG(INFO, "Generating Vivado HLS output: " + hls_template_path);
+    cerata::CreateDir(options->output_dir + "/vivado_hls");
+    auto hls_template_file = std::ofstream(hls_template_path);
+    hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(design.kernel);
   }
 
-  LOG(INFO, program_name + " completed.");
+  // Generate AXI top level
+  if (options->axi_top) {
+    FLETCHER_LOG(WARNING, "Generating AXI top-level not yet implemented.");
+  }
+
+  FLETCHER_LOG(INFO, program_name + " completed.");
 
   // Shut down logging
-  cerata::StopLogging();
+  fletcher::StopLogging();
 
   return 0;
 }

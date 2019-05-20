@@ -44,4 +44,4 @@ struct Status {
   inline static Status NO_PLATFORM() {return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM));}
 };
 
-}
+} // namespace fletcher

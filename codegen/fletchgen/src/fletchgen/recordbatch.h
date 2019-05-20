@@ -17,7 +17,7 @@
 #include <utility>
 #include <arrow/api.h>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
 #include "fletchgen/utils.h"
 #include "fletchgen/basic_types.h"

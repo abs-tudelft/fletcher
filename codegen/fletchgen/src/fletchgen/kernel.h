@@ -17,7 +17,7 @@
 #include <deque>
 #include <memory>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/recordbatch.h"

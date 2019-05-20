@@ -43,10 +43,10 @@ void VHDLOutputGenerator::Generate() {
   for (const auto &o : outputs_) {
     if ((o.graph != nullptr)) {
       if (o.graph->IsComponent()) {
-        LOG(INFO, "VHDL: Transforming Component " + o.graph->name() + " to VHDL-compatible version.");
+        CERATA_LOG(INFO, "VHDL: Transforming Component " + o.graph->name() + " to VHDL-compatible version.");
         auto vhdl_design = Design(*Cast<Component>(o.graph), DEFAULT_LIBS);
 
-        LOG(INFO, "VHDL: Generating sources for component " + o.graph->name());
+        CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.graph->name());
         auto vhdl_source = vhdl_design.Generate();
         vhdl_source.ToString();
         auto vhdl_path = subdir() + "/" + o.graph->name() + ".vhd";
@@ -59,13 +59,13 @@ void VHDLOutputGenerator::Generate() {
           }
         }
 
-        LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
+        CERATA_LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
         if (!FileExists(vhdl_path) || overwrite) {
           auto vhdl_file = std::ofstream(vhdl_path);
           vhdl_file << vhdl_source.ToString();
           vhdl_file.close();
         } else {
-          LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
+          CERATA_LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
           // Save as a vhdt file.
           auto vhdl_file = std::ofstream(vhdl_path + "t");
           vhdl_file << vhdl_source.ToString();
@@ -74,13 +74,13 @@ void VHDLOutputGenerator::Generate() {
 
         num_graphs++;
       } else {
-        LOG(WARNING, "VHDL: Graph " << o.graph->name() << " is not a component. Skipping output generation.");
+        CERATA_LOG(WARNING, "VHDL: Graph " << o.graph->name() << " is not a component. Skipping output generation.");
       }
     } else {
       throw std::runtime_error("Graph is nullptr.");
     }
   }
-  LOG(INFO, "VHDL: Generated output for " << num_graphs << " graphs.");
+  CERATA_LOG(INFO, "VHDL: Generated output for " << num_graphs << " graphs.");
 }
 
 }  // namespace cerata::vhdl

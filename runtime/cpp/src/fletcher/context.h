@@ -18,16 +18,16 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-
 #include <arrow/array.h>
 #include <arrow/record_batch.h>
+#include <fletcher/common.h>
 
-#include "fletcher/common/status.h"
-#include "fletcher/common/arrow-utils.h"
-
-#include "./platform.h"
+#include "fletcher/platform.h"
+#include "fletcher/status.h"
 
 namespace fletcher {
+
+using fletcher::Mode;
 
 /**
  * A buffer on the device

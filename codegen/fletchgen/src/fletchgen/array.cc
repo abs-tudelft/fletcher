@@ -17,7 +17,7 @@
 #include <memory>
 #include <cmath>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
 #include "fletchgen/bus.h"
 

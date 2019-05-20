@@ -1,3 +1,6 @@
+##############################################################################
+# Configuration
+##############################################################################
 cmake_minimum_required(VERSION 3.10)
 set(FLETCHGEN fletchgen)
 project(${FLETCHGEN})
@@ -9,22 +12,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-error=unused-function
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
-# Dependencies
-
-# Arrow
-find_library(LIB_ARROW arrow)
-# Common library, if not already built
-if (NOT TARGET fletcher-common-static)
-    add_subdirectory(../../common/cpp fletcher-common)
-endif ()
-include_directories(../../common/cpp/src)
-
-# Cerata
-# add_compile_definitions(LOGGING_ARROW)
-add_subdirectory(../cerata cerata)
-include_directories(../cerata/src)
-
+##############################################################################
 # Sources
+##############################################################################
 set(HEADERS
         src/fletchgen/schema.h
         src/fletchgen/bus.h
@@ -43,6 +33,8 @@ set(HEADERS
 
         src/fletchgen/top/sim.h
         src/fletchgen/top/axi.h
+
+        src/fletchgen/hls/vivado.h
         )
 
 set(SOURCES
@@ -63,31 +55,49 @@ set(SOURCES
 
         src/fletchgen/top/sim.cc
         src/fletchgen/top/axi.cc
+
+        src/fletchgen/hls/vivado.cc
         )
 
 set(THIRD_PARTY_HEADERS
         src/CLI/CLI11.hpp
         )
 
-# Linking
 include_directories(src)
 
-add_library(${FLETCHGEN}-static STATIC ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES})
-target_link_libraries(${FLETCHGEN}-static ${LIB_ARROW})
-target_link_libraries(${FLETCHGEN}-static fletcher-common-static)
+##############################################################################
+# Targets
+##############################################################################
+add_executable(${FLETCHGEN} ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} src/fletchgen/fletchgen.cc)
 
-add_executable(${FLETCHGEN} src/fletchgen/fletchgen.cc)
+##############################################################################
+# Dependencies & Linking
+##############################################################################
+# Arrow
+find_library(LIB_ARROW arrow)
 target_link_libraries(${FLETCHGEN} ${LIB_ARROW})
-target_link_libraries(${FLETCHGEN} fletchgen-static)
-target_link_libraries(${FLETCHGEN} fletcher-common-static)
+
+# Cerata
+# add_compile_definitions(LOGGING_ARROW)
+add_subdirectory(../cerata cerata)
+include_directories(../cerata/src)
 target_link_libraries(${FLETCHGEN} cerata)
 
+# Fletcher Common static library
+add_subdirectory(../../common/cpp fletcher-common)
+include_directories(../../common/cpp/src)
+include_directories(../../common/c/src)
+target_link_libraries(${FLETCHGEN} fletcher-common)
+
+##############################################################################
+# Installation
+##############################################################################
 install(TARGETS ${FLETCHGEN} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fletchgen)
 
-########################################################################################################################
-# TESTS
-########################################################################################################################
+##############################################################################
+# Testing
+##############################################################################
 if (FLETCHGEN_TESTS)
     enable_testing()
     include(GoogleTest)
@@ -102,16 +112,19 @@ if (FLETCHGEN_TESTS)
             test/fletchgen/test_bus.h
             )
 
-    add_executable(${FLETCHGEN}-test ${TEST_HEADERS} ${TEST_SOURCES})
+    add_executable(${FLETCHGEN}-test ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} ${TEST_HEADERS} ${TEST_SOURCES})
 
-    target_link_libraries(${FLETCHGEN}-test fletchgen-static)
-    target_link_libraries(${FLETCHGEN}-test fletcher-common-generate-static)
+    # External libraries
+    target_link_libraries(${FLETCHGEN}-test fletcher-common)
+    include_directories(../../common/cpp/src)
+
+    target_link_libraries(${FLETCHGEN}-test fletcher-common-examples)
     include_directories(../../common/cpp/test)
 
     target_link_libraries(${FLETCHGEN}-test cerata)
-
     target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
     target_link_libraries(${FLETCHGEN}-test GTest::GTest GTest::Main)
 
+    # GoogleTest
     gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHGEN_TESTS)

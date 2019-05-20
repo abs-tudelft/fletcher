@@ -18,7 +18,7 @@
 #include <vector>
 #include <arrow/api.h>
 #include <cerata/api.h>
-#include <fletcher/common/arrow-utils.h>
+#include <fletcher/common.h>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/options.h"

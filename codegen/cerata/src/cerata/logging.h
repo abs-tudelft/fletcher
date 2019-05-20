@@ -14,33 +14,19 @@
 
 #pragma once
 
-#ifdef LOG_ARROW
-// Enable logging using Apache Arrows logging facility
-#include <arrow/util/logging.h>
-
-// This Cerata logging facility wraps around Arrow's logging facility
-
-// Logging levels
-constexpr arrow::util::ArrowLogLevel LOG_DEBUG = arrow::util::ArrowLogLevel::ARROW_DEBUG;
-constexpr arrow::util::ArrowLogLevel LOG_INFO = arrow::util::ArrowLogLevel::ARROW_INFO;
-constexpr arrow::util::ArrowLogLevel LOG_WARNING = arrow::util::ArrowLogLevel::ARROW_WARNING;
-constexpr arrow::util::ArrowLogLevel LOG_ERROR = arrow::util::ArrowLogLevel::ARROW_ERROR;
-constexpr arrow::util::ArrowLogLevel LOG_FATAL = arrow::util::ArrowLogLevel::ARROW_FATAL;
-
-// Logging Macros
-#define LOG_INTERNAL(level) ::arrow::util::ArrowLog(__FILE__, __LINE__, level)
-#define LOG(level, msg) LOG_INTERNAL(::arrow::util::ArrowLogLevel::ARROW_##level) << msg
-
-using LogLevel = arrow::util::ArrowLogLevel;
-#else
 #include <iostream>
+
+namespace cerata {
+
 // Default logging
-constexpr int LOG_DEBUG = -1;
-constexpr int LOG_INFO = 0;
-constexpr int LOG_WARNING = 1;
-constexpr int LOG_ERROR = 2;
-constexpr int LOG_FATAL = 3;
+constexpr int CERATA_LOG_DEBUG = -1;
+constexpr int CERATA_LOG_INFO = 0;
+constexpr int CERATA_LOG_WARNING = 1;
+constexpr int CERATA_LOG_ERROR = 2;
+constexpr int CERATA_LOG_FATAL = 3;
 using LogLevel = int;
+
+#define CERATA_LOG(level, msg) std::cout << "[" << level2str(CERATA_LOG_##level) + "]: " << msg << std::endl
 
 inline std::string level2str(int level) {
   switch (level) {
@@ -52,21 +38,14 @@ inline std::string level2str(int level) {
   }
 }
 
-#define LOG(level, msg) std::cerr << "[" << level2str(LOG_##level) + "]: " << msg << std::endl
-#endif
-
-namespace cerata {
-
-/**
- * @brief Start logging.
- * @param app_name  Name of the application.
- * @param file_name Name of the log file.
- */
-void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name);
-
-/**
- * @brief Stop logging.
- */
-void StopLogging();
+inline void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
+  // No init required, but prevent compiler warnings by pretending to use the arguments.
+  (void)app_name;
+  (void)level;
+  (void)file_name;
+}
+inline void StopLogging() {
+  // No shutdown required.
+}
 
 }

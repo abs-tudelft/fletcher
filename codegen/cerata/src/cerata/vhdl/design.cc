@@ -32,7 +32,7 @@ MultiBlock Design::Generate() {
   // in case multiple back ends are processing the graph. This currently modifies the original structure.
 
   // Resolve VHDL specific problems
-  LOG(DEBUG, "VHDL: Transforming Cerata graph to VHDL-compatible.");
+  CERATA_LOG(DEBUG, "VHDL: Transforming Cerata graph to VHDL-compatible.");
   Resolve::ResolvePortToPort(comp);
   Resolve::ExpandStreams(comp);
 

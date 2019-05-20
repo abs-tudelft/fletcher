@@ -19,7 +19,7 @@
 #include <deque>
 #include <utility>
 #include <cerata/api.h>
-#include <fletcher/common/api.h>
+#include <fletcher/common.h>
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/array.h"
@@ -94,7 +94,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   // Generate a BusArbiterVec for every unique bus specification
   for (const auto &spec : bus_specs) {
-    LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
+    FLETCHER_LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
     auto arbiter = AddInstanceOf(BusArbiter(spec));
     arbiter->par(bus_addr_width()->name()) <<= Literal::Make(spec.addr_width);
     arbiter->par(bus_data_width()->name()) <<= Literal::Make(spec.data_width);

@@ -15,11 +15,10 @@
 #include <arrow/record_batch.h>
 #include <arrow/builder.h>
 
-#include "./test_schemas.h"
-#include "./test_recordbatches.h"
+#include "fletcher/test_schemas.h"
+#include "fletcher/test_recordbatches.h"
 
 namespace fletcher {
-namespace test {
 
 std::shared_ptr<arrow::RecordBatch> getStringRB() {
   // Some names
@@ -306,6 +305,4 @@ std::shared_ptr<arrow::RecordBatch> getFilterRB() {
   return record_batch;
 }
 
-
-}  // namespace test
 }  // namespace fletcher
