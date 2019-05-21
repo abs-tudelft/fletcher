@@ -47,7 +47,7 @@ TEST(VHDL_DESIGN, Simple) {
       "use ieee.numeric_std.all;\n"
       "entity simple is\n"
       "  generic (\n"
-      "    vec_width : natural := 8\n"
+      "    VEC_WIDTH : natural := 8\n"
       "  );\n"
       "  port (\n"
       "    static_vec : in std_logic_vector(7 downto 0);\n"
