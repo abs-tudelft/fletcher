@@ -49,10 +49,10 @@ package Buffers is
       OUT_SLICE                 : boolean := true
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
 
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
@@ -308,10 +308,10 @@ package Buffers is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmdIn_valid               : in  std_logic;
       cmdIn_ready               : out std_logic;
       cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
@@ -357,8 +357,7 @@ package Buffers is
       ELEMENT_COUNT_MAX         : natural := 1;
       ELEMENT_COUNT_WIDTH       : natural := 1;
       CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural;
-      NORM_SLICE                : boolean := true
+      CMD_TAG_WIDTH             : natural
     );
     port (
       clk                       : in  std_logic;
@@ -416,6 +415,7 @@ package Buffers is
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
       in_data                   : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+      in_dvalid                 : in  std_logic;
       in_count                  : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
       in_last                   : in  std_logic;
       out_valid                 : out std_logic;
@@ -468,27 +468,28 @@ package Buffers is
 
   component BufferWriterPreCmdGen is
     generic (
-      INDEX_WIDTH               : natural;
-      MODE                      : string := "continuous";
-      CMD_CTRL_WIDTH            : natural;
-      CMD_TAG_WIDTH             : natural
+      OFFSET_WIDTH              : natural;
+      COUNT_MAX                 : natural := 1;
+      COUNT_WIDTH               : natural := 1;
+      CMD_CTRL_WIDTH            : natural := 1;
+      CMD_TAG_WIDTH             : natural := 1;
+      MODE                      : string := ""
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
-      cmdIn_valid               : in  std_logic;
-      cmdIn_ready               : out std_logic;
-      cmdIn_firstIdx            : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdIn_implicit            : in  std_logic;
-      cmdIn_ctrl                : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
-      cmdIn_tag                 : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-      cmdIn_last                : in  std_logic;
-
+      in_valid                  : in  std_logic;
+      in_ready                  : out std_logic;
+      in_offsets                : in  std_logic_vector(OFFSET_WIDTH-1 downto 0);
+      in_count                  : in  std_logic_vector(COUNT_WIDTH-1 downto 0);
+      in_dvalid                 : in  std_logic;
+      in_last                   : in  std_logic;
+      in_ctrl                   : in  std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
+      in_tag                    : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       cmdOut_valid              : out std_logic;
       cmdOut_ready              : in  std_logic;
-      cmdOut_firstIdx           : out std_logic_vector(INDEX_WIDTH-1 downto 0);
-      cmdOut_lastIdx            : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmdOut_firstIdx           : out std_logic_vector(OFFSET_WIDTH-1 downto 0);
+      cmdOut_lastIdx            : out std_logic_vector(OFFSET_WIDTH-1 downto 0);
       cmdOut_implicit           : out std_logic;
       cmdOut_ctrl               : out std_logic_vector(CMD_CTRL_WIDTH-1 downto 0);
       cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)

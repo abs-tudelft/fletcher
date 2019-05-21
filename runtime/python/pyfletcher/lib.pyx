@@ -29,6 +29,6 @@ include "public-api.pxi"
 
 include "platform.pxi"
 
-include "usercore.pxi"
+include "kernel.pxi"
 
 include "context.pxi"

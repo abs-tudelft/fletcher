@@ -67,8 +67,8 @@ entity BusReadArbiterVec is
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Master port.
     mst_rreq_valid              : out std_logic;
@@ -214,8 +214,8 @@ begin
         DATA_WIDTH                      => BQI(BQI'high)
       )
       port map (
-        clk                             => bus_clk,
-        reset                           => bus_reset,
+        clk                             => bcd_clk,
+        reset                           => bcd_reset,
 
         in_valid                        => bs_rreq_valid(i),
         in_ready                        => bs_rreq_ready(i),
@@ -239,8 +239,8 @@ begin
         DATA_WIDTH                      => BPI(BPI'high)
       )
       port map (
-        clk                             => bus_clk,
-        reset                           => bus_reset,
+        clk                             => bcd_clk,
+        reset                           => bcd_reset,
 
         in_valid                        => bss_rdat_valid(i),
         in_ready                        => bss_rdat_ready(i),
@@ -266,8 +266,8 @@ begin
       DATA_WIDTH                        => BQI(BQI'high)
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       in_valid                          => bms_rreq_valid,
       in_ready                          => bms_rreq_ready,
@@ -291,8 +291,8 @@ begin
       DATA_WIDTH                        => BPI(BPI'high)
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       in_valid                          => mst_rdat_valid,
       in_ready                          => mst_rdat_ready,
@@ -334,8 +334,8 @@ begin
       ARB_METHOD                        => ARB_METHOD
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       in_valid                          => arb_in_valid,
       in_ready                          => arb_in_ready,
@@ -358,8 +358,8 @@ begin
       NUM_OUTPUTS                       => 2
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
       in_valid(0)                       => arb_out_valid,
       in_ready(0)                       => arb_out_ready,
       out_valid(1)                      => bms_rreq_valid,
@@ -376,8 +376,8 @@ begin
       RAM_CONFIG                        => RAM_CONFIG
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       in_valid                          => idxA_valid,
       in_ready                          => idxA_ready,
@@ -411,8 +411,8 @@ begin
       NUM_OUTPUTS                       => NUM_SLAVE_PORTS
     )
     port map (
-      clk                               => bus_clk,
-      reset                             => bus_reset,
+      clk                               => bcd_clk,
+      reset                             => bcd_reset,
 
       in_valid(1)                       => idxB_valid,
       in_valid(0)                       => bms_rdat_valid,

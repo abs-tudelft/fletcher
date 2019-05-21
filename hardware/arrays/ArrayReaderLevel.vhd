@@ -75,13 +75,13 @@ entity ArrayReaderLevel is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -145,6 +145,10 @@ begin
   -- Primitive reader
   -----------------------------------------------------------------------------
   prim_gen: if CMD = "prim" generate
+    constant ELEMENT_WIDTH      : natural := strtoi(parse_arg(cfg, 0));
+    constant COUNT_MAX          : natural := parse_param(CFG, "epc", 1);
+    constant COUNT_WIDTH        : natural := log2ceil(COUNT_MAX+1);
+    signal s_out_data           : std_logic_vector(COUNT_WIDTH + COUNT_MAX*ELEMENT_WIDTH - 1 downto 0);
   begin
 
     -- Instantiate the data buffer reader.
@@ -156,31 +160,31 @@ begin
         BUS_BURST_MAX_LEN       => BUS_BURST_MAX_LEN,
         BUS_BURST_STEP_LEN      => BUS_BURST_STEP_LEN,
         INDEX_WIDTH             => INDEX_WIDTH,
-        ELEMENT_WIDTH           => strtoi(parse_arg(CFG, 0)),
+        ELEMENT_WIDTH           => ELEMENT_WIDTH,
         IS_OFFSETS_BUFFER       => false,
-        ELEMENT_COUNT_MAX       => 1,
-        ELEMENT_COUNT_WIDTH     => 1,
+        ELEMENT_COUNT_MAX       => COUNT_MAX,
+        ELEMENT_COUNT_WIDTH     => COUNT_WIDTH,
         CMD_CTRL_WIDTH          => 1,
         CMD_TAG_WIDTH           => CMD_TAG_WIDTH,
-        CMD_IN_SLICE            => parse_param(CFG, "cmd_in_slice", false),
+        CMD_IN_SLICE            => parse_param(CFG, "cmd_in_slice", true),
         BUS_REQ_SLICE           => parse_param(CFG, "bus_req_slice", true),
         BUS_FIFO_DEPTH          => parse_param(CFG, "bus_fifo_depth", 16),
         BUS_FIFO_RAM_CONFIG     => parse_param(CFG, "bus_fifo_ram_config", ""),
-        CMD_OUT_SLICE           => false,
+        CMD_OUT_SLICE           => false, -- not required for non-offsets buffer
         UNLOCK_SLICE            => parse_param(CFG, "unlock_slice", true),
-        SHR2GB_SLICE            => parse_param(CFG, "shr2gb_slice", false),
-        GB2FIFO_SLICE           => parse_param(CFG, "gb2fifo_slice", false),
+        SHR2GB_SLICE            => parse_param(CFG, "shr2gb_slice", true),
+        GB2FIFO_SLICE           => parse_param(CFG, "gb2fifo_slice", true),
         ELEMENT_FIFO_SIZE       => parse_param(CFG, "fifo_size", 64),
         ELEMENT_FIFO_RAM_CONFIG => parse_param(CFG, "fifo_ram_config", ""),
         ELEMENT_FIFO_XCLK_STAGES=> parse_param(CFG, "fifo_xclk_stages", 0),
-        FIFO2POST_SLICE         => parse_param(CFG, "fifo2post_slice", false),
+        FIFO2POST_SLICE         => parse_param(CFG, "fifo2post_slice", true),
         OUT_SLICE               => parse_param(CFG, "out_slice", true)
       )
       port map (
-        bus_clk                 => bus_clk,
-        bus_reset               => bus_reset,
-        acc_clk                 => acc_clk,
-        acc_reset               => acc_reset,
+        bcd_clk                 => bcd_clk,
+        bcd_reset               => bcd_reset,
+        kcd_clk                 => kcd_clk,
+        kcd_reset               => kcd_reset,
 
         cmdIn_valid             => cmd_valid,
         cmdIn_ready             => cmd_ready,
@@ -204,9 +208,18 @@ begin
 
         out_valid               => out_valid(0),
         out_ready               => out_ready(0),
-        out_data                => out_data,
+        out_data                => s_out_data(COUNT_MAX*ELEMENT_WIDTH-1 downto 0),
+        out_count               => s_out_data(COUNT_MAX*ELEMENT_WIDTH + COUNT_WIDTH-1 downto COUNT_MAX*ELEMENT_WIDTH),
         out_last                => out_last(0)
       );
+
+    -- Connect count only when epc > 1
+    epc_gen : if COUNT_MAX > 1 generate
+      out_data <= s_out_data;
+    end generate;
+    no_epc_gen: if COUNT_MAX = 1 generate
+      out_data <= s_out_data(ELEMENT_WIDTH-1 downto 0);
+    end generate;
 
     -- Null ranges in the command stream are illegal, so dvalid is always
     -- asserted.
@@ -232,10 +245,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -283,10 +296,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -334,10 +347,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -385,10 +398,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,
@@ -436,10 +449,10 @@ begin
         CMD_TAG_WIDTH             => CMD_TAG_WIDTH
       )
       port map (
-        bus_clk                   => bus_clk,
-        bus_reset                 => bus_reset,
-        acc_clk                   => acc_clk,
-        acc_reset                 => acc_reset,
+        bcd_clk                   => bcd_clk,
+        bcd_reset                 => bcd_reset,
+        kcd_clk                   => kcd_clk,
+        kcd_reset                 => kcd_reset,
 
         cmd_valid                 => cmd_valid,
         cmd_ready                 => cmd_ready,

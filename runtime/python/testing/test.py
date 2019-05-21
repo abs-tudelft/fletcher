@@ -24,7 +24,7 @@ def test_platform():
     platform.init()
 
     # Info
-    print("Platform name: " + platform.get_name())
+    print("Platform name: " + platform.name())
 
     # Malloc/free
     address = platform.device_malloc(1024)

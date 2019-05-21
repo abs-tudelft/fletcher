@@ -1,9 +1,12 @@
 # C/C++/CLion stuff
 cmake-build-debug/
 .idea/
+
+# Typical build folders
 debug/
 release/
-/build
+build/
+python-build/
 
 *.pyc
 .cproject
@@ -19,11 +22,43 @@ transcript
 # Java compiled
 *.class
 
-platforms/aws-f1/cl_arrow/software/runtime/regexp/Release/
-platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.txt
-platforms/aws-f1/cl_arrow/software/runtime/regexp/output\.csv
-
 *.dat
 
-platforms/aws-f1/regexp/design/ip/axi_interconnect_top/*
-!platforms/aws-f1/regexp/design/ip/axi_interconnect_top/axi_interconnect_top\.xci
+# C++ stuff
+
+# Created by https://www.gitignore.io/api/c++
+### C++ ###
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# End of https://www.gitignore.io/api/c++

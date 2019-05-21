@@ -21,7 +21,7 @@ cdef extern from * nogil:
 cdef class Platform:
     """Python wrapper for Fletcher Platforms.
 
-    Most functions are exposed for completeness, but for mose uses cases Context and UserCore are more suited.
+    Most functions are exposed for completeness, but for mose uses cases Context and Kernel are more suited.
 
     Args:
         name (:obj:'str', optional): Which platform driver to use. Leave empty to autodetect.
@@ -42,11 +42,11 @@ cdef class Platform:
         else:
             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
 
-    def get_name(self):
-        return self.platform.get().getName().decode("utf-8")
+    def name(self):
+        return self.platform.get().name().decode("utf-8")
 
     def init(self):
-        check_fletcher_status(self.platform.get().init())
+        check_fletcher_status(self.platform.get().Init())
 
     def write_mmio(self, uint64_t offset, uint32_t value):
         """Write to MMIO register.
@@ -56,7 +56,7 @@ cdef class Platform:
             value (int): Value to write.
 
         """
-        check_fletcher_status(self.platform.get().writeMMIO(offset, value))
+        check_fletcher_status(self.platform.get().WriteMMIO(offset, value))
 
     def read_mmio(self, uint64_t offset, str type=u"uint"):
         """Read from MMIO register.
@@ -71,7 +71,7 @@ cdef class Platform:
 
         """
         cdef uint32_t value
-        check_fletcher_status(self.platform.get().readMMIO(offset, &value))
+        check_fletcher_status(self.platform.get().ReadMMIO(offset, &value))
 
         if type == "uint":
             return value
@@ -95,7 +95,7 @@ cdef class Platform:
 
         """
         cdef uint64_t value
-        check_fletcher_status(self.platform.get().readMMIO64(offset, &value))
+        check_fletcher_status(self.platform.get().ReadMMIO64(offset, &value))
 
         if type == "uint":
             return value
@@ -117,7 +117,7 @@ cdef class Platform:
 
         """
         cdef da_t device_address
-        check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
+        check_fletcher_status(self.platform.get().DeviceMalloc(&device_address, size))
 
         return device_address
 
@@ -128,7 +128,7 @@ cdef class Platform:
             device_address (int): Device address of the memory region.
 
         """
-        check_fletcher_status(self.platform.get().deviceFree(device_address))
+        check_fletcher_status(self.platform.get().DeviceFree(device_address))
 
     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
         """Copy a memory region from device memory to host memory.
@@ -142,7 +142,7 @@ cdef class Platform:
         cdef const uint8_t[:] host_source_view = host_bytes
         cdef const uint8_t *host_source = &host_source_view[0]
 
-        check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
+        check_fletcher_status(self.platform.get().CopyHostToDevice(<uint8_t*>host_source, device_destination, size))
 
     def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):
         """Copy a memory region from device memory to host memory.
@@ -165,9 +165,9 @@ cdef class Platform:
         else:
             host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()
 
-        check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
+        check_fletcher_status(self.platform.get().CopyDeviceToHost(device_source, <uint8_t*>host_destination, size))
 
         return buffer
 
     def terminate(self):
-        check_fletcher_status(self.platform.get().terminate())
+        check_fletcher_status(self.platform.get().Terminate())

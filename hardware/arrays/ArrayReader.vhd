@@ -83,13 +83,13 @@ entity ArrayReader is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -109,9 +109,9 @@ entity ArrayReader is
 
     -- Unlock stream (bus clock domain). Produces the chunk tags supplied by
     -- the command stream when all BufferReaders finish processing the command.
-    unlock_valid                : out std_logic;
-    unlock_ready                : in  std_logic := '1';
-    unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+    unl_valid                   : out std_logic;
+    unl_ready                   : in  std_logic := '1';
+    unl_tag                     : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- Bus access ports
@@ -130,7 +130,7 @@ entity ArrayReader is
     -- User streams
     ---------------------------------------------------------------------------
     -- Concatenation of all user output streams at this level of hierarchy
-    -- (accelerator clock domain). The master stream starts at the side of the
+    -- (kernel clock domain). The master stream starts at the side of the
     -- least significant bit.
     out_valid                   : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
     out_ready                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -160,10 +160,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -172,9 +172,9 @@ begin
       cmd_ctrl                  => cmd_ctrl,
       cmd_tag                   => cmd_tag,
 
-      unlock_valid              => unlock_valid,
-      unlock_ready              => unlock_ready,
-      unlock_tag                => unlock_tag,
+      unlock_valid              => unl_valid,
+      unlock_ready              => unl_ready,
+      unlock_tag                => unl_tag,
 
       bus_rreq_valid(0)         => bus_rreq_valid,
       bus_rreq_ready(0)         => bus_rreq_ready,

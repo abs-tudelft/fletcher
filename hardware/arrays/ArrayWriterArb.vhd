@@ -38,7 +38,7 @@ entity ArrayWriterArb is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
-    
+
     -- Bus strobe width.
     BUS_STROBE_WIDTH            : natural := 32/8;
 
@@ -78,13 +78,13 @@ entity ArrayWriterArb is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -101,13 +101,13 @@ entity ArrayWriterArb is
     cmd_lastIdx                 : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmd_ctrl                    : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
     cmd_tag                     : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-    
+
     -- Unlock stream (bus clock domain). Produces the chunk tags supplied by
     -- the command stream when all BufferReaders finish processing the command.
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-    
+
     ---------------------------------------------------------------------------
     -- Bus access ports
     ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ entity ArrayWriterArb is
     bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
     bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
-    
+
     ---------------------------------------------------------------------------
     -- User streams
     ---------------------------------------------------------------------------
@@ -148,18 +148,18 @@ architecture Behavioral of ArrayWriterArb is
   constant A_USER_WIDTH         : natural   := sum(A_USER_WIDTHS);
   constant A_USER_COUNT         : natural   := A_USER_WIDTHS'length;
   constant AUI                  : nat_array := cumulative(A_USER_WIDTHS);
-  
+
   signal a_cmd_valid            : std_logic;
   signal a_cmd_ready            : std_logic;
   signal a_cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal a_cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal a_cmd_ctrl             : std_logic_vector(A_CTRL_WIDTH-1 downto 0);
   signal a_cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  
+
   signal a_unlock_valid         : std_logic;
   signal a_unlock_ready         : std_logic;
   signal a_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-  
+
   signal a_bus_wreq_valid       : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wreq_ready       : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wreq_addr        : std_logic_vector(A_BUS_COUNT*BUS_ADDR_WIDTH-1 downto 0);
@@ -169,7 +169,7 @@ architecture Behavioral of ArrayWriterArb is
   signal a_bus_wdat_data        : std_logic_vector(A_BUS_COUNT*BUS_DATA_WIDTH-1 downto 0);
   signal a_bus_wdat_strobe      : std_logic_vector(A_BUS_COUNT*BUS_STROBE_WIDTH-1 downto 0);
   signal a_bus_wdat_last        : std_logic_vector(A_BUS_COUNT-1 downto 0);
-  
+
   signal a_in_valid             : std_logic_vector(A_USER_COUNT-1 downto 0);
   signal a_in_ready             : std_logic_vector(A_USER_COUNT-1 downto 0);
   signal a_in_last              : std_logic_vector(A_USER_COUNT-1 downto 0);
@@ -180,7 +180,7 @@ begin
 
   -- Optional command stream buffer.
   cmd_buf_block: block is
-  
+
     -- Serialization indices for the command stream.
     constant CSI : nat_array := cumulative((
       3 => cmd_firstIdx'length,
@@ -188,19 +188,19 @@ begin
       1 => cmd_ctrl'length,
       0 => cmd_tag'length
     ));
-  
+
     -- Serialized versions of the command streams.
     signal cmd_sData            : std_logic_vector(CSI(CSI'high)-1 downto 0);
     signal a_cmd_sData          : std_logic_vector(CSI(CSI'high)-1 downto 0);
-  
+
   begin
-  
+
     -- Serialize the command stream for the optional register slice.
     cmd_sData(CSI(4)-1 downto CSI(3)) <= cmd_firstIdx;
     cmd_sData(CSI(3)-1 downto CSI(2)) <= cmd_lastIdx;
     cmd_sData(CSI(2)-1 downto CSI(1)) <= cmd_ctrl;
     cmd_sData(CSI(1)-1 downto CSI(0)) <= cmd_tag;
-  
+
     -- Generate an optional register slice in the command stream.
     buffer_inst: StreamBuffer
       generic map (
@@ -208,26 +208,26 @@ begin
         DATA_WIDTH              => CSI(CSI'high)
       )
       port map (
-        clk                     => bus_clk,
-        reset                   => bus_reset,
+        clk                     => bcd_clk,
+        reset                   => bcd_reset,
   
         in_valid                => cmd_valid,
         in_ready                => cmd_ready,
         in_data                 => cmd_sData,
-  
+
         out_valid               => a_cmd_valid,
         out_ready               => a_cmd_ready,
         out_data                => a_cmd_sData
       );
-  
+
     -- Deserialize the command stream from the optional register slice.
     a_cmd_firstIdx  <= a_cmd_sData(CSI(4)-1 downto CSI(3));
     a_cmd_lastIdx   <= a_cmd_sData(CSI(3)-1 downto CSI(2));
     a_cmd_ctrl      <= a_cmd_sData(CSI(2)-1 downto CSI(1));
     a_cmd_tag       <= a_cmd_sData(CSI(1)-1 downto CSI(0));
-  
+
   end block;
-  
+
   -- Generate an optional register slice in the command stream.
   unlock_stream_gen: if CMD_TAG_ENABLE generate
   begin
@@ -237,13 +237,13 @@ begin
         DATA_WIDTH                => CMD_TAG_WIDTH
       )
       port map (
-        clk                       => bus_clk,
-        reset                     => bus_reset,
+        clk                       => bcd_clk,
+        reset                     => bcd_reset,
   
         in_valid                  => a_unlock_valid,
         in_ready                  => a_unlock_ready,
         in_data                   => a_unlock_tag,
-  
+
         out_valid                 => unlock_valid,
         out_ready                 => unlock_ready,
         out_data                  => unlock_tag
@@ -255,11 +255,11 @@ begin
     a_unlock_ready  <= '1';
     unlock_tag      <= (others => '0');
   end generate;
-  
+
   -- Optional arbiter.
   arb_gen: if A_BUS_COUNT > 1 generate
   begin
-  
+
     -- Instantiate the actual arbiter.
     arb_inst: BusWriteArbiterVec
       generic map (
@@ -268,11 +268,11 @@ begin
         BUS_DATA_WIDTH          => BUS_DATA_WIDTH,
         BUS_STROBE_WIDTH        => BUS_STROBE_WIDTH,
         NUM_SLAVE_PORTS         => A_BUS_COUNT,
-  
+
         ARB_METHOD              => parse_param(CFG, "method", "ROUND-ROBIN"),
         MAX_OUTSTANDING         => parse_param(CFG, "max_outstanding", 2),
         RAM_CONFIG              => parse_param(CFG, "ram_config", ""),
-        
+
         -- TODO: change config parameters:
         SLV_REQ_SLICES          => parse_param(CFG, "req_in_slices", false),
         MST_REQ_SLICE           => parse_param(CFG, "req_out_slice", true),
@@ -280,8 +280,8 @@ begin
         SLV_DAT_SLICES          => parse_param(CFG, "dat_out_slices", true)
       )
       port map (
-        bus_clk                 => bus_clk,
-        bus_reset               => bus_reset,
+        bcd_clk                 => bcd_clk,
+        bcd_reset               => bcd_reset,
   
         -- Slave ports (input)
         bsv_wreq_valid          => a_bus_wreq_valid,
@@ -293,7 +293,7 @@ begin
         bsv_wdat_data           => a_bus_wdat_data,
         bsv_wdat_strobe         => a_bus_wdat_strobe,
         bsv_wdat_last           => a_bus_wdat_last,
-  
+
         -- Master port (output)
         mst_wreq_valid          => bus_wreq_valid(0),
         mst_wreq_ready          => bus_wreq_ready(0),
@@ -320,22 +320,22 @@ begin
       bus_wdat_strobe <= a_bus_wdat_strobe;
       bus_wdat_last   <= a_bus_wdat_last;
   end generate;
-  
+
   -- Optional user stream slices.
   user_slice_gen: for i in 0 to A_USER_COUNT-1 generate
-  
+
     -- Serialized vector containing the last flag, dvalid flag, and data vector
     -- for this user stream.
     signal in_sData            : std_logic_vector(A_USER_WIDTHS(i) + 1 downto 0);
     signal a_in_sData          : std_logic_vector(A_USER_WIDTHS(i) + 1 downto 0);
-  
+
   begin
-  
+
     -- Deserialize the stream data and flags.
     in_sData(0)                             <= in_last(i);
     in_sData(1)                             <= in_dvalid(i);
     in_sData(A_USER_WIDTHS(i) + 1 downto 2) <= in_data(AUI(i+1)-1 downto AUI(i));
-  
+
     -- Generate an optional register slice in the user stream.
     buffer_inst: StreamBuffer
       generic map (
@@ -343,25 +343,25 @@ begin
         DATA_WIDTH              => A_USER_WIDTHS(i) + 2
       )
       port map (
-        clk                     => acc_clk,
-        reset                   => acc_reset,
+        clk                     => kcd_clk,
+        reset                   => kcd_reset,
   
         in_valid                => in_valid(i),
         in_ready                => in_ready(i),
         in_data                 => in_sData,
-  
+
         out_valid               => a_in_valid(i),
         out_ready               => a_in_ready(i),
         out_data                => a_in_sData
       );
-      
+
     -- Serialize the stream data and flags.
     a_in_last(i)                            <= a_in_sData(0);
-    a_in_dvalid(i)                          <= a_in_sData(1);                            
+    a_in_dvalid(i)                          <= a_in_sData(1);
     a_in_data(AUI(i+1)-1 downto AUI(i))     <= a_in_sData(A_USER_WIDTHS(i) + 1 downto 2);
-  
+
   end generate;
-  
+
   -- Instantiate child.
   a_inst: ArrayWriterLevel
     generic map (
@@ -377,10 +377,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
   
       cmd_valid                 => a_cmd_valid,
       cmd_ready                 => a_cmd_ready,
@@ -388,11 +388,11 @@ begin
       cmd_lastIdx               => a_cmd_lastIdx,
       cmd_ctrl                  => a_cmd_ctrl,
       cmd_tag                   => a_cmd_tag,
-  
+
       unlock_valid              => a_unlock_valid,
       unlock_ready              => a_unlock_ready,
       unlock_tag                => a_unlock_tag,
-  
+
       bus_wreq_valid            => a_bus_wreq_valid,
       bus_wreq_ready            => a_bus_wreq_ready,
       bus_wreq_addr             => a_bus_wreq_addr,
@@ -402,12 +402,12 @@ begin
       bus_wdat_data             => a_bus_wdat_data,
       bus_wdat_strobe           => a_bus_wdat_strobe,
       bus_wdat_last             => a_bus_wdat_last,
-  
+
       in_valid                  => a_in_valid,
       in_ready                  => a_in_ready,
       in_last                   => a_in_last,
       in_dvalid                 => a_in_dvalid,
       in_data                   => a_in_data
     );
-  
+
 end Behavioral;

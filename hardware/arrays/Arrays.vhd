@@ -39,33 +39,33 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
-      cmd_firstIdx              : in  std_logic_vector;
-      cmd_lastIdx               : in  std_logic_vector;
-      cmd_ctrl                  : in  std_logic_vector;
+      cmd_firstIdx              : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_lastIdx               : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      cmd_ctrl                  : in  std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unl_valid                 : out std_logic;
+      unl_ready                 : in  std_logic := '1';
+      unl_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_wreq_valid            : out std_logic;
       bus_wreq_ready            : in  std_logic;
-      bus_wreq_addr             : out std_logic_vector;
-      bus_wreq_len              : out std_logic_vector;
+      bus_wreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      bus_wreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
       bus_wdat_valid            : out std_logic;
       bus_wdat_ready            : in  std_logic;
-      bus_wdat_data             : out std_logic_vector;
-      bus_wdat_strobe           : out std_logic_vector;
+      bus_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      bus_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       bus_wdat_last             : out std_logic;
-      in_valid                  : in  std_logic_vector;
-      in_ready                  : out std_logic_vector;
-      in_last                   : in  std_logic_vector;
-      in_dvalid                 : in  std_logic_vector;
-      in_data                   : in  std_logic_vector
+      in_valid                  : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_ready                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_last                   : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_dvalid                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      in_data                   : in  std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
     );
   end component;
 
@@ -83,10 +83,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -127,10 +127,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -171,10 +171,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -203,41 +203,25 @@ package Arrays is
 
   component ArrayWriterListSync is
     generic (
-      ELEMENT_WIDTH             : positive;
       LENGTH_WIDTH              : positive;
-      COUNT_MAX                 : positive;
-      COUNT_WIDTH               : positive;
-      GENERATE_LENGTH           : boolean;
-      NORMALIZE                 : boolean;
-      ELEM_LAST_FROM_LENGTH     : boolean;
-      DATA_IN_SLICE             : boolean;
-      LEN_IN_SLICE              : boolean;
-      OUT_SLICE                 : boolean
+      LCOUNT_MAX                : positive := 1;
+      LCOUNT_WIDTH              : positive := 1
     );
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-      inl_valid                 : in  std_logic;
-      inl_ready                 : out std_logic;
-      inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-      inl_last                  : in  std_logic;
-      ine_valid                 : in  std_logic;
-      ine_ready                 : out std_logic;
-      ine_dvalid                : in  std_logic;
-      ine_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      ine_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
-      ine_last                  : in  std_logic;
-      outl_valid                : out std_logic;
-      outl_ready                : in  std_logic;
-      outl_length               : out std_logic_vector(LENGTH_WIDTH-1 downto 0);
-      outl_last                 : out std_logic;
-      oute_valid                : out std_logic;
-      oute_ready                : in  std_logic;
-      oute_last                 : out std_logic;
-      oute_dvalid               : out std_logic;
-      oute_data                 : out std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
-      oute_count                : out std_logic_vector(COUNT_WIDTH-1 downto 0)
-
+      in_len_valid              : in  std_logic;
+      in_len_ready              : out std_logic;
+      in_len_count              : in  std_logic_vector(LCOUNT_WIDTH-1 downto 0);
+      in_len_last               : in  std_logic;
+      out_len_valid             : out std_logic;
+      out_len_ready             : in  std_logic;
+      in_val_valid              : in  std_logic;
+      in_val_ready              : out std_logic;
+      in_val_last               : in  std_logic;
+      out_val_valid             : out std_logic;
+      out_val_ready             : in  std_logic;
+      out_val_last              : out std_logic
     );
   end component;
 
@@ -257,19 +241,19 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
       cmd_lastIdx               : in  std_logic_vector;
       cmd_ctrl                  : in  std_logic_vector;
       cmd_tag                   : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-      unlock_valid              : out std_logic;
-      unlock_ready              : in  std_logic := '1';
-      unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
+      unl_valid                 : out std_logic;
+      unl_ready                 : in  std_logic := '1';
+      unl_tag                   : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
       bus_rreq_valid            : out std_logic;
       bus_rreq_ready            : in  std_logic;
       bus_rreq_addr             : out std_logic_vector;
@@ -278,11 +262,11 @@ package Arrays is
       bus_rdat_ready            : out std_logic;
       bus_rdat_data             : in  std_logic_vector;
       bus_rdat_last             : in  std_logic;
-      out_valid                 : out std_logic_vector;
-      out_ready                 : in  std_logic_vector;
-      out_last                  : out std_logic_vector;
-      out_dvalid                : out std_logic_vector;
-      out_data                  : out std_logic_vector
+      out_valid                 : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      out_ready                 : in  std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      out_last                  : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      out_dvalid                : out std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
+      out_data                  : out std_logic_vector(arcfg_userWidth(CFG, INDEX_WIDTH)-1 downto 0)
     );
   end component;
 
@@ -299,10 +283,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -341,10 +325,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -383,10 +367,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -425,10 +409,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -467,11 +451,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -510,11 +493,10 @@ package Arrays is
       CMD_TAG_WIDTH             : natural := 1
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -548,16 +530,13 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       a_unlock_valid            : in  std_logic;
       a_unlock_ready            : out std_logic;
       a_unlock_tag              : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       a_unlock_ignoreChild      : in  std_logic := '0';
-
       b_unlock_valid            : in  std_logic;
       b_unlock_ready            : out std_logic;
       b_unlock_tag              : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic;
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
@@ -577,16 +556,13 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       inl_valid                 : in  std_logic;
       inl_ready                 : out std_logic;
       inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-
       ind_valid                 : in  std_logic;
       ind_ready                 : out std_logic;
       ind_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       ind_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
-
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
       out_last                  : out std_logic;
@@ -606,11 +582,9 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       inl_valid                 : in  std_logic;
       inl_ready                 : out std_logic;
       inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-
       ctrl_valid                : out std_logic;
       ctrl_ready                : in  std_logic;
       ctrl_last                 : out std_logic;

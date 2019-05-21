@@ -15,4 +15,4 @@
 name = "pyfletcher"
 
 import pyarrow
-from pyfletcher.lib import Platform, UserCore, Context
+from pyfletcher.lib import Platform, Kernel, Context

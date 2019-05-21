@@ -29,7 +29,7 @@ cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
 
-cdef extern from "fletcher/common/arrow-utils.h" namespace "fletcher" nogil:
+cdef extern from "fletcher/arrow-utils.h" namespace "fletcher" nogil:
     ctypedef enum Mode:
         READ "fletcher::Mode::READ",
         WRITE "fletcher::Mode::WRITE"
@@ -57,45 +57,45 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         @staticmethod
         Status createUnnamed"Make"(shared_ptr[CPlatform] *platform)
 
-        cpp_string getName()
-        Status init()
-        Status writeMMIO(uint64_t offset, uint32_t value)
-        Status readMMIO(uint64_t offset, uint32_t *value)
-        Status readMMIO64(uint64_t offset, uint64_t *value)
-        Status deviceMalloc(da_t *device_address, size_t size)
-        Status deviceFree(da_t device_address)
-        Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
-        Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size)
-        Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, cpp_bool *alloced)
-        Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size)
-        Status terminate()
+        cpp_string name()
+        Status Init()
+        Status WriteMMIO(uint64_t offset, uint32_t value)
+        Status ReadMMIO(uint64_t offset, uint32_t *value)
+        Status ReadMMIO64(uint64_t offset, uint64_t *value)
+        Status DeviceMalloc(da_t *device_address, size_t size)
+        Status DeviceFree(da_t device_address)
+        Status CopyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
+        Status CopyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size)
+        Status PrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, cpp_bool *alloced)
+        Status CacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size)
+        Status Terminate()
 
     cdef cppclass CContext" fletcher::Context":
         @staticmethod
         Status Make(shared_ptr[CContext] *context, const shared_ptr[CPlatform] &platform)
-        Status queueArray(const shared_ptr[CArray] &array, Mode access_mode, cpp_bool cache)
-        Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, Mode access_mode, cpp_bool cache)
-        Status queueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
-        size_t getQueueSize()
+        Status QueueArray(const shared_ptr[CArray] &array, Mode access_mode, cpp_bool cache)
+        Status QueueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, Mode access_mode, cpp_bool cache)
+        Status QueueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
+        size_t GetQueueSize()
         uint64_t num_buffers()
-        Status enable()
-        vector[shared_ptr[CDeviceArray]] device_arrays
+        Status Enable()
+        vector[shared_ptr[CDeviceArray]] device_arrays_
 
-    cdef cppclass CUserCore" fletcher::UserCore":
+    cdef cppclass CKernel" fletcher::Kernel":
         # Control and status values
         uint32_t ctrl_start
         uint32_t ctrl_reset
         uint32_t done_status
         uint32_t done_status_mask
 
-        CUserCore(shared_ptr[CContext] context)
-        cpp_bool implementsSchema(const shared_ptr[CSchema] &schema)
-        Status reset()
-        Status setRange(int32_t first, int32_t last)
-        Status setArguments(vector[uint32_t] arguments)
-        Status start()
-        Status getStatus(uint32_t *status)
-        Status getReturn(uint32_t *ret0, uint32_t *ret1)
-        Status waitForFinish(unsigned int poll_interval_usec)
+        CKernel(shared_ptr[CContext] context)
+        cpp_bool ImplementsSchema(const shared_ptr[CSchema] &schema)
+        Status Reset()
+        Status SetRange(size_t recordbatch_index, int32_t first, int32_t last)
+        Status SetArguments(vector[uint32_t] arguments)
+        Status Start()
+        Status GetStatus(uint32_t *status)
+        Status GetReturn(uint32_t *ret0, uint32_t *ret1)
+        Status WaitForFinish(unsigned int poll_interval_usec)
         shared_ptr[CPlatform] platform()
         shared_ptr[CContext] context()

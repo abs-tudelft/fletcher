@@ -52,10 +52,10 @@ entity axi_top is
   );
 
   port (
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
-    bus_clk                     : in  std_logic;
-    bus_reset_n                 : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset_n                 : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- AXI4 master as Host Memory Interface
@@ -141,10 +141,10 @@ architecture Behavorial of axi_top is
       TAG_WIDTH                 : natural
     );
     port(
-      acc_clk                   : in std_logic;
-      acc_reset                 : in std_logic;
-      bus_clk                   : in std_logic;
-      bus_reset                 : in std_logic;
+      kcd_clk                   : in std_logic;
+      kcd_reset                 : in std_logic;
+      bcd_clk                   : in std_logic;
+      bcd_reset                 : in std_logic;
       mst_rreq_valid            : out std_logic;
       mst_rreq_ready            : in std_logic;
       mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -170,7 +170,7 @@ architecture Behavorial of axi_top is
   -----------------------------------------------------------------------------
 
   -- Fletcher bus signals
-  signal bus_reset              : std_logic;
+  signal bcd_reset              : std_logic;
 
   signal bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
@@ -200,7 +200,7 @@ architecture Behavorial of axi_top is
 begin
 
   -- Active high reset
-  bus_reset <= '1' when bus_reset_n = '0' else '0';
+  bcd_reset <= '1' when bcd_reset_n = '0' else '0';
 
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
@@ -221,10 +221,10 @@ begin
       TAG_WIDTH                 => TAG_WIDTH
     )
     port map (
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
       mst_rreq_valid            => bus_rreq_valid,
       mst_rreq_ready            => bus_rreq_ready,
       mst_rreq_addr             => bus_rreq_addr,
@@ -263,8 +263,8 @@ begin
       ENABLE_FIFO               => false
     )
     port map (
-      clk                       => bus_clk,
-      reset_n                   => bus_reset_n,
+      clk                       => bcd_clk,
+      reset_n                   => bcd_reset_n,
       slv_bus_rreq_addr         => bus_rreq_addr,
       slv_bus_rreq_len          => bus_rreq_len,
       slv_bus_rreq_valid        => bus_rreq_valid,
@@ -300,8 +300,8 @@ begin
       ENABLE_FIFO               => false
     )
     port map (
-      clk                       => bus_clk,
-      reset_n                   => bus_reset_n,
+      clk                       => bcd_clk,
+      reset_n                   => bcd_reset_n,
       slv_bus_wreq_addr         => bus_wreq_addr,
       slv_bus_wreq_len          => bus_wreq_len,
       slv_bus_wreq_valid        => bus_wreq_valid,
@@ -333,8 +333,8 @@ begin
       NUM_REGS                  => NUM_REGS
     )
     port map (
-      clk                       => bus_clk,
-      reset_n                   => bus_reset_n,
+      clk                       => bcd_clk,
+      reset_n                   => bcd_reset_n,
       s_axi_awvalid             => s_axi_awvalid,
       s_axi_awready             => s_axi_awready,
       s_axi_awaddr              => s_axi_awaddr,

@@ -14,13 +14,16 @@
 
 #pragma once
 
+// Common lib C
 #include "fletcher/fletcher.h"
 
-#include "fletcher/common/status.h"
-#include "fletcher/common/timer.h"
-#include "fletcher/common/arrow-utils.h"
-#include "fletcher/common/hex-view.h"
+// Common lib CPP
+#include "fletcher/status.h"
+#include "fletcher/timer.h"
+#include "fletcher/arrow-utils.h"
+#include "fletcher/hex-view.h"
 
-#include "./context.h"
-#include "./platform.h"
-#include "./usercore.h"
+// CPP runtime lib
+#include "fletcher/context.h"
+#include "fletcher/platform.h"
+#include "fletcher/kernel.h"

@@ -17,6 +17,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
+use work.SimUtils.all;
 use work.Streams.all;
 use work.Utils.all;
 use work.ArrayConfig.all;
@@ -57,13 +58,13 @@ entity ArrayWriterListPrim is
     ---------------------------------------------------------------------------
     -- Array metrics and configuration
     ---------------------------------------------------------------------------
-    -- Configures this ArrayReaderLevel. Due to its complexity, the syntax of
-    -- this string is documented centrally in ArrayReaderConfig.vhd.
+    -- Configures this ArrayWriterLevel. Due to its complexity, the syntax of
+    -- this string is documented centrally in ArrayConfig.vhd.
     CFG                         : string;
 
     -- Enables or disables command stream tag system. When enabled, an
     -- additional output stream is created that returns tags supplied along
-    -- with the command stream when all BufferReaders finish making bus
+    -- with the command stream when all BufferWriters finish making bus
     -- requests for the command. This can be used to support chunking later.
     CMD_TAG_ENABLE              : boolean := false;
 
@@ -78,13 +79,13 @@ entity ArrayWriterListPrim is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -103,7 +104,7 @@ entity ArrayWriterListPrim is
     cmd_tag                     : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
 
     -- Unlock stream (bus clock domain). Produces the chunk tags supplied by
-    -- the command stream when all BufferReaders finish processing the command.
+    -- the command stream when all BufferWriters finish processing the command.
     unlock_valid                : out std_logic;
     unlock_ready                : in  std_logic := '1';
     unlock_tag                  : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
@@ -149,26 +150,17 @@ architecture Behavioral of ArrayWriterListPrim is
   constant COUNT_MAX            : natural := parse_param(CFG, "epc", 1);
   constant COUNT_WIDTH          : natural := log2ceil(COUNT_MAX+1);
   constant DATA_WIDTH           : natural := ELEMENT_WIDTH * COUNT_MAX;
-  
+
+  constant LCOUNT_MAX           : natural := parse_param(CFG, "lepc", 1);
+  constant LCOUNT_WIDTH         : natural := log2ceil(LCOUNT_MAX+1);
+
   -- Determine whether to generate the child stream last signal from the length
-  -- stream last signal. If this is false, every list will generate a new 
-  -- command on the child buffer.
+  -- stream last signal. If this is false, every list will generate a new
+  -- command on the child buffer, and will probably result in very poor
+  -- performance. Therefore, it is not a good idea to set this to false, unless
+  -- there is a very good reason to do so (e.g. a kernel already takes this
+  -- sort of last signaling into consideration).
   constant LAST_FROM_LENGTH     : boolean := parse_param(CFG, "last_from_length", true);
-  
-  -- Determine whether to generate the length stream based on the last signal
-  -- of the element stream. In this mode, the length stream last signal is still 
-  -- used to finalize both buffers. The length stream data is ignored but
-  -- should still be handshaked for every list.
-  constant GENERATE_LENGTH      : boolean := parse_param(CFG, "generate_lengths", false);
-  
-  -- Determine if the element stream should be normalized according to the
-  -- length stream. Can only be used if length stream is not generated. Will
-  -- split up multiple element-per-cycle element streams and their valid count
-  -- properly based on length stream. If length stream is used and normalize is
-  -- false, user must make sure boundaries are not crossed when last is
-  -- asserted on multiple element-per-cycle element stream during a single 
-  -- transfer.
-  constant NORMALIZE            : boolean := parse_param(CFG, "normalize", false);
 
   -- Signals for offsets buffer writer.
   signal a_unlock_valid         : std_logic;
@@ -178,8 +170,9 @@ architecture Behavioral of ArrayWriterListPrim is
 
   signal a_valid                : std_logic;
   signal a_ready                : std_logic;
+  signal a_count                : std_logic_vector(LCOUNT_WIDTH-1 downto 0);
   signal a_last                 : std_logic;
-  signal a_length               : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal a_length               : std_logic_vector(LCOUNT_MAX*INDEX_WIDTH-1 downto 0);
 
   -- Metrics and signals for values buffer writer.
   signal b_cmd_valid            : std_logic;
@@ -208,6 +201,13 @@ architecture Behavioral of ArrayWriterListPrim is
 
 begin
 
+  -- Poop out some debug info
+  --pragma translate off
+  dumpStdOut("ArrayWriterListPrim");
+  dumpStdOut("  list  epc: " & ii(LCOUNT_MAX));
+  dumpStdOut("  value epc: " & ii(COUNT_MAX));
+  --pragma translate on
+
   -- Combine the unlock streams.
   unlock_inst: ArrayReaderUnlockCombine
     generic map (
@@ -215,61 +215,72 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      clk                       => bus_clk,
-      reset                     => bus_reset,
+      clk                       => bcd_clk,
+      reset                     => bcd_reset,
   
       a_unlock_valid            => a_unlock_valid,
       a_unlock_ready            => a_unlock_ready,
       a_unlock_tag              => a_unlock_tag,
       a_unlock_ignoreChild      => a_unlock_ignoreChild,
-  
+
       b_unlock_valid            => b_unlock_valid,
       b_unlock_ready            => b_unlock_ready,
       b_unlock_tag              => b_unlock_tag,
-  
+
       unlock_valid              => unlock_valid,
       unlock_ready              => unlock_ready,
       unlock_tag                => unlock_tag
     );
 
-  -- Instantiate the list synchronizer
-  sync_inst: ArrayWriterListSync
-    generic map (
-      ELEMENT_WIDTH             => ELEMENT_WIDTH,
-      LENGTH_WIDTH              => INDEX_WIDTH,
-      COUNT_MAX                 => COUNT_MAX,
-      COUNT_WIDTH               => COUNT_WIDTH,
-      GENERATE_LENGTH           => GENERATE_LENGTH,
-      NORMALIZE                 => NORMALIZE,
-      ELEM_LAST_FROM_LENGTH     => LAST_FROM_LENGTH,
-      DATA_IN_SLICE             => false,
-      LEN_IN_SLICE              => false,
-      OUT_SLICE                 => false
-    )
-    port map (
-      clk                       => acc_clk,
-      reset                     => acc_reset,
-      inl_valid                 => in_valid(0),
-      inl_ready                 => in_ready(0),
-      inl_length                => in_data(IUI(1)-1 downto IUI(0)),
-      inl_last                  => in_last(0),
-      ine_valid                 => in_valid(1),
-      ine_ready                 => in_ready(1),
-      ine_last                  => in_last(1),
-      ine_dvalid                => in_dvalid(1),
-      ine_data                  => in_data(IUI(2)-COUNT_WIDTH-1 downto IUI(1)),
-      ine_count                 => in_data(IUI(2)-1 downto IUI(2)-COUNT_WIDTH),
-      outl_valid                => a_valid,
-      outl_ready                => a_ready,
-      outl_length               => a_length,
-      outl_last                 => a_last,
-      oute_valid                => b_valid,
-      oute_ready                => b_ready,
-      oute_last                 => b_last,
-      oute_dvalid               => b_dvalid,
-      oute_data                 => b_data,
-      oute_count                => b_count
-    );
+  len_last_gen: if LAST_FROM_LENGTH generate
+    -- Generate values last signal from, and synchronize to, length stream:
+
+    -- Instantiate the list synchronizer
+    sync_inst: ArrayWriterListSync
+      generic map (
+        LENGTH_WIDTH              => INDEX_WIDTH,
+        LCOUNT_MAX                => LCOUNT_MAX,
+        LCOUNT_WIDTH              => LCOUNT_WIDTH
+      )
+      port map (
+        clk                       => kcd_clk,
+        reset                     => kcd_reset,
+        in_len_valid              => in_valid(0),
+        in_len_ready              => in_ready(0),
+        in_len_count              => a_count,
+        in_len_last               => a_last,
+        out_len_valid             => a_valid,
+        out_len_ready             => a_ready,
+        in_val_valid              => in_valid(1),
+        in_val_ready              => in_ready(1),
+        in_val_last               => in_last(1),
+        out_val_valid             => b_valid,
+        out_val_ready             => b_ready,
+        out_val_last              => b_last
+      );
+
+      a_length <= in_data(IUI(1)-LCOUNT_WIDTH-1 downto 0);
+      a_count  <= in_data(IUI(1)-1 downto IUI(1)-LCOUNT_WIDTH);
+      a_last   <= in_last(0);
+
+      b_data   <= in_data(IUI(2)-COUNT_WIDTH-1 downto IUI(1));
+      b_count  <= in_data(IUI(2)-1 downto IUI(2)-COUNT_WIDTH);
+
+  end generate;
+  no_len_last_gen: if not(LAST_FROM_LENGTH) generate
+    -- Length and values stream operate completely independently
+    b_valid     <= in_valid(1);
+    in_ready(1) <= b_ready;
+    b_data      <= in_data(IUI(2)-COUNT_WIDTH-1 downto IUI(1));
+    b_count     <= in_data(IUI(2)-1 downto IUI(2)-COUNT_WIDTH);
+    b_last      <= in_last(1);
+
+    a_valid     <= in_valid(0);
+    in_ready(0) <= a_ready;
+    a_length    <= in_data(IUI(1)-LCOUNT_WIDTH-1 downto 0);
+    a_count     <= in_data(IUI(1)-1 downto IUI(1)-LCOUNT_WIDTH);
+    a_last      <= in_last(0);
+  end generate;
 
   -- Instantiate offsets buffer writer.
   a_inst: BufferWriter
@@ -284,16 +295,16 @@ begin
       INDEX_WIDTH               => INDEX_WIDTH,
       ELEMENT_WIDTH             => INDEX_WIDTH,
       IS_OFFSETS_BUFFER         => true,
-      ELEMENT_COUNT_MAX         => 1,
-      ELEMENT_COUNT_WIDTH       => 1,
+      ELEMENT_COUNT_MAX         => LCOUNT_MAX,
+      ELEMENT_COUNT_WIDTH       => LCOUNT_WIDTH,
       CMD_CTRL_WIDTH            => BUS_ADDR_WIDTH,
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmdIn_valid               => cmd_valid,
       cmdIn_ready               => cmd_ready,
@@ -314,11 +325,11 @@ begin
       unlock_valid              => a_unlock_valid,  --a_unlock_valid
       unlock_ready              => a_unlock_ready,  --a_unlock_ready
       unlock_tag                => a_unlock_tag,    --a_unlock_tag,
-      
+
       in_valid                  => a_valid,
       in_ready                  => a_ready,
       in_data                   => a_length,
-      in_count                  => "1",
+      in_count                  => a_count,
       in_last                   => a_last,
 
       bus_wreq_valid            => bus_wreq_valid(0),
@@ -352,10 +363,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmdIn_valid               => b_cmd_valid,
       cmdIn_ready               => b_cmd_ready,

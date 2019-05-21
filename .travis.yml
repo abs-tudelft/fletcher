@@ -28,6 +28,8 @@ env:
     - SOURCE_PATH=
     # cmake
     - CTEST_OUTPUT_ON_FAILURE=1
+    # gcc
+    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
 matrix:
   include:
@@ -56,17 +58,20 @@ matrix:
       env: SOURCE_PATH=platforms/echo/runtime
     - name: "Docs"
       env: FLETCHER_DOCS=1
+      
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-7
 
 before_install:
   - curl -sSL "https://dist.apache.org/repos/dist/dev/arrow/KEYS" | sudo -E apt-key add -
   - echo "deb [arch=amd64] https://dl.bintray.com/apache/arrow/ubuntu/ xenial main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -yq libarrow-dev=${ARROW_VERSION}-1
-
-addons:
-  apt:
-    packages:
-      - libboost-all-dev
+  - eval "${MATRIX_EVAL}"
 
 script:
   - |

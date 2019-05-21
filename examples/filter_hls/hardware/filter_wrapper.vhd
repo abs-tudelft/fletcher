@@ -44,10 +44,10 @@ entity filter_wrapper is
     TAG_WIDTH                                  : natural
   );
   port(
+    acc_clk                                    : in std_logic;
     acc_reset                                  : in std_logic;
     bus_clk                                    : in std_logic;
     bus_reset                                  : in std_logic;
-    acc_clk                                    : in std_logic;
     ---------------------------------------------------------------------------
     mst_rreq_valid                             : out std_logic;
     mst_rreq_ready                             : in std_logic;
@@ -60,9 +60,9 @@ entity filter_wrapper is
     mst_rdat_last                              : in std_logic;
     ---------------------------------------------------------------------------
     mst_wreq_valid                             : out std_logic;
-    mst_wreq_len                               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-    mst_wreq_addr                              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     mst_wreq_ready                             : in std_logic;
+    mst_wreq_addr                              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+    mst_wreq_len                               : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
     ---------------------------------------------------------------------------
     mst_wdat_valid                             : out std_logic;
     mst_wdat_ready                             : in std_logic;
@@ -192,23 +192,8 @@ architecture Implementation of filter_wrapper is
   end component;
   -----------------------------------------------------------------------------
 
-  signal s_read_first_name_cmd_ready           : std_logic;
-  signal uctrl_done                            : std_logic;
-  signal uctrl_busy                            : std_logic;
-  signal uctrl_idle                            : std_logic;
-  signal uctrl_reset                           : std_logic;
-  signal uctrl_stop                            : std_logic;
-  signal uctrl_start                           : std_logic;
-  signal uctrl_control                         : std_logic_vector(REG_WIDTH-1 downto 0);
-  signal uctrl_status                          : std_logic_vector(REG_WIDTH-1 downto 0);
-  signal s_read_first_name_bus_rdat_last       : std_logic;
-  signal s_read_first_name_bus_rdat_data       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_read_first_name_bus_rdat_ready      : std_logic;
-  signal s_read_first_name_bus_rdat_valid      : std_logic;
-  signal s_read_first_name_bus_rreq_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_read_first_name_bus_rreq_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal s_read_first_name_bus_rreq_valid      : std_logic;
   signal s_read_first_name_cmd_valid           : std_logic;
+  signal s_read_first_name_cmd_ready           : std_logic;
   signal s_read_first_name_cmd_firstIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_read_first_name_cmd_lastIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_read_first_name_cmd_ctrl            : std_logic_vector(2*BUS_ADDR_WIDTH-1 downto 0);
@@ -216,23 +201,24 @@ architecture Implementation of filter_wrapper is
   signal s_read_first_name_unlock_valid        : std_logic;
   signal s_read_first_name_unlock_ready        : std_logic;
   signal s_read_first_name_unlock_tag          : std_logic_vector(TAG_WIDTH-1 downto 0);
-  signal s_read_first_name_bus_rreq_ready      : std_logic;
-  signal s_read_first_name_out_dvalid          : std_logic_vector(1 downto 0);
-  signal s_read_first_name_out_data            : std_logic_vector(INDEX_WIDTH+8 downto 0);
-  signal s_read_first_name_out_last            : std_logic_vector(1 downto 0);
-  signal s_read_first_name_out_ready           : std_logic_vector(1 downto 0);
   signal s_read_first_name_out_valid           : std_logic_vector(1 downto 0);
+  signal s_read_first_name_out_ready           : std_logic_vector(1 downto 0);
+  signal s_read_first_name_out_last            : std_logic_vector(1 downto 0);
+  signal s_read_first_name_out_data            : std_logic_vector(INDEX_WIDTH+8 downto 0);
+  signal s_read_first_name_out_dvalid          : std_logic_vector(1 downto 0);
+  signal s_read_first_name_bus_rreq_valid      : std_logic;
+  signal s_read_first_name_bus_rreq_ready      : std_logic;
+  signal s_read_first_name_bus_rreq_addr       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_read_first_name_bus_rreq_len        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_read_first_name_bus_rdat_valid      : std_logic;
+  signal s_read_first_name_bus_rdat_ready      : std_logic;
+  signal s_read_first_name_bus_rdat_data       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_read_first_name_bus_rdat_last       : std_logic;
   -----------------------------------------------------------------------------
-  signal s_read_last_name_cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_read_last_name_cmd_valid            : std_logic;
   signal s_read_last_name_cmd_ready            : std_logic;
-  signal s_read_last_name_bus_rdat_last        : std_logic;
-  signal s_read_last_name_bus_rdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_read_last_name_bus_rdat_ready       : std_logic;
-  signal s_read_last_name_bus_rdat_valid       : std_logic;
-  signal s_read_last_name_bus_rreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_read_last_name_bus_rreq_ready       : std_logic;
   signal s_read_last_name_cmd_firstIdx         : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal s_read_last_name_cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_read_last_name_cmd_ctrl             : std_logic_vector(2*BUS_ADDR_WIDTH-1 downto 0);
   signal s_read_last_name_cmd_tag              : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_read_last_name_unlock_valid         : std_logic;
@@ -240,23 +226,23 @@ architecture Implementation of filter_wrapper is
   signal s_read_last_name_unlock_tag           : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_read_last_name_out_valid            : std_logic_vector(1 downto 0);
   signal s_read_last_name_out_ready            : std_logic_vector(1 downto 0);
-  signal s_read_last_name_bus_rreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal s_read_last_name_bus_rreq_valid       : std_logic;
-  signal s_read_last_name_out_dvalid           : std_logic_vector(1 downto 0);
-  signal s_read_last_name_out_data             : std_logic_vector(INDEX_WIDTH+8 downto 0);
   signal s_read_last_name_out_last             : std_logic_vector(1 downto 0);
+  signal s_read_last_name_out_data             : std_logic_vector(INDEX_WIDTH+8 downto 0);
+  signal s_read_last_name_out_dvalid           : std_logic_vector(1 downto 0);
+  signal s_read_last_name_bus_rreq_valid       : std_logic;
+  signal s_read_last_name_bus_rreq_ready       : std_logic;
+  signal s_read_last_name_bus_rreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_read_last_name_bus_rreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_read_last_name_bus_rdat_valid       : std_logic;
+  signal s_read_last_name_bus_rdat_ready       : std_logic;
+  signal s_read_last_name_bus_rdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_read_last_name_bus_rdat_last        : std_logic;
   -----------------------------------------------------------------------------
-  signal s_read_zipcode_cmd_ctrl               : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_read_zipcode_cmd_valid              : std_logic;
   signal s_read_zipcode_cmd_ready              : std_logic;
   signal s_read_zipcode_cmd_firstIdx           : std_logic_vector(INDEX_WIDTH-1 downto 0);
-  signal s_read_zipcode_bus_rdat_last          : std_logic;
-  signal s_read_zipcode_bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_read_zipcode_bus_rdat_ready         : std_logic;
-  signal s_read_zipcode_bus_rdat_valid         : std_logic;
-  signal s_read_zipcode_bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_read_zipcode_bus_rreq_ready         : std_logic;
   signal s_read_zipcode_cmd_lastIdx            : std_logic_vector(INDEX_WIDTH-1 downto 0);
+  signal s_read_zipcode_cmd_ctrl               : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_read_zipcode_cmd_tag                : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_read_zipcode_unlock_valid           : std_logic;
   signal s_read_zipcode_unlock_ready           : std_logic;
@@ -264,23 +250,23 @@ architecture Implementation of filter_wrapper is
   signal s_read_zipcode_out_valid              : std_logic_vector(0 downto 0);
   signal s_read_zipcode_out_ready              : std_logic_vector(0 downto 0);
   signal s_read_zipcode_out_last               : std_logic_vector(0 downto 0);
-  signal s_read_zipcode_bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal s_read_zipcode_bus_rreq_valid         : std_logic;
-  signal s_read_zipcode_out_dvalid             : std_logic_vector(0 downto 0);
   signal s_read_zipcode_out_data               : std_logic_vector(31 downto 0);
+  signal s_read_zipcode_out_dvalid             : std_logic_vector(0 downto 0);
+  signal s_read_zipcode_bus_rreq_valid         : std_logic;
+  signal s_read_zipcode_bus_rreq_ready         : std_logic;
+  signal s_read_zipcode_bus_rreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_read_zipcode_bus_rreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_read_zipcode_bus_rdat_valid         : std_logic;
+  signal s_read_zipcode_bus_rdat_ready         : std_logic;
+  signal s_read_zipcode_bus_rdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_read_zipcode_bus_rdat_last          : std_logic;
   -----------------------------------------------------------------------------
-  signal s_write_first_name_cmd_tag            : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_write_first_name_cmd_valid          : std_logic;
   signal s_write_first_name_cmd_ready          : std_logic;
   signal s_write_first_name_cmd_firstIdx       : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal s_write_first_name_cmd_lastIdx        : std_logic_vector(INDEX_WIDTH-1 downto 0);
-  signal s_write_first_name_bus_wdat_last      : std_logic;
-  signal s_write_first_name_bus_wdat_strobe    : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-  signal s_write_first_name_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_write_first_name_bus_wdat_ready     : std_logic;
-  signal s_write_first_name_bus_wdat_valid     : std_logic;
-  signal s_write_first_name_bus_wreq_addr      : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_write_first_name_cmd_ctrl           : std_logic_vector(2*BUS_ADDR_WIDTH-1 downto 0);
+  signal s_write_first_name_cmd_tag            : std_logic_vector(TAG_WIDTH-1 downto 0);
   signal s_write_first_name_unlock_valid       : std_logic;
   signal s_write_first_name_unlock_ready       : std_logic;
   signal s_write_first_name_unlock_tag         : std_logic_vector(TAG_WIDTH-1 downto 0);
@@ -288,31 +274,46 @@ architecture Implementation of filter_wrapper is
   signal s_write_first_name_in_ready           : std_logic_vector(1 downto 0);
   signal s_write_first_name_in_last            : std_logic_vector(1 downto 0);
   signal s_write_first_name_in_data            : std_logic_vector(INDEX_WIDTH+8 downto 0);
-  signal s_write_first_name_bus_wreq_len       : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_write_first_name_bus_wreq_ready     : std_logic;
-  signal s_write_first_name_bus_wreq_valid     : std_logic;
   signal s_write_first_name_in_dvalid          : std_logic_vector(1 downto 0);
+  signal s_write_first_name_bus_wreq_valid     : std_logic;
+  signal s_write_first_name_bus_wreq_ready     : std_logic;
+  signal s_write_first_name_bus_wreq_addr      : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_write_first_name_bus_wreq_len       : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal s_write_first_name_bus_wdat_valid     : std_logic;
+  signal s_write_first_name_bus_wdat_ready     : std_logic;
+  signal s_write_first_name_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+  signal s_write_first_name_bus_wdat_strobe    : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_write_first_name_bus_wdat_last      : std_logic;
   -----------------------------------------------------------------------------
   signal s_bsv_rreq_valid                      : std_logic_vector(2 downto 0);
   signal s_bsv_rreq_ready                      : std_logic_vector(2 downto 0);
   signal s_bsv_rreq_addr                       : std_logic_vector(3*BUS_ADDR_WIDTH-1 downto 0);
   signal s_bsv_rreq_len                        : std_logic_vector(3*BUS_LEN_WIDTH-1 downto 0);
   -----------------------------------------------------------------------------
-  signal s_bsv_rdat_ready                      : std_logic_vector(2 downto 0);
-  signal s_bsv_rdat_last                       : std_logic_vector(2 downto 0);
-  signal s_bsv_rdat_data                       : std_logic_vector(3*BUS_DATA_WIDTH-1 downto 0);
   signal s_bsv_rdat_valid                      : std_logic_vector(2 downto 0);
+  signal s_bsv_rdat_ready                      : std_logic_vector(2 downto 0);
+  signal s_bsv_rdat_data                       : std_logic_vector(3*BUS_DATA_WIDTH-1 downto 0);
+  signal s_bsv_rdat_last                       : std_logic_vector(2 downto 0);
   -----------------------------------------------------------------------------
-  signal s_bsv_wreq_len                        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_bsv_wreq_addr                       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal s_bsv_wreq_ready                      : std_logic_vector(0 downto 0);
   signal s_bsv_wreq_valid                      : std_logic_vector(0 downto 0);
+  signal s_bsv_wreq_ready                      : std_logic_vector(0 downto 0);
+  signal s_bsv_wreq_addr                       : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal s_bsv_wreq_len                        : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   -----------------------------------------------------------------------------
+  signal s_bsv_wdat_valid                      : std_logic_vector(0 downto 0);
   signal s_bsv_wdat_ready                      : std_logic_vector(0 downto 0);
   signal s_bsv_wdat_data                       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal s_bsv_wdat_strobe                     : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal s_bsv_wdat_last                       : std_logic_vector(0 downto 0);
-  signal s_bsv_wdat_valid                      : std_logic_vector(0 downto 0);
+  -----------------------------------------------------------------------------
+  signal uctrl_status                          : std_logic_vector(REG_WIDTH-1 downto 0);
+  signal uctrl_control                         : std_logic_vector(REG_WIDTH-1 downto 0);
+  signal uctrl_start                           : std_logic;
+  signal uctrl_stop                            : std_logic;
+  signal uctrl_reset                           : std_logic;
+  signal uctrl_idle                            : std_logic;
+  signal uctrl_busy                            : std_logic;
+  signal uctrl_done                            : std_logic;
 begin
   -- ArrayReader instance generated from Arrow schema field:
   -- read_first_name: string not null
@@ -324,8 +325,7 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH,
-      CMD_TAG_ENABLE                           => true
+      INDEX_WIDTH                              => INDEX_WIDTH
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -366,9 +366,7 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH,
-      CMD_TAG_WIDTH                            => TAG_WIDTH,
-      CMD_TAG_ENABLE                           => true
+      INDEX_WIDTH                              => INDEX_WIDTH
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -409,9 +407,7 @@ begin
       BUS_DATA_WIDTH                           => BUS_DATA_WIDTH,
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
-      INDEX_WIDTH                              => INDEX_WIDTH,
-      CMD_TAG_WIDTH                            => TAG_WIDTH,
-      CMD_TAG_ENABLE                           => true
+      INDEX_WIDTH                              => INDEX_WIDTH
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -453,9 +449,7 @@ begin
       BUS_BURST_STEP_LEN                       => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN                        => BUS_BURST_MAX_LEN,
       INDEX_WIDTH                              => INDEX_WIDTH,
-      CFG                                      => "listprim(8;last_from_length=0)",
-      CMD_TAG_WIDTH                            => TAG_WIDTH,
-      CMD_TAG_ENABLE                           => true
+      CFG                                      => "listprim(8)"
     )
     port map (
       bus_clk                                  => bus_clk,
@@ -674,44 +668,44 @@ begin
 
   s_bsv_rreq_valid(0)                          <= s_read_first_name_bus_rreq_valid;
   s_read_first_name_bus_rreq_ready             <= s_bsv_rreq_ready(0);
-  s_bsv_rreq_len(BUS_LEN_WIDTH-1 downto 0)     <= s_read_first_name_bus_rreq_len;
   s_bsv_rreq_addr(BUS_ADDR_WIDTH-1 downto 0)   <= s_read_first_name_bus_rreq_addr;
+  s_bsv_rreq_len(BUS_LEN_WIDTH-1 downto 0)     <= s_read_first_name_bus_rreq_len;
   -----------------------------------------------------------------------------
   s_bsv_rreq_valid(1)                          <= s_read_last_name_bus_rreq_valid;
   s_read_last_name_bus_rreq_ready              <= s_bsv_rreq_ready(1);
-  s_bsv_rreq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH)<= s_read_last_name_bus_rreq_len;
   s_bsv_rreq_addr(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH)<= s_read_last_name_bus_rreq_addr;
+  s_bsv_rreq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH)<= s_read_last_name_bus_rreq_len;
   -----------------------------------------------------------------------------
   s_bsv_rreq_valid(2)                          <= s_read_zipcode_bus_rreq_valid;
   s_read_zipcode_bus_rreq_ready                <= s_bsv_rreq_ready(2);
-  s_bsv_rreq_len(3*BUS_LEN_WIDTH-1 downto 2*BUS_LEN_WIDTH)<= s_read_zipcode_bus_rreq_len;
   s_bsv_rreq_addr(3*BUS_ADDR_WIDTH-1 downto 2*BUS_ADDR_WIDTH)<= s_read_zipcode_bus_rreq_addr;
+  s_bsv_rreq_len(3*BUS_LEN_WIDTH-1 downto 2*BUS_LEN_WIDTH)<= s_read_zipcode_bus_rreq_len;
   -----------------------------------------------------------------------------
-  s_read_first_name_bus_rdat_data              <= s_bsv_rdat_data(BUS_DATA_WIDTH-1 downto 0);
   s_read_first_name_bus_rdat_valid             <= s_bsv_rdat_valid(0);
   s_bsv_rdat_ready(0)                          <= s_read_first_name_bus_rdat_ready;
+  s_read_first_name_bus_rdat_data              <= s_bsv_rdat_data(BUS_DATA_WIDTH-1 downto 0);
   s_read_first_name_bus_rdat_last              <= s_bsv_rdat_last(0);
   -----------------------------------------------------------------------------
-  s_read_last_name_bus_rdat_data               <= s_bsv_rdat_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH);
   s_read_last_name_bus_rdat_valid              <= s_bsv_rdat_valid(1);
-  s_read_last_name_bus_rdat_last               <= s_bsv_rdat_last(1);
   s_bsv_rdat_ready(1)                          <= s_read_last_name_bus_rdat_ready;
+  s_read_last_name_bus_rdat_data               <= s_bsv_rdat_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH);
+  s_read_last_name_bus_rdat_last               <= s_bsv_rdat_last(1);
   -----------------------------------------------------------------------------
-  s_read_zipcode_bus_rdat_last                 <= s_bsv_rdat_last(2);
+  s_read_zipcode_bus_rdat_valid                <= s_bsv_rdat_valid(2);
   s_bsv_rdat_ready(2)                          <= s_read_zipcode_bus_rdat_ready;
   s_read_zipcode_bus_rdat_data                 <= s_bsv_rdat_data(3*BUS_DATA_WIDTH-1 downto 2*BUS_DATA_WIDTH);
-  s_read_zipcode_bus_rdat_valid                <= s_bsv_rdat_valid(2);
+  s_read_zipcode_bus_rdat_last                 <= s_bsv_rdat_last(2);
   -----------------------------------------------------------------------------
+  s_bsv_wreq_valid(0)                          <= s_write_first_name_bus_wreq_valid;
+  s_write_first_name_bus_wreq_ready            <= s_bsv_wreq_ready(0);
   s_bsv_wreq_addr(BUS_ADDR_WIDTH-1 downto 0)   <= s_write_first_name_bus_wreq_addr;
   s_bsv_wreq_len(BUS_LEN_WIDTH-1 downto 0)     <= s_write_first_name_bus_wreq_len;
-  s_write_first_name_bus_wreq_ready            <= s_bsv_wreq_ready(0);
-  s_bsv_wreq_valid(0)                          <= s_write_first_name_bus_wreq_valid;
   -----------------------------------------------------------------------------
-  s_bsv_wdat_data(BUS_DATA_WIDTH-1 downto 0)   <= s_write_first_name_bus_wdat_data;
-  s_bsv_wdat_last(0)                           <= s_write_first_name_bus_wdat_last;
-  s_write_first_name_bus_wdat_ready            <= s_bsv_wdat_ready(0);
-  s_bsv_wdat_strobe(BUS_STROBE_WIDTH-1 downto 0)<= s_write_first_name_bus_wdat_strobe;
   s_bsv_wdat_valid(0)                          <= s_write_first_name_bus_wdat_valid;
+  s_write_first_name_bus_wdat_ready            <= s_bsv_wdat_ready(0);
+  s_bsv_wdat_data(BUS_DATA_WIDTH-1 downto 0)   <= s_write_first_name_bus_wdat_data;
+  s_bsv_wdat_strobe(BUS_STROBE_WIDTH-1 downto 0)<= s_write_first_name_bus_wdat_strobe;
+  s_bsv_wdat_last(0)                           <= s_write_first_name_bus_wdat_last;
   -----------------------------------------------------------------------------
   regs_out_en(0)                               <='0';
   regs_out_en(1)                               <='1';

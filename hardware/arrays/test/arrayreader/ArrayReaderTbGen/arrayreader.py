@@ -968,13 +968,13 @@ entity {camelprefix}ArrayReader is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -1036,10 +1036,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1084,10 +1084,10 @@ component {camelprefix}ArrayReader is
     CMD_TAG_WIDTH               : natural := 1
   );
   port (
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     @cmd_ports
 
@@ -1123,10 +1123,10 @@ uut_template_with_unlock = """
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => {acc}_clk,
-      acc_reset                 => {acc}_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => {kcd}_clk,
+      kcd_reset                 => {kcd}_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1170,10 +1170,10 @@ uut_template_without_unlock = """
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => {acc}_clk,
-      acc_reset                 => {acc}_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => {kcd}_clk,
+      kcd_reset                 => {kcd}_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1201,7 +1201,7 @@ uut_template_without_unlock = """
 class ArrayReader(object):
     """Represents a ArrayReader."""
 
-    def __init__(self, field, instance_prefix=None, signal_prefix="", bus_clk_prefix="", main_clk_prefix="", **opts):
+    def __init__(self, field, instance_prefix=None, signal_prefix="", bcd_clk_prefix="", main_clk_prefix="", **opts):
         """Generates a ArrayReader for the given Arrow field. prefix
         optionally specifies a name for the ArrayReader, which will be
         prefixed to all signals and instance names in the generated code."""
@@ -1225,9 +1225,9 @@ class ArrayReader(object):
             signal_prefix += "_"
         self.signal_prefix = signal_prefix
 
-        if bus_clk_prefix and not bus_clk_prefix[-1] == "_":
-            bus_clk_prefix += "_"
-        self.bus_clk_prefix = bus_clk_prefix
+        if bcd_clk_prefix and not bcd_clk_prefix[-1] == "_":
+            bcd_clk_prefix += "_"
+        self.bcd_clk_prefix = bcd_clk_prefix
 
         if main_clk_prefix and not main_clk_prefix[-1] == "_":
             main_clk_prefix += "_"
@@ -1329,8 +1329,8 @@ class ArrayReader(object):
         random_bus_rdat_timing = get_param("random_bus_rdat_timing", random.choice([True, False]))
 
         # Generate the testbench wrapper object.
-        acc = "acc" if multi_clk else "bus"
-        tb = Testbench(self._camel_prefix + "ArrayReader_tb", {"bus", acc})
+        kcd = "kcd" if multi_clk else "bcd"
+        tb = Testbench(self._camel_prefix + "ArrayReader_tb", {"bcd", kcd})
 
         # Set constants.
         tb.set_const("BUS_ADDR_WIDTH",      addr_width)
@@ -1343,12 +1343,12 @@ class ArrayReader(object):
         tb.set_const("CMD_TAG_WIDTH",       max(1, tag_width))
 
         # Add the streams.
-        tb.append_input_stream(self.cmd_stream, "bus")
+        tb.append_input_stream(self.cmd_stream, "bcd")
         if tag_width > 0:
-            tb.append_output_stream(self.unlock_stream, "bus")
-        tb.append_output_stream(self.bus_rreq_stream, "bus")
-        tb.append_input_stream(self.bus_rdat_stream, "bus")
-        tb.append_output_stream(self.out_stream, acc)
+            tb.append_output_stream(self.unlock_stream, "bcd")
+        tb.append_output_stream(self.bus_rreq_stream, "bcd")
+        tb.append_input_stream(self.bus_rdat_stream, "bcd")
+        tb.append_output_stream(self.out_stream, kcd)
 
         # Generate a random set of commands.
         commands = []
@@ -1380,7 +1380,7 @@ class ArrayReader(object):
 
         # Generate a memory model.
         memory = Memory()
-        tb.append_memory(memory, self.bus_rreq_stream, self.bus_rdat_stream, "bus",
+        tb.append_memory(memory, self.bus_rreq_stream, self.bus_rdat_stream, "bcd",
                          random_bus_rreq_timing, random_bus_rdat_timing)
 
         # Generate the test vectors for the readers.
@@ -1390,7 +1390,7 @@ class ArrayReader(object):
 
         # Append unit under test.
         template = uut_template_with_unlock if tag_width > 0 else uut_template_without_unlock
-        tb.append_uut(template.format(cfg=self.cfg(), acc=acc))
+        tb.append_uut(template.format(cfg=self.cfg(), kcd=kcd))
 
         # Add documentation.
         doc = []

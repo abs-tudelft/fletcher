@@ -55,9 +55,9 @@ cdef class Context():
             raise ValueError("mode argument can be only 'read' or 'write'")
 
         if not field:
-            check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array), queue_mode, cache))
+            check_fletcher_status(self.context.get().QueueArray(pyarrow_unwrap_array(array), queue_mode, cache))
         else:
-            check_fletcher_status(self.context.get().queueArray(pyarrow_unwrap_array(array),
+            check_fletcher_status(self.context.get().QueueArray(pyarrow_unwrap_array(array),
                                                                 pyarrow_unwrap_field(field),
                                                                 queue_mode,
                                                                 cache))
@@ -70,7 +70,7 @@ cdef class Context():
             cache (bool): Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
 
         """
-        check_fletcher_status(self.context.get().queueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
+        check_fletcher_status(self.context.get().QueueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
 
     def get_queue_size(self):
         """Obtain the size (in bytes) of all buffers currently enqueued.
@@ -79,7 +79,7 @@ cdef class Context():
             queue_size
 
         """
-        return self.context.get().getQueueSize()
+        return self.context.get().GetQueueSize()
 
     def num_buffers(self):
         """Return the number of buffers in this context.
@@ -101,7 +101,7 @@ cdef class Context():
 
         """
 
-        return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address
+        return self.context.get().device_arrays_[array_index].get().buffers[buffer_index].device_address
 
     def enable(self):
-        check_fletcher_status(self.context.get().enable())
+        check_fletcher_status(self.context.get().Enable())

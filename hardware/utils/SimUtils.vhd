@@ -179,6 +179,9 @@ package SimUtils is
   
   -- Short-hand for integer'image(to_integer(u))
   function ii(u : unsigned) return string;
+  
+  -- Short-hand for integer'image(to_integer(s))
+  function ii(s : signed) return string;
 
 end SimUtils;
 
@@ -731,6 +734,11 @@ package body SimUtils is
   function ii(u : unsigned) return string is
   begin
     return integer'image(to_integer(u));
+  end function;
+  
+    function ii(s : signed) return string is
+  begin
+    return integer'image(to_integer(s));
   end function;
 
 end SimUtils;

@@ -75,13 +75,13 @@ entity ArrayReaderArb is
     ---------------------------------------------------------------------------
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- bus and control logic side of the BufferReader.
-    bus_clk                     : in  std_logic;
-    bus_reset                   : in  std_logic;
+    bcd_clk                     : in  std_logic;
+    bcd_reset                   : in  std_logic;
 
     -- Rising-edge sensitive clock and active-high synchronous reset for the
     -- accelerator side.
-    acc_clk                     : in  std_logic;
-    acc_reset                   : in  std_logic;
+    kcd_clk                     : in  std_logic;
+    kcd_reset                   : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- Command streams
@@ -203,8 +203,8 @@ begin
         DATA_WIDTH              => CSI(CSI'high)
       )
       port map (
-        clk                     => bus_clk,
-        reset                   => bus_reset,
+        clk                     => bcd_clk,
+        reset                   => bcd_reset,
 
         in_valid                => cmd_valid,
         in_ready                => cmd_ready,
@@ -232,8 +232,8 @@ begin
         DATA_WIDTH                => CMD_TAG_WIDTH
       )
       port map (
-        clk                       => bus_clk,
-        reset                     => bus_reset,
+        clk                       => bcd_clk,
+        reset                     => bcd_reset,
 
         in_valid                  => a_unlock_valid,
         in_ready                  => a_unlock_ready,
@@ -274,8 +274,8 @@ begin
         SLV_DAT_SLICES          => parse_param(CFG, "resp_out_slices", true)
       )
       port map (
-        bus_clk                 => bus_clk,
-        bus_reset               => bus_reset,
+        bcd_clk                 => bcd_clk,
+        bcd_reset               => bcd_reset,
 
         mst_rreq_valid          => bus_rreq_valid(0),
         mst_rreq_ready          => bus_rreq_ready(0),
@@ -335,8 +335,8 @@ begin
         DATA_WIDTH              => A_USER_WIDTHS(i) + 2
       )
       port map (
-        clk                     => acc_clk,
-        reset                   => acc_reset,
+        clk                     => kcd_clk,
+        reset                   => kcd_reset,
 
         in_valid                => a_out_valid(i),
         in_ready                => a_out_ready(i),
@@ -368,10 +368,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmd_valid                 => a_cmd_valid,
       cmd_ready                 => a_cmd_ready,

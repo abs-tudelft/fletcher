@@ -51,8 +51,8 @@ package Interconnect is
       SLV_DAT_SLICES            : boolean := true
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
 
       mst_rreq_valid            : out std_logic;
       mst_rreq_ready            : in  std_logic;
@@ -90,8 +90,8 @@ package Interconnect is
       SLV_DAT_SLICES            : boolean := true
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
       
       bsv_wreq_valid            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
       bsv_wreq_ready            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
@@ -213,8 +213,8 @@ package Interconnect is
       SLV_DAT_SLICES            : boolean
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
 
       mst_rreq_valid            : out std_logic;
       mst_rreq_ready            : in  std_logic;
@@ -389,8 +389,8 @@ package Interconnect is
       SLV_DAT_SLICES            : boolean
     );
     port (
-      bus_clk                   : in  std_logic;
-      bus_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset                 : in  std_logic;
 
       mst_wreq_valid            : out std_logic;
       mst_wreq_ready            : in  std_logic;

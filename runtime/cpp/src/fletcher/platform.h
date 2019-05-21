@@ -20,7 +20,7 @@
 #include <string>
 #include <cassert>
 
-#include "fletcher/common/status.h"
+#include "fletcher/status.h"
 
 namespace fletcher {
 
@@ -49,13 +49,13 @@ class Platform {
   static Status Make(std::shared_ptr<Platform> *platform);
 
   /// @brief Return the name of the platform
-  std::string getName();
+  std::string name();
 
   /// @brief Print the contents of the MMIO registers within some range
-  Status printMMIO(uint64_t start, uint64_t stop, bool quiet=false);
+  Status MmioToString(std::string* str, uint64_t start, uint64_t stop, bool quiet = false);
 
   /// @brief Initialize the platform
-  inline Status init() { return Status(platformInit(init_data)); }
+  inline Status Init() { return Status(platformInit(init_data)); }
 
   /**
    * @brief Write to MMIO register
@@ -63,7 +63,7 @@ class Platform {
    * @param value       Value to write
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  inline Status writeMMIO(uint64_t offset, uint32_t value) { return Status(platformWriteMMIO(offset, value)); }
+  inline Status WriteMMIO(uint64_t offset, uint32_t value) { return Status(platformWriteMMIO(offset, value)); }
 
   /**
   * @brief Read from MMIO register
@@ -71,7 +71,7 @@ class Platform {
   * @param value       Value to read to
   * @return            Status::OK() if successful, Status::ERROR() otherwise.
   */
-  inline Status readMMIO(uint64_t offset, uint32_t *value) { return Status(platformReadMMIO(offset, value)); }
+  inline Status ReadMMIO(uint64_t offset, uint32_t *value) { return Status(platformReadMMIO(offset, value)); }
 
   /**
   * @brief Read 64 bit value from two successive 32 bit MMIO registers.
@@ -79,7 +79,7 @@ class Platform {
   * @param value       Value to read to
   * @return            Status::OK() if successful, Status::ERROR() otherwise.
   */
-  Status readMMIO64(uint64_t offset, uint64_t *value);
+  Status ReadMMIO64(uint64_t offset, uint64_t *value);
 
   /**
    * @brief Allocate a region of memory on the device
@@ -87,7 +87,7 @@ class Platform {
    * @param size            The amount of bytes to allocate
    * @return                Status::OK() if successful, Status::ERROR() otherwise.
    */
-  inline Status deviceMalloc(da_t *device_address, size_t size) {
+  inline Status DeviceMalloc(da_t *device_address, size_t size) {
     return Status(platformDeviceMalloc(device_address, size));
   }
 
@@ -96,7 +96,7 @@ class Platform {
    * @param device_address  The device address of the memory region.
    * @return                Status::OK() if successful, Status::ERROR() otherwise.
    */
-  inline Status deviceFree(da_t device_address) { return Status(platformDeviceFree(device_address)); }
+  inline Status DeviceFree(da_t device_address) { return Status(platformDeviceFree(device_address)); }
 
   /**
    * @brief Copy a memory region from host memory to device memory
@@ -105,7 +105,7 @@ class Platform {
    * @param size                The amount of bytes
    * @return                    Status::OK() if successful, Status::ERROR() otherwise.
    */
-  inline Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size) {
+  inline Status CopyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size) {
     return Status(platformCopyHostToDevice(host_source, device_destination, size));
   }
 
@@ -116,7 +116,7 @@ class Platform {
    * @param size                The amount of bytes
    * @return                    Status::OK() if successful, Status::ERROR() otherwise
    */
-  inline Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size) {
+  inline Status CopyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size) {
     return Status(platformCopyDeviceToHost(device_source, host_destination, size));
   }
 
@@ -128,7 +128,7 @@ class Platform {
    * @param alloced             Whether or not an allocation was made in device memory
    * @return                    Status::OK() if successful, Status::ERROR() otherwise
    */
-  inline Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) {
+  inline Status PrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) {
     assert(platformPrepareHostBuffer != nullptr);
     int ll_alloced = 0;
     auto stat = platformPrepareHostBuffer(host_source, device_destination, size, &ll_alloced);
@@ -143,13 +143,13 @@ class Platform {
   * @param size                Amount of bytes
   * @return                    Status::OK() if successful, Status::ERROR() otherwise
   */
-  inline Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
+  inline Status CacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
     assert(platformCacheHostBuffer != nullptr);
     return Status(platformCacheHostBuffer(host_source, device_destination, size));
   }
 
   /// @brief Terminate the platform
-  inline Status terminate() {
+  inline Status Terminate() {
     assert(platformTerminate != nullptr);
     terminated = true;
     return Status(platformTerminate(terminate_data));
@@ -177,7 +177,7 @@ class Platform {
   fstatus_t (*platformTerminate)(void *arg) = nullptr;
 
   /// @brief Attempt to link all functions using a handle obtained by dlopen
-  Status link(void *handle, bool quiet = true);
+  Status Link(void *handle, bool quiet = true);
 
   bool terminated = false;
 

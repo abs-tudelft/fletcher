@@ -28,12 +28,26 @@ ext_modules = cythonize(Extension(
 ))
 
 for ext in ext_modules:
+    # Numpy
     ext.include_dirs.append(np.get_include())
-    ext.include_dirs.append(pa.get_include())
+
+    # PyArrow
     ext.libraries.extend(pa.get_libraries())
+    ext.include_dirs.append(pa.get_include())
     ext.library_dirs.extend(pa.get_library_dirs())
     ext.runtime_library_dirs.extend(pa.get_library_dirs())
+
+    # Common library
+    ext.include_dirs.append("../../common/c/src")
+    ext.include_dirs.append("../../common/cpp/src")
+
+    # C++ Run-time
     ext.libraries.extend(["fletcher"])
+    ext.include_dirs.append("../cpp/src")
+    # TODO(johanpel): Some packaging wizard should fix this
+    ext.library_dirs.extend(["../cpp/python-build"])
+
+    # ABI trouble
     ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
 
 this_directory = os.path.abspath(os.path.dirname(__file__))

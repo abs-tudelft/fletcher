@@ -28,10 +28,10 @@ package Wrapper is
       REG_WIDTH                 : natural := 32
     );
     port(
-      acc_clk                   : in std_logic;
-      acc_reset                 : in std_logic;
-      bus_clk                   : in std_logic;
-      bus_reset                 : in std_logic;
+      kcd_clk                   : in std_logic;
+      kcd_reset                 : in std_logic;
+      bcd_clk                   : in std_logic;
+      bcd_reset                 : in std_logic;
       status                    : out std_logic_vector(REG_WIDTH-1 downto 0);
       control                   : in std_logic_vector(REG_WIDTH-1 downto 0);
       start                     : out std_logic;

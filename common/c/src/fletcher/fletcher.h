@@ -14,6 +14,10 @@
 
 #pragma once
 
+/**
+ * This file contains the Fletcher run-time global C header.
+ */
+
 #include <stdint.h>
 
 #define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
@@ -43,19 +47,19 @@ typedef union {
 /// Device nullptr
 #define D_NULLPTR (da_t) 0x0
 
-/// Hardware defaults
+/// Hardware default registers
 #define FLETCHER_REG_CONTROL        0
 #define FLETCHER_REG_STATUS         1
 #define FLETCHER_REG_RETURN0        2
 #define FLETCHER_REG_RETURN1        3
-#define FLETCHER_REG_FIRSTIDX       4
-#define FLETCHER_REG_LASTIDX        5
-#define FLETCHER_REG_BUFFER_OFFSET  6
+
+/// Offset for schema derived registers
+#define FLETCHER_REG_SCHEMA         4
 
 #define FLETCHER_REG_CONTROL_START  0x0
 #define FLETCHER_REG_CONTROL_STOP   0x1
 #define FLETCHER_REG_CONTROL_RESET  0x2
 
-#define FLETCHER_REG_STATUS_IDLE    0
-#define FLETCHER_REG_STATUS_BUSY    1
-#define FLETCHER_REG_STATUS_DONE    2
+#define FLETCHER_REG_STATUS_IDLE    0x0
+#define FLETCHER_REG_STATUS_BUSY    0x1
+#define FLETCHER_REG_STATUS_DONE    0x2

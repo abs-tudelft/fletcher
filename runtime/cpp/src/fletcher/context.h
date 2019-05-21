@@ -18,16 +18,16 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-
 #include <arrow/array.h>
 #include <arrow/record_batch.h>
+#include <fletcher/common.h>
 
-#include "fletcher/common/status.h"
-#include "fletcher/common/arrow-utils.h"
-
-#include "./platform.h"
+#include "fletcher/platform.h"
+#include "fletcher/status.h"
 
 namespace fletcher {
+
+using fletcher::Mode;
 
 /**
  * A buffer on the device
@@ -47,7 +47,7 @@ struct DeviceBuffer {
  */
 struct DeviceArray {
   typedef enum { PREPARE, CACHE } memory_t;
-  DeviceArray(const std::shared_ptr<arrow::Array> &array,
+  DeviceArray(std::shared_ptr<arrow::Array> array,
               const std::shared_ptr<arrow::Field> &field,
               Mode access_mode,
               memory_t memory);
@@ -65,14 +65,17 @@ struct DeviceArray {
 class Context {
  public:
 
-  explicit Context(std::shared_ptr<Platform> platform) : platform(std::move(platform)) {}
+  explicit Context(std::shared_ptr<Platform> platform) : platform_(std::move(platform)) {}
   ~Context();
 
   /// The platform this context is running on.
-  std::shared_ptr<Platform> platform;
+  std::shared_ptr<Platform> platform_;
+
+  /// The [arrow::RecordBatch]es that have been added to the context.
+  std::vector<std::shared_ptr<arrow::RecordBatch>> recordbatches_;
 
   /// The [arrow::Array]s that have been added to the context.
-  std::vector<std::shared_ptr<DeviceArray>> device_arrays;
+  std::vector<std::shared_ptr<DeviceArray>> device_arrays_;
 
   /**
    * @brief Create a new context on a specific platform.
@@ -88,15 +91,15 @@ class Context {
    * This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
    * contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies
    * between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the
-   * field argument.
+   * field argument, supplying the field from the schema that was used for hardware generation.
    *
    * @param array       The arrow::Array to queue
    * @param access_mode Whether to read or write from/to this array.
    * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  [[deprecated]] Status queueArray(const std::shared_ptr<arrow::Array> &array, Mode access_mode, bool cache = false) {
-    return queueArray(array, nullptr, access_mode, cache);
+  [[deprecated]] Status QueueArray(const std::shared_ptr<arrow::Array> &array, Mode access_mode, bool cache = false) {
+    return QueueArray(array, nullptr, access_mode, cache);
   }
 
   /**
@@ -112,7 +115,7 @@ class Context {
    * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  Status queueArray(const std::shared_ptr<arrow::Array> &array,
+  Status QueueArray(const std::shared_ptr<arrow::Array> &array,
                     const std::shared_ptr<arrow::Field> &field,
                     Mode access_mode,
                     bool cache = false);
@@ -127,13 +130,13 @@ class Context {
    * @param cache         Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
    * @return              Status::OK() if successful, Status::ERROR() otherwise.
    */
-  Status queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache = false);
+  Status QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache = false);
 
   /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
-  size_t getQueueSize();
+  size_t GetQueueSize();
 
   /// @brief Enable the usage of the enqueued buffers by the device
-  Status enable();
+  Status Enable();
 
   /// @brief Return the number of buffers in this context.
   uint64_t num_buffers();
@@ -152,7 +155,7 @@ class Context {
  * @param field         Potential schema field that corresponds to this array.
  * @return              Status::OK() if successful, Status::ERROR() otherwise.
  */
-  Status prepareArray(const std::shared_ptr<arrow::Array> &array,
+  Status PrepareArray(const std::shared_ptr<arrow::Array> &array,
                       Mode access_mode,
                       const std::shared_ptr<arrow::Field> &field = nullptr);
 
@@ -166,7 +169,7 @@ class Context {
    * @param field       Potential schema field that corresponds to this array.
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  Status cacheArray(const std::shared_ptr<arrow::Array> &array,
+  Status CacheArray(const std::shared_ptr<arrow::Array> &array,
                     Mode access_mode,
                     const std::shared_ptr<arrow::Field> &field = nullptr);
 };

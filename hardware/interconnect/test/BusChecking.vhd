@@ -34,8 +34,8 @@ package BusChecking is
       BUS_BURST_BOUNDARY        : natural
     );
     port (
-      bus_clk                   : in std_logic;
-      bus_reset                 : in std_logic;
+      bcd_clk                   : in std_logic;
+      bcd_reset                 : in std_logic;
       bus_rreq_valid            : in std_logic;
       bus_rreq_ready            : in std_logic;
       bus_rreq_addr             : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);

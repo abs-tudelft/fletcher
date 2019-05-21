@@ -1,25 +1,21 @@
-# Fletcher Wrapper Generator
-This tool generates a VHDL wrapper for an Arrow Schema. 
-This wrapper contains the following:
+# Fletchgen: The Fletcher Design Generator
+Fletchgen is a command-line utility that generates the upper layers of a hardware design, including simulation and 
+platform-specific top-levels, based on Arrow Schemas and Recordbatches. 
 
-* A ColumnReader/Writer instance for each Arrow Field of a Schema.
-* Bus arbiters for reading and writing to/from the ColumnReader/Writers.
-* A state machine to support the start(), stop(), reset(), etc. commands of 
-  the run-time library.
-* The Hardware-Accelerated Function (HAF). This component is to be implemented 
-  by the user. Only a template is generated.
+Currently, the overall structure of a Fletcher hardware design is as follows:
 
-# Requirements
-It should not be a surprise that we require Apache Arrow. We use 
-Boost.Program_options to parse command line options. You also need a C++14 
-compliant compiler, such as Clang.
+* For each Arrow Field, an ArrayReader/Writer is instantiated.
+* For each Arrow Schema, a RecordBatch/Writer is generated and wrapper around all ArrayReader/Writer instances.
+* For the combination of all Arrow Schemas, a Kernel is generated.
+* All RecordBatch/Writers and the Kernel is wrapped by a Mantle. The Mantle also instantiate the required 
+  memory bus interconnection logic.
 
-* [C++11 compliant compiler](https://clang.llvm.org/)
-* [Apache Arrow 0.11+](https://github.com/apache/arrow)
-* [libboost 1.58+](https://www.boost.org/)
+# Prerequisites
+* [C++17 compliant compiler](https://clang.llvm.org/)
+* [Apache Arrow 0.13+](https://github.com/apache/arrow)
+* [CMake 3.10+](https://cmake.org/)
 
 # Build
-Currently you can make a simple debug build as follows (on Ubuntu):
 ```console
 cd /path/to/fletcher/codegen/fletchgen
 mkdir debug
@@ -101,38 +97,28 @@ This produces the wrapper on stdout. If you want to save it in a file:
 `fletchgen /path/to/myschema.fbs > wrapper.vhd`
 
 # Supported/required metadata for Arrow Schemas
-Settings of your platform are currently conveyed through the metadata of an 
-Arrow schema.
+Fletchgen derives how to use an Arrow Schema from attached key-value metadata that is stored in Arrow Schemas as 
+strings. You can use this to, for example, prevent the generation of hardware structures for fields that you're not 
+going to use in your kernel implementation.
 
 ## Schema metadata:
-### Access mode
-* `"fletcher_mode" : "read" | "write"` - REQUIRED. Determines whether a 
-RecordBatch of this schema will be read or written.
-
-### Host memory interface
-* `"fletcher_bus_addr_width" : 1, 2, 4, ... (any power of two natural), default=64` - Address port width.
-* `"fletcher_bus_data_width" : 1, 2, 4, ... (any power of two natural), default=512` - Data port width.
-* `"fletcher_bus_len_width" : 1, 2, 4, ... (any power of two natural), default=8` - Burst length port width.
-* `"fletcher_bus_burst_step : 1, 2, 4, ... (any power of two natural), default=1` - Minimum burst length.
-* `"fletcher_bus_burst_max : 1, 2, 4, ... (any power of two natural), default=32` - Maximum burst length.
-
-### Host MMIO interface
-* `"fletcher_reg_width : 1, 2, 4, ... (any power of two natural), default=32` - Register width of MMIO registers.
-
-### Arrow specifics
-* `"fletcher_index_width : 1, 2, 4, ... (any power of two natural), default=32` - Width of Arrow indices. You probably don't want to touch this.
-
-### Hardware accelerated function settings
-* `"fletcher_tag_width : 1, 2, 3, ... (any natural >= 1), default = 1` - Tag width of commands for command and unlock streams.
-* `"fletcher_num_user_regs : 1, 2, 3, ... (any natural), default = 0` - Number of registers for the user.
+### Access mode (required)
+| Key                    | Possible values     | Default | Description                                                |
+|------------------------|---------------------|---------|------------------------------------------------------------|
+| fletcher_mode          | read / write        | read    | Determines whether a RecordBatch of this schema will be read or written by the kernel. |
 
 ## Field metadata:
-* `"fletcher_ignore" : "true" | "false"` - Whether the field must ignored in interface generation.
-* `"fletcher_epc" : "0" | "1" | "2" | "4" | ...` - The number of elements per clock cycle to deliver of this field. Must be power of 2. Only works on lists of primitives or primitive fields.
+
+| Key                    | Possible values | Default | Description                                  |
+|------------------------|-----------------|---------|----------------------------------------------|
+| fletcher_ignore        | true / false    | false   | Whether to ignore a specific Schema field, preventing generation of hardware to read/write from/to it. |
+| fletcher_offsets_width | 1 / 2 / 4 / ... | 32      | For `List<>` fields only. Width of offsets.  |
+| fletcher_epc           | 1 / 2 / 4 / ... | 1       | Number of elements per cycle for this field. For `List<X>` fields where X is a fixed-width type, this applies to the `values` stream. |
+| fletcher_lepc          | 1 / 2 / 4 / ... | 1       | For `List<>` fields only. Number of elements per cycle on the `length` stream. |
+| fletcher_tag_width     | 1 / 2 / 3 / ... | 1       | Tag width of command and unlock streams for the field. |
 
 # Further reading
 
-You can generate a simulation top level and provide a Flatbuffer file with a 
-RecordBatch to the simulation environment. You can use this to debug your 
-designs in simulation, independent of an FPGA platform specific simulation 
-environment. [An example is shown here.](../../hardware/test/fletchgen/stringread).
+You can generate a simulation top level and provide a Flatbuffer file with a RecordBatch to the simulation environment. 
+You can use this to debug your designs in simulation, independent of an FPGA platform specific simulation environment. 
+[An example is shown here.](test/hardware/stringread).

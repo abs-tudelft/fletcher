@@ -25,7 +25,8 @@ use work.Buffers.all;
 use work.SimUtils.all;
 
 -------------------------------------------------------------------------------
--- This testbench is used to check the functionality of the BufferWriter.
+-- This testbench is used to verify the functionality of the BufferWriter.
+-------------------------------------------------------------------------------
 entity BufferWriter_tb is
   generic (
     TEST_NAME                   : string   := "";
@@ -73,10 +74,10 @@ architecture tb of BufferWriter_tb is
   signal write_done             : boolean := false;
   signal sim_done               : boolean := false;
 
-  signal bus_clk                : std_logic := '1';
-  signal bus_reset              : std_logic := '1';
-  signal acc_clk                : std_logic := '1';
-  signal acc_reset              : std_logic := '1';
+  signal bcd_clk                : std_logic := '1';
+  signal bcd_reset              : std_logic := '1';
+  signal kcd_clk                : std_logic := '1';
+  signal kcd_reset              : std_logic := '1';
 
   signal cmdIn_valid            : std_logic;
   signal cmdIn_ready            : std_logic;
@@ -131,7 +132,7 @@ architecture tb of BufferWriter_tb is
 
   procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is
   begin
-    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)) & " =?= " & ii(int(b)));
+    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: W[" & ii(int(a)) & "] =?= E[" & ii(int(b)) & "]");
   end print_elem_check;
 
   procedure generate_command(
@@ -170,14 +171,14 @@ begin
   clk_proc: process is
   begin
     if not sim_done then
-      bus_clk                   <= '1';
-      acc_clk                   <= '1';
+      bcd_clk                   <= '1';
+      kcd_clk                   <= '1';
       wait for 2 ns;
-      bus_clk                   <= '0';
-      acc_clk                   <= '0';
+      bcd_clk                   <= '0';
+      kcd_clk                   <= '0';
       wait for 2 ns;
       -- Count number of cycles.
-      if acc_reset = '0' then
+      if kcd_reset = '0' then
         cycle                   <= cycle + 1;
       end if;
     else
@@ -188,12 +189,12 @@ begin
   -- Reset
   reset_proc: process is
   begin
-    bus_reset                   <= '1';
-    acc_reset                   <= '1';
+    bcd_reset                   <= '1';
+    kcd_reset                   <= '1';
     wait for 8 ns;
-    wait until rising_edge(acc_clk);
-    bus_reset                   <= '0';
-    acc_reset                   <= '0';
+    wait until rising_edge(kcd_clk);
+    bcd_reset                   <= '0';
+    kcd_reset                   <= '0';
     wait;
   end process;
 
@@ -218,7 +219,7 @@ begin
     cmdIn_tag                   <= (others => '0');
 
     -- Wait for reset
-    wait until rising_edge(acc_clk) and (acc_reset /= '1');
+    wait until rising_edge(kcd_clk) and (kcd_reset /= '1');
 
     for I in 0 to NUM_COMMANDS-1 loop
       -- Determine the first index and last index
@@ -235,7 +236,7 @@ begin
       cmdIn_valid               <= '1';
 
       -- Wait until it's accepted and invalidate
-      wait until rising_edge(acc_clk) and (cmdIn_ready = '1');
+      wait until rising_edge(kcd_clk) and (cmdIn_ready = '1');
       cmdIn_valid               <= '0';
       commands_accepted         := commands_accepted + 1;
 
@@ -248,7 +249,7 @@ begin
         if VERBOSE then
           dumpStdOut(TEST_NAME & " :" & "Waiting for unlock.");
         end if;
-        wait until rising_edge(acc_clk) and (unlock_ready = '1' and unlock_valid = '1');
+        wait until rising_edge(kcd_clk) and (unlock_ready = '1' and unlock_valid = '1');
       end if;
 
       if command_done then
@@ -294,6 +295,9 @@ begin
 
     in_valid                    <= '0';
     in_last                     <= '0';
+    
+    -- Wait for reset
+    wait until rising_edge(kcd_clk) and (kcd_reset /= '1');
 
     loop
       in_valid                  <= '0';
@@ -306,7 +310,7 @@ begin
 
       current_index             := first_index;
 
-      -- Index buffers automatically get a zero padded
+      -- Offsets buffers automatically get a zero padded
       if IS_OFFSETS_BUFFER then
         current_index           := current_index + 1;
       end if;
@@ -387,7 +391,7 @@ begin
         in_valid                <= '1';
 
         -- Wait until handshake
-        wait until rising_edge(acc_clk) and (in_ready = '1');
+        wait until rising_edge(kcd_clk) and (in_ready = '1');
 
         -- Exit when last element streamed in
         if in_last = '1' then
@@ -417,7 +421,7 @@ begin
   begin
     loop
       -- Wait for unlock handshake
-      wait until rising_edge(acc_clk) and (unlock_valid = '1' and unlock_ready = '1');
+      wait until rising_edge(kcd_clk) and (unlock_valid = '1' and unlock_ready = '1');
 
       expected_tag              := slv(to_unsigned(unlocked,CMD_TAG_WIDTH));
 
@@ -469,7 +473,7 @@ begin
         exit;
       end if;
       -- Wait for a bus request
-      wait until rising_edge(acc_clk) and (bus_wreq_ready = '1' and bus_wreq_valid = '1');
+      wait until rising_edge(kcd_clk) and (bus_wreq_ready = '1' and bus_wreq_valid = '1');
       bus_wreq_ready             <= '0';
       bus_wdat_ready             <= '1';
 
@@ -483,7 +487,7 @@ begin
       -- Accept the number of words requested by the burst length
       for I in 0 to int(len)-1 loop
         -- Wait until master writes a burst beat
-        wait until rising_edge(acc_clk) and (bus_wdat_valid = '1');
+        wait until rising_edge(kcd_clk) and (bus_wdat_valid = '1');
 
         transfers               := transfers + 1;
 
@@ -555,11 +559,11 @@ begin
     variable transfers : unsigned(63 downto 0) := (others => '0');
   begin
     -- Wait for reset
-    wait until rising_edge(acc_clk) and acc_reset = '0';
+    wait until rising_edge(kcd_clk) and kcd_reset = '0';
 
     -- Start counting
     loop
-      wait until rising_edge(acc_clk) or sim_done;
+      wait until rising_edge(kcd_clk) or sim_done;
 
       if bus_wdat_valid = '1' and bus_wdat_ready = '1' then
         transfers               := transfers + 1;
@@ -599,10 +603,10 @@ begin
       CMD_TAG_WIDTH             => CMD_TAG_WIDTH
     )
     port map (
-      bus_clk                   => bus_clk,
-      bus_reset                 => bus_reset,
-      acc_clk                   => acc_clk,
-      acc_reset                 => acc_reset,
+      bcd_clk                   => bcd_clk,
+      bcd_reset                 => bcd_reset,
+      kcd_clk                   => kcd_clk,
+      kcd_reset                 => kcd_reset,
 
       cmdIn_valid               => cmdIn_valid,
       cmdIn_ready               => cmdIn_ready,

@@ -101,6 +101,7 @@ entity BufferWriterPrePadder is
     in_valid                    : in  std_logic;
     in_ready                    : out std_logic;
     in_data                     : in  std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
+    in_dvalid                   : in  std_logic;
     in_count                    : in  std_logic_vector(ELEMENT_COUNT_WIDTH-1 downto 0);
     in_last                     : in  std_logic;
 

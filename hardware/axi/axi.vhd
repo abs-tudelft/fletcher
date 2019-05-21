@@ -13,11 +13,11 @@
 -- limitations under the License.
 
 library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.numeric_std.all;
-  use ieee.std_logic_misc.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_misc.all;
 
-package AXI is
+package axi is
 
   component axi_top is
     generic (    
@@ -27,10 +27,10 @@ package AXI is
       SLV_BUS_DATA_WIDTH        : natural
     );
     port (
-      acc_clk                   : in  std_logic;
-      acc_reset                 : in  std_logic;
-      bus_clk                   : in  std_logic;
-      bus_reset_n               : in  std_logic;
+      kcd_clk                   : in  std_logic;
+      kcd_reset                 : in  std_logic;
+      bcd_clk                   : in  std_logic;
+      bcd_reset_n               : in  std_logic;
       m_axi_araddr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       m_axi_arlen               : out std_logic_vector(7 downto 0);
       m_axi_arvalid             : out std_logic;
@@ -150,11 +150,11 @@ package AXI is
 
   component axi_mmio is
     generic (
-      BUS_ADDR_WIDTH            : natural;
-      BUS_DATA_WIDTH            : natural;   
+      BUS_ADDR_WIDTH            : natural := 32;
+      BUS_DATA_WIDTH            : natural := 32;   
       NUM_REGS                  : natural;
-      REG_CONFIG                : string := "";
-      REG_RESET                 : string := "";
+      REG_CONFIG                : string  := "";
+      REG_RESET                 : string  := "";
       SLV_R_SLICE_DEPTH         : natural := 2;
       SLV_W_SLICE_DEPTH         : natural := 2
     );
