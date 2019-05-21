@@ -455,7 +455,6 @@ package Arrays is
       bcd_reset                 : in  std_logic;
       kcd_clk                   : in  std_logic;
       kcd_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -498,7 +497,6 @@ package Arrays is
       bcd_reset                 : in  std_logic;
       kcd_clk                   : in  std_logic;
       kcd_reset                 : in  std_logic;
-
       cmd_valid                 : in  std_logic;
       cmd_ready                 : out std_logic;
       cmd_firstIdx              : in  std_logic_vector;
@@ -532,16 +530,13 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       a_unlock_valid            : in  std_logic;
       a_unlock_ready            : out std_logic;
       a_unlock_tag              : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
       a_unlock_ignoreChild      : in  std_logic := '0';
-
       b_unlock_valid            : in  std_logic;
       b_unlock_ready            : out std_logic;
       b_unlock_tag              : in  std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
-
       unlock_valid              : out std_logic;
       unlock_ready              : in  std_logic;
       unlock_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
@@ -561,16 +556,13 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       inl_valid                 : in  std_logic;
       inl_ready                 : out std_logic;
       inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-
       ind_valid                 : in  std_logic;
       ind_ready                 : out std_logic;
       ind_data                  : in  std_logic_vector(COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
       ind_count                 : in  std_logic_vector(COUNT_WIDTH-1 downto 0) := std_logic_vector(to_unsigned(COUNT_MAX, COUNT_WIDTH));
-
       out_valid                 : out std_logic;
       out_ready                 : in  std_logic;
       out_last                  : out std_logic;
@@ -590,11 +582,9 @@ package Arrays is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       inl_valid                 : in  std_logic;
       inl_ready                 : out std_logic;
       inl_length                : in  std_logic_vector(LENGTH_WIDTH-1 downto 0);
-
       ctrl_valid                : out std_logic;
       ctrl_ready                : in  std_logic;
       ctrl_last                 : out std_logic;

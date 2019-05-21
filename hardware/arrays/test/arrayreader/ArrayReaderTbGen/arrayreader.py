@@ -1125,8 +1125,8 @@ uut_template_with_unlock = """
     port map (
       bcd_clk                   => bcd_clk,
       bcd_reset                 => bcd_reset,
-      kcd_clk                   => {acc}_clk,
-      kcd_reset                 => {acc}_reset,
+      kcd_clk                   => {kcd}_clk,
+      kcd_reset                 => {kcd}_reset,
 
       cmd_valid                 => cmd_valid,
       cmd_ready                 => cmd_ready,
@@ -1329,8 +1329,8 @@ class ArrayReader(object):
         random_bus_rdat_timing = get_param("random_bus_rdat_timing", random.choice([True, False]))
 
         # Generate the testbench wrapper object.
-        acc = "acc" if multi_clk else "bus"
-        tb = Testbench(self._camel_prefix + "ArrayReader_tb", {"bus", acc})
+        kcd = "kcd" if multi_clk else "bcd"
+        tb = Testbench(self._camel_prefix + "ArrayReader_tb", {"bcd", kcd})
 
         # Set constants.
         tb.set_const("BUS_ADDR_WIDTH",      addr_width)
@@ -1343,12 +1343,12 @@ class ArrayReader(object):
         tb.set_const("CMD_TAG_WIDTH",       max(1, tag_width))
 
         # Add the streams.
-        tb.append_input_stream(self.cmd_stream, "bus")
+        tb.append_input_stream(self.cmd_stream, "bcd")
         if tag_width > 0:
-            tb.append_output_stream(self.unlock_stream, "bus")
-        tb.append_output_stream(self.bus_rreq_stream, "bus")
-        tb.append_input_stream(self.bus_rdat_stream, "bus")
-        tb.append_output_stream(self.out_stream, acc)
+            tb.append_output_stream(self.unlock_stream, "bcd")
+        tb.append_output_stream(self.bus_rreq_stream, "bcd")
+        tb.append_input_stream(self.bus_rdat_stream, "bcd")
+        tb.append_output_stream(self.out_stream, kcd)
 
         # Generate a random set of commands.
         commands = []
@@ -1380,7 +1380,7 @@ class ArrayReader(object):
 
         # Generate a memory model.
         memory = Memory()
-        tb.append_memory(memory, self.bus_rreq_stream, self.bus_rdat_stream, "bus",
+        tb.append_memory(memory, self.bus_rreq_stream, self.bus_rdat_stream, "bcd",
                          random_bus_rreq_timing, random_bus_rdat_timing)
 
         # Generate the test vectors for the readers.
@@ -1390,7 +1390,7 @@ class ArrayReader(object):
 
         # Append unit under test.
         template = uut_template_with_unlock if tag_width > 0 else uut_template_without_unlock
-        tb.append_uut(template.format(cfg=self.cfg(), acc=acc))
+        tb.append_uut(template.format(cfg=self.cfg(), kcd=kcd))
 
         # Add documentation.
         doc = []
