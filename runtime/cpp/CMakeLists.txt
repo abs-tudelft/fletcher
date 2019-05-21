@@ -103,9 +103,10 @@ install(FILES ${GLOBAL_C_HEADER}
 ##############################################################################
 if (FLETCHER_TESTS)
     enable_testing()
-    include(../../BuildGTest.cmake)
+    if (NOT TARGET gtest)
+        include(../../BuildGTest.cmake)
+    endif ()
     include(GoogleTest)
-    find_package(GTest REQUIRED)
 
     set(TEST_SOURCES test/fletcher/test.cpp)
     set(TEST_HEADERS)
@@ -128,6 +129,6 @@ if (FLETCHER_TESTS)
     target_link_libraries(${FLETCHER}-test fletcher-common)
     target_link_libraries(${FLETCHER}-test ${FLETCHER})
 
-    target_link_libraries(${FLETCHER}-test GTest::GTest GTest::Main)
+    target_link_libraries(${FLETCHER}-test gtest gtest_main)
     gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHER_TESTS)

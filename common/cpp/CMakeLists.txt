@@ -15,9 +15,9 @@ if (NOT TARGET fletcher-common)
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
-    ##############################################################################
+    ##########################################################################
     # PyFletcher
-    ##############################################################################
+    ##########################################################################
     option(FLETCHER_PYTHON "Build Fletcher for use in building pyfletcher" OFF)
 
     if (FLETCHER_PYTHON)
@@ -26,9 +26,9 @@ if (NOT TARGET fletcher-common)
         message("Building fletcher-common for Pyfletcher")
     endif ()
 
-    ##############################################################################
+    ##########################################################################
     # Target
-    ##############################################################################
+    ##########################################################################
     set(COMMON_SOURCES
             src/fletcher/arrow-utils.cc
             src/fletcher/hex-view.cc)
@@ -45,20 +45,21 @@ if (NOT TARGET fletcher-common)
 
     add_library(${FLETCHER_COMMON} STATIC ${COMMON_SOURCES} ${COMMON_HEADERS})
 
-    ##############################################################################
+    ##########################################################################
     # Dependencies
-    ##############################################################################
+    ##########################################################################
     find_library(LIB_ARROW arrow)
     target_link_libraries(${FLETCHER_COMMON} ${LIB_ARROW})
 
-    ##############################################################################
+    ##########################################################################
     # Tests
-    ##############################################################################
+    ##########################################################################
     if (FLETCHER_TESTS)
         enable_testing()
-        include(../../BuildGTest.cmake)
+        if (NOT TARGET gtest)
+            include(../../BuildGTest.cmake)
+        endif ()
         include(GoogleTest)
-        find_package(GTest REQUIRED)
 
         # Sources that are used to generate data structures used testing
         set(TEST_GEN_HEADERS
@@ -102,7 +103,7 @@ if (NOT TARGET fletcher-common)
         # Link examples to test main
         target_link_libraries(${FLETCHER_COMMON}-test ${FLETCHER_COMMON}-examples)
 
-        target_link_libraries(${FLETCHER_COMMON}-test GTest::GTest GTest::Main)
+        target_link_libraries(${FLETCHER_COMMON}-test gtest gtest_main)
         target_include_directories(${FLETCHER_COMMON}-test PUBLIC src)
 
         gtest_discover_tests(${FLETCHER_COMMON}-test)

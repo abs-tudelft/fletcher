@@ -107,9 +107,10 @@ install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fle
 ##############################################################################
 if (FLETCHGEN_TESTS)
     enable_testing()
-    include(../../BuildGTest.cmake)
+    if (NOT TARGET gtest)
+        include(../../BuildGTest.cmake)
+    endif ()
     include(GoogleTest)
-    find_package(GTest REQUIRED)
 
     set(TEST_SOURCES
             test/fletchgen/test.cc
@@ -131,7 +132,7 @@ if (FLETCHGEN_TESTS)
 
     target_link_libraries(${FLETCHGEN}-test cerata)
     target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
-    target_link_libraries(${FLETCHGEN}-test GTest::GTest GTest::Main)
+    target_link_libraries(${FLETCHGEN}-test gtest gtest_main)
 
     # GoogleTest
     gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")

@@ -77,12 +77,12 @@ add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 ########################################################################################################################
 # TESTS
 ########################################################################################################################
-option(CERATA_TESTS "Build tests" OFF)
 if (CERATA_TESTS)
     enable_testing()
-    include(../../BuildGTest.cmake)
+    if (NOT TARGET gtest)
+        include(../../BuildGTest.cmake)
+    endif ()
     include(GoogleTest)
-    find_package(GTest REQUIRED)
 
     set(TEST_SOURCES
             # Intermeditate
@@ -98,7 +98,7 @@ if (CERATA_TESTS)
             test/cerata/vhdl/test_instantiators.h
             )
     add_executable(${PROJECT_NAME}-test ${TEST_HEADERS} ${TEST_SOURCES})
-    target_link_libraries(${PROJECT_NAME}-test GTest::GTest GTest::Main)
+    target_link_libraries(${PROJECT_NAME}-test gtest gtest_main)
     target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 
     gtest_discover_tests(cerata-test)
