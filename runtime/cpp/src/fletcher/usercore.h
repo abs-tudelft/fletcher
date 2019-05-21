@@ -60,14 +60,14 @@ class UserCore {
    *
    * Polls with an interval of poll_interval_usec microseconds.
    */
-  Status WaitForFinished(unsigned int poll_interval_usec);
+  Status WaitForFinish(unsigned int poll_interval_usec);
 
   /**
    * @brief A blocking function that waits for the UserCore to finish
    *
    * Polls at maximum speed.
    */
-  Status WaitForFinished();
+  Status WaitForFinish();
 
   std::shared_ptr<Platform> platform();
   std::shared_ptr<Context> context();

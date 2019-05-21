@@ -29,7 +29,7 @@ cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
 
-cdef extern from "fletcher/common/arrow-utils.h" namespace "fletcher" nogil:
+cdef extern from "fletcher/arrow-utils.h" namespace "fletcher" nogil:
     ctypedef enum Mode:
         READ "fletcher::Mode::READ",
         WRITE "fletcher::Mode::WRITE"
@@ -57,7 +57,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         @staticmethod
         Status createUnnamed"Make"(shared_ptr[CPlatform] *platform)
 
-        cpp_string getName()
+        cpp_string name()
         Status Init()
         Status WriteMMIO(uint64_t offset, uint32_t value)
         Status ReadMMIO(uint64_t offset, uint32_t *value)
@@ -79,7 +79,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         size_t GetQueueSize()
         uint64_t num_buffers()
         Status Enable()
-        vector[shared_ptr[CDeviceArray]] device_arrays
+        vector[shared_ptr[CDeviceArray]] device_arrays_
 
     cdef cppclass CUserCore" fletcher::UserCore":
         # Control and status values

@@ -76,11 +76,11 @@ Status UserCore::GetReturn(uint32_t *ret0, uint32_t *ret1) {
   return Status::ERROR();
 }
 
-Status UserCore::WaitForFinished() {
-  return WaitForFinished(0);
+Status UserCore::WaitForFinish() {
+  return WaitForFinish(0);
 }
 
-Status UserCore::WaitForFinished(unsigned int poll_interval_usec) {
+Status UserCore::WaitForFinish(unsigned int poll_interval_usec) {
   uint32_t status = 0;
   if (poll_interval_usec == 0) {
     do {

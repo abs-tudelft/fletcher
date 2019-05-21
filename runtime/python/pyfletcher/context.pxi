@@ -101,7 +101,7 @@ cdef class Context():
 
         """
 
-        return self.context.get().device_arrays[array_index].get().buffers[buffer_index].device_address
+        return self.context.get().device_arrays_[array_index].get().buffers[buffer_index].device_address
 
     def enable(self):
         check_fletcher_status(self.context.get().Enable())

@@ -55,7 +55,7 @@ class Platform {
   Status MmioToString(std::string* str, uint64_t start, uint64_t stop, bool quiet = false);
 
   /// @brief Initialize the platform
-  inline Status init() { return Status(platformInit(init_data)); }
+  inline Status Init() { return Status(platformInit(init_data)); }
 
   /**
    * @brief Write to MMIO register
