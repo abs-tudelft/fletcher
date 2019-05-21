@@ -84,13 +84,14 @@ install(FILES ${HEADERS}
 
 # Headers from common library
 set(COMMON_HEADERS
-        ../../common/cpp/src/fletcher/common/status.h
-        ../../common/cpp/src/fletcher/common/arrow-utils.h
-        ../../common/cpp/src/fletcher/common/hex-view.h
-        ../../common/cpp/src/fletcher/common/timer.h)
+        ../../common/cpp/src/fletcher/common.h
+        ../../common/cpp/src/fletcher/logging.h
+        ../../common/cpp/src/fletcher/arrow-utils.h
+        ../../common/cpp/src/fletcher/hex-view.h
+        ../../common/cpp/src/fletcher/timer.h)
 
 install(FILES ${COMMON_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}/common
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
         )
 
 # Install C header
