@@ -146,7 +146,7 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(
-          genFloatListSchema(),
+      GetListFloatSchema(),
           numbers.size() / list_length,
           {data_array});
 
@@ -197,7 +197,7 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(
-      genIntListSchema(),
+      GetListIntSchema(),
       numbers.size() / list_length,
       {data_array});
 
@@ -248,7 +248,7 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB() {
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
       record_batch = arrow::RecordBatch::Make(
-      genIntListSchema(),
+      GetListIntSchema(),
       numbers.size() / list_length,
       {data_array});
 
@@ -300,7 +300,7 @@ std::shared_ptr<arrow::RecordBatch> getFilterRB() {
 
   // Create the Record Batch
   std::shared_ptr<arrow::RecordBatch>
-      record_batch = arrow::RecordBatch::Make(genFilterReadSchema(), fn_array->length(), {fn_array, ln_array, zip_array});
+      record_batch = arrow::RecordBatch::Make(GetFilterReadSchema(), fn_array->length(), {fn_array, ln_array, zip_array});
 
   return record_batch;
 }

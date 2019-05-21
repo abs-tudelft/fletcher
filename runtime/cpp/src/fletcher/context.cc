@@ -32,11 +32,11 @@ DeviceArray::DeviceArray(std::shared_ptr<arrow::Array> array,
     : host_array(std::move(array)), field(field), mode(access_mode), memory(memory_type) {
   std::vector<arrow::Buffer *> host_buffers;
   if (field != nullptr) {
-    flattenArrayBuffers(&host_buffers, host_array, field);
+    FlattenArrayBuffers(&host_buffers, host_array, field);
   } else {
     FLETCHER_LOG(WARNING, "Flattening of array buffers without field specification may lead to discrepancy between "
                           "hardware and software implementation.");
-    flattenArrayBuffers(&host_buffers, host_array);
+    FlattenArrayBuffers(&host_buffers, host_array);
   }
   buffers.reserve(buffers.size());
   for (const auto &buf : host_buffers) {
@@ -152,7 +152,13 @@ Status Context::Enable() {
     }
   }
 
-  uint64_t off = FLETCHER_REG_BUFFER_OFFSET;
+  uint64_t off = FLETCHER_REG_SCHEMA;
+  for (const auto &rb : recordbatches_) {
+    platform_->WriteMMIO(off, 0);
+    off++;
+    platform_->WriteMMIO(off, rb->num_rows());
+    off++;
+  }
   for (const auto &array : device_arrays_) {
     for (const auto &buf : array->buffers) {
       dau_t address;
@@ -185,8 +191,9 @@ Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
   auto access_mode = GetMode(record_batch->schema());
 
   if (record_batch != nullptr) {
+    recordbatches_.push_back(record_batch);
     for (int c = 0; c < record_batch->num_columns(); c++) {
-      if (!mustIgnore(record_batch->schema()->field(c))) {
+      if (!MustIgnore(record_batch->schema()->field(c))) {
         QueueArray(record_batch->column(c), record_batch->schema()->field(c), access_mode, cache);
       }
     }

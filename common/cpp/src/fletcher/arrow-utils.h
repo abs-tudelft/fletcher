@@ -23,7 +23,7 @@
 
 namespace fletcher {
 
-/// @brief Access mode for reads / writes to recordbatches, arrays, buffers, etc. as seen from accelerator.
+/// @brief Access mode for reads / writes to recordbatches, arrays, buffers, etc. as seen from accelerator kernel.
 enum class Mode {
   READ,  ///< Read mode
   WRITE  ///< Write mode
@@ -34,21 +34,21 @@ enum class Mode {
  * @param buffers   The buffer names to append to.
  * @param field     The field to analyze
  */
-void appendExpectedBuffersFromField(std::vector<std::string>* buffers, const std::shared_ptr<arrow::Field>& field);
+void AppendExpectedBuffersFromField(std::vector<std::string> *buffers, const std::shared_ptr<arrow::Field> &field);
 
 /**
  * @brief Append a vector of buffers with the buffers contained within an Arrow::array
  * @param buffers   The buffers to append to
  * @param array     The Arrow::array to append buffers from
  */
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array);
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array);
 
 /**
  * @brief Append a vector of buffers with the buffers contained within an Arrow::ArrayData
  * @param buffers   The buffers to append to
  * @param array     The Arrow::ArrayData to append buffers from
  */
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data);
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data);
 
 /**
  * @brief Given an arrow::Field, and corresponding arrow::Array, append the buffers of the array.
@@ -60,7 +60,7 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
  * @param array     The Arrow::Array to append buffers from
  * @param field     The arrow::Field from a schema.
  */
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
                          const std::shared_ptr<arrow::Array> &array,
                          const std::shared_ptr<arrow::Field> &field);
 
@@ -71,7 +71,7 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
  * @param array     The Arrow::ArrayData to append buffers from
  * @param field     The arrow::Field from a schema.
  */
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
                          const std::shared_ptr<arrow::ArrayData> &array_data,
                          const std::shared_ptr<arrow::Field> &field);
 
@@ -83,55 +83,69 @@ std::string GetMeta(const std::shared_ptr<arrow::Schema> &schema, const std::str
 
 /**
  * @brief Return the schema operational mode (read or write) from the metadata, if any.
- * @param schema The Arrow Schema to inspect.
- * @return The schema operational mode, if any. Default = READ.
+ * @param schema  The Arrow Schema to inspect.
+ * @return        The schema operational mode, if any. Default = READ.
  */
 Mode GetMode(const std::shared_ptr<arrow::Schema> &schema);
 
 /**
  * @brief Obtain metadata and convert to integer.
- * @param field A field
- * @return The integer the field represents, if it exists. Returns default_to otherwise.
+ * @param field   A field
+ * @return        The integer the field represents, if it exists. Returns default_to otherwise.
  */
 int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int default_to);
 
 /**
  * @brief Check if a field should be ignored in Fletcher.
- * @param field The field to check the metadata for.
- * @return Return true if the value for the "ignore" metadata key is set to "true", else false.
+ * @param field   The field to check the metadata for.
+ * @return        Return true if the value for the "ignore" metadata key is set to "true", else false.
  */
-bool mustIgnore(const std::shared_ptr<arrow::Field>& field);
-
-std::shared_ptr<arrow::KeyValueMetadata> MakeRequiredMeta(std::string schema_name, Mode schema_mode);
-
-/// @brief Generate Arrow key-value metadata to determine the mode (read/write) of a field.
-std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode);
+bool MustIgnore(const std::shared_ptr<arrow::Field> &field);
 
 /**
- * @brief Generate Arrow key-value metadata to set the elements-per-cycle of a field
- *
- * This currently only works on lists of non-nullable primitives
- * @param epc The elements per cycle at peak throughput on the output of the stream generated from this field.
- * @return The key-value metadata
+ * @brief Append the minimum required metadata for Fletcher to a schema.
+ * @param schema        The Schema to append to.
+ * @param schema_name   The Schema name that will be used for hardware generation.
+ * @param schema_mode   The Schema mode, i.e. whether to read or write from a RecordBatch as seen by
+ *                      the accelerator kernel.
+ * @return              The Schema.
  */
-std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc);
+std::shared_ptr<arrow::Schema> AppendMetaRequired(const std::shared_ptr<arrow::Schema> &schema,
+                                                  std::string schema_name,
+                                                  Mode schema_mode);
 
-/// @brief Generate key-value metadata that tells Fletcher to ignore a specific Arrow field.
-std::shared_ptr<arrow::KeyValueMetadata> metaIgnore();
+/**
+ * @brief Append Elements-Per-Cycle metadata to a field.
+ *
+ * This works only for primitive and list<primitive> fields.
+ *
+ * @param field   The field to append to.
+ * @param epc     The elements-per-cycle.
+ * @return        The field.
+ */
+std::shared_ptr<arrow::Field> AppendMetaEPC(const std::shared_ptr<arrow::Field> &field, int epc);
+
+/**
+ * @brief Append metadata to a field to signify Fletcher should ignore this field.
+ * @param field   The field to append to.
+ * @return        The field.
+ */
+std::shared_ptr<arrow::Field> AppendMetaIgnore(const std::shared_ptr<arrow::Field> &field);
 
 /**
  * Write a schema to a Flatbuffer file
- * @param schema The schema to write.
- * @param file_name File to write to.
+ * @param schema      The schema to write.
+ * @param file_name   File to write to.
+ * @return            The schema.
  */
-void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name);
+void WriteSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name);
 
 /**
  * @brief Write the data buffers of an arrow::RecordBatch to a file.
  * @param recordbatch The RecordBatch
  * @param filename The output filename.
  */
-void writeRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbatch, const std::string &filename);
+void WriteRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbatch, const std::string &filename);
 
 /**
  * @brief Read an arrow::RecordBatch from a file.
@@ -147,6 +161,6 @@ std::shared_ptr<arrow::RecordBatch> ReadRecordBatchFromFile(const std::string &f
  * @param file_names Files to read from.
  * @return The schemas.
  */
-std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names);
+std::vector<std::shared_ptr<arrow::Schema>> ReadSchemasFromFiles(const std::vector<std::string> &file_names);
 
 }  // namespace fletcher

@@ -44,7 +44,7 @@ using cerata::Stream;
 
 std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field) {
   std::vector<std::string> buffers;
-  fletcher::appendExpectedBuffersFromField(&buffers, field);
+  fletcher::AppendExpectedBuffersFromField(&buffers, field);
   std::shared_ptr<Node> width = Literal::Make(buffers.size());
   return width * bus_addr_width();
 }

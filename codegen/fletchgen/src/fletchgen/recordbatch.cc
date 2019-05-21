@@ -45,7 +45,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
   // Iterate over all fields and add ArrayReader data and control ports.
   for (const auto &f : fs->arrow_schema()->fields()) {
     // Check if we must ignore a field
-    if (!fletcher::mustIgnore(f)) {
+    if (!fletcher::MustIgnore(f)) {
       FLETCHER_LOG(DEBUG, "Instantiating Array " << (fs->mode() == Mode::READ ? "Reader" : "Writer")
                                                  << " for schema: " << fs->name() << " : " << f->name());
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatch.

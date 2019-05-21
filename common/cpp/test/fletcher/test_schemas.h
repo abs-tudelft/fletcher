@@ -34,7 +34,7 @@ std::shared_ptr<arrow::Schema> GetStringReadSchema();
 std::shared_ptr<arrow::Schema> GetStringWriteSchema();
 
 /// @brief  A struct schema.
-std::shared_ptr<arrow::Schema> genStructSchema();
+std::shared_ptr<arrow::Schema> GetStructSchema();
 
 /// @brief A big example schema containing all field types that Fletcher supports.
 std::shared_ptr<arrow::Schema> GetBigSchema();
@@ -43,15 +43,15 @@ std::shared_ptr<arrow::Schema> GetBigSchema();
 std::shared_ptr<arrow::Schema> genPairHMMSchema();
 
 /// @brief An example schema with lists of float(64) numbers
-std::shared_ptr<arrow::Schema> genFloatListSchema();
+std::shared_ptr<arrow::Schema> GetListFloatSchema();
 
 /// @brief An example schema with lists of int(64) numbers
-std::shared_ptr<arrow::Schema> genIntListSchema();
+std::shared_ptr<arrow::Schema> GetListIntSchema();
 
 /// #brief An read schema for the filter example
-std::shared_ptr<arrow::Schema> genFilterReadSchema();
+std::shared_ptr<arrow::Schema> GetFilterReadSchema();
 
 /// #brief An write schema for the filter example
-std::shared_ptr<arrow::Schema> genFilterWriteSchema();
+std::shared_ptr<arrow::Schema> GetFilterWriteSchema();
 
 } // namespace fletcher

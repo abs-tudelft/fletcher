@@ -18,12 +18,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 set(SOURCES
     src/fletcher/platform.cc
     src/fletcher/context.cc
-    src/fletcher/usercore.cc)
+    src/fletcher/kernel.cc)
 
 set(HEADERS
     src/fletcher/platform.h
     src/fletcher/context.h
-    src/fletcher/usercore.h)
+    src/fletcher/kernel.h)
 
 include_directories(src)
 

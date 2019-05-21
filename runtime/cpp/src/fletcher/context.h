@@ -71,6 +71,9 @@ class Context {
   /// The platform this context is running on.
   std::shared_ptr<Platform> platform_;
 
+  /// The [arrow::RecordBatch]es that have been added to the context.
+  std::vector<std::shared_ptr<arrow::RecordBatch>> recordbatches_;
+
   /// The [arrow::Array]s that have been added to the context.
   std::vector<std::shared_ptr<DeviceArray>> device_arrays_;
 
@@ -88,7 +91,7 @@ class Context {
    * This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
    * contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies
    * between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the
-   * field argument.
+   * field argument, supplying the field from the schema that was used for hardware generation.
    *
    * @param array       The arrow::Array to queue
    * @param access_mode Whether to read or write from/to this array.

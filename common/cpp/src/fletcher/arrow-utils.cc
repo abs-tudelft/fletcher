@@ -26,7 +26,7 @@
 
 namespace fletcher {
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data) {
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::ArrayData> &array_data) {
   for (const auto &buf : array_data->buffers) {
     auto addr = buf.get();
     if (addr != nullptr) {
@@ -34,11 +34,11 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
     }
   }
   for (const auto &child : array_data->child_data) {
-    flattenArrayBuffers(buffers, child);
+    FlattenArrayBuffers(buffers, child);
   }
 }
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array) {
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::shared_ptr<arrow::Array> &array) {
   // Because Arrow buffer order seems to be by convention and not by specification, handle these special cases:
   // This is to reverse the order of offset and values buffer to correspond with the hardware implementation.
   if (array->type_id() == arrow::BinaryType::type_id) {
@@ -57,12 +57,12 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers, const std::share
       }
     }
     for (const auto &child : array->data()->child_data) {
-      flattenArrayBuffers(buffers, child);
+      FlattenArrayBuffers(buffers, child);
     }
   }
 }
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
                          const std::shared_ptr<arrow::ArrayData> &array_data,
                          const std::shared_ptr<arrow::Field> &field) {
   size_t b = 0;
@@ -78,12 +78,12 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
       buffers->push_back(addr);
     }
     for (size_t c = 0; c < array_data->child_data.size(); c++) {
-      flattenArrayBuffers(buffers, array_data->child_data[c], field->type()->child(static_cast<int>(c)));
+      FlattenArrayBuffers(buffers, array_data->child_data[c], field->type()->child(static_cast<int>(c)));
     }
   }
 }
 
-void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
+void FlattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
                          const std::shared_ptr<arrow::Array> &array,
                          const std::shared_ptr<arrow::Field> &field) {
   if (field->type()->id() != array->type()->id()) {
@@ -118,7 +118,7 @@ void flattenArrayBuffers(std::vector<arrow::Buffer *> *buffers,
       }
     }
     for (size_t c = 0; c < array->data()->child_data.size(); c++) {
-      flattenArrayBuffers(buffers, array->data()->child_data[c], field->type()->child(static_cast<int>(c)));
+      FlattenArrayBuffers(buffers, array->data()->child_data[c], field->type()->child(static_cast<int>(c)));
     }
   }
 }
@@ -159,7 +159,7 @@ Mode GetMode(const std::shared_ptr<arrow::Schema> &schema) {
   return mode;
 }
 
-bool mustIgnore(const std::shared_ptr<arrow::Field> &field) {
+bool MustIgnore(const std::shared_ptr<arrow::Field> &field) {
   bool ret = false;
   if (GetMeta(field, "fletcher_ignore") == "true") {
     ret = true;
@@ -176,40 +176,36 @@ int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int 
   return ret;
 }
 
-std::shared_ptr<arrow::KeyValueMetadata> MakeRequiredMeta(std::string schema_name, Mode mode) {
+std::shared_ptr<arrow::Schema> AppendMetaRequired(const std::shared_ptr<arrow::Schema> &schema,
+                                                  std::string schema_name,
+                                                  Mode mode) {
   std::vector<std::string> keys = {"fletcher_name", "fletcher_mode"};
   std::vector<std::string> values = {std::move(schema_name)};
   if (mode == Mode::READ)
     values.emplace_back("read");
   else
     values.emplace_back("write");
-  return std::make_shared<arrow::KeyValueMetadata>(keys, values);
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(keys, values);
+  schema->AddMetadata(meta);
+  return schema;
 }
 
-std::shared_ptr<arrow::KeyValueMetadata> metaMode(Mode mode) {
-  std::vector<std::string> keys = {"fletcher_mode"};
-  std::vector<std::string> values;
-  if (mode == Mode::READ)
-    values = {"read"};
-  else
-    values = {"write"};
-  return std::make_shared<arrow::KeyValueMetadata>(keys, values);
+std::shared_ptr<arrow::Field> AppendMetaEPC(const std::shared_ptr<arrow::Field> &field, int epc) {
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({"fletcher_epc"}),
+                                                        std::vector<std::string>({std::to_string(epc)}));
+  field->AddMetadata(meta);
+  return field;
 }
 
-std::shared_ptr<arrow::KeyValueMetadata> metaEPC(int epc) {
-  std::vector<std::string> epc_keys = {"epc"};
-  std::vector<std::string> epc_values = {std::to_string(epc)};
-  return std::make_shared<arrow::KeyValueMetadata>(epc_keys, epc_values);
+std::shared_ptr<arrow::Field> AppendMetaIgnore(const std::shared_ptr<arrow::Field> &field) {
+  const static std::vector<std::string> ignore_key = {"fletcher_ignore"};
+  const static std::vector<std::string> ignore_value = {"true"};
+  const static auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
+  field->AddMetadata(meta);
+  return field;
 }
 
-std::shared_ptr<arrow::KeyValueMetadata> metaIgnore() {
-  static std::vector<std::string> ignore_key = {"fletcher_ignore"};
-  static std::vector<std::string> ignore_value = {"true"};
-  static auto result = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
-  return result;
-}
-
-std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vector<std::string> &file_names) {
+std::vector<std::shared_ptr<arrow::Schema>> ReadSchemasFromFiles(const std::vector<std::string> &file_names) {
   std::vector<std::shared_ptr<arrow::Schema>> schemas;
   for (const auto &file_name : file_names) {
     std::shared_ptr<arrow::Schema> schema_to_read;
@@ -227,7 +223,7 @@ std::vector<std::shared_ptr<arrow::Schema>> readSchemasFromFiles(const std::vect
   return schemas;
 }
 
-void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name) {
+void WriteSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::string &file_name) {
   std::shared_ptr<arrow::ResizableBuffer> resizable_buffer;
   std::shared_ptr<arrow::io::FileOutputStream> fos;
   if (!arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0, &resizable_buffer).ok()) {
@@ -246,7 +242,7 @@ void writeSchemaToFile(const std::shared_ptr<arrow::Schema> &schema, const std::
   }
 }
 
-void writeRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbatch, const std::string &filename) {
+void WriteRecordBatchToFile(const std::shared_ptr<arrow::RecordBatch> &recordbatch, const std::string &filename) {
   std::shared_ptr<arrow::ResizableBuffer> resizable_buffer;
   if (!arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0, &resizable_buffer).ok()) {
     throw std::runtime_error("Could not allocate resizable Arrow buffer.");
@@ -280,7 +276,7 @@ std::shared_ptr<arrow::RecordBatch> ReadRecordBatchFromFile(const std::string &f
   }
 }
 
-void appendExpectedBuffersFromField(std::vector<std::string> *buffers, const std::shared_ptr<arrow::Field> &field) {
+void AppendExpectedBuffersFromField(std::vector<std::string> *buffers, const std::shared_ptr<arrow::Field> &field) {
   // Flatten in case this is a struct:
   auto flat_fields = field->Flatten();
 
@@ -298,7 +294,7 @@ void appendExpectedBuffersFromField(std::vector<std::string> *buffers, const std
       }
       if (f->type()->id() == arrow::ListType::type_id) {
         buffers->push_back(f->name() + "_offsets");
-        appendExpectedBuffersFromField(buffers, f->type()->child(0));
+        AppendExpectedBuffersFromField(buffers, f->type()->child(0));
       } else {
         buffers->push_back(f->name() + "_values");
       }

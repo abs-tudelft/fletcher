@@ -80,7 +80,7 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<
   for (const auto &rb : recordbatches) {
     for (int c = 0; c < rb->num_columns(); c++) {
       auto column = rb->column(c);
-      fletcher::flattenArrayBuffers(&buffers, column);
+      fletcher::FlattenArrayBuffers(&buffers, column);
     }
   }
 

@@ -28,42 +28,42 @@
 namespace fletcher {
 
 /**
- * @brief Abstract class for UserCore management
+ * @brief Abstract class for Kernel management
  */
-class UserCore {
+class Kernel {
  public:
-  explicit UserCore(std::shared_ptr<Context> context);
+  explicit Kernel(std::shared_ptr<Context> context);
 
-  /// @brief Check if the Schema of this UserCore is compatible with another Schema
+  /// @brief Check if the Schema of this Kernel is compatible with another Schema
   bool ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema);
 
-  /// @brief Reset the UserCore
+  /// @brief Reset the Kernel
   Status Reset();
 
-  /// @brief Set the first (inclusive) and last (exclusive) column to process
-  Status SetRange(int32_t first, int32_t last);
+  /// @brief Set the first (inclusive) and last (exclusive) row to process
+  Status SetRange(size_t recordbatch_index, int32_t first, int32_t last);
 
-  /// @brief Set the parameters of the UserCore
+  /// @brief Set the parameters of the Kernel
   Status SetArguments(std::vector<uint32_t> arguments);
 
-  /// @brief Start the UserCore
+  /// @brief Start the Kernel
   Status Start();
 
-  /// @brief Read the status register of the UserCore
+  /// @brief Read the status register of the Kernel
   Status GetStatus(uint32_t *status);
 
-  /// @brief Read the return registers of the UserCore
+  /// @brief Read the return registers of the Kernel
   Status GetReturn(uint32_t *ret0, uint32_t *ret1);
 
   /**
-   * @brief A blocking function that waits for the UserCore to finish
+   * @brief A blocking function that waits for the Kernel to finish
    *
    * Polls with an interval of poll_interval_usec microseconds.
    */
   Status WaitForFinish(unsigned int poll_interval_usec);
 
   /**
-   * @brief A blocking function that waits for the UserCore to finish
+   * @brief A blocking function that waits for the Kernel to finish
    *
    * Polls at maximum speed.
    */

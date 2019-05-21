@@ -81,17 +81,17 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status Enable()
         vector[shared_ptr[CDeviceArray]] device_arrays_
 
-    cdef cppclass CUserCore" fletcher::UserCore":
+    cdef cppclass CKernel" fletcher::Kernel":
         # Control and status values
         uint32_t ctrl_start
         uint32_t ctrl_reset
         uint32_t done_status
         uint32_t done_status_mask
 
-        CUserCore(shared_ptr[CContext] context)
+        CKernel(shared_ptr[CContext] context)
         cpp_bool ImplementsSchema(const shared_ptr[CSchema] &schema)
         Status Reset()
-        Status SetRange(int32_t first, int32_t last)
+        Status SetRange(size_t recordbatch_index, int32_t first, int32_t last)
         Status SetArguments(vector[uint32_t] arguments)
         Status Start()
         Status GetStatus(uint32_t *status)

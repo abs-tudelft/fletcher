@@ -44,7 +44,8 @@ for ext in ext_modules:
     # C++ Run-time
     ext.libraries.extend(["fletcher"])
     ext.include_dirs.append("../cpp/src")
-    ext.library_dirs.extend(["../cpp/build"])
+    # TODO(johanpel): Some packaging wizard should fix this
+    ext.library_dirs.extend(["../cpp/python-build"])
 
     # ABI trouble
     ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))

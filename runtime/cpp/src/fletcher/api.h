@@ -26,4 +26,4 @@
 // CPP runtime lib
 #include "fletcher/context.h"
 #include "fletcher/platform.h"
-#include "fletcher/usercore.h"
+#include "fletcher/kernel.h"

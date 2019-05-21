@@ -34,13 +34,13 @@ TEST(Platform, EchoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform, false).ok());
+  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform).ok());
   ASSERT_EQ(platform->name(), "echo");
 
   // Init
   // Make echo quiet
   auto opts = std::make_shared<InitOptions>();
-  opts->quiet = 1;
+  opts->quiet = 0;
   platform->init_data = opts.get();
   ASSERT_TRUE(platform->Init().ok());
 

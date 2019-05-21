@@ -21,7 +21,7 @@ cdef extern from * nogil:
 cdef class Platform:
     """Python wrapper for Fletcher Platforms.
 
-    Most functions are exposed for completeness, but for mose uses cases Context and UserCore are more suited.
+    Most functions are exposed for completeness, but for mose uses cases Context and Kernel are more suited.
 
     Args:
         name (:obj:'str', optional): Which platform driver to use. Leave empty to autodetect.

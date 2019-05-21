@@ -38,53 +38,53 @@ void generateDebugFiles() {
 
   /* Primitive */
   schema = fletcher::GetPrimReadSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/primread.fbs");
+  fletcher::WriteSchemaToFile(schema, "schemas/primread.fbs");
   recordbatch = fletcher::getInt8RB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
 
   schema = fletcher::GetPrimWriteSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/primwrite.fbs");
+  fletcher::WriteSchemaToFile(schema, "schemas/primwrite.fbs");
 
   /* String */
   schema = fletcher::GetStringReadSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/stringread.fbs");
+  fletcher::WriteSchemaToFile(schema, "schemas/stringread.fbs");
   recordbatch = fletcher::getStringRB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/names.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/names.rb");
 
   schema = fletcher::GetStringWriteSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/stringwrite.fbs");
+  fletcher::WriteSchemaToFile(schema, "schemas/stringwrite.fbs");
 
   /* List of UInt8 */
   schema = fletcher::GetListUint8Schema();
-  fletcher::writeSchemaToFile(schema, "schemas/listuint8.fbs");
+  fletcher::WriteSchemaToFile(schema, "schemas/listuint8.fbs");
   recordbatch = fletcher::getListUint8RB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
 
   /* List of Float64 */
-  schema = fletcher::genFloatListSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/listfloat64.fbs");
+  schema = fletcher::GetListFloatSchema();
+  fletcher::WriteSchemaToFile(schema, "schemas/listfloat64.fbs");
   recordbatch = fletcher::getFloat64ListRB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
 
   /* List of Int64 (length 2) */
-  schema = fletcher::genIntListSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/listint64short.fbs");
+  schema = fletcher::GetListIntSchema();
+  fletcher::WriteSchemaToFile(schema, "schemas/listint64short.fbs");
   recordbatch = fletcher::getInt64ListRB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
 
   /* List of Int64 (length 8) */
-  schema = fletcher::genIntListSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/listint64long.fbs");
+  schema = fletcher::GetListIntSchema();
+  fletcher::WriteSchemaToFile(schema, "schemas/listint64long.fbs");
   recordbatch = fletcher::getInt64ListWideRB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
 
   /* Filter example */
-  schema = fletcher::genFilterReadSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/filter_read.fbs");
-  schema = fletcher::genFilterWriteSchema();
-  fletcher::writeSchemaToFile(schema, "schemas/filter_write.fbs");
+  schema = fletcher::GetFilterReadSchema();
+  fletcher::WriteSchemaToFile(schema, "schemas/filter_read.fbs");
+  schema = fletcher::GetFilterWriteSchema();
+  fletcher::WriteSchemaToFile(schema, "schemas/filter_write.fbs");
   recordbatch = fletcher::getFilterRB();
-  fletcher::writeRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
 }
 
 }

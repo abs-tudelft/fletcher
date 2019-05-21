@@ -27,7 +27,7 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
 
   // Read schemas
   FLETCHER_LOG(INFO, "Reading Arrow Schema files.");
-  ret.schemas = fletcher::readSchemasFromFiles(ret.options->schema_paths);
+  ret.schemas = fletcher::ReadSchemasFromFiles(ret.options->schema_paths);
   FLETCHER_LOG(INFO, "Creating SchemaSet.");
   ret.schema_set = SchemaSet::Make(ret.options->kernel_name, ret.schemas);
 

@@ -63,7 +63,7 @@ Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform) {
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    err = Make(p, platform, false);
+    err = Make(p, platform);
     if (err.ok()) {
       return err;
     }

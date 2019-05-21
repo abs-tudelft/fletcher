@@ -21,63 +21,63 @@
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"
 
-TEST(common_arrow_utils, appendExpectedBuffersFromField) {
+TEST(Common, appendExpectedBuffersFromField) {
   // List of uint8's
   auto schema = fletcher::GetListUint8Schema();
   std::vector<std::string> bufs;
-  fletcher::appendExpectedBuffersFromField(&bufs, schema->field(0));
+  fletcher::AppendExpectedBuffersFromField(&bufs, schema->field(0));
   ASSERT_EQ(bufs[0], "list_offsets");
   ASSERT_EQ(bufs[1], "number_values");
 
   schema = fletcher::GetStringReadSchema();
   // String is essentially a list of non-nullable utf8 bytes
   std::vector<std::string> bufs2;
-  fletcher::appendExpectedBuffersFromField(&bufs2, schema->field(0));
+  fletcher::AppendExpectedBuffersFromField(&bufs2, schema->field(0));
   ASSERT_EQ(bufs2[0], "Name_offsets");
   ASSERT_EQ(bufs2[1], "Name_values");
 }
 
-TEST(common_arrow_utils, RecordBatchFileRoundTrip) {
+TEST(Common, RecordBatchFileRoundTrip) {
   auto wrb = fletcher::getStringRB();
-  fletcher::writeRecordBatchToFile(wrb, "test-common.rb");
+  fletcher::WriteRecordBatchToFile(wrb, "test-common.rb");
   auto rrb = fletcher::ReadRecordBatchFromFile("test-common.rb", wrb->schema());
   ASSERT_TRUE(wrb->Equals(*rrb));
 }
 
-TEST(common_arrow_utils, flattenArrayBuffers_string) {
+TEST(Common, flattenArrayBuffers_string) {
   // Test flattening of array buffers with field
   auto rb = fletcher::getStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer*> buffers;
-  fletcher::flattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
+  fletcher::FlattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
   // First buffer should be offsets buffer
   ASSERT_EQ(buffers[0], sa->value_offsets().get());
   // Second buffer should be values buffer
   ASSERT_EQ(buffers[1], sa->value_data().get());
 }
 
-TEST(common_arrow_utils, flattenArrayBuffers_string_noField) {
+TEST(Common, flattenArrayBuffers_string_noField) {
   // Test flattening of array buffers without field
   auto rb = fletcher::getStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer*> buffers;
-  fletcher::flattenArrayBuffers(&buffers, rb->column(0));
+  fletcher::FlattenArrayBuffers(&buffers, rb->column(0));
   // First buffer should be offsets buffer
   ASSERT_EQ(buffers[0], sa->value_offsets().get());
   // Second buffer should be values buffer
   ASSERT_EQ(buffers[1], sa->value_data().get());
 }
 
-TEST(common_arrow_utils, flattenArrayBuffers_list) {
+TEST(Common, flattenArrayBuffers_list) {
   // Test flattening of array buffers without field
   auto rb = fletcher::getListUint8RB();
   auto la = std::dynamic_pointer_cast<arrow::ListArray>(rb->column(0));
   auto va = std::dynamic_pointer_cast<arrow::UInt8Array>(la->values());
 
   std::vector<arrow::Buffer*> buffers;
-  fletcher::flattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
+  fletcher::FlattenArrayBuffers(&buffers, rb->column(0), rb->schema()->field(0));
   // First buffer should be offsets buffer
   ASSERT_EQ(buffers[0], la->value_offsets().get());
   // Second buffer should be values buffer
