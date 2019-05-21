@@ -9,10 +9,10 @@ set(CMAKE_C_FLAGS_DEBUG "-g")
 set(CMAKE_C_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES
-        src/fletcher_echo.c)
+    src/fletcher_echo.c)
 
 set(HEADERS
-        src/fletcher_echo.h)
+    src/fletcher_echo.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 include_directories(../../../common/c/src)
@@ -22,5 +22,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
 
 install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
+    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)

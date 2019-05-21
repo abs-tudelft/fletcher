@@ -16,52 +16,52 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 # Sources
 ##############################################################################
 set(HEADERS
-        src/fletchgen/schema.h
-        src/fletchgen/bus.h
-        src/fletchgen/mmio.h
-        src/fletchgen/array.h
-        src/fletchgen/basic_types.h
-        src/fletchgen/mantle.h
-        src/fletchgen/kernel.h
-        src/fletchgen/options.h
-        src/fletchgen/design.h
-        src/fletchgen/utils.h
-        src/fletchgen/recordbatch.h
+    src/fletchgen/schema.h
+    src/fletchgen/bus.h
+    src/fletchgen/mmio.h
+    src/fletchgen/array.h
+    src/fletchgen/basic_types.h
+    src/fletchgen/mantle.h
+    src/fletchgen/kernel.h
+    src/fletchgen/options.h
+    src/fletchgen/design.h
+    src/fletchgen/utils.h
+    src/fletchgen/recordbatch.h
 
-        src/fletchgen/srec/recordbatch.h
-        src/fletchgen/srec/srec.h
+    src/fletchgen/srec/recordbatch.h
+    src/fletchgen/srec/srec.h
 
-        src/fletchgen/top/sim.h
-        src/fletchgen/top/axi.h
+    src/fletchgen/top/sim.h
+    src/fletchgen/top/axi.h
 
-        src/fletchgen/hls/vivado.h
-        )
+    src/fletchgen/hls/vivado.h
+    )
 
 set(SOURCES
-        src/fletchgen/schema.cc
-        src/fletchgen/bus.cc
-        src/fletchgen/mmio.cc
-        src/fletchgen/array.cc
-        src/fletchgen/basic_types.cc
-        src/fletchgen/mantle.cc
-        src/fletchgen/kernel.cc
-        src/fletchgen/options.cc
-        src/fletchgen/design.cc
-        src/fletchgen/utils.cc
-        src/fletchgen/recordbatch.cc
+    src/fletchgen/schema.cc
+    src/fletchgen/bus.cc
+    src/fletchgen/mmio.cc
+    src/fletchgen/array.cc
+    src/fletchgen/basic_types.cc
+    src/fletchgen/mantle.cc
+    src/fletchgen/kernel.cc
+    src/fletchgen/options.cc
+    src/fletchgen/design.cc
+    src/fletchgen/utils.cc
+    src/fletchgen/recordbatch.cc
 
-        src/fletchgen/srec/recordbatch.cc
-        src/fletchgen/srec/srec.cc
+    src/fletchgen/srec/recordbatch.cc
+    src/fletchgen/srec/srec.cc
 
-        src/fletchgen/top/sim.cc
-        src/fletchgen/top/axi.cc
+    src/fletchgen/top/sim.cc
+    src/fletchgen/top/axi.cc
 
-        src/fletchgen/hls/vivado.cc
-        )
+    src/fletchgen/hls/vivado.cc
+    )
 
 set(THIRD_PARTY_HEADERS
-        src/CLI/CLI11.hpp
-        )
+    src/CLI/CLI11.hpp
+    )
 
 include_directories(src)
 
@@ -87,7 +87,7 @@ target_link_libraries(${FLETCHGEN} cerata)
 
 # Enable tests for the common library before adding
 if (FLETCHGEN_TESTS)
-    set(FLETCHER_TESTS ON)
+  set(FLETCHER_TESTS ON)
 endif ()
 
 # Add the common library
@@ -106,34 +106,34 @@ install(FILES ${RESOURCES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fletcher/fle
 # Testing
 ##############################################################################
 if (FLETCHGEN_TESTS)
-    enable_testing()
-    if (NOT TARGET gtest)
-        include(../../BuildGTest.cmake)
-    endif ()
-    include(GoogleTest)
+  if (NOT TARGET gtest)
+    include(../../BuildGTest.cmake)
+  endif ()
+  include(GoogleTest)
+  enable_testing()
 
-    set(TEST_SOURCES
-            test/fletchgen/test.cc
-            test/fletchgen/test_utils.h
-            test/fletchgen/test_recordbatch.h
-            test/fletchgen/test_kernel.h
-            test/fletchgen/test_mantle.h
-            test/fletchgen/test_bus.h
-            )
+  set(TEST_SOURCES
+      test/fletchgen/test.cc
+      test/fletchgen/test_utils.h
+      test/fletchgen/test_recordbatch.h
+      test/fletchgen/test_kernel.h
+      test/fletchgen/test_mantle.h
+      test/fletchgen/test_bus.h
+      )
 
-    add_executable(${FLETCHGEN}-test ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} ${TEST_HEADERS} ${TEST_SOURCES})
+  add_executable(${FLETCHGEN}-test ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} ${TEST_HEADERS} ${TEST_SOURCES})
 
-    # External libraries
-    target_link_libraries(${FLETCHGEN}-test fletcher-common)
-    include_directories(../../common/cpp/src)
+  # External libraries
+  target_link_libraries(${FLETCHGEN}-test fletcher-common)
+  include_directories(../../common/cpp/src)
 
-    target_link_libraries(${FLETCHGEN}-test fletcher-common-examples)
-    include_directories(../../common/cpp/test)
+  target_link_libraries(${FLETCHGEN}-test fletcher-common-examples)
+  include_directories(../../common/cpp/test)
 
-    target_link_libraries(${FLETCHGEN}-test cerata)
-    target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
-    target_link_libraries(${FLETCHGEN}-test gtest gtest_main)
+  target_link_libraries(${FLETCHGEN}-test cerata)
+  target_link_libraries(${FLETCHGEN}-test ${LIB_ARROW})
+  target_link_libraries(${FLETCHGEN}-test gtest gtest_main)
 
-    # GoogleTest
-    gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
+  # GoogleTest
+  gtest_discover_tests(${FLETCHGEN}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHGEN_TESTS)

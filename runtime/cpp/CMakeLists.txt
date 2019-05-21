@@ -16,14 +16,14 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 # Targets
 ##############################################################################
 set(SOURCES
-        src/fletcher/platform.cc
-        src/fletcher/context.cc
-        src/fletcher/usercore.cc)
+    src/fletcher/platform.cc
+    src/fletcher/context.cc
+    src/fletcher/usercore.cc)
 
 set(HEADERS
-        src/fletcher/platform.h
-        src/fletcher/context.h
-        src/fletcher/usercore.h)
+    src/fletcher/platform.h
+    src/fletcher/context.h
+    src/fletcher/usercore.h)
 
 include_directories(src)
 
@@ -33,18 +33,18 @@ add_library(${FLETCHER} SHARED ${HEADERS} ${SOURCES})
 # PyFletcher
 ##############################################################################
 option(FLETCHER_PYTHON
-        "Build Fletcher for use in building pyfletcher"
-        OFF)
+    "Build Fletcher for use in building pyfletcher"
+    OFF)
 
 # Only needed when building for Python
 set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
 
 if (FLETCHER_PYTHON)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-    find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
-    include_directories(${PYARROW_DIR}/include)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+  find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
+  include_directories(${PYARROW_DIR}/include)
 else ()
-    find_library(LIB_ARROW arrow)
+  find_library(LIB_ARROW arrow)
 endif ()
 
 ##############################################################################
@@ -74,62 +74,65 @@ set_target_properties(${FLETCHER} PROPERTIES SOVERSION 1)
 set_target_properties(${FLETCHER} PROPERTIES PUBLIC_HEADER src/fletcher/api.h)
 
 install(TARGETS ${FLETCHER}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER})
+    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER})
 
 # Install headers from cpp runtime
 install(FILES ${HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
-        )
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
+    )
 
 # Headers from common library
 set(COMMON_HEADERS
-        ../../common/cpp/src/fletcher/common.h
-        ../../common/cpp/src/fletcher/logging.h
-        ../../common/cpp/src/fletcher/arrow-utils.h
-        ../../common/cpp/src/fletcher/hex-view.h
-        ../../common/cpp/src/fletcher/timer.h)
+    ../../common/cpp/src/fletcher/common.h
+    ../../common/cpp/src/fletcher/logging.h
+    ../../common/cpp/src/fletcher/arrow-utils.h
+    ../../common/cpp/src/fletcher/hex-view.h
+    ../../common/cpp/src/fletcher/timer.h)
 
 install(FILES ${COMMON_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
-        )
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
+    )
 
 # Install C header
 install(FILES ${GLOBAL_C_HEADER}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
-        )
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${FLETCHER}
+    )
 
 ##############################################################################
 # Tests
 ##############################################################################
 if (FLETCHER_TESTS)
-    enable_testing()
-    if (NOT TARGET gtest)
-        include(../../BuildGTest.cmake)
-    endif ()
-    include(GoogleTest)
+  if (NOT TARGET gtest)
+    include(../../BuildGTest.cmake)
+  endif ()
+  include(GoogleTest)
+  enable_testing()
 
-    set(TEST_SOURCES test/fletcher/test.cpp)
-    set(TEST_HEADERS)
-    include_directories(src)
+  set(TEST_SOURCES test/fletcher/test.cpp)
+  set(TEST_HEADERS)
+  include_directories(src)
 
-    add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
+  add_executable(${FLETCHER}-test ${TEST_HEADERS} ${TEST_SOURCES})
 
-    # Linking
+  # Linking
 
-    # The echo platform is dynamically linked during run-time
-    if (FLETCHER_ECHO)
-        set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
-    else ()
-        add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
-        set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
-    endif ()
-    include_directories(../../platforms/echo/runtime/src)
+  # The echo platform is dynamically linked during run-time
+  if (NOT TARGET fletcher_echo)
+    message("[Fletcher] Adding echo platform build.")
+    add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
+    set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
+  else ()
+    message("[Fletcher] Using existing echo platform build.")
+    set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
+  endif ()
+  message("[Fletcher] Echo platform library in: ${FLETCHER_ECHO_LIBDIR}")
+  include_directories(../../platforms/echo/runtime/src)
 
-    target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
-    target_link_libraries(${FLETCHER}-test fletcher-common)
-    target_link_libraries(${FLETCHER}-test ${FLETCHER})
+  target_link_libraries(${FLETCHER}-test ${LIB_ARROW})
+  target_link_libraries(${FLETCHER}-test fletcher-common)
+  target_link_libraries(${FLETCHER}-test ${FLETCHER})
 
-    target_link_libraries(${FLETCHER}-test gtest gtest_main)
-    gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
+  target_link_libraries(${FLETCHER}-test gtest gtest_main)
+  gtest_discover_tests(${FLETCHER}-test PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${FLETCHER_ECHO_LIBDIR}")
 endif (FLETCHER_TESTS)

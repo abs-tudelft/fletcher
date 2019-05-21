@@ -34,7 +34,7 @@ TEST(Platform, EchoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform).ok());
+  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform, false).ok());
   ASSERT_EQ(platform->name(), "echo");
 
   // Init
@@ -42,7 +42,7 @@ TEST(Platform, EchoPlatform) {
   auto opts = std::make_shared<InitOptions>();
   opts->quiet = 1;
   platform->init_data = opts.get();
-  ASSERT_TRUE(platform->init().ok());
+  ASSERT_TRUE(platform->Init().ok());
 
   // Malloc / free
   da_t a;
@@ -67,10 +67,9 @@ TEST(Platform, EchoPlatform) {
 }
 
 TEST(Context, ContextFunctions) {
-
   std::shared_ptr<fletcher::Platform> platform;
   ASSERT_TRUE(fletcher::Platform::Make(&platform).ok());
-  ASSERT_TRUE(platform->init().ok());
+  ASSERT_TRUE(platform->Init().ok());
 
   // Create a schema with some stuff
   std::vector<std::shared_ptr<arrow::Field>> schema_fields;

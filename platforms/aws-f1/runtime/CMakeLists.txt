@@ -9,10 +9,10 @@ set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-Ofast -march=native")
 
 set(SOURCES
-        src/fletcher_aws.c)
+    src/fletcher_aws.c)
 
 set(HEADERS
-        src/fletcher_aws.h)
+    src/fletcher_aws.h)
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 include_directories(../../../common/c/src)
@@ -25,7 +25,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
 find_library(LIB_AWS_FPGA_MGMT fpga_mgmt)
 
 if (NOT EXISTS "$ENV{SDK_DIR}")
-    message(WARNING "Attempting to CMake with AWS EC2 F1 support, but SDK_DIR is not set. Please source the sdk_setup.sh script first.")
+  message(WARNING "Attempting to CMake with AWS EC2 F1 support, but SDK_DIR is not set. Please source the sdk_setup.sh script first.")
 endif ()
 
 # Point to include directories
@@ -35,7 +35,7 @@ include_directories($ENV{SDK_DIR}/userspace/include)
 target_link_libraries(${PROJECT_NAME} ${LIB_AWS_FPGA_MGMT})
 
 install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
+    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
 
 message("[FLETCHER] After running installation, please refresh your dynamic library cache (e.g. sudo ldconfig).")
