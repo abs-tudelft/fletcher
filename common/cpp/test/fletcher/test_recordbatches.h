@@ -25,5 +25,6 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB();
 std::shared_ptr<arrow::RecordBatch> getInt64ListRB();
 std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB();
 std::shared_ptr<arrow::RecordBatch> getFilterRB();
+std::shared_ptr<arrow::RecordBatch> getSodaBeerRB(const std::vector<std::string>& names, const std::vector<uint8_t>& ages);
 
 } //namespace fletcher

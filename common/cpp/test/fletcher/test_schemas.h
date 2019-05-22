@@ -17,6 +17,8 @@
 #include <arrow/api.h>
 #include <memory>
 
+#include "fletcher/common.h"
+
 namespace fletcher {
 
 /// @brief Generate a schema of a list with uint8 primitives.
@@ -42,16 +44,19 @@ std::shared_ptr<arrow::Schema> GetBigSchema();
 /// @brief An example schema from a genomics pipeline application.
 std::shared_ptr<arrow::Schema> genPairHMMSchema();
 
-/// @brief An example schema with lists of float(64) numbers
+/// @brief An example schema with lists of float(64) numbers.
 std::shared_ptr<arrow::Schema> GetListFloatSchema();
 
-/// @brief An example schema with lists of int(64) numbers
+/// @brief An example schema with lists of int(64) numbers.
 std::shared_ptr<arrow::Schema> GetListIntSchema();
 
-/// #brief An read schema for the filter example
+/// @brief An read schema for the filter example.
 std::shared_ptr<arrow::Schema> GetFilterReadSchema();
 
-/// #brief An write schema for the filter example
+/// @brief An write schema for the filter example.
 std::shared_ptr<arrow::Schema> GetFilterWriteSchema();
+
+/// @brief A schema that can be both read and write for the SodaBeer example.
+std::shared_ptr<arrow::Schema> GetSodaBeerSchema(const std::string& name, Mode mode=Mode::READ);
 
 } // namespace fletcher

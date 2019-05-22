@@ -305,4 +305,39 @@ std::shared_ptr<arrow::RecordBatch> getFilterRB() {
   return record_batch;
 }
 
+std::shared_ptr<arrow::RecordBatch> getSodaBeerRB(const std::vector<std::string>& names, const std::vector<uint8_t>& ages) {
+  if (names.size() != ages.size()) {
+    throw std::runtime_error("Vector sizes do not match.");
+  }
+  // Make a string builder
+  arrow::StringBuilder name_builder;
+  arrow::UInt8Builder age_builder;
+
+  // Append the strings in the string builder
+  if (!name_builder.AppendValues(names).ok()) {
+    throw std::runtime_error("Could not append to first name builder.");
+  };
+  if (!age_builder.AppendValues(ages).ok()) {
+    throw std::runtime_error("Could not append zip codes to builder.");
+  };
+
+  // Array to hold Arrow formatted string data
+  std::shared_ptr<arrow::Array> name_array;
+  std::shared_ptr<arrow::Array> age_array;
+
+  // Finish building and create a new data array around the data
+  if (!name_builder.Finish(&name_array).ok()) {
+    throw std::runtime_error("Could not finalize first name builder.");
+  };
+  if (!age_builder.Finish(&age_array).ok()) {
+    throw std::runtime_error("Could not finalize zip code builder.");
+  };
+
+  // Create the Record Batch
+  std::shared_ptr<arrow::RecordBatch>
+      record_batch = arrow::RecordBatch::Make(GetSodaBeerSchema(""), name_array->length(), {name_array, age_array});
+
+  return record_batch;
+}
+
 }  // namespace fletcher

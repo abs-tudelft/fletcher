@@ -85,6 +85,25 @@ void generateDebugFiles() {
   fletcher::WriteSchemaToFile(schema, "schemas/filter_write.fbs");
   recordbatch = fletcher::getFilterRB();
   fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+
+  /* SodaBeer example */
+  auto hobbiton_sch = fletcher::GetSodaBeerSchema("Hobbiton", fletcher::Mode::READ);
+  auto bywater_sch = fletcher::GetSodaBeerSchema("Bywater", fletcher::Mode::READ);
+  auto soda_sch = fletcher::GetSodaBeerSchema("Soda", fletcher::Mode::WRITE);
+  auto beer_sch = fletcher::GetSodaBeerSchema("Beer", fletcher::Mode::WRITE);
+  std::vector<std::string> hobbiton_names = {"Bilbo", "Rosie", "Frodo", "Sam", "Elanor"};
+  std::vector<uint8_t> hobbiton_ages = {111, 34, 33, 35, 1};
+  std::vector<std::string> bywater_names = {"Lobelia", "Merry", "Pippin"};
+  std::vector<uint8_t> bywater_ages = {80, 37, 29};
+  auto hobbiton_rb = fletcher::getSodaBeerRB(hobbiton_names, hobbiton_ages);
+  auto bywater_rb = fletcher::getSodaBeerRB(bywater_names, bywater_ages);
+
+  fletcher::WriteSchemaToFile(hobbiton_sch, "schemas/Hobbiton.fbs");
+  fletcher::WriteSchemaToFile(bywater_sch, "schemas/Bywater.fbs");
+  fletcher::WriteSchemaToFile(soda_sch, "schemas/Soda.fbs");
+  fletcher::WriteSchemaToFile(beer_sch, "schemas/Beer.fbs");
+  fletcher::WriteRecordBatchToFile(hobbiton_rb, "recordbatches/Hobbiton.rb");
+  fletcher::WriteRecordBatchToFile(bywater_rb, "recordbatches/Bywater.rb");
 }
 
 }
