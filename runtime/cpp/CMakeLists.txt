@@ -29,6 +29,13 @@ include_directories(src)
 
 add_library(${FLETCHER} SHARED ${HEADERS} ${SOURCES})
 
+# Turn ON to use Arrow's logging facility.
+option(ARROW_LOGGING "Use Arrow's logging facility" OFF)
+message("[Fletcher] Runtime: Arrow logging is: ${ARROW_LOGGING}")
+if (ARROW_LOGGING)
+  add_definitions(-DFLETCHER_USE_ARROW_LOGGING)
+endif ()
+
 ##############################################################################
 # PyFletcher
 ##############################################################################
@@ -119,14 +126,14 @@ if (FLETCHER_TESTS)
 
   # The echo platform is dynamically linked during run-time
   if (NOT TARGET fletcher_echo)
-    message("[Fletcher] Adding echo platform build.")
+    message("[Fletcher] Runtime tests: Adding echo platform build.")
     add_subdirectory(../../platforms/echo/runtime ${CMAKE_BINARY_DIR}/echo)
     set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/echo)
   else ()
-    message("[Fletcher] Using existing echo platform build.")
+    message("[Fletcher] Runtime tests: Using existing echo platform build.")
     set(FLETCHER_ECHO_LIBDIR ${CMAKE_BINARY_DIR}/platforms/echo/runtime)
   endif ()
-  message("[Fletcher] Echo platform library in: ${FLETCHER_ECHO_LIBDIR}")
+  message("[Fletcher] Runtime tests: Echo platform library in: ${FLETCHER_ECHO_LIBDIR}")
   include_directories(../../platforms/echo/runtime/src)
 
   target_link_libraries(${FLETCHER}-test ${LIB_ARROW})

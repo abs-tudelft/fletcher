@@ -26,7 +26,10 @@
 int main(int argc, char **argv) {
   // Start logging
   std::string program_name = GetProgramName(argv[0]);
-  fletcher::StartLogging(program_name, LOG_DEBUG, program_name + ".log");
+  fletcher::StartLogging(program_name, FLETCHER_LOG_DEBUG, program_name + ".log");
+
+  // Enable Cerata to log into the Fletcher logger through the callback function.
+  cerata::logger().enable(LogCerata);
 
   // Parse options
   auto options = std::make_shared<fletchgen::Options>();

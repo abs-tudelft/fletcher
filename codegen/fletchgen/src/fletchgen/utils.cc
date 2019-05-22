@@ -35,3 +35,32 @@ cerata::Port::Dir mode2dir(fletcher::Mode mode) {
     return cerata::Port::Dir::OUT;
   }
 }
+
+void LogCerata(cerata::LogLevel level,
+               std::string const &message,
+               char const *source_function,
+               char const *source_file,
+               int line_number) {
+  switch (level) {
+    case cerata::CERATA_LOG_DEBUG: {
+      FLETCHER_LOG(DEBUG, message);
+      return;
+    }
+    case cerata::CERATA_LOG_INFO: {
+      FLETCHER_LOG(DEBUG, message);
+      return;
+    }
+    case cerata::CERATA_LOG_WARNING: {
+      FLETCHER_LOG(DEBUG, message);
+      return;
+    }
+    case cerata::CERATA_LOG_ERROR: {
+      FLETCHER_LOG(DEBUG, message);
+      return;
+    }
+    case cerata::CERATA_LOG_FATAL: {
+      FLETCHER_LOG(DEBUG, message);
+      return;
+    }
+  }
+}

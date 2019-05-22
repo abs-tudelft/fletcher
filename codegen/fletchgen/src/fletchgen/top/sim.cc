@@ -28,9 +28,10 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
                            const std::vector<std::pair<uint32_t, uint32_t>> &firstlastidx) {
 
   // Fletcher hardware dir
-  const char *fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
+  const char *fhwd = std::getenv("FLETCHER_DIR");
   if (fhwd == nullptr) {
-    throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
+    throw std::runtime_error("Environment variable FLETCHER_DIR not set.\n"
+                             "Please point FLETCHER_DIR to the Fletcher repository.");
   }
 
   // Number of default registers
@@ -40,7 +41,7 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
   size_t nfl = firstlastidx.size();
 
   // Template file for simulation top-level
-  cerata::vhdl::Template t(std::string(fhwd) + "/sim/sim_top.vhdt");
+  cerata::vhdl::Template t(std::string(fhwd) + "/hardware/sim/sim_top.vhdt");
 
   // Bus properties
   t.Replace("BUS_ADDR_WIDTH", 64);

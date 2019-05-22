@@ -14,6 +14,7 @@
 
 #pragma once
 
+// Cerata intermediate
 #include <cerata/arrays.h>
 #include <cerata/edges.h>
 #include <cerata/flattypes.h>
@@ -22,8 +23,11 @@
 #include <cerata/nodes.h>
 #include <cerata/objects.h>
 #include <cerata/output.h>
+
+// Cerata utilities
 #include <cerata/utils.h>
+#include <cerata/logging.h>
 
+// Cerata back-ends
 #include <cerata/vhdl/vhdl.h>
-
 #include <cerata/dot/dot.h>

@@ -74,13 +74,13 @@ void VHDLOutputGenerator::Generate() {
 
         num_graphs++;
       } else {
-        CERATA_LOG(WARNING, "VHDL: Graph " << o.graph->name() << " is not a component. Skipping output generation.");
+        CERATA_LOG(WARNING, "VHDL: Graph " + o.graph->name() + " is not a component. Skipping output generation.");
       }
     } else {
       throw std::runtime_error("Graph is nullptr.");
     }
   }
-  CERATA_LOG(INFO, "VHDL: Generated output for " << num_graphs << " graphs.");
+  CERATA_LOG(INFO, "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
 }
 
 }  // namespace cerata::vhdl

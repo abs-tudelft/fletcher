@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 
 ##############################################################################
-# Sources
+# Targets
 ##############################################################################
 set(HEADERS
     src/fletchgen/schema.h
@@ -65,10 +65,13 @@ set(THIRD_PARTY_HEADERS
 
 include_directories(src)
 
-##############################################################################
-# Targets
-##############################################################################
 add_executable(${FLETCHGEN} ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} src/fletchgen/fletchgen.cc)
+
+# Turn ON to use Arrow's logging facility.
+option(ARROW_LOGGING "Use Arrow's logging facility" OFF)
+if (ARROW_LOGGING)
+  add_definitions(-DFLETCHER_USE_ARROW_LOGGING)
+endif ()
 
 ##############################################################################
 # Dependencies & Linking

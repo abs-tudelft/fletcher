@@ -1,8 +1,10 @@
+##############################################################################
+# Configuration
+##############################################################################
 cmake_minimum_required(VERSION 3.10)
 
-# Tests for any subproject
+# Turn ON to enable tests for any subproject.
 option(FLETCHER_TESTS "Build tests." ON)
-
 if (FLETCHER_TESTS)
   enable_testing()
   include(BuildGTest.cmake)
@@ -14,9 +16,16 @@ if (FLETCHER_COMMON)
   add_subdirectory(common/cpp fletcher-common)
 endif ()
 
-########################################################################################################################
+# Turn ON to use Arrow's logging facility.
+option(ARROW_LOGGING "Use Arrow's logging facility" OFF)
+if (ARROW_LOGGING)
+  # Force the setting onto all subprojects.
+  set(ARROW_LOGGING ON CACHE BOOL "")
+endif ()
+
+##############################################################################
 # Platforms:
-########################################################################################################################
+##############################################################################
 # Echo: the default platform that just outputs your fpga interactions on stdout
 option(FLETCHER_ECHO "Build with ECHO support (simulating platform interface on STDOUT)" ON)
 if (FLETCHER_ECHO)
@@ -35,18 +44,18 @@ if (FLETCHER_SNAP)
   add_subdirectory(platforms/snap/runtime)
 endif ()
 
-########################################################################################################################
+##############################################################################
 # Runtimes
-########################################################################################################################
+##############################################################################
 # CPP runtime
 option(FLETCHER_CPP "Build Fletcher C++ run-time library" ON)
 if (FLETCHER_CPP)
   add_subdirectory(runtime/cpp)
 endif ()
 
-########################################################################################################################
+##############################################################################
 # Tools
-########################################################################################################################
+##############################################################################
 # Fletcher design generator
 option(FLETCHER_GEN "Build with Fletchgen - Fletcher's design generator." ON)
 if (FLETCHER_GEN)

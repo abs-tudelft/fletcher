@@ -21,3 +21,17 @@
 std::string GetProgramName(char *argv0);
 
 cerata::Port::Dir mode2dir(fletcher::Mode mode);
+
+/**
+ * @brief Callback function for the Cerata logger.
+ * @param level             The logging level.
+ * @param message
+ * @param source_function
+ * @param source_file
+ * @param line_number
+ */
+void LogCerata(cerata::LogLevel level,
+               std::string const &message,
+               char const *source_function,
+               char const *source_file,
+               int line_number);

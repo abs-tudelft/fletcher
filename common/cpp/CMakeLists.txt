@@ -45,6 +45,12 @@ if (NOT TARGET fletcher-common)
 
   add_library(${FLETCHER_COMMON} STATIC ${COMMON_SOURCES} ${COMMON_HEADERS})
 
+  # Turn ON to use Arrow's logging facility.
+  option(ARROW_LOGGING "Use Arrow's logging facility" OFF)
+  if (ARROW_LOGGING)
+    add_definitions(-DFLETCHER_USE_ARROW_LOGGING)
+  endif ()
+
   ##########################################################################
   # Dependencies
   ##########################################################################

@@ -15,6 +15,7 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 
 namespace cerata {
 
@@ -26,26 +27,40 @@ constexpr int CERATA_LOG_ERROR = 2;
 constexpr int CERATA_LOG_FATAL = 3;
 using LogLevel = int;
 
-#define CERATA_LOG(level, msg) std::cout << "[" << level2str(CERATA_LOG_##level) + "]: " << msg << std::endl
+class Logger {
+ public:
+  /// Signature of the callback function.
+  using CallbackSignature = void(LogLevel, const std::string &, char const *, char const *, int);
 
-inline std::string level2str(int level) {
-  switch (level) {
-    default: return "D";
-    case 0: return "I";
-    case 1: return "W";
-    case 2: return "E";
-    case 3: return "F";
+  /// @brief Enable the logger. Can only be done after the callback function was set.
+  inline void enable(std::function<CallbackSignature> callback) {
+    callback_ = callback;
   }
+
+  /// @brief Return true if callback was set, false otherwise.
+  inline bool IsEnabled() { return callback_ ? true : false; }
+
+  /// @brief Write something using the logging callback function.
+  inline void write(LogLevel level,
+                    std::string const &message,
+                    char const *source_function,
+                    char const *source_file,
+                    int line_number) {
+    if (callback_) {
+      callback_(level, message, source_function, source_file, line_number);
+    }
+  }
+
+ private:
+  /// @brief Callback function for Cerata logging
+  std::function<void(LogLevel, const std::string &, char const *, char const *, int)> callback_;
+};
+
+inline Logger &logger() {
+  static Logger l;
+  return l;
 }
 
-inline void StartLogging(const std::string &app_name, LogLevel level, const std::string &file_name) {
-  // No init required, but prevent compiler warnings by pretending to use the arguments.
-  (void)app_name;
-  (void)level;
-  (void)file_name;
-}
-inline void StopLogging() {
-  // No shutdown required.
-}
+#define CERATA_LOG(level, msg) logger().write(CERATA_LOG_##level, msg,  __FUNCTION__, __FILE__, __LINE__)
 
 }
