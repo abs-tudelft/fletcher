@@ -84,6 +84,17 @@ TEST(Common, flattenArrayBuffers_list) {
   ASSERT_EQ(buffers[1], va->values().get());
 }
 
+TEST(Common, AppendMetaRequired) {
+  auto schema = fletcher::GetPrimReadSchema();
+  ASSERT_NE(schema->metadata(), nullptr);
+  std::unordered_map<std::string, std::string> map;
+  schema->metadata()->ToUnorderedMap(&map);
+  ASSERT_TRUE(map.count("fletcher_name") > 0);
+  ASSERT_TRUE(map.count("fletcher_mode") > 0);
+  ASSERT_TRUE(map.at("fletcher_name") == "PrimRead");
+  ASSERT_TRUE(map.at("fletcher_mode") == "read");
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

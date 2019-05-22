@@ -103,32 +103,32 @@ int GetIntMeta(const std::shared_ptr<arrow::Field> &field, std::string key, int 
 bool MustIgnore(const std::shared_ptr<arrow::Field> &field);
 
 /**
- * @brief Append the minimum required metadata for Fletcher to a schema.
+ * @brief Append the minimum required metadata for Fletcher to a schema. Returns a copy of the schema.
  * @param schema        The Schema to append to.
  * @param schema_name   The Schema name that will be used for hardware generation.
  * @param schema_mode   The Schema mode, i.e. whether to read or write from a RecordBatch as seen by
  *                      the accelerator kernel.
- * @return              The Schema.
+ * @return              A copy of the Schema with metadata appended.
  */
 std::shared_ptr<arrow::Schema> AppendMetaRequired(const std::shared_ptr<arrow::Schema> &schema,
                                                   std::string schema_name,
                                                   Mode schema_mode);
 
 /**
- * @brief Append Elements-Per-Cycle metadata to a field.
+ * @brief Append Elements-Per-Cycle metadata to a field. Returns a copy of the field.
  *
  * This works only for primitive and list<primitive> fields.
  *
  * @param field   The field to append to.
  * @param epc     The elements-per-cycle.
- * @return        The field.
+ * @return        A copy of the field with metadata appended.
  */
 std::shared_ptr<arrow::Field> AppendMetaEPC(const std::shared_ptr<arrow::Field> &field, int epc);
 
 /**
- * @brief Append metadata to a field to signify Fletcher should ignore this field.
+ * @brief Append metadata to a field to signify Fletcher should ignore this field. Returns a copy of the field.
  * @param field   The field to append to.
- * @return        The field.
+ * @return        A copy of the field with metadata appended.
  */
 std::shared_ptr<arrow::Field> AppendMetaIgnore(const std::shared_ptr<arrow::Field> &field);
 

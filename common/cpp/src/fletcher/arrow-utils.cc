@@ -186,23 +186,20 @@ std::shared_ptr<arrow::Schema> AppendMetaRequired(const std::shared_ptr<arrow::S
   else
     values.emplace_back("write");
   auto meta = std::make_shared<arrow::KeyValueMetadata>(keys, values);
-  schema->AddMetadata(meta);
-  return schema;
+  return schema->AddMetadata(meta);
 }
 
 std::shared_ptr<arrow::Field> AppendMetaEPC(const std::shared_ptr<arrow::Field> &field, int epc) {
   auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({"fletcher_epc"}),
                                                         std::vector<std::string>({std::to_string(epc)}));
-  field->AddMetadata(meta);
-  return field;
+  return field->AddMetadata(meta);
 }
 
 std::shared_ptr<arrow::Field> AppendMetaIgnore(const std::shared_ptr<arrow::Field> &field) {
   const static std::vector<std::string> ignore_key = {"fletcher_ignore"};
   const static std::vector<std::string> ignore_value = {"true"};
   const static auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
-  field->AddMetadata(meta);
-  return field;
+  return field->AddMetadata(meta);
 }
 
 std::vector<std::shared_ptr<arrow::Schema>> ReadSchemasFromFiles(const std::vector<std::string> &file_names) {
