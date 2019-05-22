@@ -1,3 +1,6 @@
 work
 transcript
 vsim.wlf
+output/
+vhdl/
+!vhdl/Kernel.vhd
