@@ -215,7 +215,7 @@ Block Inst::GeneratePortArrayMaps(const std::shared_ptr<PortArray> &array) {
     auto p = *Cast<Port>(n);
     ret << GeneratePortMaps(p);
   }
-  return ret;
+  return ret.sort('(');
 }
 
 MultiBlock Inst::Generate(const Graph *graph) {

@@ -17,6 +17,7 @@
 #include <iostream>
 #include <sstream>
 #include <regex>
+#include <string>
 
 namespace cerata::vhdl {
 
@@ -78,6 +79,26 @@ std::string Block::str() const {
   return ret.str();
 }
 
+Block &Block::reverse() {
+  std::reverse(lines.begin(), lines.end());
+  return *this;
+}
+
+Block &Block::sort(std::optional<char> c) {
+  std::stable_sort(lines.begin(), lines.end(),
+            [&](const Line &la, const Line &lb) -> bool {
+              auto a = la.ToString();
+              auto b = lb.ToString();
+              if (c) {
+                return a.substr(0, a.find_first_of(*c)) > b.substr(0, b.find_first_of(*c));
+              } else {
+                return a > b;
+              }
+            }
+  );
+  return *this;
+}
+
 Block &operator<<(Block &lhs, const Line &line) {
   lhs.lines.push_back(line);
   return lhs;
@@ -88,7 +109,7 @@ Block &operator<<(Block &lhs, const Block &rhs) {
   return lhs;
 }
 
-Block &Prepend(const std::string &lhs, Block *rhs, std::string sep) {
+Block &Prepend(const std::string &lhs, Block *rhs, const std::string &sep) {
   if (!lhs.empty()) {
     for (auto &l : rhs->lines) {
       if (!l.parts.empty()) {
@@ -121,7 +142,7 @@ Block &operator<<(Block &lhs, const std::string &rhs) {
 }
 
 Block &operator<<=(Block &lhs, const std::string &rhs) {
-  if (lhs.lines.size() > 0) {
+  if (!lhs.lines.empty()) {
     for (uint i = 0; i < lhs.lines.size() - 1; i++) {
       lhs.lines[i].parts.back().append(rhs);
     }
@@ -156,7 +177,7 @@ std::string MultiBlock::ToString() const {
   return ret.str();
 }
 
-std::string ToString(std::vector<Block> blocks) {
+std::string ToString(const std::vector<Block> &blocks) {
   std::stringstream ret;
   for (const auto &b : blocks) {
     ret << b.str();
@@ -164,4 +185,11 @@ std::string ToString(std::vector<Block> blocks) {
   return ret.str();
 }
 
+std::string Line::ToString() const {
+  std::stringstream str;
+  for (const auto &p : parts) {
+    str << p;
+  }
+  return str.str();
+}
 }  // namespace cerata::vhdl

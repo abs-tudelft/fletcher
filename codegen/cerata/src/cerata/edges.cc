@@ -85,8 +85,8 @@ std::shared_ptr<Signal> insert(const std::shared_ptr<Edge> &edge, const std::str
   std::shared_ptr<Signal> signal;
 
   // Get the destination type
-  auto type = dst->type();
-  auto name = name_prefix + dst->name();
+  auto type = src->type();
+  auto name = name_prefix + src->name();
   // Create the signal
   signal = Signal::Make(name, type);
   // Remove the original edge from the source and destination node
