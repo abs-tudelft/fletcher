@@ -90,7 +90,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
       auto bus = *Cast<BusPort>(array_rw->port("bus")->Copy());
       // Give the new bus port a unique name
       // TODO(johanpel): move the bus renaming to the Mantle level
-      bus->SetName(fs->name() + "_" + bus->name());
+      bus->SetName(fs->name() + "_" + f->name() + "_" + bus->name());
       // Add them to the RecordBatch
       AddObject(bus);
       // Remember the port
