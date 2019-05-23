@@ -1,0 +1,1 @@
+fletchgen -i input/Hobbiton.fbs input/Bywater.fbs input/Beer.fbs input/Soda.fbs -r input/Hobbiton.rb input/Bywater.rb -s output/SodaBeer.srec -l vhdl --sim

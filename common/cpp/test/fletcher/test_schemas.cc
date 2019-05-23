@@ -143,14 +143,4 @@ std::shared_ptr<arrow::Schema> GetSodaBeerSchema(const std::string& name, Mode m
   return AppendMetaRequired(schema, name, mode);
 }
 
-std::shared_ptr<arrow::Schema> GetSodaBeerSchema(const std::string& name, Mode mode) {
-  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("name", arrow::utf8(), false),
-      arrow::field("age", arrow::uint8(), false)
-  };
-  auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  AppendMetaRequired(schema, name, mode);
-  return schema;
-}
-
 }  // namespace fletcher
