@@ -10,7 +10,7 @@ proc gen_cr {{seed -1}} {
     exec python3 ../gen_tb.py > ArrayReader_tb.vhd
   } else {
     echo "Seed = $seed"
-    exec python3 gen_tb.py $seed > ArrayReader_tb.vhd
+    exec python3 ../gen_tb.py $seed > ArrayReader_tb.vhd
   }
   
   add_source ArrayReader_tb.vhd
