@@ -52,7 +52,6 @@ std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &op
 
   // Generate the SREC file
   auto srec_buffer_offsets = fletchgen::srec::WriteRecordBatchesToSREC(recordbatches, options->srec_out_path);
-
   return srec_buffer_offsets;
 }
 
@@ -112,7 +111,11 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<
 
   srec::File sr(srecbuf, offsets.back(), 0);
   std::ofstream ofs(srec_fname, std::ofstream::out);
-  sr.write(ofs);
+  if (ofs.good()) {
+    sr.write(ofs);
+  } else {
+    FLETCHER_LOG(ERROR, "Could not open SREC file for writing.");
+  }
   ofs.close();
   free(srecbuf);
   return offsets;

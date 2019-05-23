@@ -88,7 +88,7 @@ bool Options::MustGenerateSREC() {
       return true;
     } else {
       FLETCHER_LOG(WARNING, "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.");
-      return false;
+      return true;
     }
   }
   return false;
