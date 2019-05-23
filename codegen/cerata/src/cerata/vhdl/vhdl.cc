@@ -31,11 +31,6 @@
 
 namespace cerata::vhdl {
 
-bool FileExists (const std::string& name) {
-  std::ifstream f(name.c_str());
-  return f.good();
-}
-
 void VHDLOutputGenerator::Generate() {
   // Make sure the subdirectory exists.
   CreateDir(subdir());

@@ -42,7 +42,7 @@ struct Options {
 
   bool axi_top = false;
   bool sim_top = false;
-  bool override_kernels = false;
+  bool overwrite = false;
 
   /// Vivado HLS template
   bool vivado_hls = false;
