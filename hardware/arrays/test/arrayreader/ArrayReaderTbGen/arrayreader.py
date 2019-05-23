@@ -312,9 +312,14 @@ class NullReaderLevel(ReaderLevel):
         return [impl_tv, base_tv, val_tv] + self.child.test_vectors(memory, row_count, commands)
 
 
-def _list_test_vectors(reader, memory, row_count, commands):
+def _list_test_vectors(reader, memory, row_count, commands, lists_per_cycle=None):
     """Test vector generation function shared by ListReaderLevel and
     ListPrimReaderLevel."""
+
+    # We support a lists per cycle field on the interface, but don't support it
+    # outputting anything other than 1 yet.
+    if lists_per_cycle not in [None, 1]:
+        raise NotImplementedError("We only support 1 list per cycle so far")
 
     # Generate on average 4 items per list.
     child_length = row_count * 4
@@ -334,6 +339,8 @@ def _list_test_vectors(reader, memory, row_count, commands):
     # stream for the child.
     base_tv = TestVectors(reader.cmd_idx_base)
     len_tv  = TestVectors(reader.out_length, reader.out_stream.name + "dvalid = '1'")
+    if lists_per_cycle is not None:
+        cnt_tv = TestVectors(reader.out_count, reader.out_stream.name + "dvalid = '1'")
     for start, stop in commands:
         buf_idx = random.randrange(4)
         addr, data = buffers[buf_idx]
@@ -341,8 +348,13 @@ def _list_test_vectors(reader, memory, row_count, commands):
         child_idxs.append(list(zip(data[start:stop], data[start+1:stop+1])))
         base_tv.append(addr)
         len_tv.extend([data[i+1] - data[i] for i in range(start, stop)])
+        if lists_per_cycle is not None:
+            cnt_tv.extend([1 for _ in range(start, stop)])
 
-    return child_length, child_commands, child_idxs, [base_tv, len_tv]
+    tvs = [base_tv, len_tv]
+    if lists_per_cycle is not None:
+        tvs.append(cnt_tv)
+    return child_length, child_commands, child_idxs, tvs
 
 
 class ListReaderLevel(ReaderLevel):
@@ -445,6 +457,7 @@ class ListPrimReaderLevel(ReaderLevel):
         cmd_val_base,
         out_stream,
         out_length,
+        out_count,
         out_el_stream,
         out_el_values,
         out_el_count,
@@ -462,6 +475,7 @@ class ListPrimReaderLevel(ReaderLevel):
         self.cmd_val_base = cmd_val_base
         self.out_stream = out_stream
         self.out_length = out_length
+        self.out_count = out_count
         self.out_el_stream = out_el_stream
         self.out_el_values = out_el_values
         self.out_el_count = out_el_count
@@ -480,6 +494,7 @@ class ListPrimReaderLevel(ReaderLevel):
     def _config_defaults(self):
         return { # NOTE: the defaults here MUST correspond to VHDL defaults.
             "epc":                      1,
+            "lepc":                     1,
             "idx_cmd_in_slice":         False,
             "idx_bus_req_slice":        True,
             "idx_bus_fifo_depth":       16,
@@ -525,7 +540,7 @@ class ListPrimReaderLevel(ReaderLevel):
 
         # Figure out the test vectors for the list.
         child_length, child_commands, child_idxs, tvs = _list_test_vectors(
-            self, memory, row_count, commands)
+            self, memory, row_count, commands, lists_per_cycle=self.lepc)
 
         # Generate memory for 4 buffers of the given child length. We randomly
         # select which buffer to use for each command.
@@ -675,8 +690,10 @@ def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
     """Internal function which converts a UTF8/bytes field into a ReaderLevel."""
 
     # Add the signals to the existing streams.
+    lepc = field.lists_per_cycle
     cmd_val_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "valBase", BUS_ADDR_WIDTH))
     cmd_idx_base = cmd_ctrl.append(Signal(prefix + "cmd_" + field_prefix + "idxBase", BUS_ADDR_WIDTH))
+    out_count    = out_data.append(Signal(prefix + "out_" + field_prefix + "cnt", lepc))
     out_length   = out_data.append(Signal(prefix + "out_" + field_prefix + "len", INDEX_WIDTH))
 
     # Create a secondary output stream for the list elements.
@@ -701,11 +718,13 @@ def _bytes_reader(field, prefix, field_prefix, cmd_stream, cmd_ctrl, out_stream,
         cmd_val_base,
         out_stream,
         out_length,
+        out_count,
         out_el_stream,
         out_el_values,
         out_el_count,
         **field.get_cfg_dict({
             "bytes_per_cycle":          "epc",
+            "lists_per_cycle":          "lepc",
             "idx_cmd_in_slice":         "idx_cmd_in_slice",
             "idx_bus_req_slice":        "idx_bus_req_slice",
             "idx_bus_fifo_depth":       "idx_bus_fifo_depth",

@@ -252,6 +252,9 @@ class BytesField(Field):
             # Default number of bytes returned per cycle.
             "bytes_per_cycle":          1,
 
+            # Default number of strings/lists returned per cycle.
+            "lists_per_cycle":          1,
+
             # Default value buffer reader configuration.
             "cmd_in_slice":             False,
             "bus_req_slice":            True,
@@ -316,6 +319,7 @@ class BytesField(Field):
             name = name,
             nullable = random.choice([True, True, False]),
             bytes_per_cycle = random.randint(1, 8),
+            lists_per_cycle = 1,
 
             cmd_in_slice =             random.choice([True, False]),
             bus_req_slice =            random.choice([True, False]),
