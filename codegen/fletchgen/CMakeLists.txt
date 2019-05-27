@@ -122,7 +122,10 @@ if (FLETCHGEN_TESTS)
       test/fletchgen/test_kernel.h
       test/fletchgen/test_mantle.h
       test/fletchgen/test_bus.h
+      test/fletchgen/srec/test_srec.h
       )
+
+  include_directories(test)
 
   add_executable(${FLETCHGEN}-test ${HEADERS} ${THIRD_PARTY_HEADERS} ${SOURCES} ${TEST_HEADERS} ${TEST_SOURCES})
 

@@ -87,10 +87,11 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<
   auto offsets = GetBufferOffsets(buffers);
   FLETCHER_LOG(DEBUG, "Contiguous size: " + std::to_string(offsets.back()));
 
-  // Generate a warning when stuff gets larger than a megabyte.
-  if (offsets.back() > 1024 * 1024) {
-    FLETCHER_LOG(WARNING, "The recordbatch you are trying to serialize is very large. "
-                          "Use the SREC utility only for functional verification purposes in simulation.");
+  // Generate a warning when buffers get larger than a 42 kibibytes.
+  if (offsets.back() > 42 * 1024) {
+    FLETCHER_LOG(WARNING, "The RecordBatch you are trying to serialize is rather large (greater than 42 KiB)."
+                          "The SREC utility is meant for functional verification purposes in simulation only."
+                          "Consider making your RecordBatch smaller.");
   }
 
   unsigned int i = 0;
@@ -109,7 +110,7 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<
     memcpy(&srecbuf[offsets[i]], buffers[i]->data(), static_cast<size_t>(buffers[i]->size()));
   }
 
-  srec::File sr(srecbuf, offsets.back(), 0);
+  srec::File sr(0, srecbuf, offsets.back());
   std::ofstream ofs(srec_fname, std::ofstream::out);
   if (ofs.good()) {
     sr.write(ofs);
