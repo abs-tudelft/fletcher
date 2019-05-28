@@ -14,9 +14,19 @@
 
 #pragma once
 
+#include <deque>
+#include <memory>
+
 #include <gtest/gtest.h>
 
+#include <arrow/api.h>
+#include <arrow/ipc/api.h>
+#include <arrow/io/api.h>
+
+#include <fletcher/test_recordbatches.h>
+
 #include "fletchgen/srec/srec.h"
+#include "fletchgen/srec/recordbatch.h"
 
 namespace fletchgen::srec {
 
@@ -63,15 +73,44 @@ TEST(SREC, File) {
                       0x00, 0x14, 0x4E, 0xD4};
   // Check header record. Default header is similar to example.
   auto sro = File(0, data, 52);
-  auto ofs = std::ofstream("srec_test.srec");
-  sro.write(ofs);
+  auto ofs = std::ofstream("srec_file_test.srec");
+  sro.write(&ofs);
   ofs.close();
-  auto ifs = std::ifstream("srec_test.srec");
-  auto sri = File(ifs);
+  auto ifs = std::ifstream("srec_file_test.srec");
+  auto sri = File(&ifs);
   uint8_t* result;
   size_t size;
   sri.ToBuffer(&result, &size);
   ASSERT_EQ(memcmp(data, result, 52), 0);
+}
+
+TEST(SREC, RecordBatchRoundTrip) {
+  // Get a recordbatch with some integers
+  auto rb = fletcher::GetStringRB();
+
+  // Open an Arrow FileOutputStream
+  std::shared_ptr<arrow::io::OutputStream> aos;
+  EXPECT_TRUE(arrow::io::FileOutputStream::Open("test.rbf", &aos).ok());
+  // Create a RecordBatchFile writer
+  std::shared_ptr<arrow::ipc::RecordBatchWriter> afw;
+  EXPECT_TRUE(arrow::ipc::RecordBatchFileWriter::Open(aos.get(), rb->schema(), &afw).ok());
+  // Write the RecordBatch to the FileOutputStream
+  EXPECT_TRUE(afw->WriteRecordBatch(*rb).ok());
+
+  /*
+
+
+
+  std::deque<std::shared_ptr<arrow::RecordBatch>> rbs_out;
+  rbs_out.push_back(rb);
+  auto ofs = std::ofstream("srec_rb_test.srec");
+  auto buf_offsets = WriteRecordBatchesToSREC(&ofs, rbs_out);
+  ofs.close();
+  auto ifs = std::ifstream("srec_rb_test.srec");
+  auto rbs_in = ReadRecordBatchesFromSREC(&ifs, {rb->schema()}, {4}, buf_offsets);
+
+  std::cerr << rbs_in[0]->column(0)->ToString();
+   */
 }
 
 }

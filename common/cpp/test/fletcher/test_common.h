@@ -19,6 +19,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <fletcher/common.h>
+#include <arrow/api.h>
 
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"
