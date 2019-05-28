@@ -1,6 +1,6 @@
 # Fletcher: A framework to integrate FPGA accelerators with Apache Arrow
 
-[![Build Status](https://travis-ci.org/johanpel/fletcher.svg?branch=master)](https://travis-ci.org/johanpel/fletcher)
+[![Build Status](https://travis-ci.com/abs-tudelft/fletcher.svg?branch=develop)](https://travis-ci.com/abs-tudelft/fletcher)
 [![pipeline status](https://gitlab.com/mbrobbel/fletcher/badges/master/pipeline.svg)](https://gitlab.com/mbrobbel/fletcher/commits/master)
 
 Fletcher is a framework that helps to integrate FPGA accelerators with tools and
