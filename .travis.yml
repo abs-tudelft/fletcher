@@ -2,11 +2,6 @@ dist: xenial
 
 language: cpp
 
-branches:
-  only:
-    - master
-    - develop
-
 env:
   global:
     # versions
