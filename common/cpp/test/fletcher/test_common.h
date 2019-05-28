@@ -40,7 +40,7 @@ TEST(Common, AppendExpectedBuffersFromField) {
 }
 
 TEST(Common, RecordBatchFileRoundTrip) {
-  auto wrb = fletcher::getStringRB();
+  auto wrb = fletcher::GetStringRB();
   fletcher::WriteRecordBatchToFile(wrb, "test-common.rb");
   auto rrb = fletcher::ReadRecordBatchFromFile("test-common.rb", wrb->schema());
   ASSERT_TRUE(wrb->Equals(*rrb));
@@ -48,7 +48,7 @@ TEST(Common, RecordBatchFileRoundTrip) {
 
 TEST(Common, FlattenArrayBuffers_string) {
 // Test flattening of array buffers with field
-  auto rb = fletcher::getStringRB();
+  auto rb = fletcher::GetStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer *> buffers;
@@ -61,7 +61,7 @@ TEST(Common, FlattenArrayBuffers_string) {
 
 TEST(Common, FlattenArrayBuffers_string_noField) {
 // Test flattening of array buffers without field
-  auto rb = fletcher::getStringRB();
+  auto rb = fletcher::GetStringRB();
   auto sa = std::dynamic_pointer_cast<arrow::StringArray>(rb->column(0));
 
   std::vector<arrow::Buffer *> buffers;
@@ -74,7 +74,7 @@ TEST(Common, FlattenArrayBuffers_string_noField) {
 
 TEST(Common, FlattenArrayBuffers_list) {
 // Test flattening of array buffers without field
-  auto rb = fletcher::getListUint8RB();
+  auto rb = fletcher::GetListUint8RB();
   auto la = std::dynamic_pointer_cast<arrow::ListArray>(rb->column(0));
   auto va = std::dynamic_pointer_cast<arrow::UInt8Array>(la->values());
 

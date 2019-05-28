@@ -26,7 +26,7 @@
 
 namespace fletcher {
 
-std::shared_ptr<arrow::RecordBatch> getStringRB() {
+inline std::shared_ptr<arrow::RecordBatch> GetStringRB() {
   // Some names
   std::vector<std::string> names = {"Alice", "Bob", "Carol", "David",
                                     "Eve", "Frank", "Grace", "Harry",
@@ -50,7 +50,7 @@ std::shared_ptr<arrow::RecordBatch> getStringRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getInt8RB() {
+inline std::shared_ptr<arrow::RecordBatch> GetIntRB() {
   std::vector<int8_t> numbers = {-1, 3, -3, 7};
   // Make a string builder
   arrow::Int8Builder int_builder;
@@ -65,7 +65,7 @@ std::shared_ptr<arrow::RecordBatch> getInt8RB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
+inline std::shared_ptr<arrow::RecordBatch> GetListUint8RB() {
   std::vector<std::vector<uint8_t>> numbers = {{1, 3, 3, 7}, {3, 1, 4, 1, 5, 9, 2}, {4, 2}};
 
   auto vb = std::make_shared<arrow::UInt8Builder>();
@@ -86,7 +86,7 @@ std::shared_ptr<arrow::RecordBatch> getListUint8RB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
+inline std::shared_ptr<arrow::RecordBatch> GetFloat64RB() {
   std::vector<double> numbers = {1.2, 0.6, 1.4, 0.3, 4.5, -1.2, 5.1, -1.3,};
   // Make a float builder
   auto float_builder = std::make_shared<arrow::DoubleBuilder>();
@@ -115,7 +115,7 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
+inline std::shared_ptr<arrow::RecordBatch> GetInt64RB() {
   std::vector<int64_t> numbers = {12, 6, 14, 3, 13, 0, 45, -500, 51, -520,};
   // Make an int builder
   auto int_builder = std::make_shared<arrow::Int64Builder>();
@@ -144,7 +144,7 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB() {
+inline std::shared_ptr<arrow::RecordBatch> GetInt64ListWideRB() {
   std::vector<int64_t> numbers = {12, 6, 110, 120, 130, 140, 150, -160,
                                   14, 3, 111, 121, 131, 141, 151, -161,
                                   13, 0, 112, 122, 132, 142, 152, -162,
@@ -175,7 +175,7 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getFilterRB() {
+inline std::shared_ptr<arrow::RecordBatch> GetFilterRB() {
   // Some first names
   std::vector<std::string> first_names = {"Alice", "Bob", "Carol", "David"};
   std::vector<std::string> last_names = {"Cooper", "Smith", "Smith", "Smith"};
@@ -202,7 +202,7 @@ std::shared_ptr<arrow::RecordBatch> getFilterRB() {
   return record_batch;
 }
 
-std::shared_ptr<arrow::RecordBatch> getSodaBeerRB(const std::vector<std::string> &names,
+inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(const std::vector<std::string> &names,
                                                   const std::vector<uint8_t> &ages) {
   assert(names.size() == ages.size());
   // Make a string builder
