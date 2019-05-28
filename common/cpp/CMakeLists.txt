@@ -72,11 +72,7 @@ if (NOT TARGET fletcher-common)
         test/fletcher/test_generate.h
         test/fletcher/test_schemas.h
         test/fletcher/test_recordbatches.h)
-
-    set(TEST_GEN_SOURCES
-        test/fletcher/test_schemas.cc
-        test/fletcher/test_recordbatches.cc)
-
+      
     include_directories(test)
 
     SET(TEST_GEN_ALL ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES})
