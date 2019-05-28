@@ -110,11 +110,11 @@ package Utils is
   -- Returns true if a is an integer multiple of 2^b, false otherwise
   function is_aligned(a : in unsigned; b : natural) return boolean;
 
-  -- Returns the one-hot encoded version of a count with implicit '1' MSB
-  function cnt2oh(a: in unsigned; bits : natural) return std_logic_vector;
+  -- Returns the thermometer/unary-coded version of a count with implicit '1' MSB
+  function cnt2th(a: in unsigned; bits : natural) return std_logic_vector;
 
-  -- Returns the count with implicit '1' MSB of a one-hot encoded value
-  function oh2cnt(a: in std_logic_vector) return unsigned;
+  -- Returns the count with implicit '1' MSB of a one-hot- or thermometer/unary-encoded value
+  function th2cnt(a: in std_logic_vector) return unsigned;
 
   -- 1-read 1-write RAM.
   component Ram1R1W is
@@ -445,7 +445,7 @@ package body Utils is
     end if;
   end is_aligned;
 
-  function cnt2oh(a: in unsigned; bits: natural) return std_logic_vector is
+  function cnt2th(a: in unsigned; bits: natural) return std_logic_vector is
     type ret_array_type is array(0 to bits-1) of std_logic_vector(bits-1 downto 0);
     variable ret_array : ret_array_type;
   begin
@@ -462,9 +462,9 @@ package body Utils is
     ret_array(0) := (others => '1');
 
     return ret_array(to_integer(a) mod bits);
-  end cnt2oh;
+  end cnt2th;
 
-  function oh2cnt(a: in std_logic_vector) return unsigned is
+  function th2cnt(a: in std_logic_vector) return unsigned is
     variable cnt : unsigned(log2ceil(a'length)-1 downto 0) := (others => '0');
   begin
     for i in 0 to a'length-1 loop
@@ -473,6 +473,6 @@ package body Utils is
       end if;
     end loop;
     return cnt;
-  end oh2cnt;
+  end th2cnt;
 
 end Utils;
