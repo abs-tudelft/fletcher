@@ -123,7 +123,7 @@ architecture Behavioral of StreamPrefixSum is
     
 begin
 
-  in_skip <= not(work.Utils.cnt2oh(unsigned(in_count), COUNT_MAX));
+  in_skip <= not(work.Utils.cnt2th(unsigned(in_count), COUNT_MAX));
 
   -- Represent input data as array
   input_deserialize: for I in 0 to COUNT_MAX-1 generate
