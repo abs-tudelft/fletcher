@@ -177,14 +177,18 @@ File::File(uint32_t start_address, const uint8_t *data, size_t size, const std::
   }
 }
 
-void File::write(std::ostream &output) {
-  for (auto &r : records) {
-    output << r.ToString(true);
+void File::write(std::ostream* output) {
+  if (output->good()) {
+    for (auto &r : records) {
+      (*output) << r.ToString(true);
+    }
+  } else {
+    FLETCHER_LOG(ERROR, "Could not write SREC file to output stream.");
   }
 }
 
-File::File(std::istream &input) {
-  for (std::string line; std::getline(input, line);) {
+File::File(std::istream* input) {
+  for (std::string line; std::getline(*input, line);) {
     auto record = Record::FromString(line);
     if (record) {
       records.push_back(*record);
@@ -193,6 +197,7 @@ File::File(std::istream &input) {
     }
   }
 }
+
 void File::ToBuffer(uint8_t **buf, size_t *size) {
   // Find the highest address and total size
   uint32_t top_addr = 0;

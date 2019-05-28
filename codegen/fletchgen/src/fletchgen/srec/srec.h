@@ -101,7 +101,7 @@ class Record {
 
   inline uint32_t address() const { return address_; }
   inline uint32_t size() const { return size_; }
-  inline uint8_t* data() const { return data_; }
+  inline uint8_t *data() const { return data_; }
 
  private:
   /// Record type.
@@ -145,10 +145,22 @@ struct File {
    * @brief Construct a new File, reading the contents from an input stream.
    * @param input
    */
-  explicit File(std::istream &input);
+  explicit File(std::istream *input);
 
-  void write(std::ostream &output);
+  /**
+   * @brief Write the SREC file to an output stream.
+   * @param output  The output stream to write to.
+   */
+  void write(std::ostream *output);
 
+  /**
+   * @brief Convert an SREC file to a raw buffer.
+   *
+   * Allocates memory that must be freed.
+   *
+   * @param buffer  A pointer to a pointer that will be set to newly allocated buffer.
+   * @param size    The size of the buffer.
+   */
   void ToBuffer(uint8_t **buffer, size_t *size);
 };
 
