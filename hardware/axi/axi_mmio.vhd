@@ -206,13 +206,13 @@ begin
         -- Check for each register if it needs to be reset
         if (REG_RESET /= "") then
           for I in REG_RESET'range loop
-              if (REG_RESET(i) /= 'Y') then
-                r.regs(i-REG_RESET'low) <= (others => '0');
+              if (REG_RESET(I) /= 'Y') then
+                r.regs(I-REG_RESET'low) <= (others => '0');
               end if;
           end loop;
         else
-          for I in REG_RESET'range loop
-            r.regs(i-REG_RESET'low) <= (others => '0');
+          for I in r.regs'range loop
+            r.regs(I) <= (others => '0');
           end loop;
         end if;
       end if;
