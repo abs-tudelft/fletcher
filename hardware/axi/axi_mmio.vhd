@@ -211,8 +211,8 @@ begin
               end if;
           end loop;
         else
-          for I in REG_RESET'range loop
-            r.regs(i-REG_RESET'low) <= (others => '0');
+          for I in r.regs'range loop
+            r.regs(i) <= (others => '0');
           end loop;
         end if;
       end if;
