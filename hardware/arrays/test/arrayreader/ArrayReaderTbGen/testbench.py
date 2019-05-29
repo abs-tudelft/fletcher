@@ -580,6 +580,7 @@ class Testbench(object):
             end loop;
 
             addr := unsigned({req_prefix}addr);
+            addr := addr - (addr mod (BUS_DATA_WIDTH / 8));
             len := to_integer(unsigned({req_prefix}len));
 
             -- Check that length is nonzero.

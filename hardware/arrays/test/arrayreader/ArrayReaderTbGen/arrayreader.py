@@ -59,7 +59,7 @@ class ReaderLevel(Configurable):
     def _write_buffer(cls, memory, bits, data):
         """Writes an arrow buffer to the given Memory given a list of integers
         and bit width."""
-        memory.align(max(8*64, bits))
+        memory.align(64)
         addr = memory.byte_addr()
         for entry in data:
             memory.write(entry, bits)
