@@ -22,7 +22,7 @@ namespace fletcher {
 HexView::HexView(uint64_t start, std::string str, uint64_t row, uint64_t col, uint64_t width)
     : str(std::move(str)), row(row), col(col), width(width), start(start) {}
 
-std::string HexView::toString(bool header) {
+std::string HexView::ToString(bool header) {
   char buf[6] = {0};
   std::string ret;
   if (header) {
@@ -43,7 +43,7 @@ unsigned char convertToReadable(unsigned char c) {
   return c;
 }
 
-void HexView::addData(const uint8_t *ptr, size_t size) {
+void HexView::AddData(const uint8_t *ptr, size_t size) {
   char buf[64] = {0};
   std::string left;
   std::string right;

@@ -21,9 +21,6 @@
 
 #include "fletcher/test_schemas.h"
 
-/// Arrow OK or FAIL
-#define OOF
-
 namespace fletcher {
 
 inline std::shared_ptr<arrow::RecordBatch> GetStringRB() {

@@ -44,7 +44,7 @@ struct Timer {
   inline void stop() { stop_ = std::chrono::high_resolution_clock::now(); }
 
   /// @brief Retrieve the interval in seconds.
-  double seconds() {
+  double seconds() const {
     duration diff = stop_ - start_;
     return diff.count();
   }

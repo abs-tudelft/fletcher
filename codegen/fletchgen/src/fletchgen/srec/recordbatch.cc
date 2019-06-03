@@ -104,10 +104,10 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
   unsigned int i = 0;
   for (const auto &buf : buffers) {
     fletcher::HexView hv(0);
-    hv.addData(buf->data(), static_cast<size_t>(buf->size()));
+    hv.AddData(buf->data(), static_cast<size_t>(buf->size()));
     FLETCHER_LOG(DEBUG, "Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
         "Start address: " + std::to_string(offsets[i]) + "\n" +
-        hv.toString());
+        hv.ToString());
     i++;
   }
 
@@ -132,45 +132,9 @@ std::deque<std::shared_ptr<arrow::RecordBatch>> ReadRecordBatchesFromSREC(std::i
                                                                           const std::vector<uint64_t> &num_rows,
                                                                           const std::vector<uint64_t> &buf_offsets) {
   std::deque<std::shared_ptr<arrow::RecordBatch>> ret;
-// dit is kut
-  /*
-  // Obtain a raw buffer with bytes.
-  uint8_t *buf;
-  size_t size;
-  auto fsrec = srec::File(input);
-  fsrec.ToBuffer(&buf, &size);
-
-  int bo = 0;
-
-  for (size_t s = 0; s < schemas.size(); s++) {
-    std::vector<std::shared_ptr<arrow::Array>> arrays;
-    for (const auto &f : schemas[s]->fields()) {
-      // Arrow buffers to construct the ArrayData with
-      std::vector<std::shared_ptr<arrow::Buffer>> arrow_buffers;
-
-      // Get expected buffers
-      std::vector<std::string> expected_buffers;
-      fletcher::AppendExpectedBuffersFromField(&expected_buffers, f);
-
-      //
-      for (size_t eb = 0; eb < expected_buffers.size(); eb++) {
-        auto arrow_buf = std::make_shared<arrow::Buffer>(buf + buf_offsets[bo], buf_offsets[bo + 1] - buf_offsets[bo]);
-        bo++;
-        arrow_buffers.push_back(arrow_buf);
-      }
-
-      auto ad = arrow::ArrayData::Make(f->type(), num_rows[s], arrow_buffers);
-      auto b = ad->buffers.size();
-      std::cerr << b << std::endl;
-    }
-    auto rb = arrow::RecordBatch::Make(schemas[s], num_rows[s], arrays);
-    if (rb->Validate().ok();
-    ret.push_back(rb);
-  }
-
-  free(buf);
+  // TODO(johanpel): implement this
+  FLETCHER_LOG(ERROR, "SREC to RecordBatch not yet implemented.");
   return ret;
-  */
 }
 
 } // namespace fletchgen::srec
