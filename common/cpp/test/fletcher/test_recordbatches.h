@@ -172,6 +172,22 @@ inline std::shared_ptr<arrow::RecordBatch> GetInt64ListWideRB() {
   return record_batch;
 }
 
+inline std::shared_ptr<arrow::RecordBatch> GetStructRB() {
+  auto schema = fletcher::GetStructSchema();
+  auto ab = std::make_shared<arrow::UInt16Builder>();
+  auto bb = std::make_shared<arrow::UInt32Builder>();
+  arrow::StructBuilder sb(schema->field(0)->type(), arrow::default_memory_pool(), {ab, bb});
+  assert(ab->AppendValues({1, 3, 3, 7}).ok());
+  assert(bb->AppendValues({3, 1, 4, 1}).ok());
+  const uint8_t valid_bytes[4] = {1, 1, 1, 1};
+  assert(sb.AppendValues(4, valid_bytes).ok());
+  std::shared_ptr<arrow::Array> arr;
+  assert(sb.Finish(&arr).ok());
+  auto record_batch = arrow::RecordBatch::Make(schema, 4, {arr});
+  assert(record_batch->Validate().ok());
+  return record_batch;
+}
+
 inline std::shared_ptr<arrow::RecordBatch> GetFilterRB() {
   // Some first names
   std::vector<std::string> first_names = {"Alice", "Bob", "Carol", "David"};
@@ -200,7 +216,7 @@ inline std::shared_ptr<arrow::RecordBatch> GetFilterRB() {
 }
 
 inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(const std::vector<std::string> &names,
-                                                  const std::vector<uint8_t> &ages) {
+                                                         const std::vector<uint8_t> &ages) {
   assert(names.size() == ages.size());
   // Make a string builder
   arrow::StringBuilder name_builder;

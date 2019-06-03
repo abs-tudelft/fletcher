@@ -30,14 +30,16 @@ if (NOT TARGET fletcher-common)
   # Target
   ##########################################################################
   set(COMMON_SOURCES
+      src/fletcher/hex-view.cc
       src/fletcher/arrow-utils.cc
-      src/fletcher/hex-view.cc)
+      src/fletcher/arrow-recordbatch.cc)
 
   set(COMMON_HEADERS
-      src/fletcher/arrow-utils.h
       src/fletcher/hex-view.h
       src/fletcher/timer.h
       src/fletcher/logging.h
+      src/fletcher/arrow-utils.h
+      src/fletcher/arrow-recordbatch.h
       src/fletcher/common.h)
 
   include_directories(src)
