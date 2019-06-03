@@ -16,7 +16,7 @@ void PushString(unsigned char buffer[MAX_NAME_LENGTH], unsigned int length, hls:
 }
 
 
-bool ChooseDrink(Schema& hobbiton, Schema& bywater, Schema& soda, Schema& beer, unsigned int beer_allowed_age) {
+bool ChooseDrink(Schema& hobbits, Schema& soda, Schema& beer, unsigned int beer_allowed_age) {
 	#pragma HLS INTERFACE register port=beer_allowed_age
 	#pragma HLS INTERFACE axis port=hobbiton.name_length
 	#pragma HLS INTERFACE axis port=hobbiton.name_chars
@@ -34,24 +34,14 @@ bool ChooseDrink(Schema& hobbiton, Schema& bywater, Schema& soda, Schema& beer, 
 	#pragma HLS INTERFACE axis port=beer.name_chars
 	#pragma HLS INTERFACE axis port=beer.age
 
-	bool did_something = false;
 	unsigned char name[MAX_NAME_LENGTH];
 	unsigned int nlen;
 	unsigned char age;
 
 	// Select input stream and pull in a hobbit.
-	if (!hobbiton.age.empty()) {
-		hobbiton.age >> age;
-		hobbiton.name_lengths >> nlen;
-		PullString(name, nlen, hobbiton.name_chars);
-	} else if (!bywater.age.empty()) {
-		bywater.age >> age;
-		bywater.name_lengths >> nlen;
-		PullString(name, nlen, bywater.name_chars);
-	} else {
-		// No data ready, just return without doing anything
-		goto end;
-	}
+	hobbits.age >> age;
+	hobbits.name_lengths >> nlen;
+	PullString(name, nlen, hobbits.name_chars);
 
 	// Select output stream and push the hobbit.
 	if (age >= beer_allowed_age) {
@@ -64,9 +54,5 @@ bool ChooseDrink(Schema& hobbiton, Schema& bywater, Schema& soda, Schema& beer, 
 		PushString(name, nlen, soda.name_chars);
 	}
 
-	did_something = true;
-
-	// End of function
-	end:
-	return did_something;
+	return true;
 }

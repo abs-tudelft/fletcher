@@ -11,4 +11,4 @@ struct Schema {
 
 void PullString(unsigned char buffer[MAX_NAME_LENGTH], unsigned int length, hls::stream<unsigned char>& chars);
 void PushString(unsigned char buffer[MAX_NAME_LENGTH], unsigned int length, hls::stream<unsigned char>& chars);
-bool ChooseDrink(Schema& hobbiton, Schema& bywater, Schema& soda, Schema& beer, unsigned int beer_allowed_age);
+bool ChooseDrink(Schema& hobbits, Schema& soda, Schema& beer, unsigned int beer_allowed_age);

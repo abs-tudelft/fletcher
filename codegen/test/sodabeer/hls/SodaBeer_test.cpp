@@ -4,32 +4,20 @@
 #include "SodaBeer.h"
 
 int main() {
-	std::vector<std::string> hobbiton_names = {"Bilbo", "Rosie", "Frodo", "Sam", "Elanor"};
-	std::vector<uint8_t> hobbiton_ages = {111, 32, 33, 35, 1};
-	std::vector<std::string> bywater_names = {"Lobelia", "Merry", "Pippin"};
-	std::vector<uint8_t> bywater_ages = {80, 37, 29};
+	std::vector<std::string> hobbits_names = {"Bilbo", "Rosie", "Frodo", "Sam", "Elanor", "Lobelia", "Merry", "Pippin"};
+	std::vector<uint8_t> hobbits_ages = {111, 32, 33, 35, 1, 80, 37, 29};
 
-	Schema hobbiton;
-	Schema bywater;
+	Schema hobbits;
 	Schema soda;
 	Schema beer;
 
-	for (int i=0;i<hobbiton_names.size();i++) {
-		hobbiton.age << hobbiton_ages[i];
-		hobbiton.name_lengths << hobbiton_names[i].size();
-		for (int j = 0; j < hobbiton_names[i].size(); j++) {
-			hobbiton.name_chars << hobbiton_names[i].c_str()[j];
+	for (int i=0;i<hobbits_names.size();i++) {
+		hobbits.age << hobbits_ages[i];
+		hobbits.name_lengths << hobbits_names[i].size();
+		for (int j = 0; j < hobbits_names[i].size(); j++) {
+			hobbits.name_chars << hobbits_names[i].c_str()[j];
 		}
-		ChooseDrink(hobbiton, bywater, soda, beer, 33);
-	}
-
-	for (int i=0;i<bywater_names.size();i++) {
-		bywater.age << bywater_ages[i];
-		bywater.name_lengths << bywater_names[i].size();
-		for (int j = 0; j < bywater_names[i].size(); j++) {
-			bywater.name_chars << bywater_names[i].c_str()[j];
-		}
-		ChooseDrink(hobbiton, bywater, soda, beer, 33);
+		ChooseDrink(hobbits, soda, beer, 33);
 	}
 
 	unsigned char age;

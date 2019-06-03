@@ -17,7 +17,6 @@
 #include <cassert>
 #include <arrow/api.h>
 #include <arrow/status.h>
-#include <gtest/gtest.h>
 
 #include "fletcher/test_schemas.h"
 
