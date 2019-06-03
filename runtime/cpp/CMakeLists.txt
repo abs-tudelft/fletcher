@@ -21,6 +21,7 @@ set(SOURCES
     src/fletcher/kernel.cc)
 
 set(HEADERS
+    src/fletcher/status.h
     src/fletcher/platform.h
     src/fletcher/context.h
     src/fletcher/kernel.h)
@@ -91,6 +92,7 @@ install(FILES ${HEADERS}
 
 # Headers from common library
 set(COMMON_HEADERS
+    ../../common/c/src/fletcher/fletcher.h
     ../../common/cpp/src/fletcher/common.h
     ../../common/cpp/src/fletcher/logging.h
     ../../common/cpp/src/fletcher/arrow-utils.h
