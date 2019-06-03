@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <fletcher/common.h>
 
 #include "fletcher/test_schemas.h"
@@ -93,9 +93,4 @@ TEST(Common, AppendMetaRequired) {
   ASSERT_TRUE(map.count("fletcher_mode") > 0);
   ASSERT_TRUE(map.at("fletcher_name") == "PrimRead");
   ASSERT_TRUE(map.at("fletcher_mode") == "read");
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

@@ -17,6 +17,13 @@
 
 #include "fletcher/hex-view.h"
 
+#ifdef __APPLE__
+#define ULL_FORMAT "%016lluX: "
+#else
+#define ULL_FORMAT "%016luX: "
+#endif
+
+
 namespace fletcher {
 
 HexView::HexView(uint64_t start, std::string str, uint64_t row, uint64_t col, uint64_t width)
@@ -58,7 +65,7 @@ void HexView::addData(const uint8_t *ptr, size_t size) {
       str.append("\n");
       left = "";
       right = "";
-      snprintf(buf, sizeof(buf), "%016lX: ", start + row * width);
+      snprintf(buf, sizeof(buf), ULL_FORMAT, start + row * width);
       left.append(buf);
       row++;
     }

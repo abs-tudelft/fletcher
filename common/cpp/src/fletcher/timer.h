@@ -25,7 +25,7 @@ namespace fletcher {
 
 /// @brief A timer using the C++11 high resolution monotonic clock.
 struct Timer {
-  using system_clock = std::chrono::system_clock;
+  using system_clock = std::chrono::high_resolution_clock;
   using nanoseconds = std::chrono::nanoseconds;
   using time_point = std::chrono::time_point<system_clock, nanoseconds>;
   using duration = std::chrono::duration<double>;

@@ -22,6 +22,12 @@
 
 #include "fletcher/status.h"
 
+#if defined(__MACH__)
+#define DYLIB_EXT ".dylib"
+#else 
+#define DYLIB_EXT ".so"
+#endif
+
 namespace fletcher {
 
 class Platform {

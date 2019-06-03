@@ -18,9 +18,3 @@
 #include "./test_kernel.h"
 #include "./test_mantle.h"
 #include "./test_recordbatch.h"
-
-int main(int argc, char **argv) {
-
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

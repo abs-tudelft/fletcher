@@ -40,7 +40,7 @@ std::string Platform::name() {
 Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
   // Attempt to open shared library
   void *handle = nullptr;
-  handle = dlopen(("libfletcher_" + name + ".so").c_str(), RTLD_NOW);
+  handle = dlopen(("libfletcher_" + name + DYLIB_EXT).c_str(), RTLD_NOW);
 
   if (handle) {
     // Create a new platform

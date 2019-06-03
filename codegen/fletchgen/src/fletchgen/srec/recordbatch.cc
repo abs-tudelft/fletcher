@@ -57,8 +57,8 @@ std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &op
 }
 
 std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
-  size_t addr = 0;
-  std::vector<size_t> ret;
+  uint64_t addr = 0;
+  std::vector<uint64_t> ret;
 
   for (const auto &buf : buffers) {
     ret.push_back(addr);

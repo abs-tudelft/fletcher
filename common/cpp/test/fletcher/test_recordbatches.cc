@@ -60,7 +60,7 @@ std::shared_ptr<arrow::RecordBatch> getInt8RB() {
   // Make a string builder
   arrow::Int8Builder int_builder;
 
-  int_builder.AppendValues(numbers);
+  int_builder.AppendValues(numbers).ok();
 
   // Array to hold Arrow formatted string data
   std::shared_ptr<arrow::Array> data_array;
@@ -128,10 +128,10 @@ std::shared_ptr<arrow::RecordBatch> getFloat64ListRB() {
   const unsigned int list_length = 2;
   for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
-    list_builder.Append();
+    list_builder.Append().ok();
     for (unsigned int index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
-      float_builder->Append(numbers[index]);
+      float_builder->Append(numbers[index]).ok();
     }
   }
 
@@ -179,10 +179,10 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListRB() {
   const unsigned int list_length = 2;
   for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
-    list_builder.Append();
+    list_builder.Append().ok();
     for (unsigned int index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
-      int_builder->Append(numbers[index]);
+      int_builder->Append(numbers[index]).ok();
     }
   }
 
@@ -230,10 +230,10 @@ std::shared_ptr<arrow::RecordBatch> getInt64ListWideRB() {
   const unsigned int list_length = 8;
   for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
-    list_builder.Append();
+    list_builder.Append().ok();
     for (unsigned int index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
-      int_builder->Append(numbers[index]);
+      int_builder->Append(numbers[index]).ok();
     }
   }
 
