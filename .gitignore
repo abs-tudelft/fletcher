@@ -19,6 +19,9 @@ transcript
 *.vstf
 *.wlf
 
+# GHDL stuff
+*.cf
+
 # Java compiled
 *.class
 
