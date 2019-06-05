@@ -40,7 +40,7 @@ layout/structure of the Array in memory. There are some additional
 options to tweak internals (like FIFO depths), but we will ignore them 
 for now.
 
-[ArrayConfig.vhd](vhdl/arrays/ArrayConfig.vhd) contains an in-depth guide 
+[ArrayConfig.vhd](arrays/ArrayConfig.vhd) contains an in-depth guide 
 on which entries of the config string are supported.
 
 **Make sure not to use any whitespace characters in the configuration 

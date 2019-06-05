@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # distutils: language = c++
+# cython: language_level=3
 
 import cython
 import pyarrow
