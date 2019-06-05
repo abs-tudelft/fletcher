@@ -1,0 +1,3 @@
+[submodule "hardware/vhlib"]
+	path = hardware/vhlib
+	url = git@github.com:abs-tudelft/vhlib.git
