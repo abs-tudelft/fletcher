@@ -1,4 +1,4 @@
-#include "fletcher/vivado_hls.h"
+
 
 #include "SodaBeer.h"
 
@@ -6,16 +6,25 @@ bool ChooseDrink(RecordBatchMeta hobbits_meta, Hobbits& hobbits, Soda& soda, Bee
 	#pragma HLS INTERFACE register port=beer_allowed_age
 	#pragma HLS INTERFACE register port=hobbits_meta.length
 
+#pragma HLS INTERFACE ap_fifo port=hobbits.name_length
 	#pragma HLS data_pack variable=hobbits.name_length
+#pragma HLS INTERFACE ap_fifo port=hobbits.name_chars
 	#pragma HLS data_pack variable=hobbits.name_chars
+#pragma HLS INTERFACE ap_fifo port=hobbits.age
 	#pragma HLS data_pack variable=hobbits.age
 
+#pragma HLS INTERFACE ap_fifo port=soda.name_length
 	#pragma HLS data_pack variable=soda.name_length
+#pragma HLS INTERFACE ap_fifo port=soda.name_chars
 	#pragma HLS data_pack variable=soda.name_chars
+#pragma HLS INTERFACE ap_fifo port=soda.age
 	#pragma HLS data_pack variable=soda.age
 
+#pragma HLS INTERFACE ap_fifo port=beer.name_length
 	#pragma HLS data_pack variable=beer.name_length
+#pragma HLS INTERFACE ap_fifo port=beer.name_chars
 	#pragma HLS data_pack variable=beer.name_chars
+#pragma HLS INTERFACE ap_fifo port=beer.age
 	#pragma HLS data_pack variable=beer.age
 
 	static int i = 0;
