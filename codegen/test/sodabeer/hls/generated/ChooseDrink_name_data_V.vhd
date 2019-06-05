@@ -1,5 +1,5 @@
 -- ==============================================================
--- File generated on Thu May 23 16:22:20 CEST 2019
+-- File generated on Wed Jun 05 11:23:45 CEST 2019
 -- Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
 -- SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
 -- IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
@@ -10,7 +10,7 @@ library ieee;
 use ieee.std_logic_1164.all; 
 use ieee.std_logic_unsigned.all;
 
-entity ChooseDrink_name_ram is 
+entity ChooseDrink_name_data_V_ram is 
     generic(
             MEM_TYPE    : string := "block"; 
             DWIDTH     : integer := 8; 
@@ -28,7 +28,7 @@ entity ChooseDrink_name_ram is
 end entity; 
 
 
-architecture rtl of ChooseDrink_name_ram is 
+architecture rtl of ChooseDrink_name_data_V_ram is 
 
 signal addr0_tmp : std_logic_vector(AWIDTH-1 downto 0); 
 type mem_array is array (0 to MEM_SIZE-1) of std_logic_vector (DWIDTH-1 downto 0); 
@@ -72,7 +72,7 @@ end rtl;
 Library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity ChooseDrink_name is
+entity ChooseDrink_name_data_V is
     generic (
         DataWidth : INTEGER := 8;
         AddressRange : INTEGER := 256;
@@ -87,8 +87,8 @@ entity ChooseDrink_name is
         q0 : OUT STD_LOGIC_VECTOR(DataWidth - 1 DOWNTO 0));
 end entity;
 
-architecture arch of ChooseDrink_name is
-    component ChooseDrink_name_ram is
+architecture arch of ChooseDrink_name_data_V is
+    component ChooseDrink_name_data_V_ram is
         port (
             clk : IN STD_LOGIC;
             addr0 : IN STD_LOGIC_VECTOR;
@@ -101,7 +101,7 @@ architecture arch of ChooseDrink_name is
 
 
 begin
-    ChooseDrink_name_ram_U :  component ChooseDrink_name_ram
+    ChooseDrink_name_data_V_ram_U :  component ChooseDrink_name_data_V_ram
     port map (
         clk => clk,
         addr0 => address0,

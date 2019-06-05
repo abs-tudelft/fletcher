@@ -90,8 +90,8 @@ void generateDebugFiles() {
   auto hobbits_sch = fletcher::GetSodaBeerSchema("Hobbits", fletcher::Mode::READ);
   auto soda_sch = fletcher::GetSodaBeerSchema("Soda", fletcher::Mode::WRITE);
   auto beer_sch = fletcher::GetSodaBeerSchema("Beer", fletcher::Mode::WRITE);
-  std::vector<std::string> hobbit_names = {"Bilbo", "Rosie", "Frodo", "Sam", "Elanor", "Lobelia", "Merry", "Pippin"};
-  std::vector<uint8_t> hobbit_ages = {111, 32, 33, 35, 1, 80, 37, 29};
+  std::vector<std::string> hobbit_names = {"Bilbo", "Sam", "Rosie", "Frodo", "Elanor", "Lobelia", "Merry", "Pippin"};
+  std::vector<uint8_t> hobbit_ages = {111, 35, 32, 33, 1, 80, 37, 29};
   auto hobbits_rb = fletcher::GetSodaBeerRB(hobbit_names, hobbit_ages);
 
   fletcher::WriteSchemaToFile(hobbits_sch, "schemas/Hobbits.fbs");

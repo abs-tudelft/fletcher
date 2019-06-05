@@ -12,47 +12,39 @@ use IEEE.numeric_std.all;
 entity ChooseDrink is
 port (
     ap_clk : IN STD_LOGIC;
-    ap_rst_n : IN STD_LOGIC;
+    ap_rst : IN STD_LOGIC;
     ap_start : IN STD_LOGIC;
     ap_done : OUT STD_LOGIC;
     ap_idle : OUT STD_LOGIC;
     ap_ready : OUT STD_LOGIC;
-    hobbiton_name_lengths_V_TDATA : IN STD_LOGIC_VECTOR (31 downto 0);
-    hobbiton_name_lengths_V_TVALID : IN STD_LOGIC;
-    hobbiton_name_lengths_V_TREADY : OUT STD_LOGIC;
-    hobbiton_name_chars_V_TDATA : IN STD_LOGIC_VECTOR (7 downto 0);
-    hobbiton_name_chars_V_TVALID : IN STD_LOGIC;
-    hobbiton_name_chars_V_TREADY : OUT STD_LOGIC;
-    hobbiton_age_V_TDATA : IN STD_LOGIC_VECTOR (7 downto 0);
-    hobbiton_age_V_TVALID : IN STD_LOGIC;
-    hobbiton_age_V_TREADY : OUT STD_LOGIC;
-    bywater_name_lengths_V_TDATA : IN STD_LOGIC_VECTOR (31 downto 0);
-    bywater_name_lengths_V_TVALID : IN STD_LOGIC;
-    bywater_name_lengths_V_TREADY : OUT STD_LOGIC;
-    bywater_name_chars_V_TDATA : IN STD_LOGIC_VECTOR (7 downto 0);
-    bywater_name_chars_V_TVALID : IN STD_LOGIC;
-    bywater_name_chars_V_TREADY : OUT STD_LOGIC;
-    bywater_age_V_TDATA : IN STD_LOGIC_VECTOR (7 downto 0);
-    bywater_age_V_TVALID : IN STD_LOGIC;
-    bywater_age_V_TREADY : OUT STD_LOGIC;
-    soda_name_lengths_V_TDATA : OUT STD_LOGIC_VECTOR (31 downto 0);
-    soda_name_lengths_V_TVALID : OUT STD_LOGIC;
-    soda_name_lengths_V_TREADY : IN STD_LOGIC;
-    soda_name_chars_V_TDATA : OUT STD_LOGIC_VECTOR (7 downto 0);
-    soda_name_chars_V_TVALID : OUT STD_LOGIC;
-    soda_name_chars_V_TREADY : IN STD_LOGIC;
-    soda_age_V_TDATA : OUT STD_LOGIC_VECTOR (7 downto 0);
-    soda_age_V_TVALID : OUT STD_LOGIC;
-    soda_age_V_TREADY : IN STD_LOGIC;
-    beer_name_lengths_V_TDATA : OUT STD_LOGIC_VECTOR (31 downto 0);
-    beer_name_lengths_V_TVALID : OUT STD_LOGIC;
-    beer_name_lengths_V_TREADY : IN STD_LOGIC;
-    beer_name_chars_V_TDATA : OUT STD_LOGIC_VECTOR (7 downto 0);
-    beer_name_chars_V_TVALID : OUT STD_LOGIC;
-    beer_name_chars_V_TREADY : IN STD_LOGIC;
-    beer_age_V_TDATA : OUT STD_LOGIC_VECTOR (7 downto 0);
-    beer_age_V_TVALID : OUT STD_LOGIC;
-    beer_age_V_TREADY : IN STD_LOGIC;
+    hobbits_meta_length : IN STD_LOGIC_VECTOR (31 downto 0);
+    hobbits_name_lengths_V_dout : IN STD_LOGIC_VECTOR (34 downto 0);
+    hobbits_name_lengths_V_empty_n : IN STD_LOGIC;
+    hobbits_name_lengths_V_read : OUT STD_LOGIC;
+    hobbits_name_chars_V_dout : IN STD_LOGIC_VECTOR (10 downto 0);
+    hobbits_name_chars_V_empty_n : IN STD_LOGIC;
+    hobbits_name_chars_V_read : OUT STD_LOGIC;
+    hobbits_age_V_dout : IN STD_LOGIC_VECTOR (10 downto 0);
+    hobbits_age_V_empty_n : IN STD_LOGIC;
+    hobbits_age_V_read : OUT STD_LOGIC;
+    soda_name_lengths_V_din : OUT STD_LOGIC_VECTOR (34 downto 0);
+    soda_name_lengths_V_full_n : IN STD_LOGIC;
+    soda_name_lengths_V_write : OUT STD_LOGIC;
+    soda_name_chars_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+    soda_name_chars_V_full_n : IN STD_LOGIC;
+    soda_name_chars_V_write : OUT STD_LOGIC;
+    soda_age_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+    soda_age_V_full_n : IN STD_LOGIC;
+    soda_age_V_write : OUT STD_LOGIC;
+    beer_name_lengths_V_din : OUT STD_LOGIC_VECTOR (34 downto 0);
+    beer_name_lengths_V_full_n : IN STD_LOGIC;
+    beer_name_lengths_V_write : OUT STD_LOGIC;
+    beer_name_chars_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+    beer_name_chars_V_full_n : IN STD_LOGIC;
+    beer_name_chars_V_write : OUT STD_LOGIC;
+    beer_age_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+    beer_age_V_full_n : IN STD_LOGIC;
+    beer_age_V_write : OUT STD_LOGIC;
     beer_allowed_age : IN STD_LOGIC_VECTOR (31 downto 0);
     ap_return : OUT STD_LOGIC_VECTOR (0 downto 0) );
 end;
@@ -61,249 +53,135 @@ end;
 architecture behav of ChooseDrink is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "ChooseDrink,hls_ip_2018_3,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xcvu9p-flgb2104-2-i,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=1.761000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=1,HLS_SYN_DSP=0,HLS_SYN_FF=656,HLS_SYN_LUT=822,HLS_VERSION=2018_3}";
+    "ChooseDrink,hls_ip_2018_3,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xcvu9p-flgc2104-3-e,HLS_INPUT_CLOCK=4.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.545000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=1,HLS_SYN_DSP=0,HLS_SYN_FF=333,HLS_SYN_LUT=630,HLS_VERSION=2018_3}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
-    constant ap_ST_fsm_state1 : STD_LOGIC_VECTOR (6 downto 0) := "0000001";
-    constant ap_ST_fsm_state2 : STD_LOGIC_VECTOR (6 downto 0) := "0000010";
-    constant ap_ST_fsm_state3 : STD_LOGIC_VECTOR (6 downto 0) := "0000100";
-    constant ap_ST_fsm_state4 : STD_LOGIC_VECTOR (6 downto 0) := "0001000";
-    constant ap_ST_fsm_state5 : STD_LOGIC_VECTOR (6 downto 0) := "0010000";
-    constant ap_ST_fsm_state6 : STD_LOGIC_VECTOR (6 downto 0) := "0100000";
-    constant ap_ST_fsm_state7 : STD_LOGIC_VECTOR (6 downto 0) := "1000000";
+    constant ap_ST_fsm_state1 : STD_LOGIC_VECTOR (4 downto 0) := "00001";
+    constant ap_ST_fsm_state2 : STD_LOGIC_VECTOR (4 downto 0) := "00010";
+    constant ap_ST_fsm_state3 : STD_LOGIC_VECTOR (4 downto 0) := "00100";
+    constant ap_ST_fsm_state4 : STD_LOGIC_VECTOR (4 downto 0) := "01000";
+    constant ap_ST_fsm_state5 : STD_LOGIC_VECTOR (4 downto 0) := "10000";
     constant ap_const_lv32_0 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000000";
     constant ap_const_boolean_1 : BOOLEAN := true;
-    constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
-    constant ap_const_lv1_1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
-    constant ap_const_lv2_0 : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    constant ap_const_lv2_2 : STD_LOGIC_VECTOR (1 downto 0) := "10";
-    constant ap_const_lv2_3 : STD_LOGIC_VECTOR (1 downto 0) := "11";
-    constant ap_const_lv2_1 : STD_LOGIC_VECTOR (1 downto 0) := "01";
-    constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
-    constant ap_const_lv32_4 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000100";
-    constant ap_const_lv32_5 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000101";
-    constant ap_const_boolean_0 : BOOLEAN := false;
     constant ap_const_lv32_2 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000010";
+    constant ap_const_lv1_1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
     constant ap_const_lv32_3 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000011";
-    constant ap_const_lv32_6 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000110";
+    constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
+    constant ap_const_lv32_4 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000100";
+    constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
+    constant ap_const_lv8_0 : STD_LOGIC_VECTOR (7 downto 0) := "00000000";
+    constant ap_const_lv31_0 : STD_LOGIC_VECTOR (30 downto 0) := "0000000000000000000000000000000";
+    constant ap_const_lv32_22 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000100010";
+    constant ap_const_lv8_1 : STD_LOGIC_VECTOR (7 downto 0) := "00000001";
+    constant ap_const_lv8_FF : STD_LOGIC_VECTOR (7 downto 0) := "11111111";
+    constant ap_const_lv32_A : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000001010";
+    constant ap_const_lv31_1 : STD_LOGIC_VECTOR (30 downto 0) := "0000000000000000000000000000001";
 
-    signal ap_rst_n_inv : STD_LOGIC;
-    signal ap_CS_fsm : STD_LOGIC_VECTOR (6 downto 0) := "0000001";
+    signal ap_CS_fsm : STD_LOGIC_VECTOR (4 downto 0) := "00001";
     attribute fsm_encoding : string;
     attribute fsm_encoding of ap_CS_fsm : signal is "none";
     signal ap_CS_fsm_state1 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state1 : signal is "none";
-    signal hobbiton_name_lengths_V_0_data_out : STD_LOGIC_VECTOR (31 downto 0);
-    signal hobbiton_name_lengths_V_0_vld_in : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_vld_out : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_ack_in : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_ack_out : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_payload_A : STD_LOGIC_VECTOR (31 downto 0);
-    signal hobbiton_name_lengths_V_0_payload_B : STD_LOGIC_VECTOR (31 downto 0);
-    signal hobbiton_name_lengths_V_0_sel_rd : STD_LOGIC := '0';
-    signal hobbiton_name_lengths_V_0_sel_wr : STD_LOGIC := '0';
-    signal hobbiton_name_lengths_V_0_sel : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_load_A : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_load_B : STD_LOGIC;
-    signal hobbiton_name_lengths_V_0_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal hobbiton_name_lengths_V_0_state_cmp_full : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal hobbiton_name_chars_V_0_vld_in : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_vld_out : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_ack_in : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_ack_out : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal hobbiton_name_chars_V_0_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal hobbiton_name_chars_V_0_sel_rd : STD_LOGIC := '0';
-    signal hobbiton_name_chars_V_0_sel_wr : STD_LOGIC := '0';
-    signal hobbiton_name_chars_V_0_sel : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_load_A : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_load_B : STD_LOGIC;
-    signal hobbiton_name_chars_V_0_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal hobbiton_name_chars_V_0_state_cmp_full : STD_LOGIC;
-    signal bywater_name_lengths_V_0_data_out : STD_LOGIC_VECTOR (31 downto 0);
-    signal bywater_name_lengths_V_0_vld_in : STD_LOGIC;
-    signal bywater_name_lengths_V_0_vld_out : STD_LOGIC;
-    signal bywater_name_lengths_V_0_ack_in : STD_LOGIC;
-    signal bywater_name_lengths_V_0_ack_out : STD_LOGIC;
-    signal bywater_name_lengths_V_0_payload_A : STD_LOGIC_VECTOR (31 downto 0);
-    signal bywater_name_lengths_V_0_payload_B : STD_LOGIC_VECTOR (31 downto 0);
-    signal bywater_name_lengths_V_0_sel_rd : STD_LOGIC := '0';
-    signal bywater_name_lengths_V_0_sel_wr : STD_LOGIC := '0';
-    signal bywater_name_lengths_V_0_sel : STD_LOGIC;
-    signal bywater_name_lengths_V_0_load_A : STD_LOGIC;
-    signal bywater_name_lengths_V_0_load_B : STD_LOGIC;
-    signal bywater_name_lengths_V_0_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal bywater_name_lengths_V_0_state_cmp_full : STD_LOGIC;
-    signal bywater_name_chars_V_0_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal bywater_name_chars_V_0_vld_in : STD_LOGIC;
-    signal bywater_name_chars_V_0_vld_out : STD_LOGIC;
-    signal bywater_name_chars_V_0_ack_in : STD_LOGIC;
-    signal bywater_name_chars_V_0_ack_out : STD_LOGIC;
-    signal bywater_name_chars_V_0_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal bywater_name_chars_V_0_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal bywater_name_chars_V_0_sel_rd : STD_LOGIC := '0';
-    signal bywater_name_chars_V_0_sel_wr : STD_LOGIC := '0';
-    signal bywater_name_chars_V_0_sel : STD_LOGIC;
-    signal bywater_name_chars_V_0_load_A : STD_LOGIC;
-    signal bywater_name_chars_V_0_load_B : STD_LOGIC;
-    signal bywater_name_chars_V_0_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal bywater_name_chars_V_0_state_cmp_full : STD_LOGIC;
-    signal soda_name_lengths_V_1_data_out : STD_LOGIC_VECTOR (31 downto 0);
-    signal soda_name_lengths_V_1_vld_in : STD_LOGIC;
-    signal soda_name_lengths_V_1_vld_out : STD_LOGIC;
-    signal soda_name_lengths_V_1_ack_in : STD_LOGIC;
-    signal soda_name_lengths_V_1_ack_out : STD_LOGIC;
-    signal soda_name_lengths_V_1_payload_A : STD_LOGIC_VECTOR (31 downto 0);
-    signal soda_name_lengths_V_1_payload_B : STD_LOGIC_VECTOR (31 downto 0);
-    signal soda_name_lengths_V_1_sel_rd : STD_LOGIC := '0';
-    signal soda_name_lengths_V_1_sel_wr : STD_LOGIC := '0';
-    signal soda_name_lengths_V_1_sel : STD_LOGIC;
-    signal soda_name_lengths_V_1_load_A : STD_LOGIC;
-    signal soda_name_lengths_V_1_load_B : STD_LOGIC;
-    signal soda_name_lengths_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal soda_name_lengths_V_1_state_cmp_full : STD_LOGIC;
-    signal soda_name_chars_V_1_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_name_chars_V_1_vld_in : STD_LOGIC;
-    signal soda_name_chars_V_1_vld_out : STD_LOGIC;
-    signal soda_name_chars_V_1_ack_in : STD_LOGIC;
-    signal soda_name_chars_V_1_ack_out : STD_LOGIC;
-    signal soda_name_chars_V_1_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_name_chars_V_1_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_name_chars_V_1_sel_rd : STD_LOGIC := '0';
-    signal soda_name_chars_V_1_sel_wr : STD_LOGIC := '0';
-    signal soda_name_chars_V_1_sel : STD_LOGIC;
-    signal soda_name_chars_V_1_load_A : STD_LOGIC;
-    signal soda_name_chars_V_1_load_B : STD_LOGIC;
-    signal soda_name_chars_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal soda_name_chars_V_1_state_cmp_full : STD_LOGIC;
-    signal soda_age_V_1_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_age_V_1_vld_in : STD_LOGIC;
-    signal soda_age_V_1_vld_out : STD_LOGIC;
-    signal soda_age_V_1_ack_in : STD_LOGIC;
-    signal soda_age_V_1_ack_out : STD_LOGIC;
-    signal soda_age_V_1_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_age_V_1_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal soda_age_V_1_sel_rd : STD_LOGIC := '0';
-    signal soda_age_V_1_sel_wr : STD_LOGIC := '0';
-    signal soda_age_V_1_sel : STD_LOGIC;
-    signal soda_age_V_1_load_A : STD_LOGIC;
-    signal soda_age_V_1_load_B : STD_LOGIC;
-    signal soda_age_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal soda_age_V_1_state_cmp_full : STD_LOGIC;
-    signal beer_name_lengths_V_1_data_out : STD_LOGIC_VECTOR (31 downto 0);
-    signal beer_name_lengths_V_1_vld_in : STD_LOGIC;
-    signal beer_name_lengths_V_1_vld_out : STD_LOGIC;
-    signal beer_name_lengths_V_1_ack_in : STD_LOGIC;
-    signal beer_name_lengths_V_1_ack_out : STD_LOGIC;
-    signal beer_name_lengths_V_1_payload_A : STD_LOGIC_VECTOR (31 downto 0);
-    signal beer_name_lengths_V_1_payload_B : STD_LOGIC_VECTOR (31 downto 0);
-    signal beer_name_lengths_V_1_sel_rd : STD_LOGIC := '0';
-    signal beer_name_lengths_V_1_sel_wr : STD_LOGIC := '0';
-    signal beer_name_lengths_V_1_sel : STD_LOGIC;
-    signal beer_name_lengths_V_1_load_A : STD_LOGIC;
-    signal beer_name_lengths_V_1_load_B : STD_LOGIC;
-    signal beer_name_lengths_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal beer_name_lengths_V_1_state_cmp_full : STD_LOGIC;
-    signal beer_name_chars_V_1_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_name_chars_V_1_vld_in : STD_LOGIC;
-    signal beer_name_chars_V_1_vld_out : STD_LOGIC;
-    signal beer_name_chars_V_1_ack_in : STD_LOGIC;
-    signal beer_name_chars_V_1_ack_out : STD_LOGIC;
-    signal beer_name_chars_V_1_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_name_chars_V_1_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_name_chars_V_1_sel_rd : STD_LOGIC := '0';
-    signal beer_name_chars_V_1_sel_wr : STD_LOGIC := '0';
-    signal beer_name_chars_V_1_sel : STD_LOGIC;
-    signal beer_name_chars_V_1_load_A : STD_LOGIC;
-    signal beer_name_chars_V_1_load_B : STD_LOGIC;
-    signal beer_name_chars_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal beer_name_chars_V_1_state_cmp_full : STD_LOGIC;
-    signal beer_age_V_1_data_out : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_age_V_1_vld_in : STD_LOGIC;
-    signal beer_age_V_1_vld_out : STD_LOGIC;
-    signal beer_age_V_1_ack_in : STD_LOGIC;
-    signal beer_age_V_1_ack_out : STD_LOGIC;
-    signal beer_age_V_1_payload_A : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_age_V_1_payload_B : STD_LOGIC_VECTOR (7 downto 0);
-    signal beer_age_V_1_sel_rd : STD_LOGIC := '0';
-    signal beer_age_V_1_sel_wr : STD_LOGIC := '0';
-    signal beer_age_V_1_sel : STD_LOGIC;
-    signal beer_age_V_1_load_A : STD_LOGIC;
-    signal beer_age_V_1_load_B : STD_LOGIC;
-    signal beer_age_V_1_state : STD_LOGIC_VECTOR (1 downto 0) := "00";
-    signal beer_age_V_1_state_cmp_full : STD_LOGIC;
+    signal hobbits_meta_length_0_data_reg : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000000";
+    signal hobbits_meta_length_0_vld_reg : STD_LOGIC := '0';
+    signal hobbits_meta_length_0_ack_out : STD_LOGIC;
     signal beer_allowed_age_0_data_reg : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000000";
     signal beer_allowed_age_0_vld_reg : STD_LOGIC := '0';
     signal beer_allowed_age_0_ack_out : STD_LOGIC;
-    signal hobbiton_name_lengths_V_TDATA_blk_n : STD_LOGIC;
-    signal ap_CS_fsm_state2 : STD_LOGIC;
-    attribute fsm_encoding of ap_CS_fsm_state2 : signal is "none";
-    signal tmp_nbreadreq_fu_76_p3 : STD_LOGIC_VECTOR (0 downto 0);
-    signal hobbiton_age_V_TDATA_blk_n : STD_LOGIC;
-    signal bywater_name_lengths_V_TDATA_blk_n : STD_LOGIC;
-    signal tmp_6_nbreadreq_fu_84_p3 : STD_LOGIC_VECTOR (0 downto 0);
-    signal bywater_age_V_TDATA_blk_n : STD_LOGIC;
-    signal soda_name_lengths_V_TDATA_blk_n : STD_LOGIC;
-    signal ap_CS_fsm_state5 : STD_LOGIC;
-    attribute fsm_encoding of ap_CS_fsm_state5 : signal is "none";
-    signal tmp_3_fu_210_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal ap_CS_fsm_state6 : STD_LOGIC;
-    attribute fsm_encoding of ap_CS_fsm_state6 : signal is "none";
-    signal tmp_3_reg_248 : STD_LOGIC_VECTOR (0 downto 0);
-    signal soda_age_V_TDATA_blk_n : STD_LOGIC;
-    signal beer_name_lengths_V_TDATA_blk_n : STD_LOGIC;
-    signal beer_age_V_TDATA_blk_n : STD_LOGIC;
-    signal ap_predicate_op43_read_state2 : BOOLEAN;
-    signal ap_predicate_op44_read_state2 : BOOLEAN;
-    signal ap_block_state2 : BOOLEAN;
-    signal tmp_13_reg_226 : STD_LOGIC_VECTOR (7 downto 0);
-    signal tmp_14_reg_231 : STD_LOGIC_VECTOR (31 downto 0);
-    signal tmp_11_reg_237 : STD_LOGIC_VECTOR (7 downto 0);
-    signal tmp_12_reg_242 : STD_LOGIC_VECTOR (31 downto 0);
-    signal ap_block_state5_io : BOOLEAN;
-    signal name_address0 : STD_LOGIC_VECTOR (7 downto 0);
-    signal name_ce0 : STD_LOGIC;
-    signal name_we0 : STD_LOGIC;
-    signal name_q0 : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PushString_fu_185_ap_start : STD_LOGIC;
-    signal grp_PushString_fu_185_ap_done : STD_LOGIC;
-    signal grp_PushString_fu_185_ap_idle : STD_LOGIC;
-    signal grp_PushString_fu_185_ap_ready : STD_LOGIC;
-    signal grp_PushString_fu_185_buffer_r_address0 : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PushString_fu_185_buffer_r_ce0 : STD_LOGIC;
-    signal grp_PushString_fu_185_chars_V_TDATA : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PushString_fu_185_chars_V_TVALID : STD_LOGIC;
-    signal grp_PushString_fu_185_chars_V_TREADY : STD_LOGIC;
-    signal grp_PullString_fu_195_ap_start : STD_LOGIC;
-    signal grp_PullString_fu_195_ap_done : STD_LOGIC;
-    signal grp_PullString_fu_195_ap_idle : STD_LOGIC;
-    signal grp_PullString_fu_195_ap_ready : STD_LOGIC;
-    signal grp_PullString_fu_195_buffer_r_address0 : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PullString_fu_195_buffer_r_ce0 : STD_LOGIC;
-    signal grp_PullString_fu_195_buffer_r_we0 : STD_LOGIC;
-    signal grp_PullString_fu_195_buffer_r_d0 : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PullString_fu_195_length_r : STD_LOGIC_VECTOR (31 downto 0);
-    signal grp_PullString_fu_195_chars_V_TDATA : STD_LOGIC_VECTOR (7 downto 0);
-    signal grp_PullString_fu_195_chars_V_TVALID : STD_LOGIC;
-    signal grp_PullString_fu_195_chars_V_TREADY : STD_LOGIC;
-    signal tmp_9_reg_144 : STD_LOGIC_VECTOR (7 downto 0);
+    signal i : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000000";
+    signal hobbits_name_lengths_V_blk_n : STD_LOGIC;
     signal ap_CS_fsm_state3 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state3 : signal is "none";
+    signal tmp_s_fu_282_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal hobbits_name_chars_V_blk_n : STD_LOGIC;
     signal ap_CS_fsm_state4 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state4 : signal is "none";
-    signal tmp_10_reg_158 : STD_LOGIC_VECTOR (31 downto 0);
-    signal did_something_reg_172 : STD_LOGIC_VECTOR (0 downto 0);
-    signal ap_block_state6_io : BOOLEAN;
-    signal ap_block_state6_on_subcall_done : BOOLEAN;
-    signal grp_PushString_fu_185_ap_start_reg : STD_LOGIC := '0';
-    signal grp_PullString_fu_195_ap_start_reg : STD_LOGIC := '0';
-    signal ap_block_state2_ignore_call2 : BOOLEAN;
-    signal tmp_2_fu_206_p1 : STD_LOGIC_VECTOR (31 downto 0);
-    signal ap_CS_fsm_state7 : STD_LOGIC;
-    attribute fsm_encoding of ap_CS_fsm_state7 : signal is "none";
-    signal ap_block_state7 : BOOLEAN;
-    signal ap_NS_fsm : STD_LOGIC_VECTOR (6 downto 0);
+    signal tmp_i_fu_336_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal hobbits_age_V_blk_n : STD_LOGIC;
+    signal soda_name_lengths_V_blk_n : STD_LOGIC;
+    signal tmp_3_fu_392_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal ap_CS_fsm_state5 : STD_LOGIC;
+    attribute fsm_encoding of ap_CS_fsm_state5 : signal is "none";
+    signal tmp_3_reg_508 : STD_LOGIC_VECTOR (0 downto 0);
+    signal tmp_4_fu_397_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal soda_age_V_blk_n : STD_LOGIC;
+    signal beer_name_lengths_V_blk_n : STD_LOGIC;
+    signal beer_age_V_blk_n : STD_LOGIC;
+    signal ap_CS_fsm_state2 : STD_LOGIC;
+    attribute fsm_encoding of ap_CS_fsm_state2 : signal is "none";
+    signal tmp_8_fu_271_p2 : STD_LOGIC_VECTOR (7 downto 0);
+    signal ap_block_state3 : BOOLEAN;
+    signal tmp_1_fu_292_p2 : STD_LOGIC_VECTOR (31 downto 0);
+    signal tmp_1_reg_459 : STD_LOGIC_VECTOR (31 downto 0);
+    signal tmp113_reg_464 : STD_LOGIC_VECTOR (10 downto 0);
+    signal age_count_V_fu_304_p1 : STD_LOGIC_VECTOR (0 downto 0);
+    signal age_count_V_reg_471 : STD_LOGIC_VECTOR (0 downto 0);
+    signal age_data_V_reg_476 : STD_LOGIC_VECTOR (7 downto 0);
+    signal tmp_196_reg_481 : STD_LOGIC_VECTOR (34 downto 0);
+    signal nlen_count_V_fu_318_p1 : STD_LOGIC_VECTOR (0 downto 0);
+    signal nlen_count_V_reg_488 : STD_LOGIC_VECTOR (0 downto 0);
+    signal nlen_data_V_reg_494 : STD_LOGIC_VECTOR (31 downto 0);
+    signal i_1_fu_341_p2 : STD_LOGIC_VECTOR (30 downto 0);
+    signal ap_predicate_op80_write_state4 : BOOLEAN;
+    signal ap_predicate_op81_write_state4 : BOOLEAN;
+    signal ap_predicate_op83_write_state4 : BOOLEAN;
+    signal ap_predicate_op84_write_state4 : BOOLEAN;
+    signal ap_block_state4 : BOOLEAN;
+    signal name_count_V_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal name_count_V_ce0 : STD_LOGIC;
+    signal name_count_V_we0 : STD_LOGIC;
+    signal name_count_V_d0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_count_V_q0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_dvalid_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal name_dvalid_ce0 : STD_LOGIC;
+    signal name_dvalid_we0 : STD_LOGIC;
+    signal name_dvalid_d0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_dvalid_q0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_last_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal name_last_ce0 : STD_LOGIC;
+    signal name_last_we0 : STD_LOGIC;
+    signal name_last_d0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_last_q0 : STD_LOGIC_VECTOR (0 downto 0);
+    signal name_data_V_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal name_data_V_ce0 : STD_LOGIC;
+    signal name_data_V_we0 : STD_LOGIC;
+    signal name_data_V_d0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal name_data_V_q0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal grp_PushString_fu_250_ap_start : STD_LOGIC;
+    signal grp_PushString_fu_250_ap_done : STD_LOGIC;
+    signal grp_PushString_fu_250_ap_idle : STD_LOGIC;
+    signal grp_PushString_fu_250_ap_ready : STD_LOGIC;
+    signal grp_PushString_fu_250_buffer_count_V_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal grp_PushString_fu_250_buffer_count_V_ce0 : STD_LOGIC;
+    signal grp_PushString_fu_250_buffer_dvalid_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal grp_PushString_fu_250_buffer_dvalid_ce0 : STD_LOGIC;
+    signal grp_PushString_fu_250_buffer_last_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal grp_PushString_fu_250_buffer_last_ce0 : STD_LOGIC;
+    signal grp_PushString_fu_250_buffer_data_V_address0 : STD_LOGIC_VECTOR (7 downto 0);
+    signal grp_PushString_fu_250_buffer_data_V_ce0 : STD_LOGIC;
+    signal grp_PushString_fu_250_chars_V_din : STD_LOGIC_VECTOR (10 downto 0);
+    signal grp_PushString_fu_250_chars_V_full_n : STD_LOGIC;
+    signal grp_PushString_fu_250_chars_V_write : STD_LOGIC;
+    signal tmp_reg_228 : STD_LOGIC_VECTOR (7 downto 0);
+    signal i_op_assign_reg_239 : STD_LOGIC_VECTOR (30 downto 0);
+    signal grp_PushString_fu_250_ap_start_reg : STD_LOGIC := '0';
+    signal ap_block_state4_ignore_call2 : BOOLEAN;
+    signal tmp_9_fu_277_p1 : STD_LOGIC_VECTOR (63 downto 0);
+    signal tmp_4_i_fu_347_p1 : STD_LOGIC_VECTOR (63 downto 0);
+    signal ap_predicate_op95_write_state5 : BOOLEAN;
+    signal ap_predicate_op98_write_state5 : BOOLEAN;
+    signal ap_predicate_op100_write_state5 : BOOLEAN;
+    signal ap_predicate_op103_write_state5 : BOOLEAN;
+    signal ap_block_state5 : BOOLEAN;
+    signal ap_block_state5_on_subcall_done : BOOLEAN;
+    signal tmp_6_1_fu_410_p4 : STD_LOGIC_VECTOR (10 downto 0);
+    signal tmp_96_fu_431_p4 : STD_LOGIC_VECTOR (34 downto 0);
+    signal tmp_7_2_fu_421_p4 : STD_LOGIC_VECTOR (34 downto 0);
+    signal i_op_assign_cast_fu_332_p1 : STD_LOGIC_VECTOR (31 downto 0);
+    signal tmp_2_fu_389_p1 : STD_LOGIC_VECTOR (31 downto 0);
+    signal tmp_5_fu_401_p4 : STD_LOGIC_VECTOR (8 downto 0);
+    signal grp_fu_262_p4 : STD_LOGIC_VECTOR (32 downto 0);
+    signal ap_NS_fsm : STD_LOGIC_VECTOR (4 downto 0);
 
     component PushString IS
     port (
@@ -313,36 +191,42 @@ architecture behav of ChooseDrink is
         ap_done : OUT STD_LOGIC;
         ap_idle : OUT STD_LOGIC;
         ap_ready : OUT STD_LOGIC;
-        buffer_r_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
-        buffer_r_ce0 : OUT STD_LOGIC;
-        buffer_r_q0 : IN STD_LOGIC_VECTOR (7 downto 0);
-        length_r : IN STD_LOGIC_VECTOR (31 downto 0);
-        chars_V_TDATA : OUT STD_LOGIC_VECTOR (7 downto 0);
-        chars_V_TVALID : OUT STD_LOGIC;
-        chars_V_TREADY : IN STD_LOGIC );
+        buffer_count_V_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
+        buffer_count_V_ce0 : OUT STD_LOGIC;
+        buffer_count_V_q0 : IN STD_LOGIC_VECTOR (0 downto 0);
+        buffer_dvalid_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
+        buffer_dvalid_ce0 : OUT STD_LOGIC;
+        buffer_dvalid_q0 : IN STD_LOGIC_VECTOR (0 downto 0);
+        buffer_last_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
+        buffer_last_ce0 : OUT STD_LOGIC;
+        buffer_last_q0 : IN STD_LOGIC_VECTOR (0 downto 0);
+        buffer_data_V_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
+        buffer_data_V_ce0 : OUT STD_LOGIC;
+        buffer_data_V_q0 : IN STD_LOGIC_VECTOR (7 downto 0);
+        length_data_V : IN STD_LOGIC_VECTOR (31 downto 0);
+        chars_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+        chars_V_full_n : IN STD_LOGIC;
+        chars_V_write : OUT STD_LOGIC );
     end component;
 
 
-    component PullString IS
+    component ChooseDrink_name_count_V IS
+    generic (
+        DataWidth : INTEGER;
+        AddressRange : INTEGER;
+        AddressWidth : INTEGER );
     port (
-        ap_clk : IN STD_LOGIC;
-        ap_rst : IN STD_LOGIC;
-        ap_start : IN STD_LOGIC;
-        ap_done : OUT STD_LOGIC;
-        ap_idle : OUT STD_LOGIC;
-        ap_ready : OUT STD_LOGIC;
-        buffer_r_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
-        buffer_r_ce0 : OUT STD_LOGIC;
-        buffer_r_we0 : OUT STD_LOGIC;
-        buffer_r_d0 : OUT STD_LOGIC_VECTOR (7 downto 0);
-        length_r : IN STD_LOGIC_VECTOR (31 downto 0);
-        chars_V_TDATA : IN STD_LOGIC_VECTOR (7 downto 0);
-        chars_V_TVALID : IN STD_LOGIC;
-        chars_V_TREADY : OUT STD_LOGIC );
+        clk : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        address0 : IN STD_LOGIC_VECTOR (7 downto 0);
+        ce0 : IN STD_LOGIC;
+        we0 : IN STD_LOGIC;
+        d0 : IN STD_LOGIC_VECTOR (0 downto 0);
+        q0 : OUT STD_LOGIC_VECTOR (0 downto 0) );
     end component;
 
 
-    component ChooseDrink_name IS
+    component ChooseDrink_name_data_V IS
     generic (
         DataWidth : INTEGER;
         AddressRange : INTEGER;
@@ -360,52 +244,86 @@ architecture behav of ChooseDrink is
 
 
 begin
-    name_U : component ChooseDrink_name
+    name_count_V_U : component ChooseDrink_name_count_V
+    generic map (
+        DataWidth => 1,
+        AddressRange => 256,
+        AddressWidth => 8)
+    port map (
+        clk => ap_clk,
+        reset => ap_rst,
+        address0 => name_count_V_address0,
+        ce0 => name_count_V_ce0,
+        we0 => name_count_V_we0,
+        d0 => name_count_V_d0,
+        q0 => name_count_V_q0);
+
+    name_dvalid_U : component ChooseDrink_name_count_V
+    generic map (
+        DataWidth => 1,
+        AddressRange => 256,
+        AddressWidth => 8)
+    port map (
+        clk => ap_clk,
+        reset => ap_rst,
+        address0 => name_dvalid_address0,
+        ce0 => name_dvalid_ce0,
+        we0 => name_dvalid_we0,
+        d0 => name_dvalid_d0,
+        q0 => name_dvalid_q0);
+
+    name_last_U : component ChooseDrink_name_count_V
+    generic map (
+        DataWidth => 1,
+        AddressRange => 256,
+        AddressWidth => 8)
+    port map (
+        clk => ap_clk,
+        reset => ap_rst,
+        address0 => name_last_address0,
+        ce0 => name_last_ce0,
+        we0 => name_last_we0,
+        d0 => name_last_d0,
+        q0 => name_last_q0);
+
+    name_data_V_U : component ChooseDrink_name_data_V
     generic map (
         DataWidth => 8,
         AddressRange => 256,
         AddressWidth => 8)
     port map (
         clk => ap_clk,
-        reset => ap_rst_n_inv,
-        address0 => name_address0,
-        ce0 => name_ce0,
-        we0 => name_we0,
-        d0 => grp_PullString_fu_195_buffer_r_d0,
-        q0 => name_q0);
+        reset => ap_rst,
+        address0 => name_data_V_address0,
+        ce0 => name_data_V_ce0,
+        we0 => name_data_V_we0,
+        d0 => name_data_V_d0,
+        q0 => name_data_V_q0);
 
-    grp_PushString_fu_185 : component PushString
+    grp_PushString_fu_250 : component PushString
     port map (
         ap_clk => ap_clk,
-        ap_rst => ap_rst_n_inv,
-        ap_start => grp_PushString_fu_185_ap_start,
-        ap_done => grp_PushString_fu_185_ap_done,
-        ap_idle => grp_PushString_fu_185_ap_idle,
-        ap_ready => grp_PushString_fu_185_ap_ready,
-        buffer_r_address0 => grp_PushString_fu_185_buffer_r_address0,
-        buffer_r_ce0 => grp_PushString_fu_185_buffer_r_ce0,
-        buffer_r_q0 => name_q0,
-        length_r => tmp_10_reg_158,
-        chars_V_TDATA => grp_PushString_fu_185_chars_V_TDATA,
-        chars_V_TVALID => grp_PushString_fu_185_chars_V_TVALID,
-        chars_V_TREADY => grp_PushString_fu_185_chars_V_TREADY);
-
-    grp_PullString_fu_195 : component PullString
-    port map (
-        ap_clk => ap_clk,
-        ap_rst => ap_rst_n_inv,
-        ap_start => grp_PullString_fu_195_ap_start,
-        ap_done => grp_PullString_fu_195_ap_done,
-        ap_idle => grp_PullString_fu_195_ap_idle,
-        ap_ready => grp_PullString_fu_195_ap_ready,
-        buffer_r_address0 => grp_PullString_fu_195_buffer_r_address0,
-        buffer_r_ce0 => grp_PullString_fu_195_buffer_r_ce0,
-        buffer_r_we0 => grp_PullString_fu_195_buffer_r_we0,
-        buffer_r_d0 => grp_PullString_fu_195_buffer_r_d0,
-        length_r => grp_PullString_fu_195_length_r,
-        chars_V_TDATA => grp_PullString_fu_195_chars_V_TDATA,
-        chars_V_TVALID => grp_PullString_fu_195_chars_V_TVALID,
-        chars_V_TREADY => grp_PullString_fu_195_chars_V_TREADY);
+        ap_rst => ap_rst,
+        ap_start => grp_PushString_fu_250_ap_start,
+        ap_done => grp_PushString_fu_250_ap_done,
+        ap_idle => grp_PushString_fu_250_ap_idle,
+        ap_ready => grp_PushString_fu_250_ap_ready,
+        buffer_count_V_address0 => grp_PushString_fu_250_buffer_count_V_address0,
+        buffer_count_V_ce0 => grp_PushString_fu_250_buffer_count_V_ce0,
+        buffer_count_V_q0 => name_count_V_q0,
+        buffer_dvalid_address0 => grp_PushString_fu_250_buffer_dvalid_address0,
+        buffer_dvalid_ce0 => grp_PushString_fu_250_buffer_dvalid_ce0,
+        buffer_dvalid_q0 => name_dvalid_q0,
+        buffer_last_address0 => grp_PushString_fu_250_buffer_last_address0,
+        buffer_last_ce0 => grp_PushString_fu_250_buffer_last_ce0,
+        buffer_last_q0 => name_last_q0,
+        buffer_data_V_address0 => grp_PushString_fu_250_buffer_data_V_address0,
+        buffer_data_V_ce0 => grp_PushString_fu_250_buffer_data_V_ce0,
+        buffer_data_V_q0 => name_data_V_q0,
+        length_data_V => nlen_data_V_reg_494,
+        chars_V_din => grp_PushString_fu_250_chars_V_din,
+        chars_V_full_n => grp_PushString_fu_250_chars_V_full_n,
+        chars_V_write => grp_PushString_fu_250_chars_V_write);
 
 
 
@@ -414,7 +332,7 @@ begin
     ap_CS_fsm_assign_proc : process(ap_clk)
     begin
         if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
+            if (ap_rst = '1') then
                 ap_CS_fsm <= ap_ST_fsm_state1;
             else
                 ap_CS_fsm <= ap_NS_fsm;
@@ -423,512 +341,16 @@ begin
     end process;
 
 
-    beer_age_V_1_sel_rd_assign_proc : process(ap_clk)
+    grp_PushString_fu_250_ap_start_reg_assign_proc : process(ap_clk)
     begin
         if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_age_V_1_sel_rd <= ap_const_logic_0;
+            if (ap_rst = '1') then
+                grp_PushString_fu_250_ap_start_reg <= ap_const_logic_0;
             else
-                if (((beer_age_V_1_ack_out = ap_const_logic_1) and (beer_age_V_1_vld_out = ap_const_logic_1))) then 
-                                        beer_age_V_1_sel_rd <= not(beer_age_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_age_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_age_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((beer_age_V_1_ack_in = ap_const_logic_1) and (beer_age_V_1_vld_in = ap_const_logic_1))) then 
-                                        beer_age_V_1_sel_wr <= not(beer_age_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_age_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_age_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((beer_age_V_1_state = ap_const_lv2_2) and (beer_age_V_1_vld_in = ap_const_logic_0)) or ((beer_age_V_1_state = ap_const_lv2_3) and (beer_age_V_1_vld_in = ap_const_logic_0) and (beer_age_V_1_ack_out = ap_const_logic_1)))) then 
-                    beer_age_V_1_state <= ap_const_lv2_2;
-                elsif ((((beer_age_V_1_state = ap_const_lv2_1) and (beer_age_V_1_ack_out = ap_const_logic_0)) or ((beer_age_V_1_state = ap_const_lv2_3) and (beer_age_V_1_ack_out = ap_const_logic_0) and (beer_age_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_age_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((beer_age_V_1_vld_in = ap_const_logic_0) and (beer_age_V_1_ack_out = ap_const_logic_1))) and not(((beer_age_V_1_ack_out = ap_const_logic_0) and (beer_age_V_1_vld_in = ap_const_logic_1))) and (beer_age_V_1_state = ap_const_lv2_3)) or ((beer_age_V_1_state = ap_const_lv2_1) and (beer_age_V_1_ack_out = ap_const_logic_1)) or ((beer_age_V_1_state = ap_const_lv2_2) and (beer_age_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_age_V_1_state <= ap_const_lv2_3;
-                else 
-                    beer_age_V_1_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_chars_V_1_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_chars_V_1_sel_rd <= ap_const_logic_0;
-            else
-                if (((beer_name_chars_V_1_ack_out = ap_const_logic_1) and (beer_name_chars_V_1_vld_out = ap_const_logic_1))) then 
-                                        beer_name_chars_V_1_sel_rd <= not(beer_name_chars_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_chars_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_chars_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((beer_name_chars_V_1_ack_in = ap_const_logic_1) and (beer_name_chars_V_1_vld_in = ap_const_logic_1))) then 
-                                        beer_name_chars_V_1_sel_wr <= not(beer_name_chars_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_chars_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_chars_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((beer_name_chars_V_1_state = ap_const_lv2_2) and (beer_name_chars_V_1_vld_in = ap_const_logic_0)) or ((beer_name_chars_V_1_state = ap_const_lv2_3) and (beer_name_chars_V_1_vld_in = ap_const_logic_0) and (beer_name_chars_V_1_ack_out = ap_const_logic_1)))) then 
-                    beer_name_chars_V_1_state <= ap_const_lv2_2;
-                elsif ((((beer_name_chars_V_1_state = ap_const_lv2_1) and (beer_name_chars_V_1_ack_out = ap_const_logic_0)) or ((beer_name_chars_V_1_state = ap_const_lv2_3) and (beer_name_chars_V_1_ack_out = ap_const_logic_0) and (beer_name_chars_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_name_chars_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((beer_name_chars_V_1_vld_in = ap_const_logic_0) and (beer_name_chars_V_1_ack_out = ap_const_logic_1))) and not(((beer_name_chars_V_1_ack_out = ap_const_logic_0) and (beer_name_chars_V_1_vld_in = ap_const_logic_1))) and (beer_name_chars_V_1_state = ap_const_lv2_3)) or ((beer_name_chars_V_1_state = ap_const_lv2_1) and (beer_name_chars_V_1_ack_out = ap_const_logic_1)) or ((beer_name_chars_V_1_state = ap_const_lv2_2) and (beer_name_chars_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_name_chars_V_1_state <= ap_const_lv2_3;
-                else 
-                    beer_name_chars_V_1_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_lengths_V_1_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_lengths_V_1_sel_rd <= ap_const_logic_0;
-            else
-                if (((beer_name_lengths_V_1_ack_out = ap_const_logic_1) and (beer_name_lengths_V_1_vld_out = ap_const_logic_1))) then 
-                                        beer_name_lengths_V_1_sel_rd <= not(beer_name_lengths_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_lengths_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_lengths_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((beer_name_lengths_V_1_ack_in = ap_const_logic_1) and (beer_name_lengths_V_1_vld_in = ap_const_logic_1))) then 
-                                        beer_name_lengths_V_1_sel_wr <= not(beer_name_lengths_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    beer_name_lengths_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                beer_name_lengths_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((beer_name_lengths_V_1_state = ap_const_lv2_2) and (beer_name_lengths_V_1_vld_in = ap_const_logic_0)) or ((beer_name_lengths_V_1_state = ap_const_lv2_3) and (beer_name_lengths_V_1_vld_in = ap_const_logic_0) and (beer_name_lengths_V_1_ack_out = ap_const_logic_1)))) then 
-                    beer_name_lengths_V_1_state <= ap_const_lv2_2;
-                elsif ((((beer_name_lengths_V_1_state = ap_const_lv2_1) and (beer_name_lengths_V_1_ack_out = ap_const_logic_0)) or ((beer_name_lengths_V_1_state = ap_const_lv2_3) and (beer_name_lengths_V_1_ack_out = ap_const_logic_0) and (beer_name_lengths_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_name_lengths_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((beer_name_lengths_V_1_vld_in = ap_const_logic_0) and (beer_name_lengths_V_1_ack_out = ap_const_logic_1))) and not(((beer_name_lengths_V_1_ack_out = ap_const_logic_0) and (beer_name_lengths_V_1_vld_in = ap_const_logic_1))) and (beer_name_lengths_V_1_state = ap_const_lv2_3)) or ((beer_name_lengths_V_1_state = ap_const_lv2_1) and (beer_name_lengths_V_1_ack_out = ap_const_logic_1)) or ((beer_name_lengths_V_1_state = ap_const_lv2_2) and (beer_name_lengths_V_1_vld_in = ap_const_logic_1)))) then 
-                    beer_name_lengths_V_1_state <= ap_const_lv2_3;
-                else 
-                    beer_name_lengths_V_1_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_chars_V_0_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_chars_V_0_sel_rd <= ap_const_logic_0;
-            else
-                if (((bywater_name_chars_V_0_ack_out = ap_const_logic_1) and (bywater_name_chars_V_0_vld_out = ap_const_logic_1))) then 
-                                        bywater_name_chars_V_0_sel_rd <= not(bywater_name_chars_V_0_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_chars_V_0_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_chars_V_0_sel_wr <= ap_const_logic_0;
-            else
-                if (((bywater_name_chars_V_0_ack_in = ap_const_logic_1) and (bywater_name_chars_V_0_vld_in = ap_const_logic_1))) then 
-                                        bywater_name_chars_V_0_sel_wr <= not(bywater_name_chars_V_0_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_chars_V_0_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_chars_V_0_state <= ap_const_lv2_0;
-            else
-                if ((((bywater_name_chars_V_0_state = ap_const_lv2_2) and (bywater_name_chars_V_0_vld_in = ap_const_logic_0)) or ((bywater_name_chars_V_0_state = ap_const_lv2_3) and (bywater_name_chars_V_0_vld_in = ap_const_logic_0) and (bywater_name_chars_V_0_ack_out = ap_const_logic_1)))) then 
-                    bywater_name_chars_V_0_state <= ap_const_lv2_2;
-                elsif ((((bywater_name_chars_V_0_state = ap_const_lv2_1) and (bywater_name_chars_V_0_ack_out = ap_const_logic_0)) or ((bywater_name_chars_V_0_state = ap_const_lv2_3) and (bywater_name_chars_V_0_ack_out = ap_const_logic_0) and (bywater_name_chars_V_0_vld_in = ap_const_logic_1)))) then 
-                    bywater_name_chars_V_0_state <= ap_const_lv2_1;
-                elsif (((not(((bywater_name_chars_V_0_vld_in = ap_const_logic_0) and (bywater_name_chars_V_0_ack_out = ap_const_logic_1))) and not(((bywater_name_chars_V_0_ack_out = ap_const_logic_0) and (bywater_name_chars_V_0_vld_in = ap_const_logic_1))) and (bywater_name_chars_V_0_state = ap_const_lv2_3)) or ((bywater_name_chars_V_0_state = ap_const_lv2_1) and (bywater_name_chars_V_0_ack_out = ap_const_logic_1)) or ((bywater_name_chars_V_0_state = ap_const_lv2_2) and (bywater_name_chars_V_0_vld_in = ap_const_logic_1)))) then 
-                    bywater_name_chars_V_0_state <= ap_const_lv2_3;
-                else 
-                    bywater_name_chars_V_0_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_lengths_V_0_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_lengths_V_0_sel_rd <= ap_const_logic_0;
-            else
-                if (((bywater_name_lengths_V_0_ack_out = ap_const_logic_1) and (bywater_name_lengths_V_0_vld_out = ap_const_logic_1))) then 
-                                        bywater_name_lengths_V_0_sel_rd <= not(bywater_name_lengths_V_0_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_lengths_V_0_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_lengths_V_0_sel_wr <= ap_const_logic_0;
-            else
-                if (((bywater_name_lengths_V_0_ack_in = ap_const_logic_1) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_1))) then 
-                                        bywater_name_lengths_V_0_sel_wr <= not(bywater_name_lengths_V_0_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    bywater_name_lengths_V_0_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                bywater_name_lengths_V_0_state <= ap_const_lv2_0;
-            else
-                if ((((bywater_name_lengths_V_0_state = ap_const_lv2_2) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_0)) or ((bywater_name_lengths_V_0_state = ap_const_lv2_3) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_0) and (bywater_name_lengths_V_0_ack_out = ap_const_logic_1)))) then 
-                    bywater_name_lengths_V_0_state <= ap_const_lv2_2;
-                elsif ((((bywater_name_lengths_V_0_state = ap_const_lv2_1) and (bywater_name_lengths_V_0_ack_out = ap_const_logic_0)) or ((bywater_name_lengths_V_0_state = ap_const_lv2_3) and (bywater_name_lengths_V_0_ack_out = ap_const_logic_0) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_1)))) then 
-                    bywater_name_lengths_V_0_state <= ap_const_lv2_1;
-                elsif (((not(((bywater_name_lengths_V_0_vld_in = ap_const_logic_0) and (bywater_name_lengths_V_0_ack_out = ap_const_logic_1))) and not(((bywater_name_lengths_V_0_ack_out = ap_const_logic_0) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_1))) and (bywater_name_lengths_V_0_state = ap_const_lv2_3)) or ((bywater_name_lengths_V_0_state = ap_const_lv2_1) and (bywater_name_lengths_V_0_ack_out = ap_const_logic_1)) or ((bywater_name_lengths_V_0_state = ap_const_lv2_2) and (bywater_name_lengths_V_0_vld_in = ap_const_logic_1)))) then 
-                    bywater_name_lengths_V_0_state <= ap_const_lv2_3;
-                else 
-                    bywater_name_lengths_V_0_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    grp_PullString_fu_195_ap_start_reg_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                grp_PullString_fu_195_ap_start_reg <= ap_const_logic_0;
-            else
-                if (((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2)) or (not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2)))) then 
-                    grp_PullString_fu_195_ap_start_reg <= ap_const_logic_1;
-                elsif ((grp_PullString_fu_195_ap_ready = ap_const_logic_1)) then 
-                    grp_PullString_fu_195_ap_start_reg <= ap_const_logic_0;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    grp_PushString_fu_185_ap_start_reg_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                grp_PushString_fu_185_ap_start_reg <= ap_const_logic_0;
-            else
-                if ((((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state5)) or ((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state5)))) then 
-                    grp_PushString_fu_185_ap_start_reg <= ap_const_logic_1;
-                elsif ((grp_PushString_fu_185_ap_ready = ap_const_logic_1)) then 
-                    grp_PushString_fu_185_ap_start_reg <= ap_const_logic_0;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_chars_V_0_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_chars_V_0_sel_rd <= ap_const_logic_0;
-            else
-                if (((hobbiton_name_chars_V_0_ack_out = ap_const_logic_1) and (hobbiton_name_chars_V_0_vld_out = ap_const_logic_1))) then 
-                                        hobbiton_name_chars_V_0_sel_rd <= not(hobbiton_name_chars_V_0_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_chars_V_0_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_chars_V_0_sel_wr <= ap_const_logic_0;
-            else
-                if (((hobbiton_name_chars_V_0_ack_in = ap_const_logic_1) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_1))) then 
-                                        hobbiton_name_chars_V_0_sel_wr <= not(hobbiton_name_chars_V_0_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_chars_V_0_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_chars_V_0_state <= ap_const_lv2_0;
-            else
-                if ((((hobbiton_name_chars_V_0_state = ap_const_lv2_2) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_0)) or ((hobbiton_name_chars_V_0_state = ap_const_lv2_3) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_0) and (hobbiton_name_chars_V_0_ack_out = ap_const_logic_1)))) then 
-                    hobbiton_name_chars_V_0_state <= ap_const_lv2_2;
-                elsif ((((hobbiton_name_chars_V_0_state = ap_const_lv2_1) and (hobbiton_name_chars_V_0_ack_out = ap_const_logic_0)) or ((hobbiton_name_chars_V_0_state = ap_const_lv2_3) and (hobbiton_name_chars_V_0_ack_out = ap_const_logic_0) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_1)))) then 
-                    hobbiton_name_chars_V_0_state <= ap_const_lv2_1;
-                elsif (((not(((hobbiton_name_chars_V_0_vld_in = ap_const_logic_0) and (hobbiton_name_chars_V_0_ack_out = ap_const_logic_1))) and not(((hobbiton_name_chars_V_0_ack_out = ap_const_logic_0) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_1))) and (hobbiton_name_chars_V_0_state = ap_const_lv2_3)) or ((hobbiton_name_chars_V_0_state = ap_const_lv2_1) and (hobbiton_name_chars_V_0_ack_out = ap_const_logic_1)) or ((hobbiton_name_chars_V_0_state = ap_const_lv2_2) and (hobbiton_name_chars_V_0_vld_in = ap_const_logic_1)))) then 
-                    hobbiton_name_chars_V_0_state <= ap_const_lv2_3;
-                else 
-                    hobbiton_name_chars_V_0_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_lengths_V_0_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_lengths_V_0_sel_rd <= ap_const_logic_0;
-            else
-                if (((hobbiton_name_lengths_V_0_ack_out = ap_const_logic_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_1))) then 
-                                        hobbiton_name_lengths_V_0_sel_rd <= not(hobbiton_name_lengths_V_0_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_lengths_V_0_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_lengths_V_0_sel_wr <= ap_const_logic_0;
-            else
-                if (((hobbiton_name_lengths_V_0_ack_in = ap_const_logic_1) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_1))) then 
-                                        hobbiton_name_lengths_V_0_sel_wr <= not(hobbiton_name_lengths_V_0_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    hobbiton_name_lengths_V_0_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                hobbiton_name_lengths_V_0_state <= ap_const_lv2_0;
-            else
-                if ((((hobbiton_name_lengths_V_0_state = ap_const_lv2_2) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_0)) or ((hobbiton_name_lengths_V_0_state = ap_const_lv2_3) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_0) and (hobbiton_name_lengths_V_0_ack_out = ap_const_logic_1)))) then 
-                    hobbiton_name_lengths_V_0_state <= ap_const_lv2_2;
-                elsif ((((hobbiton_name_lengths_V_0_state = ap_const_lv2_1) and (hobbiton_name_lengths_V_0_ack_out = ap_const_logic_0)) or ((hobbiton_name_lengths_V_0_state = ap_const_lv2_3) and (hobbiton_name_lengths_V_0_ack_out = ap_const_logic_0) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_1)))) then 
-                    hobbiton_name_lengths_V_0_state <= ap_const_lv2_1;
-                elsif (((not(((hobbiton_name_lengths_V_0_vld_in = ap_const_logic_0) and (hobbiton_name_lengths_V_0_ack_out = ap_const_logic_1))) and not(((hobbiton_name_lengths_V_0_ack_out = ap_const_logic_0) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_1))) and (hobbiton_name_lengths_V_0_state = ap_const_lv2_3)) or ((hobbiton_name_lengths_V_0_state = ap_const_lv2_1) and (hobbiton_name_lengths_V_0_ack_out = ap_const_logic_1)) or ((hobbiton_name_lengths_V_0_state = ap_const_lv2_2) and (hobbiton_name_lengths_V_0_vld_in = ap_const_logic_1)))) then 
-                    hobbiton_name_lengths_V_0_state <= ap_const_lv2_3;
-                else 
-                    hobbiton_name_lengths_V_0_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_age_V_1_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_age_V_1_sel_rd <= ap_const_logic_0;
-            else
-                if (((soda_age_V_1_ack_out = ap_const_logic_1) and (soda_age_V_1_vld_out = ap_const_logic_1))) then 
-                                        soda_age_V_1_sel_rd <= not(soda_age_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_age_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_age_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((soda_age_V_1_ack_in = ap_const_logic_1) and (soda_age_V_1_vld_in = ap_const_logic_1))) then 
-                                        soda_age_V_1_sel_wr <= not(soda_age_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_age_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_age_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((soda_age_V_1_state = ap_const_lv2_2) and (soda_age_V_1_vld_in = ap_const_logic_0)) or ((soda_age_V_1_state = ap_const_lv2_3) and (soda_age_V_1_vld_in = ap_const_logic_0) and (soda_age_V_1_ack_out = ap_const_logic_1)))) then 
-                    soda_age_V_1_state <= ap_const_lv2_2;
-                elsif ((((soda_age_V_1_state = ap_const_lv2_1) and (soda_age_V_1_ack_out = ap_const_logic_0)) or ((soda_age_V_1_state = ap_const_lv2_3) and (soda_age_V_1_ack_out = ap_const_logic_0) and (soda_age_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_age_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((soda_age_V_1_vld_in = ap_const_logic_0) and (soda_age_V_1_ack_out = ap_const_logic_1))) and not(((soda_age_V_1_ack_out = ap_const_logic_0) and (soda_age_V_1_vld_in = ap_const_logic_1))) and (soda_age_V_1_state = ap_const_lv2_3)) or ((soda_age_V_1_state = ap_const_lv2_1) and (soda_age_V_1_ack_out = ap_const_logic_1)) or ((soda_age_V_1_state = ap_const_lv2_2) and (soda_age_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_age_V_1_state <= ap_const_lv2_3;
-                else 
-                    soda_age_V_1_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_chars_V_1_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_chars_V_1_sel_rd <= ap_const_logic_0;
-            else
-                if (((soda_name_chars_V_1_ack_out = ap_const_logic_1) and (soda_name_chars_V_1_vld_out = ap_const_logic_1))) then 
-                                        soda_name_chars_V_1_sel_rd <= not(soda_name_chars_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_chars_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_chars_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((soda_name_chars_V_1_ack_in = ap_const_logic_1) and (soda_name_chars_V_1_vld_in = ap_const_logic_1))) then 
-                                        soda_name_chars_V_1_sel_wr <= not(soda_name_chars_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_chars_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_chars_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((soda_name_chars_V_1_state = ap_const_lv2_2) and (soda_name_chars_V_1_vld_in = ap_const_logic_0)) or ((soda_name_chars_V_1_state = ap_const_lv2_3) and (soda_name_chars_V_1_vld_in = ap_const_logic_0) and (soda_name_chars_V_1_ack_out = ap_const_logic_1)))) then 
-                    soda_name_chars_V_1_state <= ap_const_lv2_2;
-                elsif ((((soda_name_chars_V_1_state = ap_const_lv2_1) and (soda_name_chars_V_1_ack_out = ap_const_logic_0)) or ((soda_name_chars_V_1_state = ap_const_lv2_3) and (soda_name_chars_V_1_ack_out = ap_const_logic_0) and (soda_name_chars_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_name_chars_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((soda_name_chars_V_1_vld_in = ap_const_logic_0) and (soda_name_chars_V_1_ack_out = ap_const_logic_1))) and not(((soda_name_chars_V_1_ack_out = ap_const_logic_0) and (soda_name_chars_V_1_vld_in = ap_const_logic_1))) and (soda_name_chars_V_1_state = ap_const_lv2_3)) or ((soda_name_chars_V_1_state = ap_const_lv2_1) and (soda_name_chars_V_1_ack_out = ap_const_logic_1)) or ((soda_name_chars_V_1_state = ap_const_lv2_2) and (soda_name_chars_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_name_chars_V_1_state <= ap_const_lv2_3;
-                else 
-                    soda_name_chars_V_1_state <= ap_const_lv2_2;
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_lengths_V_1_sel_rd_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_lengths_V_1_sel_rd <= ap_const_logic_0;
-            else
-                if (((soda_name_lengths_V_1_ack_out = ap_const_logic_1) and (soda_name_lengths_V_1_vld_out = ap_const_logic_1))) then 
-                                        soda_name_lengths_V_1_sel_rd <= not(soda_name_lengths_V_1_sel_rd);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_lengths_V_1_sel_wr_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_lengths_V_1_sel_wr <= ap_const_logic_0;
-            else
-                if (((soda_name_lengths_V_1_ack_in = ap_const_logic_1) and (soda_name_lengths_V_1_vld_in = ap_const_logic_1))) then 
-                                        soda_name_lengths_V_1_sel_wr <= not(soda_name_lengths_V_1_sel_wr);
-                end if; 
-            end if;
-        end if;
-    end process;
-
-
-    soda_name_lengths_V_1_state_assign_proc : process(ap_clk)
-    begin
-        if (ap_clk'event and ap_clk =  '1') then
-            if (ap_rst_n_inv = '1') then
-                soda_name_lengths_V_1_state <= ap_const_lv2_0;
-            else
-                if ((((soda_name_lengths_V_1_state = ap_const_lv2_2) and (soda_name_lengths_V_1_vld_in = ap_const_logic_0)) or ((soda_name_lengths_V_1_state = ap_const_lv2_3) and (soda_name_lengths_V_1_vld_in = ap_const_logic_0) and (soda_name_lengths_V_1_ack_out = ap_const_logic_1)))) then 
-                    soda_name_lengths_V_1_state <= ap_const_lv2_2;
-                elsif ((((soda_name_lengths_V_1_state = ap_const_lv2_1) and (soda_name_lengths_V_1_ack_out = ap_const_logic_0)) or ((soda_name_lengths_V_1_state = ap_const_lv2_3) and (soda_name_lengths_V_1_ack_out = ap_const_logic_0) and (soda_name_lengths_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_name_lengths_V_1_state <= ap_const_lv2_1;
-                elsif (((not(((soda_name_lengths_V_1_vld_in = ap_const_logic_0) and (soda_name_lengths_V_1_ack_out = ap_const_logic_1))) and not(((soda_name_lengths_V_1_ack_out = ap_const_logic_0) and (soda_name_lengths_V_1_vld_in = ap_const_logic_1))) and (soda_name_lengths_V_1_state = ap_const_lv2_3)) or ((soda_name_lengths_V_1_state = ap_const_lv2_1) and (soda_name_lengths_V_1_ack_out = ap_const_logic_1)) or ((soda_name_lengths_V_1_state = ap_const_lv2_2) and (soda_name_lengths_V_1_vld_in = ap_const_logic_1)))) then 
-                    soda_name_lengths_V_1_state <= ap_const_lv2_3;
-                else 
-                    soda_name_lengths_V_1_state <= ap_const_lv2_2;
+                if (((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_3_fu_392_p2 = ap_const_lv1_0) and (tmp_i_fu_336_p2 = ap_const_lv1_0)) or (not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_0) and (tmp_3_fu_392_p2 = ap_const_lv1_1)))) then 
+                    grp_PushString_fu_250_ap_start_reg <= ap_const_logic_1;
+                elsif ((grp_PushString_fu_250_ap_ready = ap_const_logic_1)) then 
+                    grp_PushString_fu_250_ap_start_reg <= ap_const_logic_0;
                 end if; 
             end if;
         end if;
@@ -941,55 +363,45 @@ begin
         end if;
     end process;
 
-    did_something_reg_172_assign_proc : process (ap_clk)
+    hobbits_meta_length_0_vld_reg_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_0) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-                did_something_reg_172 <= ap_const_lv1_0;
-            elsif ((not(((ap_const_boolean_1 = ap_block_state6_on_subcall_done) or (ap_const_boolean_1 = ap_block_state6_io))) and (ap_const_logic_1 = ap_CS_fsm_state6))) then 
-                did_something_reg_172 <= ap_const_lv1_1;
+        end if;
+    end process;
+
+    i_op_assign_reg_239_assign_proc : process (ap_clk)
+    begin
+        if (ap_clk'event and ap_clk = '1') then
+            if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+                i_op_assign_reg_239 <= i_1_fu_341_p2;
+            elsif ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then 
+                i_op_assign_reg_239 <= ap_const_lv31_0;
             end if; 
         end if;
     end process;
 
-    tmp_10_reg_158_assign_proc : process (ap_clk)
+    tmp_reg_228_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if ((grp_PullString_fu_195_ap_done = ap_const_logic_1)) then
-                if ((ap_const_logic_1 = ap_CS_fsm_state4)) then 
-                    tmp_10_reg_158 <= tmp_12_reg_242;
-                elsif ((ap_const_logic_1 = ap_CS_fsm_state3)) then 
-                    tmp_10_reg_158 <= tmp_14_reg_231;
-                end if;
-            end if; 
-        end if;
-    end process;
-
-    tmp_9_reg_144_assign_proc : process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((grp_PullString_fu_195_ap_done = ap_const_logic_1)) then
-                if ((ap_const_logic_1 = ap_CS_fsm_state4)) then 
-                    tmp_9_reg_144 <= tmp_11_reg_237;
-                elsif ((ap_const_logic_1 = ap_CS_fsm_state3)) then 
-                    tmp_9_reg_144 <= tmp_13_reg_226;
-                end if;
+            if ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_0))) then 
+                tmp_reg_228 <= tmp_8_fu_271_p2;
+            elsif ((ap_const_logic_1 = ap_CS_fsm_state2)) then 
+                tmp_reg_228 <= ap_const_lv8_0;
             end if; 
         end if;
     end process;
     process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if ((beer_age_V_1_load_A = ap_const_logic_1)) then
-                beer_age_V_1_payload_A <= tmp_9_reg_144;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((beer_age_V_1_load_B = ap_const_logic_1)) then
-                beer_age_V_1_payload_B <= tmp_9_reg_144;
+            if ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then
+                age_count_V_reg_471 <= age_count_V_fu_304_p1;
+                age_data_V_reg_476 <= hobbits_age_V_dout(10 downto 3);
+                i <= tmp_1_fu_292_p2;
+                nlen_count_V_reg_488 <= nlen_count_V_fu_318_p1;
+                nlen_data_V_reg_494 <= hobbits_name_lengths_V_dout(34 downto 3);
+                tmp113_reg_464 <= hobbits_age_V_dout;
+                tmp_196_reg_481 <= hobbits_name_lengths_V_dout;
+                tmp_1_reg_459 <= tmp_1_fu_292_p2;
             end if;
         end if;
     end process;
@@ -1004,182 +416,21 @@ begin
     process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if ((beer_name_chars_V_1_load_A = ap_const_logic_1)) then
-                beer_name_chars_V_1_payload_A <= grp_PushString_fu_185_chars_V_TDATA;
+            if (((not(((ap_start = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state1))) and (hobbits_meta_length_0_vld_reg = ap_const_logic_0) and (ap_const_logic_1 = ap_const_logic_1)) or (not(((ap_start = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state1))) and (hobbits_meta_length_0_ack_out = ap_const_logic_1) and (ap_const_logic_1 = ap_const_logic_1) and (hobbits_meta_length_0_vld_reg = ap_const_logic_1)))) then
+                hobbits_meta_length_0_data_reg <= hobbits_meta_length;
             end if;
         end if;
     end process;
     process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if ((beer_name_chars_V_1_load_B = ap_const_logic_1)) then
-                beer_name_chars_V_1_payload_B <= grp_PushString_fu_185_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((beer_name_lengths_V_1_load_A = ap_const_logic_1)) then
-                beer_name_lengths_V_1_payload_A <= tmp_10_reg_158;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((beer_name_lengths_V_1_load_B = ap_const_logic_1)) then
-                beer_name_lengths_V_1_payload_B <= tmp_10_reg_158;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((bywater_name_chars_V_0_load_A = ap_const_logic_1)) then
-                bywater_name_chars_V_0_payload_A <= bywater_name_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((bywater_name_chars_V_0_load_B = ap_const_logic_1)) then
-                bywater_name_chars_V_0_payload_B <= bywater_name_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((bywater_name_lengths_V_0_load_A = ap_const_logic_1)) then
-                bywater_name_lengths_V_0_payload_A <= bywater_name_lengths_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((bywater_name_lengths_V_0_load_B = ap_const_logic_1)) then
-                bywater_name_lengths_V_0_payload_B <= bywater_name_lengths_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((hobbiton_name_chars_V_0_load_A = ap_const_logic_1)) then
-                hobbiton_name_chars_V_0_payload_A <= hobbiton_name_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((hobbiton_name_chars_V_0_load_B = ap_const_logic_1)) then
-                hobbiton_name_chars_V_0_payload_B <= hobbiton_name_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((hobbiton_name_lengths_V_0_load_A = ap_const_logic_1)) then
-                hobbiton_name_lengths_V_0_payload_A <= hobbiton_name_lengths_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((hobbiton_name_lengths_V_0_load_B = ap_const_logic_1)) then
-                hobbiton_name_lengths_V_0_payload_B <= hobbiton_name_lengths_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_age_V_1_load_A = ap_const_logic_1)) then
-                soda_age_V_1_payload_A <= tmp_9_reg_144;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_age_V_1_load_B = ap_const_logic_1)) then
-                soda_age_V_1_payload_B <= tmp_9_reg_144;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_name_chars_V_1_load_A = ap_const_logic_1)) then
-                soda_name_chars_V_1_payload_A <= grp_PushString_fu_185_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_name_chars_V_1_load_B = ap_const_logic_1)) then
-                soda_name_chars_V_1_payload_B <= grp_PushString_fu_185_chars_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_name_lengths_V_1_load_A = ap_const_logic_1)) then
-                soda_name_lengths_V_1_payload_A <= tmp_10_reg_158;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((soda_name_lengths_V_1_load_B = ap_const_logic_1)) then
-                soda_name_lengths_V_1_payload_B <= tmp_10_reg_158;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                tmp_11_reg_237 <= hobbiton_age_V_TDATA;
-                tmp_12_reg_242 <= hobbiton_name_lengths_V_0_data_out;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (ap_predicate_op43_read_state2 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                tmp_13_reg_226 <= bywater_age_V_TDATA;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (ap_predicate_op44_read_state2 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                tmp_14_reg_231 <= bywater_name_lengths_V_0_data_out;
-            end if;
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if (((ap_const_boolean_0 = ap_block_state5_io) and (ap_const_logic_1 = ap_CS_fsm_state5))) then
-                tmp_3_reg_248 <= tmp_3_fu_210_p2;
+            if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_0))) then
+                tmp_3_reg_508 <= tmp_3_fu_392_p2;
             end if;
         end if;
     end process;
 
-    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, soda_name_lengths_V_1_ack_in, soda_name_lengths_V_1_state, soda_name_chars_V_1_ack_in, soda_name_chars_V_1_state, soda_age_V_1_ack_in, soda_age_V_1_state, beer_name_lengths_V_1_ack_in, beer_name_lengths_V_1_state, beer_name_chars_V_1_ack_in, beer_name_chars_V_1_state, beer_age_V_1_ack_in, beer_age_V_1_state, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, tmp_6_nbreadreq_fu_84_p3, ap_CS_fsm_state5, ap_CS_fsm_state6, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2, ap_block_state5_io, grp_PullString_fu_195_ap_done, ap_CS_fsm_state3, ap_CS_fsm_state4, ap_block_state6_io, ap_block_state6_on_subcall_done, ap_CS_fsm_state7)
+    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, hobbits_name_lengths_V_empty_n, hobbits_name_chars_V_empty_n, hobbits_age_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state3, tmp_s_fu_282_p2, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
         case ap_CS_fsm is
             when ap_ST_fsm_state1 => 
@@ -1189,96 +440,73 @@ begin
                     ap_NS_fsm <= ap_ST_fsm_state1;
                 end if;
             when ap_ST_fsm_state2 => 
-                if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_0) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                    ap_NS_fsm <= ap_ST_fsm_state7;
-                elsif ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                    ap_NS_fsm <= ap_ST_fsm_state3;
-                elsif ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
-                    ap_NS_fsm <= ap_ST_fsm_state4;
-                else
-                    ap_NS_fsm <= ap_ST_fsm_state2;
-                end if;
+                ap_NS_fsm <= ap_ST_fsm_state3;
             when ap_ST_fsm_state3 => 
-                if (((grp_PullString_fu_195_ap_done = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3))) then
-                    ap_NS_fsm <= ap_ST_fsm_state5;
+                if ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then
+                    ap_NS_fsm <= ap_ST_fsm_state4;
+                elsif ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_0))) then
+                    ap_NS_fsm <= ap_ST_fsm_state3;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state3;
                 end if;
             when ap_ST_fsm_state4 => 
-                if (((grp_PullString_fu_195_ap_done = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state4))) then
+                if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_0))) then
                     ap_NS_fsm <= ap_ST_fsm_state5;
+                elsif ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then
+                    ap_NS_fsm <= ap_ST_fsm_state4;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state4;
                 end if;
             when ap_ST_fsm_state5 => 
-                if (((ap_const_boolean_0 = ap_block_state5_io) and (ap_const_logic_1 = ap_CS_fsm_state5))) then
-                    ap_NS_fsm <= ap_ST_fsm_state6;
+                if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_const_logic_1 = ap_CS_fsm_state5))) then
+                    ap_NS_fsm <= ap_ST_fsm_state1;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state5;
                 end if;
-            when ap_ST_fsm_state6 => 
-                if ((not(((ap_const_boolean_1 = ap_block_state6_on_subcall_done) or (ap_const_boolean_1 = ap_block_state6_io))) and (ap_const_logic_1 = ap_CS_fsm_state6))) then
-                    ap_NS_fsm <= ap_ST_fsm_state7;
-                else
-                    ap_NS_fsm <= ap_ST_fsm_state6;
-                end if;
-            when ap_ST_fsm_state7 => 
-                if ((not(((beer_age_V_1_ack_in = ap_const_logic_0) or (beer_name_chars_V_1_ack_in = ap_const_logic_0) or (beer_name_lengths_V_1_ack_in = ap_const_logic_0) or (soda_age_V_1_ack_in = ap_const_logic_0) or (soda_name_chars_V_1_ack_in = ap_const_logic_0) or (soda_name_lengths_V_1_ack_in = ap_const_logic_0))) and (beer_age_V_1_state(0) = ap_const_logic_0) and (beer_name_chars_V_1_state(0) = ap_const_logic_0) and (beer_name_lengths_V_1_state(0) = ap_const_logic_0) and (soda_age_V_1_state(0) = ap_const_logic_0) and (soda_name_chars_V_1_state(0) = ap_const_logic_0) and (soda_name_lengths_V_1_state(0) = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state7))) then
-                    ap_NS_fsm <= ap_ST_fsm_state1;
-                else
-                    ap_NS_fsm <= ap_ST_fsm_state7;
-                end if;
             when others =>  
-                ap_NS_fsm <= "XXXXXXX";
+                ap_NS_fsm <= "XXXXX";
         end case;
     end process;
+    age_count_V_fu_304_p1 <= hobbits_age_V_dout(1 - 1 downto 0);
     ap_CS_fsm_state1 <= ap_CS_fsm(0);
     ap_CS_fsm_state2 <= ap_CS_fsm(1);
     ap_CS_fsm_state3 <= ap_CS_fsm(2);
     ap_CS_fsm_state4 <= ap_CS_fsm(3);
     ap_CS_fsm_state5 <= ap_CS_fsm(4);
-    ap_CS_fsm_state6 <= ap_CS_fsm(5);
-    ap_CS_fsm_state7 <= ap_CS_fsm(6);
 
-    ap_block_state2_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
+    ap_block_state3_assign_proc : process(hobbits_name_lengths_V_empty_n, hobbits_age_V_empty_n, tmp_s_fu_282_p2)
     begin
-                ap_block_state2 <= (((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)));
+                ap_block_state3 <= (((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)));
     end process;
 
 
-    ap_block_state2_ignore_call2_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
+    ap_block_state4_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
     begin
-                ap_block_state2_ignore_call2 <= (((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)));
+                ap_block_state4 <= (((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)));
     end process;
 
 
-    ap_block_state5_io_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_age_V_1_ack_in, beer_name_lengths_V_1_ack_in, beer_age_V_1_ack_in, tmp_3_fu_210_p2)
+    ap_block_state4_ignore_call2_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
     begin
-                ap_block_state5_io <= (((tmp_3_fu_210_p2 = ap_const_lv1_0) and (beer_name_lengths_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_fu_210_p2 = ap_const_lv1_0) and (beer_age_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_fu_210_p2 = ap_const_lv1_1) and (soda_name_lengths_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_fu_210_p2 = ap_const_lv1_1) and (soda_age_V_1_ack_in = ap_const_logic_0)));
+                ap_block_state4_ignore_call2 <= (((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)));
     end process;
 
 
-    ap_block_state6_io_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_age_V_1_ack_in, beer_name_lengths_V_1_ack_in, beer_age_V_1_ack_in, tmp_3_reg_248)
+    ap_block_state5_assign_proc : process(soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5)
     begin
-                ap_block_state6_io <= (((tmp_3_reg_248 = ap_const_lv1_0) and (beer_name_lengths_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_reg_248 = ap_const_lv1_0) and (beer_age_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_reg_248 = ap_const_lv1_1) and (soda_name_lengths_V_1_ack_in = ap_const_logic_0)) or ((tmp_3_reg_248 = ap_const_lv1_1) and (soda_age_V_1_ack_in = ap_const_logic_0)));
+                ap_block_state5 <= (((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)));
     end process;
 
 
-    ap_block_state6_on_subcall_done_assign_proc : process(tmp_3_reg_248, grp_PushString_fu_185_ap_done)
+    ap_block_state5_on_subcall_done_assign_proc : process(tmp_3_reg_508, grp_PushString_fu_250_ap_done)
     begin
-                ap_block_state6_on_subcall_done <= (((tmp_3_reg_248 = ap_const_lv1_0) and (grp_PushString_fu_185_ap_done = ap_const_logic_0)) or ((tmp_3_reg_248 = ap_const_lv1_1) and (grp_PushString_fu_185_ap_done = ap_const_logic_0)));
+                ap_block_state5_on_subcall_done <= (((grp_PushString_fu_250_ap_done = ap_const_logic_0) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((grp_PushString_fu_250_ap_done = ap_const_logic_0) and (tmp_3_reg_508 = ap_const_lv1_0)));
     end process;
 
 
-    ap_block_state7_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_name_chars_V_1_ack_in, soda_age_V_1_ack_in, beer_name_lengths_V_1_ack_in, beer_name_chars_V_1_ack_in, beer_age_V_1_ack_in)
+    ap_done_assign_proc : process(soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state5, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-                ap_block_state7 <= ((beer_age_V_1_ack_in = ap_const_logic_0) or (beer_name_chars_V_1_ack_in = ap_const_logic_0) or (beer_name_lengths_V_1_ack_in = ap_const_logic_0) or (soda_age_V_1_ack_in = ap_const_logic_0) or (soda_name_chars_V_1_ack_in = ap_const_logic_0) or (soda_name_lengths_V_1_ack_in = ap_const_logic_0));
-    end process;
-
-
-    ap_done_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_name_lengths_V_1_state, soda_name_chars_V_1_ack_in, soda_name_chars_V_1_state, soda_age_V_1_ack_in, soda_age_V_1_state, beer_name_lengths_V_1_ack_in, beer_name_lengths_V_1_state, beer_name_chars_V_1_ack_in, beer_name_chars_V_1_state, beer_age_V_1_ack_in, beer_age_V_1_state, ap_CS_fsm_state7)
-    begin
-        if ((not(((beer_age_V_1_ack_in = ap_const_logic_0) or (beer_name_chars_V_1_ack_in = ap_const_logic_0) or (beer_name_lengths_V_1_ack_in = ap_const_logic_0) or (soda_age_V_1_ack_in = ap_const_logic_0) or (soda_name_chars_V_1_ack_in = ap_const_logic_0) or (soda_name_lengths_V_1_ack_in = ap_const_logic_0))) and (beer_age_V_1_state(0) = ap_const_logic_0) and (beer_name_chars_V_1_state(0) = ap_const_logic_0) and (beer_name_lengths_V_1_state(0) = ap_const_logic_0) and (soda_age_V_1_state(0) = ap_const_logic_0) and (soda_name_chars_V_1_state(0) = ap_const_logic_0) and (soda_name_lengths_V_1_state(0) = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state7))) then 
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
             ap_done <= ap_const_logic_1;
         else 
             ap_done <= ap_const_logic_0;
@@ -1296,494 +524,469 @@ begin
     end process;
 
 
-    ap_predicate_op43_read_state2_assign_proc : process(tmp_nbreadreq_fu_76_p3, tmp_6_nbreadreq_fu_84_p3)
+    ap_predicate_op100_write_state5_assign_proc : process(tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-                ap_predicate_op43_read_state2 <= ((tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0));
+                ap_predicate_op100_write_state5 <= ((tmp_4_fu_397_p2 = ap_const_lv1_1) and (tmp_3_reg_508 = ap_const_lv1_1));
     end process;
 
 
-    ap_predicate_op44_read_state2_assign_proc : process(tmp_nbreadreq_fu_76_p3, tmp_6_nbreadreq_fu_84_p3)
+    ap_predicate_op103_write_state5_assign_proc : process(tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-                ap_predicate_op44_read_state2 <= ((tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0));
+                ap_predicate_op103_write_state5 <= ((tmp_4_fu_397_p2 = ap_const_lv1_1) and (tmp_3_reg_508 = ap_const_lv1_1));
     end process;
 
 
-    ap_ready_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_name_lengths_V_1_state, soda_name_chars_V_1_ack_in, soda_name_chars_V_1_state, soda_age_V_1_ack_in, soda_age_V_1_state, beer_name_lengths_V_1_ack_in, beer_name_lengths_V_1_state, beer_name_chars_V_1_ack_in, beer_name_chars_V_1_state, beer_age_V_1_ack_in, beer_age_V_1_state, ap_CS_fsm_state7)
+    ap_predicate_op80_write_state4_assign_proc : process(tmp_i_fu_336_p2, tmp_3_fu_392_p2)
     begin
-        if ((not(((beer_age_V_1_ack_in = ap_const_logic_0) or (beer_name_chars_V_1_ack_in = ap_const_logic_0) or (beer_name_lengths_V_1_ack_in = ap_const_logic_0) or (soda_age_V_1_ack_in = ap_const_logic_0) or (soda_name_chars_V_1_ack_in = ap_const_logic_0) or (soda_name_lengths_V_1_ack_in = ap_const_logic_0))) and (beer_age_V_1_state(0) = ap_const_logic_0) and (beer_name_chars_V_1_state(0) = ap_const_logic_0) and (beer_name_lengths_V_1_state(0) = ap_const_logic_0) and (soda_age_V_1_state(0) = ap_const_logic_0) and (soda_name_chars_V_1_state(0) = ap_const_logic_0) and (soda_name_lengths_V_1_state(0) = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state7))) then 
+                ap_predicate_op80_write_state4 <= ((tmp_3_fu_392_p2 = ap_const_lv1_0) and (tmp_i_fu_336_p2 = ap_const_lv1_0));
+    end process;
+
+
+    ap_predicate_op81_write_state4_assign_proc : process(tmp_i_fu_336_p2, tmp_3_fu_392_p2)
+    begin
+                ap_predicate_op81_write_state4 <= ((tmp_3_fu_392_p2 = ap_const_lv1_0) and (tmp_i_fu_336_p2 = ap_const_lv1_0));
+    end process;
+
+
+    ap_predicate_op83_write_state4_assign_proc : process(tmp_i_fu_336_p2, tmp_3_fu_392_p2)
+    begin
+                ap_predicate_op83_write_state4 <= ((tmp_i_fu_336_p2 = ap_const_lv1_0) and (tmp_3_fu_392_p2 = ap_const_lv1_1));
+    end process;
+
+
+    ap_predicate_op84_write_state4_assign_proc : process(tmp_i_fu_336_p2, tmp_3_fu_392_p2)
+    begin
+                ap_predicate_op84_write_state4 <= ((tmp_i_fu_336_p2 = ap_const_lv1_0) and (tmp_3_fu_392_p2 = ap_const_lv1_1));
+    end process;
+
+
+    ap_predicate_op95_write_state5_assign_proc : process(tmp_3_reg_508, tmp_4_fu_397_p2)
+    begin
+                ap_predicate_op95_write_state5 <= ((tmp_3_reg_508 = ap_const_lv1_0) and (tmp_4_fu_397_p2 = ap_const_lv1_1));
+    end process;
+
+
+    ap_predicate_op98_write_state5_assign_proc : process(tmp_3_reg_508, tmp_4_fu_397_p2)
+    begin
+                ap_predicate_op98_write_state5 <= ((tmp_3_reg_508 = ap_const_lv1_0) and (tmp_4_fu_397_p2 = ap_const_lv1_1));
+    end process;
+
+
+    ap_ready_assign_proc : process(soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state5, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
+    begin
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
             ap_ready <= ap_const_logic_1;
         else 
             ap_ready <= ap_const_logic_0;
         end if; 
     end process;
 
-    ap_return <= did_something_reg_172;
+    ap_return <= ap_const_lv1_1;
 
-    ap_rst_n_inv_assign_proc : process(ap_rst_n)
+    beer_age_V_blk_n_assign_proc : process(beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, tmp_3_fu_392_p2, ap_CS_fsm_state5, tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-                ap_rst_n_inv <= not(ap_rst_n);
-    end process;
-
-    beer_age_V_1_ack_in <= beer_age_V_1_state(1);
-    beer_age_V_1_ack_out <= beer_age_V_TREADY;
-
-    beer_age_V_1_data_out_assign_proc : process(beer_age_V_1_payload_A, beer_age_V_1_payload_B, beer_age_V_1_sel)
-    begin
-        if ((beer_age_V_1_sel = ap_const_logic_1)) then 
-            beer_age_V_1_data_out <= beer_age_V_1_payload_B;
+        if ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_4_fu_397_p2 = ap_const_lv1_1) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_3_fu_392_p2 = ap_const_lv1_0) and (tmp_i_fu_336_p2 = ap_const_lv1_0)))) then 
+            beer_age_V_blk_n <= beer_age_V_full_n;
         else 
-            beer_age_V_1_data_out <= beer_age_V_1_payload_A;
+            beer_age_V_blk_n <= ap_const_logic_1;
         end if; 
     end process;
 
-    beer_age_V_1_load_A <= (not(beer_age_V_1_sel_wr) and beer_age_V_1_state_cmp_full);
-    beer_age_V_1_load_B <= (beer_age_V_1_state_cmp_full and beer_age_V_1_sel_wr);
-    beer_age_V_1_sel <= beer_age_V_1_sel_rd;
-    beer_age_V_1_state_cmp_full <= '0' when (beer_age_V_1_state = ap_const_lv2_1) else '1';
 
-    beer_age_V_1_vld_in_assign_proc : process(ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_block_state5_io)
+    beer_age_V_din_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp113_reg_464, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done, tmp_6_1_fu_410_p4)
     begin
-        if (((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
-            beer_age_V_1_vld_in <= ap_const_logic_1;
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op100_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
+            beer_age_V_din <= tmp_6_1_fu_410_p4;
+        elsif ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op80_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4))) then 
+            beer_age_V_din <= tmp113_reg_464;
         else 
-            beer_age_V_1_vld_in <= ap_const_logic_0;
+            beer_age_V_din <= "XXXXXXXXXXX";
         end if; 
     end process;
 
-    beer_age_V_1_vld_out <= beer_age_V_1_state(0);
-    beer_age_V_TDATA <= beer_age_V_1_data_out;
 
-    beer_age_V_TDATA_blk_n_assign_proc : process(beer_age_V_1_state, ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_CS_fsm_state6, tmp_3_reg_248)
+    beer_age_V_write_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-        if ((((tmp_3_reg_248 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_fu_210_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state5)))) then 
-            beer_age_V_TDATA_blk_n <= beer_age_V_1_state(1);
+        if (((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op100_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5)) or (not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op80_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4)))) then 
+            beer_age_V_write <= ap_const_logic_1;
         else 
-            beer_age_V_TDATA_blk_n <= ap_const_logic_1;
+            beer_age_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
-    beer_age_V_TVALID <= beer_age_V_1_state(0);
 
-    beer_allowed_age_0_ack_out_assign_proc : process(soda_name_lengths_V_1_ack_in, soda_name_chars_V_1_ack_in, soda_age_V_1_ack_in, beer_name_lengths_V_1_ack_in, beer_name_chars_V_1_ack_in, beer_age_V_1_ack_in, ap_CS_fsm_state7)
+    beer_allowed_age_0_ack_out_assign_proc : process(soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state5, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-        if ((not(((beer_age_V_1_ack_in = ap_const_logic_0) or (beer_name_chars_V_1_ack_in = ap_const_logic_0) or (beer_name_lengths_V_1_ack_in = ap_const_logic_0) or (soda_age_V_1_ack_in = ap_const_logic_0) or (soda_name_chars_V_1_ack_in = ap_const_logic_0) or (soda_name_lengths_V_1_ack_in = ap_const_logic_0))) and (ap_const_logic_1 = ap_CS_fsm_state7))) then 
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
             beer_allowed_age_0_ack_out <= ap_const_logic_1;
         else 
             beer_allowed_age_0_ack_out <= ap_const_logic_0;
         end if; 
     end process;
 
-    beer_name_chars_V_1_ack_in <= beer_name_chars_V_1_state(1);
-    beer_name_chars_V_1_ack_out <= beer_name_chars_V_TREADY;
+    beer_name_chars_V_din <= grp_PushString_fu_250_chars_V_din;
 
-    beer_name_chars_V_1_data_out_assign_proc : process(beer_name_chars_V_1_payload_A, beer_name_chars_V_1_payload_B, beer_name_chars_V_1_sel)
+    beer_name_chars_V_write_assign_proc : process(ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_chars_V_write)
     begin
-        if ((beer_name_chars_V_1_sel = ap_const_logic_1)) then 
-            beer_name_chars_V_1_data_out <= beer_name_chars_V_1_payload_B;
+        if (((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0))) then 
+            beer_name_chars_V_write <= grp_PushString_fu_250_chars_V_write;
         else 
-            beer_name_chars_V_1_data_out <= beer_name_chars_V_1_payload_A;
-        end if; 
-    end process;
-
-    beer_name_chars_V_1_load_A <= (not(beer_name_chars_V_1_sel_wr) and beer_name_chars_V_1_state_cmp_full);
-    beer_name_chars_V_1_load_B <= (beer_name_chars_V_1_state_cmp_full and beer_name_chars_V_1_sel_wr);
-    beer_name_chars_V_1_sel <= beer_name_chars_V_1_sel_rd;
-    beer_name_chars_V_1_state_cmp_full <= '0' when (beer_name_chars_V_1_state = ap_const_lv2_1) else '1';
-
-    beer_name_chars_V_1_vld_in_assign_proc : process(ap_CS_fsm_state6, tmp_3_reg_248, grp_PushString_fu_185_chars_V_TVALID)
-    begin
-        if (((tmp_3_reg_248 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state6))) then 
-            beer_name_chars_V_1_vld_in <= grp_PushString_fu_185_chars_V_TVALID;
-        else 
-            beer_name_chars_V_1_vld_in <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    beer_name_chars_V_1_vld_out <= beer_name_chars_V_1_state(0);
-    beer_name_chars_V_TDATA <= beer_name_chars_V_1_data_out;
-    beer_name_chars_V_TVALID <= beer_name_chars_V_1_state(0);
-    beer_name_lengths_V_1_ack_in <= beer_name_lengths_V_1_state(1);
-    beer_name_lengths_V_1_ack_out <= beer_name_lengths_V_TREADY;
-
-    beer_name_lengths_V_1_data_out_assign_proc : process(beer_name_lengths_V_1_payload_A, beer_name_lengths_V_1_payload_B, beer_name_lengths_V_1_sel)
-    begin
-        if ((beer_name_lengths_V_1_sel = ap_const_logic_1)) then 
-            beer_name_lengths_V_1_data_out <= beer_name_lengths_V_1_payload_B;
-        else 
-            beer_name_lengths_V_1_data_out <= beer_name_lengths_V_1_payload_A;
-        end if; 
-    end process;
-
-    beer_name_lengths_V_1_load_A <= (not(beer_name_lengths_V_1_sel_wr) and beer_name_lengths_V_1_state_cmp_full);
-    beer_name_lengths_V_1_load_B <= (beer_name_lengths_V_1_state_cmp_full and beer_name_lengths_V_1_sel_wr);
-    beer_name_lengths_V_1_sel <= beer_name_lengths_V_1_sel_rd;
-    beer_name_lengths_V_1_state_cmp_full <= '0' when (beer_name_lengths_V_1_state = ap_const_lv2_1) else '1';
-
-    beer_name_lengths_V_1_vld_in_assign_proc : process(ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_block_state5_io)
-    begin
-        if (((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
-            beer_name_lengths_V_1_vld_in <= ap_const_logic_1;
-        else 
-            beer_name_lengths_V_1_vld_in <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    beer_name_lengths_V_1_vld_out <= beer_name_lengths_V_1_state(0);
-    beer_name_lengths_V_TDATA <= beer_name_lengths_V_1_data_out;
-
-    beer_name_lengths_V_TDATA_blk_n_assign_proc : process(beer_name_lengths_V_1_state, ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_CS_fsm_state6, tmp_3_reg_248)
-    begin
-        if ((((tmp_3_reg_248 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_fu_210_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state5)))) then 
-            beer_name_lengths_V_TDATA_blk_n <= beer_name_lengths_V_1_state(1);
-        else 
-            beer_name_lengths_V_TDATA_blk_n <= ap_const_logic_1;
-        end if; 
-    end process;
-
-    beer_name_lengths_V_TVALID <= beer_name_lengths_V_1_state(0);
-
-    bywater_age_V_TDATA_blk_n_assign_proc : process(bywater_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, tmp_6_nbreadreq_fu_84_p3)
-    begin
-        if (((tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            bywater_age_V_TDATA_blk_n <= bywater_age_V_TVALID;
-        else 
-            bywater_age_V_TDATA_blk_n <= ap_const_logic_1;
+            beer_name_chars_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
 
-    bywater_age_V_TREADY_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
+    beer_name_lengths_V_blk_n_assign_proc : process(beer_name_lengths_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, tmp_3_fu_392_p2, ap_CS_fsm_state5, tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-        if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (ap_predicate_op43_read_state2 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            bywater_age_V_TREADY <= ap_const_logic_1;
+        if ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_4_fu_397_p2 = ap_const_lv1_1) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_3_fu_392_p2 = ap_const_lv1_0) and (tmp_i_fu_336_p2 = ap_const_lv1_0)))) then 
+            beer_name_lengths_V_blk_n <= beer_name_lengths_V_full_n;
         else 
-            bywater_age_V_TREADY <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    bywater_name_chars_V_0_ack_in <= bywater_name_chars_V_0_state(1);
-
-    bywater_name_chars_V_0_ack_out_assign_proc : process(grp_PullString_fu_195_chars_V_TREADY, ap_CS_fsm_state3)
-    begin
-        if ((ap_const_logic_1 = ap_CS_fsm_state3)) then 
-            bywater_name_chars_V_0_ack_out <= grp_PullString_fu_195_chars_V_TREADY;
-        else 
-            bywater_name_chars_V_0_ack_out <= ap_const_logic_0;
+            beer_name_lengths_V_blk_n <= ap_const_logic_1;
         end if; 
     end process;
 
 
-    bywater_name_chars_V_0_data_out_assign_proc : process(bywater_name_chars_V_0_payload_A, bywater_name_chars_V_0_payload_B, bywater_name_chars_V_0_sel)
+    beer_name_lengths_V_din_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_196_reg_481, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done, tmp_96_fu_431_p4)
     begin
-        if ((bywater_name_chars_V_0_sel = ap_const_logic_1)) then 
-            bywater_name_chars_V_0_data_out <= bywater_name_chars_V_0_payload_B;
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op103_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
+            beer_name_lengths_V_din <= tmp_96_fu_431_p4;
+        elsif ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op81_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4))) then 
+            beer_name_lengths_V_din <= tmp_196_reg_481;
         else 
-            bywater_name_chars_V_0_data_out <= bywater_name_chars_V_0_payload_A;
-        end if; 
-    end process;
-
-    bywater_name_chars_V_0_load_A <= (not(bywater_name_chars_V_0_sel_wr) and bywater_name_chars_V_0_state_cmp_full);
-    bywater_name_chars_V_0_load_B <= (bywater_name_chars_V_0_state_cmp_full and bywater_name_chars_V_0_sel_wr);
-    bywater_name_chars_V_0_sel <= bywater_name_chars_V_0_sel_rd;
-    bywater_name_chars_V_0_state_cmp_full <= '0' when (bywater_name_chars_V_0_state = ap_const_lv2_1) else '1';
-    bywater_name_chars_V_0_vld_in <= bywater_name_chars_V_TVALID;
-    bywater_name_chars_V_0_vld_out <= bywater_name_chars_V_0_state(0);
-    bywater_name_chars_V_TREADY <= bywater_name_chars_V_0_state(1);
-    bywater_name_lengths_V_0_ack_in <= bywater_name_lengths_V_0_state(1);
-
-    bywater_name_lengths_V_0_ack_out_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
-    begin
-        if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (ap_predicate_op44_read_state2 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            bywater_name_lengths_V_0_ack_out <= ap_const_logic_1;
-        else 
-            bywater_name_lengths_V_0_ack_out <= ap_const_logic_0;
+            beer_name_lengths_V_din <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
         end if; 
     end process;
 
 
-    bywater_name_lengths_V_0_data_out_assign_proc : process(bywater_name_lengths_V_0_payload_A, bywater_name_lengths_V_0_payload_B, bywater_name_lengths_V_0_sel)
+    beer_name_lengths_V_write_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-        if ((bywater_name_lengths_V_0_sel = ap_const_logic_1)) then 
-            bywater_name_lengths_V_0_data_out <= bywater_name_lengths_V_0_payload_B;
+        if (((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op103_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5)) or (not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op81_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4)))) then 
+            beer_name_lengths_V_write <= ap_const_logic_1;
         else 
-            bywater_name_lengths_V_0_data_out <= bywater_name_lengths_V_0_payload_A;
+            beer_name_lengths_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
-    bywater_name_lengths_V_0_load_A <= (not(bywater_name_lengths_V_0_sel_wr) and bywater_name_lengths_V_0_state_cmp_full);
-    bywater_name_lengths_V_0_load_B <= (bywater_name_lengths_V_0_state_cmp_full and bywater_name_lengths_V_0_sel_wr);
-    bywater_name_lengths_V_0_sel <= bywater_name_lengths_V_0_sel_rd;
-    bywater_name_lengths_V_0_state_cmp_full <= '0' when (bywater_name_lengths_V_0_state = ap_const_lv2_1) else '1';
-    bywater_name_lengths_V_0_vld_in <= bywater_name_lengths_V_TVALID;
-    bywater_name_lengths_V_0_vld_out <= bywater_name_lengths_V_0_state(0);
+    grp_PushString_fu_250_ap_start <= grp_PushString_fu_250_ap_start_reg;
 
-    bywater_name_lengths_V_TDATA_blk_n_assign_proc : process(bywater_name_lengths_V_0_state, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, tmp_6_nbreadreq_fu_84_p3)
+    grp_PushString_fu_250_chars_V_full_n_assign_proc : process(soda_name_chars_V_full_n, beer_name_chars_V_full_n, ap_CS_fsm_state5)
     begin
-        if (((tmp_6_nbreadreq_fu_84_p3 = ap_const_lv1_1) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            bywater_name_lengths_V_TDATA_blk_n <= bywater_name_lengths_V_0_state(0);
+        grp_PushString_fu_250_chars_V_full_n <= soda_name_chars_V_full_n;
+    end process;
+
+    grp_fu_262_p4 <= tmp_196_reg_481(34 downto 2);
+
+    hobbits_age_V_blk_n_assign_proc : process(hobbits_age_V_empty_n, ap_CS_fsm_state3, tmp_s_fu_282_p2)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then 
+            hobbits_age_V_blk_n <= hobbits_age_V_empty_n;
         else 
-            bywater_name_lengths_V_TDATA_blk_n <= ap_const_logic_1;
+            hobbits_age_V_blk_n <= ap_const_logic_1;
         end if; 
     end process;
 
-    bywater_name_lengths_V_TREADY <= bywater_name_lengths_V_0_state(1);
-    grp_PullString_fu_195_ap_start <= grp_PullString_fu_195_ap_start_reg;
 
-    grp_PullString_fu_195_chars_V_TDATA_assign_proc : process(hobbiton_name_chars_V_0_data_out, bywater_name_chars_V_0_data_out, ap_CS_fsm_state3, ap_CS_fsm_state4)
+    hobbits_age_V_read_assign_proc : process(hobbits_name_lengths_V_empty_n, hobbits_age_V_empty_n, ap_CS_fsm_state3, tmp_s_fu_282_p2)
     begin
-        if ((ap_const_logic_1 = ap_CS_fsm_state4)) then 
-            grp_PullString_fu_195_chars_V_TDATA <= hobbiton_name_chars_V_0_data_out;
+        if ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then 
+            hobbits_age_V_read <= ap_const_logic_1;
+        else 
+            hobbits_age_V_read <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    hobbits_meta_length_0_ack_out_assign_proc : process(soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state5, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
+    begin
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
+            hobbits_meta_length_0_ack_out <= ap_const_logic_1;
+        else 
+            hobbits_meta_length_0_ack_out <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    hobbits_name_chars_V_blk_n_assign_proc : process(hobbits_name_chars_V_empty_n, ap_CS_fsm_state4, tmp_i_fu_336_p2)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            hobbits_name_chars_V_blk_n <= hobbits_name_chars_V_empty_n;
+        else 
+            hobbits_name_chars_V_blk_n <= ap_const_logic_1;
+        end if; 
+    end process;
+
+
+    hobbits_name_chars_V_read_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
+    begin
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            hobbits_name_chars_V_read <= ap_const_logic_1;
+        else 
+            hobbits_name_chars_V_read <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    hobbits_name_lengths_V_blk_n_assign_proc : process(hobbits_name_lengths_V_empty_n, ap_CS_fsm_state3, tmp_s_fu_282_p2)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then 
+            hobbits_name_lengths_V_blk_n <= hobbits_name_lengths_V_empty_n;
+        else 
+            hobbits_name_lengths_V_blk_n <= ap_const_logic_1;
+        end if; 
+    end process;
+
+
+    hobbits_name_lengths_V_read_assign_proc : process(hobbits_name_lengths_V_empty_n, hobbits_age_V_empty_n, ap_CS_fsm_state3, tmp_s_fu_282_p2)
+    begin
+        if ((not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3) and (tmp_s_fu_282_p2 = ap_const_lv1_1))) then 
+            hobbits_name_lengths_V_read <= ap_const_logic_1;
+        else 
+            hobbits_name_lengths_V_read <= ap_const_logic_0;
+        end if; 
+    end process;
+
+    i_1_fu_341_p2 <= std_logic_vector(unsigned(i_op_assign_reg_239) + unsigned(ap_const_lv31_1));
+    i_op_assign_cast_fu_332_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_239),32));
+
+    name_count_V_address0_assign_proc : process(ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_buffer_count_V_address0, tmp_4_i_fu_347_p1)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_count_V_address0 <= tmp_4_i_fu_347_p1(8 - 1 downto 0);
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_count_V_address0 <= grp_PushString_fu_250_buffer_count_V_address0;
+        else 
+            name_count_V_address0 <= "XXXXXXXX";
+        end if; 
+    end process;
+
+
+    name_count_V_ce0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, grp_PushString_fu_250_buffer_count_V_ce0)
+    begin
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_count_V_ce0 <= ap_const_logic_1;
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_count_V_ce0 <= grp_PushString_fu_250_buffer_count_V_ce0;
+        else 
+            name_count_V_ce0 <= ap_const_logic_0;
+        end if; 
+    end process;
+
+    name_count_V_d0 <= hobbits_name_chars_V_dout(1 - 1 downto 0);
+
+    name_count_V_we0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
+    begin
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_count_V_we0 <= ap_const_logic_1;
+        else 
+            name_count_V_we0 <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    name_data_V_address0_assign_proc : process(ap_CS_fsm_state3, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_buffer_data_V_address0, tmp_9_fu_277_p1, tmp_4_i_fu_347_p1)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_data_V_address0 <= tmp_4_i_fu_347_p1(8 - 1 downto 0);
         elsif ((ap_const_logic_1 = ap_CS_fsm_state3)) then 
-            grp_PullString_fu_195_chars_V_TDATA <= bywater_name_chars_V_0_data_out;
+            name_data_V_address0 <= tmp_9_fu_277_p1(8 - 1 downto 0);
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_data_V_address0 <= grp_PushString_fu_250_buffer_data_V_address0;
         else 
-            grp_PullString_fu_195_chars_V_TDATA <= "XXXXXXXX";
+            name_data_V_address0 <= "XXXXXXXX";
         end if; 
     end process;
 
-    grp_PullString_fu_195_chars_V_TVALID <= hobbiton_name_chars_V_0_state(0);
 
-    grp_PullString_fu_195_length_r_assign_proc : process(tmp_14_reg_231, tmp_12_reg_242, ap_CS_fsm_state3, ap_CS_fsm_state4)
+    name_data_V_ce0_assign_proc : process(hobbits_name_lengths_V_empty_n, hobbits_name_chars_V_empty_n, hobbits_age_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state3, tmp_s_fu_282_p2, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, grp_PushString_fu_250_buffer_data_V_ce0)
     begin
-        if ((ap_const_logic_1 = ap_CS_fsm_state4)) then 
-            grp_PullString_fu_195_length_r <= tmp_12_reg_242;
+        if (((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1)) or (not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3)))) then 
+            name_data_V_ce0 <= ap_const_logic_1;
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_data_V_ce0 <= grp_PushString_fu_250_buffer_data_V_ce0;
+        else 
+            name_data_V_ce0 <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    name_data_V_d0_assign_proc : process(hobbits_name_chars_V_dout, ap_CS_fsm_state3, ap_CS_fsm_state4, tmp_i_fu_336_p2)
+    begin
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_data_V_d0 <= hobbits_name_chars_V_dout(10 downto 3);
         elsif ((ap_const_logic_1 = ap_CS_fsm_state3)) then 
-            grp_PullString_fu_195_length_r <= tmp_14_reg_231;
+            name_data_V_d0 <= ap_const_lv8_0;
         else 
-            grp_PullString_fu_195_length_r <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+            name_data_V_d0 <= "XXXXXXXX";
         end if; 
     end process;
 
-    grp_PushString_fu_185_ap_start <= grp_PushString_fu_185_ap_start_reg;
-    grp_PushString_fu_185_chars_V_TREADY <= ((beer_name_chars_V_1_ack_in and ap_CS_fsm_state6) or (soda_name_chars_V_1_ack_in and ap_CS_fsm_state6));
 
-    hobbiton_age_V_TDATA_blk_n_assign_proc : process(hobbiton_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3)
+    name_data_V_we0_assign_proc : process(hobbits_name_lengths_V_empty_n, hobbits_name_chars_V_empty_n, hobbits_age_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state3, tmp_s_fu_282_p2, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
     begin
-        if (((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            hobbiton_age_V_TDATA_blk_n <= hobbiton_age_V_TVALID;
+        if (((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1)) or (not((((hobbits_name_lengths_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)) or ((hobbits_age_V_empty_n = ap_const_logic_0) and (tmp_s_fu_282_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state3)))) then 
+            name_data_V_we0 <= ap_const_logic_1;
         else 
-            hobbiton_age_V_TDATA_blk_n <= ap_const_logic_1;
+            name_data_V_we0 <= ap_const_logic_0;
         end if; 
     end process;
 
 
-    hobbiton_age_V_TREADY_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
+    name_dvalid_address0_assign_proc : process(ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_buffer_dvalid_address0, tmp_4_i_fu_347_p1)
     begin
-        if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            hobbiton_age_V_TREADY <= ap_const_logic_1;
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_dvalid_address0 <= tmp_4_i_fu_347_p1(8 - 1 downto 0);
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_dvalid_address0 <= grp_PushString_fu_250_buffer_dvalid_address0;
         else 
-            hobbiton_age_V_TREADY <= ap_const_logic_0;
+            name_dvalid_address0 <= "XXXXXXXX";
         end if; 
     end process;
 
-    hobbiton_name_chars_V_0_ack_in <= hobbiton_name_chars_V_0_state(1);
 
-    hobbiton_name_chars_V_0_ack_out_assign_proc : process(grp_PullString_fu_195_chars_V_TREADY, ap_CS_fsm_state4)
+    name_dvalid_ce0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, grp_PushString_fu_250_buffer_dvalid_ce0)
     begin
-        if ((ap_const_logic_1 = ap_CS_fsm_state4)) then 
-            hobbiton_name_chars_V_0_ack_out <= grp_PullString_fu_195_chars_V_TREADY;
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_dvalid_ce0 <= ap_const_logic_1;
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_dvalid_ce0 <= grp_PushString_fu_250_buffer_dvalid_ce0;
         else 
-            hobbiton_name_chars_V_0_ack_out <= ap_const_logic_0;
+            name_dvalid_ce0 <= ap_const_logic_0;
         end if; 
     end process;
 
+    name_dvalid_d0 <= hobbits_name_chars_V_dout(1 downto 1);
 
-    hobbiton_name_chars_V_0_data_out_assign_proc : process(hobbiton_name_chars_V_0_payload_A, hobbiton_name_chars_V_0_payload_B, hobbiton_name_chars_V_0_sel)
+    name_dvalid_we0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
     begin
-        if ((hobbiton_name_chars_V_0_sel = ap_const_logic_1)) then 
-            hobbiton_name_chars_V_0_data_out <= hobbiton_name_chars_V_0_payload_B;
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_dvalid_we0 <= ap_const_logic_1;
         else 
-            hobbiton_name_chars_V_0_data_out <= hobbiton_name_chars_V_0_payload_A;
+            name_dvalid_we0 <= ap_const_logic_0;
         end if; 
     end process;
 
-    hobbiton_name_chars_V_0_load_A <= (hobbiton_name_chars_V_0_state_cmp_full and not(hobbiton_name_chars_V_0_sel_wr));
-    hobbiton_name_chars_V_0_load_B <= (hobbiton_name_chars_V_0_state_cmp_full and hobbiton_name_chars_V_0_sel_wr);
-    hobbiton_name_chars_V_0_sel <= hobbiton_name_chars_V_0_sel_rd;
-    hobbiton_name_chars_V_0_state_cmp_full <= '0' when (hobbiton_name_chars_V_0_state = ap_const_lv2_1) else '1';
-    hobbiton_name_chars_V_0_vld_in <= hobbiton_name_chars_V_TVALID;
-    hobbiton_name_chars_V_0_vld_out <= hobbiton_name_chars_V_0_state(0);
-    hobbiton_name_chars_V_TREADY <= hobbiton_name_chars_V_0_state(1);
-    hobbiton_name_lengths_V_0_ack_in <= hobbiton_name_lengths_V_0_state(1);
 
-    hobbiton_name_lengths_V_0_ack_out_assign_proc : process(hobbiton_name_lengths_V_0_vld_out, hobbiton_age_V_TVALID, bywater_name_lengths_V_0_vld_out, bywater_age_V_TVALID, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3, ap_predicate_op43_read_state2, ap_predicate_op44_read_state2)
+    name_last_address0_assign_proc : process(ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_buffer_last_address0, tmp_4_i_fu_347_p1)
     begin
-        if ((not((((bywater_name_lengths_V_0_vld_out = ap_const_logic_0) and (ap_predicate_op44_read_state2 = ap_const_boolean_1)) or ((bywater_age_V_TVALID = ap_const_logic_0) and (ap_predicate_op43_read_state2 = ap_const_boolean_1)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_name_lengths_V_0_vld_out = ap_const_logic_0)) or ((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (hobbiton_age_V_TVALID = ap_const_logic_0)))) and (tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            hobbiton_name_lengths_V_0_ack_out <= ap_const_logic_1;
+        if (((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_last_address0 <= tmp_4_i_fu_347_p1(8 - 1 downto 0);
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_last_address0 <= grp_PushString_fu_250_buffer_last_address0;
         else 
-            hobbiton_name_lengths_V_0_ack_out <= ap_const_logic_0;
+            name_last_address0 <= "XXXXXXXX";
         end if; 
     end process;
 
 
-    hobbiton_name_lengths_V_0_data_out_assign_proc : process(hobbiton_name_lengths_V_0_payload_A, hobbiton_name_lengths_V_0_payload_B, hobbiton_name_lengths_V_0_sel)
+    name_last_ce0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_3_reg_508, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, grp_PushString_fu_250_buffer_last_ce0)
     begin
-        if ((hobbiton_name_lengths_V_0_sel = ap_const_logic_1)) then 
-            hobbiton_name_lengths_V_0_data_out <= hobbiton_name_lengths_V_0_payload_B;
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_last_ce0 <= ap_const_logic_1;
+        elsif ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0)))) then 
+            name_last_ce0 <= grp_PushString_fu_250_buffer_last_ce0;
         else 
-            hobbiton_name_lengths_V_0_data_out <= hobbiton_name_lengths_V_0_payload_A;
+            name_last_ce0 <= ap_const_logic_0;
         end if; 
     end process;
 
-    hobbiton_name_lengths_V_0_load_A <= (hobbiton_name_lengths_V_0_state_cmp_full and not(hobbiton_name_lengths_V_0_sel_wr));
-    hobbiton_name_lengths_V_0_load_B <= (hobbiton_name_lengths_V_0_state_cmp_full and hobbiton_name_lengths_V_0_sel_wr);
-    hobbiton_name_lengths_V_0_sel <= hobbiton_name_lengths_V_0_sel_rd;
-    hobbiton_name_lengths_V_0_state_cmp_full <= '0' when (hobbiton_name_lengths_V_0_state = ap_const_lv2_1) else '1';
-    hobbiton_name_lengths_V_0_vld_in <= hobbiton_name_lengths_V_TVALID;
-    hobbiton_name_lengths_V_0_vld_out <= hobbiton_name_lengths_V_0_state(0);
+    name_last_d0 <= hobbits_name_chars_V_dout(2 downto 2);
 
-    hobbiton_name_lengths_V_TDATA_blk_n_assign_proc : process(hobbiton_name_lengths_V_0_state, ap_CS_fsm_state2, tmp_nbreadreq_fu_76_p3)
+    name_last_we0_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4)
     begin
-        if (((tmp_nbreadreq_fu_76_p3 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
-            hobbiton_name_lengths_V_TDATA_blk_n <= hobbiton_name_lengths_V_0_state(0);
+        if ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_1))) then 
+            name_last_we0 <= ap_const_logic_1;
         else 
-            hobbiton_name_lengths_V_TDATA_blk_n <= ap_const_logic_1;
+            name_last_we0 <= ap_const_logic_0;
         end if; 
     end process;
 
-    hobbiton_name_lengths_V_TREADY <= hobbiton_name_lengths_V_0_state(1);
+    nlen_count_V_fu_318_p1 <= hobbits_name_lengths_V_dout(1 - 1 downto 0);
 
-    name_address0_assign_proc : process(ap_CS_fsm_state6, tmp_3_reg_248, grp_PushString_fu_185_buffer_r_address0, grp_PullString_fu_195_buffer_r_address0, ap_CS_fsm_state3, ap_CS_fsm_state4)
+    soda_age_V_blk_n_assign_proc : process(soda_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, tmp_3_fu_392_p2, ap_CS_fsm_state5, tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-        if (((ap_const_logic_1 = ap_CS_fsm_state4) or (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-            name_address0 <= grp_PullString_fu_195_buffer_r_address0;
-        elsif ((((tmp_3_reg_248 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_reg_248 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state6)))) then 
-            name_address0 <= grp_PushString_fu_185_buffer_r_address0;
+        if ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0) and (tmp_4_fu_397_p2 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_0) and (tmp_3_fu_392_p2 = ap_const_lv1_1)))) then 
+            soda_age_V_blk_n <= soda_age_V_full_n;
         else 
-            name_address0 <= "XXXXXXXX";
+            soda_age_V_blk_n <= ap_const_logic_1;
         end if; 
     end process;
 
 
-    name_ce0_assign_proc : process(ap_CS_fsm_state6, tmp_3_reg_248, grp_PushString_fu_185_buffer_r_ce0, grp_PullString_fu_195_buffer_r_ce0, ap_CS_fsm_state3, ap_CS_fsm_state4)
+    soda_age_V_din_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp113_reg_464, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done, tmp_6_1_fu_410_p4)
     begin
-        if (((ap_const_logic_1 = ap_CS_fsm_state4) or (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-            name_ce0 <= grp_PullString_fu_195_buffer_r_ce0;
-        elsif ((((tmp_3_reg_248 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_reg_248 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state6)))) then 
-            name_ce0 <= grp_PushString_fu_185_buffer_r_ce0;
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op95_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
+            soda_age_V_din <= tmp_6_1_fu_410_p4;
+        elsif ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op83_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4))) then 
+            soda_age_V_din <= tmp113_reg_464;
         else 
-            name_ce0 <= ap_const_logic_0;
+            soda_age_V_din <= "XXXXXXXXXXX";
         end if; 
     end process;
 
 
-    name_we0_assign_proc : process(grp_PullString_fu_195_buffer_r_we0, ap_CS_fsm_state3, ap_CS_fsm_state4)
+    soda_age_V_write_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-        if (((ap_const_logic_1 = ap_CS_fsm_state4) or (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-            name_we0 <= grp_PullString_fu_195_buffer_r_we0;
+        if (((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op95_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5)) or (not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op83_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4)))) then 
+            soda_age_V_write <= ap_const_logic_1;
         else 
-            name_we0 <= ap_const_logic_0;
+            soda_age_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
-    soda_age_V_1_ack_in <= soda_age_V_1_state(1);
-    soda_age_V_1_ack_out <= soda_age_V_TREADY;
+    soda_name_chars_V_din <= grp_PushString_fu_250_chars_V_din;
 
-    soda_age_V_1_data_out_assign_proc : process(soda_age_V_1_payload_A, soda_age_V_1_payload_B, soda_age_V_1_sel)
+    soda_name_chars_V_write_assign_proc : process(ap_CS_fsm_state5, tmp_3_reg_508, grp_PushString_fu_250_chars_V_write)
     begin
-        if ((soda_age_V_1_sel = ap_const_logic_1)) then 
-            soda_age_V_1_data_out <= soda_age_V_1_payload_B;
+        if (((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_1))) then 
+            soda_name_chars_V_write <= grp_PushString_fu_250_chars_V_write;
         else 
-            soda_age_V_1_data_out <= soda_age_V_1_payload_A;
+            soda_name_chars_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
-    soda_age_V_1_load_A <= (soda_age_V_1_state_cmp_full and not(soda_age_V_1_sel_wr));
-    soda_age_V_1_load_B <= (soda_age_V_1_state_cmp_full and soda_age_V_1_sel_wr);
-    soda_age_V_1_sel <= soda_age_V_1_sel_rd;
-    soda_age_V_1_state_cmp_full <= '0' when (soda_age_V_1_state = ap_const_lv2_1) else '1';
 
-    soda_age_V_1_vld_in_assign_proc : process(ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_block_state5_io)
+    soda_name_lengths_V_blk_n_assign_proc : process(soda_name_lengths_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, tmp_3_fu_392_p2, ap_CS_fsm_state5, tmp_3_reg_508, tmp_4_fu_397_p2)
     begin
-        if (((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
-            soda_age_V_1_vld_in <= ap_const_logic_1;
+        if ((((ap_const_logic_1 = ap_CS_fsm_state5) and (tmp_3_reg_508 = ap_const_lv1_0) and (tmp_4_fu_397_p2 = ap_const_lv1_1)) or ((ap_const_logic_1 = ap_CS_fsm_state4) and (tmp_i_fu_336_p2 = ap_const_lv1_0) and (tmp_3_fu_392_p2 = ap_const_lv1_1)))) then 
+            soda_name_lengths_V_blk_n <= soda_name_lengths_V_full_n;
         else 
-            soda_age_V_1_vld_in <= ap_const_logic_0;
+            soda_name_lengths_V_blk_n <= ap_const_logic_1;
         end if; 
     end process;
 
-    soda_age_V_1_vld_out <= soda_age_V_1_state(0);
-    soda_age_V_TDATA <= soda_age_V_1_data_out;
 
-    soda_age_V_TDATA_blk_n_assign_proc : process(soda_age_V_1_state, ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_CS_fsm_state6, tmp_3_reg_248)
+    soda_name_lengths_V_din_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, tmp_196_reg_481, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done, tmp_7_2_fu_421_p4)
     begin
-        if ((((tmp_3_reg_248 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_fu_210_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state5)))) then 
-            soda_age_V_TDATA_blk_n <= soda_age_V_1_state(1);
+        if ((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op98_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
+            soda_name_lengths_V_din <= tmp_7_2_fu_421_p4;
+        elsif ((not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op84_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4))) then 
+            soda_name_lengths_V_din <= tmp_196_reg_481;
         else 
-            soda_age_V_TDATA_blk_n <= ap_const_logic_1;
+            soda_name_lengths_V_din <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
         end if; 
     end process;
 
-    soda_age_V_TVALID <= soda_age_V_1_state(0);
-    soda_name_chars_V_1_ack_in <= soda_name_chars_V_1_state(1);
-    soda_name_chars_V_1_ack_out <= soda_name_chars_V_TREADY;
 
-    soda_name_chars_V_1_data_out_assign_proc : process(soda_name_chars_V_1_payload_A, soda_name_chars_V_1_payload_B, soda_name_chars_V_1_sel)
+    soda_name_lengths_V_write_assign_proc : process(hobbits_name_chars_V_empty_n, soda_name_lengths_V_full_n, soda_age_V_full_n, beer_name_lengths_V_full_n, beer_age_V_full_n, ap_CS_fsm_state4, tmp_i_fu_336_p2, ap_CS_fsm_state5, ap_predicate_op80_write_state4, ap_predicate_op81_write_state4, ap_predicate_op83_write_state4, ap_predicate_op84_write_state4, ap_predicate_op95_write_state5, ap_predicate_op98_write_state5, ap_predicate_op100_write_state5, ap_predicate_op103_write_state5, ap_block_state5_on_subcall_done)
     begin
-        if ((soda_name_chars_V_1_sel = ap_const_logic_1)) then 
-            soda_name_chars_V_1_data_out <= soda_name_chars_V_1_payload_B;
+        if (((not(((ap_const_boolean_1 = ap_block_state5_on_subcall_done) or ((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op98_write_state5 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op95_write_state5 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op103_write_state5 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op100_write_state5 = ap_const_boolean_1)))) and (ap_predicate_op98_write_state5 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state5)) or (not((((soda_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op84_write_state4 = ap_const_boolean_1)) or ((soda_age_V_full_n = ap_const_logic_0) and (ap_predicate_op83_write_state4 = ap_const_boolean_1)) or ((beer_name_lengths_V_full_n = ap_const_logic_0) and (ap_predicate_op81_write_state4 = ap_const_boolean_1)) or ((beer_age_V_full_n = ap_const_logic_0) and (ap_predicate_op80_write_state4 = ap_const_boolean_1)) or ((hobbits_name_chars_V_empty_n = ap_const_logic_0) and (tmp_i_fu_336_p2 = ap_const_lv1_1)))) and (ap_predicate_op84_write_state4 = ap_const_boolean_1) and (ap_const_logic_1 = ap_CS_fsm_state4)))) then 
+            soda_name_lengths_V_write <= ap_const_logic_1;
         else 
-            soda_name_chars_V_1_data_out <= soda_name_chars_V_1_payload_A;
+            soda_name_lengths_V_write <= ap_const_logic_0;
         end if; 
     end process;
 
-    soda_name_chars_V_1_load_A <= (soda_name_chars_V_1_state_cmp_full and not(soda_name_chars_V_1_sel_wr));
-    soda_name_chars_V_1_load_B <= (soda_name_chars_V_1_state_cmp_full and soda_name_chars_V_1_sel_wr);
-    soda_name_chars_V_1_sel <= soda_name_chars_V_1_sel_rd;
-    soda_name_chars_V_1_state_cmp_full <= '0' when (soda_name_chars_V_1_state = ap_const_lv2_1) else '1';
-
-    soda_name_chars_V_1_vld_in_assign_proc : process(ap_CS_fsm_state6, tmp_3_reg_248, grp_PushString_fu_185_chars_V_TVALID)
-    begin
-        if (((tmp_3_reg_248 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state6))) then 
-            soda_name_chars_V_1_vld_in <= grp_PushString_fu_185_chars_V_TVALID;
-        else 
-            soda_name_chars_V_1_vld_in <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    soda_name_chars_V_1_vld_out <= soda_name_chars_V_1_state(0);
-    soda_name_chars_V_TDATA <= soda_name_chars_V_1_data_out;
-    soda_name_chars_V_TVALID <= soda_name_chars_V_1_state(0);
-    soda_name_lengths_V_1_ack_in <= soda_name_lengths_V_1_state(1);
-    soda_name_lengths_V_1_ack_out <= soda_name_lengths_V_TREADY;
-
-    soda_name_lengths_V_1_data_out_assign_proc : process(soda_name_lengths_V_1_payload_A, soda_name_lengths_V_1_payload_B, soda_name_lengths_V_1_sel)
-    begin
-        if ((soda_name_lengths_V_1_sel = ap_const_logic_1)) then 
-            soda_name_lengths_V_1_data_out <= soda_name_lengths_V_1_payload_B;
-        else 
-            soda_name_lengths_V_1_data_out <= soda_name_lengths_V_1_payload_A;
-        end if; 
-    end process;
-
-    soda_name_lengths_V_1_load_A <= (soda_name_lengths_V_1_state_cmp_full and not(soda_name_lengths_V_1_sel_wr));
-    soda_name_lengths_V_1_load_B <= (soda_name_lengths_V_1_state_cmp_full and soda_name_lengths_V_1_sel_wr);
-    soda_name_lengths_V_1_sel <= soda_name_lengths_V_1_sel_rd;
-    soda_name_lengths_V_1_state_cmp_full <= '0' when (soda_name_lengths_V_1_state = ap_const_lv2_1) else '1';
-
-    soda_name_lengths_V_1_vld_in_assign_proc : process(ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_block_state5_io)
-    begin
-        if (((ap_const_boolean_0 = ap_block_state5_io) and (tmp_3_fu_210_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state5))) then 
-            soda_name_lengths_V_1_vld_in <= ap_const_logic_1;
-        else 
-            soda_name_lengths_V_1_vld_in <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    soda_name_lengths_V_1_vld_out <= soda_name_lengths_V_1_state(0);
-    soda_name_lengths_V_TDATA <= soda_name_lengths_V_1_data_out;
-
-    soda_name_lengths_V_TDATA_blk_n_assign_proc : process(soda_name_lengths_V_1_state, ap_CS_fsm_state5, tmp_3_fu_210_p2, ap_CS_fsm_state6, tmp_3_reg_248)
-    begin
-        if ((((tmp_3_reg_248 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state6)) or ((tmp_3_fu_210_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state5)))) then 
-            soda_name_lengths_V_TDATA_blk_n <= soda_name_lengths_V_1_state(1);
-        else 
-            soda_name_lengths_V_TDATA_blk_n <= ap_const_logic_1;
-        end if; 
-    end process;
-
-    soda_name_lengths_V_TVALID <= soda_name_lengths_V_1_state(0);
-    tmp_2_fu_206_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(tmp_9_reg_144),32));
-    tmp_3_fu_210_p2 <= "1" when (unsigned(tmp_2_fu_206_p1) < unsigned(beer_allowed_age_0_data_reg)) else "0";
-    tmp_6_nbreadreq_fu_84_p3 <= (0=>bywater_age_V_TVALID, others=>'-');
-    tmp_nbreadreq_fu_76_p3 <= (0=>hobbiton_age_V_TVALID, others=>'-');
+    tmp_1_fu_292_p2 <= std_logic_vector(unsigned(ap_const_lv32_1) + unsigned(i));
+    tmp_2_fu_389_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(age_data_V_reg_476),32));
+    tmp_3_fu_392_p2 <= "1" when (unsigned(tmp_2_fu_389_p1) < unsigned(beer_allowed_age_0_data_reg)) else "0";
+    tmp_4_fu_397_p2 <= "1" when (tmp_1_reg_459 = hobbits_meta_length_0_data_reg) else "0";
+    tmp_4_i_fu_347_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_239),64));
+    tmp_5_fu_401_p4 <= tmp113_reg_464(10 downto 2);
+    tmp_6_1_fu_410_p4 <= ((tmp_5_fu_401_p4 & ap_const_lv1_0) & age_count_V_reg_471);
+    tmp_7_2_fu_421_p4 <= ((grp_fu_262_p4 & ap_const_lv1_0) & nlen_count_V_reg_488);
+    tmp_8_fu_271_p2 <= std_logic_vector(unsigned(tmp_reg_228) + unsigned(ap_const_lv8_1));
+    tmp_96_fu_431_p4 <= ((grp_fu_262_p4 & ap_const_lv1_0) & nlen_count_V_reg_488);
+    tmp_9_fu_277_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(tmp_reg_228),64));
+    tmp_i_fu_336_p2 <= "1" when (signed(i_op_assign_cast_fu_332_p1) < signed(nlen_data_V_reg_494)) else "0";
+    tmp_s_fu_282_p2 <= "1" when (tmp_reg_228 = ap_const_lv8_FF) else "0";
 end behav;
