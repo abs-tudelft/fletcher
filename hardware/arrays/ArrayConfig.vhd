@@ -109,8 +109,10 @@ package ArrayConfig is
   -- specifies the bitwidth of the list element data type. The advantage of this
   -- construct over list(prim(width)) is that multiple elements can be returned
   -- per cycle, specified by the epc parameter.
+  -- 
   -- For ArrayWriters, multiple list lengths per cycle can also be supplied
-  -- using the lepc parameter.
+  -- using the lepc parameter. 
+  -- For ArrayReaders, lepc other than 1 is not supported.
   --
   -- Control vector:
   --   - dataBaseAddr: BUS_ADDR_WIDTH
