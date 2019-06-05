@@ -30,13 +30,13 @@ cdef class Platform:
     cdef:
         shared_ptr[CPlatform] platform
 
-    def __init__(self, str name = u"", quiet = True):
+    def __init__(self, str name = "", quiet = True):
         self._create(name, quiet)
 
     cdef from_pointer(self, const shared_ptr[CPlatform]& platform):
         self.platform = platform
 
-    cdef _create(self, str name = u"", quiet = True):
+    cdef _create(self, str name = "", quiet = True):
         if not name:
             check_fletcher_status(CPlatform.createUnnamed(&self.platform))
         else:
@@ -58,7 +58,7 @@ cdef class Platform:
         """
         check_fletcher_status(self.platform.get().WriteMMIO(offset, value))
 
-    def read_mmio(self, uint64_t offset, str type=u"uint"):
+    def read_mmio(self, uint64_t offset, str type="uint"):
         """Read from MMIO register.
 
 
@@ -82,7 +82,7 @@ cdef class Platform:
         else:
             raise ValueError("Invalid type in read_mmio(). Options: 'uint' (default), 'int' or 'float'")
 
-    def read_mmio_64(self, uint64_t offset, str type=u"uint"):
+    def read_mmio_64(self, uint64_t offset, str type="uint"):
         """Read 64 bit value from two 32 bit MMIO registers.
 
 
