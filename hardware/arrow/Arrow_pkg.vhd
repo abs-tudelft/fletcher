@@ -16,51 +16,32 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.Utils.all;
+package Arrow_pkg is
+  -- The Arrow format specification on buffer address alignment in bytes:
+  constant REQ_ARROW_BUFFER_ALIGN : natural := 8;
 
-package Wrapper is
+  -- The Arrow format recommendation on buffer address alignment in bytes:
+  constant REC_ARROW_BUFFER_ALIGN : natural := 64;
+  
   -----------------------------------------------------------------------------
-  -- Wrapper components
+  -- MMIO interface register width
   -----------------------------------------------------------------------------
-  component UserCoreController is
-    generic (
-      REG_WIDTH                 : natural := 32
-    );
-    port(
-      kcd_clk                   : in std_logic;
-      kcd_reset                 : in std_logic;
-      bcd_clk                   : in std_logic;
-      bcd_reset                 : in std_logic;
-      status                    : out std_logic_vector(REG_WIDTH-1 downto 0);
-      control                   : in std_logic_vector(REG_WIDTH-1 downto 0);
-      start                     : out std_logic;
-      stop                      : out std_logic;
-      reset                     : out std_logic;
-      idle                      : in std_logic;
-      busy                      : in std_logic;
-      done                      : in std_logic
-    );
-  end component;
+  constant FLETCHER_REG_WIDTH   : natural := 32;
 
-  -----------------------------------------------------------------------------
-  -- Wrapper simulation components
-  -----------------------------------------------------------------------------
-  --pragma translate off
   component UserCoreMock is
     generic (
       NUM_REQUESTS              : natural;
       NUM_ELEMENTS              : natural;
       RANDOMIZE_OFFSET          : boolean;
-      RANDOMIZE_NUM_ELEMENTS    : boolean;
+      RANDOMIZE_NUM_ELEMENTS	  : boolean;
       RANDOMIZE_RESP_LATENCY    : boolean;
       MAX_LATENCY               : natural;
       DEFAULT_LATENCY           : natural;
-      RESULT_LSHIFT             : natural;
       RESP_TIMEOUT              : natural;
-      WAIT_FOR_PREV_LAST        : boolean;
       SEED                      : positive;
       IS_OFFSETS_BUFFER         : boolean;
+      WAIT_FOR_PREV_LAST        : boolean;
+      RESULT_LSHIFT             : natural;
       DATA_WIDTH                : natural;
       INDEX_WIDTH               : natural;
       ELEMENT_WIDTH             : natural;
@@ -70,16 +51,21 @@ package Wrapper is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
+
       start                     : in  std_logic;
       done                      : out std_logic;
+
       req_resp_error            : out std_logic;
       incorrect                 : out std_logic;
       timeout                   : out std_logic;
+
       rows                      : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+
       cmd_valid                 : out std_logic;
       cmd_ready                 : in  std_logic;
       cmd_firstIdx              : out std_logic_vector(INDEX_WIDTH-1 downto 0);
       cmd_lastIdx               : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
       in_data                   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -87,8 +73,5 @@ package Wrapper is
       in_last                   : in  std_logic
     );
   end component;
-  --pragma translate on
-end Wrapper;
-
-package body Wrapper is
-end Wrapper;
+  
+end Arrow_pkg;

@@ -17,10 +17,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
-package axi is
+package Axi_pkg is
 
-  component axi_top is
-    generic (    
+  component AxiTop is
+    generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_DATA_WIDTH            : natural;
       SLV_BUS_ADDR_WIDTH        : natural;
@@ -71,7 +71,7 @@ package axi is
     );
   end component;
   
-  component axi_read_converter is
+  component AxiReadConverter is
     generic (
       ADDR_WIDTH                : natural;
       MASTER_DATA_WIDTH         : natural;
@@ -109,7 +109,7 @@ package axi is
     );
   end component;
   
-  component axi_write_converter is
+  component AxiWriteConverter is
     generic (
       ADDR_WIDTH                : natural;
       MASTER_DATA_WIDTH         : natural;
@@ -148,7 +148,7 @@ package axi is
     );
   end component;
 
-  component axi_mmio is
+  component AxiMmio is
     generic (
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_DATA_WIDTH            : natural := 32;   
@@ -184,4 +184,4 @@ package axi is
     );
   end component;
 
-end AXI;
+end Axi_pkg;

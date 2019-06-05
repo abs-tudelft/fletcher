@@ -18,9 +18,9 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.axi.all;
+use work.Axi_pkg.all;
 
-entity axi_mmio_tb is
+entity AxiMmio_tc is
   generic (
     ---------------------------------------------------------------------------
     -- Bus metrics and configuration
@@ -33,9 +33,9 @@ entity axi_mmio_tb is
     REG_CONFIG                  : string := "";
     REG_RESET                   : string := ""
   );
-end axi_mmio_tb;
+end AxiMmio_tc;
 
-architecture Behavioral of axi_mmio_tb is
+architecture Behavioral of AxiMmio_tc is
   signal clk                    : std_logic;
   signal reset_n                : std_logic := '0';
   signal s_axi_awvalid          : std_logic;
@@ -221,7 +221,7 @@ begin
   end process;
 
   -- AXI mmio unit
-  uut : axi_mmio
+  uut : AxiMmio
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,

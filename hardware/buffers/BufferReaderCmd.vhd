@@ -18,9 +18,11 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity BufferReaderCmd is
   generic (
@@ -133,7 +135,7 @@ end BufferReaderCmd;
 architecture Behavioral of BufferReaderCmd is
 
   -- Amount of bus beats per element.
-  constant BUS_BPE              : natural := max(1, ELEMENT_WIDTH / BUS_DATA_WIDTH);
+  constant BUS_BPE              : natural := imax(1, ELEMENT_WIDTH / BUS_DATA_WIDTH);
 
   -- Logarithm of the amount of bus beats per element. This is the amount by
   -- which the len field of the bus request should be left-shifted to account
@@ -141,7 +143,7 @@ architecture Behavioral of BufferReaderCmd is
   constant BUS_BPE_LOG2         : natural := log2ceil(BUS_BPE);
 
   -- Amount of elements per bus beat.
-  constant BUS_EPB              : natural := max(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
+  constant BUS_EPB              : natural := imax(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
 
   -- Command input stream serialization indices.
   constant CSI : nat_array := cumulative((

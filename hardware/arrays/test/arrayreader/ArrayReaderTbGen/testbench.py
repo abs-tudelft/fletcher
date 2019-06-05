@@ -303,9 +303,8 @@ class Testbench(object):
     use ieee.math_real.all;
 
     library work;
-    use work.Streams.all;
-    use work.Arrays.all;
-    use work.Utils.all;
+    use work.Stream_pkg.all;
+    use work.Array_pkg.all;
 
     entity {name} is
     end {name};

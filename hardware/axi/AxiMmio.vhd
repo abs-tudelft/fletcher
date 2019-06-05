@@ -18,12 +18,12 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.AXI.all;
-use work.Streams.all;
+use work.Axi_pkg.all;
+use work.Stream_pkg.all;
+use work.UtilInt_pkg.all;
 
 -- Provides an AXI4-lite slave to write to / read from a set of registers.
-entity axi_mmio is
+entity AxiMmio is
   generic (
     ---------------------------------------------------------------------------
     -- Bus metrics and configuration
@@ -106,9 +106,9 @@ entity axi_mmio is
     regs_in                     : in  std_logic_vector(BUS_DATA_WIDTH*NUM_REGS-1 downto 0);
     regs_in_en                  : in  std_logic_vector(NUM_REGS-1 downto 0)
   );
-end axi_mmio;
+end AxiMmio;
 
-architecture Behavioral of axi_mmio is
+architecture Behavioral of AxiMmio is
 
   constant ARDCI : nat_array := cumulative((
     1 => s_axi_rdata'length,

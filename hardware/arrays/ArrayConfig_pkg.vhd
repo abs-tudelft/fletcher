@@ -13,10 +13,10 @@
 -- limitations under the License.
 
 library work;
-use work.ArrayConfigParse.all;
-use work.Utils.all;
+use work.ArrayConfigParse_pkg.all;
+use work.UtilInt_pkg.all;
 
-package ArrayConfig is
+package ArrayConfig_pkg is
 
   -- The supported Array reader configuration commands are listed and
   -- documented below. Vectors are listed MSB first. Streams are listed in
@@ -175,9 +175,9 @@ package ArrayConfig is
   function arcfg_userWidthMain(cfg: string; INDEX_WIDTH: natural) return natural;
   function arcfg_userWidthSecondary(cfg: string; INDEX_WIDTH: natural) return natural;
 
-end ArrayConfig;
+end ArrayConfig_pkg;
 
-package body ArrayConfig is
+package body ArrayConfig_pkg is
 
   -- Returns the control vector width for the given configuration.
   function arcfg_ctrlWidth(cfg: string; BUS_ADDR_WIDTH: natural) return natural is
@@ -494,4 +494,4 @@ package body ArrayConfig is
   end function;
 
 
-end ArrayConfig;
+end ArrayConfig_pkg;

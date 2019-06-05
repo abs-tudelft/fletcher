@@ -16,7 +16,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-package Buffers is
+package Buffer_pkg is
   -----------------------------------------------------------------------------
   -- BufferReader components
   -----------------------------------------------------------------------------
@@ -468,7 +468,7 @@ package Buffers is
 
   component BufferWriterPreCmdGen is
     generic (
-      OFFSET_WIDTH              : natural;
+      OFFSET_WIDTH              : natural := 32;
       COUNT_MAX                 : natural := 1;
       COUNT_WIDTH               : natural := 1;
       CMD_CTRL_WIDTH            : natural := 1;
@@ -480,7 +480,7 @@ package Buffers is
       reset                     : in  std_logic;
       in_valid                  : in  std_logic;
       in_ready                  : out std_logic;
-      in_offsets                : in  std_logic_vector(OFFSET_WIDTH-1 downto 0);
+      in_offsets                : in  std_logic_vector(COUNT_MAX*OFFSET_WIDTH-1 downto 0);
       in_count                  : in  std_logic_vector(COUNT_WIDTH-1 downto 0);
       in_dvalid                 : in  std_logic;
       in_last                   : in  std_logic;
@@ -495,7 +495,5 @@ package Buffers is
       cmdOut_tag                : out std_logic_vector(CMD_TAG_WIDTH-1 downto 0)
     );
   end component;
-end Buffers;
 
-package body Buffers is
-end Buffers;
+end Buffer_pkg;

@@ -17,11 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.SimUtils.all;
-use work.Interconnect.all;
+use work.Interconnect_pkg.all;
 
-package BusChecking is
+package BusChecking_pkg is
 
   component BusProtocolChecker is
     generic (
@@ -64,9 +62,9 @@ package BusChecking is
     len  : in std_logic_vector
   );
 
-end BusChecking;
+end BusChecking_pkg;
 
-package body BusChecking is
+package body BusChecking_pkg is
 
   procedure bus_check_boundary (
     BUS_DATA_WIDTH : in natural;
@@ -95,4 +93,4 @@ package body BusChecking is
       severity failure;
   end bus_check_boundary;
 
-end BusChecking;
+end BusChecking_pkg;

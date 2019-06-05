@@ -17,9 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
+use work.UtilInt_pkg.all;
 
-package Interconnect is
+package Interconnect_pkg is
   -----------------------------------------------------------------------------
   -- General address alignment requirements
   -----------------------------------------------------------------------------
@@ -686,8 +686,4 @@ package Interconnect is
   
   -- pragma translate_on
   
-end Interconnect;
-
-package body Interconnect is
-end Interconnect;
-
+end Interconnect_pkg;

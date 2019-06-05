@@ -32,16 +32,23 @@ proc source_dir_or_default {source_dir} {
 proc add_utils {{source_dir ""}} {
   echo "- Utilities."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/utils/SimUtils.vhd
-  add_source $source_dir/utils/Memory.vhd
-  add_source $source_dir/utils/Ram1R1W.vhd
-  add_source $source_dir/utils/Utils.vhd
+  add_source $source_dir/vhlib/util/UtilStr_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilInt_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilConv_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilMisc_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilMem64_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilRam_pkg.vhd
+  add_source $source_dir/vhlib/util/UtilRam1R1W.vhd
+  add_source $source_dir/vhlib/sim/TestCase_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/sim/SimDataComms_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/sim/ClockGen_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/sim/ClockGen_mdl.sim.08.vhd -2008
 }
 
 proc add_arrow {{source_dir ""}} {
   echo "- Arrow specifics."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/arrow/Arrow.vhd
+  add_source $source_dir/arrow/Arrow_pkg.vhd
 }
 
 proc add_streams {{source_dir ""}} {
@@ -49,51 +56,51 @@ proc add_streams {{source_dir ""}} {
   set source_dir [source_dir_or_default $source_dir]
 
   # Synthesis package
-  add_source $source_dir/streams/Streams.vhd
+  add_source $source_dir/vhlib/stream/Stream_pkg.vhd
 
   # Buffers
-  add_source $source_dir/streams/StreamSlice.vhd
-  add_source $source_dir/streams/StreamFIFOCounter.vhd
-  add_source $source_dir/streams/StreamFIFO.vhd
-  add_source $source_dir/streams/StreamBuffer.vhd
+  add_source $source_dir/vhlib/stream/StreamSlice.vhd
+  add_source $source_dir/vhlib/stream/StreamFIFOCounter.vhd
+  add_source $source_dir/vhlib/stream/StreamFIFO.vhd
+  add_source $source_dir/vhlib/stream/StreamBuffer.vhd
 
   # Split & merge
-  add_source $source_dir/streams/StreamSync.vhd
-  add_source $source_dir/streams/StreamArb.vhd
+  add_source $source_dir/vhlib/stream/StreamSync.vhd
+  add_source $source_dir/vhlib/stream/StreamArb.vhd
 
   # Pipelines
-  add_source $source_dir/streams/StreamPipelineControl.vhd
-  add_source $source_dir/streams/StreamPipelineBarrel.vhd
+  add_source $source_dir/vhlib/stream/StreamPipelineControl.vhd
+  add_source $source_dir/vhlib/stream/StreamPipelineBarrel.vhd
 
   # Reshapers
-  add_source $source_dir/streams/StreamSerializer.vhd
-  add_source $source_dir/streams/StreamParallelizer.vhd
-  add_source $source_dir/streams/StreamGearbox.vhd
-  add_source $source_dir/streams/StreamNormalizer.vhd
-  add_source $source_dir/streams/StreamReshaper.vhd
+  add_source $source_dir/vhlib/stream/StreamGearboxSerializer.vhd
+  add_source $source_dir/vhlib/stream/StreamGearboxParallelizer.vhd
+  add_source $source_dir/vhlib/stream/StreamGearbox.vhd
+  add_source $source_dir/vhlib/stream/StreamNormalizer.vhd
+  add_source $source_dir/vhlib/stream/StreamReshaper.vhd
 
   # Arithmetic
-  add_source $source_dir/streams/StreamAccumulator.vhd
-  add_source $source_dir/streams/StreamElementCounter.vhd
-  add_source $source_dir/streams/StreamPseudoRandomGenerator.vhd
-  add_source $source_dir/streams/StreamPrefixSum.vhd
+  add_source $source_dir/vhlib/stream/StreamElementCounter.vhd
+  add_source $source_dir/vhlib/stream/StreamPRNG.vhd
+  add_source $source_dir/vhlib/stream/StreamPrefixSum.vhd
+
 }
 
 proc add_streams_tb {{source_dir ""}} {
   echo "- Streams library simulation support."
   set source_dir [source_dir_or_default $source_dir]
-  # Simulation package
-  add_source $source_dir/streams/test/StreamSim.vhd -2008
-  # Stream endpoint models
-  add_source $source_dir/streams/test/StreamTbProd.vhd -2008
-  add_source $source_dir/streams/test/StreamTbMon.vhd -2008
-  add_source $source_dir/streams/test/StreamTbCons.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamMonitor_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamMonitor_mdl.sim.08.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamSource_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamSource_mdl.sim.08.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamSink_pkg.sim.08.vhd -2008
+  add_source $source_dir/vhlib/stream/model/StreamSink_mdl.sim.08.vhd -2008
 }
 
 proc add_interconnect {{source_dir ""}} {
   echo "- Bus infrastructure."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/interconnect/Interconnect.vhd
+  add_source $source_dir/interconnect/Interconnect_pkg.vhd
   add_source $source_dir/interconnect/BusReadArbiter.vhd
   add_source $source_dir/interconnect/BusReadArbiterVec.vhd
   add_source $source_dir/interconnect/BusReadBuffer.vhd
@@ -105,7 +112,7 @@ proc add_interconnect {{source_dir ""}} {
 proc add_interconnect_tb {{source_dir ""}} {
   echo "- Bus infrastructure simulation support."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/interconnect/test/BusChecking.vhd
+  add_source $source_dir/interconnect/test/BusChecking_pkg.vhd
   add_source $source_dir/interconnect/test/BusProtocolChecker.vhd
   add_source $source_dir/interconnect/test/BusReadSlaveMock.vhd
   add_source $source_dir/interconnect/test/BusReadMasterMock.vhd
@@ -117,7 +124,7 @@ proc add_interconnect_tb {{source_dir ""}} {
 proc add_buffers {{source_dir ""}} {
   echo "- Buffer Readers/Writers."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/buffers/Buffers.vhd
+  add_source $source_dir/buffers/Buffer_pkg.vhd
   add_source $source_dir/buffers/BufferReaderCmdGenBusReq.vhd
   add_source $source_dir/buffers/BufferReaderCmd.vhd
   add_source $source_dir/buffers/BufferReaderPost.vhd
@@ -134,9 +141,9 @@ proc add_buffers {{source_dir ""}} {
 proc add_arrays {{source_dir ""}} {
   echo "- Array Readers/Writers."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/arrays/ArrayConfigParse.vhd
-  add_source $source_dir/arrays/ArrayConfig.vhd
-  add_source $source_dir/arrays/Arrays.vhd
+  add_source $source_dir/arrays/ArrayConfigParse_pkg.vhd
+  add_source $source_dir/arrays/ArrayConfig_pkg.vhd
+  add_source $source_dir/arrays/Array_pkg.vhd
   add_source $source_dir/arrays/ArrayReaderArb.vhd
   add_source $source_dir/arrays/ArrayReaderLevel.vhd
   add_source $source_dir/arrays/ArrayReaderList.vhd
@@ -157,16 +164,16 @@ proc add_arrays {{source_dir ""}} {
 proc add_axi {{source_dir ""}} {
   echo "- AXI support."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/axi/axi.vhd
-  add_source $source_dir/axi/axi_mmio.vhd
-  add_source $source_dir/axi/axi_write_converter.vhd
-  add_source $source_dir/axi/axi_read_converter.vhd
+  add_source $source_dir/axi/Axi_pkg.vhd
+  add_source $source_dir/axi/AxiMmio.vhd
+  add_source $source_dir/axi/AxiWriteConverter.vhd
+  add_source $source_dir/axi/AxiReadConverter.vhd
 }
 
 proc add_axi_tb {{source_dir ""}} {
   echo "- AXI tests."
   set source_dir [source_dir_or_default $source_dir]
-  add_source $source_dir/axi/test/axi_mmio_tb.vhd
+  add_source $source_dir/axi/test/AxiMmio_tc.vhd
 }
 
 
@@ -174,7 +181,7 @@ proc add_wrapper {{source_dir ""}} {
   echo "- Wrapper components."
   set source_dir [source_dir_or_default $source_dir]
   add_source $source_dir/wrapper/UserCoreController.vhd
-  add_source $source_dir/wrapper/Wrapper.vhd
+  add_source $source_dir/wrapper/Wrapper_pkg.vhd
 }
 
 proc add_wrapper_tb {{source_dir ""}} {

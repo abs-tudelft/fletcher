@@ -18,11 +18,10 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Memory.all;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
-use work.SimUtils.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilMem64_pkg.all;
+use work.UtilStr_pkg.all;
 
 -- This simulation-only unit is a mockup of a bus slave that can either write 
 -- to an S-record file, or simply accept and print the written data on stdout.
@@ -142,7 +141,7 @@ begin
         
         -- Print or dump the data to an SREC file
         if (SREC_FILE = "") then
-          dumpStdOut("Write > " & sim_hex_no0x(std_logic_vector(addr)) & " > " & sim_hex_no0x(wdat_data));
+          println("Write > " & unsToHexNo0x(addr) & " > " & slvToHexNo0x(wdat_data));
         else
           mem_write(mem, std_logic_vector(addr), wdat_data);
           mem_dumpSRec(mem, SREC_FILE);

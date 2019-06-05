@@ -18,9 +18,11 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This entity converts read requests of a specific len and size on the slave port
 -- to proper len and size on the master port. It assumed the addresses and lens are
@@ -30,7 +32,7 @@ use work.Interconnect.all;
 -- It also subtracts the Fletcher side len with 1 and decreases the number
 -- of bits used to whatever is specified on the slave port.
 
-entity axi_read_converter is
+entity AxiReadConverter is
   generic (
     ADDR_WIDTH                  : natural;
 
@@ -84,9 +86,9 @@ entity axi_read_converter is
     m_axi_rvalid                : in  std_logic;
     m_axi_rready                : out std_logic
   );
-end entity axi_read_converter;
+end entity AxiReadConverter;
 
-architecture rtl of axi_read_converter is
+architecture rtl of AxiReadConverter is
 
   -- The ratio between the master and slave
   constant RATIO                : natural := MASTER_DATA_WIDTH / SLAVE_DATA_WIDTH;
@@ -121,7 +123,7 @@ architecture rtl of axi_read_converter is
   signal buf_slv_resp_data      : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
   signal buf_slv_resp_last      : std_logic;
 
-  -- StreamSerializer input & output
+  -- StreamGearboxSerializer input & output
   signal ser_in_ready           : std_logic;
   signal ser_in_valid           : std_logic;
   signal ser_in_data            : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
@@ -220,7 +222,7 @@ begin
     -- Length conversion; get the number of full words on the master
     -- Thus we have to shift with the log2ceil of the ratio, but round up
     -- in case its not an integer multiple of the ratio.
-    buf_mst_req_len             <= slv(resize(shift_right_round_up(u(int_slv_bus_rreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
+    buf_mst_req_len             <= slv(resize(shift(u(int_slv_bus_rreq_len), -LEN_SHIFT, true), MASTER_LEN_WIDTH+1));
 
     -- From BusBuffer to AXI master port
     buf_slv_req_ready           <= int_m_axi_arready;
@@ -237,13 +239,13 @@ begin
     buf_slv_resp_last           <= int_m_axi_rlast;
     buf_slv_resp_valid          <= int_m_axi_rvalid;
 
-    -- From BusBuffer to StreamSerializer
+    -- From BusBuffer to StreamGearboxSerializer
     buf_mst_resp_ready          <= ser_in_ready;
     ser_in_valid                <= buf_mst_resp_valid;
     ser_in_data                 <= buf_mst_resp_data;
     ser_in_last                 <= buf_mst_resp_last;
 
-    -- From StreamSerializer to slave port
+    -- From StreamGearboxSerializer to slave port
     ser_out_ready               <= int_slv_bus_rdat_ready;
     int_slv_bus_rdat_valid      <= ser_out_valid;
     int_slv_bus_rdat_data       <= ser_out_data;
@@ -297,9 +299,9 @@ begin
       buf_slv_resp_last         <= buf_mst_resp_last;
     end generate;
     ---------------------------------------------------------------------------
-    serializer: StreamSerializer
+    serializer: StreamGearboxSerializer
       generic map (
-        DATA_WIDTH              => SLAVE_DATA_WIDTH,
+        ELEMENT_WIDTH           => SLAVE_DATA_WIDTH,
         CTRL_WIDTH              => 0,
         IN_COUNT_MAX            => RATIO,
         IN_COUNT_WIDTH          => log2ceil(RATIO),

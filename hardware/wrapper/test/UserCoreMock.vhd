@@ -18,7 +18,9 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Utils.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This entity simulates a user core. It should be synthesizable when
 -- randomization generics are set to false.
@@ -310,7 +312,7 @@ begin
           b                     := resize(dq.lastIdx, ELEMENT_WIDTH);
           a2                    := a*a;
           b2                    := b*b;
-          sum                   := shift_right(a+b2-a2-b,1-RESULT_LSHIFT);
+          sum                   := shift(a+b2-a2-b,RESULT_LSHIFT-1);
 
           expected_result       <= expected_result + sum(ELEMENT_WIDTH-1 downto 0);
         end if;

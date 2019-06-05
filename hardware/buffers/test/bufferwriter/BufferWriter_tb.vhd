@@ -19,10 +19,12 @@ use ieee.std_logic_misc.all;
 use ieee.math_real.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.SimUtils.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilStr_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -------------------------------------------------------------------------------
 -- This testbench is used to verify the functionality of the BufferWriter.
@@ -45,7 +47,7 @@ entity BufferWriter_tb is
 
     ELEMENT_WIDTH               : natural  := sel(IS_OFFSETS_BUFFER, INDEX_WIDTH, 32);
     ELEMENT_COUNT_MAX           : natural  := 1;
-    ELEMENT_COUNT_WIDTH         : natural  := max(1,log2ceil(ELEMENT_COUNT_MAX));
+    ELEMENT_COUNT_WIDTH         : natural  := imax(1,log2ceil(ELEMENT_COUNT_MAX));
 
     AVG_RANGE_LEN               : real     := 2.0 ** 10;
 
@@ -65,7 +67,7 @@ end BufferWriter_tb;
 
 architecture tb of BufferWriter_tb is
   constant ELEMS_PER_WORD       : natural := BUS_DATA_WIDTH / ELEMENT_WIDTH;
-  constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH/8);
+  constant BYTES_PER_ELEM       : natural := imax(1, ELEMENT_WIDTH/8);
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
   constant MAX_ELEM_VAL         : real    := 2.0 ** (ELEMENT_WIDTH - 1);
 
@@ -127,12 +129,12 @@ architecture tb of BufferWriter_tb is
 
   procedure print_elem(name: in string; index: in unsigned; a: in unsigned) is
   begin
-    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: " & ii(int(a)));
+    println(TEST_NAME & " :" & name & "[" & unsToUDec(index) & "]: " & intToDec(int(a)));
   end print_elem;
 
   procedure print_elem_check(name: in string; index: in integer; a: in unsigned; b: in unsigned) is
   begin
-    dumpStdOut(TEST_NAME & " :" & name & "[" & ii(index) & "]: W[" & ii(int(a)) & "] =?= E[" & ii(int(b)) & "]");
+    println(TEST_NAME & " :" & name & "[" & intToDec(index) & "]: W[" & intToDec(int(a)) & "] =?= E[" & intToDec(int(b)) & "]");
   end print_elem_check;
 
   procedure generate_command(
@@ -150,7 +152,7 @@ architecture tb of BufferWriter_tb is
     if not IS_OFFSETS_BUFFER then
       first_index             := to_unsigned(natural(rand * 256.0), INDEX_WIDTH);
       if KNOWN_LAST_INDEX then
-        last_index            := first_index + to_unsigned(max(1, natural(rand_last * AVG_RANGE_LEN)), INDEX_WIDTH);
+        last_index            := first_index + to_unsigned(imax(1, natural(rand_last * AVG_RANGE_LEN)), INDEX_WIDTH);
       end if;
     end if;
 
@@ -158,8 +160,8 @@ architecture tb of BufferWriter_tb is
     -- Otherwise align:
     if ELEMS_PER_BYTE /= 0 then
       -- Elements don't always start on a byte boundary, align the first index to a byte boundary
-      first_index             := align_beq(first_index, log2ceil(ELEMS_PER_BYTE));
-      last_index              := align_aeq(last_index, log2ceil(ELEMS_PER_BYTE));
+      first_index             := alignDown(first_index, log2ceil(ELEMS_PER_BYTE));
+      last_index              := alignUp(last_index, log2ceil(ELEMS_PER_BYTE));
     end if;
   end generate_command;
 
@@ -247,7 +249,7 @@ begin
 
       if WAIT_FOR_UNLOCK then
         if VERBOSE then
-          dumpStdOut(TEST_NAME & " :" & "Waiting for unlock.");
+          println(TEST_NAME & " :" & "Waiting for unlock.");
         end if;
         wait until rising_edge(kcd_clk) and (unlock_ready = '1' and unlock_valid = '1');
       end if;
@@ -335,13 +337,13 @@ begin
         -- Reduce count to not exceed lastidx
         if (last_index /= 0) and (current_index + true_count > last_index) then
           if VERBOSE then
-            dumpStdOut(TEST_NAME & " :" & "Count would exceed last index, modifying..." & ii(current_index) & " + " & ii(true_count) & " > " & ii(last_index));
+            println(TEST_NAME & " :" & "Count would exceed last index, modifying..." & unsToUDec(current_index) & " + " & intToDec(true_count) & " > " & unsToUDec(last_index));
           end if;
 
           true_count            := int(last_index - current_index);
 
           if VERBOSE then
-            dumpStdOut(TEST_NAME & " :" & "New count:" & ii(true_count));
+            println(TEST_NAME & " :" & "New count:" & intToDec(true_count));
           end if;
 
           in_count              <= slv(to_unsigned(true_count, ELEMENT_COUNT_WIDTH));
@@ -396,7 +398,7 @@ begin
         -- Exit when last element streamed in
         if in_last = '1' then
           if VERBOSE then
-            dumpStdOut(TEST_NAME & " : " & "Last element.");
+            println(TEST_NAME & " : " & "Last element.");
           end if;
           exit;
         end if;
@@ -485,7 +487,7 @@ begin
       index                     := int(bus_wreq_addr) / BYTES_PER_ELEM;
 
       -- Accept the number of words requested by the burst length
-      for I in 0 to int(len)-1 loop
+      for J in 0 to int(len)-1 loop
         -- Wait until master writes a burst beat
         wait until rising_edge(kcd_clk) and (bus_wdat_valid = '1');
 
@@ -533,13 +535,13 @@ begin
           -- Make sure last is not too early
           if bus_wdat_last = '1' then
             assert transfers = len
-              report "TEST FAILURE. Bus write channel last asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
+              report "TEST FAILURE. Bus write channel last asserted at transfer " & intToDec(int(transfers)) & " while requested length was " & intToDec(int(len))
               severity failure;
           end if;
 
           -- Or too late
           if transfers = len and bus_wdat_last = '0' then
-            report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & ii(int(transfers)) & " while requested length was " & ii(int(len))
+            report "TEST FAILURE. Bus write channel last NOT asserted at transfer " & intToDec(int(transfers)) & " while requested length was " & intToDec(int(len))
               severity failure;
           end if;
 
@@ -576,9 +578,9 @@ begin
 
     end loop;
 
-    dumpStdOut(TEST_NAME & " :" & "Transfers: " & ii(transfers));
-    dumpStdOut(TEST_NAME & " :" & "Cycles: " & ii(cycle));
-    dumpStdOut(TEST_NAME & " :" & "Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
+    println(TEST_NAME & " :" & "Transfers: " & unsToUDec(transfers));
+    println(TEST_NAME & " :" & "Cycles: " & unsToUDec(cycle));
+    println(TEST_NAME & " :" & "Throughput: " & integer'image(integer(100.0 * real(int(transfers))/real(int(cycle)))) & "% of peak.");
 
     wait;
   end process;

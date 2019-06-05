@@ -53,7 +53,7 @@ add_source ../BufferWriter_Default_tc.vhd -2008
 add_source ../BufferWriter_IndexBS4_tc.vhd -2008
 add_source ../BufferWriter_IndexBuf_tc.vhd -2008
 add_source ../BufferWriter_IndexBufMEPC_tc.vhd -2008
-add_source ../BusWriteArbiter_tb.vhd -2008
+#add_source ../BusWriteArbiter_tb.vhd -2008
 
 echo "Testbench loaded, use \"t <name>\" to start BufferWriter test case, or b to start the bus infrastructure test."
 print_cases

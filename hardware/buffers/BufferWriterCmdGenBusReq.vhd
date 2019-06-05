@@ -18,10 +18,12 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity BufferWriterCmdGenBusReq is
   generic (
@@ -122,7 +124,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
 
   -- Burst step counter
   type counter_record is record
-    word                        : unsigned(max(0,log2ceil(BUS_BURST_STEP_LEN)-1) downto 0);
+    word                        : unsigned(imax(0,log2ceil(BUS_BURST_STEP_LEN)-1) downto 0);
     -- This counter must be able to hold the number of steps in a maximum burst
     step                        : unsigned(log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN+1) downto 0);
   end record;
@@ -180,7 +182,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
   -- The pre-alignment state will end when we've reached either the global
   -- maximum for the bus_burst_boundary or a maximum burst boundary.
   -- However, this operates on the byte level.
-  constant BYTE_ALIGN           : natural := work.Utils.min(BUS_BURST_BOUNDARY, BUS_BURST_MAX_LEN * BUS_DATA_WIDTH / 8);
+  constant BYTE_ALIGN           : natural := imin(BUS_BURST_BOUNDARY, BUS_BURST_MAX_LEN * BUS_DATA_WIDTH / 8);
 
   constant ELEMS_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / ELEMENT_WIDTH;
   constant ELEMS_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / ELEMENT_WIDTH;
@@ -263,7 +265,7 @@ begin
   -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
   -- Get the byte address of this index
-  byte_address                  <= resize(r.base_address + shift_left_with_neg(r.index.current, ITOBA_LSHIFT), BUS_ADDR_WIDTH);
+  byte_address                  <= resize(r.base_address + shift(r.index.current, ITOBA_LSHIFT), BUS_ADDR_WIDTH);
 
   -----------------------------------------------------------------------------
   -- State machine sequential part
@@ -319,8 +321,8 @@ begin
         if cmdIn_valid = '1' then
           vr.index.first        := u(cmdIn_firstIdx);
           vr.base_address       := u(cmdIn_baseAddr);
-          vr.index.current      := align_beq(u(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
-          vr.index.last         := align_aeq(u(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
+          vr.index.current      := alignDown(u(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
+          vr.index.last         := alignUp(u(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
         end if;
 
         -- A lastIdx of zero is impossible since the index range is exclusive
@@ -354,7 +356,7 @@ begin
         vo.master.valid         := '1';
 
         -- Invalidate if we've reached the alignment boundary
-        if is_aligned(byte_address, log2floor(BYTE_ALIGN)) then
+        if isAligned(byte_address, log2floor(BYTE_ALIGN)) then
           vo.master.valid       := '0';
           vr.state              := MAX;
         end if;

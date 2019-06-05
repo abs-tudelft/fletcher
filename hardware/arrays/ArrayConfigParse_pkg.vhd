@@ -13,9 +13,10 @@
 -- limitations under the License.
 
 library work;
-use work.Utils.all;
+use work.UtilInt_pkg.all;
+use work.UtilMisc_pkg.all;
 
-package ArrayConfigParse is
+package ArrayConfigParse_pkg is
 
   -- Implementations of integer'image and integer'value, because these
   -- constructs are not supported everywhere. Only supports positive
@@ -38,9 +39,9 @@ package ArrayConfigParse is
   function parse_param(cfg: string; param: string; default_val: integer) return integer;
   function parse_param(cfg: string; param: string; default_val: boolean) return boolean;
 
-end ArrayConfigParse;
+end ArrayConfigParse_pkg;
 
-package body ArrayConfigParse is
+package body ArrayConfigParse_pkg is
 
   -- Implementations of integer'image and integer'value, because these
   -- constructs are not supported everywhere. Only supports positive
@@ -429,4 +430,4 @@ package body ArrayConfigParse is
     end if;
   end function;
 
-end ArrayConfigParse;
+end ArrayConfigParse_pkg;

@@ -17,11 +17,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
 
-package Arrays is
+package Array_pkg is
   -----------------------------------------------------------------------------
   -- ArrayWriter
   -----------------------------------------------------------------------------
@@ -593,7 +592,4 @@ package Arrays is
     );
   end component;
 
-end Arrays;
-
-package body Arrays is
-end Arrays;
+end Array_pkg;

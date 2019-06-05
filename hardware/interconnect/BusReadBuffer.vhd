@@ -17,9 +17,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilStr_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This unit prevents backpressure on the response stream from propagating to
 -- the slave, by blocking requests until there is enough room in a response
@@ -197,7 +199,7 @@ begin
 
           -- Check if the request burst length is not larger than the FIFO depth
           assert unsigned(ms_req_len) < 2**DEPTH_LOG2
-            report "Violated burst length requirement. ms_req_len(=" & integer'image(int(ms_req_len)) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
+            report "Violated burst length requirement. ms_req_len(=" & slvToUDec(ms_req_len) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
             severity FAILURE;
 
           -- Increase amount of space reserved in the FIFO
@@ -212,8 +214,8 @@ begin
           assert reserved_v >= 0
             report "This should never happen... " &
                    "Check if BUS_LEN_WIDTH is wide enough to contain log2(slv_rreq_len)+2 bits. " &
-                   "reserved_v=" & integer'image(int(reserved_v)) & ">= 0. " &
-                   "Reserved (if accepted):" & integer'image(int(reserved_if_accepted))
+                   "reserved_v=" & sgnToDec(reserved_v) & ">= 0. " &
+                   "Reserved (if accepted):" & sgnToDec(reserved_if_accepted)
             severity FAILURE;
 
         end if;

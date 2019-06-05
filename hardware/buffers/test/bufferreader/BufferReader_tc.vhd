@@ -17,11 +17,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
-use work.Wrapper.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.Wrapper_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
 
 --pragma simulation timeout 1 ms
 
@@ -75,7 +76,7 @@ entity BufferReader_tc is
     ELEMENT_WIDTH               : natural := 32;
 
     ELEMENT_COUNT_MAX           : natural := 1; --BUS_DATA_WIDTH / ELEMENT_WIDTH;
-    ELEMENT_COUNT_WIDTH         : natural := max(1,log2ceil(ELEMENT_COUNT_MAX+1));
+    ELEMENT_COUNT_WIDTH         : natural := imax(1,log2ceil(ELEMENT_COUNT_MAX+1));
 
     ---------------------------------------------------------------------------
     -- MISC

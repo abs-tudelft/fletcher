@@ -18,10 +18,12 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Utils.all;
-use work.Arrow.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Arrow_pkg.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This entity converts read requests of a specific len and size on the slave port
 -- to proper len and size on the master port. It assumed the addresses and lens are
@@ -32,7 +34,7 @@ use work.Interconnect.all;
 -- of bits used to whatever is specified on the slave port.
 -- This unit doesn't support strobe bits for anything but bytes only
 
-entity axi_write_converter is
+entity AxiWriteConverter is
   generic (
     ADDR_WIDTH                  : natural;
 
@@ -89,9 +91,9 @@ entity axi_write_converter is
     m_axi_wstrb                 : out std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
     m_axi_wlast                 : out std_logic
   );
-end entity axi_write_converter;
+end entity AxiWriteConverter;
 
-architecture rtl of axi_write_converter is
+architecture rtl of AxiWriteConverter is
   
   -- The ratio between the master and slave
   constant RATIO                : natural := MASTER_DATA_WIDTH / SLAVE_DATA_WIDTH;
@@ -129,7 +131,7 @@ architecture rtl of axi_write_converter is
   signal buf_slv_wdat_strobe    : std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
   signal buf_slv_wdat_last      : std_logic;
 
-  -- StreamSerializer input & output for data
+  -- StreamGearboxSerializer input & output for data
   signal ser_dat_i_ready        : std_logic;
   signal ser_dat_i_valid        : std_logic;
   signal ser_dat_i_data         : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
@@ -140,7 +142,7 @@ architecture rtl of axi_write_converter is
   signal ser_dat_o_data         : std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
   signal ser_dat_o_last         : std_logic;
 
-  -- StreamSerializer input & output for strobe
+  -- StreamGearboxSerializer input & output for strobe
   signal ser_stb_i_ready        : std_logic;
   signal ser_stb_i_valid        : std_logic;
   signal ser_stb_i_data         : std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
@@ -245,7 +247,7 @@ begin
     -- Length conversion; get the number of full words on the master
     -- Thus we have to shift with the log2ceil of the ratio, but round up
     -- in case its not an integer multiple of the ratio.
-    buf_mst_wreq_len            <= slv(resize(shift_right_round_up(u(int_slv_bus_wreq_len), LEN_SHIFT), MASTER_LEN_WIDTH+1));
+    buf_mst_wreq_len            <= slv(resize(shift(u(int_slv_bus_wreq_len), -LEN_SHIFT, true), MASTER_LEN_WIDTH+1));
 
     -- From BusBuffer to AXI master port
     buf_slv_wreq_ready          <= m_axi_awready;
@@ -256,7 +258,7 @@ begin
     -----------------------------------------------------------------------------
     -- Write Data channel
     -----------------------------------------------------------------------------
-    -- From slave port to StreamSerializer
+    -- From slave port to StreamGearboxSerializer
     ser_dat_i_data              <= int_slv_bus_wdat_data;
     ser_dat_i_last              <= int_slv_bus_wdat_last;
     
@@ -281,9 +283,9 @@ begin
       );
     
     -- Serialize the data
-    data_serializer: StreamSerializer
+    data_serializer: StreamGearboxSerializer
       generic map (
-        DATA_WIDTH              => SLAVE_DATA_WIDTH,
+        ELEMENT_WIDTH           => SLAVE_DATA_WIDTH,
         CTRL_WIDTH              => 0,
         IN_COUNT_MAX            => RATIO,
         IN_COUNT_WIDTH          => log2ceil(RATIO),
@@ -306,9 +308,9 @@ begin
       );
       
     -- Serialize the strobe
-    strobe_serializer: StreamSerializer
+    strobe_serializer: StreamGearboxSerializer
       generic map (
-        DATA_WIDTH              => SLAVE_DATA_WIDTH/8,
+        ELEMENT_WIDTH           => SLAVE_DATA_WIDTH/8,
         CTRL_WIDTH              => 0,
         IN_COUNT_MAX            => RATIO,
         IN_COUNT_WIDTH          => log2ceil(RATIO),
@@ -348,7 +350,7 @@ begin
       );
       
         
-    -- From StreamSerializer to BusBuffer
+    -- From StreamGearboxSerializer to BusBuffer
     buf_mst_wdat_data           <= ser_dat_o_data;
     buf_mst_wdat_strobe         <= ser_stb_o_data;
     buf_mst_wdat_last           <= ser_dat_o_last and ser_stb_o_last;

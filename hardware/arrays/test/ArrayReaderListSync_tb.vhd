@@ -18,8 +18,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Streams.all;
-use work.Arrays.all;
+use work.Stream_pkg.all;
+use work.Array_pkg.all;
 
 entity ArrayReaderListSync_tb is
 end ArrayReaderListSync_tb;

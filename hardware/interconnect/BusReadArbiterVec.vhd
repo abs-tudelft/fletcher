@@ -17,9 +17,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This unit acts as an arbiter for the bus system utilized by the
 -- BufferReaders.
@@ -96,7 +97,7 @@ end BusReadArbiterVec;
 architecture Behavioral of BusReadArbiterVec is
 
   -- Width of the index stream.
-  constant INDEX_WIDTH          : natural := max(1, log2ceil(NUM_SLAVE_PORTS));
+  constant INDEX_WIDTH          : natural := imax(1, log2ceil(NUM_SLAVE_PORTS));
 
   -- Type declarations for busses.
   subtype bus_addr_type is std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
