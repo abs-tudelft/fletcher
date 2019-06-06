@@ -2,6 +2,7 @@
 
 #include <hls_stream.h>
 #include <ap_int.h>
+#include <hls_half.h>
 
 // A log function to get the number of count bits.
 template <int x>
