@@ -3,5 +3,5 @@ vsim.wlf
 transcript
 output/
 vhdl/
+
 !vhdl/Kernel.vhd
-hls/vivado/
