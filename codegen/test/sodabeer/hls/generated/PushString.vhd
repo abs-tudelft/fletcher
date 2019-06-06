@@ -17,9 +17,6 @@ port (
     ap_done : OUT STD_LOGIC;
     ap_idle : OUT STD_LOGIC;
     ap_ready : OUT STD_LOGIC;
-    buffer_count_V_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
-    buffer_count_V_ce0 : OUT STD_LOGIC;
-    buffer_count_V_q0 : IN STD_LOGIC_VECTOR (0 downto 0);
     buffer_dvalid_address0 : OUT STD_LOGIC_VECTOR (7 downto 0);
     buffer_dvalid_ce0 : OUT STD_LOGIC;
     buffer_dvalid_q0 : IN STD_LOGIC_VECTOR (0 downto 0);
@@ -30,7 +27,7 @@ port (
     buffer_data_V_ce0 : OUT STD_LOGIC;
     buffer_data_V_q0 : IN STD_LOGIC_VECTOR (7 downto 0);
     length_data_V : IN STD_LOGIC_VECTOR (31 downto 0);
-    chars_V_din : OUT STD_LOGIC_VECTOR (10 downto 0);
+    chars_V_din : OUT STD_LOGIC_VECTOR (9 downto 0);
     chars_V_full_n : IN STD_LOGIC;
     chars_V_write : OUT STD_LOGIC );
 end;
@@ -58,14 +55,14 @@ architecture behav of PushString is
     signal chars_V_blk_n : STD_LOGIC;
     signal ap_CS_fsm_state3 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state3 : signal is "none";
-    signal i_1_fu_121_p2 : STD_LOGIC_VECTOR (30 downto 0);
-    signal i_1_reg_156 : STD_LOGIC_VECTOR (30 downto 0);
+    signal i_fu_102_p2 : STD_LOGIC_VECTOR (30 downto 0);
+    signal i_reg_134 : STD_LOGIC_VECTOR (30 downto 0);
     signal ap_CS_fsm_state2 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state2 : signal is "none";
-    signal tmp_fu_116_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal i_op_assign_reg_101 : STD_LOGIC_VECTOR (30 downto 0);
-    signal tmp_1_fu_127_p1 : STD_LOGIC_VECTOR (63 downto 0);
-    signal i_op_assign_cast_fu_112_p1 : STD_LOGIC_VECTOR (31 downto 0);
+    signal tmp_fu_97_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal i_op_assign_reg_82 : STD_LOGIC_VECTOR (30 downto 0);
+    signal tmp_1_fu_108_p1 : STD_LOGIC_VECTOR (63 downto 0);
+    signal i_op_assign_cast_fu_93_p1 : STD_LOGIC_VECTOR (31 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (2 downto 0);
 
 
@@ -86,13 +83,13 @@ begin
     end process;
 
 
-    i_op_assign_reg_101_assign_proc : process (ap_clk)
+    i_op_assign_reg_82_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
             if (((chars_V_full_n = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-                i_op_assign_reg_101 <= i_1_reg_156;
+                i_op_assign_reg_82 <= i_reg_134;
             elsif (((ap_start = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state1))) then 
-                i_op_assign_reg_101 <= ap_const_lv31_0;
+                i_op_assign_reg_82 <= ap_const_lv31_0;
             end if; 
         end if;
     end process;
@@ -100,12 +97,12 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state2)) then
-                i_1_reg_156 <= i_1_fu_121_p2;
+                i_reg_134 <= i_fu_102_p2;
             end if;
         end if;
     end process;
 
-    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, chars_V_full_n, ap_CS_fsm_state3, ap_CS_fsm_state2, tmp_fu_116_p2)
+    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, chars_V_full_n, ap_CS_fsm_state3, ap_CS_fsm_state2, tmp_fu_97_p2)
     begin
         case ap_CS_fsm is
             when ap_ST_fsm_state1 => 
@@ -115,7 +112,7 @@ begin
                     ap_NS_fsm <= ap_ST_fsm_state1;
                 end if;
             when ap_ST_fsm_state2 => 
-                if (((tmp_fu_116_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
+                if (((tmp_fu_97_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then
                     ap_NS_fsm <= ap_ST_fsm_state1;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state3;
@@ -134,9 +131,9 @@ begin
     ap_CS_fsm_state2 <= ap_CS_fsm(1);
     ap_CS_fsm_state3 <= ap_CS_fsm(2);
 
-    ap_done_assign_proc : process(ap_start, ap_CS_fsm_state1, ap_CS_fsm_state2, tmp_fu_116_p2)
+    ap_done_assign_proc : process(ap_start, ap_CS_fsm_state1, ap_CS_fsm_state2, tmp_fu_97_p2)
     begin
-        if ((((tmp_fu_116_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2)) or ((ap_start = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state1)))) then 
+        if ((((tmp_fu_97_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2)) or ((ap_start = ap_const_logic_0) and (ap_const_logic_1 = ap_CS_fsm_state1)))) then 
             ap_done <= ap_const_logic_1;
         else 
             ap_done <= ap_const_logic_0;
@@ -154,27 +151,16 @@ begin
     end process;
 
 
-    ap_ready_assign_proc : process(ap_CS_fsm_state2, tmp_fu_116_p2)
+    ap_ready_assign_proc : process(ap_CS_fsm_state2, tmp_fu_97_p2)
     begin
-        if (((tmp_fu_116_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
+        if (((tmp_fu_97_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state2))) then 
             ap_ready <= ap_const_logic_1;
         else 
             ap_ready <= ap_const_logic_0;
         end if; 
     end process;
 
-    buffer_count_V_address0 <= tmp_1_fu_127_p1(8 - 1 downto 0);
-
-    buffer_count_V_ce0_assign_proc : process(ap_CS_fsm_state2)
-    begin
-        if ((ap_const_logic_1 = ap_CS_fsm_state2)) then 
-            buffer_count_V_ce0 <= ap_const_logic_1;
-        else 
-            buffer_count_V_ce0 <= ap_const_logic_0;
-        end if; 
-    end process;
-
-    buffer_data_V_address0 <= tmp_1_fu_127_p1(8 - 1 downto 0);
+    buffer_data_V_address0 <= tmp_1_fu_108_p1(8 - 1 downto 0);
 
     buffer_data_V_ce0_assign_proc : process(ap_CS_fsm_state2)
     begin
@@ -185,7 +171,7 @@ begin
         end if; 
     end process;
 
-    buffer_dvalid_address0 <= tmp_1_fu_127_p1(8 - 1 downto 0);
+    buffer_dvalid_address0 <= tmp_1_fu_108_p1(8 - 1 downto 0);
 
     buffer_dvalid_ce0_assign_proc : process(ap_CS_fsm_state2)
     begin
@@ -196,7 +182,7 @@ begin
         end if; 
     end process;
 
-    buffer_last_address0 <= tmp_1_fu_127_p1(8 - 1 downto 0);
+    buffer_last_address0 <= tmp_1_fu_108_p1(8 - 1 downto 0);
 
     buffer_last_ce0_assign_proc : process(ap_CS_fsm_state2)
     begin
@@ -217,7 +203,7 @@ begin
         end if; 
     end process;
 
-    chars_V_din <= (((buffer_data_V_q0 & buffer_last_q0) & buffer_dvalid_q0) & buffer_count_V_q0);
+    chars_V_din <= ((buffer_data_V_q0 & buffer_last_q0) & buffer_dvalid_q0);
 
     chars_V_write_assign_proc : process(chars_V_full_n, ap_CS_fsm_state3)
     begin
@@ -228,8 +214,8 @@ begin
         end if; 
     end process;
 
-    i_1_fu_121_p2 <= std_logic_vector(unsigned(i_op_assign_reg_101) + unsigned(ap_const_lv31_1));
-    i_op_assign_cast_fu_112_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_101),32));
-    tmp_1_fu_127_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_101),64));
-    tmp_fu_116_p2 <= "1" when (signed(i_op_assign_cast_fu_112_p1) < signed(length_data_V)) else "0";
+    i_fu_102_p2 <= std_logic_vector(unsigned(i_op_assign_reg_82) + unsigned(ap_const_lv31_1));
+    i_op_assign_cast_fu_93_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_82),32));
+    tmp_1_fu_108_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i_op_assign_reg_82),64));
+    tmp_fu_97_p2 <= "1" when (signed(i_op_assign_cast_fu_93_p1) < signed(length_data_V)) else "0";
 end behav;

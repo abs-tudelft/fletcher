@@ -1,5 +1,5 @@
 -- ==============================================================
--- File generated on Wed Jun 05 11:23:45 CEST 2019
+-- File generated on Thu Jun 06 15:21:47 CEST 2019
 -- Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
 -- SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
 -- IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
@@ -10,7 +10,7 @@ library ieee;
 use ieee.std_logic_1164.all; 
 use ieee.std_logic_unsigned.all;
 
-entity ChooseDrink_name_count_V_ram is 
+entity ChooseDrink_name_dvalid_ram is 
     generic(
             MEM_TYPE    : string := "distributed"; 
             DWIDTH     : integer := 1; 
@@ -28,7 +28,7 @@ entity ChooseDrink_name_count_V_ram is
 end entity; 
 
 
-architecture rtl of ChooseDrink_name_count_V_ram is 
+architecture rtl of ChooseDrink_name_dvalid_ram is 
 
 signal addr0_tmp : std_logic_vector(AWIDTH-1 downto 0); 
 type mem_array is array (0 to MEM_SIZE-1) of std_logic_vector (DWIDTH-1 downto 0); 
@@ -72,7 +72,7 @@ end rtl;
 Library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity ChooseDrink_name_count_V is
+entity ChooseDrink_name_dvalid is
     generic (
         DataWidth : INTEGER := 1;
         AddressRange : INTEGER := 256;
@@ -87,8 +87,8 @@ entity ChooseDrink_name_count_V is
         q0 : OUT STD_LOGIC_VECTOR(DataWidth - 1 DOWNTO 0));
 end entity;
 
-architecture arch of ChooseDrink_name_count_V is
-    component ChooseDrink_name_count_V_ram is
+architecture arch of ChooseDrink_name_dvalid is
+    component ChooseDrink_name_dvalid_ram is
         port (
             clk : IN STD_LOGIC;
             addr0 : IN STD_LOGIC_VECTOR;
@@ -101,7 +101,7 @@ architecture arch of ChooseDrink_name_count_V is
 
 
 begin
-    ChooseDrink_name_count_V_ram_U :  component ChooseDrink_name_count_V_ram
+    ChooseDrink_name_dvalid_ram_U :  component ChooseDrink_name_dvalid_ram
     port map (
         clk => clk,
         addr0 => address0,
