@@ -71,7 +71,12 @@ int main(int argc, char **argv) {
 
   // Generate simulation top level
   if (options->sim_top) {
-    auto sim_file = std::ofstream("vhdl/sim_top.vhd");
+    std::ofstream sim_file;
+    std::string sim_file_path = "vhdl/sim_top.vhd";
+    if (cerata::FileExists(sim_file_path) && !options->overwrite) {
+      sim_file_path += 't';
+    }
+    sim_file = std::ofstream(sim_file_path);
     fletchgen::top::GenerateSimTop(design.mantle,
                                    {&sim_file},
                                    options->srec_out_path,

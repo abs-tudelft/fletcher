@@ -342,6 +342,7 @@ package body Memory is
   type srec_line_type is record
     rec       : srec_record_type;
     addr      : mem_address_type;
+    addrSize  : natural;
     data      : byte_array(0 to 255);
     dataCount : natural;
   end record;
@@ -359,19 +360,12 @@ package body Memory is
     variable sum      : unsigned(7 downto 0);
     variable result   : std_logic_vector(7 downto 0);
   begin
-
     -- Start at 0.
     sum := (others => '0');
-
+    
     -- Determine length byte and add to sum.
-    sum := to_unsigned(5 + rec.dataCount, 8);
-    --if rec.addr(31 downto 24) = X"00" then
-    --  sum := sum - 1;
-    --  if rec.addr(23 downto 16) = X"00" then
-    --    sum := sum - 1;
-    --  end if;
-    --end if;
-
+    sum := to_unsigned(1 + rec.addrSize + rec.dataCount, 8);
+    
     -- Accumulate all address and data bytes.
     sum := sum + unsigned(rec.addr(31 downto 24));
     sum := sum + unsigned(rec.addr(23 downto 16));
@@ -382,11 +376,10 @@ package body Memory is
         sum := sum + unsigned(rec.data(i));
       end if;
     end loop;
-
+    
     -- Return the one's complement of the sum.
     result := not std_logic_vector(sum);
     return result;
-
   end srecChecksum;
 
   -- Parses an S-record line.
@@ -471,6 +464,7 @@ package body Memory is
     -- Store the byte count (can't do this earlier, because the computed byte
     -- count can be negative for invalid records and dataCount is a natural).
     result.dataCount := count;
+    result.addrSize := addrSize;
 
     -- Parse the address field.
     case addrSize is
@@ -641,6 +635,7 @@ package body Memory is
           sb := srec2str((
             rec => DATA_REC,
             addr => addr & std_logic_vector(to_unsigned(i, MEM_LEAF_SIZE_LOG2-4)) & "0000",
+            addrSize => 4,
             data => (
               0  => node.leafData.all(i*16+0),
               1  => node.leafData.all(i*16+1),
@@ -705,6 +700,7 @@ package body Memory is
     sb := srec2str((
       rec => HEADER_REC,
       addr => X"0000000000000000",
+      addrSize => 4,
       data => (
         0  => X"6D", -- m
         1  => X"65", -- e
@@ -740,6 +736,7 @@ package body Memory is
     sb := srec2str((
       rec => COUNT_REC,
       addr => std_logic_vector(to_unsigned(count, 64)),
+      addrSize => 4,
       data => (others => X"00"),
       dataCount => 0
     ), format);
@@ -752,6 +749,7 @@ package body Memory is
     sb := srec2str((
       rec => TERMINATION_REC,
       addr => X"0000000000000000",
+      addrSize => 4,
       data => (others => X"00"),
       dataCount => 0
     ), format);

@@ -97,6 +97,21 @@ proc add_source {file_name {file_mode -93}} {
   return
 }
 
+# Add all files to the compilation list
+proc add_directory {path_name {path_mode -93}} {
+  # TODO: select proper version after sim framework refactor.
+  global compile_list
+  
+  check_new_compile_dir
+  
+  if {[file isdirectory $path_name]} {
+    set path_files [glob -directory $path_name *.{vhd,vhdl}]
+    foreach f $path_files {
+      add_source $f
+    }
+  }
+}
+
 # compile all sources added to the compilation list
 proc compile_sources {{quiet 1}} {
   global compile_list

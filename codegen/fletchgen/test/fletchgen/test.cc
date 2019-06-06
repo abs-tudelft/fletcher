@@ -14,10 +14,11 @@
 
 #include <gtest/gtest.h>
 
-#include "./test_bus.h"
-#include "./test_kernel.h"
-#include "./test_mantle.h"
-#include "./test_recordbatch.h"
+#include "fletchgen/test_bus.h"
+#include "fletchgen/test_kernel.h"
+#include "fletchgen/test_mantle.h"
+#include "fletchgen/test_recordbatch.h"
+#include "fletchgen/srec/test_srec.h"
 
 int main(int argc, char **argv) {
 

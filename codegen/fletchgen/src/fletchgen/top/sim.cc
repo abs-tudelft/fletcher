@@ -201,7 +201,7 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
               "      mst_wdat_ready            => bus_wdat_ready,\n"
               "      mst_wdat_data             => bus_wdat_data,\n"
               "      mst_wdat_strobe           => bus_wdat_strobe,\n"
-              "      mst_wdat_last             => bus_wdat_last");
+              "      mst_wdat_last             => bus_wdat_last,");
   } else {
     t.replace("BUS_WRITE_SLAVE_MOCK", "");
     t.replace("MST_WREQ_DECLARE", "");

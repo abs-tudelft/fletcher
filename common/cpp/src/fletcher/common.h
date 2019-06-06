@@ -14,7 +14,8 @@
 
 #pragma once
 
-#include "fletcher/arrow-utils.h"
 #include "fletcher/hex-view.h"
 #include "fletcher/timer.h"
 #include "fletcher/logging.h"
+#include "fletcher/arrow-utils.h"
+#include "fletcher/arrow-recordbatch.h"
