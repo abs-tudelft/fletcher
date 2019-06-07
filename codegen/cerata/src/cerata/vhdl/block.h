@@ -17,30 +17,38 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <optional>
 
 namespace cerata::vhdl {
 
 struct Line {
-  Line()=default;
+  Line() = default;
   explicit Line(const std::string &str) {
     parts.push_back(str);
   }
   std::vector<std::string> parts;
+  std::string ToString() const;
 };
 
 struct Block {
-  explicit Block(int indent=0) : indent(indent) {}
+  explicit Block(int indent = 0) : indent(indent) {}
   std::vector<Line> lines;
   std::vector<size_t> GetAlignments() const;
-  void reverse() {
-    std::reverse(lines.begin(), lines.end());
-  }
+  Block &reverse();
+
+  /**
+   * @brief Sort the lines in the block. Supply a character to stop sorting per line after encountering the character.
+   * @param c   The character.
+   * @return    A reference to the block itself.
+   */
+  Block &sort(std::optional<char> c = std::nullopt);
+
   std::string str() const;
   int indent = 0;
 };
 
 struct MultiBlock {
-  explicit MultiBlock(int indent=0) : indent(indent) {}
+  explicit MultiBlock(int indent = 0) : indent(indent) {}
   std::vector<Block> blocks;
   std::string ToString() const;
   int indent = 0;
@@ -53,7 +61,7 @@ Line &operator+=(Line &lhs, const std::string &str);
 Line &operator<<(Line &lhs, const std::string &str);
 
 /// @brief Append all parts of a line to another line.
-Line &operator<<(Line &lhs, const Line& rhs);
+Line &operator<<(Line &lhs, const Line &rhs);
 
 /// @brief Append a line to a block
 Block &operator<<(Block &lhs, const Line &line);
@@ -65,10 +73,10 @@ Block &operator<<(Block &lhs, const Block &rhs);
 Block &operator<<(Block &lhs, const std::string &rhs);
 
 /// @brief Append a string to the last parts of all lines in a block, except the last one.
-Block &operator<<=(Block& lhs, const std::string &rhs);
+Block &operator<<=(Block &lhs, const std::string &rhs);
 
 /// @brief Prepend a string to every line of a block.
-Block &Prepend(const std::string &lhs, Block* rhs, std::string sep = "_");
+Block &Prepend(const std::string &lhs, Block *rhs, const std::string &sep = "_");
 
 /// @brief Append a block to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Block &rhs);
@@ -79,6 +87,6 @@ MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs);
 /// @brief Append a line to a multiblock
 MultiBlock &operator<<(MultiBlock &lhs, const Line &rhs);
 
-std::string ToString(std::vector<Block> blocks);
+std::string ToString(const std::vector<Block> &blocks);
 
 }  // namespace cerata::vhdl

@@ -30,14 +30,16 @@ if (NOT TARGET fletcher-common)
   # Target
   ##########################################################################
   set(COMMON_SOURCES
+      src/fletcher/hex-view.cc
       src/fletcher/arrow-utils.cc
-      src/fletcher/hex-view.cc)
+      src/fletcher/arrow-recordbatch.cc)
 
   set(COMMON_HEADERS
-      src/fletcher/arrow-utils.h
       src/fletcher/hex-view.h
       src/fletcher/timer.h
       src/fletcher/logging.h
+      src/fletcher/arrow-utils.h
+      src/fletcher/arrow-recordbatch.h
       src/fletcher/common.h)
 
   include_directories(src)
@@ -72,11 +74,7 @@ if (NOT TARGET fletcher-common)
         test/fletcher/test_generate.h
         test/fletcher/test_schemas.h
         test/fletcher/test_recordbatches.h)
-
-    set(TEST_GEN_SOURCES
-        test/fletcher/test_schemas.cc
-        test/fletcher/test_recordbatches.cc)
-
+      
     include_directories(test)
 
     SET(TEST_GEN_ALL ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES})

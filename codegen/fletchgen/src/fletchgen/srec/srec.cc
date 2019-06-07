@@ -14,92 +14,213 @@
 
 #include <sstream>
 #include <string>
+#include <iomanip>
+#include <cmath>
+#include <stdlib.h>
+#include <fletcher/common.h>
 
-#include "./srec.h"
+#include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {
 
-Record::Record(const uint8_t *data, size_t length, uint32_t address)
-    : length_(length), address_(address) {
-  data_ = (uint8_t *) calloc(1, length_);
-  memcpy(data_, data, length);
-  byte_count_ = 4 + length_ + 1; // 4 for addr, 1 for checksum
-  checksum_ = checksum();
+Record::Record(Type type, uint32_t address, const uint8_t *data, size_t size)
+    : type_(type), size_(size), address_(address) {
+  // Throw if size is too large.
+  if (size > MAX_DATA_BYTES) {
+    throw std::domain_error("SREC Record size cannot exceed " + std::to_string(MAX_DATA_BYTES) + " bytes.");
+  }
+  if (size_ > 0) {
+    // Allocate buffer for data
+    data_ = (uint8_t *) calloc(1, size_);
+    // Copy data over
+    memcpy(data_, data, size);
+  }
 }
 
 Record::~Record() {
-  free(data_);
+  if (size_ > 0) {
+    free(data_);
+  }
+}
+
+Record Record::Header(const std::string &header_str, uint16_t address) {
+  auto str = header_str.substr(0, std::max(MAX_DATA_BYTES, header_str.size()));
+  return Record(Record::HEADER, address, (const uint8_t *) (str.c_str()), str.size());
+}
+
+uint8_t Record::byte_count() {
+  return address_width() + size_ + 1;
+}
+
+int Record::address_width() {
+  switch (type_) {
+    case DATA24: return 3;
+    case COUNT24: return 3;
+    case TERM24: return 3;
+    case DATA32: return 4;
+    case TERM32: return 4;
+    default:return 2;
+  }
 }
 
 uint8_t Record::checksum() {
-  auto ret = static_cast<uint8_t>(byte_count_);
-
+  uint32_t sum = 0;
+  // Byte count
+  sum += byte_count();
   // Address
-  ret += (uint8_t) ((address_ & 0xFFu << 24u) >> 24u);
-  ret += (uint8_t) ((address_ & 0xFFu << 16u) >> 16u);
-  ret += (uint8_t) ((address_ & 0xFFu << 8u) >> 8u);
-  ret += (uint8_t) (address_ & 0xFFu);
-
+  if (address_width() > 3) sum += (address_ & 0xFF000000u) >> 24u;
+  if (address_width() > 2) sum += (address_ & 0x00FF0000u) >> 16u;
+  sum += (address_ & 0x0000FF00u) >> 8u;
+  sum += (address_ & 0x000000FFu);
   // Data
-  for (unsigned int i = 0; i < length_; i++)
-    ret += (uint8_t) data_[i];
-
-  // 1's complement the final result
+  for (unsigned int i = 0; i < size_; i++)
+    sum += data_[i];
+  // Keep the least significant byte
+  uint8_t ret = sum & 0xFFu;
+  // Get one's complement
   ret = ~ret;
+  // Return 1's complement
+  return ret;
+}
+
+std::string Record::ToString(bool line_feed) {
+  // String stream to build output
+  std::stringstream output;
+  output << 'S' << std::to_string(type_); // Record type
+  PutHex(output, byte_count()); // Byte count
+  PutHex(output, address_, 2 * address_width()); // Address
+  // Data
+  for (unsigned int i = 0; i < size_; i++) {
+    PutHex(output, data_[i]);
+  }
+  PutHex(output, checksum()); // Checksum
+  // Line feed
+  if (line_feed) {
+    output << std::endl;
+  }
+  return output.str();
+}
+
+std::optional<Record> Record::FromString(const std::string &line) {
+  // TODO(johanpel): make this function not break on big endian systems
+  size_t offset = 0;
+  Record ret(RESERVED, 0, nullptr, 0);
+
+  // Check if line starts with S (1 character)
+  if (line.substr(offset, 1) != "S") {
+    return std::nullopt;
+  }
+  offset++;
+
+  // Get type (1 character)
+  unsigned long t = std::stoul(line.substr(offset, 1), nullptr, 16);
+  if (t > 9) {
+    return std::nullopt;
+  }
+  ret.type_ = static_cast<Type>(t);
+  offset++;
+
+  // Get size (2 characters, 1 byte), subtract address width and checksum
+  ret.size_ = std::stoul(line.substr(offset, 2), nullptr, 16) - ret.address_width() - 1;
+  if (ret.size_ > MAX_DATA_BYTES) {
+    return std::nullopt;
+  }
+  offset += 2;
+
+  // Obtain the address (addr. width * (2 chars or 1 byte))
+  uint32_t addr = 0;
+  for (int i = ret.address_width() - 1; i >= 0; i--) {
+    uint8_t byte = std::stoul(line.substr(offset, 2), nullptr, 16);
+    addr |= byte << (8u * i);
+    offset += 2;
+  }
+  ret.address_ = addr;
+
+  // Reserve a data buffer
+  ret.data_ = (uint8_t *) calloc(ret.size_, sizeof(uint8_t));
+
+  // Obtain the data (2 chars or 1 byte)
+  for (size_t i = 0; i < ret.size_; i++) {
+    auto byte = static_cast<uint8_t>(std::stoul(line.substr(offset, 2), nullptr, 16));
+    ret.data_[i] = byte;
+    offset += 2;
+  }
+
+  // Validate checksum
+  uint8_t sum = std::stoul(line.substr(offset, 2), nullptr, 16);
+  if (ret.checksum() != sum) {
+    return std::nullopt;
+  }
 
   return ret;
 }
 
-std::string Record::toString() {
-  // Formatting was taken from:
-  // https://github.com/vsergeev/libGIS
-
-  // Buffer to throw snprintf output in
-  char buf[64] = {0};
-
-  // String stream to build output
-  std::stringstream output;
-
-  // Byte count
-  snprintf(buf, sizeof(buf), "%s%2.2X", "S3", (unsigned int) byte_count_);
-  output << std::string(buf);
-
-  // Address
-  snprintf(buf, sizeof(buf), "%2.8X", address_);
-  output << std::string(buf);
-
-  // Data
-  for (unsigned int i = 0; i < length_; i++) {
-    snprintf(buf, sizeof(buf), "%2.2X", data_[i]);
-    output << std::string(buf);
-  }
-
-  // Checksum
-  snprintf(buf, sizeof(buf), "%2.2X\r\n", checksum_);
-  output << std::string(buf);
-
-  return output.str();
-}
-
-File::File(const uint8_t *data, size_t length, uint32_t address) {
+File::File(uint32_t start_address, const uint8_t *data, size_t size, const std::string &header_str) {
+  // Create a header
+  auto header = Record::Header(header_str);
+  records.push_back(header);
   // Chop the data up into MAX_DATA_BYTES Records
   size_t pos = 0;
-  while (pos < length) {
-    size_t recsize;
-    if ((length - pos) / Record::MAX_DATA_BYTES > 0) {
-      recsize = Record::MAX_DATA_BYTES;
+  while (pos < size) {
+    // Determine record size
+    size_t rec_size;
+    if ((size - pos) / Record::MAX_DATA_BYTES > 0) {
+      rec_size = Record::MAX_DATA_BYTES;
     } else {
-      recsize = (length - pos) % Record::MAX_DATA_BYTES;
+      rec_size = (size - pos) % Record::MAX_DATA_BYTES;
     }
-    auto record = std::make_shared<Record>(&data[pos], recsize, static_cast<uint32_t>(address + pos));
-    lines_.push_back(record);
-    pos = pos + recsize;
+    // Create the record
+    auto rec = Record::Data<32>(static_cast<uint32_t>(start_address + pos), &data[pos], rec_size);
+    // Add to the file
+    records.push_back(rec);
+    pos = pos + rec_size;
   }
 }
 
-void File::write(std::ostream &output) {
-  for (auto &r : lines_) {
-    output << r->toString();
+void File::write(std::ostream* output) {
+  if (output->good()) {
+    for (auto &r : records) {
+      (*output) << r.ToString(true);
+    }
+  } else {
+    FLETCHER_LOG(ERROR, "Could not write SREC file to output stream.");
+  }
+}
+
+File::File(std::istream* input) {
+  for (std::string line; std::getline(*input, line);) {
+    auto record = Record::FromString(line);
+    if (record) {
+      records.push_back(*record);
+    } else {
+      throw std::runtime_error("Could not parse SREC file.");
+    }
+  }
+}
+
+void File::ToBuffer(uint8_t **buf, size_t *size) {
+  // Find the highest address and total size
+  uint32_t top_addr = 0;
+  const Record *top_rec = nullptr;
+  for (const auto &r : records) {
+    if (r.address() > top_addr) {
+      top_addr = r.address();
+      top_rec = &r;
+    }
+  }
+  // Allocate buffer
+  if (top_rec != nullptr) {
+    *size = top_addr + top_rec->size();
+    *buf = (uint8_t *) calloc(*size, sizeof(uint8_t));
+  } else {
+    // If there werent any records, just return a nullptr and size 0
+    *buf = nullptr;
+    *size = 0;
+    return;
+  }
+  // For each record, copy bytes into the buffer
+  for (const auto &r: records) {
+    std::memcpy(*buf + r.address(), r.data(), r.size());
   }
 }
 

@@ -54,14 +54,17 @@ MultiBlock Design::Generate() {
         if (libs_and_packages.count(lib) == 0) {
           libs_and_packages[lib] = std::vector<std::string>({pkg});
         } else {
-          // If the package has not been added already, add it
-          if (std::find(std::begin(libs_and_packages[lib]), std::end(libs_and_packages[lib]), pkg)
-              != std::end(libs_and_packages[lib])) {
-            libs_and_packages[lib].push_back(pkg);
-          }
+          libs_and_packages.at(lib).push_back(pkg);
         }
       }
     }
+  }
+
+  // Sort and remove duplicate packages for each library
+  for (auto &v : libs_and_packages) {
+    auto& vec = v.second;
+    std::sort(vec.begin(), vec.end());
+    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
   }
 
   Block incl;

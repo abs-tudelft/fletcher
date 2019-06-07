@@ -56,10 +56,10 @@ int Options::Parse(Options *options, int argc, char **argv) {
                  "                                          vhdl: Export as VHDL files (default).\n"
                  "                                          dot : Export as DOT graphs.");
 
-  app.add_flag("-f,--force", options->override_kernels,
-               "Force overwriting kernel component if it exists already. If this flag is not used and the kernel "
-               "source exists already in the specified path, the output filename will be <kernel>.vhdt and is always "
-               "overwritten.");
+  app.add_flag("-f,--force", options->overwrite,
+               "Force overwriting source code files if they exists already. If this flag is *not* used and the source "
+               "file exists already in the specified path, the output filename will be <filename>.<extension>t. This "
+               "file IS always overwritten. This applies only to files that the user should modify.");
 
   app.add_flag("--axi", options->axi_top,
                "Generate AXI top-level template (VHDL only).");
@@ -87,8 +87,9 @@ bool Options::MustGenerateSREC() {
     if (schema_paths.size() == recordbatch_paths.size()) {
       return true;
     } else {
-      FLETCHER_LOG(WARNING, "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.");
-      return false;
+      FLETCHER_LOG(WARNING,
+                   "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.");
+      return true;
     }
   }
   return false;
