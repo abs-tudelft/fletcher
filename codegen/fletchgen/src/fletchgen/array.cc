@@ -147,7 +147,7 @@ std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
 
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
-  ret->meta["package"] = "Arrays";
+  ret->meta["package"] = "Array_pkg";
   return ret;
 }
 
@@ -307,7 +307,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
   // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented.
   //
   // WARNING: Modifications to this function must be reflected in the manual hardware implementation of Fletcher
-  // components! See: hardware/arrays/ArrayConfig.vhd
+  // components! See: hardware/arrays/ArrayConfig_pkg.vhd
 
   int epc = fletcher::GetIntMeta(field, "epc", 1);
   int lepc = fletcher::GetIntMeta(field, "lepc", 1);

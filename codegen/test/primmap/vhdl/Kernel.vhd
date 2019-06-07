@@ -17,9 +17,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Axi.all;
-use work.Utils.all;
-use work.SimUtils.all;
+use work.Axi_pkg.all;
+use work.UtilStr_pkg.all;
 
 entity Kernel is
   generic (
@@ -112,7 +111,7 @@ architecture Implementation of Kernel is
 begin
   -- Instantiate the AXI mmio component to communicate with host more easily 
   -- through registers.
-  axi_mmio_inst : axi_mmio
+  axi_mmio_inst : AxiMmio
     generic map (
       BUS_ADDR_WIDTH     => 32,
       BUS_DATA_WIDTH     => 32,
@@ -160,7 +159,7 @@ begin
   
   -- We don't use the return registers for this kernel. Put some random data.
   rreg_array(REG_RETURN0) <= X"42001337";
-  rreg_array(REG_RETURN1) <= X"FEEDC4F3";
+  rreg_array(REG_RETURN1) <= X"FEEDCAFE";
   
   -- Connect the control bits  
   ctrl_start <= wreg_array(REG_CONTROL)(0);
@@ -248,7 +247,7 @@ begin
         exit when PrimWrite_number_ready = '1';
       end loop;
       
-      dumpStdOut("Read number: " & ii(number_read) & ". Wrote number " & ii(number_written));
+      println("Read number: " & sgnToDec(number_read) & ". Wrote number " & sgnToDec(number_written));
       
       PrimWrite_number_valid <= '0';
       
