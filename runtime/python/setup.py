@@ -13,63 +13,68 @@
 # limitations under the License.
 
 from setuptools import setup, Extension
-from Cython.Build import cythonize
-import os
 
+import os
 import numpy as np
 import pyarrow as pa
 
-ext_modules = cythonize(Extension(
-    "pyfletcher.lib",
-    ["pyfletcher/lib.pyx"],
-    language="c++",
-    extra_compile_args=["-std=c++11", "-O3"],
-    extra_link_args=["-std=c++11"]
-))
-
-for ext in ext_modules:
-    # Numpy
-    ext.include_dirs.append(np.get_include())
-
-    # PyArrow
-    ext.libraries.extend(pa.get_libraries())
-    ext.include_dirs.append(pa.get_include())
-    ext.library_dirs.extend(pa.get_library_dirs())
-    ext.runtime_library_dirs.extend(pa.get_library_dirs())
-
-    # Common library
-    ext.include_dirs.append("../../common/c/src")
-    ext.include_dirs.append("../../common/cpp/src")
-
-    # C++ Run-time
-    ext.libraries.extend(["fletcher"])
-    ext.include_dirs.append("../cpp/src")
-    # TODO(johanpel): Some packaging wizard should fix this
-    ext.library_dirs.extend(["../cpp/python-build"])
-
-    # ABI trouble
-    ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
-
-this_directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+def read(fname):
+    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+        return f.read()
 
 setup(
     name="pyfletcher",
-    version="0.0.7",
+    version="0.0.8",
     author="Lars van Leeuwen",
     packages=['pyfletcher'],
     description="A Python wrapper for the Fletcher runtime library",
-    long_description=long_description,
+    long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    url="https://github.com/johanpel/fletcher",
-    ext_modules=ext_modules,
+    url="https://github.com/abs-tudelft/fletcher",
+    project_urls = {
+        "Bug Tracker": "https://github.com/abs-tudelft/fletcher/issues",
+        "Documentation": "https://abs-tudelft.github.io/fletcher/",
+        "Source Code": "https://github.com/abs-tudelft/fletcher/",
+    },
+    ext_modules=[
+        Extension(
+            "pyfletcher.lib",
+            ["pyfletcher/lib.pyx"],
+            language="c++",
+            define_macros=[
+                ("_GLIBCXX_USE_CXX11_ABI", "0")
+            ],
+            include_dirs=[
+                np.get_include(),
+                pa.get_include(),
+                "../../common/cpp/include",
+                "../../common/cpp/src",
+                "../cpp/src"
+            ],
+            libraries=[
+                pa.get_libraries(),
+                "fletcher"
+            ],
+            library_dirs=[
+                pa.get_library_dirs()
+            ],
+            runtime_library_dirs=[
+                pa.get_library_dirs()
+            ],
+            extra_compile_args=["-std=c++11", "-O3"],
+            extra_link_args=["-std=c++11"]
+        )
+    ],
     install_requires=[
         'numpy >= 1.14',
         'pyarrow',
         'pandas'
     ],
-    setup_requires=['setuptools_scm', 'cython >= 0.27'],
+    setup_requires=[
+        'cython >= 0.27',
+        'numpy',
+        'pyarrow'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Cython",
@@ -80,5 +85,3 @@ setup(
     license='Apache License, Version 2.0',
     include_package_data=True
 )
-
-#https://github.com/pypa/manylinux
