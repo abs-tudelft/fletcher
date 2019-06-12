@@ -18,10 +18,8 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.SimUtils.all;
-use work.Interconnect.all;
-use work.BusChecking.all;
+use work.Interconnect_pkg.all;
+use work.BusChecking_pkg.all;
 
 -- This unit checks for violations of any bus protocols.
 entity BusProtocolChecker is

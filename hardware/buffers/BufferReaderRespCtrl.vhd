@@ -18,9 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
 
 entity BufferReaderRespCtrl is
   generic (
@@ -157,7 +158,7 @@ architecture rtl of BufferReaderRespCtrl is
   constant BA_ELEMENTS          : natural := BUS_BURST_STEP_LEN * WA_ELEMENTS;
   
   -- Number of bits to drop from an index to get the burst aligned index
-  constant BA_IDX_BITS          : natural := max(1, log2ceil(BA_ELEMENTS));
+  constant BA_IDX_BITS          : natural := imax(1, log2ceil(BA_ELEMENTS));
   constant BA_IDX_ZEROS         : unsigned(BA_IDX_BITS-1 downto 0) := (others => '0');
   
 

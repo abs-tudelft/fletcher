@@ -18,9 +18,9 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Interconnect.all;
-use work.Utils.all;
-use work.SimUtils.all;
+use work.Interconnect_pkg.all;
+--use work.Utils.all; TODO refactor
+--use work.SimUtils.all; TODO refactor
 
 entity sim_top is
   generic (

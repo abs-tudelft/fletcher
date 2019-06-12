@@ -17,12 +17,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
-use work.Arrays.all;
-use work.SimUtils.all;
+use work.Stream_pkg.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
+use work.Array_pkg.all;
+use work.UtilStr_pkg.all;
 
 entity ArrayWriter is
   generic (
@@ -151,11 +150,11 @@ begin
 
   -- pragma translate off
   process is begin
-    dumpStdOut("ArrayWriter");
-    dumpStdOut("--------------------------------------------------------------");
-    dumpStdOut("Config            : " & CFG);
-    dumpStdOut("User streams      : " & integer'image(arcfg_userCount(CFG)));
-    dumpStdOut("User total width  : " & integer'image(arcfg_userWidth(CFG, INDEX_WIDTH)));
+    println("ArrayWriter");
+    println("--------------------------------------------------------------");
+    println("Config            : " & CFG);
+    println("User streams      : " & integer'image(arcfg_userCount(CFG)));
+    println("User total width  : " & integer'image(arcfg_userWidth(CFG, INDEX_WIDTH)));
     wait;
   end process;
   -- pragma translate on

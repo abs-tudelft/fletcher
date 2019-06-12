@@ -18,9 +18,8 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
 
 entity BufferWriterPreCmdGen is
 
@@ -29,10 +28,10 @@ entity BufferWriterPreCmdGen is
   generic (
 
     -- Width of an offset.
-    OFFSET_WIDTH                 : natural := 32;
+    OFFSET_WIDTH                : natural := 32;
 
     -- Maximum number of offsets per clock in the data input stream.
-    COUNT_MAX                    : natural := 1;
+    COUNT_MAX                   : natural := 1;
 
     -- The number of bits in the count vectors. This must be at least
     -- ceil(log2(COUNT_MAX)) and must be at least 1. If COUNT_MAX is a power of

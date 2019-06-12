@@ -17,12 +17,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
-use work.Arrays.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
+use work.Array_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
 
 entity ArrayReaderLevel is
   generic (

@@ -18,10 +18,12 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity BufferReaderCmdGenBusReq is
   generic (
@@ -143,7 +145,7 @@ architecture rtl of BufferReaderCmdGenBusReq is
   -- The pre-alignment state will end when we've reached either the global
   -- maximum for the bus_burst_boundary or a maximum burst boundary.
   -- However, this operates on the byte level.
-  constant BYTE_ALIGN           : natural := work.Utils.min(BUS_BURST_BOUNDARY, BUS_BURST_MAX_LEN * BUS_DATA_WIDTH / 8);
+  constant BYTE_ALIGN           : natural := imin(BUS_BURST_BOUNDARY, BUS_BURST_MAX_LEN * BUS_DATA_WIDTH / 8);
 
   constant ELEMS_PER_STEP       : natural := BUS_DATA_WIDTH * BUS_BURST_STEP_LEN / ELEMENT_WIDTH;
   constant ELEMS_PER_MAX        : natural := BUS_DATA_WIDTH * BUS_BURST_MAX_LEN / ELEMENT_WIDTH;
@@ -180,13 +182,13 @@ begin
   -- Burst step / index / address calculation
   -----------------------------------------------------------------------------
   -- Floor align the first index to the no. elements per step.
-  first_index                   <= align_beq(r.index.first, log2floor(ELEMS_PER_STEP));
+  first_index                   <= alignDown(r.index.first, log2floor(ELEMS_PER_STEP));
   -- Ceil align the last index to the no. elements per step.
-  last_index                    <= align_aeq(r.index.last, log2floor(ELEMS_PER_STEP));
+  last_index                    <= alignUp(r.index.last, log2floor(ELEMS_PER_STEP));
 
   -- Get the byte address of this index
-  byte_address                  <= resize(r.base_address + shift_left_with_neg(
-      resize(r.index.current, r.index.current'length + work.Utils.max(0, ITOBA_LSHIFT)),
+  byte_address                  <= resize(r.base_address + shift(
+      resize(r.index.current, r.index.current'length + imax(0, ITOBA_LSHIFT)),
       ITOBA_LSHIFT), r.base_address'length);
 
   -----------------------------------------------------------------------------
@@ -240,9 +242,9 @@ begin
 
             -- Determine what is to be loaded first
             if (IS_OFFSETS_BUFFER) then
-              v.index.current   := align_beq(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
+              v.index.current   := alignDown(unsigned(cmdIn_lastIdx), log2floor(ELEMS_PER_STEP));
             else
-              v.index.current   := align_beq(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
+              v.index.current   := alignDown(unsigned(cmdIn_firstIdx), log2floor(ELEMS_PER_STEP));
             end if;
           end if;
         end if;
@@ -295,7 +297,7 @@ begin
         v.master.valid          := '1';
 
         -- Invalidate if we've reached the alignment boundary
-        if is_aligned(byte_address, log2floor(BYTE_ALIGN)) then
+        if isAligned(byte_address, log2floor(BYTE_ALIGN)) then
           v.master.valid        := '0';
           v.state               := MAX;
         end if;

@@ -18,9 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity BufferReaderResp is
   generic (
@@ -158,11 +159,11 @@ end BufferReaderResp;
 architecture Behavioral of BufferReaderResp is
 
   -- Amount of bus beats per element.
-  constant BUS_BPE              : natural := max(1, ELEMENT_WIDTH / BUS_DATA_WIDTH);
+  constant BUS_BPE              : natural := imax(1, ELEMENT_WIDTH / BUS_DATA_WIDTH);
   
   -- Amount of elements per bus beat (= the amount of elements we handle at a
   -- time in most of this unit).
-  constant BUS_EPB              : natural := max(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
+  constant BUS_EPB              : natural := imax(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
 
   -- Bus response stream after the optional parallelizer.
   signal busRespP_valid         : std_logic;
@@ -197,7 +198,7 @@ architecture Behavioral of BufferReaderResp is
   signal stageB_valid           : std_logic;
   signal stageB_ready           : std_logic;
   signal stageB_data            : std_logic_vector(BUS_EPB*ELEMENT_WIDTH-1 downto 0);
-  signal stageB_count           : std_logic_vector(max(0, ICS_COUNT_WIDTH-2) downto 0);
+  signal stageB_count           : std_logic_vector(imax(0, ICS_COUNT_WIDTH-2) downto 0);
   signal stageB_last            : std_logic;
 
   -- Stage B serialization indices.
@@ -247,9 +248,9 @@ begin
   -- a single element.
   bus_para_gen: if BUS_BPE > 1 generate
   begin
-    inst: StreamParallelizer
+    inst: StreamGearboxParallelizer
       generic map (
-        DATA_WIDTH                      => BUS_DATA_WIDTH,
+        ELEMENT_WIDTH                   => BUS_DATA_WIDTH,
         OUT_COUNT_MAX                   => BUS_BPE,
         OUT_COUNT_WIDTH                 => log2ceil(BUS_BPE)
       )
@@ -600,7 +601,7 @@ begin
   -- bus clock).
   stage_b2c_gearbox_inst: StreamGearbox
     generic map (
-      DATA_WIDTH                        => ELEMENT_WIDTH,
+      ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       IN_COUNT_MAX                      => BUS_EPB,
       IN_COUNT_WIDTH                    => stageB_count'length,
       OUT_COUNT_MAX                     => ELEMENT_FIFO_COUNT_MAX,

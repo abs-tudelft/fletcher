@@ -18,10 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
 
 entity BufferReader is
   generic (
@@ -235,21 +235,21 @@ end BufferReader;
 architecture Behavioral of BufferReader is
 
   -- Determine internal command stream metrics.
-  constant ICS_SHIFT_WIDTH      : natural := max(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH));
-  constant ICS_COUNT_WIDTH      : natural := max(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH) + 1);
+  constant ICS_SHIFT_WIDTH      : natural := imax(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH));
+  constant ICS_COUNT_WIDTH      : natural := imax(1, log2ceil(BUS_DATA_WIDTH / ELEMENT_WIDTH) + 1);
 
   -- Amount of elements per bus beat.
-  constant BUS_EPB              : natural := max(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
+  constant BUS_EPB              : natural := imax(1, BUS_DATA_WIDTH / ELEMENT_WIDTH);
 
   -- Width of the element FIFO in number of elements.
-  constant ELEMENT_FIFO_COUNT_MAX  : natural := max(BUS_EPB, ELEMENT_COUNT_MAX);
+  constant ELEMENT_FIFO_COUNT_MAX  : natural := imax(BUS_EPB, ELEMENT_COUNT_MAX);
 
   -- Width of the vector signifying how many elements are valid in a FIFO entry.
   constant ELEMENT_FIFO_COUNT_USED : natural := log2ceil(ELEMENT_FIFO_COUNT_MAX);
-  constant ELEMENT_FIFO_COUNT_WIDTH: natural := max(1, ELEMENT_FIFO_COUNT_USED);
+  constant ELEMENT_FIFO_COUNT_WIDTH: natural := imax(1, ELEMENT_FIFO_COUNT_USED);
 
   -- Depth of the FIFO. Need at least 2 entries or things will break.
-  constant ELEMENT_FIFO_DEPTH   : natural := max(2, ELEMENT_FIFO_SIZE / ELEMENT_FIFO_COUNT_MAX);
+  constant ELEMENT_FIFO_DEPTH   : natural := imax(2, ELEMENT_FIFO_SIZE / ELEMENT_FIFO_COUNT_MAX);
 
   -- Internal bus, between the request/response handling logic and the buffer
   -- that prevents backpressure on the response stream from reaching the slave.
@@ -348,7 +348,7 @@ begin
       BUS_ADDR_WIDTH                    => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH                     => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH                    => BUS_DATA_WIDTH,
-      FIFO_DEPTH                        => max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
+      FIFO_DEPTH                        => imax(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN+1),
       RAM_CONFIG                        => BUS_FIFO_RAM_CONFIG,
       SLV_REQ_SLICE                     => false,
       MST_REQ_SLICE                     => BUS_REQ_SLICE,

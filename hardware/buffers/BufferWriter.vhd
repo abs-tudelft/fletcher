@@ -18,10 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
 
 entity BufferWriter is
   generic (
@@ -217,14 +217,14 @@ architecture Behavioral of BufferWriter is
   signal step_last              : std_logic;
   signal step_dvalid            : std_logic := '1';
 
-  constant STEPS_COUNT_WIDTH    : natural := max(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN+1));
+  constant STEPS_COUNT_WIDTH    : natural := imax(1,log2ceil(BUS_BURST_MAX_LEN/BUS_BURST_STEP_LEN+1));
 
   signal steps_valid            : std_logic;
   signal steps_ready            : std_logic;
   signal steps_count            : std_logic_vector(STEPS_COUNT_WIDTH-1 downto 0);
   signal steps_last             : std_logic;
 
-  constant WRITE_BUFFER_DEPTH   : natural := max(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN)+1;
+  constant WRITE_BUFFER_DEPTH   : natural := imax(BUS_FIFO_DEPTH, BUS_BURST_MAX_LEN)+1;
 
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;

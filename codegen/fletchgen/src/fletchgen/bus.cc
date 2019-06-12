@@ -109,7 +109,7 @@ std::shared_ptr<Component> BusArbiter(BusSpec spec) {
 
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
-  ret->meta["package"] = "Interconnect";
+  ret->meta["package"] = "Interconnect_pkg";
   return
       ret;
 }

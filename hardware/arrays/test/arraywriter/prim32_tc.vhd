@@ -18,14 +18,13 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.SimUtils.all;
-use work.Arrays.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
-use work.Interconnect.all;
-use work.BusChecking.all;
+use work.Stream_pkg.all;
+use work.Array_pkg.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
+use work.Interconnect_pkg.all;
+use work.BusChecking_pkg.all;
+use work.UtilInt_pkg.all;
 
 --pragma simulation timeout 1 ms
 
@@ -64,9 +63,9 @@ architecture tb of prim32_tc is
   signal cmd_lastIdx            : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal cmd_ctrl               : std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
   signal cmd_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-  signal unlock_valid           : std_logic;
-  signal unlock_ready           : std_logic := '1';
-  signal unlock_tag             : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  signal unl_valid              : std_logic;
+  signal unl_ready              : std_logic := '1';
+  signal unl_tag                : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   signal bus_wreq_valid         : std_logic;
   signal bus_wreq_ready         : std_logic;
   signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -176,7 +175,7 @@ begin
   begin
     loop
       wait until rising_edge(kcd_clk);
-      exit when unlock_valid = '1';
+      exit when unl_valid = '1';
     end loop;
 
     wait until rising_edge(kcd_clk);
@@ -315,9 +314,9 @@ begin
       cmd_lastIdx               => cmd_lastIdx,
       cmd_ctrl                  => cmd_ctrl,
       cmd_tag                   => cmd_tag,
-      unlock_valid              => unlock_valid,
-      unlock_ready              => unlock_ready,
-      unlock_tag                => unlock_tag,
+      unl_valid                 => unl_valid,
+      unl_ready                 => unl_ready,
+      unl_tag                   => unl_tag,
       bus_wreq_valid            => bus_wreq_valid,
       bus_wreq_ready            => bus_wreq_ready,
       bus_wreq_addr             => bus_wreq_addr,

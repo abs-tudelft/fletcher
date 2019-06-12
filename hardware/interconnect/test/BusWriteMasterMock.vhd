@@ -18,10 +18,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Memory.all;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
 
 -- This simulation-only unit is a mockup of a bus master. It requests
 -- consecutive addresses with varying burst lengths, and generates a write data

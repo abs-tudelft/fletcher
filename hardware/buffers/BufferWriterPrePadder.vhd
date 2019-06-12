@@ -18,9 +18,11 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilConv_pkg.all;
+use work.UtilMisc_pkg.all;
 
 -- This unit pads stream head and tail with non-valid elements and generates
 -- write strobes on a per-element basis. The padding is done in such a way that
@@ -270,7 +272,7 @@ begin
           
           -- The first index to work on is the aligned below or equal of the 
           -- first index.
-          vr.index.current      := align_beq(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
+          vr.index.current      := alignDown(u(cmdIn_firstIdx), log2ceil(ELEM_PER_BURST_STEP));
           
           -- Register the tags
           vr.tags.implicit      := cmdIn_implicit;
@@ -369,15 +371,15 @@ begin
         
         -- This last transfer might already be aligned; assert last if so
         if in_last = '1' then
-          if is_aligned(new_index, log2ceil(ELEM_PER_BURST_STEP)) then
+          if isAligned(new_index, log2ceil(ELEM_PER_BURST_STEP)) then
             vo.out_last         := '1';
           end if;
         end if;
         
         -- Determine the final index based on the current index, so it will
           -- be ready for the next state
-        vr.index.final          := align_aeq(new_index, 
-                                             log2ceil(ELEM_PER_BURST_STEP));
+        vr.index.final          := alignUp(new_index,
+                                           log2ceil(ELEM_PER_BURST_STEP));
 
         -- Advance state if no backpressure and a valid input was passed
         if int_out_ready = '1' and vo.out_valid = '1' then
@@ -418,7 +420,7 @@ begin
         end if;
         
         -- Only assert last if the current index is aligned
-        if is_aligned(vr.index.current, log2ceil(ELEM_PER_BURST_STEP)) then
+        if isAligned(vr.index.current, log2ceil(ELEM_PER_BURST_STEP)) then
           vo.out_last           := '1';
           vr.state              := IDLE;
         end if;

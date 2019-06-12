@@ -17,11 +17,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
-use work.Arrays.all;
+use work.Stream_pkg.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
+use work.Array_pkg.all;
 
 entity ArrayReaderPrimEpc_tb is
 end ArrayReaderPrimEpc_tb;
@@ -37,9 +36,9 @@ architecture Behavioral of ArrayReaderPrimEpc_tb is
   signal cmd_lastIdx            : std_logic_vector(31 downto 0);
   signal cmd_ctrl               : std_logic_vector(63 downto 0);
   signal cmd_tag                : std_logic_vector(0 downto 0) := (others => '0');
-  signal unlock_valid           : std_logic;
-  signal unlock_ready           : std_logic := '1';
-  signal unlock_tag             : std_logic_vector(0 downto 0);
+  signal unl_valid              : std_logic;
+  signal unl_ready              : std_logic := '1';
+  signal unl_tag                : std_logic_vector(0 downto 0);
   signal bus_rreq_valid         : std_logic;
   signal bus_rreq_ready         : std_logic;
   signal bus_rreq_addr          : std_logic_vector(63 downto 0);
@@ -105,9 +104,9 @@ begin
       cmd_lastIdx               => cmd_lastIdx,
       cmd_ctrl                  => cmd_ctrl,
       cmd_tag                   => cmd_tag,
-      unlock_valid              => unlock_valid,
-      unlock_ready              => unlock_ready,
-      unlock_tag                => unlock_tag,
+      unl_valid                 => unl_valid,
+      unl_ready                 => unl_ready,
+      unl_tag                   => unl_tag,
       bus_rreq_valid            => bus_rreq_valid,
       bus_rreq_ready            => bus_rreq_ready,
       bus_rreq_addr             => bus_rreq_addr,

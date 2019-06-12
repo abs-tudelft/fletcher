@@ -18,10 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.Interconnect_pkg.all;
+use work.UtilInt_pkg.all;
 
 -- This unit converts a stream of values to a stream of bus words and
 -- write strobes.
@@ -117,7 +117,7 @@ architecture Behavioral of BufferWriterPre is
   -- Number of bytes in a data bus word:
   constant BYTE_COUNT           : natural := BUS_DATA_WIDTH / 8;
   -- Bytes per element, clipped to 1.
-  constant BYTES_PER_ELEM       : natural := work.Utils.max(1, ELEMENT_WIDTH / 8);
+  constant BYTES_PER_ELEM       : natural := imax(1, ELEMENT_WIDTH / 8);
   -- Elements per byte, resulting in 0 if the elements are larger than a byte.
   constant ELEMS_PER_BYTE       : natural := 8 / ELEMENT_WIDTH;
 
@@ -203,11 +203,9 @@ begin
     -- sum when last is asserted.
     prefix_sum_inst: StreamPrefixSum
       generic map (
-        DATA_WIDTH              => ELEMENT_WIDTH,
+        ELEMENT_WIDTH           => ELEMENT_WIDTH,
         COUNT_WIDTH             => ELEMENT_COUNT_WIDTH,
-        COUNT_MAX               => ELEMENT_COUNT_MAX,
-        CTRL_WIDTH              => 1, -- dvalid
-        LOOPBACK                => true
+        COUNT_MAX               => ELEMENT_COUNT_MAX
       )
       port map (
         clk                     => clk,
@@ -216,14 +214,14 @@ begin
         in_ready                => in_ready,
         in_data                 => in_data,
         in_count                => in_count,
-        in_ctrl(0)              => in_dvalid,
+        in_dvalid               => in_dvalid,
         in_last                 => in_last,
 
         out_valid               => pss_valid,
         out_ready               => pss_ready,
         out_data                => pss_data,
         out_count               => pss_count,
-        out_ctrl(0)             => pss_dvalid,
+        out_dvalid              => pss_dvalid,
         out_last                => pss_last
       );
 

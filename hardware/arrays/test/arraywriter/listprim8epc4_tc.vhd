@@ -18,13 +18,13 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.SimUtils.all;
-use work.Arrow.all;
-use work.Arrays.all;
-use work.ArrayConfig.all;
-use work.ArrayConfigParse.all;
+use work.Stream_pkg.all;
+use work.Arrow_pkg.all;
+use work.Array_pkg.all;
+use work.ArrayConfig_pkg.all;
+use work.ArrayConfigParse_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilStr_pkg.all;
 
 -- pragma simulation timeout 1 ms
 
@@ -69,9 +69,9 @@ architecture tb of listprim8epc4_tc is
   signal cmd_lastIdx          : std_logic_vector(INDEX_WIDTH-1 downto 0);
   signal cmd_ctrl             : std_logic_vector(arcfg_ctrlWidth(CFG, BUS_ADDR_WIDTH)-1 downto 0);
   signal cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0) := (others => '0');
-  signal unlock_valid         : std_logic;
-  signal unlock_ready         : std_logic := '1';
-  signal unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
+  signal unl_valid            : std_logic;
+  signal unl_ready            : std_logic := '1';
+  signal unl_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
   signal bus_wreq_valid       : std_logic;
   signal bus_wreq_ready       : std_logic;
   signal bus_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -207,7 +207,7 @@ begin
         uniform(seed1, seed2, rand);
         len := natural(rand * MAX_LEN);
 
-        dumpStdOut("length stream: list " & integer'image(list) & " length is " & integer'image(len));
+        println("length stream: list " & integer'image(list) & " length is " & integer'image(len));
 
         -- Set the length vector
         len_data((I+1)*LENGTH_WIDTH-1 downto I*LENGTH_WIDTH) <= std_logic_vector(to_unsigned(len, LENGTH_WIDTH));
@@ -291,7 +291,7 @@ begin
       len := natural(lrand * MAX_LEN);
       orig_len := len;
 
-      dumpStdOut("element stream: list " & integer'image(list) & " length is " & integer'image(len));
+      println("element stream: list " & integer'image(list) & " length is " & integer'image(len));
 
       if len = 0 then
         empty := true;
@@ -303,9 +303,9 @@ begin
       loop
         -- Randomize count
         uniform(seed1, seed2, rand);
-        count := 1 + work.Utils.min(3, natural(100.0*rand * real(COUNT_MAX)));
+        count := 1 + imin(3, natural(100.0*rand * real(COUNT_MAX)));
 
-        dumpStdOut("element stream: count is " & integer'image(count));
+        println("element stream: count is " & integer'image(count));
 
         -- Resize count if necessary
         if len - count < 0 then
@@ -391,9 +391,9 @@ begin
       cmd_lastIdx         => cmd_lastIdx,
       cmd_ctrl            => cmd_ctrl,
       cmd_tag             => cmd_tag,
-      unlock_valid        => unlock_valid,
-      unlock_ready        => unlock_ready,
-      unlock_tag          => unlock_tag,
+      unl_valid           => unl_valid,
+      unl_ready           => unl_ready,
+      unl_tag             => unl_tag,
       bus_wreq_valid      => bus_wreq_valid,
       bus_wreq_ready      => bus_wreq_ready,
       bus_wreq_addr       => bus_wreq_addr,
