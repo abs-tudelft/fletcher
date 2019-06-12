@@ -27,7 +27,7 @@
 
 TEST(Platform, NoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
-  ASSERT_EQ(fletcher::Platform::Make("DEADBEEF", &platform).val, fletcher::Status::NO_PLATFORM().val);
+  ASSERT_EQ(fletcher::Platform::Make("DEADBEEF", &platform), fletcher::Status::NO_PLATFORM());
 }
 
 TEST(Platform, EchoPlatform) {

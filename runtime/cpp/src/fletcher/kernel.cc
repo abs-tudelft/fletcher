@@ -20,17 +20,22 @@
 
 namespace fletcher {
 
-Kernel::Kernel(std::shared_ptr<Context> context) : _context(std::move(context)) {}
+Kernel::Kernel(std::shared_ptr<Context> context) : context_(std::move(context)) {}
 
 bool Kernel::ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
-  // TODO(johanpel): Implement checking if the platform implements the same Schema
+  // TODO(johanpel): Implement checking if the kernel implements the same Schema,
+  //  probably through some checksum register
   FLETCHER_LOG(INFO, schema->ToString());
   return true;
 }
 
 Status Kernel::Reset() {
-  platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
-  return platform()->WriteMMIO(FLETCHER_REG_CONTROL, 0);
+  auto status = context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_reset);
+  if (status.ok()) {
+    return context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, 0);
+  } else {
+    return status;
+  }
 }
 
 Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
@@ -40,10 +45,10 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
   }
 
   Status ret;
-  if (!platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index, static_cast<uint32_t>(first)).ok()) {
+  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index, static_cast<uint32_t>(first)).ok()) {
     ret = Status::ERROR();
   }
-  if (!platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index + 1, static_cast<uint32_t>(last)).ok()) {
+  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index + 1, static_cast<uint32_t>(last)).ok()) {
     ret = Status::ERROR();
   }
   return Status::OK();
@@ -51,23 +56,23 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
 
 Status Kernel::SetArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    platform()->WriteMMIO(FLETCHER_REG_SCHEMA + _context->num_buffers() * 2 + i, arguments[i]);
+    context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + context_->num_buffers() * 2 + i, arguments[i]);
   }
 
   return Status::OK();
 }
 
 Status Kernel::Start() {
-  return platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_start);
+  return context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_start);
 }
 
 Status Kernel::GetStatus(uint32_t *status) {
-  return platform()->ReadMMIO(FLETCHER_REG_STATUS, status);
+  return context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, status);
 }
 
 Status Kernel::GetReturn(uint32_t *ret0, uint32_t *ret1) {
-  if (platform()->ReadMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
-    if (platform()->ReadMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
+  if (context_->platform()->ReadMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
+    if (context_->platform()->ReadMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
       return Status::OK();
     }
   }
@@ -82,23 +87,19 @@ Status Kernel::WaitForFinish(unsigned int poll_interval_usec) {
   uint32_t status = 0;
   if (poll_interval_usec == 0) {
     do {
-      platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
+      context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   } else {
     do {
       usleep(poll_interval_usec);
-      platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
+      context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   }
   return Status::OK();
 }
 
-std::shared_ptr<Platform> Kernel::platform() {
-  return _context->platform_;
-}
-
 std::shared_ptr<Context> Kernel::context() {
-  return _context;
+  return context_;
 }
 
 }
