@@ -19,3 +19,4 @@
 #include "fletcher/logging.h"
 #include "fletcher/arrow-utils.h"
 #include "fletcher/arrow-recordbatch.h"
+#include "fletcher/arrow-schema.h"

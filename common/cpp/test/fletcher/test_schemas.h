@@ -24,12 +24,11 @@ namespace fletcher {
 
 inline std::shared_ptr<arrow::Schema> GetListUint8Schema() {
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("list", arrow::list(std::make_shared<arrow::Field>("number", arrow::uint8(), false)), false)
+      arrow::field("L", arrow::list(std::make_shared<arrow::Field>("number", arrow::uint8(), false)), false)
   };
 
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  AppendMetaRequired(schema, "listuint8", Mode::READ);
-  return schema;
+  return AppendMetaRequired(*schema, "ListUint8", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
@@ -38,7 +37,7 @@ inline std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
       arrow::field("number", arrow::int8(), false)
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "PrimRead", Mode::READ);
+  return AppendMetaRequired(*schema, "PrimRead", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
@@ -46,23 +45,23 @@ inline std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
       arrow::field("number", arrow::uint8(), false)
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "PrimWrite", Mode::WRITE);
+  return AppendMetaRequired(*schema, "PrimWrite", Mode::WRITE);
 }
 
 inline std::shared_ptr<arrow::Schema> GetStringReadSchema() {
   auto name_field = arrow::field("Name", arrow::utf8(), false);
-  AppendMetaEPC(name_field, 4);
+  AppendMetaEPC(*name_field, 4);
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {name_field};
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "StringRead", Mode::READ);
+  return AppendMetaRequired(*schema, "StringRead", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetStringWriteSchema() {
   auto string_field = arrow::field("String", arrow::utf8(), false);
-  AppendMetaEPC(string_field, 64);
+  AppendMetaEPC(*string_field, 64);
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {string_field};
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "StringWrite", Mode::WRITE);
+  return AppendMetaRequired(*schema, "StringWrite", Mode::WRITE);
 }
 
 inline std::shared_ptr<arrow::Schema> GetStructSchema() {
@@ -71,33 +70,33 @@ inline std::shared_ptr<arrow::Schema> GetStructSchema() {
       arrow::field("B", arrow::uint32(), false),
   };
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      arrow::field("Struct", arrow::struct_(struct_fields), false)
+      arrow::field("S", arrow::struct_(struct_fields), false)
   };
-  return AppendMetaRequired(std::make_shared<arrow::Schema>(schema_fields), "Struct", Mode::READ);
+  return AppendMetaRequired(*std::make_shared<arrow::Schema>(schema_fields), "StructBatch", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetBigSchema() {
   std::vector<std::shared_ptr<arrow::Field>> struct_fields = {
       arrow::field("Xuint16", arrow::uint16(), false),
       arrow::field("Yuint32", arrow::uint32(), false),
-      AppendMetaEPC(arrow::field("Zutf8", arrow::utf8(), false), 4)
+      AppendMetaEPC(*arrow::field("Zutf8", arrow::utf8(), false), 4)
   };
   std::vector<std::shared_ptr<arrow::Field>> struct2_fields = {
       arrow::field("Quint64", arrow::uint64(), false),
       arrow::field("Rstruct", arrow::struct_(struct_fields), false)
   };
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
-      AppendMetaEPC(arrow::field("Auint8", arrow::uint8(), false), 4),
+      AppendMetaEPC(*arrow::field("Auint8", arrow::uint8(), false), 4),
       arrow::field("Blist", arrow::list(arrow::float64()), false),
       arrow::field("Cbinary", arrow::binary(), false),
-      AppendMetaEPC(arrow::field("Dutf8", arrow::utf8(), false), 8),
+      AppendMetaEPC(*arrow::field("Dutf8", arrow::utf8(), false), 8),
       arrow::field("Estruct", arrow::struct_(struct2_fields), false),
-      AppendMetaIgnore(arrow::field("Fignore", arrow::utf8(), false))
+      AppendMetaIgnore(*arrow::field("Fignore", arrow::utf8(), false))
       // arrow::field("G", arrow::fixed_size_binary(5)),
       // arrow::field("H", arrow::decimal(20, 18)),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "Big", Mode::READ);
+  return AppendMetaRequired(*schema, "Big", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetListFloatSchema() {
@@ -105,7 +104,7 @@ inline std::shared_ptr<arrow::Schema> GetListFloatSchema() {
       arrow::field("ListOfFloat", arrow::list(arrow::float64()), false),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "ListFloat", Mode::READ);
+  return AppendMetaRequired(*schema, "ListFloat", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetListIntSchema() {
@@ -113,7 +112,7 @@ inline std::shared_ptr<arrow::Schema> GetListIntSchema() {
       arrow::field("ListOfNumber", arrow::list(arrow::int64()), false),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "ListInt", Mode::READ);
+  return AppendMetaRequired(*schema, "ListInt", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetFilterReadSchema() {
@@ -123,7 +122,7 @@ inline std::shared_ptr<arrow::Schema> GetFilterReadSchema() {
       arrow::field("read_zipcode", arrow::uint32(), false)
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "FilterRead", Mode::READ);
+  return AppendMetaRequired(*schema, "FilterRead", Mode::READ);
 }
 
 inline std::shared_ptr<arrow::Schema> GetFilterWriteSchema() {
@@ -131,7 +130,7 @@ inline std::shared_ptr<arrow::Schema> GetFilterWriteSchema() {
       arrow::field("write_first_name", arrow::utf8(), false),
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, "FilterWrite", Mode::WRITE);
+  return AppendMetaRequired(*schema, "FilterWrite", Mode::WRITE);
 }
 
 inline std::shared_ptr<arrow::Schema> GetSodaBeerSchema(const std::string& name="", Mode mode=Mode::READ) {
@@ -140,7 +139,8 @@ inline std::shared_ptr<arrow::Schema> GetSodaBeerSchema(const std::string& name=
       arrow::field("age", arrow::uint8(), false)
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
-  return AppendMetaRequired(schema, name, mode);
+  auto fletcher_schema = AppendMetaRequired(*schema, name, mode);
+  return fletcher_schema;
 }
 
 }  // namespace fletcher

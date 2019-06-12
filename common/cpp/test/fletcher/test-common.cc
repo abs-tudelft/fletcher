@@ -21,6 +21,7 @@
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"
 #include "fletcher/test_common.h"
+#include "fletcher/test_visitors.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
