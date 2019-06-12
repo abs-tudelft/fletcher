@@ -1,5 +1,35 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project(cerata)
+
+###############################################################################
+# Configuration                                                               #
+###############################################################################
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+
+###############################################################################
+# Dependencies                                                                #
+###############################################################################
+include(FetchContent)
+
+FetchContent_Declare(tinyxml2
+  GIT_REPOSITORY  https://github.com/leethomason/tinyxml2.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(tinyxml2)
+
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
+
+###############################################################################
+# Compilation units                                                           #
+###############################################################################
+include(CompileUnits)
+
 add_compile_unit(
-  OPT
   NAME cerata
   TYPE OBJECT
   PRPS
@@ -43,3 +73,5 @@ add_compile_unit(
     test/cerata/vhdl/test_declarators.h
     test/cerata/vhdl/test_instantiators.h
 )
+
+compile_units()
