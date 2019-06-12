@@ -1,3 +1,41 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project(fletchgen VERSION 0.0.0 LANGUAGES CXX)
+
+###############################################################################
+# Configuration                                                               #
+###############################################################################
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+
+###############################################################################
+# Dependencies                                                                #
+###############################################################################
+include(FetchContent)
+
+find_package(arrow 0.13 CONFIG REQUIRED)
+
+FetchContent_Declare(CLI11
+  GIT_REPOSITORY  https://github.com/CLIUtils/CLI11.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(CLI11)
+
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
+
+###############################################################################
+# Compilation units                                                           #
+###############################################################################
+include(CompileUnits)
+
+set(BUILD_CERATA_DOT ON)
+SET(BUILD_CERATA_VHDL ON)
+add_subdirectory(../cerata cerata)
+add_subdirectory(../../common common)
+
 add_compile_unit(
   OPT
   NAME fletchgen::lib
@@ -32,37 +70,36 @@ add_compile_unit(
     CLI11::CLI11
 )
 
-add_compile_unit(
-  OPT
-  NAME fletchgen::test::utils
-  TYPE OBJECT
-  PRPS
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-  SRCS
-    test/fletchgen/test_utils.h
-  DEPS
-    arrow_shared
-)
+# add_compile_unit(
+#   OPT
+#   NAME fletchgen::test::utils
+#   TYPE OBJECT
+#   PRPS
+#     CXX_STANDARD 17
+#     CXX_STANDARD_REQUIRED ON
+#   SRCS
+#     test/fletchgen/test_utils.h
+#   DEPS
+#     arrow_shared
+# )
+
+# add_compile_unit(
+#   OPT
+#   NAME fletchgen::tests
+#   TYPE TESTS
+#   PRPS
+#     CXX_STANDARD 17
+#     CXX_STANDARD_REQUIRED ON
+#   SRCS
+#     test/fletchgen/test.cc
+#   DEPS
+#     cerata
+#     fletchgen::lib
+#     fletchgen::test::utils
+#     fletcher::test::utils
+# )
 
 add_compile_unit(
-  OPT
-  NAME fletchgen::tests
-  TYPE TESTS
-  PRPS
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-  SRCS
-    test/fletchgen/test.cc
-  DEPS
-    cerata
-    fletchgen::lib
-    fletchgen::test::utils
-    fletcher::test::utils
-)
-
-add_compile_unit(
-  OPT
   NAME fletchgen
   TYPE EXECUTABLE
   PRPS
@@ -73,3 +110,5 @@ add_compile_unit(
   DEPS
     fletchgen::lib
 )
+
+compile_units()

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(cerata)
+project(cerata VERSION 0.0.0 LANGUAGES CXX)
 
 ###############################################################################
 # Configuration                                                               #
@@ -16,7 +16,6 @@ FetchContent_Declare(tinyxml2
   GIT_REPOSITORY  https://github.com/leethomason/tinyxml2.git
   GIT_TAG         master
 )
-FetchContent_MakeAvailable(tinyxml2)
 
 FetchContent_Declare(cmake-modules
   GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
@@ -30,23 +29,48 @@ FetchContent_MakeAvailable(cmake-modules)
 include(CompileUnits)
 
 add_compile_unit(
-  NAME cerata
-  TYPE OBJECT
+  NAME cerata::core
   PRPS
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
   SRCS
-    src/cerata/utils.cc
     src/cerata/arrays.cc
     src/cerata/edges.cc
-    src/cerata/objects.cc
-    src/cerata/types.cc
-    src/cerata/nodes.cc
-    src/cerata/graphs.cc
     src/cerata/flattypes.cc
+    src/cerata/graphs.cc
+    src/cerata/nodes.cc
+    src/cerata/objects.cc
     src/cerata/output.cc
     src/cerata/transform.cc
+    src/cerata/types.cc
+    src/cerata/utils.cc
+  TSTS
+    test/cerata/test_expressions.cc
+    # test/cerata/test_types.cc
+)
 
+add_compile_unit(
+  OPT
+  NAME cerata::dot
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
+    src/cerata/dot/dot.cc
+    src/cerata/dot/style.cc
+  TSTS
+    test/cerata/dot/test_graphs.cc
+  DEPS
+    cerata::core
+)
+
+add_compile_unit(
+  OPT
+  NAME cerata::vhdl
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
     src/cerata/vhdl/architecture.cc
     src/cerata/vhdl/block.cc
     src/cerata/vhdl/declaration.cc
@@ -57,21 +81,45 @@ add_compile_unit(
     src/cerata/vhdl/vhdl.cc
     src/cerata/vhdl/vhdl_types.cc
     src/cerata/vhdl/template.cc
-
-    src/cerata/dot/dot.cc
-    src/cerata/dot/style.cc
   TSTS
-    # Intermeditate
-    test/cerata/test.cc
-    test/cerata/test_types.h
-    test/cerata/test_expressions.h
-    test/cerata/test_designs.h
+    test/cerata/vhdl/test_declarators.cc
+    test/cerata/vhdl/test_designs.cc
+    test/cerata/vhdl/test_instantiators.cc
+  DEPS
+    cerata::core
+)
 
-    # Back-ends
-    test/cerata/dot/test_graphs.h
+add_compile_unit(
+  OPT
+  NAME cerata::ipxact
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  DEPS
+    cerata::core
+    tinyxml2
+)
 
-    test/cerata/vhdl/test_declarators.h
-    test/cerata/vhdl/test_instantiators.h
+set(CERATA_BACKENDS)
+if(BUILD_CERATA_DOT)
+  list(APPEND CERATA_BACKENDS "cerata::dot")
+endif()
+if(BUILD_CERATA_VHDL)
+  list(APPEND CERATA_BACKENDS "cerata::vhdl")
+endif()
+if(BUILD_CERATA_IPXACT)
+  FetchContent_MakeAvailable(tinyxml2)
+  list(APPEND CERATA_BACKENDS "cerata::ipxact")
+endif()
+
+add_compile_unit(
+  NAME cerata
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  DEPS
+    cerata::core
+    ${CERATA_BACKENDS}
 )
 
 compile_units()

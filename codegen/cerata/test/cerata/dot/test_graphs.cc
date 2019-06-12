@@ -14,14 +14,26 @@
 
 #include <gtest/gtest.h>
 
-// Graph layer tests
-#include "./test_expressions.h"
-#include "./test_types.h"
+#include "cerata/nodes.h"
+#include "cerata/types.h"
+#include "cerata/dot/dot.h"
 
-// VHDL backend tests
-#include "./vhdl/test_declarators.h"
-#include "./vhdl/test_instantiators.h"
-#include "./vhdl/test_designs.h"
+#include "../test_designs.h"
 
-// DOT backend tests
-#include "./dot/test_graphs.h"
+namespace cerata {
+
+TEST(Dot, Component) {
+  // Get component
+  auto top = GetAllPortTypesComponent();
+  // Generate graph
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
+TEST(Example, DOT) {
+  auto top = GetExampleDesign();
+  dot::Grapher dot;
+  std::cout << dot.GenFile(top, "graph.dot");
+}
+
+}  // namespace cerata

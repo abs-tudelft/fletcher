@@ -12,30 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <gmock/gmock.h>
 
-#include <gtest/gtest.h>
+#include <string>
+#include <fstream>
 
 #include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/dot/dot.h"
-
-#include "../test_designs.h"
 
 namespace cerata {
 
-TEST(Dot, Component) {
-  // Get component
-  auto top = GetAllPortTypesComponent();
-  // Generate graph
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+TEST(Expressions, Add) {
+  auto a = Literal::Make(string(), "a");
+  auto b = Parameter::Make("b", string());
+  auto c = Literal::Make(string(), "c");
+  auto d = Parameter::Make("d", string());
+  auto e = intl<10>();
+
+  auto f = a+b-c*d/e+a*b-c/d+e;
+
+  ASSERT_EQ(f->ToString(), "a+b-c*d/10+a*b-c/d+10");
 }
 
-TEST(Example, DOT) {
-  auto top = GetExampleDesign();
-  dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+TEST(Expressions, IntLits) {
+  auto i0 = intl<0>();
+  auto i1 = intl<1>();
+
+  auto e0 = i0 + i0;
+  auto e1 = i0 + i1;
+  auto e2 = i1 + i0;
+  auto e3 = i1 + i1;
+
+  ASSERT_EQ(e0->ToString(),"0");
+  ASSERT_EQ(e1->ToString(),"1");
+  ASSERT_EQ(e2->ToString(),"1");
+  ASSERT_EQ(e3->ToString(),"2");
 }
 
-}  // namespace cerata
+}

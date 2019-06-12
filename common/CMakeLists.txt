@@ -1,7 +1,9 @@
 add_compile_unit(
   OPT
   NAME fletcher::common
-  TYPE OBJECT
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
   SRCS
     src/fletcher/arrow-utils.cc
     src/fletcher/hex-view.cc
@@ -13,6 +15,9 @@ add_compile_unit(
   OPT
   NAME fletcher::test::common
   TYPE TESTS
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
   SRCS
     test/fletcher/test-common.cc
   DEPS
@@ -23,7 +28,9 @@ add_compile_unit(
 add_compile_unit(
   OPT
   NAME fletcher::test::utils
-  TYPE OBJECT
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
   SRCS  
     test/fletcher/test_generate.cc
     test/fletcher/test_schemas.cc
