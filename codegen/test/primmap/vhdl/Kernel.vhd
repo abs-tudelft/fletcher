@@ -116,7 +116,7 @@ begin
       BUS_ADDR_WIDTH     => 32,
       BUS_DATA_WIDTH     => 32,
       NUM_REGS           => NUM_REGS,
-      REG_CONFIG         => "WRRRWWWWWW",
+      REG_CONFIG         => "WRRRWWWWWWWW",
       SLV_R_SLICE_DEPTH  => 0,
       SLV_W_SLICE_DEPTH  => 0
     )

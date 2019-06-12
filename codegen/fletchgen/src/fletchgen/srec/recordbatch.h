@@ -25,22 +25,17 @@
 namespace fletchgen::srec {
 
 /**
- * @brief Generate and save an SREC file from a bunch of recordbatches and schemas.
- * @param options       Fletchgen options.
- * @param schemas       Schemas.
- * @param first_last_idx  A vector to store Fletcher command stream first and last indices of a RecordBatch.
- * @return              A vector of buffer addresses in the SREC.
- */
-std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
-                                   std::vector<std::pair<uint32_t, uint32_t>> *first_last_idx = nullptr);
-
-/**
- * @brief Calculate buffer offsets if all buffers would be stored contiguously.
-* @param buffers   The buffers.
- * @return          The required size of the contiguous space.
- */
-std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers);
+ * @brief Generate and save an SREC file from a bunch of RecordBatches and Schemas.
+ * @param schemas       The Schemas.
+ * @param recordbatches The RecordBatches.
+ * @param meta_out      Metadata output about saved RecordBatches.
+ * @param out           Output stream to write the SREC file to.
+ * @param buffer_align  Alignment in bytes for every RecordBatch buffer.
+*/
+void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_in,
+                      std::vector<fletcher::RecordBatchDescription> *meta_out,
+                      std::ofstream *out,
+                      int64_t buffer_align);
 
 /**
  * Write SREC formatted RecordBatches to an output stream.

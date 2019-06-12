@@ -32,9 +32,12 @@ namespace fletchgen {
 struct Design {
   static Design GenerateFrom(const std::shared_ptr<Options>& opts);
   std::shared_ptr<Options> options;
-  std::vector<std::shared_ptr<arrow::Schema>> schemas;
+
   std::shared_ptr<SchemaSet> schema_set;
+  std::vector<fletcher::RecordBatchDescription> batch_desc;
+
   std::deque<std::shared_ptr<RecordBatch>> readers;
+
   std::shared_ptr<Kernel> kernel;
   std::shared_ptr<Mantle> mantle;
   std::shared_ptr<cerata::Component> wrapper;

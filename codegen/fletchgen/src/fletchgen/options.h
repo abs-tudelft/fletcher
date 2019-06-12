@@ -15,17 +15,22 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <string>
 #include <cerata/api.h>
+#include <arrow/api.h>
 
 namespace fletchgen {
 
 struct Options {
   /// Paths to the schema files
   std::vector<std::string> schema_paths;
-
+  /// Loaded schemas
+  std::vector<std::shared_ptr<arrow::Schema>> schemas;
   /// Paths to RecordBatches
   std::vector<std::string> recordbatch_paths;
+  /// Loaded RecordBatches
+  std::vector<std::shared_ptr<arrow::RecordBatch>> recordbatches;
 
   /// Output directory
   std::string output_dir = ".";
@@ -62,14 +67,21 @@ struct Options {
   // Option checkers:
 
   /// @brief Return true if a design must be generated.
-  bool MustGenerateDesign();
+  bool MustGenerateDesign() const;
   /// @brief Return true if an SREC file must be generated.
-  bool MustGenerateSREC();
+  bool MustGenerateSREC() const;
   /// @brief Return true if the design must be outputted as VHDL.
-  bool MustGenerateVHDL();
+  bool MustGenerateVHDL() const;
   /// @brief Return true if the design must be outputted as DOT.
-  bool MustGenerateDOT();
+  bool MustGenerateDOT() const;
 
+  /// @brief Load all specified RecordBatches
+  void LoadRecordBatches();
+  /// @brief Load all specified Schemas
+  void LoadSchemas();
+
+  /// @brief Return human-readable options.
+  std::string ToString() const;
 };
 
 } // namespace fletchgen
