@@ -14,17 +14,17 @@ We've included some dummy data in our ExampleBatch "table" that we'll also use t
 
 The next few steps will take us through how we can use Fletcher to realize the functionality shown above.
 
-[1. Generate a Schema](#generate-a-schema) to represent the type of RecordBatch the kernel must operate on.
+1. [Generate a Schema](#1-generate-a-schema) to represent the type of RecordBatch the kernel must operate on.
 
-[2. Generate a RecordBatch](#generate-a-recordbatch) with some dummy data for simulation.
+2. [Generate a RecordBatch](#2-generate-a-recordbatch) with some dummy data for simulation.
 
-[3. Run Fletchgen](#run-fletchgen) to create a design and kernel template from the Schema and RecordBatch.
+3. [Run Fletchgen](#3-run-fletchgen) to create a design and kernel template from the Schema and RecordBatch.
 
-[4. Implement the kernel](#implement-the-kernel).
+4. [Implement the kernel](#4-implement-the-kernel).
 
-[5. Simulate the design.](#simulate-the-design)
+5. [Simulate the design.](#5-simulate-the-design)
 
-# Generate a Schema
+# 1. Generate a Schema
 
 Fletchgen is the design generator tool of Fletcher. It requires an Arrow *schema* as input. A schema is nothing more 
 than a description of the type of data that you can find in an Arrow *recordbatch*. A recordbatch is a tabular 
@@ -41,15 +41,64 @@ There is one more thing that Arrow needs to know about the field; whether or not
 number can also be invalid (for example, there was a corrupted sample in some measurement).  For now, we'll assume that
 the numbers are not nullable (i.e. they are always valid).
 
-We could use a little Python script to generate the field.
+We will use a little Python script to generate the field. 
+
 [Continue the tutorial by checking out this iPython Notebook.](hardware/generate-schema.ipynb)
 
-# Generate a RecordBatch
-# Run Fletchgen
-# Implement the kernel
-# Simulate the design
+If you're in a hurry, [here is the short version, that includes step 2.](hardware/generate-input.py)
 
+# 2. Generate a RecordBatch
 
+Now that we've defined an Arrow schema, we can move to the next step of our typical design flow. Not only do we
+want to design the kernel based on the schema, we'd also like to feed it with some data in a simulation environment,
+before throwing our design at the FPGA place and route tools (this can take multiple hours to complete!).
+
+To this end, we can supply Fletchgen with an actual Arrow recordbatch. In real applications, these can be very large;
+in the order of gigabytes. For simulation we're just going to fill our only recordbatch column with four numbers as
+is shown in the figure at the top of this page.
+
+We'll also use a little Python script to generate the recordbatch.
+
+[Continue the tutorial by checking out this iPython Notebook.](hardware/generate-recordbatch.ipynb)
+
+If you're in a hurry, [here is the short version, that includes step 1.](hardware/generate-input.py)
+
+# 3. Run Fletchgen
+
+Now that we've generated a recordbatch with some test data, it's time to let Fletchgen do its job.
+We want Fletchgen to do the following things for us:
+
+1. Create a kernel template based on the schema.
+2. Create a design infrastructure based on the schema.
+3. Create a simulation top-level with pre-loaded memory model contents based on the recordbatch.
+
+We can call fletchgen from the command line as follow:
+
+```console
+$ cd hardware
+$ fletchgen -n Sum -r input/recordbatch.rb -s output/recordbatch.srec -l vhdl --sim
+```
+
+We've used the following options:
+* `-n` specifies the name of our kernel.
+* `-r` specifies that we want to give Fletchgen a recordbatch.
+* `-s` specifies the path of the memory model contents (an SREC file)
+* `-l` specifies the output language for the design files, in our case VHDL (I know right?)
+* `--sim` specifies that we'd like to generate a simulation top-level.
+
+Now, Fletchgen will generate all the things we've listed above. The output files are as follows:
+
+* `hardware/output/recordbatch.srec`: our memory model contents. 
+* `hardware/vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
+so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there). 
+It will always overwrite a `.vhdt` file, though!
+* `hardware/vhdl/ExampleBatch.vhd`: a generated "RecordBatchReader".
+* `hardware/vhdl/Mantle.vhd`: a generated top-level wrapper instantiating the "RecordBatchReader" and the "Sum" kernel.
+* `hardware/vhdl/sim_top.vhd`: the simulation top-level, instantiating the memory models and the "Mantle".
+
+# 4. Implement the kernel
+
+# 5. Simulate the design
 
 ## Generating the hardware skeleton files
 
