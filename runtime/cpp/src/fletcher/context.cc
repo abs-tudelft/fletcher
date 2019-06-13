@@ -56,17 +56,19 @@ Status Context::Enable() {
     for (const auto &b : rbd.buffers) {
       fletcher::Status status;
       DeviceBuffer device_buf(b.raw_buffer_, b.size_, type, rbd.mode);
-      if (type == MemoryType::PREPARE) {
+      if (type == MemType::ANY) {
         status = platform_->PrepareHostBuffer(device_buf.host_address,
                                               &device_buf.device_address,
                                               device_buf.size,
                                               &device_buf.was_alloced);
-      } else {
+      } else if (type == MemType::CACHE) {
         // Cache always allocates on device.
         status = platform_->CacheHostBuffer(device_buf.host_address,
                                             &device_buf.device_address,
                                             device_buf.size);
         device_buf.was_alloced = true;
+      } else {
+        status = Status::ERROR("Invalid / unsupported MemType.");
       }
       if (!status.ok()) {
         return status;
@@ -77,7 +79,7 @@ Status Context::Enable() {
   return Status::OK();
 }
 
-Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, MemoryType type) {
+Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, MemType mem_type) {
   // Sanity check the recordbatch
   if (record_batch == nullptr) {
     return Status::ERROR("RecordBatch is nullptr.");
@@ -97,7 +99,7 @@ Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
   host_batch_desc_.push_back(rbd);
 
   // Put the desired memory type of the recordbatch
-  host_batch_memtype_.push_back(type);
+  host_batch_memtype_.push_back(mem_type);
 
   return Status::OK();
 }

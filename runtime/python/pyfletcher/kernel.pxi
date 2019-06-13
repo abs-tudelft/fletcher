@@ -138,15 +138,6 @@ cdef class Kernel:
         """
         check_fletcher_status(self.Kernel.get().WaitForFinish(poll_interval_usec))
 
-    def get_platform(self):
-        """Get associated platform.
-
-        Returns:
-            Platform associated with this Kernel.
-
-        """
-        return pyfletcher_wrap_platform(self.Kernel.get().platform())
-
     def get_context(self):
         """Get associated context.
 

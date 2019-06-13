@@ -29,15 +29,15 @@ namespace fletcher {
 
 using fletcher::Mode;
 
-enum class MemoryType {
+enum class MemType {
   /**
    * @brief Apply the least effort to make the data available to the device.
    *
-   * For platforms where the device may access host memory directly, PREPARE will not copy data to device on-board
+   * For platforms where the device may access host memory directly, ANY will not copy data to device on-board
    * memory to make it available to the device. If the platform requires a copy to on-board memory, then this will
    * behave the same as the CACHE option.
    */
-      PREPARE,
+      ANY,
 
   /**
    * @brief Cache the data to on-board memory of the device.
@@ -60,13 +60,15 @@ struct DeviceBuffer {
   da_t device_address = D_NULLPTR;
   int64_t size = 0;
 
-  MemoryType memory = MemoryType::CACHE;
+  MemType memory = MemType::CACHE;
   Mode mode = Mode::READ;
 
   bool available_to_device = false;
   bool was_alloced = false;
 
-  DeviceBuffer(const uint8_t *host_address, int64_t size, MemoryType type, Mode access_mode)
+  DeviceBuffer() = default;
+
+  DeviceBuffer(const uint8_t *host_address, int64_t size, MemType type, Mode access_mode)
       : host_address(host_address), size(size), memory(type), mode(access_mode) {}
 };
 
@@ -98,7 +100,7 @@ class Context {
    * @return              Status::OK() if successful, Status::ERROR() otherwise.
    */
   Status QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch,
-                          MemoryType mem_type = MemoryType::PREPARE);
+                          MemType mem_type = MemType::ANY);
 
   /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
   size_t GetQueueSize() const;
@@ -111,19 +113,16 @@ class Context {
 
   std::shared_ptr<Platform> platform() const { return platform_; }
 
+  DeviceBuffer device_buffer(size_t i) const { return device_buffers_[i]; }
+
  protected:
-
   bool written_ = false;
-
   /// The platform this context is running on.
   std::shared_ptr<Platform> platform_;
-
   std::vector<std::shared_ptr<arrow::RecordBatch>> host_batches_;
   std::vector<RecordBatchDescription> host_batch_desc_;
-  std::vector<MemoryType> host_batch_memtype_;
-
+  std::vector<MemType> host_batch_memtype_;
   std::vector<std::shared_ptr<arrow::Buffer>> device_batch_desc_;
-
   std::vector<DeviceBuffer> device_buffers_;
 };
 
