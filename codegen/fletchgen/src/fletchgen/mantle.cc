@@ -43,7 +43,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
   AddObject(bus_addr_width());
 
   // Create and add every RecordBatch/Writer
-  for (const auto &fs : schema_set_->schemas) {
+  for (const auto &fs : schema_set_->schemas()) {
     auto rb = RecordBatch::Make(fs);
     auto rb_inst = AddInstanceOf(rb);
     recordbatch_instances.push_back(rb_inst);
@@ -130,7 +130,7 @@ std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_se
   return std::make_shared<Mantle>("Mantle", schema_set);
 }
 
-std::deque<std::shared_ptr<RecordBatch>> Mantle::recordbatch_components() {
+std::deque<std::shared_ptr<RecordBatch>> Mantle::recordbatch_components() const {
   std::deque<std::shared_ptr<RecordBatch>> result;
   for (const auto &r : recordbatch_instances) {
     result.push_back(*cerata::Cast<RecordBatch>(r->component));

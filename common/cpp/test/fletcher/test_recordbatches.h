@@ -16,7 +16,6 @@
 
 #include <cassert>
 #include <arrow/api.h>
-#include <arrow/status.h>
 
 #include "fletcher/test_schemas.h"
 
@@ -214,8 +213,10 @@ inline std::shared_ptr<arrow::RecordBatch> GetFilterRB() {
   return record_batch;
 }
 
-inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(const std::vector<std::string> &names,
-                                                         const std::vector<uint8_t> &ages) {
+inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(
+    const std::shared_ptr<arrow::Schema>& schema,
+    const std::vector<std::string> &names,
+    const std::vector<uint8_t> &ages) {
   assert(names.size() == ages.size());
   // Make a string builder
   arrow::StringBuilder name_builder;
@@ -230,7 +231,7 @@ inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(const std::vector<std::
   assert(name_builder.Finish(&name_array).ok());
   assert(age_builder.Finish(&age_array).ok());
   // Create the Record Batch
-  auto record_batch = arrow::RecordBatch::Make(GetSodaBeerSchema(), name_array->length(), {name_array, age_array});
+  auto record_batch = arrow::RecordBatch::Make(schema, name_array->length(), {name_array, age_array});
   return record_batch;
 }
 

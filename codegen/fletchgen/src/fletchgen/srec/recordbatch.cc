@@ -26,105 +26,70 @@
 
 namespace fletchgen::srec {
 
-std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
-                                   std::vector<std::pair<uint32_t, uint32_t>> *first_last_idx) {
-  if (options->recordbatch_paths.size() != schemas.size()) {
-    throw std::runtime_error("Number of schemas does not correspond to number of RecordBatches.");
-  }
-
-  std::deque<std::shared_ptr<arrow::RecordBatch>> recordbatches;
-  for (size_t i = 0; i < schemas.size(); i++) {
-    // Only read RecordBatch files for Read schemas, and add their contents to the SREC file
-    if (fletcher::GetMode(schemas[i]) == fletcher::Mode::READ) {
-      auto rb = fletcher::ReadRecordBatchFromFile(options->recordbatch_paths[i], schemas[i]);
-      recordbatches.push_back(rb);
-      if (first_last_idx != nullptr) {
-        // Read schemas are assumed to go over the whole range for automatic simulation top-level generation.
-        (*first_last_idx).emplace_back(0, rb->num_rows());
-      }
-    } else {
-      // Write schemas just get firstidx and lastidx set to 0.
-      if (first_last_idx != nullptr) {
-        (*first_last_idx).emplace_back(0, 0);
-      }
-    }
-  }
-
-  auto ofs = std::ofstream(options->srec_out_path);
-  if (!ofs.good()) {
-    FLETCHER_LOG(ERROR, "Could not open " + options->srec_out_path + " for writing.");
-  }
-  std::vector<uint64_t> offsets = fletchgen::srec::WriteRecordBatchesToSREC(&ofs, recordbatches);
-  return offsets;
+static inline size_t PaddedLength(size_t size, size_t alignment) {
+  return ((size + alignment - 1) / alignment) * alignment;
 }
 
-std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers) {
-  size_t addr = 0;
-  std::vector<size_t> ret;
+void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_in,
+                      std::vector<fletcher::RecordBatchDescription> *meta_out,
+                      std::ofstream *out,
+                      int64_t buffer_align) {
+  // We need to align each buffer into the SREC stream.
+  // We start at offset 0.
+  unsigned long offset = 0;
+  for (const auto &desc_in : meta_in) {
+    fletcher::RecordBatchDescription desc_out = desc_in;
+    // We can only copy data from physically existing recordbatches into the SREC
+    if (!desc_in.is_virtual) {
+      desc_out.buffers.clear();
+      FLETCHER_LOG(DEBUG, "RecordBatch " + desc_in.name + " buffers: \n" + desc_in.ToString());
+      for (const auto &buf : desc_in.buffers) {
+        // May the force be with us
+        auto srec_buf_address = reinterpret_cast<uint8_t *>(offset);
+        // Determine the place of the buffer in the SREC output
+        desc_out.buffers.emplace_back(srec_buf_address, buf.size_, buf.desc_, buf.level_);
 
-  for (const auto &buf : buffers) {
-    // Push back the current address.
-    ret.push_back(addr);
-    // Calculate the next address.
-    addr += (buf->size() / 64) * 64;
-    if ((buf->size() % 64) != 0) {
-      addr += 64;
+        // Print some debug info
+        auto hv = fletcher::HexView(offset);
+        hv.AddData(buf.raw_buffer_, buf.size_);
+        FLETCHER_LOG(DEBUG, buf.desc_ + "\n" + hv.ToString());
+
+        // Calculate the padded length and calculate the next offset.
+        auto padded_size = PaddedLength(buf.size_, buffer_align);
+        offset = offset + padded_size;
+      }
+    }
+    meta_out->push_back(desc_out);
+  }
+  // We have now determined the location of every buffer in the SREC file and we know the total size of the resulting
+  // file in bytes. We must now create the actual SREC file. Calloc some space to serialize the Arrow buffers into.
+  auto srec_buffer = static_cast<uint8_t *>(calloc(1, offset));
+
+  // Copy over every buffer.
+  for (size_t r = 0; r < meta_in.size(); r++) {
+    if (!meta_in[r].is_virtual) {
+      for (size_t b = 0; b < meta_in[r].buffers.size(); b++) {
+        auto srec_off = reinterpret_cast<size_t>(meta_out->at(r).buffers[b].raw_buffer_);
+        auto dest = srec_buffer + srec_off;
+        auto src = meta_in[r].buffers[b].raw_buffer_;
+        auto size = meta_in[r].buffers[b].size_;
+        // skip empty buffers (typically implicit validity buffers)
+        if (src != nullptr) {
+          memcpy(dest, src, size);
+        }
+      }
     }
   }
-  // Push back the last next address. Useful to know the total contiguous size.
-  ret.push_back(addr);
-  return ret;
-}
 
-std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
-                                               const std::deque<std::shared_ptr<arrow::RecordBatch>> &recordbatches) {
-
-  std::vector<arrow::Buffer *> buffers;
-
-  // Get pointers to all buffers of all recordbatches
-  for (const auto &rb : recordbatches) {
-    for (int c = 0; c < rb->num_columns(); c++) {
-      auto column = rb->column(c);
-      fletcher::FlattenArrayBuffers(&buffers, column);
-    }
-  }
-
-  FLETCHER_LOG(DEBUG, "RecordBatches have " + std::to_string(buffers.size()) + " Arrow Buffers.");
-  auto offsets = GetBufferOffsets(buffers);
-  FLETCHER_LOG(DEBUG, "Contiguous size: " + std::to_string(offsets.back()));
-
-  // Generate a warning when buffers get larger than a 42 kibibytes.
-  if (offsets.back() > 42 * 1024) {
-    FLETCHER_LOG(WARNING, "The RecordBatch you are trying to serialize is rather large (greater than 42 KiB)."
-                          "The SREC utility is meant for functional verification purposes in simulation only."
-                          "Consider making your RecordBatch smaller.");
-  }
-
-  unsigned int i = 0;
-  for (const auto &buf : buffers) {
-    fletcher::HexView hv(0);
-    hv.AddData(buf->data(), static_cast<size_t>(buf->size()));
-    FLETCHER_LOG(DEBUG, "Buffer " + std::to_string(i) + " : " + std::to_string(buf->size()) + " bytes. " +
-        "Start address: " + std::to_string(offsets[i]) + "\n" +
-        hv.ToString());
-    i++;
-  }
-
-  // Serialize all the buffers into one contiguous buffer.
-  auto srecbuf = (uint8_t *) calloc(1, offsets.back());
-  for (i = 0; i < buffers.size(); i++) {
-    memcpy(&srecbuf[offsets[i]], buffers[i]->data(), static_cast<size_t>(buffers[i]->size()));
-  }
-
-  srec::File sr(0, srecbuf, offsets.back());
-  if (output->good()) {
-    sr.write(output);
+  // Create the SREC file, start at 0
+  srec::File sr(0, srec_buffer, offset);
+  if (out->good()) {
+    sr.write(out);
   } else {
     FLETCHER_LOG(ERROR, "Output stream unavailable. SREC was not written.");
   }
-  free(srecbuf);
-  return offsets;
+
+  free(srec_buffer);
 }
 
 std::deque<std::shared_ptr<arrow::RecordBatch>> ReadRecordBatchesFromSREC(std::istream *input,

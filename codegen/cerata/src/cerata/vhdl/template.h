@@ -40,9 +40,9 @@ class Template {
   ///@brief Replace a template replacement string with some number.
   void Replace(const std::string &str, int with);
   ///@brief Replace a template replacement string with some other string.
-  void replace(const std::string &str, const std::string &with);
+  void Replace(const std::string &str, const std::string &with);
   ///@brief Return the file as a string.
-  std::string toString();
+  std::string ToString();
  private:
   std::map<std::string, std::vector<trloc>> replace_list_; ///< Map from a template replacement string to a vector of line numbers.
   std::vector<std::string> lines_; ///< Lines of the file.

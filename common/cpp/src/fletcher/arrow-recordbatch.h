@@ -18,32 +18,11 @@
 #include <memory>
 #include <string>
 #include <utility>
-
 #include <arrow/api.h>
 
+#include "fletcher/arrow-utils.h"
+
 namespace fletcher {
-
-struct FieldMetadata {
-  std::shared_ptr<arrow::DataType> type_;
-  int64_t length_;
-  int64_t null_count_;
-  FieldMetadata(std::shared_ptr<arrow::DataType> type, int64_t length, int64_t null_count)
-      : type_(std::move(type)), length_(length), null_count_(null_count) {}
-};
-
-struct BufferMetadata {
-  std::shared_ptr<arrow::Buffer> buffer_;
-  std::string desc_;
-  int level_ = 0;
-  BufferMetadata(std::shared_ptr<arrow::Buffer> buffer, std::string desc, int level)
-      : buffer_(std::move(buffer)), desc_(std::move(desc)), level_(level) {}
-};
-
-struct RecordBatchDescription {
-  std::vector<BufferMetadata> buffers;
-  std::vector<FieldMetadata> fields;
-  std::string ToString();
-};
 
 /**
  * @brief Class to analyze a RecordBatch.
@@ -59,11 +38,14 @@ class RecordBatchAnalyzer : public arrow::ArrayVisitor {
 
  protected:
   arrow::Status VisitArray(const arrow::Array &arr);
+
   template<typename ArrayType>
   arrow::Status VisitFixedWidth(const ArrayType &array) {
-    out_->buffers.emplace_back(array.values(), arr_name + " (values)", level);
+    std::shared_ptr<arrow::Buffer> buf = array.values();
+    out_->buffers.emplace_back(buf->data(), buf->size(), buf_name + " (values)", level);
     return arrow::Status::OK();
   }
+
   arrow::Status VisitBinary(const arrow::BinaryArray &array);
   arrow::Status Visit(const arrow::StringArray &array) override { return VisitBinary(array); }
   arrow::Status Visit(const arrow::BinaryArray &array) override { return VisitBinary(array); }
@@ -99,9 +81,10 @@ class RecordBatchAnalyzer : public arrow::ArrayVisitor {
   //arrow::Status Visit(const DictionaryArray& array) override {}
   //arrow::Status Visit(const ExtensionArray& array) override {}
 
-  std::string arr_name;
+  std::string buf_name;
   int level = 0;
   RecordBatchDescription *out_{};
+  std::shared_ptr<arrow::Field> field;
 };
 
 }

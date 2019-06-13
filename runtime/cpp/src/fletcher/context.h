@@ -29,53 +29,57 @@ namespace fletcher {
 
 using fletcher::Mode;
 
+enum class MemType {
+  /**
+   * @brief Apply the least effort to make the data available to the device.
+   *
+   * For platforms where the device may access host memory directly, ANY will not copy data to device on-board
+   * memory to make it available to the device. If the platform requires a copy to on-board memory, then this will
+   * behave the same as the CACHE option.
+   */
+      ANY,
+
+  /**
+   * @brief Cache the data to on-board memory of the device.
+   *
+   * If available, this forces the data to be copied to device on-board memory (e.g. some seperate DRAM chips sitting
+   * on the accelerator PCB next to the FPGA, but it could be HBM on top of the FPGA fabric in the same chip, or
+   * BRAM. This depends on the platform).
+   *
+   * Selecting CACHE may result in higher performance if there is data reuse by the kernel, but may result in lower
+   * performance if the data is not reused by the kernel (for example fully streamable kernels).
+   */
+      CACHE
+};
+
 /**
  * A buffer on the device
  */
 struct DeviceBuffer {
-  DeviceBuffer(const uint8_t *host_address, int64_t size, Mode access_mode)
-      : host_address(host_address), size(size), mode(access_mode) {}
   const uint8_t *host_address = nullptr;
   da_t device_address = D_NULLPTR;
   int64_t size = 0;
+
+  MemType memory = MemType::CACHE;
+  Mode mode = Mode::READ;
+
+  bool available_to_device = false;
   bool was_alloced = false;
-  Mode mode = Mode::READ;
+
+  DeviceBuffer() = default;
+
+  DeviceBuffer(const uint8_t *host_address, int64_t size, MemType type, Mode access_mode)
+      : host_address(host_address), size(size), memory(type), mode(access_mode) {}
 };
 
 /**
- * An Arrow Array and its corresponding buffers on a device.
- */
-struct DeviceArray {
-  typedef enum { PREPARE, CACHE } memory_t;
-  DeviceArray(std::shared_ptr<arrow::Array> array,
-              const std::shared_ptr<arrow::Field> &field,
-              Mode access_mode,
-              memory_t memory);
-  const std::shared_ptr<arrow::Array> host_array;
-  std::shared_ptr<arrow::Field> field;
-  std::vector<DeviceBuffer> buffers;
-  Mode mode = Mode::READ;
-  memory_t memory = CACHE;
-  bool on_device = false;
-};
-
-/**
- * @brief A Context for a platform where arrow::Arrays can be prepared for processing on a platform device.
+ * @brief A Context for a platform where a RecordBatches can be prepared for processing by the Kernel.
  */
 class Context {
  public:
 
   explicit Context(std::shared_ptr<Platform> platform) : platform_(std::move(platform)) {}
   ~Context();
-
-  /// The platform this context is running on.
-  std::shared_ptr<Platform> platform_;
-
-  /// The [arrow::RecordBatch]es that have been added to the context.
-  std::vector<std::shared_ptr<arrow::RecordBatch>> recordbatches_;
-
-  /// The [arrow::Array]s that have been added to the context.
-  std::vector<std::shared_ptr<DeviceArray>> device_arrays_;
 
   /**
    * @brief Create a new context on a specific platform.
@@ -86,92 +90,40 @@ class Context {
   static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform> &platform);
 
   /**
-   * @brief Enqueue an arrow::Array for usage preparation on the device.
-   *
-   * This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
-   * contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies
-   * between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the
-   * field argument, supplying the field from the schema that was used for hardware generation.
-   *
-   * @param array       The arrow::Array to queue
-   * @param access_mode Whether to read or write from/to this array.
-   * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
-   * @return            Status::OK() if successful, Status::ERROR() otherwise.
-   */
-  [[deprecated]] Status QueueArray(const std::shared_ptr<arrow::Array> &array, Mode access_mode, bool cache = false) {
-    return QueueArray(array, nullptr, access_mode, cache);
-  }
-
-  /**
-   * @brief Enqueue an arrow::Array for usage preparation on the device.
-   *
-   * If @param field is nullptr, any null bitmap buffers that are present in the structure due to the specfic
-   * Arrow implementation will also be included. This may cause a discrepancy between the hardware implementation
-   * and the run-time. It is therefore always recommended to supply the field.
-   *
-   * @param array       The arrow::Array to queue
-   * @param field       Potential arrow::Schema field that corresponds to this array.
-   * @param access_mode Whether to read or write from/to this array.
-   * @param cache       Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
-   * @return            Status::OK() if successful, Status::ERROR() otherwise.
-   */
-  Status QueueArray(const std::shared_ptr<arrow::Array> &array,
-                    const std::shared_ptr<arrow::Field> &field,
-                    Mode access_mode,
-                    bool cache = false);
-
-  /**
-   * @brief Enqueue an arrow::RecordBatch for usage preparation on the device.
+   * @brief Enqueue an arrow::RecordBatch for usage on the device.
    *
    * This function utilizes Arrow metadata in the schema of the RecordBatch to determine whether or not some field
    * (i.e. some Array in the internal structure) will be used on the device.
    *
    * @param record_batch  The arrow::RecordBatch to queue
-   * @param cache         Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
+   * @param mem_type      Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
    * @return              Status::OK() if successful, Status::ERROR() otherwise.
    */
-  Status QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, bool cache = false);
+  Status QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch,
+                          MemType mem_type = MemType::ANY);
 
   /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
-  size_t GetQueueSize();
+  size_t GetQueueSize() const;
 
   /// @brief Enable the usage of the enqueued buffers by the device
   Status Enable();
 
   /// @brief Return the number of buffers in this context.
-  uint64_t num_buffers();
+  uint64_t num_buffers() const;
 
- private:
+  std::shared_ptr<Platform> platform() const { return platform_; }
 
-  bool written = false;
+  DeviceBuffer device_buffer(size_t i) const { return device_buffers_[i]; }
 
-  /**
- * @brief Prepare all buffers of an Arrow Array to be used within this context.
- *
- * May or may not cause a copy to the platform device on-board memory, depending on the capabilities of the platform.
- *
- * @param array         The arrow::Array to prepare.
- * @param access_mode Whether to read or write from/to this array.
- * @param field         Potential schema field that corresponds to this array.
- * @return              Status::OK() if successful, Status::ERROR() otherwise.
- */
-  Status PrepareArray(const std::shared_ptr<arrow::Array> &array,
-                      Mode access_mode,
-                      const std::shared_ptr<arrow::Field> &field = nullptr);
-
-  /**
-   * @brief Explicitly cache the buffers of an Arrow Array to the platform device on-board memory.
-   *
-   * Always creates a copy to the platform device on-board memory.
-   *
-   * @param array       The arrow::Array to cache.
-   * @param access_mode Whether to read or write from/to this array.
-   * @param field       Potential schema field that corresponds to this array.
-   * @return            Status::OK() if successful, Status::ERROR() otherwise.
-   */
-  Status CacheArray(const std::shared_ptr<arrow::Array> &array,
-                    Mode access_mode,
-                    const std::shared_ptr<arrow::Field> &field = nullptr);
+ protected:
+  bool written_ = false;
+  /// The platform this context is running on.
+  std::shared_ptr<Platform> platform_;
+  std::vector<std::shared_ptr<arrow::RecordBatch>> host_batches_;
+  std::vector<RecordBatchDescription> host_batch_desc_;
+  std::vector<MemType> host_batch_memtype_;
+  std::vector<std::shared_ptr<arrow::Buffer>> device_batch_desc_;
+  std::vector<DeviceBuffer> device_buffers_;
 };
 
 }  // namespace fletcher

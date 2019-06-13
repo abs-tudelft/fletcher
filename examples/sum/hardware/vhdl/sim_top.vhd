@@ -19,8 +19,8 @@ use ieee.std_logic_misc.all;
 
 library work;
 use work.Interconnect_pkg.all;
-use work.UtilStr_pkg.all;
-use work.UtilConv_pkg.all;
+--use work.Utils.all; TODO refactor
+--use work.SimUtils.all; TODO refactor
 
 entity sim_top is
   generic (
@@ -30,12 +30,12 @@ entity sim_top is
     TAG_WIDTH                   : natural := 1;
 
     -- Host bus properties
-    BUS_ADDR_WIDTH              : natural := ${BUS_ADDR_WIDTH};
-    BUS_DATA_WIDTH              : natural := ${BUS_DATA_WIDTH};
-    BUS_STROBE_WIDTH            : natural := ${BUS_STROBE_WIDTH};
-    BUS_LEN_WIDTH               : natural := ${BUS_LEN_WIDTH};
-    BUS_BURST_MAX_LEN           : natural := ${BUS_BURST_MAX_LEN};
-    BUS_BURST_STEP_LEN          : natural := ${BUS_BURST_STEP_LEN};
+    BUS_ADDR_WIDTH              : natural := 64;
+    BUS_DATA_WIDTH              : natural := 512;
+    BUS_STROBE_WIDTH            : natural := 64;
+    BUS_LEN_WIDTH               : natural := 8;
+    BUS_BURST_MAX_LEN           : natural := 64;
+    BUS_BURST_STEP_LEN          : natural := 1;
 
     -- MMIO bus properties
     SLV_BUS_ADDR_WIDTH          : natural := 32;
@@ -48,7 +48,7 @@ architecture Behavorial of sim_top is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  component ${FLETCHER_WRAPPER_NAME} is
+  component Mantle is
     generic(
       BUS_ADDR_WIDTH            : natural
     );
@@ -57,8 +57,16 @@ architecture Behavorial of sim_top is
       bcd_reset                 : in  std_logic;
       kcd_clk                   : in  std_logic;
       kcd_reset                 : in  std_logic;
-${MST_RREQ_DECLARE}
-${MST_WREQ_DECLARE}
+      mst_rreq_valid            : out std_logic;
+      mst_rreq_ready            : in  std_logic;
+      mst_rreq_addr             : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      mst_rreq_len              : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      mst_rdat_valid            : in  std_logic;
+      mst_rdat_ready            : out std_logic;
+      mst_rdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      mst_rdat_last             : in  std_logic;
+
+
       mmio_awvalid              : in  std_logic;
       mmio_awready              : out std_logic;
       mmio_awaddr               : in  std_logic_vector(31 downto 0);
@@ -295,9 +303,13 @@ begin
     mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink);
 
     -- 2. Write addresses of the arrow buffers in the SREC file.
-${SREC_BUFFER_ADDRESSES}
+    mmio_write(6, X"00000000", mmio_source, mmio_sink); -- int64 (values)
+    mmio_write(7, X"00000000",  mmio_source, mmio_sink);
+
     -- 3. Write recordbatch bounds.
-${SREC_FIRSTLAST_INDICES}
+    mmio_write(4, X"00000000", mmio_source, mmio_sink);
+    mmio_write(5, X"00000080",  mmio_source, mmio_sink);
+
     -- 4. Write any kernel-specific registers.
     -- <kernel specific registers reading/writing goes here>
 
@@ -322,9 +334,9 @@ ${SREC_FIRSTLAST_INDICES}
 
     -- 7. Read return register.
     mmio_read(REG_RETURN0, read_data, mmio_source, mmio_sink);
-    println("Return register 0: " & slvToHex(read_data));
+    println("Return register 0: " & ii(u(read_data)));
     mmio_read(REG_RETURN1, read_data, mmio_source, mmio_sink);
-    println("Return register 1: " & slvToHex(read_data));
+    println("Return register 1: " & ii(u(read_data)));
 
     -- 8. Finish and stop simulation.
     report "Stimuli done.";
@@ -358,14 +370,37 @@ ${SREC_FIRSTLAST_INDICES}
     wait;
   end process;
 
-${BUS_READ_SLAVE_MOCK}
-${BUS_WRITE_SLAVE_MOCK}
+  rmem_inst: BusReadSlaveMock
+  generic map (
+    BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
+    BUS_LEN_WIDTH               => BUS_LEN_WIDTH,
+    BUS_DATA_WIDTH              => BUS_DATA_WIDTH,
+    SEED                        => 1337,
+    RANDOM_REQUEST_TIMING       => false,
+    RANDOM_RESPONSE_TIMING      => false,
+    SREC_FILE                   => "output/recordbatch.srec"
+  )
+  port map (
+    clk                         => bcd_clk,
+    reset                       => bcd_reset,
+    rreq_valid                  => bus_rreq_valid,
+    rreq_ready                  => bus_rreq_ready,
+    rreq_addr                   => bus_rreq_addr,
+    rreq_len                    => bus_rreq_len,
+    rdat_valid                  => bus_rdat_valid,
+    rdat_ready                  => bus_rdat_ready,
+    rdat_data                   => bus_rdat_data,
+    rdat_last                   => bus_rdat_last
+  );
+
+
+
 
 
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
-  ${FLETCHER_WRAPPER_INST_NAME} : ${FLETCHER_WRAPPER_NAME}
+  Mantle_inst : Mantle
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH
     )
@@ -374,8 +409,16 @@ ${BUS_WRITE_SLAVE_MOCK}
       kcd_reset                 => kcd_reset,
       bcd_clk                   => bcd_clk,
       bcd_reset                 => bcd_reset,
-${MST_RREQ_INSTANTIATE}
-${MST_WREQ_INSTANTIATE}
+      mst_rreq_valid            => bus_rreq_valid,
+      mst_rreq_ready            => bus_rreq_ready,
+      mst_rreq_addr             => bus_rreq_addr,
+      mst_rreq_len              => bus_rreq_len,
+      mst_rdat_valid            => bus_rdat_valid,
+      mst_rdat_ready            => bus_rdat_ready,
+      mst_rdat_data             => bus_rdat_data,
+      mst_rdat_last             => bus_rdat_last,
+
+
       mmio_awvalid              => mmio_awvalid,
       mmio_awready              => mmio_awready,
       mmio_awaddr               => mmio_awaddr,

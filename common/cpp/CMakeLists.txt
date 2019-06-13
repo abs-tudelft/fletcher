@@ -32,14 +32,16 @@ if (NOT TARGET fletcher-common)
   set(COMMON_SOURCES
       src/fletcher/hex-view.cc
       src/fletcher/arrow-utils.cc
-      src/fletcher/arrow-recordbatch.cc)
+      src/fletcher/arrow-recordbatch.cc
+      src/fletcher/arrow-schema.cc)
 
   set(COMMON_HEADERS
-      src/fletcher/hex-view.h
-      src/fletcher/timer.h
       src/fletcher/logging.h
+      src/fletcher/timer.h
+      src/fletcher/hex-view.h
       src/fletcher/arrow-utils.h
       src/fletcher/arrow-recordbatch.h
+      src/fletcher/arrow-schema.h
       src/fletcher/common.h)
 
   include_directories(src)
@@ -73,13 +75,14 @@ if (NOT TARGET fletcher-common)
     set(TEST_GEN_HEADERS
         test/fletcher/test_generate.h
         test/fletcher/test_schemas.h
-        test/fletcher/test_recordbatches.h)
+        test/fletcher/test_recordbatches.h
+        test/fletcher/test_visitors.h)
       
     include_directories(test)
 
     SET(TEST_GEN_ALL ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES})
 
-    # Expose example generators as statis library
+    # Expose example generators as static library
     add_library(${FLETCHER_COMMON}-examples STATIC ${COMMON_ALL} ${TEST_GEN_ALL})
 
     # Expose generation functions as an executable with main function

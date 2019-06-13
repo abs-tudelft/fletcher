@@ -14,6 +14,20 @@
 
 import pyarrow as pa
 
+cdef class DeviceBuffer():
+    """Python wrapper for Fletcher DeviceBuffer."""
+    
+    # The C++ device buffer this PyObject holds
+    cdef CDeviceBuffer c_device_buffer 
+
+    def __cinit__(self):
+        self.c_device_buffer = CDeviceBuffer()
+        
+    # Construct from an existing CDeviceBuffer
+    cdef from_reference(self, CDeviceBuffer buf):
+        self.c_device_buffer = buf
+    
+    
 cdef class Context():
     """Python wrapper for Fletcher Context.
 
@@ -30,47 +44,26 @@ cdef class Context():
     cdef from_pointer(self, shared_ptr[CContext] context):
         self.context = context
 
-    def queue_array(self, array, field=None, mode = "read", cache=False):
-        """Enqueue an arrow::Array for usage preparation on the device.
-
-        This function enqueues any buffers in the underlying structure of the Array. If hardware was generated to not
-        contain validity bitmap support, while arrow implementation provides a validity bitmap anyway, discrepancies
-        between device hardware and host software may occur. Therefore, it is recommended to use queueArray with the
-        field argument.
-
-        Args:
-            array: Arrow Array to queue
-            mode ("read" or "write"): Whether to read or write from/to this array. Defaults to read.
-            field: Arrow Schema corresponding to this array.
-            cache (bool): Force caching; i.e. the Array is guaranteed to be copied to on-board memory.
-
-        """
-        cdef Mode queue_mode
-
-        if mode == "read":
-            queue_mode = Mode.READ
-        elif mode == "write":
-            queue_mode = Mode.WRITE
-        else:
-            raise ValueError("mode argument can be only 'read' or 'write'")
-
-        if not field:
-            check_fletcher_status(self.context.get().QueueArray(pyarrow_unwrap_array(array), queue_mode, cache))
-        else:
-            check_fletcher_status(self.context.get().QueueArray(pyarrow_unwrap_array(array),
-                                                                pyarrow_unwrap_field(field),
-                                                                queue_mode,
-                                                                cache))
-
-    def queue_record_batch(self, record_batch, cache=False):
+    def queue_record_batch(self, record_batch, mem_type='any'):
         """Enqueue an arrow::RecordBatch for usage preparation on the device.
 
         Args:
-            record_batch: Arrow RecordBatch to queue
-            cache (bool): Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
+            record_batch : Arrow RecordBatch to queue
+            memtype (str): Memory type: - 'any' results in least effort to make data available to FPGA (depending on the platform implementation).
+                                        - 'cache' force copy to accelerator on-board DRAM memory, if available.
 
         """
-        check_fletcher_status(self.context.get().QueueRecordBatch(pyarrow_unwrap_batch(record_batch), cache))
+        
+        cdef MemType queue_mem_type
+
+        if mem_type == "any":
+            queue_mem_type = MemType.ANY
+        elif mem_type == "cache":
+            queue_mem_type = MemType.CACHE
+        else:
+            raise ValueError("mem_type argument can be only 'any' or 'cache'")
+        
+        check_fletcher_status(self.context.get().QueueRecordBatch(pyarrow_unwrap_batch(record_batch), queue_mem_type))
 
     def get_queue_size(self):
         """Obtain the size (in bytes) of all buffers currently enqueued.
@@ -90,18 +83,18 @@ cdef class Context():
         """
         return self.context.get().num_buffers()
 
-    def get_buffer_device_address(self, int array_index, int buffer_index):
-        """Get device address of a buffer
+    def get_device_buffer(self, size_t buffer_index):
+        """Get a list of device buffers
 
         Args:
-            array_index: Index of the device array
-            buffer_index: Index of the buffer in the device array
+            buffer_index: Index of the buffer in this context.
 
         Returns:
 
         """
-
-        return self.context.get().device_arrays_[array_index].get().buffers[buffer_index].device_address
+        cdef DeviceBuffer result = Context.__new__(Context)
+        result.from_reference(self.context.get().device_buffer(buffer_index))
+        return result
 
     def enable(self):
         check_fletcher_status(self.context.get().Enable())

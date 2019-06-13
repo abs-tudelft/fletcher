@@ -37,7 +37,10 @@ struct Mantle : Component {
   static std::shared_ptr<Mantle> Make(const std::shared_ptr<SchemaSet> &schema_set);
 
   /// @brief Return all RecordBatchReader components.
-  std::deque<std::shared_ptr<RecordBatch>> recordbatch_components();
+  std::deque<std::shared_ptr<RecordBatch>> recordbatch_components() const;
+
+  /// @brief Return the SchemaSet on which this Mantle is based.
+  std::shared_ptr<SchemaSet> schema_set() const { return schema_set_; }
 
   /// The Kernel to be instantiated by this Mantle.
   std::shared_ptr<Kernel> kernel_;
@@ -46,7 +49,7 @@ struct Mantle : Component {
   /// The schema set on which this Mantle is based.
   std::shared_ptr<SchemaSet> schema_set_;
   /// The bus arbiters instantiated by this mantle for a specific bus specification.
-  std::unordered_map<BusSpec, Instance*> arbiters_;
+  std::unordered_map<BusSpec, Instance *> arbiters_;
   /// The RecordBatch instances.
   std::vector<Instance *> recordbatch_instances;
 };

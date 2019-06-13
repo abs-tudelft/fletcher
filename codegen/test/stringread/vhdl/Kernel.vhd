@@ -48,14 +48,14 @@ entity Kernel is
     StringRead_Name_ready        : out std_logic;
     StringRead_Name_dvalid       : in  std_logic;
     StringRead_Name_last         : in  std_logic;
-    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
     StringRead_Name_length       : in  std_logic_vector(31 downto 0);
+    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
     StringRead_Name_chars_valid  : in  std_logic;
     StringRead_Name_chars_ready  : out std_logic;
     StringRead_Name_chars_dvalid : in  std_logic;
     StringRead_Name_chars_last   : in  std_logic;
-    StringRead_Name_chars_count  : in  std_logic_vector(2 downto 0);
-    StringRead_Name_chars_data   : in  std_logic_vector(31 downto 0);
+    StringRead_Name_chars_data   : in  std_logic_vector(7 downto 0);
+    StringRead_Name_chars_count  : in  std_logic_vector(0 downto 0);
     StringRead_Name_cmd_valid    : out std_logic;
     StringRead_Name_cmd_ready    : in  std_logic;
     StringRead_Name_cmd_firstIdx : out std_logic_vector(31 downto 0);

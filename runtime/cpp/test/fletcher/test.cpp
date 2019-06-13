@@ -27,7 +27,7 @@
 
 TEST(Platform, NoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
-  ASSERT_EQ(fletcher::Platform::Make("DEADBEEF", &platform).val, fletcher::Status::NO_PLATFORM().val);
+  ASSERT_EQ(fletcher::Platform::Make("DEADBEEF", &platform), fletcher::Status::NO_PLATFORM());
 }
 
 TEST(Platform, EchoPlatform) {
@@ -119,18 +119,13 @@ TEST(Context, ContextFunctions) {
 
   auto rb = arrow::RecordBatch::Make(schema, 4, {a, b, c, d});
 
-  // Context stuff:
+  // Test context functions
   std::shared_ptr<fletcher::Context> context;
   ASSERT_TRUE(fletcher::Context::Make(&context, platform).ok());
-
   ASSERT_TRUE(context->QueueRecordBatch(rb).ok());
-
+  ASSERT_EQ(context->GetQueueSize(), 168);
   ASSERT_EQ(context->num_buffers(), 8);
-
-  // Write buffers
   ASSERT_TRUE(context->Enable().ok());
-
-  // Terminate:
   ASSERT_TRUE(platform->Terminate().ok());
 }
 

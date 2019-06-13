@@ -60,13 +60,13 @@ struct FieldPort : public Port {
             Port::Dir dir)
       : Port(std::move(name), std::move(type), dir), function_(function), field_(std::move(field)) {}
 
-  static std::shared_ptr<FieldPort> MakeArrowPort(const std::shared_ptr<FletcherSchema> &fs,
+  static std::shared_ptr<FieldPort> MakeArrowPort(const FletcherSchema &fs,
                                                   const std::shared_ptr<arrow::Field> &field,
                                                   Mode mode,
                                                   bool invert);
-  static std::shared_ptr<FieldPort> MakeCommandPort(const std::shared_ptr<FletcherSchema> &fs,
+  static std::shared_ptr<FieldPort> MakeCommandPort(const FletcherSchema &fs,
                                                     const std::shared_ptr<arrow::Field> &field);
-  static std::shared_ptr<FieldPort> MakeUnlockPort(const std::shared_ptr<FletcherSchema> &fs,
+  static std::shared_ptr<FieldPort> MakeUnlockPort(const FletcherSchema &fs,
                                                    const std::shared_ptr<arrow::Field> &field);
 
   std::shared_ptr<Object> Copy() const override;
@@ -95,15 +95,14 @@ struct RecordBatch : public Component {
   /// @brief Obtain all ports derived from an Arrow field with a specific function.
   std::deque<std::shared_ptr<FieldPort>> GetFieldPorts(const std::optional<FieldPort::Function> &function = {}) const;
   /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
-  std::shared_ptr<FieldPort> GetArrowPort(const std::shared_ptr<arrow::Field> &field) const;
+  std::shared_ptr<FieldPort> GetArrowPort(const arrow::Field &field) const;
 
   std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; };
   std::deque<Instance *> reader_instances() const { return array_instances_; };
   std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
  protected:
   /// @brief Adds all ArrayReaders/Writers, unconcatenates ports and connects it to the top-level of this component.
-  void AddArrays(const std::shared_ptr<FletcherSchema> &as);
-
+  void AddArrays(const FletcherSchema &as);
   /// Fletcher schema implemented by this RecordBatch(Reader/Writer)
   std::shared_ptr<FletcherSchema> fletcher_schema_;
   /// Array(Readers/Writers) instantiated
