@@ -1,10 +1,55 @@
-# Getting Started: Simple Summing Example
+# Getting Started: Simple Column Sum Example
 
-This is a simple example with the goal of getting first-time users of
-Fletcher started with a project. The core of this example is an
-accumulator that sums all integers in a given Arrow Array.
+The main goal of this tutorial is to learn the basics of working with the Fletcher framework.
 
-Be sure to read the sources as well, they contain useful hints.
+To this end, let's assume we want to create a very simple FPGA accelerator design that just sums a column of integers 
+in a table, or in Apache Arrow terminology: sums an array (column) of integers of some recordbatch (tabular data 
+structure).
+
+Schematically, our desired functionality would look as follows:
+
+![](doc/sum_top.svg)
+
+We've included some dummy data in our ExampleBatch "table" that we'll also use throughout this example. 
+
+The next few steps will take us through how we can use Fletcher to realize the functionality shown above.
+
+[1. Generate a Schema](#generate-a-schema) to represent the type of RecordBatch the kernel must operate on.
+
+[2. Generate a RecordBatch](#generate-a-recordbatch) with some dummy data for simulation.
+
+[3. Run Fletchgen](#run-fletchgen) to create a design and kernel template from the Schema and RecordBatch.
+
+[4. Implement the kernel](#implement-the-kernel).
+
+[5. Simulate the design.](#simulate-the-design)
+
+# Generate a Schema
+
+Fletchgen is the design generator tool of Fletcher. It requires an Arrow *schema* as input. A schema is nothing more 
+than a description of the type of data that you can find in an Arrow *recordbatch*. A recordbatch is a tabular 
+datastructure with columns. These columns are called Arrow *arrays*. Don't confuse them with C-like arrays! 
+They can be much more complex than that!
+
+When we look at the figure above, we see that our computational kernel (the Sum kernel) will just take one column from
+one RecordBatch, and spit out the sum of all the numbers in the column. 
+
+We observe that name of the column with the numbers is `number`. Suppose we'll choose the numbers to be of Arrow type 
+`int64`. We may now describe an Arrow *field* of the schema that corresponds to our `number` column. 
+
+There is one more thing that Arrow needs to know about the field; whether or not it's *nullable*, meaning that the 
+number can also be invalid (for example, there was a corrupted sample in some measurement).  For now, we'll assume that
+the numbers are not nullable (i.e. they are always valid).
+
+We could use a little Python script to generate the field.
+[Continue the tutorial by checking out this iPython Notebook.](hardware/generate-schema.ipynb)
+
+# Generate a RecordBatch
+# Run Fletchgen
+# Implement the kernel
+# Simulate the design
+
+
 
 ## Generating the hardware skeleton files
 
