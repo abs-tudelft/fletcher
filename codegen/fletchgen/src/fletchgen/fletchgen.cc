@@ -33,7 +33,10 @@ int main(int argc, char **argv) {
 
   // Parse options
   auto options = std::make_shared<fletchgen::Options>();
-  fletchgen::Options::Parse(options.get(), argc, argv);
+  if (!fletchgen::Options::Parse(options.get(), argc, argv)) {
+    FLETCHER_LOG(ERROR, "Error parsing arguments. Exiting Fletchgen.");
+    return -1;
+  }
 
   // The resulting design.
   fletchgen::Design design;
@@ -69,7 +72,7 @@ int main(int argc, char **argv) {
   }
 
   // Generate simulation top level
-  if (options->sim_top) {
+  if (options->MustGenerateDesign() && options->sim_top) {
     std::ofstream sim_file;
     std::string sim_file_path = "vhdl/sim_top.vhd";
     if (cerata::FileExists(sim_file_path) && !options->overwrite) {

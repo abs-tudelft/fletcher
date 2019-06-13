@@ -60,9 +60,9 @@ struct Options {
    * @param options A pointer to the Options object to parse into
    * @param argc    Argument count
    * @param argv    Argument values
-   * @return        0 if successful, something else otherwise.
+   * @return        True if successful, false otherwise.
    */
-  static int Parse(Options *options, int argc, char **argv);
+  static bool Parse(Options *options, int argc, char **argv);
 
   // Option checkers:
 
