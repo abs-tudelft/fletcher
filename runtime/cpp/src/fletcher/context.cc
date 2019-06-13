@@ -112,8 +112,10 @@ uint64_t Context::num_buffers() const {
 
 size_t Context::GetQueueSize() const {
   size_t size = 0;
-  for (const auto &buf : device_buffers_) {
-    size += buf.size;
+  for (const auto &desc : host_batch_desc_) {
+    for (const auto &buf : desc.buffers) {
+      size += buf.size_;
+    }
   }
   return size;
 }
