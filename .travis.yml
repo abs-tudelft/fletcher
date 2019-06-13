@@ -37,8 +37,8 @@ matrix:
     # runtime
     - name: "[C++] Runtime"
       env: SOURCE_PATH=runtime/cpp FLETCHER_TESTS=1
-    - name: "[Python] pyfletcher"
-      env: FLETCHER_CPP=1 FLETCHER_ECHO=1 FLETCHER_PYTHON=1
+    # - name: "[Python] pyfletcher"
+    #   env: FLETCHER_CPP=1 FLETCHER_ECHO=1 FLETCHER_PYTHON=1
     # codegen
     - name: "[C++] Fletchgen"
       env: SOURCE_PATH=codegen/fletchgen
