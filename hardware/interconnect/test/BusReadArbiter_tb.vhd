@@ -17,9 +17,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Interconnect.all;
+use work.Stream_pkg.all;
+use work.Interconnect_pkg.all;
 
 entity BusReadArbiter_tb is
 end BusReadArbiter_tb;
@@ -174,23 +173,23 @@ begin
       clk                       => clk,
       reset                     => reset,
 
-      mst_rreq_valid            => ma2b_rreq_valid,
-      mst_rreq_ready            => ma2b_rreq_ready,
-      mst_rreq_addr             => ma2b_rreq_addr,
-      mst_rreq_len              => ma2b_rreq_len,
-      mst_rdat_valid            => ma2b_rdat_valid,
-      mst_rdat_ready            => ma2b_rdat_ready,
-      mst_rdat_data             => ma2b_rdat_data,
-      mst_rdat_last             => ma2b_rdat_last,
+      slv_rreq_valid            => ma2b_rreq_valid,
+      slv_rreq_ready            => ma2b_rreq_ready,
+      slv_rreq_addr             => ma2b_rreq_addr,
+      slv_rreq_len              => ma2b_rreq_len,
+      slv_rdat_valid            => ma2b_rdat_valid,
+      slv_rdat_ready            => ma2b_rdat_ready,
+      slv_rdat_data             => ma2b_rdat_data,
+      slv_rdat_last             => ma2b_rdat_last,
 
-      slv_rreq_valid            => ba2a_rreq_valid,
-      slv_rreq_ready            => ba2a_rreq_ready,
-      slv_rreq_addr             => ba2a_rreq_addr,
-      slv_rreq_len              => ba2a_rreq_len,
-      slv_rdat_valid            => ba2a_rdat_valid,
-      slv_rdat_ready            => ba2a_rdat_ready,
-      slv_rdat_data             => ba2a_rdat_data,
-      slv_rdat_last             => ba2a_rdat_last
+      mst_rreq_valid            => ba2a_rreq_valid,
+      mst_rreq_ready            => ba2a_rreq_ready,
+      mst_rreq_addr             => ba2a_rreq_addr,
+      mst_rreq_len              => ba2a_rreq_len,
+      mst_rdat_valid            => ba2a_rdat_valid,
+      mst_rdat_ready            => ba2a_rdat_ready,
+      mst_rdat_data             => ba2a_rdat_data,
+      mst_rdat_last             => ba2a_rdat_last
     );
 
   mst_b_inst: BusReadMasterMock
@@ -284,23 +283,23 @@ begin
       clk                       => clk,
       reset                     => reset,
 
-      mst_rreq_valid            => mc2b_rreq_valid,
-      mst_rreq_ready            => mc2b_rreq_ready,
-      mst_rreq_addr             => mc2b_rreq_addr,
-      mst_rreq_len              => mc2b_rreq_len,
-      mst_rdat_valid            => mc2b_rdat_valid,
-      mst_rdat_ready            => mc2b_rdat_ready,
-      mst_rdat_data             => mc2b_rdat_data,
-      mst_rdat_last             => mc2b_rdat_last,
+      slv_rreq_valid            => mc2b_rreq_valid,
+      slv_rreq_ready            => mc2b_rreq_ready,
+      slv_rreq_addr             => mc2b_rreq_addr,
+      slv_rreq_len              => mc2b_rreq_len,
+      slv_rdat_valid            => mc2b_rdat_valid,
+      slv_rdat_ready            => mc2b_rdat_ready,
+      slv_rdat_data             => mc2b_rdat_data,
+      slv_rdat_last             => mc2b_rdat_last,
 
-      slv_rreq_valid            => bc2a_rreq_valid,
-      slv_rreq_ready            => bc2a_rreq_ready,
-      slv_rreq_addr             => bc2a_rreq_addr,
-      slv_rreq_len              => bc2a_rreq_len,
-      slv_rdat_valid            => bc2a_rdat_valid,
-      slv_rdat_ready            => bc2a_rdat_ready,
-      slv_rdat_data             => bc2a_rdat_data,
-      slv_rdat_last             => bc2a_rdat_last
+      mst_rreq_valid            => bc2a_rreq_valid,
+      mst_rreq_ready            => bc2a_rreq_ready,
+      mst_rreq_addr             => bc2a_rreq_addr,
+      mst_rreq_len              => bc2a_rreq_len,
+      mst_rdat_valid            => bc2a_rdat_valid,
+      mst_rdat_ready            => bc2a_rdat_ready,
+      mst_rdat_data             => bc2a_rdat_data,
+      mst_rdat_last             => bc2a_rdat_last
     );
 
   uut: BusReadArbiter

@@ -37,22 +37,21 @@ int main(int argc, char **argv) {
 
   // The resulting design.
   fletchgen::Design design;
-  // Buffer offsets in a potential SREC memory contents for memory model in simulation
-  std::vector<uint64_t> srec_buf_offsets;
-  // First and last indices of every RecordBatch.
-  std::vector<std::pair<uint32_t, uint32_t>> first_last_indices;
+  // Potential RecordBatch descriptors for simulation models.
+  std::vector<fletcher::RecordBatchDescription> srec_batch_desc;
 
   // Generate designs in Cerata
   if (options->MustGenerateDesign()) {
     design = fletchgen::Design::GenerateFrom(options);
   } else {
-    return -1;
+    FLETCHER_LOG(ERROR, "No schemas detected. Cannot generate design.");
   }
 
   // Generate SREC output
   if (options->MustGenerateSREC()) {
     FLETCHER_LOG(INFO, "Generating SREC output.");
-    srec_buf_offsets = fletchgen::srec::GenerateSREC(design.options, design.schemas, &first_last_indices);
+    auto srec_out = std::ofstream(options->srec_out_path);
+    fletchgen::srec::GenerateReadSREC(design.batch_desc, &srec_batch_desc, &srec_out, 64);
   }
 
   // Generate VHDL output
@@ -71,13 +70,17 @@ int main(int argc, char **argv) {
 
   // Generate simulation top level
   if (options->sim_top) {
-    auto sim_file = std::ofstream("vhdl/sim_top.vhd");
+    std::ofstream sim_file;
+    std::string sim_file_path = "vhdl/sim_top.vhd";
+    if (cerata::FileExists(sim_file_path) && !options->overwrite) {
+      sim_file_path += 't';
+    }
+    sim_file = std::ofstream(sim_file_path);
     fletchgen::top::GenerateSimTop(design.mantle,
                                    {&sim_file},
                                    options->srec_out_path,
-                                   srec_buf_offsets,
                                    options->srec_sim_dump,
-                                   first_last_indices);
+                                   srec_batch_desc);
   }
 
   // Generate Vivado HLS template

@@ -20,6 +20,10 @@
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"
 
+// Define extensions for files
+#define SCH_FILE(X) std::string("schemas/") + X + ".as"
+#define RB_FILE(X) std::string("recordbatches/") + X + ".rb"
+
 namespace fletcher {
 
 void generateDebugFiles() {
@@ -38,53 +42,66 @@ void generateDebugFiles() {
 
   /* Primitive */
   schema = fletcher::GetPrimReadSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/primread.fbs");
-  recordbatch = fletcher::getInt8RB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/primread.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("primread"), *schema);
+  recordbatch = fletcher::GetIntRB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("primread"), {recordbatch});
 
   schema = fletcher::GetPrimWriteSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/primwrite.fbs");
+  fletcher::WriteSchemaToFile(SCH_FILE("primwrite"), *schema);
 
   /* String */
   schema = fletcher::GetStringReadSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/stringread.fbs");
-  recordbatch = fletcher::getStringRB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/names.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("stringread"), *schema);
+  recordbatch = fletcher::GetStringRB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("names"), {recordbatch});
 
   schema = fletcher::GetStringWriteSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/stringwrite.fbs");
+  fletcher::WriteSchemaToFile(SCH_FILE("stringwrite"), *schema);
 
   /* List of UInt8 */
   schema = fletcher::GetListUint8Schema();
-  fletcher::WriteSchemaToFile(schema, "schemas/listuint8.fbs");
-  recordbatch = fletcher::getListUint8RB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/listuint8.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("listuint8"), *schema);
+  recordbatch = fletcher::GetListUint8RB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("listuint8"), {recordbatch});
 
   /* List of Float64 */
   schema = fletcher::GetListFloatSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/listfloat64.fbs");
-  recordbatch = fletcher::getFloat64ListRB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/floatlist.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("listfloat64"), *schema);
+  recordbatch = fletcher::GetFloat64RB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("floatlist"), {recordbatch});
 
   /* List of Int64 (length 2) */
   schema = fletcher::GetListIntSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/listint64short.fbs");
-  recordbatch = fletcher::getInt64ListRB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/intlist.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("listint64short"), *schema);
+  recordbatch = fletcher::GetInt64RB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("intlist"), {recordbatch});
 
   /* List of Int64 (length 8) */
   schema = fletcher::GetListIntSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/listint64long.fbs");
-  recordbatch = fletcher::getInt64ListWideRB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/intlistwide.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("listint64long"), *schema);
+  recordbatch = fletcher::GetInt64ListWideRB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("intlistwide"), {recordbatch});
 
   /* Filter example */
   schema = fletcher::GetFilterReadSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/filter_read.fbs");
+  fletcher::WriteSchemaToFile(SCH_FILE("filter_read"), *schema);
   schema = fletcher::GetFilterWriteSchema();
-  fletcher::WriteSchemaToFile(schema, "schemas/filter_write.fbs");
-  recordbatch = fletcher::getFilterRB();
-  fletcher::WriteRecordBatchToFile(recordbatch, "recordbatches/filter.rb");
+  fletcher::WriteSchemaToFile(SCH_FILE("filter_write"), *schema);
+  recordbatch = fletcher::GetFilterRB();
+  fletcher::WriteRecordBatchesToFile(RB_FILE("filter"), {recordbatch});
+
+  /* SodaBeer example */
+  auto hobbits_sch = fletcher::GetSodaBeerSchema("Hobbits", fletcher::Mode::READ);
+  auto soda_sch = fletcher::GetSodaBeerSchema("Soda", fletcher::Mode::WRITE);
+  auto beer_sch = fletcher::GetSodaBeerSchema("Beer", fletcher::Mode::WRITE);
+  std::vector<std::string> hobbit_names = {"Bilbo", "Sam", "Rosie", "Frodo", "Elanor", "Lobelia", "Merry", "Pippin"};
+  std::vector<uint8_t> hobbit_ages = {111, 35, 32, 33, 1, 80, 37, 29};
+  auto hobbits_rb = fletcher::GetSodaBeerRB(hobbits_sch, hobbit_names, hobbit_ages);
+
+  fletcher::WriteSchemaToFile(SCH_FILE("Hobbits"), *hobbits_sch);
+  fletcher::WriteSchemaToFile(SCH_FILE("Soda"), *soda_sch);
+  fletcher::WriteSchemaToFile(SCH_FILE("Beer"), *beer_sch);
+  fletcher::WriteRecordBatchesToFile(RB_FILE("Hobbits"), {hobbits_rb});
 }
 
 }

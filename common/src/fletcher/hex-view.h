@@ -38,14 +38,14 @@ struct HexView {
                    uint64_t width = 32);
 
   /// @brief Return a hex editor style view of the memory that was added to this HexView, optionally with a \p header.
-  std::string toString(bool header = true);
+  std::string ToString(bool header = true);
 
   /**
    * @brief Add a memory region to be printed to the HexView
    * @param ptr The memory
    * @param size The size
    */
-  void addData(const uint8_t *ptr, size_t size);
+  void AddData(const uint8_t *ptr, size_t size);
 
   std::string str;
   uint64_t row;

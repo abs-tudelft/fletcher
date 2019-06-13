@@ -69,17 +69,17 @@ class Kernel {
    */
   Status WaitForFinish();
 
-  std::shared_ptr<Platform> platform();
+  /// @brief Return the context of this Kernel
   std::shared_ptr<Context> context();
 
   // Default control and status values:
-  uint32_t ctrl_start = 1UL << FLETCHER_REG_CONTROL_START;
-  uint32_t ctrl_reset = 1UL << FLETCHER_REG_CONTROL_RESET;
-  uint32_t done_status = 1UL << FLETCHER_REG_STATUS_DONE;
-  uint32_t done_status_mask = 1UL << FLETCHER_REG_STATUS_DONE;
+  uint32_t ctrl_start = 1ul << FLETCHER_REG_CONTROL_START;
+  uint32_t ctrl_reset = 1ul << FLETCHER_REG_CONTROL_RESET;
+  uint32_t done_status = 1ul << FLETCHER_REG_STATUS_DONE;
+  uint32_t done_status_mask = 1ul << FLETCHER_REG_STATUS_DONE;
 
  private:
-  std::shared_ptr<Context> _context;
+  std::shared_ptr<Context> context_;
 };
 
 }

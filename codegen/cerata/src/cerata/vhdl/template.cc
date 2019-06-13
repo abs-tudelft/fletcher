@@ -35,10 +35,10 @@ Template::Template(const std::string &filename) {
 }
 
 void Template::Replace(const std::string &str, int with) {
-  replace(str, std::to_string(with));
+  Replace(str, std::to_string(with));
 }
 
-void Template::replace(const std::string &str, const std::string &with) {
+void Template::Replace(const std::string &str, const std::string &with) {
   if (replace_list_.find(str) != replace_list_.end()) {
     for (const auto& loc : replace_list_[str]) {
       // +3 for ${}
@@ -47,7 +47,7 @@ void Template::replace(const std::string &str, const std::string &with) {
   }
 }
 
-std::string Template::toString() {
+std::string Template::ToString() {
   std::string out;
   for (const auto &l : lines_) {
     out.append(l);

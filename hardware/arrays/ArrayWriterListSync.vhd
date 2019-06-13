@@ -18,9 +18,8 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.Arrays.all;
+use work.Stream_pkg.all;
+use work.Array_pkg.all;
 
 -- Synchronizes a (multi-element-per-cycle, or MEPC) length stream with a values
 -- stream in such a way that the values stream last signal is replaced by the

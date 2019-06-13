@@ -25,15 +25,15 @@
 
 namespace cerata::vhdl {
 
-static std::string lit2vhdl(std::shared_ptr<Literal> lit) {
-  switch (lit->type()->id()) {
-    default:return lit->ToString();
+static std::string lit2vhdl(const Literal& lit) {
+  switch (lit.type()->id()) {
+    default:return lit.ToString();
     case Type::STRING:
       // If it is a string enclose it within quotes
-      return "\"" + lit->ToString() + "\"";
+      return "\"" + lit.ToString() + "\"";
     case Type::BOOLEAN:
       // Convert to VHDL boolean
-      if (lit->bool_val_) return "true";
+      if (lit.bool_val_) return "true";
       else return "false";
   }
 }
@@ -62,7 +62,7 @@ Block Inst::GenerateGenericMap(const std::shared_ptr<Parameter> &par) {
   if (val != nullptr) {
     // If it is a literal, make it VHDL compatible
     if (val->IsLiteral()) {
-      l << lit2vhdl(*Cast<Literal>(val));
+      l << lit2vhdl(**Cast<Literal>(val));
     } else {
       l << val->ToString();
     }
@@ -215,7 +215,7 @@ Block Inst::GeneratePortArrayMaps(const std::shared_ptr<PortArray> &array) {
     auto p = *Cast<Port>(n);
     ret << GeneratePortMaps(p);
   }
-  return ret;
+  return ret.sort('(');
 }
 
 MultiBlock Inst::Generate(const Graph *graph) {

@@ -20,6 +20,7 @@
 
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"
+<<<<<<< HEAD:common/test/fletcher/test-common.cc
 
 TEST(Common, appendExpectedBuffersFromField) {
   // List of uint8's
@@ -93,4 +94,12 @@ TEST(Common, AppendMetaRequired) {
   ASSERT_TRUE(map.count("fletcher_mode") > 0);
   ASSERT_TRUE(map.at("fletcher_name") == "PrimRead");
   ASSERT_TRUE(map.at("fletcher_mode") == "read");
+=======
+#include "fletcher/test_common.h"
+#include "fletcher/test_visitors.h"
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+>>>>>>> develop:common/cpp/test/fletcher/test-common.cc
 }

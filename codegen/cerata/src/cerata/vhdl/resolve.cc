@@ -53,10 +53,10 @@ std::shared_ptr<Component> Resolve::ResolvePortToPort(std::shared_ptr<Component>
         // of instances. Insert a signal in between and add it to the component.
         CERATA_LOG(DEBUG, "VHDL:  Resolving " + (*edge->src)->ToString() + " --> " + (*edge->dst)->ToString());
         std::string prefix;
-        if ((*edge->dst)->parent()) {
-          prefix = (*(*edge->dst)->parent())->name() + "_";
-        } else if ((*edge->src)->parent()) {
+        if ((*edge->src)->parent()) {
           prefix = (*(*edge->src)->parent())->name() + "_";
+        } else if ((*edge->dst)->parent()) {
+          prefix = (*(*edge->dst)->parent())->name() + "_";
         }
         auto sig = insert(edge, prefix);
         // Add the signal to the component

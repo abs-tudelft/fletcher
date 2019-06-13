@@ -38,18 +38,18 @@ RecordBatch::RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema)
   AddObject(Port::Make(kernel_cr()));
   AddObject(bus_addr_width());
   // Add and connect all array readers and resulting ports
-  AddArrays(fletcher_schema);
+  AddArrays(*fletcher_schema);
 }
 
-void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
+void RecordBatch::AddArrays(const FletcherSchema &fs) {
   // Iterate over all fields and add ArrayReader data and control ports.
-  for (const auto &f : fs->arrow_schema()->fields()) {
+  for (const auto &f : fs.arrow_schema()->fields()) {
     // Check if we must ignore a field
-    if (!fletcher::MustIgnore(f)) {
-      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fs->mode() == Mode::READ ? "Reader" : "Writer")
-                                                 << " for schema: " << fs->name() << " : " << f->name());
+    if (!fletcher::MustIgnore(*f)) {
+      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fs.mode() == Mode::READ ? "Reader" : "Writer")
+                                                 << " for schema: " << fs.name() << " : " << f->name());
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatch.
-      auto arrow_port = FieldPort::MakeArrowPort(fs, f, fs->mode(), true);
+      auto arrow_port = FieldPort::MakeArrowPort(fs, f, fs.mode(), true);
       AddObject(arrow_port);
       auto arrow_type = arrow_port->type();
       // Add a command port for the ArrayReader
@@ -59,17 +59,17 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
       auto unlock_port = FieldPort::MakeUnlockPort(fs, f);
       AddObject(unlock_port);
       // Instantiate an ArrayReader or Writer
-      auto array_rw = AddInstanceOf(Array(arrow_port->data_width(), ctrl_width(f), tag_width(f), fs->mode()),
+      auto array_rw = AddInstanceOf(Array(arrow_port->data_width(), ctrl_width(*f), tag_width(*f), fs.mode()),
                                     f->name() + "_inst");
       // Generate a configuration string for the ArrayReader
       auto cfg_node = array_rw->GetNode(Node::PARAMETER, "CFG");
       // Set the configuration string for this field
-      cfg_node <<= cerata::strl(GenerateConfigString(f));
+      cfg_node <<= cerata::strl(GenerateConfigString(*f));
       // Drive the clocks and resets
       array_rw->port("kcd") <<= port("kcd");
       array_rw->port("bcd") <<= port("bcd");
       // Drive the RecordBatch Arrow data port with the ArrayReader/Writer data port, or vice versa
-      if (fs->mode() == Mode::READ) {
+      if (fs.mode() == Mode::READ) {
         auto data_port = array_rw->port("out");
         // Create a mapper between the Arrow port and the Array data port
         arrow_type->AddMapper(GetStreamTypeMapper(arrow_type, data_port->type()));
@@ -90,7 +90,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
       auto bus = *Cast<BusPort>(array_rw->port("bus")->Copy());
       // Give the new bus port a unique name
       // TODO(johanpel): move the bus renaming to the Mantle level
-      bus->SetName(fs->name() + "_" + bus->name());
+      bus->SetName(fs.name() + "_" + f->name() + "_" + bus->name());
       // Add them to the RecordBatch
       AddObject(bus);
       // Remember the port
@@ -105,16 +105,16 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fs) {
   }
 }
 
-std::shared_ptr<FieldPort> RecordBatch::GetArrowPort(const std::shared_ptr<arrow::Field> &field) const {
+std::shared_ptr<FieldPort> RecordBatch::GetArrowPort(const arrow::Field &field) const {
   for (const auto &n : objects_) {
     auto ap = Cast<FieldPort>(n);
     if (ap) {
-      if (((*ap)->function_ == FieldPort::ARROW) && ((*ap)->field_ == field)) {
+      if (((*ap)->function_ == FieldPort::ARROW) && ((*ap)->field_->Equals(field))) {
         return *ap;
       }
     }
   }
-  throw std::runtime_error("Field " + field->name() + " did not generate an ArrowPort for Core " + name() + ".");
+  throw std::runtime_error("Field " + field.name() + " did not generate an ArrowPort for Core " + name() + ".");
 }
 
 std::deque<std::shared_ptr<FieldPort>> RecordBatch::GetFieldPorts(const std::optional<FieldPort::Function> &function) const {
@@ -134,7 +134,7 @@ std::shared_ptr<RecordBatch> RecordBatch::Make(const std::shared_ptr<FletcherSch
   return std::make_shared<RecordBatch>(fletcher_schema);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const std::shared_ptr<FletcherSchema> &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const FletcherSchema &fs,
                                                     const std::shared_ptr<arrow::Field> &field,
                                                     Mode mode,
                                                     bool invert) {
@@ -144,24 +144,24 @@ std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const std::shared_ptr<Fletch
   } else {
     dir = mode2dir(mode);
   }
-  return std::make_shared<FieldPort>(fs->name() + "_" + field->name(), ARROW, field, GetStreamType(field, mode), dir);
+  return std::make_shared<FieldPort>(fs.name() + "_" + field->name(), ARROW, field, GetStreamType(*field, mode), dir);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(const std::shared_ptr<FletcherSchema> &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(const FletcherSchema &fs,
                                                       const std::shared_ptr<arrow::Field> &field) {
-  return std::make_shared<FieldPort>(fs->name() + "_" + field->name() + "_cmd",
+  return std::make_shared<FieldPort>(fs.name() + "_" + field->name() + "_cmd",
                                      COMMAND,
                                      field,
-                                     cmd(ctrl_width(field), tag_width(field)),
+                                     cmd(ctrl_width(*field), tag_width(*field)),
                                      Dir::IN);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(const std::shared_ptr<FletcherSchema> &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(const FletcherSchema &fs,
                                                      const std::shared_ptr<arrow::Field> &field) {
-  return std::make_shared<FieldPort>(fs->name() + "_" + field->name() + "_unl",
+  return std::make_shared<FieldPort>(fs.name() + "_" + field->name() + "_unl",
                                      UNLOCK,
                                      field,
-                                     unlock(tag_width(field)),
+                                     unlock(tag_width(*field)),
                                      Dir::OUT);
 }
 

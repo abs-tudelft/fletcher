@@ -17,8 +17,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
+use work.Stream_pkg.all;
 
 entity ArrayReaderUnlockCombine is
   generic (

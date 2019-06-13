@@ -303,10 +303,8 @@ class Testbench(object):
     use ieee.math_real.all;
 
     library work;
-    use work.StreamSim.all;
-    use work.Streams.all;
-    use work.Arrays.all;
-    use work.Utils.all;
+    use work.Stream_pkg.all;
+    use work.Array_pkg.all;
 
     entity {name} is
     end {name};
@@ -370,23 +368,31 @@ class Testbench(object):
     _PRODUCE_HEAD = _strip(4, """
       {prefix}block: block is
         signal {valid}_vect : std_logic;
-        signal {valid}_prod : std_logic;
+        signal {valid}_rnd  : std_logic;
       begin
 
         {valid}_vect <= '1';
-        {valid} <= {valid}_prod when {valid}_vect = '1' else '0';
+        {valid} <= {valid}_rnd when {valid}_vect = '1' else '0';
 
-        prod: StreamTbProd
-          generic map (
-            DATA_WIDTH              => 1,
-            SEED                    => {seed}
-          )
-          port map (
-            clk                     => {clk_prefix}clk,
-            reset                   => {clk_prefix}reset,
-            out_valid               => {valid}_prod,
-            out_ready               => {ready}
-          );
+        {prefix}handshake_proc: process ({clk_prefix}clk) is
+          variable seed1  : positive := {seed};
+          variable seed2  : positive := 1;
+          variable rnd    : real;
+        begin
+          if rising_edge({clk_prefix}clk) then
+            if {ready} = '1' then
+              {valid}_rnd <= '0';
+            end if;
+            uniform(seed1, seed2, rnd);
+            if rnd < 0.25 then
+              {valid}_rnd <= '1';
+            end if;
+            if {clk_prefix}reset = '1' then
+              {valid}_rnd <= '0';
+            end if;
+          end if;
+        end process;
+
     """)
 
     _PRODUCE_SIGNAL = _strip(4, """
@@ -431,18 +437,23 @@ class Testbench(object):
     """)
 
     _CONSUME_HEAD = _strip(4, """
-      {prefix}cons: StreamTbCons
-        generic map (
-          DATA_WIDTH                => 1,
-          SEED                      => {seed}
-        )
-        port map (
-          clk                       => {clk_prefix}clk,
-          reset                     => {clk_prefix}reset,
-          in_valid                  => {valid},
-          in_ready                  => {ready},
-          in_data                   => "0"
-        );
+      {prefix}handshake_proc: process ({clk_prefix}clk) is
+        variable seed1  : positive := {seed};
+        variable seed2  : positive := 1;
+        variable rnd    : real;
+      begin
+        if rising_edge({clk_prefix}clk) then
+          uniform(seed1, seed2, rnd);
+          if rnd < 0.25 then
+            {ready} <= '1';
+          else
+            {ready} <= '0';
+          end if;
+          if {clk_prefix}reset = '1' then
+            {ready} <= '0';
+          end if;
+        end if;
+      end process;
     """)
 
     _CONSUME_SIGNAL = _strip(4, """
@@ -532,17 +543,23 @@ class Testbench(object):
               out_ready(0)              => {req_prefix}int_ready
             );
 
-          consumer_inst: StreamTbCons
-            generic map (
-              SEED                      => {seed1}
-            )
-            port map (
-              clk                       => {clk_prefix}clk,
-              reset                     => {clk_prefix}reset,
-              in_valid                  => {req_prefix}cons_valid,
-              in_ready                  => {req_prefix}cons_ready,
-              in_data                   => (others => '0')
-            );
+          consumer_inst: process ({clk_prefix}clk) is
+            variable seed1  : positive := {seed1};
+            variable seed2  : positive := 1;
+            variable rnd    : real;
+          begin
+            if rising_edge({clk_prefix}clk) then
+              uniform(seed1, seed2, rnd);
+              if rnd < 0.25 then
+                {req_prefix}cons_ready <= '1';
+              else
+                {req_prefix}cons_ready <= '0';
+              end if;
+              if {clk_prefix}reset = '1' then
+                {req_prefix}cons_ready <= '0';
+              end if;
+            end if;
+          end process;
 
         end generate;
 
@@ -633,18 +650,24 @@ class Testbench(object):
         random_response_timing_gen: if {random_response_timing} generate
         begin
 
-          -- Response producer and synchronizer. These two units randomize the rate at
-          -- which burst beats are generated.
-          producer_inst: StreamTbProd
-            generic map (
-              SEED                      => {seed2}
-            )
-            port map (
-              clk                       => {clk_prefix}clk,
-              reset                     => {clk_prefix}reset,
-              out_valid                 => {resp_prefix}prod_valid,
-              out_ready                 => {resp_prefix}prod_ready
-            );
+          {resp_prefix}resp_handshake_proc: process ({clk_prefix}clk) is
+            variable seed1  : positive := {seed2};
+            variable seed2  : positive := 1;
+            variable rnd    : real;
+          begin
+            if rising_edge({clk_prefix}clk) then
+              if {resp_prefix}prod_ready = '1' then
+                {resp_prefix}prod_valid <= '0';
+              end if;
+              uniform(seed1, seed2, rnd);
+              if rnd < 0.25 then
+                {resp_prefix}prod_valid <= '1';
+              end if;
+              if {clk_prefix}reset = '1' then
+                {resp_prefix}prod_valid <= '0';
+              end if;
+            end if;
+          end process;
 
           producer_sync: StreamSync
             generic map (

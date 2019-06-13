@@ -42,14 +42,16 @@ using cerata::Type;
 using cerata::Record;
 using cerata::Stream;
 
-std::shared_ptr<Node> ctrl_width(const std::shared_ptr<arrow::Field> &field) {
-  std::vector<std::string> buffers;
-  fletcher::AppendExpectedBuffersFromField(&buffers, field);
-  std::shared_ptr<Node> width = Literal::Make(buffers.size());
+std::shared_ptr<Node> ctrl_width(const arrow::Field &field) {
+  fletcher::FieldMetadata field_meta;
+  std::vector<fletcher::BufferMetadata> buffer_meta;
+  fletcher::FieldAnalyzer fa(&field_meta, &buffer_meta);
+  fa.Analyze(field);
+  std::shared_ptr<Node> width = Literal::Make(buffer_meta.size());
   return width * bus_addr_width();
 }
 
-std::shared_ptr<Node> tag_width(const std::shared_ptr<arrow::Field> &field) {
+std::shared_ptr<Node> tag_width(const arrow::Field &field) {
   auto meta_val = fletcher::GetMeta(field, "tag_width");
   if (meta_val.empty()) {
     return intl<1>();
@@ -147,7 +149,7 @@ std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
 
   ret->meta["primitive"] = "true";
   ret->meta["library"] = "work";
-  ret->meta["package"] = "Arrays";
+  ret->meta["package"] = "Array_pkg";
   return ret;
 }
 
@@ -215,11 +217,11 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
   }
 }
 
-std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int level) {
+std::string GenerateConfigString(const arrow::Field &field, int level) {
   std::string ret;
-  ConfigType ct = GetConfigType(field->type().get());
+  ConfigType ct = GetConfigType(field.type().get());
 
-  if (field->nullable()) {
+  if (field.nullable()) {
     ret += "null(";
     level++;
   }
@@ -228,14 +230,14 @@ std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int
   int lepc = fletcher::GetIntMeta(field, "lepc", 1);
 
   if (ct == ConfigType::PRIM) {
-    auto w = GetWidth(field->type().get());
+    auto w = GetWidth(field.type().get());
     ret += "prim(" + w->ToString();
     level++;
   } else if (ct == ConfigType::LISTPRIM) {
     ret += "listprim(8";
     level++;
   } else if (ct == ConfigType::LIST) {
-    if (GetConfigType(field->type()->child(0)->type().get()) == ConfigType::PRIM) {
+    if (GetConfigType(field.type()->child(0)->type().get()) == ConfigType::PRIM) {
       ret += "list";
     } else {
       ret += "list(";
@@ -260,10 +262,10 @@ std::string GenerateConfigString(const std::shared_ptr<arrow::Field> &field, int
   }
 
   // Append children
-  for (int c = 0; c < field->type()->num_children(); c++) {
-    auto child = field->type()->child(c);
-    ret += GenerateConfigString(child);
-    if (c != field->type()->num_children() - 1)
+  for (int c = 0; c < field.type()->num_children(); c++) {
+    auto child = field.type()->child(c);
+    ret += GenerateConfigString(*child);
+    if (c != field.type()->num_children() - 1)
       ret += ",";
   }
 
@@ -302,20 +304,20 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
   return conversion;
 }
 
-std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, fletcher::Mode mode, int level) {
+std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mode, int level) {
   // The ordering of the record fields in this function determines the order in which a nested stream is type converted
   // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented.
   //
   // WARNING: Modifications to this function must be reflected in the manual hardware implementation of Fletcher
-  // components! See: hardware/arrays/ArrayConfig.vhd
+  // components! See: hardware/arrays/ArrayConfig_pkg.vhd
 
   int epc = fletcher::GetIntMeta(field, "epc", 1);
   int lepc = fletcher::GetIntMeta(field, "lepc", 1);
 
   std::shared_ptr<Type> type;
 
-  auto arrow_id = field->type()->id();
-  auto name = field->name();
+  auto arrow_id = field.type()->id();
+  auto name = field.name();
 
   switch (arrow_id) {
     case arrow::Type::BINARY: {
@@ -369,12 +371,12 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       // Lists
     case arrow::Type::LIST: {
-      if (field->type()->num_children() != 1) {
+      if (field.type()->num_children() != 1) {
         throw std::runtime_error("Encountered Arrow list type with other than 1 child.");
       }
 
-      auto arrow_child = field->type()->child(0);
-      auto element_type = GetStreamType(arrow_child, mode, level + 1);
+      auto arrow_child = field.type()->child(0);
+      auto element_type = GetStreamType(*arrow_child, mode, level + 1);
       std::shared_ptr<Node> length_width = Literal::Make(32);
 
       auto slave = Stream::Make(name,
@@ -392,12 +394,12 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       // Structs
     case arrow::Type::STRUCT: {
-      if (field->type()->num_children() < 1) {
+      if (field.type()->num_children() < 1) {
         throw std::runtime_error("Encountered Arrow struct type without any children.");
       }
       std::deque<std::shared_ptr<RecField>> children;
-      for (const auto &f : field->type()->children()) {
-        auto child_type = GetStreamType(f, mode, level + 1);
+      for (const auto &f : field.type()->children()) {
+        auto child_type = GetStreamType(*f, mode, level + 1);
         children.push_back(RecField::Make(f->name(), child_type));
       }
       type = Record::Make(name + "_rec", children);
@@ -406,7 +408,7 @@ std::shared_ptr<Type> GetStreamType(const std::shared_ptr<arrow::Field> &field, 
 
       // Non-nested types
     default: {
-      type = GenTypeFrom(field->type());
+      type = GenTypeFrom(field.type());
       break;
     }
   }

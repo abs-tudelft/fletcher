@@ -16,37 +16,52 @@
 
 #include <vector>
 #include <arrow/api.h>
+#include <arrow/ipc/api.h>
+#include <arrow/io/api.h>
+#include <arrow/ipc/writer.h>
 
 #include "fletchgen/options.h"
 
 namespace fletchgen::srec {
 
 /**
- * @brief Generate and save an SREC file from a bunch of recordbatches and schemas.
- * @param options       Fletchgen options.
- * @param schemas       Schemas.
- * @param firstlastidx  A vector to store Fletcher command stream first and last indices of a RecordBatch.
- * @return              A vector of buffer addresses in the SREC.
- */
-std::vector<uint64_t> GenerateSREC(const std::shared_ptr<fletchgen::Options> &options,
-                                   const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
-                                   std::vector<std::pair<uint32_t, uint32_t>>* firstlastidx=nullptr);
+ * @brief Generate and save an SREC file from a bunch of RecordBatches and Schemas.
+ * @param schemas       The Schemas.
+ * @param recordbatches The RecordBatches.
+ * @param meta_out      Metadata output about saved RecordBatches.
+ * @param out           Output stream to write the SREC file to.
+ * @param buffer_align  Alignment in bytes for every RecordBatch buffer.
+*/
+void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_in,
+                      std::vector<fletcher::RecordBatchDescription> *meta_out,
+                      std::ofstream *out,
+                      int64_t buffer_align);
 
 /**
- * @brief Calculate buffer offsets if all buffers would be stored contiguously.
- * @param buffers The buffers.
- * @return The required size of the contiguous space.
+ * Write SREC formatted RecordBatches to an output stream.
+ * @param output        The output stream to write to.
+ * @param recordbatches The RecordBatches
+ * @return              SREC buffer offsets of the flattened buffers of the RecordBatches
  */
-std::vector<uint64_t> GetBufferOffsets(std::vector<arrow::Buffer *> &buffers);
+std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
+                                               const std::deque<std::shared_ptr<arrow::RecordBatch>> &recordbatches);
 
 /**
- * @brief Write an arrow::RecordBatch to an SREC file.
- * This file can be used in simulation.
- * @param record_batch The arrow::RecordBatch to convert.
- * @param srec_fname The file name of the SREC file.
- * @return A vector with the buffer offsets in the SREC file.
+ * @brief Read an SREC formatted input stream and turn it into a RecordBatch
+ *
+ * Buffer offsets should follow
+ *
+ * @param input         The input stream to read from.
+ * @param schemas       A deque of Arrow Schemas.
+ * @param num_rows      Number of rows for each RecordBatch.
+ * @param buf_offsets   The offsets of the flattened buffer.
+ * @return              A deque of Arrow RecordBatches filled with contents from the SREC input stream.
  */
-std::vector<uint64_t> WriteRecordBatchesToSREC(const std::deque<std::shared_ptr<arrow::RecordBatch>>& recordbatches,
-                                               const std::string &srec_fname);
+std::deque<std::shared_ptr<arrow::RecordBatch>> ReadRecordBatchesFromSREC(std::istream *input,
+                                                                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
+                                                                          const std::vector<uint64_t> &num_rows,
+                                                                          const std::vector<uint64_t> &buf_offsets);
 
 } // namespace fletchgen::srec
+
+

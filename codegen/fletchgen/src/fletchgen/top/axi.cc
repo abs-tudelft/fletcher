@@ -44,15 +44,15 @@ std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle,
   t.Replace("MMIO_DATA_WIDTH", 32);
 
   // Do not change this order, TODO: fix this in replacement code
-  t.replace("FLETCHER_WRAPPER_NAME", mantle->name());
-  t.replace("FLETCHER_WRAPPER_INST_NAME", mantle->name() + "_inst");
+  t.Replace("FLETCHER_WRAPPER_NAME", mantle->name());
+  t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle->name() + "_inst");
 
   for (auto &o : outputs) {
     o->flush();
-    *o << t.toString();
+    *o << t.ToString();
   }
 
-  return t.toString();
+  return t.ToString();
 }
 
 } //namespace fletchgen::top

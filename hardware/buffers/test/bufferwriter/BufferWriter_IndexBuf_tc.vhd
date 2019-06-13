@@ -19,10 +19,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
-use work.SimUtils.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
 
 --pragma simulation timeout 1 ms
 

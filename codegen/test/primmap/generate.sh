@@ -1,1 +1,1 @@
-fletchgen -i input/primread.fbs,input/primwrite.fbs -r input/numbers.rb -s output/numbers.srec -l vhdl --sim
+fletchgen -r input/primread.rb -i input/primwrite.as -s output/memory.srec -l vhdl --sim

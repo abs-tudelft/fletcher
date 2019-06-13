@@ -17,9 +17,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Axi.all;
-use work.Utils.all;
-use work.SimUtils.all;
+use work.Axi_pkg.all;
+use work.UtilStr_pkg.all;
 
 entity Kernel is
   generic (
@@ -49,14 +48,14 @@ entity Kernel is
     StringRead_Name_ready        : out std_logic;
     StringRead_Name_dvalid       : in  std_logic;
     StringRead_Name_last         : in  std_logic;
-    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
     StringRead_Name_length       : in  std_logic_vector(31 downto 0);
+    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
     StringRead_Name_chars_valid  : in  std_logic;
     StringRead_Name_chars_ready  : out std_logic;
     StringRead_Name_chars_dvalid : in  std_logic;
     StringRead_Name_chars_last   : in  std_logic;
-    StringRead_Name_chars_count  : in  std_logic_vector(2 downto 0);
-    StringRead_Name_chars_data   : in  std_logic_vector(31 downto 0);
+    StringRead_Name_chars_data   : in  std_logic_vector(7 downto 0);
+    StringRead_Name_chars_count  : in  std_logic_vector(0 downto 0);
     StringRead_Name_cmd_valid    : out std_logic;
     StringRead_Name_cmd_ready    : in  std_logic;
     StringRead_Name_cmd_firstIdx : out std_logic_vector(31 downto 0);
@@ -104,7 +103,7 @@ architecture Implementation of Kernel is
 begin
   -- Instantiate the AXI mmio component to communicate with host more easily 
   -- through registers.
-  axi_mmio_inst : axi_mmio
+  axi_mmio_inst : AxiMmio
     generic map (
       BUS_ADDR_WIDTH     => 32,
       BUS_DATA_WIDTH     => 32,
@@ -235,8 +234,6 @@ begin
       -- Not ready to receive a new length at the moment.
       StringRead_Name_ready <= '0';
 
-      -- dumpStdOut("Received a string length of " & integer'image(string_length));
-
       -- Obtain all string characters
       loop
 
@@ -279,7 +276,7 @@ begin
         severity failure;
 
       -- Dump the string to the output
-      dumpStdOut("String " & integer'image(string_idx) & " : " & str);
+      println("String " & integer'image(string_idx) & " : " & str);
 
       string_idx := string_idx + 1;
 

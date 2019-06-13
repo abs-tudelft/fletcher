@@ -28,7 +28,6 @@ int Options::Parse(Options *options, int argc, char **argv) {
   app.add_option("-i,--input", options->schema_paths,
                  "List of Flatbuffer files with Arrow Schemas to base wrapper on, comma seperated. "
                  "Example: --input file1.fbs file2.fbs file3.fbs")
-      ->required()
       ->check(CLI::ExistingFile);
 
   // Naming options:
@@ -38,7 +37,7 @@ int Options::Parse(Options *options, int argc, char **argv) {
   // Simulation options:
   app.add_option("-r,--recordbatch_input", options->recordbatch_paths,
                  "List of Flatbuffer files with Arrow RecordBatches to convert to SREC format for simulation. "
-                 "RecordBatches must adhere to and be in the same order as Arrow Schemas set with option --input.");
+                 "Schemas contained in these RecordBatches can be skipped for the --input option.");
   app.add_option("-s,--recordbatch_output", options->srec_out_path,
                  "SREC simulation output file.");
   app.add_option("-t,--srec_dump", options->srec_sim_dump,
@@ -56,10 +55,10 @@ int Options::Parse(Options *options, int argc, char **argv) {
                  "                                          vhdl: Export as VHDL files (default).\n"
                  "                                          dot : Export as DOT graphs.");
 
-  app.add_flag("-f,--force", options->override_kernels,
-               "Force overwriting kernel component if it exists already. If this flag is not used and the kernel "
-               "source exists already in the specified path, the output filename will be <kernel>.vhdt and is always "
-               "overwritten.");
+  app.add_flag("-f,--force", options->overwrite,
+               "Force overwriting source code files if they exists already. If this flag is *not* used and the source "
+               "file exists already in the specified path, the output filename will be <filename>.<extension>t. This "
+               "file IS always overwritten. This applies only to files that the user should modify.");
 
   app.add_flag("--axi", options->axi_top,
                "Generate AXI top-level template (VHDL only).");
@@ -79,17 +78,20 @@ int Options::Parse(Options *options, int argc, char **argv) {
 
   CLI11_PARSE(app, argc, argv)
 
+  // Load input files
+  options->LoadRecordBatches();
+  options->LoadSchemas();
+
   return 0;
 }
 
-bool Options::MustGenerateSREC() {
+bool Options::MustGenerateSREC() const {
   if (!srec_out_path.empty()) {
-    if (schema_paths.size() == recordbatch_paths.size()) {
-      return true;
-    } else {
-      FLETCHER_LOG(WARNING, "SREC output flag set, but number of RecordBatches inputs is not equal to number of Schemas.");
+    if (recordbatches.empty()) {
+      FLETCHER_LOG(WARNING, "SREC output flag set, but no RecordBatches were supplied.");
       return false;
     }
+    return true;
   }
   return false;
 }
@@ -103,16 +105,47 @@ static bool HasLanguage(const std::vector<std::string> &languages, const std::st
   return false;
 }
 
-bool Options::MustGenerateVHDL() {
-  return HasLanguage(languages, "vhdl");
+bool Options::MustGenerateVHDL() const {
+  return HasLanguage(languages, "vhdl") && Options::MustGenerateDesign();
 }
 
-bool Options::MustGenerateDOT() {
-  return HasLanguage(languages, "dot");
+bool Options::MustGenerateDOT() const {
+  return HasLanguage(languages, "dot") && Options::MustGenerateDesign();
 }
 
-bool Options::MustGenerateDesign() {
-  return !schema_paths.empty();
+bool Options::MustGenerateDesign() const {
+  return !schemas.empty() || !recordbatches.empty();
+}
+
+void Options::LoadRecordBatches() {
+  for (const auto &path : recordbatch_paths) {
+    std::vector<std::shared_ptr<arrow::RecordBatch>> rbs;
+    FLETCHER_LOG(INFO, "Loading RecordBatch(es) from " + path);
+    fletcher::ReadRecordBatchesFromFile(path, &rbs);
+    recordbatches.insert(recordbatches.end(), rbs.begin(), rbs.end());
+  }
+}
+
+void Options::LoadSchemas() {
+  for (const auto &path : schema_paths) {
+    std::shared_ptr<arrow::Schema> schema;
+    FLETCHER_LOG(INFO, "Loading Schema from " + path);
+    fletcher::ReadSchemaFromFile(path, &schema);
+    schemas.push_back(schema);
+  }
+}
+
+std::string Options::ToString() const {
+  std::stringstream str;
+  str << "Schema paths:\n";
+  for (const auto &p : schema_paths) {
+    str << "  " << p << "\n";
+  }
+  str << "RecordBatch paths:\n";
+  for (const auto &p : schema_paths) {
+    str << "  " << p << "\n";
+  }
+  return str.str();
 }
 
 } // namespace fletchgen

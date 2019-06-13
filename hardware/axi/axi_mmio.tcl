@@ -1,12 +1,15 @@
-source $::env(FLETCHER_HARDWARE_DIR)/test/compile.tcl
-source $::env(FLETCHER_HARDWARE_DIR)/test/utils.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/fletcher.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/compile.tcl
+source $::env(FLETCHER_HARDWARE_DIR)/test/questa/utils.tcl
 
-add_source $::env(FLETCHER_HARDWARE_DIR)/vhdl/utils/Utils.vhd
-add_source axi.vhd
-add_source axi_mmio.vhd
-add_source test/axi_mmio_tb.vhd
+add_fletcher
+add_fletcher_tb
+
+add_source Axi_pkg.vhd
+add_source AxiMmio.vhd
+add_source test/AxiMmio_tc.vhd
 
 compile_sources
 
-simulate axi_mmio_tb {{"TB"  sim:/axi_mmio_tb/*}
-                      {"UUT" sim:/axi_mmio_tb/uut/*}}
+simulate aximmio_tc {{"TB"  sim:/aximmio_tc/*}
+                     {"UUT" sim:/aximmio_tc/uut/*}}

@@ -18,9 +18,9 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Interconnect.all;
-use work.Utils.all;
-use work.SimUtils.all;
+use work.Interconnect_pkg.all;
+use work.UtilStr_pkg.all;
+use work.UtilConv_pkg.all;
 
 entity sim_top is
   generic (
@@ -322,9 +322,9 @@ ${SREC_FIRSTLAST_INDICES}
 
     -- 7. Read return register.
     mmio_read(REG_RETURN0, read_data, mmio_source, mmio_sink);
-    dumpStdOut("Return register 0: " & ii(u(read_data)));
+    println("Return register 0: " & slvToHex(read_data));
     mmio_read(REG_RETURN1, read_data, mmio_source, mmio_sink);
-    dumpStdOut("Return register 1: " & ii(u(read_data)));
+    println("Return register 1: " & slvToHex(read_data));
 
     -- 8. Finish and stop simulation.
     report "Stimuli done.";

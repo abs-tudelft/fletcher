@@ -14,24 +14,21 @@
 
 #pragma once
 
-#include <arrow/api.h>
 #include <gtest/gtest.h>
 #include <deque>
 #include <memory>
 #include <vector>
-
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
+#include <arrow/api.h>
+#include <cerata/api.h>
 
 #include "fletchgen/mantle.h"
-
-#include "./test_utils.h"
-
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
 static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
-  auto set = SchemaSet::Make("test", std::vector({schema}));
+  auto set = SchemaSet::Make("test");
+  set->AppendSchema(schema);
   auto mantle = Mantle::Make(set);
   auto design = cerata::vhdl::Design(mantle);
   auto code = design.Generate().ToString();

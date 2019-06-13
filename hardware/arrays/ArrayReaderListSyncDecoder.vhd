@@ -18,8 +18,8 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
+use work.Stream_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity ArrayReaderListSyncDecoder is
   generic (

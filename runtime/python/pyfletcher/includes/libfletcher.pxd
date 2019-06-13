@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # distutils: language = c++
+# cython: language_level=3
 
 cimport cython
 
@@ -29,10 +30,16 @@ cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
 
-cdef extern from "fletcher/arrow-utils.h" namespace "fletcher" nogil:
-    ctypedef enum Mode:
-        READ "fletcher::Mode::READ",
+cdef extern from "fletcher/arrow-utils.h" namespace "fletcher":
+    cdef enum Mode:
+        READ  "fletcher::Mode::READ",
         WRITE "fletcher::Mode::WRITE"
+
+cdef extern from "fletcher/context.h" namespace "fletcher":
+    cdef enum MemType:
+        ANY   "fletcher::MemType::ANY",
+        CACHE "fletcher::MemType::CACHE"
+  
 
 cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass Status:
@@ -43,12 +50,16 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         void ewf()
         Status OK()
         Status ERROR()
-
-    cdef cppclass CDeviceArray" fletcher::DeviceArray":
-        vector[CDeviceBuffer] buffers
-
+        
     cdef cppclass CDeviceBuffer" fletcher::DeviceBuffer":
+        const uint8_t *host_address
         da_t device_address
+        int64_t size
+        MemType memory
+        Mode mode
+        cpp_bool available_to_device
+        cpp_bool was_alloced
+        CDeviceBuffer()
 
     cdef cppclass CPlatform" fletcher::Platform":
         #Renamed create function because overloading of static functions causes errors
@@ -73,13 +84,11 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass CContext" fletcher::Context":
         @staticmethod
         Status Make(shared_ptr[CContext] *context, const shared_ptr[CPlatform] &platform)
-        Status QueueArray(const shared_ptr[CArray] &array, Mode access_mode, cpp_bool cache)
-        Status QueueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, Mode access_mode, cpp_bool cache)
-        Status QueueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
+        Status QueueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, MemType mem_type)
         size_t GetQueueSize()
         uint64_t num_buffers()
         Status Enable()
-        vector[shared_ptr[CDeviceArray]] device_arrays_
+        CDeviceBuffer device_buffer(size_t i)
 
     cdef cppclass CKernel" fletcher::Kernel":
         # Control and status values
@@ -97,5 +106,4 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status GetStatus(uint32_t *status)
         Status GetReturn(uint32_t *ret0, uint32_t *ret1)
         Status WaitForFinish(unsigned int poll_interval_usec)
-        shared_ptr[CPlatform] platform()
         shared_ptr[CContext] context()

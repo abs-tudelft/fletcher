@@ -20,6 +20,7 @@
 #include <deque>
 #include <algorithm>
 #include <optional>
+#include <fstream>
 
 namespace cerata {
 
@@ -81,5 +82,7 @@ bool remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item
 }
 
 void CreateDir(const std::string& dir_name);
+
+bool FileExists (const std::string& name);
 
 }  // namespace cerata

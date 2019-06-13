@@ -22,3 +22,8 @@ void cerata::CreateDir(const std::string &dir_name) {
     CERATA_LOG(ERROR, "Could not create directory.");
   }
 }
+
+bool cerata::FileExists(const std::string &name) {
+  std::ifstream f(name.c_str());
+  return f.good();
+}

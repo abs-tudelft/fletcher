@@ -18,9 +18,10 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Utils.all;
-use work.Streams.all;
-use work.Buffers.all;
+use work.Stream_pkg.all;
+use work.Buffer_pkg.all;
+use work.UtilInt_pkg.all;
+use work.UtilMisc_pkg.all;
 
 entity BufferReaderPost is
   generic (
@@ -180,7 +181,7 @@ begin
   -- Gearbox between FIFO and output stream.
   post_gearbox_inst: StreamGearbox
     generic map (
-      DATA_WIDTH                        => ELEMENT_WIDTH,
+      ELEMENT_WIDTH                     => ELEMENT_WIDTH,
       IN_COUNT_MAX                      => ELEMENT_FIFO_COUNT_MAX,
       IN_COUNT_WIDTH                    => ELEMENT_FIFO_COUNT_WIDTH,
       OUT_COUNT_MAX                     => ELEMENT_COUNT_MAX,

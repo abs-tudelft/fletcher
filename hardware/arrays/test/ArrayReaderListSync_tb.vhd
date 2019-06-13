@@ -18,9 +18,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library work;
-use work.Streams.all;
-use work.StreamSim.all;
-use work.Arrays.all;
+use work.Stream_pkg.all;
+use work.Array_pkg.all;
 
 entity ArrayReaderListSync_tb is
 end ArrayReaderListSync_tb;
@@ -79,18 +78,6 @@ begin
     wait until rising_edge(clk);
   end process;
 
-  prod_handshake_inst: StreamTbProd
-    generic map (
-      DATA_WIDTH                => 1,
-      SEED                      => 1
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      out_valid                 => ind_valid,
-      out_ready                 => ind_ready
-    );
-
   prod_data_proc: process is
     variable seed1              : positive := 1;
     variable seed2              : positive := 1;
@@ -99,8 +86,17 @@ begin
     variable count              : natural;
   begin
     data := (others => '0');
+    ind_valid <= '0';
 
     state: loop
+
+      -- Delay randomly before generating the next request.
+      loop
+        uniform(seed1, seed2, rand);
+        exit when rand < 0.3;
+        wait until rising_edge(clk);
+        exit state when reset = '1';
+      end loop;
 
       -- Randomize count.
       uniform(seed1, seed2, rand);
@@ -116,31 +112,52 @@ begin
         ind_data((i+1)*ELEMENT_WIDTH-1 downto i*ELEMENT_WIDTH) <= (others => 'U');
       end loop;
 
-      -- Wait for acknowledgement.
+      -- Wait for ready.
+      ind_valid <= '1';
       loop
         wait until rising_edge(clk);
         exit state when reset = '1';
-        next when ind_valid = '0';
-        next when ind_ready = '0';
-        exit;
+        exit when ind_ready = '1';
       end loop;
+      ind_valid <= '0';
 
     end loop;
   end process;
 
-  -- Generate list lengths.
-  prod_inl: StreamTbProd
-    generic map (
-      DATA_WIDTH                => LENGTH_WIDTH,
-      SEED                      => 1
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      out_valid                 => inl_valid,
-      out_ready                 => inl_ready,
-      out_data                  => inl_length
-    );
+  prod_length_proc: process is
+    variable seed1              : positive := 1;
+    variable seed2              : positive := 1;
+    variable rand               : real;
+    variable len                : unsigned(LENGTH_WIDTH - 1 downto 0);
+  begin
+    inl_valid <= '0';
+    len := (others => '0');
+
+    state: loop
+
+      -- Delay randomly before generating the next request.
+      loop
+        uniform(seed1, seed2, rand);
+        exit when rand < 0.3;
+        wait until rising_edge(clk);
+        exit state when reset = '1';
+      end loop;
+
+      -- Generate list lengths.
+      inl_length <= std_logic_vector(len);
+      len := len + 1;
+
+      -- Wait for ready.
+      inl_valid <= '1';
+      loop
+        wait until rising_edge(clk);
+        exit state when reset = '1';
+        exit when inl_ready = '1';
+      end loop;
+      inl_valid <= '0';
+
+    end loop;
+  end process;
 
   -- Instantiate UUT.
   uut: ArrayReaderListSync
@@ -174,26 +191,15 @@ begin
       out_count                 => out_count
     );
 
-  -- Randomize output handshake.
-  cons_out: StreamTbCons
-    generic map (
-      DATA_WIDTH                => 1,
-      SEED                      => 2
-    )
-    port map (
-      clk                       => clk,
-      reset                     => reset,
-      in_valid                  => out_valid,
-      in_ready                  => out_ready,
-      in_data                   => "0"
-    );
-
   out_last_mon    <= out_last   when out_valid = '1' and out_ready = '1' else 'Z';
   out_dvalid_mon  <= out_dvalid when out_valid = '1' and out_ready = '1' else 'Z';
   out_data_mon    <= out_data   when out_valid = '1' and out_ready = '1' else (others => 'Z');
   out_count_mon   <= out_count  when out_valid = '1' and out_ready = '1' else (others => 'Z');
 
   check_out: process is
+    variable seed1              : positive := 27183;
+    variable seed2              : positive := 1;
+    variable rand               : real;
     variable data               : unsigned(ELEMENT_WIDTH-1 downto 0);
     variable count              : integer;
     variable len                : unsigned(LENGTH_WIDTH-1 downto 0);
@@ -202,10 +208,37 @@ begin
     data := (others => '0');
     len := (others => '0');
     remain := 0;
-    loop
-      wait until rising_edge(clk);
-      exit when reset = '1';
-      next when out_last_mon = 'Z';
+    out_ready <= '0';
+    state: loop
+
+      -- Consumers are allowed to wait for valid before asserting ready, but
+      -- they can also assert ready earlier. In the latter case, ready can
+      -- toggle whenever the consumer wants. Model both kinds of interface
+      -- styles with a 50/50 chance to test both,
+      uniform(seed1, seed2, rand);
+      if rand < 0.5 then
+        while out_valid /= '1' loop
+          wait until rising_edge(clk);
+          exit state when reset = '1';
+        end loop;
+      end if;
+
+      -- Delay randomly before accepting the transfer.
+      loop
+        uniform(seed1, seed2, rand);
+        if rand < 0.3 then
+          out_ready <= '1';
+          wait until rising_edge(clk);
+          exit state when reset = '1';
+          exit when out_valid = '1';
+        else
+          out_ready <= '0';
+          wait until rising_edge(clk);
+          exit state when reset = '1';
+        end if;
+      end loop;
+
+      out_ready <= '0';
 
       -- Figure out the count as an integer.
       if out_dvalid = '1' then
