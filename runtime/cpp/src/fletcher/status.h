@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,8 +48,14 @@ struct Status {
   inline static Status ERROR(std::string msg = "") {
     return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR), std::move(msg));
   }
-  inline static Status NO_PLATFORM() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM)); }
-  inline static Status DEVICE_OUT_OF_MEMORY() { return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM)); }
+  inline static Status NO_PLATFORM() {
+    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM),
+                  "No platform.");
+  }
+  inline static Status DEVICE_OUT_OF_MEMORY() {
+    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM),
+                  "Device out of memory.");
+  }
 };
 
 } // namespace fletcher
