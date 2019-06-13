@@ -1,5 +1,34 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project(fletcher_snap VERSION 0.0.0 LANGUAGES C CXX)
+
+###############################################################################
+# Dependencies                                                                #
+###############################################################################
+include(FetchContent)
+
+find_library(SNAP snap HINTS "$ENV{SNAP_ROOT}/software/lib")
+if(SNAP)
+  add_library(snap INTERFACE IMPORTED GLOBAL)
+  target_include_directories(snap INTERFACE "$ENV{SNAP_ROOT}/software/include")
+else()
+  message(FATAL_ERROR "Dependency snap not found")
+endif()
+
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
+
+###############################################################################
+# Compilation units                                                           #
+###############################################################################
+include(CompileUnits)
+
+add_subdirectory(../../../common common)
+
 add_compile_unit(
-  OPT
   NAME fletcher::snap
   TYPE SHARED
   PRPS
@@ -11,12 +40,4 @@ add_compile_unit(
     snap
 )
 
-if(BUILD_FLETCHER_SNAP)
-  find_library(SNAP snap HINTS "$ENV{SNAP_ROOT}/software/lib")
-  if(SNAP)
-    add_library(snap INTERFACE IMPORTED GLOBAL)
-    target_include_directories(snap INTERFACE "$ENV{SNAP_ROOT}/software/include")
-  else()
-    message(FATAL_ERROR "Dependency snap of fletcher::snap not found")
-  endif()
-endif()
+compile_units()
