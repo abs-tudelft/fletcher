@@ -1,6 +1,33 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project(fletcher VERSION 0.0.0 LANGUAGES CXX)
+
+###############################################################################
+# Dependencies                                                                #
+###############################################################################
+include(FetchContent)
+
+find_package(arrow 0.13 CONFIG REQUIRED)
+
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
+
+###############################################################################
+# Compilation units                                                           #
+###############################################################################
+include(CompileUnits)
+
+add_subdirectory(../../platforms/echo/runtime echo)
+
 add_compile_unit(
   NAME fletcher
   TYPE SHARED
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
   SRCS
     src/fletcher/platform.cc
     src/fletcher/context.cc
@@ -14,20 +41,4 @@ add_compile_unit(
     test/fletcher/test.cpp
 )
 
-# ##############################################################################
-# # PyFletcher
-# ##############################################################################
-# option(FLETCHER_PYTHON
-#     "Build Fletcher for use in building pyfletcher"
-#     OFF)
-
-# # Only needed when building for Python
-# set(PYARROW_DIR "/usr/" CACHE STRING "pyarrow install directory")
-
-# if (FLETCHER_PYTHON)
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-#   find_library(LIB_ARROW arrow PATHS ${PYARROW_DIR} NO_DEFAULT_PATH)
-#   include_directories(${PYARROW_DIR}/include)
-# else ()
-#   find_library(LIB_ARROW arrow)
-# endif ()
+compile_units()
