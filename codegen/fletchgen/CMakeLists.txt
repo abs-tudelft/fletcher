@@ -32,7 +32,7 @@ FetchContent_MakeAvailable(cmake-modules)
 include(CompileUnits)
 
 set(BUILD_CERATA_DOT ON)
-SET(BUILD_CERATA_VHDL ON)
+set(BUILD_CERATA_VHDL ON)
 add_subdirectory(../cerata cerata)
 add_subdirectory(../../common common)
 

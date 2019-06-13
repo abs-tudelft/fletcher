@@ -88,8 +88,3 @@ void generateDebugFiles() {
 }
 
 }
-
-int main() {
-  fletcher::generateDebugFiles();
-  return EXIT_SUCCESS;
-}
