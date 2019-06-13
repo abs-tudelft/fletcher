@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletcher_echo VERSION 0.0.0 LANGUAGES C)
+project(fletcher_echo VERSION 0.0.0 LANGUAGES C CXX)
 
 ###############################################################################
 # Dependencies                                                                #
