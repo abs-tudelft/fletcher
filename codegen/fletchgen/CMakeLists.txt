@@ -63,41 +63,18 @@ add_compile_unit(
     src/fletchgen/top/axi.cc
 
     src/fletchgen/hls/vivado.cc
+  TSTS
+    test/fletchgen/test_bus.cc
+    test/fletchgen/test_kernel.cc
+    test/fletchgen/test_mantle.cc
+    test/fletchgen/test_recordbatch.cc
+    test/fletchgen/srec/test_srec.cc
   DEPS
     cerata
     arrow_shared
     fletcher::common
     CLI11::CLI11
 )
-
-# add_compile_unit(
-#   OPT
-#   NAME fletchgen::test::utils
-#   TYPE OBJECT
-#   PRPS
-#     CXX_STANDARD 17
-#     CXX_STANDARD_REQUIRED ON
-#   SRCS
-#     test/fletchgen/test_utils.h
-#   DEPS
-#     arrow_shared
-# )
-
-# add_compile_unit(
-#   OPT
-#   NAME fletchgen::tests
-#   TYPE TESTS
-#   PRPS
-#     CXX_STANDARD 17
-#     CXX_STANDARD_REQUIRED ON
-#   SRCS
-#     test/fletchgen/test.cc
-#   DEPS
-#     cerata
-#     fletchgen::lib
-#     fletchgen::test::utils
-#     fletcher::test::utils
-# )
 
 add_compile_unit(
   NAME fletchgen

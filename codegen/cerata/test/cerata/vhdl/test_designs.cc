@@ -87,15 +87,15 @@ TEST(VHDL_DESIGN, CompInst) {
       "      b : out std_logic\n"
       "    );\n"
       "  end component;\n"
-      "  signal comp_a_inst_a : std_logic;\n"
+      "  signal comp_b_inst_b : std_logic;\n"
       "begin\n"
       "  comp_a_inst : comp_a\n"
       "    port map (\n"
-      "      a => comp_a_inst_a\n"
+      "      a => comp_b_inst_b\n"
       "    );\n"
       "  comp_b_inst : comp_b\n"
       "    port map (\n"
-      "      b => comp_a_inst_a\n"
+      "      b => comp_b_inst_b\n"
       "    );\n"
       "end architecture;\n";
   ASSERT_EQ(design_source, expected);

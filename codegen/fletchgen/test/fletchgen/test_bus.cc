@@ -12,39 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
 #include <gtest/gtest.h>
 
-#include "fletcher/test_schemas.h"
+#include <cerata/api.h>
 
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
-
-#include "fletchgen/basic_types.h"
-#include "fletchgen/mantle.h"
 #include "fletchgen/bus.h"
-#include "fletchgen/schema.h"
-#include "fletchgen/recordbatch.h"
 
 #include "./test_utils.h"
 
 namespace fletchgen {
 
-static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) {
-  auto fs = FletcherSchema::Make(schema);
-  auto rbr = RecordBatch::Make(fs);
-  auto design = cerata::vhdl::Design(rbr);
+using cerata::intl;
+using cerata::Instance;
+using cerata::Port;
+
+TEST(Bus, BusArbiter) {
+  auto top = BusArbiter();
+  auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();
   std::cerr.flush();
   std::cout << code << std::endl;
   VHDL_DUMP_TEST(code);
-  cerata::dot::Grapher dot;
-  dot.GenFile(rbr, "graph.dot");
-}
-
-TEST(RecordBatch, StringRead) {
-  TestRecordBatchReader(fletcher::GetStringReadSchema());
 }
 
 }

@@ -12,29 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
 #include <gtest/gtest.h>
-
+#include <deque>
+#include <memory>
+#include <vector>
+#include <arrow/api.h>
 #include <cerata/api.h>
 
-#include "fletchgen/bus.h"
-
-#include "./test_utils.h"
+#include "fletcher/test_schemas.h"
+#include "fletchgen/mantle.h"
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
-using cerata::intl;
-using cerata::Instance;
-using cerata::Port;
-
-TEST(Bus, BusArbiter) {
-  auto top = BusArbiter();
-  auto design = cerata::vhdl::Design(top);
+static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
+  auto set = SchemaSet::Make("test");
+  set->AppendSchema(schema);
+  auto mantle = Mantle::Make(set);
+  auto design = cerata::vhdl::Design(mantle);
   auto code = design.Generate().ToString();
   std::cerr.flush();
   std::cout << code << std::endl;
   VHDL_DUMP_TEST(code);
 }
+
+TEST(Mantle, StringRead) {
+  TestReadMantle(fletcher::GetStringReadSchema());
+}
+
 
 }

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
 #include <vector>
 #include <string>
 #include <iostream>
@@ -21,8 +19,8 @@
 #include <fletcher/common.h>
 #include <arrow/api.h>
 
-#include "fletcher/test_schemas.h"
-#include "fletcher/test_recordbatches.h"
+#include "test_schemas.h"
+#include "test_recordbatches.h"
 
 TEST(Common, AppendMetaRequired) {
   auto schema = fletcher::GetPrimReadSchema();

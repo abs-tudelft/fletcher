@@ -12,34 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
 #include <gtest/gtest.h>
-#include <deque>
-#include <memory>
-#include <vector>
-#include <arrow/api.h>
-#include <cerata/api.h>
 
+#include "fletcher/test_schemas.h"
+
+#include "cerata/vhdl/vhdl.h"
+#include "cerata/dot/dot.h"
+
+#include "fletchgen/basic_types.h"
 #include "fletchgen/mantle.h"
-#include "fletchgen/test_utils.h"
+#include "fletchgen/bus.h"
+#include "fletchgen/schema.h"
+#include "fletchgen/recordbatch.h"
+
+#include "./test_utils.h"
 
 namespace fletchgen {
 
-static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
-  auto set = SchemaSet::Make("test");
-  set->AppendSchema(schema);
-  auto mantle = Mantle::Make(set);
-  auto design = cerata::vhdl::Design(mantle);
+static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) {
+  auto fs = FletcherSchema::Make(schema);
+  auto rbr = RecordBatch::Make(fs);
+  auto design = cerata::vhdl::Design(rbr);
   auto code = design.Generate().ToString();
   std::cerr.flush();
   std::cout << code << std::endl;
   VHDL_DUMP_TEST(code);
+  cerata::dot::Grapher dot;
+  dot.GenFile(rbr, "graph.dot");
 }
 
-TEST(Mantle, StringRead) {
-  TestReadMantle(fletcher::GetStringReadSchema());
+TEST(RecordBatch, StringRead) {
+  TestRecordBatchReader(fletcher::GetStringReadSchema());
 }
-
 
 }
