@@ -4,6 +4,7 @@
 #include <ap_int.h>
 #include <hls_half.h>
 #include <utility>
+#include <string.h>
 
 // A log function to get the number of count bits.
 template <int x>
