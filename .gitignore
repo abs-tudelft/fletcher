@@ -65,3 +65,6 @@ transcript
 *.app
 
 # End of https://www.gitignore.io/api/c++
+
+.DS_Store
+.vscode/ipch
