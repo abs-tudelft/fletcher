@@ -20,7 +20,13 @@ FetchContent_MakeAvailable(cmake-modules)
 ###############################################################################
 include(CompileUnits)
 
-add_subdirectory(../../platforms/echo/runtime echo)
+set(TEST_PLATFORM_DEPS)
+if(BUILD_TESTS)
+  add_subdirectory(../../platforms/echo/runtime echo)
+  list(APPEND TEST_PLATFORM_DEPS "fletcher::echo")
+else()
+  add_subdirectory(../../common common)
+endif()
 
 add_compile_unit(
   NAME fletcher
@@ -34,11 +40,21 @@ add_compile_unit(
     src/fletcher/kernel.cc
   DEPS
     fletcher::common
-    fletcher::echo
     arrow_shared
     ${CMAKE_DL_LIBS}
-  TSTS
+)
+
+add_compile_unit(
+  NAME fletcher::test
+  TYPE TESTS
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+  SRCS
     test/fletcher/test.cpp
+  DEPS
+    fletcher
+    ${TEST_PLATFORM_DEPS}
 )
 
 compile_units()
