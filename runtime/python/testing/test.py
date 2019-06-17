@@ -18,7 +18,7 @@ import numpy as np
 
 def test_platform():
     # Create
-    platform = pf.Platform("echo")
+    platform = pf.Platform("echo", False)
 
     # Init
     platform.init()
@@ -53,7 +53,7 @@ def test_platform():
 
 def test_context():
     # Create
-    platform = pf.Platform("echo")
+    platform = pf.Platform("echo", False)
 
     # Init
     platform.init()

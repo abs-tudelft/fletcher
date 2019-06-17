@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2018 Delft University of Technology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,64 +14,131 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, Extension
-from Cython.Build import cythonize
-import os
+from setuptools import setup, Extension, find_packages
+from distutils.command.bdist import bdist as _bdist
+from distutils.command.build import build as _build
+from distutils.command.clean import clean as _clean
+from distutils.command.sdist import sdist as _sdist
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+from setuptools.command.egg_info import egg_info as _egg_info
 
+import os, platform, shutil
 import numpy as np
 import pyarrow as pa
 
-ext_modules = cythonize(Extension(
-    "pyfletcher.lib",
-    ["pyfletcher/lib.pyx"],
-    language="c++",
-    extra_compile_args=["-std=c++11", "-O3"],
-    extra_link_args=["-std=c++11"]
-))
+def read(fname):
+    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+        return f.read()
 
-for ext in ext_modules:
-    # Numpy
-    ext.include_dirs.append(np.get_include())
+target_dir = os.getcwd() + "/build"
+output_dir = target_dir + "/install"
+include_dir = output_dir + "/include"
+lib_dirs = [output_dir + "/lib", output_dir + "/lib64"]
 
-    # PyArrow
-    ext.libraries.extend(pa.get_libraries())
-    ext.include_dirs.append(pa.get_include())
-    ext.library_dirs.extend(pa.get_library_dirs())
-    ext.runtime_library_dirs.extend(pa.get_library_dirs())
+py_target_dir = target_dir + "/python"
+py_build_dir = py_target_dir + "/build"
+py_dist_dir = target_dir + "/dist"
 
-    # Common library
-    ext.include_dirs.append("../../common/c/src")
-    ext.include_dirs.append("../../common/cpp/src")
+class clean(_clean):
+    def run(self):
+        _clean.run(self)
+        try:
+            [os.remove('pyfletcher/lib' + x) for x in ['.cpp', '.h', '_api.h']]
+        except:
+            pass
+        shutil.rmtree(target_dir)
 
-    # C++ Run-time
-    ext.libraries.extend(["fletcher"])
-    ext.include_dirs.append("../cpp/src")
-    # TODO(johanpel): Some packaging wizard should fix this
-    ext.library_dirs.extend(["../cpp/python-build"])
+class build(_build):
+    def initialize_options(self):
+        _build.initialize_options(self)
+        from plumbum import FG
+        from plumbum.cmd import mkdir
+        mkdir['-p'][py_build_dir] & FG
+        self.build_base = py_build_dir
 
-    # ABI trouble
-    ext.define_macros.append(("_GLIBCXX_USE_CXX11_ABI", "0"))
+    def run(self):
+        from plumbum import local, FG
+        with local.cwd(target_dir):
+            try:
+                from plumbum.cmd import cmake, make
+            except ImportError:
+                # TODO: download cmake 3.14 and extract in build dir
+                raise ImportError('CMake or make not found')
+            cmake['../../cpp/']['-DCMAKE_BUILD_TYPE=Release']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)]['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0'] & FG
+            make['-j'] & FG
+            make['install'] & FG
+        _build.run(self)
 
-this_directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+class bdist(_bdist):
+    def finalize_options(self):
+        _bdist.finalize_options(self)
+        self.dist_dir = py_dist_dir
+
+class bdist_wheel(_bdist_wheel):
+    def run(self):
+        _bdist_wheel.run(self)
+        if 'AUDITWHEEL_PLAT' in os.environ:
+            from auditwheel.repair import repair_wheel
+            impl_tag, abi_tag, plat_tag = self.get_tag()
+            archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
+            wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
+            repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True)
+
+class sdist(_sdist):
+    def finalize_options(self):
+        _sdist.finalize_options(self)
+        self.dist_dir = py_dist_dir
+
+class egg_info(_egg_info):
+    def initialize_options(self):
+        _egg_info.initialize_options(self)
+        self.egg_base = py_target_dir
 
 setup(
     name="pyfletcher",
-    version="0.0.7",
+    version="0.0.8",
     author="Lars van Leeuwen",
-    packages=['pyfletcher'],
+    packages=find_packages(),
     description="A Python wrapper for the Fletcher runtime library",
-    long_description=long_description,
+    long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    url="https://github.com/johanpel/fletcher",
-    ext_modules=ext_modules,
+    url="https://github.com/abs-tudelft/fletcher",
+    project_urls = {
+        "Bug Tracker": "https://github.com/abs-tudelft/fletcher/issues",
+        "Documentation": "https://abs-tudelft.github.io/fletcher/",
+        "Source Code": "https://github.com/abs-tudelft/fletcher/",
+    },
+    ext_modules=[
+        Extension(
+            "pyfletcher.lib",
+            ["pyfletcher/lib.pyx"],
+            language="c++",
+            define_macros=[
+                ("_GLIBCXX_USE_CXX11_ABI", "0")
+            ],
+            include_dirs=[
+                np.get_include(),
+                pa.get_include(),
+                include_dir
+            ],
+            libraries= pa.get_libraries() + ["fletcher"],
+            library_dirs=pa.get_library_dirs() + lib_dirs,
+            runtime_library_dirs=pa.get_library_dirs() + lib_dirs,
+            extra_compile_args=["-std=c++11", "-O3"],
+            extra_link_args=["-std=c++11"]
+        )
+    ],
     install_requires=[
         'numpy >= 1.14',
-        'pyarrow',
+        'pyarrow == 0.13',
         'pandas'
     ],
-    setup_requires=['setuptools_scm', 'cython >= 0.27'],
+    setup_requires=[
+        'cython >= 0.27',
+        'numpy',
+        'pyarrow == 0.13',
+        'plumbum'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Cython",
@@ -77,8 +146,14 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: POSIX :: Linux"
     ],
+    cmdclass = {
+        'bdist': bdist,
+        'bdist_wheel': bdist_wheel,
+        'build': build,
+        'clean': clean,
+        'egg_info': egg_info,
+        'sdist': sdist,
+    },
     license='Apache License, Version 2.0',
-    include_package_data=True
+    zip_safe = False,
 )
-
-#https://github.com/pypa/manylinux

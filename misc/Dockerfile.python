@@ -1,0 +1,35 @@
+ARG MANYLINUX=1
+FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64 as pyfletcher-python-base
+
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.tar.gz | tar xz && \
+    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; do $PIP install auditwheel numpy pyarrow; done
+ENV PATH=/cmake-3.14.5-Linux-x86_64/bin:$PATH
+
+RUN yum install -y boost-devel
+RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-0.13.0.tar.gz | tar xz && \
+    cd arrow-apache-arrow-0.13.0 && \
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DARROW_BUILD_TESTS=Off \
+      -DARROW_BOOST_HEADER_ONLY=On \
+      -DARROW_COMPUTE=Off \
+      -DARROW_CUDA=Off \
+      -DARROW_WITH_BROTLI=Off \
+      -DARROW_WITH_BZ2=Off \
+      -DARROW_WITH_LZ4=Off \
+      -DARROW_WITH_SNAPPY=Off \
+      -DARROW_WITH_ZLIB=Off \
+      -DARROW_WITH_ZSTD=Off \
+      -DARROW_ORC=Off \
+      -DARROW_TENSORFLOW=Off \
+      -DARROW_IPC=On \
+      -DARROW_BUILD_BENCHMARKS=Off \
+      -DARROW_DEPENDENCY_SOURCE=BUNDLED \
+      cpp/ && \
+    make && \
+    make install
+
+FROM pyfletcher-python-base
+
+WORKDIR /io/runtime/python
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done; rm -rf build/python"]
