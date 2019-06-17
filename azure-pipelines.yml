@@ -68,6 +68,7 @@ jobs:
   - template: steps/install-ghdl.yml@abs-tudelft
   - template: steps/vhdeps.yml@abs-tudelft
     parameters:
+      args: ["--pattern '*_tc'", "--pattern ':!*/vhlib/*'"]
       sources: ['hardware']
 
 - job: pyfletcher
