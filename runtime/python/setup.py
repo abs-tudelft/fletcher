@@ -64,8 +64,7 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            # TODO: release build
-            cmake['../../cpp/']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)]['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0'] & FG
+            cmake['../../cpp/']['-DCMAKE_BUILD_TYPE=Release']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)]['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0'] & FG
             make['-j'] & FG
             make['install'] & FG
         _build.run(self)
@@ -131,13 +130,13 @@ setup(
     ],
     install_requires=[
         'numpy >= 1.14',
-        'pyarrow',
+        'pyarrow == 0.13',
         'pandas'
     ],
     setup_requires=[
         'cython >= 0.27',
         'numpy',
-        'pyarrow',
+        'pyarrow == 0.13',
         'plumbum'
     ],
     classifiers=[
