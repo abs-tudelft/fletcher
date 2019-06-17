@@ -437,6 +437,7 @@ begin
         last := last + 1;
       end if;
 
+      exit when last > 0;
       exit when last = NUM_LISTS;
 
     end loop;
