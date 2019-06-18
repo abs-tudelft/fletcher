@@ -2,14 +2,6 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(cerata VERSION 0.0.0 LANGUAGES CXX)
 
-###############################################################################
-# Configuration                                                               #
-###############################################################################
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
-###############################################################################
-# Dependencies                                                                #
-###############################################################################
 include(FetchContent)
 
 FetchContent_Declare(tinyxml2
@@ -23,9 +15,6 @@ FetchContent_Declare(cmake-modules
 )
 FetchContent_MakeAvailable(cmake-modules)
 
-###############################################################################
-# Compilation units                                                           #
-###############################################################################
 include(CompileUnits)
 
 add_compile_unit(

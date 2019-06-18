@@ -2,17 +2,9 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletchgen VERSION 0.0.0 LANGUAGES CXX)
 
-###############################################################################
-# Configuration                                                               #
-###############################################################################
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
-###############################################################################
-# Dependencies                                                                #
-###############################################################################
-include(FetchContent)
-
 find_package(arrow 0.13 CONFIG REQUIRED)
+
+include(FetchContent)
 
 FetchContent_Declare(CLI11
   GIT_REPOSITORY  https://github.com/CLIUtils/CLI11.git
@@ -26,9 +18,6 @@ FetchContent_Declare(cmake-modules
 )
 FetchContent_MakeAvailable(cmake-modules)
 
-###############################################################################
-# Compilation units                                                           #
-###############################################################################
 include(CompileUnits)
 
 set(BUILD_CERATA_DOT ON)

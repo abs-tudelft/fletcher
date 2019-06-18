@@ -2,12 +2,9 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletcher VERSION 0.0.0 LANGUAGES CXX)
 
-###############################################################################
-# Dependencies                                                                #
-###############################################################################
-include(FetchContent)
-
 find_package(arrow 0.13 CONFIG REQUIRED)
+
+include(FetchContent)
 
 FetchContent_Declare(cmake-modules
   GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
@@ -15,9 +12,6 @@ FetchContent_Declare(cmake-modules
 )
 FetchContent_MakeAvailable(cmake-modules)
 
-###############################################################################
-# Compilation units                                                           #
-###############################################################################
 include(CompileUnits)
 
 set(TEST_PLATFORM_DEPS)
