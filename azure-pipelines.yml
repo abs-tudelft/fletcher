@@ -1,0 +1,94 @@
+resources:
+  repositories:
+  - repository: abs-tudelft
+    type: github
+    endpoint: github
+    name: abs-tudelft/azure-pipelines-templates
+
+jobs:
+
+- job:
+  strategy:
+    matrix:
+      common:
+        source: common
+      cerata:
+        source: codegen/cerata
+      fletchgen:
+        source: codegen/fletchgen
+      runtime:
+        source: runtime/cpp
+      echo:
+        source: platforms/echo/runtime
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: steps/set-cc-cxx.yml@abs-tudelft
+    parameters:
+      cc: gcc-7
+      cxx: g++-7
+  - template: steps/install-arrow.yml@abs-tudelft
+  - template: steps/install-cmake.yml@abs-tudelft
+  - template: steps/cmake.yml@abs-tudelft
+    parameters:
+      source: $(source)
+      args: -DBUILD_TESTS=ON
+
+- job: aws
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: steps/install-aws-fpga.yml@abs-tudelft
+  - template: steps/install-arrow.yml@abs-tudelft
+  - template: steps/install-cmake.yml@abs-tudelft
+  - template: steps/cmake.yml@abs-tudelft
+    parameters:
+      source: platforms/aws-f1/runtime
+
+- job: snap
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: steps/install-snap.yml@abs-tudelft
+  - template: steps/install-arrow.yml@abs-tudelft
+  - template: steps/install-cmake.yml@abs-tudelft
+  - template: steps/cmake.yml@abs-tudelft
+    parameters:
+      source: platforms/snap/runtime
+
+- job: hardware
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+    submodules: true
+  - template: steps/install-python.yml@abs-tudelft
+    parameters:
+      packages: ['vhdeps']
+  - template: steps/install-ghdl.yml@abs-tudelft
+  - template: steps/vhdeps.yml@abs-tudelft
+    parameters:
+      args: ["--pattern '*_tc'", "--pattern ':!*/vhlib/*'"]
+      sources: ['hardware']
+
+- job: pyfletcher
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: steps/install-python.yml@abs-tudelft
+    parameters:
+      packages: ['pyarrow', 'numpy', 'cython']
+  - template: steps/install-arrow.yml@abs-tudelft
+  - template: steps/install-cmake.yml@abs-tudelft
+  - script: |
+      python3 setup.py build
+    displayName: Build
+    workingDirectory: $(Build.SourcesDirectory)/runtime/python
+  - script: |
+      python3 setup.py bdist_wheel
+    displayName: Wheel
+    workingDirectory: $(Build.SourcesDirectory)/runtime/python
+
+- template: jobs/mdbook-gh-pages.yml@abs-tudelft
+  parameters:
+    ref: refs/heads/develop

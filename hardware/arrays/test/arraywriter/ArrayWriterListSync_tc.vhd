@@ -47,8 +47,6 @@ architecture Behavioral of ArrayWriterListSync_tc is
   constant LCOUNT_MAX           : positive := 4;
   constant LCOUNT_WIDTH         : positive := 3;
 
-  constant ELEM_LAST_FROM_LENGTH: boolean  := false;
-
   constant NUM_LISTS            : natural  := 100;
 
   signal clk                    : std_logic;
@@ -439,7 +437,7 @@ begin
         last := last + 1;
       end if;
 
-      exit when ELEM_LAST_FROM_LENGTH and last > 0;
+      exit when last > 0;
       exit when last = NUM_LISTS;
 
     end loop;
