@@ -197,13 +197,15 @@ begin
         -- A request is made and accepted
         if ms_req_valid = '1' and ms_req_ready = '1' then
 
+          -- Increase amount of space reserved in the FIFO
+          reserved_v := reserved_if_accepted;
+
+          -- pragma translate_off
+
           -- Check if the request burst length is not larger than the FIFO depth
           assert unsigned(ms_req_len) < 2**DEPTH_LOG2
             report "Violated burst length requirement. ms_req_len(=" & slvToUDec(ms_req_len) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
             severity FAILURE;
-
-          -- Increase amount of space reserved in the FIFO
-          reserved_v := reserved_if_accepted;
 
           -- Check if either the amount of space reserved is larger than 0 or the fifo is ready
           assert reserved_v > 0 or fifo_ready = '1'
@@ -217,6 +219,8 @@ begin
                    "reserved_v=" & sgnToDec(reserved_v) & ">= 0. " &
                    "Reserved (if accepted):" & sgnToDec(reserved_if_accepted)
             severity FAILURE;
+
+          -- pragma translate_on
 
         end if;
 
