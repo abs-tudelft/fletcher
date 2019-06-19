@@ -90,12 +90,3 @@ def test_context():
 
     # Terminate
     platform.terminate()
-
-
-if __name__ == "__main__":
-    print("Platform test:")
-    test_platform()
-    print("\nContext test:")
-    test_context()
-
-    print("Reaching end of program")
