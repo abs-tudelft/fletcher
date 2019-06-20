@@ -52,42 +52,46 @@ void RecordBatch::AddArrays(const FletcherSchema &fs) {
       auto arrow_port = FieldPort::MakeArrowPort(fs, f, fs.mode(), true);
       AddObject(arrow_port);
       auto arrow_type = arrow_port->type();
-      // Add a command port for the ArrayReader
+      // Add a command port for the ArrayReader/Writer
       auto command_port = FieldPort::MakeCommandPort(fs, f);
       AddObject(command_port);
-      // Add an unlock port for the ArrayReader
+      // Add an unlock port for the ArrayReader/Writer
       auto unlock_port = FieldPort::MakeUnlockPort(fs, f);
       AddObject(unlock_port);
       // Instantiate an ArrayReader or Writer
-      auto array_rw = AddInstanceOf(Array(arrow_port->data_width(), ctrl_width(*f), tag_width(*f), fs.mode()),
-                                    f->name() + "_inst");
+      auto array_inst_unique = ArrayInstance(fs.mode(), arrow_port->data_width(), ctrl_width(*f), tag_width(*f));
+      // Remember the raw pointer
+      auto array_inst = array_inst_unique.get();
+      array_instances_.push_back(array_inst);
+      // Move ownership to this RecordBatchReader/Writer.
+      AddChild(std::move(array_inst_unique));
       // Generate a configuration string for the ArrayReader
-      auto cfg_node = array_rw->GetNode(Node::PARAMETER, "CFG");
+      auto cfg_node = array_inst->GetNode(Node::NodeID::PARAMETER, "CFG");
       // Set the configuration string for this field
       cfg_node <<= cerata::strl(GenerateConfigString(*f));
       // Drive the clocks and resets
-      array_rw->port("kcd") <<= port("kcd");
-      array_rw->port("bcd") <<= port("bcd");
+      Connect(array_inst->port("kcd"), port("kcd"));
+      Connect(array_inst->port("bcd"), port("bcd"));
       // Drive the RecordBatch Arrow data port with the ArrayReader/Writer data port, or vice versa
       if (fs.mode() == Mode::READ) {
-        auto data_port = array_rw->port("out");
+        auto data_port = array_inst->port("out");
         // Create a mapper between the Arrow port and the Array data port
         arrow_type->AddMapper(GetStreamTypeMapper(arrow_type, data_port->type()));
         // Connect the ports
         arrow_port <<= data_port;
       } else {
-        auto data_port = array_rw->port("in");
+        auto data_port = array_inst->port("in");
         // Create a mapper between the Arrow port and the Array data port
         arrow_port->type()->AddMapper(GetStreamTypeMapper(arrow_type, data_port->type()));
         // Connect the ports
         data_port <<= arrow_port;
       }
       // Drive the ArrayReader command port from the top-level command port
-      array_rw->port("cmd") <<= command_port;
+      array_inst->port("cmd") <<= command_port;
       // Drive the unlock port with the ArrayReader/Writer
-      unlock_port <<= array_rw->port("unl");
+      unlock_port <<= array_inst->port("unl");
       // Copy over the ArrayReader/Writer's bus channels
-      auto bus = *Cast<BusPort>(array_rw->port("bus")->Copy());
+      auto bus = *Cast<BusPort>(array_inst->port("bus")->Copy());
       // Give the new bus port a unique name
       // TODO(johanpel): move the bus renaming to the Mantle level
       bus->SetName(fs.name() + "_" + f->name() + "_" + bus->name());
@@ -96,9 +100,7 @@ void RecordBatch::AddArrays(const FletcherSchema &fs) {
       // Remember the port
       bus_ports_.push_back(bus);
       // Connect them to the ArrayReader/Writer
-      bus <<= array_rw->port("bus");
-      // Remember where the ArrayReader/Writer is
-      array_instances_.push_back(array_rw);
+      bus <<= array_inst->port("bus");
     } else {
       FLETCHER_LOG(DEBUG, "Ignoring field " + f->name());
     }
@@ -131,7 +133,10 @@ std::deque<std::shared_ptr<FieldPort>> RecordBatch::GetFieldPorts(const std::opt
 }
 
 std::shared_ptr<RecordBatch> RecordBatch::Make(const std::shared_ptr<FletcherSchema> &fletcher_schema) {
-  return std::make_shared<RecordBatch>(fletcher_schema);
+  auto rb = new RecordBatch(fletcher_schema);
+  auto shared_rb = std::shared_ptr<RecordBatch>(rb);
+  cerata::default_component_pool()->Add(shared_rb);
+  return shared_rb;
 }
 
 std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const FletcherSchema &fs,
@@ -166,13 +171,13 @@ std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(const FletcherSchema &fs,
 }
 
 std::shared_ptr<Node> FieldPort::data_width() {
-  std::shared_ptr<Node> width = intl<0>();
+  std::shared_ptr<Node> width = intl(0);
   // Flatten the type
-  auto flat_type = Flatten(type().get());
+  auto flat_type = Flatten(type());
   for (const auto &ft : flat_type) {
     if (ft.type_->meta.count("array_data") > 0) {
       if (ft.type_->width()) {
-        width = width + *ft.type_->width();
+        width = width + ft.type_->width().value();
       }
     }
   }
@@ -180,7 +185,9 @@ std::shared_ptr<Node> FieldPort::data_width() {
 }
 
 std::shared_ptr<cerata::Object> FieldPort::Copy() const {
-  return std::make_shared<FieldPort>(name(), function_, field_, type(), dir());
+  // Take shared ownership of the type.
+  auto typ = type()->shared_from_this();
+  return std::make_shared<FieldPort>(name(), function_, field_, typ, dir());
 }
 
 } // namespace fletchgen

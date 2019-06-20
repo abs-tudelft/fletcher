@@ -35,7 +35,7 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
   return str.str();
 }
 
-std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
+std::string GenerateSimTop(const Mantle &mantle,
                            const std::vector<std::ostream *> &outputs,
                            const std::string &read_srec_path,
                            const std::string &write_srec_path,
@@ -52,8 +52,8 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
   constexpr int ndefault = 4;
 
   // Obtain read/write schemas.
-  auto read_schemas = mantle->schema_set()->read_schemas();
-  auto write_schemas = mantle->schema_set()->write_schemas();
+  auto read_schemas = mantle.schema_set()->read_schemas();
+  auto write_schemas = mantle.schema_set()->write_schemas();
 
   // Total number of RecordBatches
   size_t num_rbs = read_schemas.size() + write_schemas.size();
@@ -70,8 +70,8 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
   t.Replace("BUS_BURST_MAX_LEN", 64);
 
   // Do not change this order, TODO: fix this in replacement code
-  t.Replace("FLETCHER_WRAPPER_NAME", mantle->name());
-  t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle->name() + "_inst");
+  t.Replace("FLETCHER_WRAPPER_NAME", mantle.name());
+  t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle.name() + "_inst");
 
   t.Replace("READ_SREC_PATH", read_srec_path);
   t.Replace("WRITE_SREC_PATH", write_srec_path);
@@ -105,7 +105,7 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
   t.Replace("SREC_FIRSTLAST_INDICES", rb_meta.str());
 
   // Read/write specific memory models
-  if (mantle->schema_set_->RequiresReading()) {
+  if (mantle.schema_set()->RequiresReading()) {
     t.Replace("BUS_READ_SLAVE_MOCK",
               "  rmem_inst: BusReadSlaveMock\n"
               "  generic map (\n"
@@ -155,7 +155,7 @@ std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
     t.Replace("MST_RREQ_DECLARE", "");
     t.Replace("MST_RREQ_INSTANTIATE", "");
   }
-  if (mantle->schema_set_->RequiresWriting()) {
+  if (mantle.schema_set()->RequiresWriting()) {
     t.Replace("BUS_WRITE_SLAVE_MOCK",
               "  wmem_inst: BusWriteSlaveMock\n"
               "  generic map (\n"

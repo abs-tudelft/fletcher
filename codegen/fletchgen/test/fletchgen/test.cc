@@ -20,8 +20,12 @@
 #include "fletchgen/test_recordbatch.h"
 #include "fletchgen/srec/test_srec.h"
 
-int main(int argc, char **argv) {
+void Log(int level, const std::string &msg, char const *source_fun, char const *source_file, int line_num) {
+  std::cerr << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
+}
 
+int main(int argc, char **argv) {
+  cerata::logger().enable(Log);
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

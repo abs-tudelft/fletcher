@@ -19,8 +19,7 @@
 #include <cerata/api.h>
 
 #include "fletchgen/bus.h"
-
-#include "./test_utils.h"
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
@@ -29,6 +28,7 @@ using cerata::Instance;
 using cerata::Port;
 
 TEST(Bus, BusArbiter) {
+  cerata::default_component_pool()->Clear();
   auto top = BusArbiter();
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();

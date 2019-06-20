@@ -18,6 +18,8 @@
 #include <fletcher/common.h>
 #include <cerata/api.h>
 
+namespace fletchgen {
+
 std::string GetProgramName(char *argv0) {
   auto arg = std::string(argv0);
   size_t pos = arg.rfind('\\');
@@ -64,3 +66,5 @@ void LogCerata(cerata::LogLevel level,
     }
   }
 }
+
+} // namespace fletchgen

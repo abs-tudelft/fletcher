@@ -31,11 +31,8 @@ using cerata::Component;
  * @brief The Kernel component to be implemented by the user
  */
 struct Kernel : Component {
-  explicit Kernel(std::string name,
-                  const std::deque<std::shared_ptr<RecordBatch>> &recordbatches = {});
-
-  static std::shared_ptr<Kernel> Make(std::string name,
-                                      std::deque<std::shared_ptr<RecordBatch>> recordbatches = {});
+  explicit Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches = {});
+  static std::shared_ptr<Kernel> Make(std::string name, std::deque<RecordBatch *> recordbatches = {});
   std::shared_ptr<SchemaSet> schema_set_;
 };
 

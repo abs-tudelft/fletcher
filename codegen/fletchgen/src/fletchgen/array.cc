@@ -32,7 +32,9 @@ using cerata::PortArray;
 using cerata::integer;
 using cerata::string;
 using cerata::intl;
+using cerata::rintl;
 using cerata::strl;
+using cerata::rstrl;
 using cerata::boolean;
 using cerata::bool_true;
 using cerata::bool_false;
@@ -47,22 +49,22 @@ std::shared_ptr<Node> ctrl_width(const arrow::Field &field) {
   std::vector<fletcher::BufferMetadata> buffer_meta;
   fletcher::FieldAnalyzer fa(&field_meta, &buffer_meta);
   fa.Analyze(field);
-  std::shared_ptr<Node> width = Literal::Make(buffer_meta.size());
+  std::shared_ptr<Node> width = intl(buffer_meta.size());
   return width * bus_addr_width();
 }
 
 std::shared_ptr<Node> tag_width(const arrow::Field &field) {
   auto meta_val = fletcher::GetMeta(field, "tag_width");
   if (meta_val.empty()) {
-    return intl<1>();
+    return intl(1);
   } else {
     return Literal::Make(std::stoi(meta_val));
   }
 }
 
 std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width, const std::shared_ptr<Node> &tag_width) {
-  auto firstidx = RecField::Make(Vector::Make<32>("firstIdx"));
-  auto lastidx = RecField::Make(Vector::Make<32>("lastidx"));
+  auto firstidx = RecField::Make(Vector::Make("firstIdx", 32));
+  auto lastidx = RecField::Make(Vector::Make("lastidx", 32));
   auto ctrl = RecField::Make(Vector::Make("ctrl", ctrl_width));
   auto tag = RecField::Make(Vector::Make("tag", tag_width));
   auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
@@ -96,10 +98,17 @@ std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &width) {
   return data_stream;
 }
 
-std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
-                                 const std::shared_ptr<Node> &ctrl_width,
-                                 const std::shared_ptr<Node> &tag_width,
-                                 Mode mode) {
+static std::string ArrayName(fletcher::Mode mode) {
+  std::string result = mode == Mode::READ ? "ArrayReader" : "ArrayWriter";
+  return result;
+}
+
+static std::string DataName(fletcher::Mode mode) {
+  std::string result = mode == Mode::READ ? "out" : "in";
+  return result;
+}
+
+std::shared_ptr<Component> Array(Mode mode) {
   std::shared_ptr<BusPort> bus;
   std::shared_ptr<Port> data;
 
@@ -107,15 +116,13 @@ std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
 
   if (mode == Mode::READ) {
     spec.function = BusFunction::READ;
-    data = Port::Make("out", read_data(data_width), Port::Dir::OUT);
+    data = Port::Make(DataName(mode), read_data(), Port::Dir::OUT);
     bus = BusPort::Make(Port::Dir::OUT, spec);
   } else {
     spec.function = BusFunction::WRITE;
-    data = Port::Make("in", write_data(data_width), Port::Dir::IN);
+    data = Port::Make(DataName(mode), write_data(), Port::Dir::IN);
     bus = BusPort::Make(Port::Dir::OUT, spec);
   }
-
-  std::string name = mode == Mode::READ ? "ArrayReader" : "ArrayWriter";
 
   std::deque<std::shared_ptr<cerata::Object>> objects;
 
@@ -129,28 +136,46 @@ std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width,
 
   // Insert other parameters
   objects.insert(objects.end(), {
-      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl<4>()),
-      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl<16>()),
-      Parameter::Make("INDEX_WIDTH", integer(), intl<32>()),
+      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl(4)),
+      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl(16)),
+      Parameter::Make("INDEX_WIDTH", integer(), intl(32)),
       Parameter::Make("CFG", string(), strl("\"\"")),
       Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
-      Parameter::Make("CMD_TAG_WIDTH", integer(), intl<1>())});
+      Parameter::Make("CMD_TAG_WIDTH", integer(), intl(1))});
 
   // Insert ports
   objects.insert(objects.end(), {
       Port::Make(bus_cr()),
       Port::Make(kernel_cr()),
       bus,
-      Port::Make("cmd", cmd(ctrl_width, tag_width), Port::Dir::IN),
-      Port::Make("unl", unlock(tag_width), Port::Dir::OUT),
+      Port::Make("cmd", cmd(), Port::Dir::IN),
+      Port::Make("unl", unlock(), Port::Dir::OUT),
       data});
 
-  auto ret = Component::Make(name, objects);
+  auto ret = Component::Make(ArrayName(mode), objects);
 
-  ret->meta["primitive"] = "true";
-  ret->meta["library"] = "work";
-  ret->meta["package"] = "Array_pkg";
+  ret->SetMeta("primitive", "true");
+  ret->SetMeta("library", "work");
+  ret->SetMeta("package", "Array_pkg");
   return ret;
+}
+
+std::unique_ptr<Instance> ArrayInstance(fletcher::Mode mode,
+                                        const std::shared_ptr<Node> &data_width,
+                                        const std::shared_ptr<Node> &ctrl_width,
+                                        const std::shared_ptr<Node> &tag_width) {
+  std::unique_ptr<Instance> result;
+  // Check if the Array component was already created.
+  Component *array_component;
+  auto optional_component = cerata::default_component_pool()->Get(ArrayName(mode));
+  if (optional_component) {
+    array_component = *optional_component;
+  } else {
+    array_component = Array(mode).get();
+  }
+  // Create the instance
+  result = Instance::Make(array_component);
+  return result;
 }
 
 ConfigType GetConfigType(const arrow::DataType *type) {
@@ -170,23 +195,23 @@ ConfigType GetConfigType(const arrow::DataType *type) {
 std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
   switch (type->id()) {
     // Fixed-width:
-    case arrow::Type::BOOL: return intl<1>();
-    case arrow::Type::DATE32: return intl<32>();
-    case arrow::Type::DATE64: return intl<64>();
-    case arrow::Type::DOUBLE: return intl<64>();
-    case arrow::Type::FLOAT: return intl<32>();
-    case arrow::Type::HALF_FLOAT: return intl<16>();
-    case arrow::Type::INT8: return intl<8>();
-    case arrow::Type::INT16: return intl<16>();
-    case arrow::Type::INT32: return intl<32>();
-    case arrow::Type::INT64: return intl<64>();
-    case arrow::Type::TIME32: return intl<32>();
-    case arrow::Type::TIME64: return intl<64>();
-    case arrow::Type::TIMESTAMP: return intl<64>();
-    case arrow::Type::UINT8: return intl<8>();
-    case arrow::Type::UINT16: return intl<16>();
-    case arrow::Type::UINT32: return intl<32>();
-    case arrow::Type::UINT64: return intl<64>();
+    case arrow::Type::BOOL: return intl(1);
+    case arrow::Type::DATE32: return intl(32);
+    case arrow::Type::DATE64: return intl(64);
+    case arrow::Type::DOUBLE: return intl(64);
+    case arrow::Type::FLOAT: return intl(32);
+    case arrow::Type::HALF_FLOAT: return intl(16);
+    case arrow::Type::INT8: return intl(8);
+    case arrow::Type::INT16: return intl(16);
+    case arrow::Type::INT32: return intl(32);
+    case arrow::Type::INT64: return intl(64);
+    case arrow::Type::TIME32: return intl(32);
+    case arrow::Type::TIME64: return intl(64);
+    case arrow::Type::TIMESTAMP: return intl(64);
+    case arrow::Type::UINT8: return intl(8);
+    case arrow::Type::UINT16: return intl(16);
+    case arrow::Type::UINT32: return intl(32);
+    case arrow::Type::UINT64: return intl(64);
 
       // Lists:
     case arrow::Type::LIST: return strl("OFFSET_WIDTH");
@@ -203,7 +228,7 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
       throw std::domain_error("Arrow type " + type->ToString() + " not supported.");
 
       // Structs have no width
-    case arrow::Type::STRUCT: return intl<0>();
+    case arrow::Type::STRUCT: return intl(0);
 
       // Other width types:
     case arrow::Type::FIXED_SIZE_BINARY: {
@@ -275,9 +300,8 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
   return ret;
 }
 
-std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type,
-                                                const std::shared_ptr<Type> &other) {
-  auto conversion = TypeMapper::Make(stream_type.get(), other.get());
+std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other) {
+  auto conversion = TypeMapper::Make(stream_type, other);
 
   size_t idx_stream = 0;
   // Unused: size_t idx_record = 1;

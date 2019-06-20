@@ -89,7 +89,6 @@ struct FieldPort : public Port {
  */
 struct RecordBatch : public Component {
  public:
-  explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
   static std::shared_ptr<RecordBatch> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
   /// @brief Obtain all ports derived from an Arrow field with a specific function.
@@ -101,6 +100,7 @@ struct RecordBatch : public Component {
   std::deque<Instance *> reader_instances() const { return array_instances_; };
   std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
  protected:
+  explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
   /// @brief Adds all ArrayReaders/Writers, unconcatenates ports and connects it to the top-level of this component.
   void AddArrays(const FletcherSchema &as);
   /// Fletcher schema implemented by this RecordBatch(Reader/Writer)

@@ -25,11 +25,11 @@
 
 int main(int argc, char **argv) {
   // Start logging
-  std::string program_name = GetProgramName(argv[0]);
+  std::string program_name = fletchgen::GetProgramName(argv[0]);
   fletcher::StartLogging(program_name, FLETCHER_LOG_DEBUG, program_name + ".log");
 
   // Enable Cerata to log into the Fletcher logger through the callback function.
-  cerata::logger().enable(LogCerata);
+  cerata::logger().enable(fletchgen::LogCerata);
 
   // Parse options
   auto options = std::make_shared<fletchgen::Options>();
@@ -57,7 +57,9 @@ int main(int argc, char **argv) {
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
     FLETCHER_LOG(INFO, "Generating VHDL output.");
-    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir, design.GetOutputSpec());
+    auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir,
+                                                  design.GetOutputSpec(),
+                                                  fletchgen::DEFAULT_NOTICE);
     vhdl.Generate();
   }
 
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
       sim_file_path += 't';
     }
     sim_file = std::ofstream(sim_file_path);
-    fletchgen::top::GenerateSimTop(design.mantle,
+    fletchgen::top::GenerateSimTop(*design.mantle,
                                    {&sim_file},
                                    options->srec_out_path,
                                    options->srec_sim_dump,
@@ -89,7 +91,7 @@ int main(int argc, char **argv) {
     FLETCHER_LOG(INFO, "Generating Vivado HLS output: " + hls_template_path);
     cerata::CreateDir(options->output_dir + "/vivado_hls");
     auto hls_template_file = std::ofstream(hls_template_path);
-    hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(design.kernel);
+    hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(*design.kernel);
   }
 
   // Generate AXI top level

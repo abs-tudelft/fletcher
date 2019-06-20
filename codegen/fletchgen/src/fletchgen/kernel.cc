@@ -27,8 +27,7 @@ namespace fletchgen {
 
 using cerata::Cast;
 
-Kernel::Kernel(std::string name,
-               const std::deque<std::shared_ptr<RecordBatch>>& recordbatches)
+Kernel::Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches)
     : Component(std::move(name)) {
 
   // Add address width
@@ -51,8 +50,7 @@ Kernel::Kernel(std::string name,
   }
 }
 
-std::shared_ptr<Kernel> Kernel::Make(std::string name,
-                                     std::deque<std::shared_ptr<RecordBatch>> recordbatches) {
+std::shared_ptr<Kernel> Kernel::Make(std::string name, std::deque<RecordBatch *> recordbatches) {
   return std::make_shared<Kernel>(name, recordbatches);
 }
 

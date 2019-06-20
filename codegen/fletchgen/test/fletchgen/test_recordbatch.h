@@ -32,6 +32,7 @@
 namespace fletchgen {
 
 static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) {
+  cerata::default_component_pool()->Clear();
   auto fs = FletcherSchema::Make(schema);
   auto rbr = RecordBatch::Make(fs);
   auto design = cerata::vhdl::Design(rbr);
@@ -40,7 +41,7 @@ static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) 
   std::cout << code << std::endl;
   VHDL_DUMP_TEST(code);
   cerata::dot::Grapher dot;
-  dot.GenFile(rbr, "graph.dot");
+  dot.GenFile(*rbr, "graph.dot");
 }
 
 TEST(RecordBatch, StringRead) {
