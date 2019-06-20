@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <deque>
+#include <string>
+
 #include "cerata/vhdl/architecture.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"

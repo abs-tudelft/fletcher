@@ -15,6 +15,9 @@
 #pragma once
 
 #include <cerata/api.h>
+#include <string>
+#include <memory>
+#include <utility>
 
 namespace fletchgen {
 
@@ -49,8 +52,6 @@ struct MmioPort : public Port {
   static std::shared_ptr<MmioPort> Make(Port::Dir dir, MmioSpec spec = MmioSpec()) {
     return std::make_shared<MmioPort>(dir, spec);
   }
-
-  //std::shared_ptr<Object> Copy() const override;
 };
 
 }  // namespace fletchgen

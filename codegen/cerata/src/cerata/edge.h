@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,10 +62,7 @@ class Edge : public Named {
 std::shared_ptr<Edge> Connect(Node *dst, Node *src);
 
 // Connect shorthands:
-std::shared_ptr<Edge> operator<<=(Node &dst, Node *src);
-std::shared_ptr<Edge> operator<<=(Node &dst, Node &src);
 std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src);
-std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node &src);
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node *src);
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::weak_ptr<Node> &src);
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::shared_ptr<Node> &src);

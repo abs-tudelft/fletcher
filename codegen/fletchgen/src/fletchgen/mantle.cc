@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +14,14 @@
 
 #include "fletchgen/mantle.h"
 
+#include <cerata/api.h>
+#include <fletcher/common.h>
+
 #include <unordered_map>
 #include <memory>
 #include <deque>
 #include <utility>
-#include <cerata/api.h>
-#include <fletcher/common.h>
+#include <string>
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/array.h"
@@ -107,7 +107,6 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     // Copy the master side of the bus arbiter
     auto master = *Cast<BusPort>(arbiter->port("mst")->Copy());
     // TODO(johanpel): actually support multiple bus specs
-    //master->SetName(spec.ToShortString());
     // Connect the ports
     master <<= arbiter->port("mst");
     AddObject(master);

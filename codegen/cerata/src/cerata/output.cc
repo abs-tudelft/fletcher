@@ -32,4 +32,4 @@ OutputGenerator &OutputGenerator::AddOutput(const OutputSpec& output) {
   return *this;
 }
 
-} // namespace cerata
+}  // namespace cerata

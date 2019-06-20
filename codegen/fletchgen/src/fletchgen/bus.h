@@ -14,8 +14,10 @@
 
 #pragma once
 
-#include <memory>
 #include <cerata/api.h>
+
+#include <memory>
+#include <string>
 
 #include "fletchgen/basic_types.h"
 

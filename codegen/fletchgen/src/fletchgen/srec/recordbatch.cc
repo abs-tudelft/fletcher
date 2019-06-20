@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <ostream>
+#include "fletchgen/srec/recordbatch.h"
 
 #include <arrow/api.h>
-#include <arrow/buffer.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
 
+#include <deque>
+#include <memory>
+#include <ostream>
+
 #include "fletchgen/options.h"
-#include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {
@@ -36,7 +37,7 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
                       int64_t buffer_align) {
   // We need to align each buffer into the SREC stream.
   // We start at offset 0.
-  unsigned long offset = 0;
+  uint64_t offset = 0;
   for (const auto &desc_in : meta_in) {
     fletcher::RecordBatchDescription desc_out = desc_in;
     // We can only copy data from physically existing recordbatches into the SREC
@@ -92,14 +93,15 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
   free(srec_buffer);
 }
 
-std::deque<std::shared_ptr<arrow::RecordBatch>> ReadRecordBatchesFromSREC(std::istream *input,
-                                                                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
-                                                                          const std::vector<uint64_t> &num_rows,
-                                                                          const std::vector<uint64_t> &buf_offsets) {
+std::deque<std::shared_ptr<arrow::RecordBatch>>
+ReadRecordBatchesFromSREC(std::istream *input,
+                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
+                          const std::vector<uint64_t> &num_rows,
+                          const std::vector<uint64_t> &buf_offsets) {
   std::deque<std::shared_ptr<arrow::RecordBatch>> ret;
   // TODO(johanpel): implement this
   FLETCHER_LOG(ERROR, "SREC to RecordBatch not yet implemented.");
   return ret;
 }
 
-} // namespace fletchgen::srec
+}  // namespace fletchgen::srec

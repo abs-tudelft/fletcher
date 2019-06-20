@@ -14,6 +14,7 @@
 
 #include "fletchgen/hls/vivado.h"
 
+#include <vector>
 #include <memory>
 #include <string>
 

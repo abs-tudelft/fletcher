@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 #include <memory>
 
@@ -87,4 +88,4 @@ inline Literal *rstrl(std::string str) { return default_node_pool()->GetLiteral(
 /// @brief Shorthand for default_node_pool->intl(i)
 inline std::shared_ptr<Literal> strl(std::string str) { return default_node_pool()->GetLiteral(str); }
 
-}
+}  // namespace cerata

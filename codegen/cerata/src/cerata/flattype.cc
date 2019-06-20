@@ -117,7 +117,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
     auto name = ft.name(ft.nesting_level_ == 0 ? NamePart("(root)") : NamePart());
     ret << std::setw(3) << std::right << i << " :"
         << std::setw(32) << std::left
-        << std::string(static_cast<unsigned long>(2 * ft.nesting_level_), ' ') + name << " | "
+        << std::string(static_cast<int64_t>(2 * ft.nesting_level_), ' ') + name << " | "
         << std::setw(24) << std::left << ft.type_->name() << " | "
         << std::setw(3) << std::right << ft.nesting_level_ << " | "
         << std::setw(8) << std::left << ft.type_->ToString(true) << std::endl;
@@ -134,20 +134,20 @@ bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *t
   return false;
 }
 
-size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
+int64_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (size_t i = 0; i < flat_types_list.size(); i++) {
     if (flat_types_list[i].type_ == type) {
       return i;
     }
   }
-  return static_cast<size_t>(-1);
+  return static_cast<int64_t>(-1);
 }
 
 TypeMapper::TypeMapper(Type *a, Type *b)
     : Named(a->name() + "_to_" + b->name()),
       fa_(Flatten(a)), fb_(Flatten(b)),
       a_(a), b_(b),
-      matrix_(MappingMatrix<size_t>(fa_.size(), fb_.size())) {
+      matrix_(MappingMatrix<int64_t>(fa_.size(), fb_.size())) {
   // If the types are the same, the mapping is trivial and implicitly constructed.
   // The matrix will be the identity matrix.
   if (a_ == b_) {
@@ -172,7 +172,7 @@ std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(Type *a, Type *b) {
   return ret;
 }
 
-TypeMapper &TypeMapper::Add(size_t a, size_t b) {
+TypeMapper &TypeMapper::Add(int64_t a, int64_t b) {
   matrix_.SetNext(a, b);
   return *this;
 }
@@ -216,7 +216,7 @@ std::string TypeMapper::ToString() const {
   return ret.str();
 }
 
-MappingMatrix<size_t> TypeMapper::map_matrix() { return matrix_; }
+MappingMatrix<int64_t> TypeMapper::map_matrix() { return matrix_; }
 
 std::deque<FlatType> TypeMapper::flat_a() const { return fa_; }
 
@@ -282,7 +282,7 @@ std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a) {
   return std::make_shared<TypeMapper>(a, a);
 }
 
-void TypeMapper::SetMappingMatrix(MappingMatrix<size_t> map_matrix) {
+void TypeMapper::SetMappingMatrix(MappingMatrix<int64_t> map_matrix) {
   matrix_ = std::move(map_matrix);
 }
 
@@ -319,7 +319,7 @@ std::string MappingPair::ToString() const {
 
 std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
   std::shared_ptr<Node> w = intl(0);
-  for (size_t i = 0; i < num_a(); i++) {
+  for (int64_t i = 0; i < num_a(); i++) {
     auto fw = flat_type_a(i).type_->width();
     if (fw) {
       w = w + fw.value();
@@ -332,7 +332,7 @@ std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<N
 
 std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
   std::shared_ptr<Node> w = intl(0);
-  for (size_t i = 0; i < num_b(); i++) {
+  for (int64_t i = 0; i < num_b(); i++) {
     auto fw = flat_type_b(i).type_->width();
     if (fw) {
       w = w + fw.value();

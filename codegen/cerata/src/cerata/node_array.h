@@ -41,14 +41,14 @@ class NodeArray : public Object {
   inline Node *size() const { return size_.get(); }
   void SetSize(const std::shared_ptr<Node> &size);
 
-  Type* type() const { return base_->type(); }
+  Type *type() const { return base_->type(); }
 
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Append a node to this array. Returns a pointer to that node.
   Node *Append();
   /// @brief Return all nodes of this NodeArray.
-  std::deque<Node *> nodes() const { return ToRawPtrs(nodes_); };
+  std::deque<Node *> nodes() const { return ToRawPtrs(nodes_); }
   /// @brief Return element node i.
   Node *node(size_t i) const;
   /// @brief Return element node i.
@@ -80,7 +80,7 @@ class NodeArray : public Object {
 class PortArray : public NodeArray, public Term {
  public:
   PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir);
-  PortArray(std::string name, const std::shared_ptr<Port>& base, std::shared_ptr<Node> size);
+  PortArray(std::string name, const std::shared_ptr<Port> &base, std::shared_ptr<Node> size);
 
   /// @brief Get a smart pointer to a new ArrayPort.
   static std::shared_ptr<PortArray> Make(std::string name,
@@ -88,7 +88,7 @@ class PortArray : public NodeArray, public Term {
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
   /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Base name.
-  static std::shared_ptr<PortArray> Make(const std::shared_ptr<Type>& type,
+  static std::shared_ptr<PortArray> Make(const std::shared_ptr<Type> &type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
 
@@ -101,4 +101,4 @@ class PortArray : public NodeArray, public Term {
   std::shared_ptr<Object> Copy() const override;
 };
 
-}
+}  // namespace cerata

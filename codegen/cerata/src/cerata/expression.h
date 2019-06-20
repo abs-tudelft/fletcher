@@ -126,4 +126,4 @@ EXPRESSION_OP_FACTORY(/, DIV)
 #undef EXPRESSION_OP_FACTORY
 #endif
 
-} // namespace cerata
+}  // namespace cerata

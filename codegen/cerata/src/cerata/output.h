@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +14,9 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <deque>
+#include <utility>
 #include <string>
 #include <memory>
 
@@ -52,4 +51,4 @@ class OutputGenerator {
   std::deque<OutputSpec> outputs_;
 };
 
-} // namespace cerata
+}  // namespace cerata

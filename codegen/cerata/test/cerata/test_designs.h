@@ -14,8 +14,11 @@
 
 #pragma once
 
-#include <memory>
 #include <cerata/api.h>
+
+#include <vector>
+#include <memory>
+#include <utility>
 
 namespace cerata {
 
@@ -35,8 +38,8 @@ std::shared_ptr<Component> GetArrayToArrayComponent() {
   child_inst->porta("child_array")->Append();
   top_array->Append();
 
-  *child_inst->porta("child_array")->node(0) <<= top_array->node(0);
-  *child_inst->porta("child_array")->node(1) <<= top_array->node(0);
+  Connect(child_inst->porta("child_array")->node(0), top_array->node(0));
+  Connect(child_inst->porta("child_array")->node(1), top_array->node(0));
 
   top_comp->AddChild(std::move(child_inst));
 
@@ -57,8 +60,8 @@ std::shared_ptr<Component> GetArrayComponent() {
   auto x = Instance::Make(x_comp.get());
   auto y = Instance::Make(y_comp.get());
 
-  *y->port("B") <<= x->porta("A")->Append();
-  *y->port("C") <<= x->porta("A")->Append();
+  Connect(y->port("B"), x->porta("A")->Append());
+  Connect(y->port("C"), x->porta("A")->Append());
 
   top->AddChild(std::move(x))
       .AddChild(std::move(y));
@@ -109,13 +112,12 @@ std::shared_ptr<Component> GetTypeConvComponent() {
       .AddChild(std::move(y));
 
   // Connect ports
-  *yr->port("B") <<= xr->port("A");
+  Connect(yr->port("B"), xr->port("A"));
 
   return top;
 }
 
 std::shared_ptr<Component> GetArrayTypeConvComponent() {
-
   auto t_wide = Vector::Make<4>();
   auto t_narrow = Vector::Make<2>();
   // Flat indices:
@@ -190,7 +192,7 @@ std::shared_ptr<Component> GetStreamConcatComponent() {
   x_comp->AddChild(std::move(y));
 
   // Connect ports
-  *x_comp->port("A") <<= yr->port("B");
+  Connect(x_comp->port("A"), yr->port("B"));
 
   return x_comp;
 }
@@ -241,7 +243,7 @@ std::shared_ptr<Component> GetExampleDesign() {
   std::vector<Instance *> my_other_instances;
   for (int i = 0; i < 10; i++) {
     my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp.get(), "my_inst_" + std::to_string(i)));
-    *my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
+    Connect(my_other_instances[i]->port("my_port"), my_inst->porta("my_array")->Append());
   }
 
   return my_top;

@@ -29,4 +29,4 @@ struct Argument {
 
 std::string GenerateVivadoHLSTemplate(const Kernel& kernel);
 
-} //namespace fletchgen::hls
+}  // namespace fletchgen::hls

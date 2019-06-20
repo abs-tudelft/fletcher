@@ -14,10 +14,12 @@
 
 #pragma once
 
-#include <deque>
-#include <memory>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <deque>
+#include <string>
+#include <memory>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/recordbatch.h"

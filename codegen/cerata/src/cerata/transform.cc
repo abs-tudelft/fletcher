@@ -110,4 +110,4 @@ void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types) {
   types->resize(std::distance(types->begin(), i));
 }
 
-} // namespace cerata
+}  // namespace cerata

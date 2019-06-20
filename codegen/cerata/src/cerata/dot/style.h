@@ -59,9 +59,9 @@ struct Palette {
   std::string light;
   std::string lighter;
 
-  std::vector<std::string> b; // Bright
-  std::vector<std::string> m; // Medium
-  std::vector<std::string> d; // Dark
+  std::vector<std::string> b;  // Bright
+  std::vector<std::string> m;  // Medium
+  std::vector<std::string> d;  // Dark
 
   // Default palette
   static Palette normal();

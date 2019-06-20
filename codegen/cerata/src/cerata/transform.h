@@ -16,6 +16,7 @@
 
 #include <string>
 #include <memory>
+#include <deque>
 
 #include "cerata/type.h"
 #include "cerata/graph.h"
@@ -52,4 +53,4 @@ void GetAllObjectTypesRecursive(Component *top_component, std::deque<Type *> *ty
  */
 void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types_out);
 
-} // namespace cerata
+}  // namespace cerata

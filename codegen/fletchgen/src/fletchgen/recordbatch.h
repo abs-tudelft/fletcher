@@ -14,10 +14,14 @@
 
 #pragma once
 
-#include <utility>
 #include <arrow/api.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <utility>
+#include <string>
+#include <deque>
+#include <memory>
 
 #include "fletchgen/utils.h"
 #include "fletchgen/basic_types.h"
@@ -96,8 +100,8 @@ struct RecordBatch : public Component {
   /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
   std::shared_ptr<FieldPort> GetArrowPort(const arrow::Field &field) const;
 
-  std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; };
-  std::deque<Instance *> reader_instances() const { return array_instances_; };
+  std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; }
+  std::deque<Instance *> reader_instances() const { return array_instances_; }
   std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
  protected:
   explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
@@ -113,4 +117,4 @@ struct RecordBatch : public Component {
   Mode mode_ = Mode::READ;
 };
 
-} // namespace fletchgen
+}  // namespace fletchgen

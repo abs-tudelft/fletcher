@@ -14,11 +14,11 @@
 
 #include "fletchgen/basic_types.h"
 
-#include <memory>
-#include <cmath>
-
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <memory>
+#include <cmath>
 
 namespace fletchgen {
 

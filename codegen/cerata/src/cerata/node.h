@@ -65,9 +65,9 @@ class Node : public Object, public std::enable_shared_from_this<Node> {
   /// Casting convenience functions
 #ifndef NODE_CAST_DECL_FACTORY
 #define NODE_CAST_DECL_FACTORY(NODENAME, IDNAME)                            \
-  inline bool Is##NODENAME() const { return node_id_ == NodeID::IDNAME; }
-  //NODENAME& As##NODENAME();
-  //const NODENAME& As##NODENAME() const;
+  inline bool Is##NODENAME() const { return node_id_ == NodeID::IDNAME; }   \
+  NODENAME& As##NODENAME();                                                 \
+  const NODENAME& As##NODENAME() const;
   NODE_CAST_DECL_FACTORY(Port, PORT)
   NODE_CAST_DECL_FACTORY(Signal, SIGNAL)
   NODE_CAST_DECL_FACTORY(Parameter, PARAMETER)
@@ -293,7 +293,7 @@ class Term {
   static Dir Invert(Dir dir);
 
   /// @brief Return the direction of this terminator.
-  inline Dir dir() const { return dir_; };
+  inline Dir dir() const { return dir_; }
 
   /// @brief Construct a new Term.
   explicit Term(Dir dir) : dir_(dir) {}

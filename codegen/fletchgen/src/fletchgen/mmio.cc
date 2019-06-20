@@ -14,6 +14,9 @@
 
 #include "fletchgen/mmio.h"
 
+#include <memory>
+#include <string>
+
 namespace fletchgen {
 
 using cerata::Parameter;

@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <fstream>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <fstream>
 
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"

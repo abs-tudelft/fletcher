@@ -15,6 +15,8 @@
 #include "fletchgen/recordbatch.h"
 
 #include <cerata/api.h>
+#include <memory>
+#include <deque>
 
 #include "fletchgen/array.h"
 #include "fletchgen/bus.h"
@@ -119,7 +121,8 @@ std::shared_ptr<FieldPort> RecordBatch::GetArrowPort(const arrow::Field &field) 
   throw std::runtime_error("Field " + field.name() + " did not generate an ArrowPort for Core " + name() + ".");
 }
 
-std::deque<std::shared_ptr<FieldPort>> RecordBatch::GetFieldPorts(const std::optional<FieldPort::Function> &function) const {
+std::deque<std::shared_ptr<FieldPort>>
+RecordBatch::GetFieldPorts(const std::optional<FieldPort::Function> &function) const {
   std::deque<std::shared_ptr<FieldPort>> result;
   for (const auto &n : objects_) {
     auto ap = Cast<FieldPort>(n);
@@ -190,4 +193,4 @@ std::shared_ptr<cerata::Object> FieldPort::Copy() const {
   return std::make_shared<FieldPort>(name(), function_, field_, typ, dir());
 }
 
-} // namespace fletchgen
+}  // namespace fletchgen

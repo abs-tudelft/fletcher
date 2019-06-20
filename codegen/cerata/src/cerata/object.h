@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <utility>
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -38,7 +39,7 @@ class Object : public Named {
   virtual ~Object() = default;
 
   /// @brief Return the object ID of this object.
-  ID obj_id() const { return obj_id_; };
+  ID obj_id() const { return obj_id_; }
   /// @brief Return true if this object is a node.
   bool IsNode() const { return obj_id_ == NODE; }
   /// @brief Return true if this object is an array.
@@ -50,10 +51,11 @@ class Object : public Named {
 
   /// @brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;
+
  protected:
   ID obj_id_;
   /// An optional parent Graph to which this Object belongs. Initially no value.
   std::optional<Graph *> parent_ = {};
 };
 
-}  // cerata;
+}  // namespace cerata

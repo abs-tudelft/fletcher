@@ -1,13 +1,3 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,9 +37,9 @@ std::string Node::ToString() const {
 
 // Generate node casting convenience functions.
 #ifndef NODE_CAST_IMPL_FACTORY
-#define NODE_CAST_IMPL_FACTORY(NODENAME)
-//NODENAME& Node::As##NODENAME() { return dynamic_cast<NODENAME &>(*this); }
-//const NODENAME &Node::As##NODENAME() const { return dynamic_cast<const NODENAME &>(*this); }
+#define NODE_CAST_IMPL_FACTORY(NODENAME)                                                     \
+NODENAME& Node::As##NODENAME() { return dynamic_cast<NODENAME &>(*this); }                   \
+const NODENAME &Node::As##NODENAME() const { return dynamic_cast<const NODENAME &>(*this); }
 NODE_CAST_IMPL_FACTORY(Port)
 NODE_CAST_IMPL_FACTORY(Signal)
 NODE_CAST_IMPL_FACTORY(Parameter)
@@ -200,7 +190,7 @@ template<>
 int Literal::raw_value() { return int_val_; }
 
 template<>
-std::string Literal::raw_value() { return str_val_; };
+std::string Literal::raw_value() { return str_val_; }
 
 std::shared_ptr<Edge> Literal::AddSource(Node *source) {
   throw std::runtime_error("Cannot drive a literal node.");

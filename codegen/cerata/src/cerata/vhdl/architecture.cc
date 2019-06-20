@@ -59,7 +59,7 @@ MultiBlock Arch::Generate(const Component &comp) {
     ret << inst_decl;
   }
 
-  //TODO(johanpel): Signal connections
+  // TODO(johanpel): Signal connections
 
   Line footer;
   footer << "end architecture;";

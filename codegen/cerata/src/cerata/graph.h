@@ -106,6 +106,7 @@ class Graph : public Named {
 
   /// @brief Set metadata
   Graph &SetMeta(const std::string &key, std::string value);
+
  protected:
   /// @brief Graph type id for convenience
   ID id_;
@@ -146,7 +147,7 @@ class Component : public Graph {
    * @param inst  Optional pointer to the instance to store.
    * @return      A reference to this Component if successful.
    */
-  Instance *AddInstanceOf(Component *comp, std::string name = "");
+  Instance *AddInstanceOf(Component *comp, const std::string &name = "");
 
   /**
    * @brief Gather all Instance graphs from this Component
@@ -194,8 +195,8 @@ class Instance : public Graph {
   /// @brief Construct an Instance of a Component, copying over all its ports and parameters
   explicit Instance(Component *comp, std::string name);
 
-  Component *component_;
-  Graph *parent_;
+  Component *component_{};
+  Graph *parent_{};
 };
 
 }  // namespace cerata

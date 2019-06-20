@@ -16,6 +16,9 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include <vector>
+#include <algorithm>
 
 #include "cerata/logging.h"
 #include "cerata/graph.h"
@@ -45,7 +48,7 @@ MultiBlock Design::Generate() {
 
   // Figure out potential libs and packages used for primitive components.
   std::unordered_map<std::string, std::vector<std::string>> libs_and_packages;
-  for (const auto &c: component_->GetAllUniqueComponents()) {
+  for (const auto &c : component_->GetAllUniqueComponents()) {
     if (c->meta().count("primitive") > 0) {
       if (c->meta().at("primitive") == "true") {
         std::string lib = c->meta().at("library");

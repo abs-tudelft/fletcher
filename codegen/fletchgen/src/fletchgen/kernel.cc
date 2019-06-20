@@ -17,6 +17,9 @@
 #include <cerata/logging.h>
 #include <fletcher/common.h>
 
+#include <utility>
+#include <string>
+
 #include "fletchgen/basic_types.h"
 #include "fletchgen/schema.h"
 #include "fletchgen/utils.h"

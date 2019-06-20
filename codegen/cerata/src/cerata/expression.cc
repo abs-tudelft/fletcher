@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -149,4 +145,4 @@ std::shared_ptr<Edge> Expression::AddSource(Node *source) {
   throw std::runtime_error("Cannot drive an expression node.");
 }
 
-} // namespace cerata
+}  // namespace cerata

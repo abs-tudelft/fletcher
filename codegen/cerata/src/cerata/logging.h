@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <functional>
+#include <string>
 
 namespace cerata {
 
@@ -65,4 +66,4 @@ inline Logger &logger() {
 
 #define CERATA_LOG(level, msg) logger().write(CERATA_LOG_##level, msg,  __FUNCTION__, __FILE__, __LINE__)
 
-}
+}  // namespace cerata

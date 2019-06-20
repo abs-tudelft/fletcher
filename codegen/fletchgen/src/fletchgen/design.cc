@@ -14,14 +14,17 @@
 
 #include <cerata/api.h>
 
+#include <string>
+#include <deque>
+
 #include "fletcher/common.h"
 #include "fletchgen/design.h"
 #include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
-using OutputSpec=cerata::OutputSpec;
-using RBVector=std::vector<std::shared_ptr<arrow::RecordBatch>>;
+using OutputSpec = cerata::OutputSpec;
+using RBVector = std::vector<std::shared_ptr<arrow::RecordBatch>>;
 
 static std::optional<std::shared_ptr<arrow::RecordBatch>> GetRecordBatchWithName(const RBVector &batches,
                                                                                  const std::string &name) {
@@ -71,7 +74,7 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   FLETCHER_LOG(INFO, "Generating Mantle...");
   ret.mantle = Mantle::Make(ret.schema_set);
   ret.kernel = ret.mantle->kernel();
-  for (const auto& recordbatch_component : ret.mantle->recordbatch_components()) {
+  for (const auto &recordbatch_component : ret.mantle->recordbatch_components()) {
     ret.readers.push_back(recordbatch_component);
   }
 
@@ -103,4 +106,4 @@ std::deque<OutputSpec> Design::GetOutputSpec() {
   return result;
 }
 
-} // namespace fletchgen
+}  // namespace fletchgen

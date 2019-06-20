@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <string>
 #include <memory>
+#include <deque>
 
 #include "cerata/node.h"
 #include "cerata/type.h"

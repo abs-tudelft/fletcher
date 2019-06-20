@@ -23,7 +23,7 @@
 #include "cerata/graph.h"
 #include "cerata/edge.h"
 #include "cerata/transform.h"
-#include "vhdl_types.h"
+#include "cerata/vhdl/vhdl_types.h"
 
 namespace cerata::vhdl {
 
@@ -79,20 +79,20 @@ static void ExpandStream(const std::deque<FlatType> &flattened_type) {
   for (auto &ft : flattened_type) {
     // If we encounter a stream type
     if (ft.type_->Is(Type::STREAM)) {
-      Stream *st = (Stream *) *Cast<Stream>(ft.type_);
+      auto *stream_type = dynamic_cast<Stream *>(ft.type_);
       // Check if we didn't expand the type already.
-      if (st->meta.count("VHDL:ExpandStream") == 0) {
+      if (stream_type->meta.count("VHDL:ExpandStream") == 0) {
         // Create a new record to hold valid, ready and the original element type
-        auto new_elem_type = Record::Make(st->name() + "_vr");
+        auto new_elem_type = Record::Make(stream_type->name() + "_vr");
         // Mark the record
         new_elem_type->meta["VHDL:ExpandStream"] = "record";
         // Add valid, ready and original type to the record and set the new element type
         new_elem_type->AddField(RecField::Make("valid", valid()));
         new_elem_type->AddField(RecField::Make("ready", ready(), true));
-        new_elem_type->AddField(RecField::Make(st->element_name(), st->element_type()));
-        st->SetElementType(new_elem_type);
+        new_elem_type->AddField(RecField::Make(stream_type->element_name(), stream_type->element_type()));
+        stream_type->SetElementType(new_elem_type);
         // Mark the stream itself to remember we've expanded it.
-        st->meta["VHDL:ExpandStream"] = "stream";
+        stream_type->meta["VHDL:ExpandStream"] = "stream";
       }
     }
   }
@@ -130,7 +130,7 @@ static void ExpandMappers(Type *type) {
     }
   } else {
     // Iterate over all previously existing mappers.
-    for (const auto &mapper: mappers) {
+    for (const auto &mapper : mappers) {
       if (!HasStream(mapper->flat_a()) && !HasStream(mapper->flat_b())) {
         continue;
       }
@@ -153,10 +153,10 @@ static void ExpandMappers(Type *type) {
       auto flat_a = new_mapper->flat_a();
       auto flat_b = new_mapper->flat_b();
 
-      size_t old_row = 0;
-      size_t old_col = 0;
-      size_t new_row = 0;
-      size_t new_col = 0;
+      int64_t old_row = 0;
+      int64_t old_col = 0;
+      int64_t new_row = 0;
+      int64_t new_col = 0;
 
       while (new_row < new_matrix.height()) {
         auto at = flat_a[new_row].type_;
@@ -165,15 +165,15 @@ static void ExpandMappers(Type *type) {
           // Figure out if we're dealing with a matching, expanded type on both sides.
           if (IsExpanded(at, "stream") && IsExpanded(bt, "stream")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
-            new_col += 4; // Skip over record, valid and ready
+            new_col += 4;  // Skip over record, valid and ready
             old_col += 1;
           } else if (IsExpanded(at, "record") && IsExpanded(bt, "record")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
-            new_col += 3; // Skip over valid and ready
+            new_col += 3;  // Skip over valid and ready
             old_col += 1;
           } else if (IsExpanded(at, "valid") && IsExpanded(bt, "valid")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
-            new_col += 2; // Skip over ready
+            new_col += 2;  // Skip over ready
             old_col += 1;
           } else if (IsExpanded(at, "ready") && IsExpanded(bt, "ready")) {
             new_matrix(new_row, new_col) = old_matrix(old_row, old_col);
@@ -195,8 +195,8 @@ static void ExpandMappers(Type *type) {
         old_col = 0;
         new_col = 0;
 
-        // Only move to the next row of the old matrix when we see the last expanded type or if it's not an expanded type
-        // at all.
+        // Only move to the next row of the old matrix when we see the last expanded type or if it's not an expanded
+        // type at all.
         if (!IsExpanded(at) || IsExpanded(at, "ready")) {
           old_row += 1;
         }

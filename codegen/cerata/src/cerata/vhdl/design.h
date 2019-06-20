@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +15,8 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "cerata/graph.h"
 #include "cerata/vhdl/vhdl.h"

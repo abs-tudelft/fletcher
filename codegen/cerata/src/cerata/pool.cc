@@ -49,4 +49,4 @@ std::optional<Component *> ComponentPool::Get(const std::string &name) {
   return std::nullopt;
 }
 
-} // namespace cerata
+}  // namespace cerata

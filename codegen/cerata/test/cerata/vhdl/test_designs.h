@@ -14,9 +14,11 @@
 
 #pragma once
 
-#include <iostream>
 #include <gtest/gtest.h>
 #include <cerata/api.h>
+
+#include <iostream>
+#include <string>
 
 #include "cerata/test_designs.h"
 
@@ -71,7 +73,7 @@ TEST(VHDL_DESIGN, CompInst) {
   auto top = Component::Make("top");
   auto ia = top->AddInstanceOf(ca.get());
   auto ib = top->AddInstanceOf(cb.get());
-  *ia->port("a") <<= ib->port("b");
+  Connect(ia->port("a"), ib->port("b"));
   auto design = vhdl::Design(top);
   auto design_source = design.Generate().ToString();
   std::cout << design_source;
@@ -107,4 +109,4 @@ TEST(VHDL_DESIGN, CompInst) {
   VHDL_DUMP_TEST(expected);
 }
 
-}
+}  // namespace cerata

@@ -27,19 +27,6 @@
 
 namespace cerata {
 
-static void OwnParameterSources(Graph *comp, const Object &obj) {
-  if (obj.IsNode()) {
-    auto &node = dynamic_cast<const Node &>(obj);
-    if (node.IsParameter()) {
-      auto &par = dynamic_cast<const Parameter&>(node);
-      // If the parameter has a value, take ownership of its value and add it to the component.
-      if (par.val()) {
-        comp->AddObject(par.val().value()->shared_from_this());
-      }
-    }
-  }
-}
-
 static void AddParameterSources(Graph *comp, const Object &obj) {
   if (obj.IsNode()) {
     auto &node = dynamic_cast<const Node &>(obj);
@@ -56,7 +43,6 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
     objects_.push_back(obj);
     obj->SetParent(this);
     AddParameterSources(this, *obj);
-    //OwnParameterSources(this, *obj);
   }
   return *this;
 }
@@ -87,7 +73,7 @@ Component &Component::AddChild(std::unique_ptr<Instance> child) {
   return *this;
 }
 
-Instance *Component::AddInstanceOf(Component *comp, std::string name) {
+Instance *Component::AddInstanceOf(Component *comp, const std::string &name) {
   auto inst = Instance::Make(comp, name);
   auto raw_ptr = inst.get();
   AddChild(std::move(inst));
@@ -127,10 +113,11 @@ NodeArray *Graph::GetArray(Node::NodeID node_id, const std::string &array_name) 
 
 Node *Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
   for (const auto &n : GetAll<Node>()) {
-    if (n->name() == node_name)
+    if (n->name() == node_name) {
       if (n->Is(node_id)) {
         return n;
       }
+    }
   }
   throw std::logic_error("Node " + node_name + " does not exist on Graph " + this->name());
 }
@@ -219,7 +206,7 @@ std::deque<Node *> Graph::GetNodesOfTypes(std::initializer_list<Node::NodeID> id
 }
 
 Graph &Graph::SetMeta(const std::string &key, std::string value) {
-  meta_[key] = value;
+  meta_[key] = std::move(value);
   return *this;
 }
 

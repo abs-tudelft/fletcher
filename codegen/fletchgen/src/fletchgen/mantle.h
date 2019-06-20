@@ -14,10 +14,12 @@
 
 #pragma once
 
+#include <cerata/api.h>
+
+#include <string>
 #include <unordered_map>
 #include <memory>
 #include <deque>
-#include <cerata/api.h>
 
 #include "fletchgen/kernel.h"
 #include "fletchgen/bus.h"

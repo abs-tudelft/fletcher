@@ -83,4 +83,4 @@ void Template::Analyze() {
   }
 }
 
-} //namespace cerata::vhdl
+}  // namespace cerata::vhdl

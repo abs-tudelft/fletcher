@@ -21,7 +21,6 @@
 #include <iomanip>
 
 #include "cerata/node.h"
-#include "cerata/type.h"
 #include "cerata/flattype.h"
 #include "cerata/pool.h"
 
@@ -86,7 +85,7 @@ std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
 }
 
 void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing) {
-  Type *other = (Type *) mapper->b();
+  Type *other = mapper->b();
 
   // Check if a mapper doesn't already exists
   if (GetMapper(other)) {
@@ -194,9 +193,7 @@ bool Vector::IsEqual(const Type &other) const {
     // Must both have a width
     if (width_ && other.width()) {
       // TODO(johanpel): implement proper width checking..
-      //if (*width_ == *other->width()) {
       return true;
-      //}
     }
   }
   return false;

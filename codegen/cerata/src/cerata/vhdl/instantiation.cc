@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <deque>
+#include <string>
+
 #include "cerata/logging.h"
 #include "cerata/edge.h"
 #include "cerata/node.h"
@@ -35,8 +38,11 @@ static std::string lit2vhdl(const Literal &lit) {
       return "\"" + lit.ToString() + "\"";
     case Type::BOOLEAN:
       // Convert to VHDL boolean
-      if (lit.bool_val()) return "true";
-      else return "false";
+      if (lit.bool_val()) {
+        return "true";
+      } else {
+        return "false";
+      }
   }
 }
 
@@ -60,7 +66,7 @@ Block Inst::GenerateGenericMap(const Parameter &par) {
     const Node *val = optional_value.value();
     // If it is a literal, make it VHDL compatible
     if (val->IsLiteral()) {
-      const Literal* lit = dynamic_cast<const Literal*>(val);
+      const Literal *lit = dynamic_cast<const Literal *>(val);
       l << lit2vhdl(*lit);
     } else {
       l << val->ToString();
@@ -152,16 +158,16 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a
     b_array = true;
   }
   // Loop over all pairs
-  for (const auto &pair: pairs) {
+  for (const auto &pair : pairs) {
     // Offset on the right side
     std::shared_ptr<Node> b_offset = pair.width_a(intl(b_idx));
     // Loop over everything on the left side
-    for (size_t ia = 0; ia < pair.num_a(); ia++) {
+    for (int64_t ia = 0; ia < pair.num_a(); ia++) {
       // Get the width of the left side.
       auto a_width = pair.flat_type_a(ia).type_->width();
       // Offset on the left side.
       std::shared_ptr<Node> a_offset = pair.width_b(intl(a_idx));
-      for (size_t ib = 0; ib < pair.num_b(); ib++) {
+      for (int64_t ib = 0; ib < pair.num_b(); ib++) {
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets

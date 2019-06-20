@@ -14,11 +14,13 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <arrow/api.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <deque>
+#include <memory>
+#include <vector>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/options.h"
@@ -43,4 +45,4 @@ struct Design {
   std::deque<cerata::OutputSpec> GetOutputSpec();
 };
 
-}
+}  // namespace fletchgen

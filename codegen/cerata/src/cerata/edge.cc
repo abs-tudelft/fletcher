@@ -79,14 +79,6 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
   return edge;
 }
 
-std::shared_ptr<Edge> operator<<=(Node &dst, Node *src) {
-  return Connect(&dst, src);
-}
-
-std::shared_ptr<Edge> operator<<=(Node &dst, Node &src) {
-  return Connect(&dst, &src);
-}
-
 std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src) {
   return Connect(dst, src.get());
 }
@@ -101,10 +93,6 @@ std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::sha
 
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
   return Connect(dst.get(), src.get());
-}
-
-std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node &src) {
-  return Connect(dst.lock().get(), &src);
 }
 
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node *src) {
@@ -170,8 +158,8 @@ std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix) {
   dst->RemoveEdge(edge);
   // From this moment onward, the edge may be deconstructed and should not be used anymore.
   // Make the new connections, effectively creating two new edges.
-  *signal <<= *src;
-  *dst <<= signal.get();
+  signal <<= src;
+  dst <<= signal;
   // Return the new signal
   return signal;
 }

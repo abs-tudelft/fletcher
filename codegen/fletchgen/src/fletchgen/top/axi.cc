@@ -15,6 +15,7 @@
 #include "fletchgen/top/axi.h"
 
 #include <cerata/api.h>
+#include <memory>
 
 #include "fletchgen/mantle.h"
 
@@ -22,8 +23,7 @@ namespace fletchgen::top {
 
 using cerata::vhdl::Template;
 
-std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle,
-                           const std::vector<std::ostream *> &outputs) {
+std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle, const std::vector<std::ostream *> &outputs) {
   const char *fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
   if (fhwd == nullptr) {
     throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
@@ -55,4 +55,4 @@ std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle,
   return t.ToString();
 }
 
-} //namespace fletchgen::top
+}  // namespace fletchgen::top

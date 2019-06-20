@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -354,7 +352,8 @@ class Stream : public Type {
   std::string element_name() { return element_name_; }
 
   /// @brief Return the maximum number of elements per cycle this stream can deliver.
-  int epc() { return epc_; } // TODO(johanpel): turn EPC into a parameter or literal node
+  // TODO(johanpel): turn EPC into a parameter or literal node
+  int epc() { return epc_; }
 
   /// @brief Determine if this Stream is exactly equal to another Stream.
   bool IsEqual(const Type &other) const override;

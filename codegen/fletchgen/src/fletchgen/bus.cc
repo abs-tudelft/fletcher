@@ -14,8 +14,10 @@
 
 #include "fletchgen/bus.h"
 
-#include <memory>
 #include <cerata/api.h>
+
+#include <memory>
+#include <deque>
 
 #include "fletchgen/basic_types.h"
 

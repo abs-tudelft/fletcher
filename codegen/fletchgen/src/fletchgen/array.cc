@@ -14,10 +14,13 @@
 
 #include "fletchgen/array.h"
 
-#include <memory>
-#include <cmath>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+#include <memory>
+#include <cmath>
+#include <vector>
+#include <deque>
+#include <string>
 
 #include "fletchgen/bus.h"
 
@@ -220,11 +223,11 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
 
       // Others:
     default:
-      //case arrow::Type::INTERVAL: return 0;
-      //case arrow::Type::MAP: return 0;
-      //case arrow::Type::NA: return 0;
-      //case arrow::Type::DICTIONARY: return 0;
-      //case arrow::Type::UNION: return 0;
+      // case arrow::Type::INTERVAL: return 0;
+      // case arrow::Type::MAP: return 0;
+      // case arrow::Type::NA: return 0;
+      // case arrow::Type::DICTIONARY: return 0;
+      // case arrow::Type::UNION: return 0;
       throw std::domain_error("Arrow type " + type->ToString() + " not supported.");
 
       // Structs have no width
