@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +36,7 @@ class Logger {
 
   /// @brief Enable the logger. Can only be done after the callback function was set.
   inline void enable(std::function<CallbackSignature> callback) {
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 
   /// @brief Return true if callback was set, false otherwise.

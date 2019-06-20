@@ -12,87 +12,92 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "cerata/transform.h"
+
 #include <string>
 #include <memory>
+#include <deque>
 
-#include "cerata/transform.h"
-#include "cerata/types.h"
+#include "cerata/graph.h"
+#include "cerata/type.h"
+#include "cerata/object.h"
+#include "cerata/node.h"
+#include "cerata/node_array.h"
 
 namespace cerata {
 
-void GetAllGraphsRecursive(std::deque<Graph *> *graphs,
-                           const std::shared_ptr<Graph> &top_graph) {
-  if (graphs == nullptr) {
-    throw std::runtime_error("Cannot append to nullptr deque of graphs.");
-  }
-  // If the top_graph is a Component it can have Instances, apply this function recursively to the components of the
+void GetAllGraphsRecursive(Graph *top_graph, std::deque<Graph *> *graphs_out) {
+  // If the top_graph is a Component it can have Instances, apply this function recursively to the components of these
   // instances.
-  auto comp = Cast<Component>(top_graph);
-  if (comp) {
+  if (top_graph->IsComponent()) {
+    auto comp = dynamic_cast<Component *>(top_graph);
     // Insert all instances
-    auto instances = (*comp)->GetAllInstances();
-    graphs->insert(graphs->end(), instances.begin(), instances.end());
+    auto instances = comp->children();
+    graphs_out->insert(graphs_out->end(), instances.begin(), instances.end());
 
     // Iterate over all instance components
     for (const auto &inst : instances) {
-      graphs->push_back(inst->component.get());
-      GetAllGraphsRecursive(graphs, inst->component);
+      Component* inst_component = inst->component();
+      // Push back its component
+      graphs_out->push_back(inst_component);
+      GetAllGraphsRecursive(inst_component, graphs_out);
     }
   }
 }
 
-void GetAllObjectsRecursive(std::deque<std::shared_ptr<Object>> *objects,
-                            const std::shared_ptr<Component> &top_component) {
+void GetAllObjectsRecursive(Component *top_component, std::deque<Object *> *objects) {
   if (objects == nullptr) {
     throw std::runtime_error("Objects deque is nullptr.");
   }
-  // First obtain all components.
-  std::deque<Graph *> graphs = {top_component.get()};
-  GetAllGraphsRecursive(&graphs, top_component);
+  // Add all objects of the top component
+  auto top_objects = top_component->objects();
+  objects->insert(objects->end(), top_objects.begin(), top_objects.end());
 
-  // Copy all pointers to the objects
+  // Obtain all subgraphs
+  std::deque<Graph *> graphs;
+  GetAllGraphsRecursive(top_component, &graphs);
+
+  // Add all pointers to the objects of the subgraphs
   for (const auto &graph : graphs) {
     auto comp_objs = graph->objects();
     objects->insert(objects->end(), comp_objs.begin(), comp_objs.end());
   }
 }
 
-void GetAllObjectTypesRecursive(std::deque<std::shared_ptr<Type>> *types,
-                                const std::shared_ptr<Component> &top_component) {
+void GetAllObjectTypesRecursive(Component *top_component, std::deque<Type *> *types) {
   if (types == nullptr) {
     throw std::runtime_error("Types deque is nullptr.");
   }
-  std::deque<std::shared_ptr<Object>> objects;
-  GetAllObjectsRecursive(&objects, top_component);
+  std::deque<Object *> objects;
+  GetAllObjectsRecursive(top_component, &objects);
 
   for (const auto &o : objects) {
     if (o->IsNode()) {
-      auto n = *Cast<Node>(o);
-      types->push_back(n->type());
+      auto node = dynamic_cast<Node *>(o);
+      types->push_back(node->type());
     }
     if (o->IsArray()) {
-      auto a = *Cast<NodeArray>(o);
-      types->push_back(a->type());
+      auto array = dynamic_cast<NodeArray *>(o);
+      types->push_back(array->type());
     }
   }
 }
 
-void GetAllTypesRecursive(std::deque<Type *> *types,
-                          const std::shared_ptr<Component> &top_component) {
+void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types) {
   if (types == nullptr) {
     throw std::runtime_error("Types deque is nullptr.");
   }
-  std::deque<std::shared_ptr<Object>> objects;
-  GetAllObjectsRecursive(&objects, top_component);
+  std::deque<Object *> objects;
+  GetAllObjectsRecursive(top_component, &objects);
 
   for (const auto &o : objects) {
     std::deque<FlatType> ft;
     if (o->IsNode()) {
       auto n = *Cast<Node>(o);
-      ft = Flatten(n->type().get());
+      ft = Flatten(n->type());
     } else if (o->IsArray()) {
       auto a = *Cast<NodeArray>(o);
-      ft = Flatten(a->type().get());
+      ft = Flatten(a->type());
     }
     for (const auto &f : ft) {
       // Drop the const qualifier, because this function is probably used to transform the type.

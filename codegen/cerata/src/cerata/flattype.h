@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +33,7 @@ class Stream;
 class Node;
 
 struct NamePart {
-  NamePart()=default;
+  NamePart() = default;
   explicit NamePart(std::string part, bool append_sep = true) : str(std::move(part)), sep(append_sep) {}
   std::string str = "";
   bool sep = false;
@@ -81,7 +79,7 @@ void Flatten(std::deque<FlatType> *list,
              const std::optional<FlatType> &parent,
              const std::string &name,
              bool invert,
-             bool sep=true);
+             bool sep = true);
 
 /// @brief Flatten and return a list of FlatTypes.
 std::deque<FlatType> Flatten(Type *type);

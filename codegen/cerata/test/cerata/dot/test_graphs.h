@@ -15,27 +15,26 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cerata/api.h>
 
-#include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/dot/dot.h"
-
-#include "../test_designs.h"
+#include "cerata/test_designs.h"
 
 namespace cerata {
 
 TEST(Dot, Component) {
+  default_component_pool()->Clear();
   // Get component
   auto top = GetAllPortTypesComponent();
   // Generate graph
   dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  std::cout << dot.GenFile(*top, "graph.dot");
 }
 
 TEST(Example, DOT) {
+  default_component_pool()->Clear();
   auto top = GetExampleDesign();
   dot::Grapher dot;
-  std::cout << dot.GenFile(top, "graph.dot");
+  std::cout << dot.GenFile(*top, "graph.dot");
 }
 
 }  // namespace cerata

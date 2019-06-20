@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 
 namespace cerata::vhdl {
 
@@ -27,16 +27,17 @@ struct Resolve {
    * In VHDL, port-to-port connections of instances are not supported.
    *
    * @param comp  The component to transform.
-   * @return      The transformed component.
+   * @return      The transformed component. TODO(johanpel): this should be a transformed copy, but is currently the
+   *              same component.
    */
-  static std::shared_ptr<Component> ResolvePortToPort(std::shared_ptr<Component> comp);
+  static Component *ResolvePortToPort(Component *comp);
 
   /**
    * @brief Transforms the component, materialize the abstract Stream type by expanding it with a ready and valid bit.
    * @param comp  The component to transform.
-   * @return      The transformed component.
+   * @return      The transformed component. TODO(johanpel): this should be a transformed copy
    */
-  static std::shared_ptr<Component> ExpandStreams(std::shared_ptr<Component> comp);
+  static Component *ExpandStreams(Component *comp);
 };
 
 }  // namespace cerata::vhdl

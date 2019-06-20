@@ -15,33 +15,28 @@
 #pragma once
 
 #include <memory>
-
-#include "cerata/types.h"
-#include "cerata/nodes.h"
-#include "cerata/edges.h"
-#include "cerata/graphs.h"
-#include "cerata/arrays.h"
+#include <cerata/api.h>
 
 namespace cerata {
 
 std::shared_ptr<Component> GetArrayToArrayComponent() {
   auto data = Vector::Make<8>();
 
-  auto top_size = Parameter::Make("top_size", integer(), intl<0>());
+  auto top_size = Parameter::Make("top_size", integer(), intl(0));
   auto top_array = PortArray::Make("top_array", data, top_size, Term::IN);
   auto top_comp = Component::Make("top_comp", {top_size, top_array});
 
-  auto child_size = Parameter::Make("child_size", integer(), intl<0>());
+  auto child_size = Parameter::Make("child_size", integer(), intl(0));
   auto child_array = PortArray::Make("child_array", data, child_size, Term::IN);
   auto child_comp = Component::Make("child_comp", {child_size, child_array});
-  auto child_inst = Instance::Make(child_comp);
+  auto child_inst = Instance::Make(child_comp.get());
 
   child_inst->porta("child_array")->Append();
   child_inst->porta("child_array")->Append();
   top_array->Append();
 
-  child_inst->porta("child_array")->node(0) <<= top_array->node(0);
-  child_inst->porta("child_array")->node(1) <<= top_array->node(0);
+  *child_inst->porta("child_array")->node(0) <<= top_array->node(0);
+  *child_inst->porta("child_array")->node(1) <<= top_array->node(0);
 
   top_comp->AddChild(std::move(child_inst));
 
@@ -49,7 +44,7 @@ std::shared_ptr<Component> GetArrayToArrayComponent() {
 }
 
 std::shared_ptr<Component> GetArrayComponent() {
-  auto size = Parameter::Make("size", integer(), intl<0>());
+  auto size = Parameter::Make("size", integer(), intl(0));
   auto data = Vector::Make<8>();
   auto pA = PortArray::Make("A", data, size, Term::OUT);
   auto pB = Port::Make("B", data, Term::IN);
@@ -59,11 +54,11 @@ std::shared_ptr<Component> GetArrayComponent() {
   auto x_comp = Component::Make("X", {size, pA});
   auto y_comp = Component::Make("Y", {pB, pC});
 
-  auto x = Instance::Make(x_comp);
-  auto y = Instance::Make(y_comp);
+  auto x = Instance::Make(x_comp.get());
+  auto y = Instance::Make(y_comp.get());
 
-  y->port("B") <<= x->porta("A")->Append();
-  y->port("C") <<= x->porta("A")->Append();
+  *y->port("B") <<= x->porta("A")->Append();
+  *y->port("C") <<= x->porta("A")->Append();
 
   top->AddChild(std::move(x))
       .AddChild(std::move(y));
@@ -72,7 +67,6 @@ std::shared_ptr<Component> GetArrayComponent() {
 }
 
 std::shared_ptr<Component> GetTypeConvComponent() {
-
   auto t_wide = Vector::Make<4>();
   auto t_narrow = Vector::Make<2>();
   // Flat indices:
@@ -107,15 +101,15 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   auto top = Component::Make("top");
   auto x_comp = Component::Make("X", {pA});
   auto y_comp = Component::Make("Y", {pB});
-  auto x = Instance::Make(x_comp);
-  auto y = Instance::Make(y_comp);
+  auto x = Instance::Make(x_comp.get());
+  auto y = Instance::Make(y_comp.get());
   auto xr = x.get();
   auto yr = y.get();
   top->AddChild(std::move(x))
       .AddChild(std::move(y));
 
   // Connect ports
-  yr->port("B") <<= xr->port("A");
+  *yr->port("B") <<= xr->port("A");
 
   return top;
 }
@@ -141,7 +135,7 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   tA->AddMapper(mapper);
 
   // Ports
-  auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl<0>());
+  auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl(0));
   auto pA = PortArray::Make("A", tA, parSize, Port::OUT);
   auto pB = Port::Make("B", tB, Port::OUT);
   auto pC = Port::Make("C", tB, Port::OUT);
@@ -149,7 +143,7 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   // Components and instantiations
   auto top = Component::Make("top", {pB, pC});
   auto x_comp = Component::Make("X", {pA});
-  auto x = Instance::Make(x_comp);
+  auto x = Instance::Make(x_comp.get());
   auto xr = x.get();
   top->AddChild(std::move(x));
 
@@ -188,15 +182,15 @@ std::shared_ptr<Component> GetStreamConcatComponent() {
   // Components and instantiations
   auto x_comp = Component::Make("X", {pA});
   auto y_comp = Component::Make("Y", {pB});
-  y_comp->meta["primitive"] = "true";
-  y_comp->meta["library"] = "test";
-  y_comp->meta["package"] = "test";
-  auto y = Instance::Make(y_comp);
+  y_comp->meta()["primitive"] = "true";
+  y_comp->meta()["library"] = "test";
+  y_comp->meta()["package"] = "test";
+  auto y = Instance::Make(y_comp.get());
   auto yr = y.get();
   x_comp->AddChild(std::move(y));
 
   // Connect ports
-  x_comp->port("A") <<= yr->port("B");
+  *x_comp->port("A") <<= yr->port("B");
 
   return x_comp;
 }
@@ -216,8 +210,7 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto r_port = Port::Make("some_record", r_type, Port::OUT);
   auto s_port = Port::Make("some_port", s_type);
 
-  auto l = intl<16>();
-  auto par = Parameter::Make("depth", integer(), l);
+  auto par = Parameter::Make("depth", integer(), intl(16));
 
   auto a_type = Component::Make("a", {par, clk_port, rst_port, b_port, v_port, r_port, s_port});
 
@@ -225,7 +218,7 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
 }
 
 std::shared_ptr<Component> GetExampleDesign() {
-  auto vec_width = Parameter::Make("vec_width", integer(), intl<32>());
+  auto vec_width = Parameter::Make("vec_width", integer(), intl(32));
   // Construct a deeply nested type to showcase Cerata's capabilities.
   auto my_type =
       Record::Make("my_record_type", {RecField::Make("bit", bit()),
@@ -242,13 +235,13 @@ std::shared_ptr<Component> GetExampleDesign() {
 
   // Create a top level and add instances of each component
   auto my_top = Component::Make("my_top_level");
-  auto my_inst = my_top->AddInstanceOf(my_comp);
+  auto my_inst = my_top->AddInstanceOf(my_comp.get());
 
   // Create a bunch of instances and connect to other component
   std::vector<Instance *> my_other_instances;
   for (int i = 0; i < 10; i++) {
-    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp, "my_inst_" + std::to_string(i)));
-    my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
+    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp.get(), "my_inst_" + std::to_string(i)));
+    *my_other_instances[i]->port("my_port") <<= my_inst->porta("my_array")->Append();
   }
 
   return my_top;

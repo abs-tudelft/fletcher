@@ -26,7 +26,7 @@ class Node;
 class NodeArray;
 class PortArray;
 struct Port;
-struct Graph;
+class Graph;
 
 class Object : public Named {
  public:
@@ -44,8 +44,8 @@ class Object : public Named {
   /// @brief Return true if this object is an array.
   bool IsArray() const { return obj_id_ == ARRAY; }
 
-  virtual void SetParent(const Graph *parent);
-  virtual std::optional<const Graph *> parent() const;
+  virtual void SetParent(Graph *parent);
+  virtual std::optional<Graph *> parent() const;
   virtual std::shared_ptr<Object> Copy() const = 0;
 
   /// @brief KV storage for metadata of tools or specific backend implementations
@@ -53,23 +53,7 @@ class Object : public Named {
  protected:
   ID obj_id_;
   /// An optional parent Graph to which this Object belongs. Initially no value.
-  std::optional<const Graph *> parent_ = {};
+  std::optional<Graph *> parent_ = {};
 };
-
-/**
- * @brief Cast an Object to some (typically) less generic Object type T.
- * @tparam T    The new Node type.
- * @param obj   The Node to cast.
- * @return      Optionally, the Node casted to T, if successful.
- */
-template<typename T>
-std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Object> &obj) {
-  auto result = std::dynamic_pointer_cast<T>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return {};
-  }
-}
 
 }  // cerata;

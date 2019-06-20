@@ -17,8 +17,8 @@
 #include <string>
 #include <memory>
 
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
 
 // Helper functions for transformations by back-ends.
 
@@ -29,31 +29,27 @@ namespace cerata {
  * @param components    The deque of components to append to.
  * @param top_component The top-level component.
  */
-void GetAllGraphsRecursive(std::deque<std::shared_ptr<Component>> *components,
-                           const std::shared_ptr<Component> &top_component);
+void GetAllGraphsRecursive(Graph *top_graph, std::deque<Graph *> *graphs_out);
 
 /**
  * @brief Get all objects from a component and its sub-components.
  * @param objects       The deque of objects to append to.
  * @param top_component The top-level component.
  */
-void GetAllObjectsRecursive(std::deque<std::shared_ptr<Object>> *objects,
-                            const std::shared_ptr<Component> &top_component);
+void GetAllObjectsRecursive(Component *top_component, std::deque<Object *> *objects_out);
 
 /**
  * @brief Recursively add all object types used in a component and its sub-components. Does not include subtypes.
  * @param types The deque types to append to.
  * @param graph The top-level component.
  */
-void GetAllObjectTypesRecursive(std::deque<std::shared_ptr<Type>> *types,
-                                const std::shared_ptr<Component> &top_component);
+void GetAllObjectTypesRecursive(Component *top_component, std::deque<Type *> *types_out);
 
 /**
  * @brief Recursively add all types used in a component and its sub-components, including subtypes.
  * @param types The deque types to append to.
  * @param graph The top-level component.
  */
-void GetAllTypesRecursive(std::deque<Type *> *types,
-                          const std::shared_ptr<Component> &top_component);
+void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types_out);
 
 } // namespace cerata

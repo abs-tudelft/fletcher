@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <deque>
 
-#include "cerata/types.h"
+#include "cerata/type.h"
 
 namespace cerata::vhdl {
 

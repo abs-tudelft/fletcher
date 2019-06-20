@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/flattypes.h"
+#include "cerata/flattype.h"
 
 #include <optional>
 #include <utility>
@@ -24,8 +24,9 @@
 #include <iostream>
 
 #include "cerata/utils.h"
-#include "cerata/types.h"
-#include "cerata/nodes.h"
+#include "cerata/type.h"
+#include "cerata/node.h"
+#include "cerata/expression.h"
 
 namespace cerata {
 
@@ -163,7 +164,7 @@ std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a, Type *b) {
 
 std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(Type *a, Type *b) {
   auto ret = std::make_shared<TypeMapper>(a, b);
-  if (a->IsEqual(b)) {
+  if (a->IsEqual(*b)) {
     for (size_t i = 0; i < ret->flat_a().size(); i++) {
       ret->Add(i, i);
     }
@@ -316,12 +317,12 @@ std::string MappingPair::ToString() const {
   return ret.str();
 }
 
-std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
-  std::shared_ptr<Node> w = intl<0>();
+std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+  std::shared_ptr<Node> w = intl(0);
   for (size_t i = 0; i < num_a(); i++) {
     auto fw = flat_type_a(i).type_->width();
     if (fw) {
-      w = w + *fw;
+      w = w + fw.value();
     } else if (no_width_increment) {
       w = w + *no_width_increment;
     }
@@ -329,12 +330,12 @@ std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<N
   return w;
 }
 
-std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
-  std::shared_ptr<Node> w = intl<0>();
+std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+  std::shared_ptr<Node> w = intl(0);
   for (size_t i = 0; i < num_b(); i++) {
     auto fw = flat_type_b(i).type_->width();
     if (fw) {
-      w = w + *fw;
+      w = w + fw.value();
     } else if (no_width_increment) {
       w = w + *no_width_increment;
     }

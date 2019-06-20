@@ -15,40 +15,42 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cerata/api.h>
 
-#include "cerata/graphs.h"
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
-
-#include "../test_designs.h"
+#include "cerata/test_designs.h"
 
 namespace cerata {
 
 TEST(VHDL_INST, TypeMapper) {
+  default_component_pool()->Clear();
   auto top = GetTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
 }
 
 TEST(VHDL_INST, StreamTypeMapper) {
+  default_component_pool()->Clear();
   auto top = GetStreamConcatComponent();
   auto code = vhdl::Design(top);
   code.Generate().ToString();
 }
 
 TEST(VHDL_INST, ArrayTypeMapper) {
+  default_component_pool()->Clear();
   auto top = GetArrayTypeConvComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
 }
 
 TEST(VHDL_INST, ArrayArray) {
+  default_component_pool()->Clear();
   auto top = GetArrayToArrayComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();
 }
 
 TEST(VHDL_INST, AllPortTypes) {
+  default_component_pool()->Clear();
   auto top = GetAllPortTypesComponent();
   auto code = vhdl::Design(top);
   std::cout << code.Generate().ToString();

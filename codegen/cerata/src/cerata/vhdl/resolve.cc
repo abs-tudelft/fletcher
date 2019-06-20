@@ -19,51 +19,48 @@
 #include <string>
 
 #include "cerata/logging.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
-#include "cerata/edges.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
+#include "cerata/edge.h"
 #include "cerata/transform.h"
 #include "vhdl_types.h"
 
 namespace cerata::vhdl {
 
-std::shared_ptr<Component> Resolve::ResolvePortToPort(std::shared_ptr<Component> comp) {
+Component *Resolve::ResolvePortToPort(Component *comp) {
   std::deque<Node *> resolved;
   CERATA_LOG(DEBUG, "VHDL: Resolve port-to-port connections...");
-  for (const auto &inst : comp->GetAllInstances()) {
+  for (const auto &inst : comp->children()) {
     for (const auto &port : inst->GetAll<Port>()) {
       for (const auto &edge : port->sinks()) {
-        // If the edge is not complete, continue.
-        if (!edge->IsComplete()) {
+        // If either side is not a port, continue with the next edge.
+        if (!edge->src()->IsPort() || !edge->dst()->IsPort()) {
           continue;
         }
-        // If either side is not a port, continue.
-        if (!(*edge->src)->IsPort() || !(*edge->dst)->IsPort()) {
-          continue;
-        }
-        // If either sides of the edges are a port node on this component, continue.
-        if (((*edge->src)->parent() == comp.get()) || ((*edge->dst)->parent() == comp.get())) {
+        // If either sides of the edges are a port node on this component, continue, since this is allowed in VHDL.
+        if ((edge->src()->parent() == comp) || (edge->dst()->parent() == comp)) {
           continue;
         }
         // If the destination is already resolved, continue.
-        if (contains(resolved, (*edge->dst).get())) {
+        if (Contains(resolved, edge->dst())) {
           continue;
         }
         // Dealing with two port nodes that are not on the component itself. VHDL cannot handle port-to-port connections
         // of instances. Insert a signal in between and add it to the component.
-        CERATA_LOG(DEBUG, "VHDL:  Resolving " + (*edge->src)->ToString() + " --> " + (*edge->dst)->ToString());
+        CERATA_LOG(DEBUG, "VHDL:  Resolving " + edge->src()->ToString() + " --> " + edge->dst()->ToString());
         std::string prefix;
-        if ((*edge->src)->parent()) {
-          prefix = (*(*edge->src)->parent())->name() + "_";
-        } else if ((*edge->dst)->parent()) {
-          prefix = (*(*edge->dst)->parent())->name() + "_";
+        if (edge->src()->parent()) {
+          prefix = edge->src()->parent().value()->name() + "_";
+        } else if (edge->dst()->parent()) {
+          prefix = edge->dst()->parent().value()->name() + "_";
         }
+        // Remember we've touched these nodes already
+        resolved.push_back(edge->src());
+        resolved.push_back(edge->dst());
+        // Insert a new signal, after this, the original edge may potentially be destroyed.
         auto sig = insert(edge, prefix);
         // Add the signal to the component
         comp->AddObject(sig);
-        // Remember we've touched these nodes already
-        resolved.push_back((*edge->src).get());
-        resolved.push_back((*edge->dst).get());
       }
     }
   }
@@ -215,10 +212,10 @@ static void ExpandMappers(Type *type) {
   }
 }
 
-std::shared_ptr<Component> Resolve::ExpandStreams(std::shared_ptr<Component> comp) {
+Component *Resolve::ExpandStreams(Component *comp) {
   CERATA_LOG(DEBUG, "VHDL: Materialize stream abstraction...");
   std::deque<Type *> types;
-  GetAllTypesRecursive(&types, comp);
+  GetAllTypesRecursive(comp, &types);
 
   for (const auto &t : types) {
     if (t->meta.count("VHDL:ExpandStreamDone") == 0) {

@@ -16,13 +16,13 @@
 
 #include <memory>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/vhdl/block.h"
 
 namespace cerata::vhdl {
 
 struct Arch {
-  static MultiBlock Generate(const std::shared_ptr<Component> &comp);
+  static MultiBlock Generate(const Component &comp);
 };
 
 }  // namespace cerata::vhdl

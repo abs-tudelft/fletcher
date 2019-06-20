@@ -21,14 +21,19 @@
 #include <deque>
 #include <unordered_map>
 
-#include "cerata/objects.h"
-#include "cerata/types.h"
+#include "cerata/object.h"
+#include "cerata/type.h"
 
 namespace cerata {
 
 // Forward declarations.
-struct Edge;
-struct Graph;
+class Edge;
+class Graph;
+struct Port;
+class Literal;
+class Signal;
+class Parameter;
+class Expression;
 
 /**
  * @brief A node.
@@ -36,53 +41,59 @@ struct Graph;
 class Node : public Object, public std::enable_shared_from_this<Node> {
  public:
   /// Node type IDs with different properties.
-  enum NodeID {
+  enum class NodeID {
+    PORT,            ///< Single-input AND multi-output node with direction.
+    SIGNAL,          ///< Single-input AND multi-output node.
+    PARAMETER,       ///< Single-input AND multi-output node with default value.
     LITERAL,         ///< No-input     AND multi-output node with storage type and storage value.
     EXPRESSION,      ///< No-input     AND multi-output node that forms a binary tree with operations and nodes.
-    SIGNAL,          ///< Single-input AND multi-output node.
-    PORT,            ///< Single-input AND multi-output node with direction.
-    PARAMETER        ///< Single-input AND multi-output node with default value.
   };
 
   /// @brief Node constructor.
   Node(std::string name, NodeID id, std::shared_ptr<Type> type);
 
   /// @brief Return the node Type
-  inline std::shared_ptr<Type> type() const { return type_; }
+  inline Type *type() const { return type_.get(); }
   /// @brief Set the node Type
   inline void SetType(const std::shared_ptr<Type> &type) { type_ = type; }
+
   /// @brief Return the node type ID
   inline NodeID node_id() const { return node_id_; }
   /// @brief Return whether this node is of a specific node type id.
   inline bool Is(NodeID node_id) const { return node_id_ == node_id; }
-  /// @brief Return true if this is a PORT node, false otherwise.
-  inline bool IsPort() const { return node_id_ == PORT; }
-  /// @brief Return true if this is a SIGNAL node, false otherwise.
-  inline bool IsSignal() const { return node_id_ == SIGNAL; }
-  /// @brief Return true if this is a PARAMETER node, false otherwise.
-  inline bool IsParameter() const { return node_id_ == PARAMETER; }
-  /// @brief Return true if this is a LITERAL node, false otherwise.
-  inline bool IsLiteral() const { return node_id_ == LITERAL; }
-  /// @brief Return true if this is an EXPRESSION node, false otherwise.
-  inline bool IsExpression() const { return node_id_ == EXPRESSION; }
+
+  /// Casting convenience functions
+#ifndef NODE_CAST_DECL_FACTORY
+#define NODE_CAST_DECL_FACTORY(NODENAME, IDNAME)                            \
+  inline bool Is##NODENAME() const { return node_id_ == NodeID::IDNAME; }
+  //NODENAME& As##NODENAME();
+  //const NODENAME& As##NODENAME() const;
+  NODE_CAST_DECL_FACTORY(Port, PORT)
+  NODE_CAST_DECL_FACTORY(Signal, SIGNAL)
+  NODE_CAST_DECL_FACTORY(Parameter, PARAMETER)
+  NODE_CAST_DECL_FACTORY(Literal, LITERAL)
+  NODE_CAST_DECL_FACTORY(Expression, EXPRESSION)
+#endif
 
   /// @brief Add an input to this node.
-  virtual std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) = 0;
+  virtual std::shared_ptr<Edge> AddSource(Node *input) = 0;
   /// @brief Add an output to this node.
-  virtual std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &output) = 0;
+  virtual std::shared_ptr<Edge> AddSink(Node *output) = 0;
   /// @brief Add an edge to this node.
   virtual bool AddEdge(const std::shared_ptr<Edge> &edge) = 0;
   /// @brief Remove an edge of this node.
-  virtual bool RemoveEdge(const std::shared_ptr<Edge> &edge) = 0;
+  virtual bool RemoveEdge(Edge *edge) = 0;
   /// @brief Get the input edges of this Node.
-  virtual std::deque<std::shared_ptr<Edge>> sources() const { return {}; }
+  virtual std::deque<Edge *> sources() const { return {}; }
   /// @brief Get the output edges of this Node.
-  virtual std::deque<std::shared_ptr<Edge>> sinks() const { return {}; }
+  virtual std::deque<Edge *> sinks() const { return {}; }
+  /// @brief Recursively list any nodes that this node owns.
+  virtual std::deque<const Node *> ownees() const { return {}; }
 
   /// @brief Set parent array.
   void SetArray(const NodeArray *array) { array_ = array; }
   /// @brief Return parent array, if any.
-  std::optional<const NodeArray *> array() { return array_; }
+  std::optional<const NodeArray *> array() const { return array_; }
 
   /// @brief Return a human-readable string of this node.
   virtual std::string ToString() const;
@@ -109,14 +120,14 @@ struct MultiOutputNode : public Node {
                                                                                         std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
-  std::deque<std::shared_ptr<Edge>> sources() const override { return {}; }
+  std::deque<Edge *> sources() const override { return {}; }
   /// @brief The outgoing Edges that sink this Node.
-  inline std::deque<std::shared_ptr<Edge>> sinks() const override { return outputs_; }
+  std::deque<Edge *> sinks() const override { return ToRawPtrs(outputs_); }
 
   /// @brief Add an output edge to this node.
-  std::shared_ptr<Edge> AddSink(const std::shared_ptr<Node> &sink) override;
+  std::shared_ptr<Edge> AddSink(Node *sink) override;
   /// @brief Remove an edge from this node.
-  bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
+  bool RemoveEdge(Edge *edge) override;
   /// @brief Add an output edge to this node.
   bool AddEdge(const std::shared_ptr<Edge> &edge) override;
 
@@ -139,19 +150,19 @@ struct NormalNode : public MultiOutputNode {
                                                                                               std::move(type)) {}
 
   /// @brief Return the incoming edges (in this case just the single input edge).
-  std::deque<std::shared_ptr<Edge>> sources() const override;
+  std::deque<Edge *> sources() const override;
 
   /// @brief Return the single incoming edge.
-  std::optional<std::shared_ptr<Edge>> input() const;
+  std::optional<Edge *> input() const;
 
   /// @brief Set the input edge of this node.
-  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &source) override;
+  std::shared_ptr<Edge> AddSource(Node *source) override;
 
   /// @brief Add an edge to this node.
   bool AddEdge(const std::shared_ptr<Edge> &edge) override;
 
   /// @brief Remove an edge from this node.
-  bool RemoveEdge(const std::shared_ptr<Edge> &edge) override;
+  bool RemoveEdge(Edge *edge) override;
 };
 
 /**
@@ -160,30 +171,10 @@ struct NormalNode : public MultiOutputNode {
  * A literal node can be used to store some literal value. A literal node can, for example, be used for Vector Type
  * widths or it can be connected to a Parameter Node, to give the Parameter its value.
  */
-struct Literal : public MultiOutputNode {
+class Literal : public MultiOutputNode {
+ public:
   /// The storage type of the literal value.
-  enum StorageType { INT, STRING, BOOL } storage_type_;
-
-  /// The string storage.
-  std::string str_val_ = "";
-
-  /// The integer storage.
-  int int_val_ = 0;
-
-  /// The boolean storage.
-  bool bool_val_ = false;
-
-  /// @brief Literal constructor.
-  Literal(std::string name,
-          const std::shared_ptr<Type> &type,
-          StorageType st,
-          std::string str_val,
-          int int_val,
-          bool bool_val)
-      : MultiOutputNode(std::move(name), Node::LITERAL, type),
-        storage_type_(st),
-        str_val_(std::move(str_val)),
-        int_val_(int_val) {}
+  enum class StorageType { INT, STRING, BOOL };
 
   /// @brief Construct a new Literal with a string storage type.
   Literal(std::string name, const std::shared_ptr<Type> &type, std::string value);
@@ -194,6 +185,8 @@ struct Literal : public MultiOutputNode {
 
   /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
   static std::shared_ptr<Literal> Make(int value);
+  /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
+  static std::shared_ptr<Literal> Make(std::string value);
   /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
   static std::shared_ptr<Literal> Make(const std::shared_ptr<Type> &type, std::string value);
   /// @brief Get a smart pointer to a new Literal with a string storage type.
@@ -206,69 +199,52 @@ struct Literal : public MultiOutputNode {
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Object> Copy() const override;
   /// @brief Add an input to this node.
-  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &input) override;
+  std::shared_ptr<Edge> AddSource(Node *source) override;
 
   /// @brief A literal node has no inputs. This function returns an empty list.
-  inline std::deque<std::shared_ptr<Edge>> sources() const override { return {}; }
+  inline std::deque<Edge *> sources() const override { return {}; }
   /// @brief Get the output edges of this Node.
-  inline std::deque<std::shared_ptr<Edge>> sinks() const override { return outputs_; }
+  inline std::deque<Edge *> sinks() const override { return ToRawPtrs(outputs_); }
 
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToString() const override;
+
+  template<typename T>
+  T raw_value() { throw std::runtime_error("Not implemented."); }
+
+  StorageType storage_type() const { return storage_type_; }
+  int int_val() const { return int_val_; }
+  bool bool_val() const { return bool_val_; }
+
+ protected:
+  /// @brief Literal constructor.
+  Literal(std::string name,
+          const std::shared_ptr<Type> &type,
+          StorageType st,
+          std::string str_val,
+          int int_val,
+          bool bool_val)
+      : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
+        storage_type_(st),
+        str_val_(std::move(str_val)),
+        int_val_(int_val) {}
+
+  StorageType storage_type_;
+  /// The string storage.
+  std::string str_val_ = "";
+  /// The integer storage.
+  int int_val_ = 0;
+  /// The boolean storage.
+  bool bool_val_ = false;
 };
-
-/**
- * @brief A node representing a binary tree of other nodes
- */
-struct Expression : public MultiOutputNode {
-  enum Operation { ADD, SUB, MUL, DIV } operation;
-  std::shared_ptr<Node> lhs;
-  std::shared_ptr<Node> rhs;
-  /**
-   * @brief Construct a new expression
-   * @param op  The operator between two operands
-   * @param lhs The left operand
-   * @param rhs The right operand
-   */
-  Expression(Operation op, const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
-
-  /// @brief Short-hand to create a smart pointer to an expression.
-  static std::shared_ptr<Expression> Make(Operation op,
-                                          const std::shared_ptr<Node> &lhs,
-                                          const std::shared_ptr<Node> &rhs);
-
-  /// @brief Add an input to this node.
-  std::shared_ptr<Edge> AddSource(const std::shared_ptr<Node> &source) override;
-
-  /// @brief Minimize a node, if it is an expression
-  static std::shared_ptr<Node> Minimize(const std::shared_ptr<Node> &node);
-
-  /// @brief Copy this expression.
-  std::shared_ptr<Object> Copy() const override;
-
-  /// @brief Minimize the expression and convert it to a human-readable string.
-  std::string ToString() const override;
-};
-
-std::string ToString(Expression::Operation operation);
-
-/// @brief Create an expressions, adding two nodes.
-std::shared_ptr<Expression> operator+(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
-/// @brief Increment a node with an integer. If the lhs is a literal, return a new literal, otherwise and expression.
-std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, int rhs);
-/// @brief Decrement a node with an integer. If the lhs is a literal, return a new literal, otherwise and expression.
-std::shared_ptr<Node> operator-(const std::shared_ptr<Node> &lhs, int rhs);
-
-std::shared_ptr<Expression> operator-(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
-std::shared_ptr<Expression> operator*(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
-std::shared_ptr<Expression> operator/(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs);
 
 /**
  * @brief A Signal Node.
  *
  * A Signal Node can have a single input and multiple outputs.
  */
-struct Signal : public NormalNode {
+class Signal : public NormalNode {
+ public:
   /// @brief Signal constructor.
   Signal(std::string name, std::shared_ptr<Type> type);
   /// @brief Create a new Signal and return a smart pointer to it.
@@ -284,25 +260,26 @@ struct Signal : public NormalNode {
  *
  * Can be used to define implementation-specific characteristics of a Graph, or can be connected to e.g. Vector widths.
  */
-struct Parameter : public NormalNode {
-  /// @brief An optional default value.
-  std::optional<std::shared_ptr<Literal>> default_value;
-
-  /// @brief Construct a new Parameter, optionally defining a default value Literal.
-  Parameter(std::string name,
-            const std::shared_ptr<Type> &type,
-            std::optional<std::shared_ptr<Literal>> default_value = {});
-
-  /// @brief Get a smart pointer to a new Parameter, optionally defining a default value Literal.
-  static std::shared_ptr<Parameter> Make(std::string name,
-                                         std::shared_ptr<Type> type,
-                                         std::optional<std::shared_ptr<Literal>> default_value = {});
+class Parameter : public NormalNode {
+ public:
+  /// @brief Get a smart pointer to a new Parameter, optionally owning a default value Literal.
+  static std::shared_ptr<Parameter> Make(const std::string &name,
+                                         const std::shared_ptr<Type> &type,
+                                         const std::optional<std::shared_ptr<Literal>> &default_value = {});
 
   /// @brief Create a copy of this Parameter.
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Short hand to get value node.
-  std::optional<std::shared_ptr<Node>> value() const;
+  std::optional<Node *> val() const;
+ protected:
+  /// @brief Construct a new Parameter, optionally defining a default value Literal.
+  Parameter(std::string name,
+            const std::shared_ptr<Type> &type,
+            std::optional<std::shared_ptr<Literal>> default_value = {});
+
+  /// @brief An optional default value.
+  std::optional<std::shared_ptr<Literal>> default_value_;
 };
 
 /**
@@ -341,39 +318,11 @@ struct Port : public NormalNode, public Term {
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
   std::shared_ptr<Object> Copy() const override;
-  std::shared_ptr<Port> InvertDirection();
+  Port &InvertDirection();
 };
-
-/**
- * @brief Cast a Node to some (typically) less generic Node type T.
- * @tparam T    The new Node type.
- * @param obj   The Node to cast.
- * @return      Optionally, the Node casted to T, if successful.
- */
-template<typename T>
-std::optional<T *> Cast(Node *obj) {
-  auto result = std::dynamic_pointer_cast<T>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return {};
-  }
-}
 
 /// @brief Convert a Node ID to a human-readable string.
 std::string ToString(Node::NodeID id);
-
-// Some often used literals for convenience:
-/**
- * @brief Create an integer Literal.
- * @tparam V    The integer value.
- * @return      A smart pointer to a literal node representing the value.
- */
-template<int V>
-std::shared_ptr<Literal> intl() {
-  static std::shared_ptr<Literal> result = std::make_shared<Literal>("int" + std::to_string(V), integer(), V);
-  return result;
-}
 
 /**
  * @brief Create a string literal.

@@ -17,9 +17,9 @@
 #include <memory>
 #include <string>
 
-#include "cerata/types.h"
-#include "cerata/flattypes.h"
-#include "cerata/nodes.h"
+#include "cerata/type.h"
+#include "cerata/flattype.h"
+#include "cerata/node.h"
 
 namespace cerata::vhdl {
 

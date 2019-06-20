@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +32,11 @@ namespace cerata::vhdl {
 
 class VHDLOutputGenerator : public OutputGenerator {
  public:
-  explicit VHDLOutputGenerator(std::string root_dir, std::deque<OutputGenerator::OutputSpec> outputs = {})
-      : OutputGenerator(std::move(root_dir), std::move(outputs)) {}
+  std::string notice_;
+  explicit VHDLOutputGenerator(std::string root_dir,
+                               std::deque<OutputSpec> outputs = {},
+                               std::string notice = "")
+      : OutputGenerator(std::move(root_dir), std::move(outputs)), notice_(std::move(notice)) {}
   void Generate() override;
   std::string subdir() override { return DEFAULT_SUBDIR; }
 };
