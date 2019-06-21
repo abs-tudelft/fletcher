@@ -56,20 +56,14 @@ jobs:
     parameters:
       source: platforms/snap/runtime
 
-- job: hardware
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-  - checkout: self
-    submodules: true
-  - template: steps/install-python.yml@abs-tudelft
-    parameters:
-      packages: ['vhdeps']
-  - template: steps/install-ghdl.yml@abs-tudelft
-  - template: steps/vhdeps.yml@abs-tudelft
-    parameters:
-      args: ["--pattern '*_tc'", "--pattern ':!*/vhlib/*'"]
-      sources: ['hardware']
+- template: jobs/vhdeps.yml@abs-tudelft
+  parameters:
+    name: hardware
+    args: ["--pattern '*_tc'", "--pattern ':!*/vhlib/*'"]
+    sources: ['hardware']
+    preSteps:
+    - checkout: self
+      submodules: true
 
 - job: pyfletcher
   pool:
