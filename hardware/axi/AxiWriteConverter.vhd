@@ -225,7 +225,7 @@ begin
   pass_through_gen: if RATIO = 1 generate
     int_slv_bus_wreq_ready      <= int_m_axi_awready;
     int_m_axi_awaddr            <= int_slv_bus_wreq_addr;
-    int_m_axi_awlen             <= slv(resize(u(slv_bus_wreq_len) - 1, MASTER_LEN_WIDTH));
+    int_m_axi_awlen             <= slv(resize(u(int_slv_bus_wreq_len) - 1, MASTER_LEN_WIDTH));
     int_m_axi_awvalid           <= int_slv_bus_wreq_valid;
 
     int_slv_bus_wdat_ready      <= int_m_axi_wready;
