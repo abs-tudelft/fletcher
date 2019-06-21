@@ -121,11 +121,11 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   auto t_wide = Vector::Make<4>();
   auto t_narrow = Vector::Make<2>();
   // Flat indices:
-  auto tA = Record::Make("rec_A", {       // 0
+  auto tA = Record::Make("rec_A", {    // 0
       RecField::Make("q", t_wide),     // 1
   });
 
-  auto tB = Record::Make("rec_B", {       // 0
+  auto tB = Record::Make("rec_B", {    // 0
       RecField::Make("r", t_narrow),   // 1
       RecField::Make("s", t_narrow),   // 2
   });
@@ -137,7 +137,7 @@ std::shared_ptr<Component> GetArrayTypeConvComponent() {
   tA->AddMapper(mapper);
 
   // Ports
-  auto parSize = Parameter::Make("A_ARRAY_SIZE", integer(), intl(0));
+  auto parSize = Parameter::Make("ARRAY_SIZE", integer(), intl(0));
   auto pA = PortArray::Make("A", tA, parSize, Port::OUT);
   auto pB = Port::Make("B", tB, Port::OUT);
   auto pC = Port::Make("C", tB, Port::OUT);

@@ -35,12 +35,9 @@ using cerata::PortArray;
 using cerata::integer;
 using cerata::string;
 using cerata::intl;
-using cerata::rintl;
 using cerata::strl;
-using cerata::rstrl;
+using cerata::booll;
 using cerata::boolean;
-using cerata::bool_true;
-using cerata::bool_false;
 using cerata::RecField;
 using cerata::Vector;
 using cerata::Type;
@@ -61,7 +58,7 @@ std::shared_ptr<Node> tag_width(const arrow::Field &field) {
   if (meta_val.empty()) {
     return intl(1);
   } else {
-    return Literal::Make(std::stoi(meta_val));
+    return Literal::MakeInt(std::stoi(meta_val));
   }
 }
 
@@ -142,8 +139,8 @@ std::shared_ptr<Component> Array(Mode mode) {
       Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl(4)),
       Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl(16)),
       Parameter::Make("INDEX_WIDTH", integer(), intl(32)),
-      Parameter::Make("CFG", string(), strl("\"\"")),
-      Parameter::Make("CMD_TAG_ENABLE", boolean(), bool_false()),
+      Parameter::Make("CFG", string(), strl("")),
+      Parameter::Make("CMD_TAG_ENABLE", boolean(), booll(false)),
       Parameter::Make("CMD_TAG_WIDTH", integer(), intl(1))});
 
   // Insert ports
@@ -236,11 +233,11 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
       // Other width types:
     case arrow::Type::FIXED_SIZE_BINARY: {
       auto t = dynamic_cast<const arrow::FixedSizeBinaryType *>(type);
-      return Literal::Make(t->bit_width());
+      return Literal::MakeInt(t->bit_width());
     }
     case arrow::Type::DECIMAL: {
       auto t = dynamic_cast<const arrow::DecimalType *>(type);
-      return Literal::Make(t->bit_width());
+      return Literal::MakeInt(t->bit_width());
     }
   }
 }
@@ -351,10 +348,10 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
       // Special case: binary type has a length stream and byte stream. The EPC is assumed to relate to the list
       // values, as there is no explicit child field to place this metadata in.
 
-      std::shared_ptr<Node> e_count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
-      std::shared_ptr<Node> l_count_width = Literal::Make(static_cast<int>(ceil(log2(lepc + 1))));
-      std::shared_ptr<Node> data_width = Literal::Make(epc * 8);
-      std::shared_ptr<Node> length_width = Literal::Make(lepc * 32);
+      std::shared_ptr<Node> e_count_width = Literal::MakeInt(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> l_count_width = Literal::MakeInt(static_cast<int>(ceil(log2(lepc + 1))));
+      std::shared_ptr<Node> data_width = Literal::MakeInt(epc * 8);
+      std::shared_ptr<Node> length_width = Literal::MakeInt(lepc * 32);
 
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {
@@ -375,11 +372,11 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
       // Special case: string type has a length stream and utf8 character stream. The EPC is assumed to relate to the
       // list values, as there is no explicit child field to place this metadata in.
 
-      std::shared_ptr<Node> e_count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
-      std::shared_ptr<Node> l_count_width = Literal::Make(static_cast<int>(ceil(log2(lepc + 1))));
-      std::shared_ptr<Node> count_width = Literal::Make(static_cast<int>(ceil(log2(epc + 1))));
-      std::shared_ptr<Node> data_width = Literal::Make(epc * 8);
-      std::shared_ptr<Node> length_width = Literal::Make(lepc * 32);
+      std::shared_ptr<Node> e_count_width = Literal::MakeInt(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> l_count_width = Literal::MakeInt(static_cast<int>(ceil(log2(lepc + 1))));
+      std::shared_ptr<Node> count_width = Literal::MakeInt(static_cast<int>(ceil(log2(epc + 1))));
+      std::shared_ptr<Node> data_width = Literal::MakeInt(epc * 8);
+      std::shared_ptr<Node> length_width = Literal::MakeInt(lepc * 32);
 
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {
@@ -404,7 +401,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
 
       auto arrow_child = field.type()->child(0);
       auto element_type = GetStreamType(*arrow_child, mode, level + 1);
-      std::shared_ptr<Node> length_width = Literal::Make(32);
+      std::shared_ptr<Node> length_width = Literal::MakeInt(32);
 
       auto slave = Stream::Make(name,
                                 Record::Make("slave_rec", {

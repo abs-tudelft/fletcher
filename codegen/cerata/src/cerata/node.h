@@ -175,26 +175,43 @@ class Literal : public MultiOutputNode {
  public:
   /// The storage type of the literal value.
   enum class StorageType { INT, STRING, BOOL };
+ protected:
+  /// @brief Literal constructor.
+  Literal(std::string name,
+          const std::shared_ptr<Type> &type,
+          StorageType st,
+          std::string str_val,
+          int int_val,
+          bool bool_val)
+      : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
+        storage_type_(st),
+        String_val_(std::move(str_val)),
+        Bool_val_(bool_val),
+        Int_val_(int_val) {}
 
-  /// @brief Construct a new Literal with a string storage type.
-  Literal(std::string name, const std::shared_ptr<Type> &type, std::string value);
-  /// @brief Construct a new Literal with an integer storage type.
-  Literal(std::string name, const std::shared_ptr<Type> &type, int value);
-  /// @brief Construct a new Literal with a boolean storage type.
-  Literal(std::string name, const std::shared_ptr<Type> &type, bool value);
+  StorageType storage_type_;
 
-  /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
-  static std::shared_ptr<Literal> Make(int value);
-  /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
-  static std::shared_ptr<Literal> Make(std::string value);
-  /// @brief Get a smart pointer to a new Literal with string storage, where the Literal name will be the string.
-  static std::shared_ptr<Literal> Make(const std::shared_ptr<Type> &type, std::string value);
-  /// @brief Get a smart pointer to a new Literal with a string storage type.
-  static std::shared_ptr<Literal> Make(std::string name, const std::shared_ptr<Type> &type, std::string value);
-  /// @brief Get a smart pointer to a new Literal with an integer storage type.
-  static std::shared_ptr<Literal> Make(std::string name, const std::shared_ptr<Type> &type, int value);
-  /// @brief Get a smart pointer to a new Literal with a boolean storage type.
-  static std::shared_ptr<Literal> Make(std::string name, const std::shared_ptr<Type> &type, bool value);
+  // Macros to generate Literal functions for different storage types.
+#ifndef LITERAL_DECL_FACTORY
+#define LITERAL_DECL_FACTORY(NAME, TYPENAME)                                                                        \
+ public:                                                                                                            \
+  explicit Literal(std::string name, const std::shared_ptr<Type> &type, TYPENAME value);                            \
+  static std::shared_ptr<Literal> Make##NAME(TYPENAME value);                                                       \
+  static std::shared_ptr<Literal> Make##NAME(const std::shared_ptr<Type> &type, TYPENAME value);                    \
+  static std::shared_ptr<Literal> Make##NAME(std::string name, const std::shared_ptr<Type> &type, TYPENAME value);  \
+  TYPENAME NAME##Value() const { return NAME##_val_; }                                                              \
+                                                                                                                    \
+ protected:                                                                                                         \
+  TYPENAME NAME##_val_{};
+#endif
+
+LITERAL_DECL_FACTORY(String, std::string)
+LITERAL_DECL_FACTORY(Bool, bool)
+LITERAL_DECL_FACTORY(Int, int)
+
+ public:
+  template<typename T>
+  static std::shared_ptr<Literal> Make(T value) { throw std::runtime_error("Not implemented."); }
 
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Object> Copy() const override;
@@ -211,31 +228,10 @@ class Literal : public MultiOutputNode {
 
   template<typename T>
   T raw_value() { throw std::runtime_error("Not implemented."); }
+  template<typename T>
+  bool IsRaw() { throw std::runtime_error("Not implemented."); }
 
   StorageType storage_type() const { return storage_type_; }
-  int int_val() const { return int_val_; }
-  bool bool_val() const { return bool_val_; }
-
- protected:
-  /// @brief Literal constructor.
-  Literal(std::string name,
-          const std::shared_ptr<Type> &type,
-          StorageType st,
-          std::string str_val,
-          int int_val,
-          bool bool_val)
-      : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
-        storage_type_(st),
-        str_val_(std::move(str_val)),
-        int_val_(int_val) {}
-
-  StorageType storage_type_;
-  /// The string storage.
-  std::string str_val_ = "";
-  /// The integer storage.
-  int int_val_ = 0;
-  /// The boolean storage.
-  bool bool_val_ = false;
 };
 
 /**
@@ -271,7 +267,7 @@ class Parameter : public NormalNode {
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Short hand to get value node.
-  std::optional<Node *> val() const;
+  std::optional<Node *> GetValue() const;
  protected:
   /// @brief Construct a new Parameter, optionally defining a default value Literal.
   Parameter(std::string name,
@@ -323,18 +319,5 @@ struct Port : public NormalNode, public Term {
 
 /// @brief Convert a Node ID to a human-readable string.
 std::string ToString(Node::NodeID id);
-
-/**
- * @brief Create a string literal.
- * @param str   The string value.
- * @return      A smart pointer to a literal node representing the string.
- */
-std::shared_ptr<Literal> strl(std::string str);
-
-/// @brief Return a literal node representing a Boolean true.
-std::shared_ptr<Literal> bool_true();
-
-/// @brief Return a literal node representing a Boolean false.
-std::shared_ptr<Literal> bool_false();
 
 }  // namespace cerata

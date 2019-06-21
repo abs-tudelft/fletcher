@@ -85,7 +85,6 @@ std::string ToString(Expression::Op operation);
 
 // Macros to generate expression generators
 #ifndef EXPRESSION_OP_FACTORY
-
 #define EXPRESSION_OP_FACTORY(SYMBOL, OPID)                                                                       \
 inline std::shared_ptr<Node> operator SYMBOL (const std::shared_ptr<const Node>& lhs,                             \
                                               const std::shared_ptr<const Node>& rhs) {                           \
@@ -101,7 +100,7 @@ inline std::shared_ptr<Node> operator SYMBOL (const std::shared_ptr<const Node>&
   if (lhs->IsLiteral()) {                                                                                         \
     auto li = std::dynamic_pointer_cast<const Literal>(lhs);                                                      \
     if (li->storage_type() == Literal::StorageType::INT) {                                                        \
-      return default_node_pool()->GetLiteral(li->int_val() SYMBOL rhs);                                           \
+      return default_node_pool()->GetLiteral(li->IntValue() SYMBOL rhs);                                           \
     }                                                                                                             \
   }                                                                                                               \
   return lhs SYMBOL intl(rhs);                                                                                    \
@@ -111,19 +110,15 @@ inline std::shared_ptr<Node> operator SYMBOL (const Node& lhs, int rhs) {       
   if (lhs.IsLiteral()) {                                                                                          \
     auto& li = dynamic_cast<const Literal&>(lhs);                                                                 \
     if (li.storage_type() == Literal::StorageType::INT) {                                                         \
-      return default_node_pool()->GetLiteral(li.int_val() SYMBOL rhs);                                            \
+      return default_node_pool()->GetLiteral(li.IntValue() SYMBOL rhs);                                            \
     }                                                                                                             \
   }                                                                                                               \
   return lhs.shared_from_this() SYMBOL intl(rhs);                                                                 \
 }
-
-
+#endif
 EXPRESSION_OP_FACTORY(+, ADD)
 EXPRESSION_OP_FACTORY(-, SUB)
 EXPRESSION_OP_FACTORY(*, MUL)
 EXPRESSION_OP_FACTORY(/, DIV)
-
-#undef EXPRESSION_OP_FACTORY
-#endif
 
 }  // namespace cerata

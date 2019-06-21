@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 
 #include "cerata/node.h"
 
@@ -33,7 +36,7 @@ struct Literal;
 class ComponentPool {
  public:
   void Add(const std::shared_ptr<Component> &comp);
-  std::optional<Component*> Get(const std::string& name);
+  std::optional<Component *> Get(const std::string &name);
   void Clear();
  protected:
   std::vector<std::shared_ptr<Component>> components_;
@@ -48,6 +51,7 @@ inline ComponentPool *default_component_pool() {
 class NodePool {
  public:
   void Add(const std::shared_ptr<Node> &node);
+  void Clear();
 
   template<typename T>
   std::shared_ptr<Literal> GetLiteral(T value) {
@@ -55,13 +59,16 @@ class NodePool {
     for (const auto &node : nodes_) {
       if (node->IsLiteral()) {
         auto lit_node = std::dynamic_pointer_cast<Literal>(node);
-        if (lit_node->raw_value<T>() == value) {
-          return lit_node;
+        if (lit_node->IsRaw<T>()) {
+          T raw_value = lit_node->raw_value<T>();
+          if (raw_value == value) {
+            return lit_node;
+          }
         }
       }
     }
     // No literal found, make a new one.
-    std::shared_ptr<Literal> ret = Literal::Make(value);
+    std::shared_ptr<Literal> ret = Literal::Make<T>(value);
     Add(ret);
     return ret;
   }
@@ -78,14 +85,22 @@ inline NodePool *default_node_pool() {
   return &pool;
 }
 
-/// @brief Shorthand for default_node_pool->intl(i).get()
+/// @brief Obtain a raw pointer to an integer literal from the default node pool.
 inline Literal *rintl(int i) { return default_node_pool()->GetLiteral(i).get(); }
-/// @brief Shorthand for default_node_pool->intl(i)
+/// @brief Obtain a shared pointer to an integer literal from the default node pool.
 inline std::shared_ptr<Literal> intl(int i) { return default_node_pool()->GetLiteral(i); }
 
-/// @brief Shorthand for default_node_pool->intl(i).get()
-inline Literal *rstrl(std::string str) { return default_node_pool()->GetLiteral(str).get(); }
-/// @brief Shorthand for default_node_pool->intl(i)
-inline std::shared_ptr<Literal> strl(std::string str) { return default_node_pool()->GetLiteral(str); }
+/// @brief Obtain a raw pointer to a string literal from the default node pool.
+inline Literal *rstrl(std::string str) {
+  return default_node_pool()->GetLiteral<std::string>(std::move(str)).get();
+}
+/// @brief Obtain a shared pointer to a string literal from the default node pool.
+inline std::shared_ptr<Literal> strl(std::string str) {
+  return default_node_pool()->GetLiteral<std::string>(std::move(str));
+}
+/// @brief Return a literal node representing a Boolean.
+inline std::shared_ptr<Literal> booll(bool value) {
+  return default_node_pool()->GetLiteral<bool>(value);
+}
 
 }  // namespace cerata

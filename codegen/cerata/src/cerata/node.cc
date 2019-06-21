@@ -135,75 +135,84 @@ std::shared_ptr<Edge> NormalNode::AddSource(Node *source) {
 
 std::string Literal::ToString() const {
   if (storage_type_ == StorageType::BOOL) {
-    return std::to_string(bool_val_);
+    return std::to_string(Bool_val_);
   } else if (storage_type_ == StorageType::STRING) {
-    return str_val_;
+    return String_val_;
   } else {
-    return std::to_string(int_val_);
+    return std::to_string(Int_val_);
   }
 }
 
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, std::string value)
-    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
-      storage_type_(StorageType::STRING),
-      str_val_(std::move(value)) {}
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, int value)
-    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
-      storage_type_(StorageType::INT),
-      int_val_(value) {}
-Literal::Literal(std::string name, const std::shared_ptr<Type> &type, bool value)
-    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
-      storage_type_(StorageType::BOOL),
-      bool_val_(value) {}
+#ifndef LITERAL_IMPL_FACTORY
 
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, bool value) {
-  return std::make_shared<Literal>(name, type, value);
+#define LITERAL_IMPL_FACTORY(NAME, BASETYPE, IDNAME, TYPENAME)                                                       \
+  Literal::Literal(std::string name, const std::shared_ptr<Type> &type, TYPENAME value) \
+    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type), \
+      storage_type_(StorageType::IDNAME), \
+      NAME##_val_(std::move(value)) {} \
+      \
+  std::shared_ptr<Literal> Literal::Make##NAME(TYPENAME value) {  \
+  std::stringstream str;  \
+  str << #NAME << "_" << value; \
+  auto ret = std::make_shared<Literal>(str.str(), BASETYPE(), value); \
+  return ret; \
 }
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, int value) {
-  return std::make_shared<Literal>(name, type, value);
+#endif
+
+LITERAL_IMPL_FACTORY(String, string, STRING, std::string)
+LITERAL_IMPL_FACTORY(Bool, boolean, BOOL, bool)
+LITERAL_IMPL_FACTORY(Int, integer, INT, int)
+
+template<>
+std::shared_ptr<Literal> Literal::Make(bool value) {
+  return MakeBool(value);
 }
-std::shared_ptr<Literal> Literal::Make(const std::shared_ptr<Type> &type, std::string value) {
-  return std::make_shared<Literal>(value, type, value);
-}
-std::shared_ptr<Literal> Literal::Make(std::string name, const std::shared_ptr<Type> &type, std::string value) {
-  return std::make_shared<Literal>(name, type, value);
-}
+
+template<>
 std::shared_ptr<Literal> Literal::Make(int value) {
-  auto ret = std::make_shared<Literal>("int" + std::to_string(value), integer(), value);
-  return ret;
+  return MakeInt(value);
 }
+
+template<>
 std::shared_ptr<Literal> Literal::Make(std::string value) {
-  auto ret = std::make_shared<Literal>("str:" + value, string(), value);
-  return ret;
+  return MakeString(value);
 }
 
 std::shared_ptr<Object> Literal::Copy() const {
   // Take shared ownership of the type
   auto typ = type()->shared_from_this();
   // Create a new literal
-  auto lit = new Literal(name(), typ, storage_type_, str_val_, int_val_, bool_val_);
+  auto lit = new Literal(name(), typ, storage_type_, String_val_, Int_val_, Bool_val_);
   auto result = std::shared_ptr<Literal>(lit);
   return result;
 }
 
 template<>
-int Literal::raw_value() { return int_val_; }
+int Literal::raw_value() { return Int_val_; }
 
 template<>
-std::string Literal::raw_value() { return str_val_; }
+std::string Literal::raw_value() { return String_val_; }
+
+template<>
+bool Literal::raw_value() { return Bool_val_; }
+
+template<>
+bool Literal::IsRaw<bool>() {
+  return storage_type_ == StorageType::BOOL;
+}
+
+template<>
+bool Literal::IsRaw<std::string>() {
+  return storage_type_ == StorageType::STRING;
+}
+
+template<>
+bool Literal::IsRaw<int>() {
+  return storage_type_ == StorageType::INT;
+}
 
 std::shared_ptr<Edge> Literal::AddSource(Node *source) {
   throw std::runtime_error("Cannot drive a literal node.");
-}
-
-std::shared_ptr<Literal> bool_true() {
-  static auto result = Literal::Make("bool_true", boolean(), true);
-  return result;
-}
-
-std::shared_ptr<Literal> bool_false() {
-  static auto result = Literal::Make("bool_true", boolean(), false);
-  return result;
 }
 
 std::string ToString(Node::NodeID id) {
@@ -258,7 +267,7 @@ Parameter::Parameter(std::string name,
                      std::optional<std::shared_ptr<Literal>> default_value)
     : NormalNode(std::move(name), Node::NodeID::PARAMETER, type), default_value_(std::move(default_value)) {}
 
-std::optional<Node *> Parameter::val() const {
+std::optional<Node *> Parameter::GetValue() const {
   if (input()) {
     return input().value()->src();
   } else if (default_value_) {

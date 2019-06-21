@@ -25,26 +25,38 @@
 #include "cerata/node.h"
 #include "cerata/pool.h"
 #include "cerata/expression.h"
+#include "cerata/graph.h"
 
 namespace cerata {
 
 static std::shared_ptr<Node> IncrementNode(const Node &node) {
   if (node.IsLiteral() || node.IsExpression()) {
-    return node.shared_from_this() + 1;
+    return node + 1;
   } else if (node.IsParameter()) {
-    // If the node is a parameter
-    auto param = dynamic_cast<const Parameter &>(node);
+    // If the node is a parameter.
+    auto &param = dynamic_cast<const Parameter &>(node);
+    // Make a copy of the parameter.
     std::shared_ptr<Node> new_param = std::dynamic_pointer_cast<Node>(param.Copy());
-    if (param.val()) {
-      // Recurse until we reach the literal
-      new_param <<= IncrementNode(**param.val());
+    // Figure out who should own the copy.
+    if (param.parent()) {
+      param.parent().value()->AddObject(new_param);
     } else {
-      // Otherwise connect an integer literal of 1 to the parameter
+      // If theres no parent, place it in the default node pool.
+      // TODO(johanpel): this is a bit ugly.
+      default_node_pool()->Add(new_param);
+    }
+    if (param.GetValue()) {
+      auto param_value = param.GetValue().value();
+      // Recurse until we reach the literal.
+      new_param <<= IncrementNode(*param_value);
+    } else {
+      // Otherwise connect an integer literal of 1 to the parameter.
       new_param <<= intl(1);
     }
     return new_param;
+  } else {
+    throw std::runtime_error("Cannot increment node " + node.name() + " of type " + ToString(node.node_id()));
   }
-  throw std::runtime_error("Cannot increment node " + node.name() + " of type " + ToString(node.node_id()));
 }
 
 void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
@@ -55,9 +67,13 @@ void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
   }
 }
 
-void NodeArray::increment() {
+void NodeArray::IncrementSize() {
   if (size_ != nullptr) {
-    SetSize(IncrementNode(*size_));
+    if (parent_) {
+      parent_.value()->RemoveObject(size_.get());
+    }
+    auto new_size = IncrementNode(*size_);
+    SetSize(new_size);
   } else {
     throw std::runtime_error("Invalid ArrayNode. Size is nullptr.");
   }
@@ -70,7 +86,7 @@ Node *NodeArray::Append() {
   }
   elem->SetArray(this);
   nodes_.push_back(elem);
-  increment();
+  IncrementSize();
   return elem.get();
 }
 

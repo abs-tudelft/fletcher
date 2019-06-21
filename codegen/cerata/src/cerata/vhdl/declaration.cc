@@ -31,7 +31,7 @@
 
 namespace cerata::vhdl {
 
-std::string Decl::Generate(const Type &type,  const std::optional<std::shared_ptr<Node>> &multiplier) {
+std::string Decl::Generate(const Type &type, const std::optional<std::shared_ptr<Node>> &multiplier) {
   switch (type.id()) {
     default: {
       if (!multiplier) {
@@ -41,7 +41,7 @@ std::string Decl::Generate(const Type &type,  const std::optional<std::shared_pt
       }
     }
     case Type::VECTOR: {
-      auto& vec = dynamic_cast<const Vector &>(type);
+      auto &vec = dynamic_cast<const Vector &>(type);
       auto width = vec.width();
       if (width) {
         auto wnode = width.value();
@@ -83,8 +83,8 @@ Block Decl::Generate(const Parameter &par, int depth) {
   Block ret(depth);
   Line l;
   l << to_upper(par.name()) << " : " << Generate(*par.type());
-  if (par.val()) {
-    auto val = *par.val();
+  if (par.GetValue()) {
+    Node *val = par.GetValue().value();
     l << " := " << val->ToString();
   }
   ret << l;
@@ -95,7 +95,6 @@ Block Decl::Generate(const Port &port, int depth) {
   Block ret(depth);
   // Filter out abstract types and flatten
   auto flat_types = FilterForVHDL(Flatten(port.type()));
-
   for (const auto &ft : flat_types) {
     Line l;
     auto port_name_prefix = port.name();
@@ -166,17 +165,17 @@ MultiBlock Decl::Generate(const Component &comp, bool entity) {
   ret << h;
 
   // Generics
-  auto generics = comp.GetAll<Parameter>();
-  if (!generics.empty()) {
+  std::deque<Parameter *> parameters = comp.GetAll<Parameter>();
+  if (!parameters.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);
     Block gdf(ret.indent + 1);
     Line gh, gf;
     gh << "generic (";
     gdh << gh;
-    for (const auto &gen : generics) {
+    for (Parameter *gen : parameters) {
       auto g = Decl::Generate(*gen, ret.indent + 2);
-      if (gen != generics.back()) {
+      if (gen != parameters.back()) {
         g << ";";
       } else {
         g <<= ";";

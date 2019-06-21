@@ -27,16 +27,13 @@ using cerata::Parameter;
 using cerata::Port;
 using cerata::PortArray;
 using cerata::intl;
-using cerata::rintl;
+using cerata::strl;
+using cerata::booll;
 using cerata::integer;
 using cerata::string;
-using cerata::strl;
-using cerata::rstrl;
 using cerata::boolean;
 using cerata::integer;
 using cerata::bit;
-using cerata::bool_true;
-using cerata::bool_false;
 using cerata::RecField;
 using cerata::Vector;
 using cerata::Record;
@@ -99,15 +96,16 @@ std::shared_ptr<Component> BusArbiter(BusSpec spec) {
   if (spec.function == BusFunction::WRITE) {
     objects.push_back(bus_strobe_width());
   }
+  auto empty_str = strl("");
   objects.insert(objects.end(), {
       nslaves,
       Parameter::Make("ARB_METHOD", string(), strl("ROUND-ROBIN")),
       Parameter::Make("MAX_OUTSTANDING", integer(), intl(4)),
-      Parameter::Make("RAM_CONFIG", string(), strl("")),
-      Parameter::Make("SLV_REQ_SLICES", boolean(), bool_true()),
-      Parameter::Make("MST_REQ_SLICE", boolean(), bool_true()),
-      Parameter::Make("MST_DAT_SLICE", boolean(), bool_true()),
-      Parameter::Make("SLV_DAT_SLICES", boolean(), bool_true()),
+      Parameter::Make("RAM_CONFIG", string(), empty_str),
+      Parameter::Make("SLV_REQ_SLICES", boolean(), booll(true)),
+      Parameter::Make("MST_REQ_SLICE", boolean(), booll(true)),
+      Parameter::Make("MST_DAT_SLICE", boolean(), booll(true)),
+      Parameter::Make("SLV_DAT_SLICES", boolean(), booll(true)),
       Port::Make(bus_cr()),
       mst,
       slaves_array,
@@ -131,7 +129,7 @@ std::shared_ptr<Component> BusReadSerializer() {
   static auto ret = Component::Make("BusReadSerializer", {
       aw, mdw, mlw, sdw, slw,
       Parameter::Make("SLAVE_MAX_BURST", integer()),
-      Parameter::Make("ENABLE_FIFO", boolean(), bool_false()),
+      Parameter::Make("ENABLE_FIFO", boolean(), booll(false)),
       Parameter::Make("SLV_REQ_SLICE_DEPTH", integer(), intl(2)),
       Parameter::Make("SLV_DAT_SLICE_DEPTH", integer(), intl(2)),
       Parameter::Make("MST_REQ_SLICE_DEPTH", integer(), intl(2)),
@@ -193,13 +191,13 @@ std::string BusSpec::ToString() const {
 std::shared_ptr<Type> BusSpec::ToType() {
   switch (function) {
     case BusFunction::READ:
-      return bus_read(Literal::Make(addr_width),
-                      Literal::Make(len_width),
-                      Literal::Make(data_width));
+      return bus_read(Literal::MakeInt(addr_width),
+                      Literal::MakeInt(len_width),
+                      Literal::MakeInt(data_width));
     case BusFunction::WRITE:
-      return bus_write(Literal::Make(addr_width),
-                       Literal::Make(len_width),
-                       Literal::Make(data_width));
+      return bus_write(Literal::MakeInt(addr_width),
+                       Literal::MakeInt(len_width),
+                       Literal::MakeInt(data_width));
     default:throw std::runtime_error("Unknown Bus function.");
   }
 }

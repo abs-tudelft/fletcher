@@ -105,7 +105,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     arbiter->par(bus_len_width()->name()) <<= intl(spec.len_width);
     arbiters_[spec] = arbiter;
     // Copy the master side of the bus arbiter
-    auto master = *Cast<BusPort>(arbiter->port("mst")->Copy());
+    auto master = std::dynamic_pointer_cast<BusPort>(arbiter->port("mst")->Copy());
     // TODO(johanpel): actually support multiple bus specs
     // Connect the ports
     master <<= arbiter->port("mst");
@@ -121,7 +121,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     // Generate a mapper. TODO(johanpel): make sure bus ports with same spec can map automatically
     auto mapper = TypeMapper::MakeImplicit(bp->type(), arb_port->type());
     bp->type()->AddMapper(mapper);
-    Connect(arb->porta("bsv")->Append(), bp);
+    Connect(arb_port->Append(), bp);
   }
 }
 

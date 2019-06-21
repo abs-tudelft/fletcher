@@ -65,7 +65,7 @@ class NodeArray : public Object {
  protected:
   Node::NodeID node_id_;
   /// @brief Increment the size of the ArrayNode.
-  void increment();
+  void IncrementSize();
   /// A node representing the template for each of the element nodes.
   std::shared_ptr<Node> base_;
   /// A node representing the number of concatenated edges.

@@ -29,8 +29,6 @@ using cerata::strl;
 using cerata::boolean;
 using cerata::integer;
 using cerata::bit;
-using cerata::bool_true;
-using cerata::bool_false;
 using cerata::RecField;
 using cerata::Vector;
 using cerata::Record;

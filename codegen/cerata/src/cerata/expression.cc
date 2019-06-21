@@ -38,10 +38,10 @@ std::shared_ptr<const Node> Expression::MergeIntLiterals(const Expression *exp) 
         && (l->type() == r->type())) {
       std::shared_ptr<Node> new_node;
       switch (exp->operation_) {
-        case Op::ADD: return intl(l->int_val() + r->int_val());
-        case Op::SUB: return intl(l->int_val() - r->int_val());
-        case Op::MUL: return intl(l->int_val() * r->int_val());
-        case Op::DIV: return intl(l->int_val() / r->int_val());
+        case Op::ADD: return intl(l->IntValue() + r->IntValue());
+        case Op::SUB: return intl(l->IntValue() - r->IntValue());
+        case Op::MUL: return intl(l->IntValue() * r->IntValue());
+        case Op::DIV: return intl(l->IntValue() / r->IntValue());
       }
     }
   }
@@ -111,14 +111,6 @@ std::string ToString(Expression::Op operation) {
     case Expression::Op::MUL:return "*";
     case Expression::Op::DIV:return "/";
     default:return "INVALID OP";
-  }
-}
-
-std::shared_ptr<Node> operator+(const std::shared_ptr<Node> &lhs, const std::optional<std::shared_ptr<Node>> &rhs) {
-  if (rhs) {
-    return lhs + *rhs;
-  } else {
-    return lhs;
   }
 }
 

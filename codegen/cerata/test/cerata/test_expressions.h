@@ -15,16 +15,16 @@
 #pragma once
 
 #include <gtest/gtest.h>
-
+#include <cerata/api.h>
+#include <memory>
 #include <string>
 #include <fstream>
-#include <cerata/api.h>
 
 namespace cerata {
 
 TEST(Expressions, OpStringLiterals) {
-  auto a = Literal::Make(string(), "a");
-  auto b = Literal::Make(string(), "b");
+  auto a = strl("a");
+  auto b = strl("b");
   auto f = a + b;
   auto g = a - b;
   auto h = a * b;
@@ -49,9 +49,9 @@ TEST(Expressions, OpIntLiterals) {
 }
 
 TEST(Expressions, Minimize) {
-  auto a = Literal::Make(string(), "a");
+  auto a = strl("a");
   auto b = Parameter::Make("b", string());
-  auto c = Literal::Make(string(), "c");
+  auto c = strl("c");
   auto d = Parameter::Make("d", string());
   auto e = intl(10);
 

@@ -58,14 +58,14 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
 
   // If the destination is a terminator
   if (dst->IsPort()) {
-    auto t = *Cast<Term>(dst);
+    auto port = dynamic_cast<Port*>(dst);
     // Check if it has a parent
     if (dst->parent()) {
       auto parent = *dst->parent();
-      if (parent->IsInstance() && t->IsOutput()) {
+      if (parent->IsInstance() && port->IsOutput()) {
         // If the parent is an instance, and the terminator node is an output, then we may not drive it.
         throw std::logic_error("Cannot drive instance port " + dst->ToString() + " of mode output.");
-      } else if (parent->IsComponent() && t->IsInput()) {
+      } else if (parent->IsComponent() && port->IsInput()) {
         // If the parent is a component, and the terminator node is an input, then we may not drive it.
         throw std::logic_error("Cannot drive component port " + dst->ToString() + " of mode input.");
       }

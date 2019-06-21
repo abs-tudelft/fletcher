@@ -38,7 +38,7 @@ static std::string lit2vhdl(const Literal &lit) {
       return "\"" + lit.ToString() + "\"";
     case Type::BOOLEAN:
       // Convert to VHDL boolean
-      if (lit.bool_val()) {
+      if (lit.BoolValue()) {
         return "true";
       } else {
         return "false";
@@ -61,12 +61,12 @@ Block Inst::GenerateGenericMap(const Parameter &par) {
   Line l;
   l << to_upper(par.name()) << " => ";
   // Get the value to apply
-  auto optional_value = par.val();
+  auto optional_value = par.GetValue();
   if (optional_value.has_value()) {
     const Node *val = optional_value.value();
     // If it is a literal, make it VHDL compatible
     if (val->IsLiteral()) {
-      const Literal *lit = dynamic_cast<const Literal *>(val);
+      auto *lit = dynamic_cast<const Literal *>(val);
       l << lit2vhdl(*lit);
     } else {
       l << val->ToString();
@@ -110,8 +110,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_a->ToString() + ")";
       } else {
-        auto a_min_one = next_offset_a - 1;
-        l += "(" + a_min_one->ToString();
+        l += "(" + (next_offset_a - 1)->ToString();
         l += " downto " + offset_a->ToString() + ")";
       }
     }
@@ -121,8 +120,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       if (p.flat_type_b(ib).type_->Is(Type::BIT)) {
         l += "(" + offset_b->ToString() + ")";
       } else {
-        auto b_min_one = next_offset_b - 1;
-        l += "(" + b_min_one->ToString();
+        l += "(" + (next_offset_b - 1)->ToString();
         l += " downto " + offset_b->ToString() + ")";
       }
     }
@@ -160,13 +158,13 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a
   // Loop over all pairs
   for (const auto &pair : pairs) {
     // Offset on the right side
-    std::shared_ptr<Node> b_offset = pair.width_a(intl(b_idx));
+    std::shared_ptr<Node> b_offset = pair.width_a(intl(1)) * intl(b_idx);
     // Loop over everything on the left side
     for (int64_t ia = 0; ia < pair.num_a(); ia++) {
       // Get the width of the left side.
       auto a_width = pair.flat_type_a(ia).type_->width();
       // Offset on the left side.
-      std::shared_ptr<Node> a_offset = pair.width_b(intl(a_idx));
+      std::shared_ptr<Node> a_offset = pair.width_b(intl(1)) * intl(a_idx);
       for (int64_t ib = 0; ib < pair.num_b(); ib++) {
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
@@ -219,8 +217,12 @@ Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
   Block ret;
   // Go over each node in the array
   for (const auto &node : port_array.nodes()) {
-    auto port = dynamic_cast<Port *>(node);
-    ret << GeneratePortMaps(*port);
+    if (node->IsPort()) {
+      auto port = dynamic_cast<Port *>(node);
+      ret << GeneratePortMaps(*port);
+    } else {
+      throw std::runtime_error("Port Array contains non-port node.");
+    }
   }
   return ret.sort('(');
 }

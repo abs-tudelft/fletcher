@@ -17,6 +17,7 @@
 // Graph layer tests
 #include "cerata/test_expressions.h"
 #include "cerata/test_types.h"
+#include "cerata/test_pool.h"
 
 // VHDL backend tests
 #include "cerata/vhdl/test_declarators.h"
@@ -27,7 +28,7 @@
 #include "cerata/dot/test_graphs.h"
 
 void Log(int level, const std::string &msg, char const *source_fun, char const *source_file, int line_num) {
-  std::cerr << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
+  std::cout << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
 }
 
 int main(int argc, char **argv) {

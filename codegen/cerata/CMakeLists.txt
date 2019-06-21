@@ -94,6 +94,7 @@ if (CERATA_TESTS)
       test/cerata/test_types.h
       test/cerata/test_expressions.h
       test/cerata/test_designs.h
+      test/cerata/test_pool.h
 
       # Back-ends
       test/cerata/dot/test_graphs.h

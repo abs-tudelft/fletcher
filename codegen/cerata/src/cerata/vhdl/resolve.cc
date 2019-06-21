@@ -134,6 +134,9 @@ static void ExpandMappers(Type *type) {
       if (!HasStream(mapper->flat_a()) && !HasStream(mapper->flat_b())) {
         continue;
       }
+
+      CERATA_LOG(DEBUG, "Old Mapper: \n" + mapper->ToString());
+
       // Apply insertion of ready and valid to every stream type in the flattened type.
       ExpandStream(mapper->flat_a());
       mapper->a()->meta["VHDL:ExpandStreamDone"] = "true";
@@ -205,6 +208,8 @@ static void ExpandMappers(Type *type) {
 
       // Set the mapping matrix of the new mapper to the new matrix
       new_mapper->SetMappingMatrix(new_matrix);
+
+      CERATA_LOG(DEBUG, "New Mapper: \n" + new_mapper->ToString());
 
       // Add the mapper to the type
       type->AddMapper(new_mapper);

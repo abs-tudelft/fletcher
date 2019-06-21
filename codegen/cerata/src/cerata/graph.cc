@@ -27,14 +27,35 @@
 
 namespace cerata {
 
-static void AddParameterSources(Graph *comp, const Object &obj) {
+static void AddParamSources(Graph *graph, const Object &obj) {
+  if (obj.IsNode()) {
+    auto &node = dynamic_cast<const Node &>(obj);
+    if (node.IsParameter()) {
+      auto& par = node.AsParameter();
+      // If the parameter node has edges
+      if (par.GetValue()) {
+        // Obtain shared ownership of the value and add it to the graph
+        auto val = par.GetValue().value()->shared_from_this();
+        graph->AddObject(val);
+      }
+    }
+  }
+}
+
+static void AddObjectParams(Graph *comp, const Object &obj) {
   if (obj.IsNode()) {
     auto &node = dynamic_cast<const Node &>(obj);
     auto params = node.type()->GetParameters();
     for (const auto &p : params) {
       // Take ownership of the node and add it to the component.
       comp->AddObject(p->shared_from_this());
+      AddParamSources(comp, obj);
     }
+  } else if (obj.IsArray()) {
+    auto &array = dynamic_cast<const NodeArray&>(obj);
+    auto array_size = array.size()->shared_from_this();
+    comp->AddObject(array_size);
+    AddParamSources(comp, *array_size);
   }
 }
 
@@ -42,7 +63,16 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
   if (!Contains(objects_, obj)) {
     objects_.push_back(obj);
     obj->SetParent(this);
-    AddParameterSources(this, *obj);
+    AddObjectParams(this, *obj);
+  }
+  return *this;
+}
+
+Graph &Graph::RemoveObject(Object* obj) {
+  for (auto o = objects_.begin(); o < objects_.end(); o++) {
+    if (o->get() == obj) {
+      objects_.erase(o);
+    }
   }
   return *this;
 }

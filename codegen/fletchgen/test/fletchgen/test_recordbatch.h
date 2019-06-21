@@ -15,6 +15,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <memory>
 
 #include "fletcher/test_schemas.h"
 

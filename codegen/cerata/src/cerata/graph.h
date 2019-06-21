@@ -58,6 +58,8 @@ class Graph : public Named {
   bool IsInstance() const { return id_ == INSTANCE; }
   /// @brief Add an object to the component
   virtual Graph &AddObject(const std::shared_ptr<Object> &obj);
+  /// @brief Remove an object from the component
+  virtual Graph &RemoveObject(Object *obj);
 
   /// @brief Get all objects of a specific type.
   template<typename T>

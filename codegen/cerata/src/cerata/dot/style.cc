@@ -261,8 +261,8 @@ std::string Style::GetLabel(const Node &n) {
   } else if (n.IsParameter()) {
     auto par = dynamic_cast<const Parameter&>(n);
     str << "label=\"" + sanitize(par.name());
-    if (par.val()) {
-      auto val = *par.val();
+    if (par.GetValue()) {
+      auto val = *par.GetValue();
       str << ":" << sanitize(val->ToString());
     }
     str << "\"";

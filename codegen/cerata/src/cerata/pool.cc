@@ -25,6 +25,10 @@ void NodePool::Add(const std::shared_ptr<Node> &node) {
   nodes_.push_back(node);
 }
 
+void NodePool::Clear() {
+  nodes_.clear();
+}
+
 void ComponentPool::Add(const std::shared_ptr<Component> &comp) {
   // Check for potential duplicate
   for (const auto &existing_component : components_) {
