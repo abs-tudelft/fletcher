@@ -22,6 +22,7 @@
 #include <memory>
 #include <iostream>
 #include <optional>
+#include <string>
 
 namespace fletchgen::srec {
 
@@ -164,4 +165,4 @@ struct File {
   void ToBuffer(uint8_t **buffer, size_t *size);
 };
 
-} // namespace fletchgen::srec
+}  // namespace fletchgen::srec

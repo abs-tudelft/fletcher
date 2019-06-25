@@ -19,9 +19,10 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <utility>
 
 #include "cerata/output.h"
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/dot/style.h"
 
 namespace cerata::dot {
@@ -32,24 +33,23 @@ namespace cerata::dot {
 struct Grapher {
   Style style;
   Config config;
-  std::deque<std::shared_ptr<Edge>> drawn_edges = {};
-
-  Grapher() : Grapher(Style::normal()) {};
+  std::deque<Edge *> drawn_edges = {};
+  Grapher() : Grapher(Style::normal()) {}
   explicit Grapher(Style style) : style(std::move(style)) {}
-  std::string GenEdges(const Graph *graph, int level = 0);
-  std::string GenNode(const std::shared_ptr<Node> &n, int level = 0);
-  std::string GenNodes(const Graph *graph, Node::NodeID id, int level = 0, bool nogroup = false);
-  std::string GenGraph(const Graph *graph, int level = 0);
-  std::string GenFile(const std::shared_ptr<Graph> &graph, const std::string& path);
-  static std::string GenExpr(const std::shared_ptr<Node> &exp, const std::string& prefix = "", int level = 0);
+  std::string GenEdges(const Graph &graph, int level = 0);
+  std::string GenNode(const Node &n, int level = 0);
+  std::string GenNodes(const Graph &graph, Node::NodeID id, int level = 0, bool nogroup = false);
+  std::string GenGraph(const Graph &graph, int level = 0);
+  std::string GenFile(const Graph &graph, const std::string &path);
+  static std::string GenExpr(const Node &exp, const std::string &prefix = "", int level = 0);
 };
 
-std::string NodeName(const std::shared_ptr<Node> &node, const std::string& suffix = "");
+std::string NodeName(const Node &node, const std::string &suffix = "");
 
 class DOTOutputGenerator : public OutputGenerator {
  public:
-  explicit DOTOutputGenerator(std::string root_dir, std::deque<OutputGenerator::OutputSpec> graphs = {})
-  : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
+  explicit DOTOutputGenerator(std::string root_dir, std::deque<OutputSpec> graphs = {})
+      : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
   void Generate() override;
   std::string subdir() override { return "dot"; }
 };

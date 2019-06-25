@@ -14,18 +14,19 @@
 
 #include "fletchgen/hls/vivado.h"
 
+#include <vector>
 #include <memory>
 #include <string>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/kernel.h"
 
-std::string fletchgen::hls::GenerateVivadoHLSTemplate(const std::shared_ptr<Kernel> &kernel) {
+std::string fletchgen::hls::GenerateVivadoHLSTemplate(const Kernel &kernel) {
   std::stringstream str;
 
   std::vector<Argument> args;
 
-  auto ports = kernel->GetAll<FieldPort>();
+  auto ports = kernel.GetAll<FieldPort>();
 
   for (const auto &p : ports) {
     Argument arg;

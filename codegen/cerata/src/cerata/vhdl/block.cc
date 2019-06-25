@@ -22,7 +22,7 @@
 namespace cerata::vhdl {
 
 static std::string tab(int n) {
-  return std::string(static_cast<unsigned long>(2 * n), ' ');
+  return std::string(static_cast<uint64_t>(2 * n), ' ');
 }
 
 Line &operator<<(Line &lhs, const std::string &str) {
@@ -73,8 +73,6 @@ std::string Block::str() const {
     }
     // strip trailing whitespace
     ret << std::regex_replace(m.str(), std::regex("\\s+$"), std::string("")) + "\n";
-    //ret << m.str();
-    //ret << "\n";
   }
   return ret.str();
 }
@@ -86,16 +84,15 @@ Block &Block::reverse() {
 
 Block &Block::sort(std::optional<char> c) {
   std::stable_sort(lines.begin(), lines.end(),
-            [&](const Line &la, const Line &lb) -> bool {
-              auto a = la.ToString();
-              auto b = lb.ToString();
-              if (c) {
-                return a.substr(0, a.find_first_of(*c)) > b.substr(0, b.find_first_of(*c));
-              } else {
-                return a > b;
-              }
-            }
-  );
+                   [&](const Line &la, const Line &lb) -> bool {
+                     auto a = la.ToString();
+                     auto b = lb.ToString();
+                     if (c) {
+                       return a.substr(0, a.find_first_of(*c)) > b.substr(0, b.find_first_of(*c));
+                     } else {
+                       return a > b;
+                     }
+                   });
   return *this;
 }
 

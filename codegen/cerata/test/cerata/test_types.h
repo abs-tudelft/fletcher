@@ -15,12 +15,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
-
 #include <string>
 #include <fstream>
-
-#include "cerata/types.h"
-#include "cerata/flattypes.h"
+#include <cerata/api.h>
 
 namespace cerata {
 

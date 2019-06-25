@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <map>
 #include <regex>
 #include <map>
 
@@ -25,7 +24,7 @@ namespace cerata::vhdl {
 
 // @brief Structure to hold a template replacement string location
 struct trloc {
-  trloc(size_t line, size_t start) : line(line), start(start) {};
+  trloc(size_t line, size_t start) : line(line), start(start) {}
   size_t line;
   size_t start;
 };
@@ -37,15 +36,18 @@ class Template {
   explicit Template(const std::string &filename);
   /// @brief Mark the locations of all replacable template strings.
   void Analyze();
-  ///@brief Replace a template replacement string with some number.
+  /// @brief Replace a template replacement string with some number.
   void Replace(const std::string &str, int with);
-  ///@brief Replace a template replacement string with some other string.
+  /// @brief Replace a template replacement string with some other string.
   void Replace(const std::string &str, const std::string &with);
-  ///@brief Return the file as a string.
+  /// @brief Return the file as a string.
   std::string ToString();
+
  private:
-  std::map<std::string, std::vector<trloc>> replace_list_; ///< Map from a template replacement string to a vector of line numbers.
-  std::vector<std::string> lines_; ///< Lines of the file.
+  /// Map from a template replacement string to a vector of line numbers.
+  std::map<std::string, std::vector<trloc>> replace_list_;
+  /// Lines of the file.
+  std::vector<std::string> lines_;
 };
 
-} //namespace cerata::vhdl
+}  // namespace cerata::vhdl

@@ -22,19 +22,18 @@
 #include <string>
 
 #include "cerata/utils.h"
-#include "cerata/flattypes.h"
+#include "cerata/flattype.h"
 
 namespace cerata {
 
 // Forward decl.
 class Node;
-struct Literal;
-
-template<int T>
-std::shared_ptr<Literal> intl();
+class Literal;
+Literal *rintl(int i);
+std::shared_ptr<Literal> intl(int i);
 
 /**
- * @brief A type
+ * @brief A Type
  *
  * Types can logically be classified as follows.
  * - Physical.
@@ -50,7 +49,7 @@ std::shared_ptr<Literal> intl();
  *      These types contain some subtype.
  *
  */
-class Type : public Named {
+class Type : public Named, public std::enable_shared_from_this<Type> {
   // TODO(johanpel): When this class is inherited by some custom type in front-end tools, there should be some way
   // to define how a back-end emits that custom type.
  public:
@@ -80,15 +79,15 @@ class Type : public Named {
   /// @brief Type virtual destructor.
   virtual ~Type() = default;
 
+  /// @brief Return the Type ID.
+  inline ID id() const { return id_; }
+
   /**
    * @brief Determine if this Type is exactly equal to an other Type.
    * @param other   The other type.
    * @return        True if exactly equal, false otherwise.
    */
-  virtual bool IsEqual(const Type *other) const;
-
-  /// @brief Shorthand for shared pointers.
-  bool IsEqual(const std::shared_ptr<Type> &other) const;
+  virtual bool IsEqual(const Type &other) const;
 
   /// @brief Return true if the Type ID is type_id, false otherwise.
   bool Is(ID type_id) const;
@@ -97,26 +96,25 @@ class Type : public Named {
   /// @brief Return true if the Type is an abstract type, false otherwise.
   bool IsAbstract() const;
   /// @brief Return the width of the type, if it is synthesizable.
-  virtual std::optional<std::shared_ptr<Node>> width() const { return {}; }
+  virtual std::optional<Node *> width() const { return {}; }
   /// @brief Return true if type is nested (e.g. Stream or Record), false otherwise.
   bool IsNested() const;
-  /// @brief Return the Type ID.
-  inline ID id() const { return id_; }
   /// @brief Return the Type ID as a human-readable string.
-  std::string ToString(bool show_meta = false) const;
+  std::string ToString(bool show_meta = false, bool show_mappers = false) const;
+
   /// @brief Return possible type mappers.
   std::deque<std::shared_ptr<TypeMapper>> mappers() const;
   /// @brief Add a type mapper.
-  void AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing=true);
+  void AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing = true);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other);
   /// @brief Remove all mappers to a specific type
-  void RemoveMappersTo(Type *other);
+  int RemoveMappersTo(Type *other);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other);
 
-  /// @brief Obtain all Nodes that parametrize this type.
-  virtual std::deque<std::shared_ptr<Node>> GetParameters() const { return {}; }
+  /// @brief Obtain any Nodes that parametrize this type.
+  virtual std::deque<Node *> GetParameters() const { return {}; }
 
   /// @brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;
@@ -149,9 +147,9 @@ struct Clock : public Type {
   /// @brief Create a new clock, and return a shared pointer to it.
   static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
   /// @brief Clock width returns integer literal 1.
-  std::optional<std::shared_ptr<Node>> width() const override;
+  std::optional<Node *> width() const override;
   /// @brief Determine if this Clock is exactly equal to an other Clock.
-  bool IsEqual(const Type *other) const override;
+  bool IsEqual(const Type &other) const override;
 };
 
 /// @brief Reset type.
@@ -163,9 +161,9 @@ struct Reset : public Type {
   /// @brief Create a new Reset, and return a shared pointer to it.
   static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
   /// @brief Reset width returns integer literal 1.
-  std::optional<std::shared_ptr<Node>> width() const override;
+  std::optional<Node *> width() const override;
   /// @brief Determine if this Reset is exactly equal to an other Reset.
-  bool IsEqual(const Type *other) const override;
+  bool IsEqual(const Type &other) const override;
 };
 
 /// @brief A bit type.
@@ -175,7 +173,7 @@ struct Bit : public Type {
   /// @brief Create a new Bit type, and return a shared pointer to it.
   static std::shared_ptr<Bit> Make(std::string name);
   /// @brief Bit width returns integer literal 1.
-  std::optional<std::shared_ptr<Node>> width() const override;
+  std::optional<Node *> width() const override;
 };
 /// @brief Return a generic static Bit type.
 std::shared_ptr<Type> bit();
@@ -227,12 +225,9 @@ std::shared_ptr<Type> string();
 
 /// @brief Vector type.
 class Vector : public Type {
- private:
-  std::optional<std::shared_ptr<Node>> width_;
-  std::shared_ptr<Type> element_type_;
  public:
   /// @brief Vector constructor.
-  Vector(std::string name, std::shared_ptr<Type> element_type, std::optional<std::shared_ptr<Node>> width);
+  Vector(std::string name, std::shared_ptr<Type> element_type, const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type, and return a shared pointer to it.
   static std::shared_ptr<Type> Make(std::string name,
@@ -245,37 +240,46 @@ class Vector : public Type {
   /// @brief Create a new Vector Type of width W and element type bit. Returns a shared pointer to it.
   template<int W>
   static std::shared_ptr<Type> Make(std::string name) {
-    return std::make_shared<Vector>(name, bit(), intl<W>());
+    return std::make_shared<Vector>(name, bit(), intl(W));
   }
 
   /// @brief Create a new Vector Type of width W and element type bit and name "vec<W>". Returns a shared pointer to it.
   template<int W>
   static std::shared_ptr<Type> Make() {
-    static auto result = std::make_shared<Vector>("vec" + std::to_string(W), bit(), intl<W>());
+    auto result = std::make_shared<Vector>("vec" + std::to_string(W), bit(), intl(W));
     return result;
   }
 
   /// @brief Create a new Vector Type of some width.
   static std::shared_ptr<Type> Make(unsigned int width);
 
-  /// @brief Return a pointer to the node representing the width of this vector, if specified.
-  std::optional<std::shared_ptr<Node>> width() const override { return width_; }
-  /// @brief Determine if this Type is exactly equal to an other Type.
-  bool IsEqual(const Type *other) const override;
+  /// @brief Create a new Vector Type of some width.
+  static std::shared_ptr<Type> Make(std::string name, unsigned int width);
 
-  /// @brief Returns the width parameter of this vector, if any. Otherwise an empty deque.
-  std::deque<std::shared_ptr<Node>> GetParameters() const override;
+  /// @brief Return a pointer to the node representing the width of this vector, if specified.
+  std::optional<Node *> width() const override;
+  Type &SetWidth(std::shared_ptr<Node> width);
+
+  /// @brief Determine if this Type is exactly equal to an other Type.
+  bool IsEqual(const Type &other) const override;
+
+  /// @brief Returns the width parameter of this vector, if any. Otherwise an empty list;
+  std::deque<Node *> GetParameters() const override;
+
+ private:
+  std::optional<std::shared_ptr<Node>> width_;
+  std::shared_ptr<Type> element_type_;
 };
 
 /// @brief A Record field.
 class RecField : public Named {
  public:
   /// @brief RecordField constructor.
-  RecField(std::string name, std::shared_ptr<Type> type, bool invert=false);
+  RecField(std::string name, std::shared_ptr<Type> type, bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it.
-  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type, bool invert=false);
+  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type, bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert=false);
+  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert = false);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
   /// @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
@@ -310,7 +314,9 @@ class Record : public Type {
   /// @brief Return the number of fields in this record.
   inline size_t num_fields() const { return fields_.size(); }
   /// @brief Determine if this Type is exactly equal to an other Type.
-  bool IsEqual(const Type *other) const override;;
+  bool IsEqual(const Type &other) const override;
+  /// @brief Return all nodes that potentially parametrize the fields of this record.
+  std::deque<Node *> GetParameters() const override;
  private:
   std::deque<std::shared_ptr<RecField>> fields_;
 };
@@ -341,15 +347,16 @@ class Stream : public Type {
   /// @brief Return the type of the elements of this stream.
   std::shared_ptr<Type> element_type() const { return element_type_; }
   /// @brief Set the name of the elements of this stream.
-  void SetElementName(std::string name) { element_name_ = name; }
+  void SetElementName(std::string name) { element_name_ = std::move(name); }
   /// @brief Return the name of the elements of this stream.
   std::string element_name() { return element_name_; }
 
   /// @brief Return the maximum number of elements per cycle this stream can deliver.
-  int epc() { return epc_; } // TODO(johanpel): turn EPC into a parameter or literal node
+  // TODO(johanpel): turn EPC into a parameter or literal node
+  int epc() { return epc_; }
 
   /// @brief Determine if this Stream is exactly equal to another Stream.
-  bool IsEqual(const Type *other) const override;
+  bool IsEqual(const Type &other) const override;
 
  private:
   /// @brief The type of the elements traveling over this stream.
@@ -360,45 +367,5 @@ class Stream : public Type {
   /// @brief Elements Per Cycle
   int epc_ = 1;
 };
-
-/// @brief Cast a pointer to a Type to a typically less abstract Type T.
-template<typename T>
-std::optional<std::shared_ptr<T>> Cast(const std::shared_ptr<Type> &type) {
-  auto result = std::dynamic_pointer_cast<T>(type);
-  if (result == nullptr) {
-    return std::nullopt;
-  }
-  return result;
-}
-
-/// @brief Cast a raw pointer of a Type to a typically more specific Type T.
-template<typename T>
-std::optional<const T *> Cast(const Type *type) {
-  auto result = dynamic_cast<const T *>(type);
-  if (result == nullptr) {
-    return std::nullopt;
-  }
-  return result;
-}
-
-/// @brief Cast a raw pointer of a Type to a typically more specific Type T.
-template<typename T>
-std::optional<T *> Cast(Type *type) {
-  auto result = dynamic_cast<T *>(type);
-  if (result == nullptr) {
-    return std::nullopt;
-  }
-  return result;
-}
-
-/// @brief Cast a raw reference to a Type to a typically more specific Type T.
-template<typename T>
-std::optional<const T &> Cast(const Type &type) {
-  auto result = dynamic_cast<T &>(type);
-  if (&result == nullptr) {
-    return std::nullopt;
-  }
-  return result;
-}
 
 }  // namespace cerata

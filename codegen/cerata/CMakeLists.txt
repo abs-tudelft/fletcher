@@ -17,16 +17,18 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
 # Sources
 set(HEADERS
     src/cerata/utils.h
-    src/cerata/arrays.h
-    src/cerata/edges.h
-    src/cerata/objects.h
-    src/cerata/types.h
-    src/cerata/nodes.h
-    src/cerata/graphs.h
-    src/cerata/flattypes.h
+    src/cerata/node_array.h
+    src/cerata/edge.h
+    src/cerata/object.h
+    src/cerata/type.h
+    src/cerata/node.h
+    src/cerata/expression.h
+    src/cerata/graph.h
+    src/cerata/flattype.h
     src/cerata/output.h
     src/cerata/transform.h
     src/cerata/logging.h
+    src/cerata/pool.h
 
     src/cerata/vhdl/architecture.h
     src/cerata/vhdl/block.h
@@ -45,15 +47,17 @@ set(HEADERS
 
 set(SOURCES
     src/cerata/utils.cc
-    src/cerata/arrays.cc
-    src/cerata/edges.cc
-    src/cerata/objects.cc
-    src/cerata/types.cc
-    src/cerata/nodes.cc
-    src/cerata/graphs.cc
-    src/cerata/flattypes.cc
+    src/cerata/node_array.cc
+    src/cerata/edge.cc
+    src/cerata/object.cc
+    src/cerata/type.cc
+    src/cerata/node.cc
+    src/cerata/expression.cc
+    src/cerata/graph.cc
+    src/cerata/flattype.cc
     src/cerata/output.cc
     src/cerata/transform.cc
+    src/cerata/pool.cc
 
     src/cerata/vhdl/architecture.cc
     src/cerata/vhdl/block.cc
@@ -90,6 +94,7 @@ if (CERATA_TESTS)
       test/cerata/test_types.h
       test/cerata/test_expressions.h
       test/cerata/test_designs.h
+      test/cerata/test_pool.h
 
       # Back-ends
       test/cerata/dot/test_graphs.h
@@ -97,6 +102,7 @@ if (CERATA_TESTS)
       test/cerata/vhdl/test_declarators.h
       test/cerata/vhdl/test_instantiators.h
       )
+  include_directories(test)
   add_executable(${PROJECT_NAME}-test ${TEST_HEADERS} ${TEST_SOURCES})
   target_link_libraries(${PROJECT_NAME}-test gtest gtest_main)
   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})

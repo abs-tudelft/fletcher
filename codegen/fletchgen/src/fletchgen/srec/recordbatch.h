@@ -14,11 +14,14 @@
 
 #pragma once
 
-#include <vector>
 #include <arrow/api.h>
 #include <arrow/ipc/api.h>
 #include <arrow/io/api.h>
-#include <arrow/ipc/writer.h>
+#include <fletcher/common.h>
+
+#include <vector>
+#include <deque>
+#include <memory>
 
 #include "fletchgen/options.h"
 
@@ -57,11 +60,10 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
  * @param buf_offsets   The offsets of the flattened buffer.
  * @return              A deque of Arrow RecordBatches filled with contents from the SREC input stream.
  */
-std::deque<std::shared_ptr<arrow::RecordBatch>> ReadRecordBatchesFromSREC(std::istream *input,
-                                                                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
-                                                                          const std::vector<uint64_t> &num_rows,
-                                                                          const std::vector<uint64_t> &buf_offsets);
+std::deque<std::shared_ptr<arrow::RecordBatch>>
+ReadRecordBatchesFromSREC(std::istream *input,
+                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
+                          const std::vector<uint64_t> &num_rows,
+                          const std::vector<uint64_t> &buf_offsets);
 
-} // namespace fletchgen::srec
-
-
+}  // namespace fletchgen::srec

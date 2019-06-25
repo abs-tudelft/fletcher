@@ -15,25 +15,23 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cerata/api.h>
 
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
-#include "cerata/nodes.h"
-#include "cerata/types.h"
-
-#include "../test_designs.h"
+#include "cerata/test_designs.h"
 
 namespace cerata {
 
 TEST(VHDL_DECL, Component) {
-  auto code = vhdl::Decl::Generate(GetAllPortTypesComponent().get());
+  default_component_pool()->Clear();
+  auto code = vhdl::Decl::Generate(*GetAllPortTypesComponent());
   std::cout << code.ToString() << std::endl;
 }
 
 TEST(VHDL_DECL, ArrayPort) {
+  default_component_pool()->Clear();
   auto top = GetArrayComponent();
-  auto code = vhdl::Design(top);
-  std::cout << code.Generate().ToString() << std::endl;
+  auto design = vhdl::Design(top);
+  std::cout << design.Generate().ToString() << std::endl;
 }
 
 }  // namespace cerata

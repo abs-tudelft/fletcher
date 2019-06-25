@@ -14,11 +14,12 @@
 
 #pragma once
 
+#include <cerata/api.h>
+#include <arrow/api.h>
+
 #include <vector>
 #include <memory>
 #include <string>
-#include <cerata/api.h>
-#include <arrow/api.h>
 
 namespace fletchgen {
 
@@ -84,4 +85,4 @@ struct Options {
   std::string ToString() const;
 };
 
-} // namespace fletchgen
+}  // namespace fletchgen

@@ -19,8 +19,7 @@
 
 namespace fletchgen {
 
-bool Options::Parse(Options *options, int argc, char **argv) {
-
+int Options::Parse(Options *options, int argc, char **argv) {
   CLI::App app{"Fletchgen - The Fletcher Design Generator"};
 
   app.get_formatter()->column_width(40);
@@ -155,4 +154,4 @@ std::string Options::ToString() const {
   return str.str();
 }
 
-} // namespace fletchgen
+}  // namespace fletchgen

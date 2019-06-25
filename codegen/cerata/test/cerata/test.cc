@@ -15,18 +15,24 @@
 #include <gtest/gtest.h>
 
 // Graph layer tests
-#include "./test_expressions.h"
-#include "./test_types.h"
+#include "cerata/test_expressions.h"
+#include "cerata/test_types.h"
+#include "cerata/test_pool.h"
 
 // VHDL backend tests
-#include "./vhdl/test_declarators.h"
-#include "./vhdl/test_instantiators.h"
-#include "./vhdl/test_designs.h"
+#include "cerata/vhdl/test_declarators.h"
+#include "cerata/vhdl/test_instantiators.h"
+#include "cerata/vhdl/test_designs.h"
 
 // DOT backend tests
-#include "./dot/test_graphs.h"
+#include "cerata/dot/test_graphs.h"
+
+void Log(int level, const std::string &msg, char const *source_fun, char const *source_file, int line_num) {
+  std::cout << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
+}
 
 int main(int argc, char **argv) {
+  cerata::logger().enable(Log);
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -15,19 +15,21 @@
 #pragma once
 
 // Cerata intermediate
-#include <cerata/arrays.h>
-#include <cerata/edges.h>
-#include <cerata/flattypes.h>
-#include <cerata/graphs.h>
-#include <cerata/types.h>
-#include <cerata/nodes.h>
-#include <cerata/objects.h>
-#include <cerata/output.h>
+#include "cerata/node_array.h"
+#include "cerata/edge.h"
+#include "cerata/flattype.h"
+#include "cerata/graph.h"
+#include "cerata/type.h"
+#include "cerata/node.h"
+#include "cerata/object.h"
+#include "cerata/output.h"
+#include "cerata/pool.h"
+#include "cerata/expression.h"
 
 // Cerata utilities
-#include <cerata/utils.h>
-#include <cerata/logging.h>
+#include "cerata/utils.h"
+#include "cerata/logging.h"
 
 // Cerata back-ends
-#include <cerata/vhdl/vhdl.h>
-#include <cerata/dot/dot.h>
+#include "cerata/vhdl/vhdl.h"
+#include "cerata/dot/dot.h"

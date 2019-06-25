@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "fletchgen/mantle.h"
 
@@ -25,4 +26,4 @@ namespace fletchgen::top {
 std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle,
                            const std::vector<std::ostream *> &outputs);
 
-} // namespace fletchgen::top
+}  // namespace fletchgen::top

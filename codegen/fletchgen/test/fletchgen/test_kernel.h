@@ -26,14 +26,15 @@
 #include "fletchgen/bus.h"
 #include "fletchgen/schema.h"
 
-#include "./test_utils.h"
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
 static void TestReadKernel(const std::string& test_name, const std::shared_ptr<arrow::Schema>& schema) {
+  cerata::default_component_pool()->Clear();
   auto fs = FletcherSchema::Make(schema);
   auto rbr = RecordBatch::Make(fs);
-  auto top = Kernel::Make("Test" + test_name, {rbr});
+  auto top = Kernel::Make("Test" + test_name, {rbr.get()});
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();
   std::cerr.flush();

@@ -14,14 +14,20 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-#include <locale>
 #include <arrow/api.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+#include <string>
+#include <memory>
+#include <locale>
 
 namespace fletchgen {
+
+/// Metadata keys
+namespace metakeys {
+  /// Key for automated type mapping.
+  constexpr char ARRAY_DATA[] = "fletchgen_array_data";
+}
 
 using cerata::Type;
 using cerata::Node;
@@ -63,15 +69,24 @@ PARAM_DECL_FACTORY(bus_burst_step_len)
 PARAM_DECL_FACTORY(bus_burst_max_len)
 PARAM_DECL_FACTORY(index_width)
 
-std::shared_ptr<ClockDomain> kernel_domain(); ///< @brief Fletcher accelerator clock domain
-std::shared_ptr<ClockDomain> bus_domain(); ///< @brief Fletcher bus clock domain
-std::shared_ptr<Type> data(const std::shared_ptr<Node>& width); ///< @brief Fletcher data
-std::shared_ptr<Type> length(const std::shared_ptr<Node>& width); ///< @brief Fletcher length
-std::shared_ptr<Type> count(const std::shared_ptr<Node>& width); ///< @brief Fletcher count
-std::shared_ptr<Type> dvalid(); ///< @brief Fletcher dvalid
-std::shared_ptr<Type> last(); ///< @brief Fletcher last
-std::shared_ptr<Type> kernel_cr(); ///< @brief Fletcher accelerator clock/reset
-std::shared_ptr<Type> bus_cr(); ///< @brief Fletcher bus clock/reset
+/// @brief Fletcher accelerator clock domain
+std::shared_ptr<ClockDomain> kernel_domain();
+/// @brief Fletcher bus clock domain
+std::shared_ptr<ClockDomain> bus_domain();
+/// @brief Fletcher data
+std::shared_ptr<Type> data(const std::shared_ptr<Node> &width);
+/// @brief Fletcher length
+std::shared_ptr<Type> length(const std::shared_ptr<Node> &width);
+/// @brief Fletcher count
+std::shared_ptr<Type> count(const std::shared_ptr<Node> &width);
+/// @brief Fletcher dvalid
+std::shared_ptr<Type> dvalid();
+/// @brief Fletcher last
+std::shared_ptr<Type> last();
+/// @brief Fletcher accelerator clock/reset
+std::shared_ptr<Type> kernel_cr();
+/// @brief Fletcher bus clock/reset
+std::shared_ptr<Type> bus_cr();
 
 /**
  * @brief Convert an arrow::DataType to a Fletcher Type.
