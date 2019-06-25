@@ -1,4 +1,4 @@
-# Fletcher accelerator host-side platform agnostic run-time libraries
+# Fletcher host-side platform agnostic run-time libraries
 
 Host-side run-time libraries exist for the following languages:
 

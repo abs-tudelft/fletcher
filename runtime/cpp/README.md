@@ -4,7 +4,7 @@
 
 To build this library, the following packages are required to be installed:
 
-* [Apache Arrow](https://github.com/apache/arrow)
+* [Apache Arrow 0.13+](https://github.com/apache/arrow)
 
 # Build & install
 
