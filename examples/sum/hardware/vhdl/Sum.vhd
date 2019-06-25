@@ -100,7 +100,10 @@ architecture Implementation of Sum is
   -- Accumulate the total sum here
   signal accumulator, accumulator_next : signed(2*REG_WIDTH-1 downto 0);
   
+  signal kcd_reset_n            : std_logic;
+  
 begin
+  kcd_reset_n <= not(kcd_reset);
   -- Instantiate the AXI mmio component to communicate with host more easily 
   -- through registers.
   axi_mmio_inst : AxiMmio
@@ -114,7 +117,7 @@ begin
     )
     port map (
       clk                => kcd_clk,
-      reset_n            => not(kcd_reset),
+      reset_n            => kcd_reset_n,
       s_axi_awvalid      => mmio_awvalid,
       s_axi_awready      => mmio_awready,
       s_axi_awaddr       => mmio_awaddr,

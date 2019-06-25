@@ -1,1 +1,12 @@
+input/*
+output/*
+vhdl/*
+dot/*
+work/*
+!input/.keep
+!output/.keep
+!vhdl/Sum.vhd
 .ipynb_checkpoints
+vsim.do
+transcript
+*.cf

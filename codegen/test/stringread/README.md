@@ -1,42 +1,41 @@
 # Hardware simulation of Fletcher designs: Stringread example
 
-This is a simple example of how to use **fletchgen** to generate a design based on an Arrow Schema.
+This is a simple example of how to use **Fletchgen** to generate a design based on an Arrow Schema.
 
 ## Prerequisites
 
-* Build and install [fletchgen](../../../README.md).
+* Build and install [Fletchgen](../../fletchgen/README.md).
 * Install some simulator like QuestSim or GHDL.
 
 ## Input files
 
-There are two input files for **fletchgen** in the [input](input/) folder of this example.
+There are two input files for **Fletchgen** in the [input](input/) folder of this example.
 
-#### [input/stringread.fbs](input/stringread.fbs)
+#### [input/names.rb](input/names.rb)
 
-This is an Arrow Schema saved as a Flatbuffer file. You can supply multiple schemas to Fletchen, but for this we will 
-only read some strings from a single Arrow RecordBatch with random names of people.
+This is an Arrow Recordbatch that contains an Arrow Schema with Fletcher-specific metadata annotated, and some data
+(some random people names).
 
 A textual representation of the schema would look as follows:
  
 ```
-Schema metadata (key, value):
-  * "fletcher_mode" = "read"
+Schema metadata (key = value):
+  fletcher_name = StringRead
+  fletcher_mode = read
              
-Field 0: 
-  * Name     : "Name"
-  * Type     : utf8 
-  * Metadata : "epc" = "4"
+Field 0:
+  Name     : "Name"
+  Type     : utf8 
+  Metadata : "fletcher_epc" = "4"
 ```
 
-The schema is very simple, but there are two key-value-pairs of metadata attached at specific places.
-* **"fletcher_mode"** is attached to the Schema itself. Setting this to "read" means that the generated kernel is supposed 
-to read from the Arrow RecordBatch based on this schema.
-* **"epc"** is attached to the first field with the name "Name". This will cause the hardware stream generated based on 
-  this field to deliver at most four *elements per cycle*.
-
-#### [input/names.rb](input/names.rb)
-
-This is a RecordBatch with some random names confirming to the schema described before.
+The schema is very simple, but there are three key-value-pairs of metadata attached at specific places.
+* **"fletcher_name"** is attached to the schema itself. This is the name of the schema, that will later on be the name
+of a generated RecordBatchReader.
+* **"fletcher_mode"** is also attached to the schema itself. Setting this to "read" means that the generated kernel 
+is supposed to read from the Arrow RecordBatch (rather than write to it).
+* **"fletcher_epc"** is attached to the first field with the name "Name". This will cause the hardware stream generated based on 
+  this field to deliver at most four *elements per cycle*. This increases the throughput of our little example kernel.
 
 # Runing fletchgen
 
@@ -49,7 +48,7 @@ Let's assume we want to use VHDL as our output language.
 After inspecting the options, we can run fletchgen for this example as follows.
 
  ```console
-fletchgen -i input/stringread.fbs -r input/names.rb -s output/stringread.srec -l vhdl --sim
+fletchgen -r input/names.rb -s output/stringread.srec -l vhdl --sim
 ```
 
 This basically means, use the aforementioned input files (the schema and the recordbatch), output the contents for the
@@ -58,25 +57,35 @@ top-level.
 
 This will produce the following files:
 
-| File                                  | Description                                                                                   |
-|---------------------------------------|-----------------------------------------------------------------------------------------------|
-| vhdl/Kernel.vhdt                      | Kernel template                                                                               |
-| vhdl/StringRead_RecordBatchReader.vhd | A component instantiating all ArrayReaders for every Arrow Array (column) of the RecordBatch. |
-| vhdl/Kernel_Mantle.vhd                | A wrapper around the Kernel, RecordBatchReaders and bus interconnect.                         |
-| vhdl/sim_top.vhd                      | Simulation (testbench) top-level                                                              |
-| output/stringread.srec                | An SREC file with the contents of the RecordBatch for the memory model in simulation.         |
+| File                                  | Description                                                                  |
+|---------------------------------------|------------------------------------------------------------------------------|
+| vhdl/Kernel.vhdt                      | Kernel template                                                              |
+| vhdl/StringRead.vhd                   | A RecordBatchReader instantiating all ArrayReaders for every Arrow Array (column) of the RecordBatch. |
+| vhdl/Mantle.vhd                       | A wrapper around the Kernel, RecordBatchReaders and bus interconnect.        |
+| vhdl/sim_top_tc.vhd                   | Simulation top-level test case                                               |
+| output/stringread.srec                | An SREC file with the contents of the RecordBatch for the memory model in simulation. |
 
-Note that the "vhdl/Kernel.vhdt" file was only generated because there is already an existing "vhdl/Kernel.vhd". By
-default, fletchgen will not overwrite that file, but will only overwrite any existing "vhdl/Kernel.vhdt".
+Note that the `vhdl/Kernel.vhdt` file was only generated because there is already an existing `vhdl/Kernel.vhd`. By
+default, Fletchgen will not overwrite a file that a user should modify, but *will* only overwrite any existing 
+`*.vhdt`-file!
 
-Now, sim_top.vhd can be simulated. There is a TCL script for QuestaSim. You can run it from this folder as follows:
+Now, `sim_top_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
+At the time of writing, this tool gives us two simulation targets, either [GHDL](https://github.com/ghdl/ghdl) 
+or Questasim/Modelsim.
+
+Suppose we are targeting GHDL, we can invoke vhdeps as follows:
 
 ```console
-vsim -batch -do questa/stringread.tcl
+ vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl sim_top_tc
 ```
 
-After QuestaSim has compiled all Fletcher hardware and files generated by fletchgen, you should see the Kernel 
-outputting the strings:
+vhdeps will automatically analyze the dependencies of our simulation top level test case. These files are found in 
+the Fletcher hardware directory and the current directory, so we include them using the ```-i``` flag.
+We use the ```--no-tempdir``` flag to tell vhdeps to run our test case in the current working directory rather than
+a temporary directory it creates by default.
+ 
+Once GHDL has compiled all Fletcher hardware and the files generated by Fletchgen, you should see the simulation Kernel 
+outputting the strings that were in the RecordBatch:
  
 ```
 # String 0 : Alice
@@ -87,23 +96,34 @@ outputting the strings:
 ...
 ```
 
-You can run QuestaSim in GUI mode to see the waveforms too. 
+You can see the waveforms if you run the simulation in gui mode with the ```-gui``` flag. 
+In this example, we use QuestaSim as a simulator target for vhdeps.
 ```console
-vsim -do questa/stringread.tcl
+vhdeps --no-tempdir -i path/to/fletcher/hardware -i . --gui vsim sim_top_tc
 ```
 
 You can verify that the string lengths and characters of the names appear on the two streams that were generated from
-the "Names" field. Just set the character stream radix to ASCII.
+the "Names" field. Add the kernel to the simulation waveforms as follows:
 
 ```tcl
-property wave -radix ASCII *chars_data
+add_waves {{"Kernel" sim:/sim_top_tc/Mantle_inst/Kernel_inst/*}}
 ```
 
-You should see the waveforms as below. Because we have used "epc" = "4" as metadata on the "Names" field, you can see
-that the "Name_chars" signal contains 32 bits (four bytes). QuestaSim shows 32'a in front of ASCII strings, so the first
-handshake delivers "cilA" to us, where from the "Name_chars_count" field we can see that all four bytes are part of the
-data. Because the string "Alice" terminates after "e", the next handshake delivers "XXXe" (where X is undefined) with a
-count of 1. That means only the first (rightmost) byte is part of the string. The "Name_chars_last" signal is also
-asserted to signal that this is the last handshake for this string.
+We'll take a look at the StringRead_Name_chars_data signal using ASCII radix, so we can actually read what is going on.
+**After you un-collapse the "Kernel" group in the wave window**, you can issue the following TCL command to zoom in on the
+waveform and change the radix of this signal.
+
+```tcl
+wave zoom range 0 1731ns
+property wave -radix ASCII *chars_data 
+```
+
+You should see the waveforms as below. Because we have used "fletcher_epc" = "4" as metadata on the "Names" field, you 
+can see that the "Name_chars" signal contains 32 bits (four bytes). QuestaSim shows 32'a in front of ASCII strings, so 
+the first handshake delivers "cilA" to us, where from the "Name_chars_count" field we can see that all four bytes are 
+part of the data. Because the string "Alice" terminates after "e", the next handshake delivers "XXXe" (where X is 
+undefined) with a count of 1. That means only the first (rightmost) byte is part of the string. The "Name_chars_last" 
+signal is also asserted to signal that this is the last handshake for this string.
 
 ![Example output](doc/example.png)
+
