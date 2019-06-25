@@ -14,15 +14,17 @@
 
 #pragma once
 
-#include <memory>
-
 #include <cerata/api.h>
+
+#include <string>
+#include <memory>
 
 #include "fletchgen/basic_types.h"
 
 namespace fletchgen {
 
 using cerata::Component;
+using cerata::Instance;
 using cerata::intl;
 
 /// @brief Return the width of the control data of this field.
@@ -34,14 +36,14 @@ std::shared_ptr<Node> tag_width(const arrow::Field &field);
 // Default streams of ArrayReaders/ArrayWriters
 
 ///< @brief Fletcher command stream
-std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl<1>(),
-                          const std::shared_ptr<Node> &tag_width = intl<1>());
+std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl(1),
+                          const std::shared_ptr<Node> &tag_width = intl(1));
 ///< @brief Fletcher unlock stream
-std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl<1>());
+std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl(1));
 ///< @brief Fletcher read data
-std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &data_width = intl<1>());
+std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &data_width = intl(1));
 ///< @brief Fletcher write data
-std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &data_width = intl<1>());
+std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &data_width = intl(1));
 
 /// @brief Types for ArrayReader/Writer configuration string.
 enum class ConfigType {
@@ -83,8 +85,7 @@ std::string GenerateConfigString(const arrow::Field &field, int level = 0);
  * @param other         The other type, typically some read_data() or write_data() generated type.
  * @return              A type mapper
  */
-std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &stream_type,
-                                                const std::shared_ptr<Type> &other);
+std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other);
 
 /**
  * @brief Convert an Arrow::Field into a stream type.
@@ -96,25 +97,18 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(const std::shared_ptr<Type> &str
 std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mode, int level = 0);
 
 /**
- * @brief Return a Cerata component model of an Array(Reader/Writer).
- *
- *  * This model corresponds to either:
- *    [`hardware/arrays/ArrayReader.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayReader.vhd)
- * or [`hardware/arrays/ArrayWriter.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayWriter.vhd)
- * depending on the mode parameter.
- *
- * Changes to the implementation of this component in the HDL source must be reflected in the implementation of this
- * function.
- *
- * @param data_width  Width of the data port.
- * @param ctrl_width  Width of the control port.
- * @param tag_width   Width of the tag on the control and unlock port.
- * @param mode        Whether this Array component must Read or Write.
- * @return            The component model.
+ * @brief Return a parameterized Cerata instance of an Array(Reader/Writer)
+ * @param name        Name of the instance.
+ * @param mode        Whether the Array(Reader/Writer) instance must READ from memory or WRITE to memory.
+ * @param data_width  Data bus width parameter.
+ * @param ctrl_width  Command control signal width parameter.
+ * @param tag_width   Command/unlock tag width parameter.
+ * @return            A unique pointer holding the Array(Reader/Writer) instance.
  */
-std::shared_ptr<Component> Array(const std::shared_ptr<Node> &data_width = intl<1>(),
-                                 const std::shared_ptr<Node> &ctrl_width = intl<1>(),
-                                 const std::shared_ptr<Node> &tag_width = intl<1>(),
-                                 fletcher::Mode mode = fletcher::Mode::READ);
+std::unique_ptr<Instance> ArrayInstance(std::string name,
+    fletcher::Mode mode = fletcher::Mode::READ,
+                                        const std::shared_ptr<Node> &data_width = intl(1),
+                                        const std::shared_ptr<Node> &ctrl_width = intl(1),
+                                        const std::shared_ptr<Node> &tag_width = intl(1));
 
 }  // namespace fletchgen

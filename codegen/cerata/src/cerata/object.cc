@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/objects.h"
+#include "cerata/object.h"
 
 #include <string>
 #include <memory>
 
-#include "cerata/nodes.h"
-#include "cerata/arrays.h"
+#include "cerata/node.h"
+#include "cerata/node_array.h"
 #include "cerata/utils.h"
 
 namespace cerata {
 
-void Object::SetParent(const Graph *parent) {
-  if (parent != nullptr) { parent_ = parent; }
-  else { throw std::runtime_error("Parent cannot be nullptr."); }
+void Object::SetParent(Graph *parent) {
+  if (parent != nullptr) {
+    parent_ = parent;
+  } else {
+    throw std::runtime_error("Parent cannot be nullptr.");
+  }
 }
 
-std::optional<const Graph *> Object::parent() const { return parent_; }
+std::optional<Graph *> Object::parent() const { return parent_; }
 
-}  // cerata;
+}  // namespace cerata

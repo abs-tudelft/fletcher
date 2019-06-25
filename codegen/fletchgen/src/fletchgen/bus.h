@@ -14,8 +14,10 @@
 
 #pragma once
 
-#include <memory>
 #include <cerata/api.h>
+
+#include <memory>
+#include <string>
 
 #include "fletchgen/basic_types.h"
 
@@ -29,7 +31,6 @@ using cerata::Port;
 using cerata::Parameter;
 using cerata::PortArray;
 using cerata::integer;
-using cerata::Cast;
 using cerata::Type;
 
 // Bus channel classes:
@@ -48,35 +49,34 @@ struct BusSpec {
   size_t max_burst = 128;
   BusFunction function = BusFunction::READ;
 
-  std::shared_ptr<Type> ToType();
   std::string ToString() const;
-  std::string ToShortString() const;
+  std::string ToBusTypeName() const;
 };
 
 bool operator==(const BusSpec &lhs, const BusSpec &rhs);
+
+/// @brief Fletcher bus type with access mode conveyed through spec.
+std::shared_ptr<Type> bus(BusSpec spec = BusSpec());
+std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width,
+                               const std::shared_ptr<Node> &len_width,
+                               const std::shared_ptr<Node> &data_width);
+std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
+                                const std::shared_ptr<Node> &len_width,
+                                const std::shared_ptr<Node> &data_width);
+
 
 /// @brief Bus port
 struct BusPort : public Port {
   BusSpec spec_;
   BusPort(Port::Dir dir, BusSpec spec, const std::string &name = "")
-      : Port(name.empty() ? "bus" : name, spec.ToType(), dir), spec_(spec) {}
+      : Port(name.empty() ? "bus" : name, bus(spec), dir), spec_(spec) {}
   static std::shared_ptr<BusPort> Make(std::string name, Port::Dir dir, BusSpec spec);
   static std::shared_ptr<BusPort> Make(Port::Dir dir, BusSpec spec);
   std::shared_ptr<Object> Copy() const override;
 };
 
-/// @brief Fletcher bus read request channel
-std::shared_ptr<Type> bus_read(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
-                               const std::shared_ptr<Node> &len_width = bus_len_width(),
-                               const std::shared_ptr<Node> &data_width = bus_data_width());
-
-/// @brief Fletcher bus write request channel
-std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width = bus_addr_width(),
-                                const std::shared_ptr<Node> &len_width = bus_len_width(),
-                                const std::shared_ptr<Node> &data_width = bus_data_width());
-
 /**
- * @brief Return a Cerata component model of a BusArbiter.
+ * @brief Return a Cerata Instance of a BusArbiter.
  *
  * This model corresponds to either:
  *    [`hardware/interconnect/BusReadArbiterVec.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/interconnect/BusReadArbiterVec.vhd)
@@ -90,7 +90,7 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width = bus_ad
  * @param spec      The bus specification.
  * @return          A Bus(Read/Write)Arbiter Cerata component model.
  */
-std::shared_ptr<Component> BusArbiter(BusSpec spec = BusSpec());
+std::unique_ptr<Instance> BusArbiterInstance(BusSpec spec = BusSpec());
 
 std::shared_ptr<Component> BusReadSerializer();
 std::shared_ptr<Component> BusWriteSerializer();

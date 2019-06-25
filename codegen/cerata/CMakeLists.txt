@@ -23,19 +23,22 @@ add_compile_unit(
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
   SRCS
-    src/cerata/arrays.cc
-    src/cerata/edges.cc
-    src/cerata/flattypes.cc
-    src/cerata/graphs.cc
-    src/cerata/nodes.cc
-    src/cerata/objects.cc
+    src/cerata/edge.cc
+    src/cerata/expression.cc
+    src/cerata/flattype.cc
+    src/cerata/graph.cc
+    src/cerata/node.cc
+    src/cerata/node_array.cc
+    src/cerata/object.cc
     src/cerata/output.cc
+    src/cerata/pool.cc
     src/cerata/transform.cc
-    src/cerata/types.cc
+    src/cerata/type.cc
     src/cerata/utils.cc
   TSTS
     test/cerata/test_expressions.cc
-    # test/cerata/test_types.cc
+    test/cerata/test_pool.cc
+    test/cerata/test_types.cc
 )
 
 add_compile_unit(
@@ -67,9 +70,9 @@ add_compile_unit(
     src/cerata/vhdl/identifier.cc
     src/cerata/vhdl/instantiation.cc
     src/cerata/vhdl/resolve.cc
+    src/cerata/vhdl/template.cc
     src/cerata/vhdl/vhdl.cc
     src/cerata/vhdl/vhdl_types.cc
-    src/cerata/vhdl/template.cc
   TSTS
     test/cerata/vhdl/test_declarators.cc
     test/cerata/vhdl/test_designs.cc

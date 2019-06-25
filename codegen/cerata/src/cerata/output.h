@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,29 +14,31 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <deque>
+#include <utility>
 #include <string>
 #include <memory>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 
 namespace cerata {
+
+/// @brief Structure to specify output properties per graph
+struct OutputSpec {
+  std::shared_ptr<Component> comp;
+  std::unordered_map<std::string, std::string> meta = {};
+};
 
 /**
  * @brief Abstract class to generate language specific output from Graphs
  */
 class OutputGenerator {
  public:
-  /// @brief Structure to specify output properties per graph
-  struct OutputSpec {
-    explicit OutputSpec(std::shared_ptr<Graph> g) : graph(std::move(g)) {}
-    std::shared_ptr<Graph> graph;
-    std::unordered_map<std::string, std::string> meta;
-  };
-
   explicit OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs = {});
 
   /// @brief Add a graph to the list of graphs to generate output for.
-  OutputGenerator &AddOutput(OutputSpec output);
+  OutputGenerator &AddOutput(const OutputSpec &output);
 
   /// @brief Start the output generation.
   virtual void Generate() = 0;
@@ -51,4 +51,4 @@ class OutputGenerator {
   std::deque<OutputSpec> outputs_;
 };
 
-} // namespace cerata
+}  // namespace cerata

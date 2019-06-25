@@ -97,11 +97,11 @@ StyleBuilder &StyleBuilder::operator<<(const std::string &part) {
 
 bool Config::operator()(const std::shared_ptr<Node> &node) {
   switch (node->node_id()) {
-    case Node::PARAMETER: return nodes.parameters;
-    case Node::LITERAL: return nodes.literals;
-    case Node::SIGNAL: return nodes.signals;
-    case Node::PORT: return nodes.ports;
-    case Node::EXPRESSION: return nodes.expressions;
+    case Node::NodeID::PARAMETER: return nodes.parameters;
+    case Node::NodeID::LITERAL: return nodes.literals;
+    case Node::NodeID::SIGNAL: return nodes.signals;
+    case Node::NodeID::PORT: return nodes.ports;
+    case Node::NodeID::EXPRESSION: return nodes.expressions;
   }
   return true;
 }
@@ -183,13 +183,13 @@ Palette Palette::normal() {
   return ret;
 }
 
-std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
+std::string Style::GetStyle(const Node &n) {
   StyleBuilder sb;
 
   sb << node.base;
 
   // Add label
-  switch (n->type()->id()) {
+  switch (n.type()->id()) {
     case Type::RECORD:break;
     case Type::STREAM:break;
     case Type::CLOCK:sb << node.type.clock;
@@ -212,26 +212,26 @@ std::string Style::GetStyle(const std::shared_ptr<Node> &n) {
   sb << GetLabel(n);
 
   // Add other style
-  switch (n->node_id()) {
-    case Node::PORT: sb << node.port;
+  switch (n.node_id()) {
+    case Node::NodeID::PORT: sb << node.port;
       break;
-    case Node::SIGNAL:sb << node.signal;
+    case Node::NodeID::SIGNAL:sb << node.signal;
       break;
-    case Node::PARAMETER:sb << node.parameter;
+    case Node::NodeID::PARAMETER:sb << node.parameter;
       break;
-    case Node::LITERAL:sb << node.literal;
+    case Node::NodeID::LITERAL:sb << node.literal;
       break;
-    case Node::EXPRESSION:sb << node.expression;
+    case Node::NodeID::EXPRESSION:sb << node.expression;
       break;
   }
 
   return sb.ToString();
 }
 
-std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
+std::string Style::GetLabel(const Node &n) {
   StyleBuilder sb;
   bool expand = false;
-  if (n->type()->Is(Type::STREAM)) {
+  if (n.type()->Is(Type::STREAM)) {
     expand |= config.nodes.expand.stream;
     if (config.nodes.expand.stream) {
       sb << awq("fillcolor", node.color.stream_child);
@@ -239,7 +239,7 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
     } else {
       sb << node.type.stream;
     }
-  } else if (n->type()->Is(Type::RECORD)) {
+  } else if (n.type()->Is(Type::RECORD)) {
     expand |= config.nodes.expand.record;
     if (config.nodes.expand.record) {
       sb << awq("fillcolor", node.color.record_child);
@@ -250,24 +250,24 @@ std::string Style::GetLabel(const std::shared_ptr<Node> &n) {
   }
 
   std::stringstream str;
-  if (n->type()->IsNested() && expand) {
+  if (n.type()->IsNested() && expand) {
     str << "label=<";
     if (node.nested == "html") {
-      str << GenHTMLTableCell(n->type(), n->name());
+      str << GenHTMLTableCell(*n.type(), n.name());
     } else {
-      str << GenDotRecordCell(n->type(), n->name());
+      str << GenDotRecordCell(*n.type(), n.name());
     }
     str << ">";
-  } else if (n->IsParameter()) {
-    str << "label=\"" + sanitize(n->name());
-    auto par = *Cast<Parameter>(n);
-    if (par->value()) {
-      auto val = *par->value();
+  } else if (n.IsParameter()) {
+    auto par = dynamic_cast<const Parameter&>(n);
+    str << "label=\"" + sanitize(par.name());
+    if (par.GetValue()) {
+      auto val = *par.GetValue();
       str << ":" << sanitize(val->ToString());
     }
     str << "\"";
   } else {
-    str << "label=\"" + sanitize(n->name()) + "\"";
+    str << "label=\"" + sanitize(n.name()) + "\"";
   }
 
   sb << str.str();

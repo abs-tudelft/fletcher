@@ -13,25 +13,29 @@
 // limitations under the License.
 
 #include <iostream>
+#include <string>
 #include <gmock/gmock.h>
 
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/nodes.h"
-#include "cerata/types.h"
+#include <cerata/api.h>
 
-#include "../test_designs.h"
+#include "cerata/test_designs.h"
 
 namespace cerata {
 
+#ifdef TEST_CERATA_DUMP_VHDL
 // Macro to save the test to some VHDL files that can be used to syntax check the tests with e.g. GHDL
 // At some point the reverse might be more interesting - load the test cases from file into the test.
 #define VHDL_DUMP_TEST(str) \
-  std::ofstream(std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) \
-  + "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".vhd") << str
+    std::ofstream(std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) \
+    + "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".vhd") << str
+#else
+#define VHDL_DUMP_TEST(str)
+#endif
 
 TEST(VHDL_DESIGN, Simple) {
+  default_component_pool()->Clear();
   auto static_vec = Vector::Make<8>();
-  auto param = Parameter::Make("vec_width", natural(), intl<8>());
+  auto param = Parameter::Make("vec_width", natural(), intl(8));
   auto param_vec = Vector::Make("param_vec_type", param);
   auto veca = Port::Make("static_vec", static_vec);
   auto vecb = Port::Make("param_vec", param_vec);
@@ -59,14 +63,15 @@ TEST(VHDL_DESIGN, Simple) {
 }
 
 TEST(VHDL_DESIGN, CompInst) {
+  default_component_pool()->Clear();
   auto a = Port::Make("a", bit(), Port::Dir::IN);
   auto b = Port::Make("b", bit(), Port::Dir::OUT);
   auto ca = Component::Make("comp_a", {a});
   auto cb = Component::Make("comp_b", {b});
   auto top = Component::Make("top");
-  auto ia = top->AddInstanceOf(ca);
-  auto ib = top->AddInstanceOf(cb);
-  ia->port("a") <<= ib->port("b");
+  auto ia = top->AddInstanceOf(ca.get());
+  auto ib = top->AddInstanceOf(cb.get());
+  Connect(ia->port("a"), ib->port("b"));
   auto design = vhdl::Design(top);
   auto design_source = design.Generate().ToString();
   std::cout << design_source;
@@ -102,4 +107,5 @@ TEST(VHDL_DESIGN, CompInst) {
   VHDL_DUMP_TEST(expected);
 }
 
-}
+}  // namespace cerata
+

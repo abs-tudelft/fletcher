@@ -18,21 +18,21 @@
 #include <string>
 #include <memory>
 
-#include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include "cerata/node.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
 
 #include "cerata/vhdl/block.h"
 
 namespace cerata::vhdl {
 
 struct Decl {
-  static std::string Generate(const Type *type, const std::optional<std::shared_ptr<Node>> &multiplier = {});
-  static Block Generate(const std::shared_ptr<Parameter> &par, int depth = 0);
-  static Block Generate(const std::shared_ptr<Port> &port, int depth = 0);
-  static Block Generate(const std::shared_ptr<PortArray> &port, int depth = 0);
-  static Block Generate(const std::shared_ptr<Signal> &sig, int depth = 0);
-  static MultiBlock Generate(const Component *comp, bool entity = false);
+  static std::string Generate(const Type &type,  const std::optional<std::shared_ptr<Node>> &multiplier = std::nullopt);
+  static Block Generate(const Parameter &par, int depth = 0);
+  static Block Generate(const Port &port, int depth = 0);
+  static Block Generate(const PortArray &port, int depth = 0);
+  static Block Generate(const Signal &sig, int depth = 0);
+  static MultiBlock Generate(const Component &comp, bool entity = false);
 };
 
 }  // namespace cerata::vhdl

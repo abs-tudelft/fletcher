@@ -57,6 +57,7 @@ add_compile_unit(
     test/fletchgen/test_kernel.cc
     test/fletchgen/test_mantle.cc
     test/fletchgen/test_recordbatch.cc
+    test/fletchgen/test_types.cc
     test/fletchgen/srec/test_srec.cc
   DEPS
     cerata

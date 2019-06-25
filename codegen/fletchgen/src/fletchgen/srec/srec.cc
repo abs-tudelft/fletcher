@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stdlib.h>
+#include <fletcher/common.h>
 #include <sstream>
 #include <string>
 #include <iomanip>
 #include <cmath>
-#include <stdlib.h>
-#include <fletcher/common.h>
+#include <algorithm>
 
 #include "fletchgen/srec/srec.h"
 
@@ -31,7 +32,7 @@ Record::Record(Type type, uint32_t address, const uint8_t *data, size_t size)
   }
   if (size_ > 0) {
     // Allocate buffer for data
-    data_ = (uint8_t *) calloc(1, size_);
+    data_ = static_cast<uint8_t *>(calloc(1, size_));
     // Copy data over
     memcpy(data_, data, size);
   }
@@ -86,14 +87,18 @@ uint8_t Record::checksum() {
 std::string Record::ToString(bool line_feed) {
   // String stream to build output
   std::stringstream output;
-  output << 'S' << std::to_string(type_); // Record type
-  PutHex(output, byte_count()); // Byte count
-  PutHex(output, address_, 2 * address_width()); // Address
+  // Record type
+  output << 'S' << std::to_string(type_);
+  // Byte count
+  PutHex(output, byte_count());
+  // Address
+  PutHex(output, address_, 2 * address_width());
   // Data
   for (unsigned int i = 0; i < size_; i++) {
     PutHex(output, data_[i]);
   }
-  PutHex(output, checksum()); // Checksum
+  // Checksum
+  PutHex(output, checksum());
   // Line feed
   if (line_feed) {
     output << std::endl;
@@ -113,7 +118,7 @@ std::optional<Record> Record::FromString(const std::string &line) {
   offset++;
 
   // Get type (1 character)
-  unsigned long t = std::stoul(line.substr(offset, 1), nullptr, 16);
+  uint64_t t = std::stoul(line.substr(offset, 1), nullptr, 16);
   if (t > 9) {
     return std::nullopt;
   }
@@ -137,7 +142,7 @@ std::optional<Record> Record::FromString(const std::string &line) {
   ret.address_ = addr;
 
   // Reserve a data buffer
-  ret.data_ = (uint8_t *) calloc(ret.size_, sizeof(uint8_t));
+  ret.data_ = static_cast<uint8_t *>(calloc(ret.size_, sizeof(uint8_t)));
 
   // Obtain the data (2 chars or 1 byte)
   for (size_t i = 0; i < ret.size_; i++) {
@@ -177,7 +182,7 @@ File::File(uint32_t start_address, const uint8_t *data, size_t size, const std::
   }
 }
 
-void File::write(std::ostream* output) {
+void File::write(std::ostream *output) {
   if (output->good()) {
     for (auto &r : records) {
       (*output) << r.ToString(true);
@@ -187,7 +192,7 @@ void File::write(std::ostream* output) {
   }
 }
 
-File::File(std::istream* input) {
+File::File(std::istream *input) {
   for (std::string line; std::getline(*input, line);) {
     auto record = Record::FromString(line);
     if (record) {
@@ -211,7 +216,7 @@ void File::ToBuffer(uint8_t **buf, size_t *size) {
   // Allocate buffer
   if (top_rec != nullptr) {
     *size = top_addr + top_rec->size();
-    *buf = (uint8_t *) calloc(*size, sizeof(uint8_t));
+    *buf = static_cast<uint8_t *>(calloc(*size, sizeof(uint8_t)));
   } else {
     // If there werent any records, just return a nullptr and size 0
     *buf = nullptr;
@@ -219,9 +224,9 @@ void File::ToBuffer(uint8_t **buf, size_t *size) {
     return;
   }
   // For each record, copy bytes into the buffer
-  for (const auto &r: records) {
+  for (const auto &r : records) {
     std::memcpy(*buf + r.address(), r.data(), r.size());
   }
 }
 
-} // namespace fletchgen::srec
+}  // namespace fletchgen::srec

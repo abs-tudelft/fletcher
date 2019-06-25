@@ -14,11 +14,13 @@
 
 #pragma once
 
+#include <arrow/api.h>
+#include <cerata/api.h>
+
 #include <memory>
 #include <deque>
 #include <optional>
-#include <arrow/api.h>
-#include <cerata/api.h>
+#include <string>
 
 #include "fletchgen/utils.h"
 
@@ -39,6 +41,7 @@ class FletcherSchema {
   std::shared_ptr<arrow::Schema> arrow_schema() const { return arrow_schema_; }
   Mode mode() const { return mode_; }
   std::string name() const { return name_; }
+
  private:
   std::shared_ptr<arrow::Schema> arrow_schema_;
   Mode mode_;
@@ -70,6 +73,7 @@ class SchemaSet : public cerata::Named {
   std::deque<std::shared_ptr<FletcherSchema>> write_schemas() const;
   /// @brief Sort the schemas by name, then by read/write mode.
   void Sort();
+
  private:
   /// @brief Schemas of RecordBatches.
   std::deque<std::shared_ptr<FletcherSchema>> schemas_;

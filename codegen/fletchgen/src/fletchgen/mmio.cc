@@ -14,6 +14,11 @@
 
 #include "fletchgen/mmio.h"
 
+#include <cerata/api.h>
+#include <fletcher/logging.h>
+#include <memory>
+#include <string>
+
 namespace fletchgen {
 
 using cerata::Parameter;
@@ -26,31 +31,37 @@ using cerata::strl;
 using cerata::boolean;
 using cerata::integer;
 using cerata::bit;
-using cerata::bool_true;
-using cerata::bool_false;
 using cerata::RecField;
 using cerata::Vector;
 using cerata::Record;
 using cerata::Stream;
 
 std::shared_ptr<Type> mmio(MmioSpec spec) {
-  auto result = Record::Make("mmio", {
-      NoSep(RecField::Make("aw", Stream::Make(Record::Make("aw", {
-          RecField::Make("addr", Vector::Make(spec.addr_width))})))),
-      NoSep(RecField::Make("w", Stream::Make(Record::Make("w", {
-          RecField::Make("data", Vector::Make(spec.data_width)),
-          RecField::Make("strb", Vector::Make(spec.data_width / 8))
-      })))),
-      NoSep(RecField::Make("b", Stream::Make(Record::Make("b", {
-          RecField::Make("resp", Vector::Make(2))})), true)),
-      NoSep(RecField::Make("ar", Stream::Make(Record::Make("ar", {
-          RecField::Make("addr", Vector::Make(spec.addr_width))
-      })))),
-      NoSep(RecField::Make("r", Stream::Make(Record::Make("r", {
-          RecField::Make("data", Vector::Make(spec.data_width)),
-          RecField::Make("resp", Vector::Make(2))})), true)),
-  });
-  return result;
+  auto mmio_typename = spec.ToMMIOTypeName();
+  auto optional_existing_mmio_type = cerata::default_type_pool()->Get(mmio_typename);
+  if (optional_existing_mmio_type) {
+    FLETCHER_LOG(DEBUG, "MMIO Type already exists in default pool.");
+    return optional_existing_mmio_type.value()->shared_from_this();
+  } else {
+    auto new_mmio_type = Record::Make(mmio_typename, {
+        NoSep(RecField::Make("aw", Stream::Make(Record::Make("aw", {
+            RecField::Make("addr", Vector::Make(spec.addr_width))})))),
+        NoSep(RecField::Make("w", Stream::Make(Record::Make("w", {
+            RecField::Make("data", Vector::Make(spec.data_width)),
+            RecField::Make("strb", Vector::Make(spec.data_width / 8))
+        })))),
+        NoSep(RecField::Make("b", Stream::Make(Record::Make("b", {
+            RecField::Make("resp", Vector::Make(2))})), true)),
+        NoSep(RecField::Make("ar", Stream::Make(Record::Make("ar", {
+            RecField::Make("addr", Vector::Make(spec.addr_width))
+        })))),
+        NoSep(RecField::Make("r", Stream::Make(Record::Make("r", {
+            RecField::Make("data", Vector::Make(spec.data_width)),
+            RecField::Make("resp", Vector::Make(2))})), true)),
+    });
+    cerata::default_type_pool()->Add(new_mmio_type);
+    return new_mmio_type;
+  }
 }
 
 std::string MmioSpec::ToString() const {
@@ -59,6 +70,14 @@ std::string MmioSpec::ToString() const {
   str << "addr:" << addr_width;
   str << ", dat:" << data_width;
   str << "]";
+  return str.str();
+}
+
+std::string MmioSpec::ToMMIOTypeName() const {
+  std::stringstream str;
+  str << "MMIO";
+  str << "_A" << addr_width;
+  str << "_D" << data_width;
   return str.str();
 }
 

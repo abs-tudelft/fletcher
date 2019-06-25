@@ -16,35 +16,36 @@
 
 #include <memory>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/instantiation.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 
-MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
+MultiBlock Arch::Generate(const Component &comp) {
   MultiBlock ret;
   Line header_line;
-  header_line << "architecture Implementation of " + comp->name() + " is";
+  header_line << "architecture Implementation of " + comp.name() + " is";
   ret << header_line;
 
   // Component declarations
-  auto components_used = GetAllUniqueComponents(comp.get());
+  auto components_used = comp.GetAllUniqueComponents();
   for (const auto &c : components_used) {
     // Check for metadata that this component is not marked primitive
     // In this case, a library package has been added at the top of the design file.
-    if ((c->meta.count("primitive") == 0) || (c->meta.at("primitive") != "true")) {
+    if ((c->meta().count(metakeys::PRIMITIVE) == 0) || (c->meta().at(metakeys::PRIMITIVE) != "true")) {
       // TODO(johanpel): generate packages with component declarations
-      auto comp_decl = Decl::Generate(c);
+      auto comp_decl = Decl::Generate(*c);
       ret << comp_decl;
     }
   }
 
   // Signal declarations
-  auto signals = comp->GetAll<Signal>();
+  auto signals = comp.GetAll<Signal>();
   for (const auto &s : signals) {
-    auto signal_decl = Decl::Generate(s, 1);
+    auto signal_decl = Decl::Generate(*s, 1);
     ret << signal_decl;
   }
 
@@ -53,13 +54,13 @@ MultiBlock Arch::Generate(const std::shared_ptr<Component> &comp) {
   ret << header_end;
 
   // Component instantiations
-  auto instances = comp->GetAllInstances();
+  auto instances = comp.children();
   for (const auto &i : instances) {
-    auto inst_decl = Inst::Generate(i);
+    auto inst_decl = Inst::Generate(*i);
     ret << inst_decl;
   }
 
-  //TODO(johanpel): Signal connections
+  // TODO(johanpel): Signal connections
 
   Line footer;
   footer << "end architecture;";

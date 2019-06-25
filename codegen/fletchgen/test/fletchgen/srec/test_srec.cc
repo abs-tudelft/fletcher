@@ -80,6 +80,7 @@ TEST(SREC, File) {
   size_t size;
   sri.ToBuffer(&result, &size);
   ASSERT_EQ(memcmp(data, result, 52), 0);
+  free(result);
 }
 
 TEST(SREC, RecordBatchRoundTrip) {

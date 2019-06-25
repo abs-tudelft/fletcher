@@ -16,9 +16,12 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include <vector>
+#include <algorithm>
 
 #include "cerata/logging.h"
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/architecture.h"
@@ -33,23 +36,23 @@ MultiBlock Design::Generate() {
 
   // Resolve VHDL specific problems
   CERATA_LOG(DEBUG, "VHDL: Transforming Cerata graph to VHDL-compatible.");
-  Resolve::ResolvePortToPort(comp);
-  Resolve::ExpandStreams(comp);
+  Resolve::ResolvePortToPort(component_.get());
+  Resolve::ExpandStreams(component_.get());
 
   // Place header
-  if (!head.empty()) {
+  if (!libs_.empty()) {
     Block h;
-    h << Line(head);
+    h << Line(libs_);
     ret << h;
   }
 
   // Figure out potential libs and packages used for primitive components.
   std::unordered_map<std::string, std::vector<std::string>> libs_and_packages;
-  for (const auto &c: GetAllUniqueComponents(comp.get())) {
-    if (c->meta.count("primitive") > 0) {
-      if (c->meta.at("primitive") == "true") {
-        std::string lib = c->meta.at("library");
-        std::string pkg = c->meta.at("package");
+  for (const auto &c : component_->GetAllUniqueComponents()) {
+    if (c->meta().count(metakeys::PRIMITIVE) > 0) {
+      if (c->meta().at(metakeys::PRIMITIVE) == "true") {
+        std::string lib = c->meta().at(metakeys::LIBRARY);
+        std::string pkg = c->meta().at(metakeys::PACKAGE);
         // Create the kv-pair if there is none yet
         if (libs_and_packages.count(lib) == 0) {
           libs_and_packages[lib] = std::vector<std::string>({pkg});
@@ -80,8 +83,8 @@ MultiBlock Design::Generate() {
 
   // Place any libraries from subcomponents
 
-  auto decl = Decl::Generate(comp.get(), true);
-  auto arch = Arch::Generate(comp);
+  auto decl = Decl::Generate(*component_, true);
+  auto arch = Arch::Generate(*component_);
 
   ret << decl;
   ret << arch;

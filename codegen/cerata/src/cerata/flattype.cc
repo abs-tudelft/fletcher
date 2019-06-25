@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/flattypes.h"
+#include "cerata/flattype.h"
 
 #include <optional>
 #include <utility>
@@ -24,8 +24,9 @@
 #include <iostream>
 
 #include "cerata/utils.h"
-#include "cerata/types.h"
-#include "cerata/nodes.h"
+#include "cerata/type.h"
+#include "cerata/node.h"
+#include "cerata/expression.h"
 
 namespace cerata {
 
@@ -95,9 +96,9 @@ void Flatten(std::deque<FlatType> *list,
   list->push_back(result);
 
   switch (type->id()) {
-    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result, invert);
+    case Type::STREAM:FlattenStream(list, dynamic_cast<Stream*>(type), result, invert);
       break;
-    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result, invert);
+    case Type::RECORD:FlattenRecord(list, dynamic_cast<Record*>(type), result, invert);
       break;
     default:break;
   }
@@ -116,7 +117,7 @@ std::string ToString(std::deque<FlatType> flat_type_list) {
     auto name = ft.name(ft.nesting_level_ == 0 ? NamePart("(root)") : NamePart());
     ret << std::setw(3) << std::right << i << " :"
         << std::setw(32) << std::left
-        << std::string(static_cast<unsigned long>(2 * ft.nesting_level_), ' ') + name << " | "
+        << std::string(static_cast<int64_t>(2 * ft.nesting_level_), ' ') + name << " | "
         << std::setw(24) << std::left << ft.type_->name() << " | "
         << std::setw(3) << std::right << ft.nesting_level_ << " | "
         << std::setw(8) << std::left << ft.type_->ToString(true) << std::endl;
@@ -133,20 +134,20 @@ bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *t
   return false;
 }
 
-size_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
+int64_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type) {
   for (size_t i = 0; i < flat_types_list.size(); i++) {
     if (flat_types_list[i].type_ == type) {
       return i;
     }
   }
-  return static_cast<size_t>(-1);
+  return static_cast<int64_t>(-1);
 }
 
 TypeMapper::TypeMapper(Type *a, Type *b)
     : Named(a->name() + "_to_" + b->name()),
       fa_(Flatten(a)), fb_(Flatten(b)),
       a_(a), b_(b),
-      matrix_(MappingMatrix<size_t>(fa_.size(), fb_.size())) {
+      matrix_(MappingMatrix<int64_t>(fa_.size(), fb_.size())) {
   // If the types are the same, the mapping is trivial and implicitly constructed.
   // The matrix will be the identity matrix.
   if (a_ == b_) {
@@ -163,7 +164,7 @@ std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a, Type *b) {
 
 std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(Type *a, Type *b) {
   auto ret = std::make_shared<TypeMapper>(a, b);
-  if (a->IsEqual(b)) {
+  if (a->IsEqual(*b)) {
     for (size_t i = 0; i < ret->flat_a().size(); i++) {
       ret->Add(i, i);
     }
@@ -171,7 +172,7 @@ std::shared_ptr<TypeMapper> TypeMapper::MakeImplicit(Type *a, Type *b) {
   return ret;
 }
 
-TypeMapper &TypeMapper::Add(size_t a, size_t b) {
+TypeMapper &TypeMapper::Add(int64_t a, int64_t b) {
   matrix_.SetNext(a, b);
   return *this;
 }
@@ -179,7 +180,8 @@ TypeMapper &TypeMapper::Add(size_t a, size_t b) {
 std::string TypeMapper::ToString() const {
   constexpr int w = 20;
   std::stringstream ret;
-  ret << "TypeMapper [" + a()->ToString() + "]=>[" + b()->ToString() << "]:" << std::endl;
+  ret << "TypeMapper " << a()->ToString(true, true) + " => " + b()->ToString(true, true) + "\n";
+  ret << "  Meta: " + ::cerata::ToString(meta) + "\n";
   ret << std::setw(w) << " " << " | ";
 
   for (const auto &x : fb_) {
@@ -190,32 +192,32 @@ std::string TypeMapper::ToString() const {
   for (const auto &x : fb_) {
     ret << std::setw(w) << x.type_->ToString() << " | ";
   }
-  ret << std::endl;
+  ret << "\n";
 
   // Separator
   for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
-  ret << std::endl;
+  ret << "\n";
 
   for (size_t y = 0; y < fa_.size(); y++) {
     ret << std::setw(w) << fa_[y].name() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       ret << std::setw(w) << " " << " | ";
     }
-    ret << std::endl;
+    ret << "\n";
     ret << std::setw(w) << fa_[y].type_->ToString() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       auto val = matrix_(y, x);
       ret << std::setw(w) << val << " | ";
     }
-    ret << std::endl;
+    ret << "\n";
     // Separator
     for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
-    ret << std::endl;
+    ret << "\n";
   }
   return ret.str();
 }
 
-MappingMatrix<size_t> TypeMapper::map_matrix() { return matrix_; }
+MappingMatrix<int64_t> TypeMapper::map_matrix() { return matrix_; }
 
 std::deque<FlatType> TypeMapper::flat_a() const { return fa_; }
 
@@ -226,14 +228,14 @@ bool TypeMapper::CanConvert(const Type *a, const Type *b) const {
 }
 
 std::shared_ptr<TypeMapper> TypeMapper::Inverse() const {
-  auto ret = std::make_shared<TypeMapper>(b_, a_);
-  ret->matrix_ = matrix_.Transpose();
-  return ret;
+  auto result = std::make_shared<TypeMapper>(b_, a_);  // Create a new mapper.
+  result->matrix_ = matrix_.Transpose();  // Copy over a transposed version of the mapping matrix.
+  result->meta = this->meta;  // Copy over metadata.
+  return result;
 }
 
 std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
   std::deque<MappingPair> pairs;
-
   // Find mappings that are one to one
   for (size_t ia = 0; ia < fa_.size(); ia++) {
     auto maps_a = matrix_.mapping_row(ia);
@@ -281,7 +283,7 @@ std::shared_ptr<TypeMapper> TypeMapper::Make(Type *a) {
   return std::make_shared<TypeMapper>(a, a);
 }
 
-void TypeMapper::SetMappingMatrix(MappingMatrix<size_t> map_matrix) {
+void TypeMapper::SetMappingMatrix(MappingMatrix<int64_t> map_matrix) {
   matrix_ = std::move(map_matrix);
 }
 
@@ -316,12 +318,12 @@ std::string MappingPair::ToString() const {
   return ret.str();
 }
 
-std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
-  std::shared_ptr<Node> w = intl<0>();
-  for (size_t i = 0; i < num_a(); i++) {
+std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+  std::shared_ptr<Node> w = intl(0);
+  for (int64_t i = 0; i < num_a(); i++) {
     auto fw = flat_type_a(i).type_->width();
     if (fw) {
-      w = w + *fw;
+      w = w + fw.value();
     } else if (no_width_increment) {
       w = w + *no_width_increment;
     }
@@ -329,12 +331,12 @@ std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<N
   return w;
 }
 
-std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
-  std::shared_ptr<Node> w = intl<0>();
-  for (size_t i = 0; i < num_b(); i++) {
+std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+  std::shared_ptr<Node> w = intl(0);
+  for (int64_t i = 0; i < num_b(); i++) {
     auto fw = flat_type_b(i).type_->width();
     if (fw) {
-      w = w + *fw;
+      w = w + fw.value();
     } else if (no_width_increment) {
       w = w + *no_width_increment;
     }

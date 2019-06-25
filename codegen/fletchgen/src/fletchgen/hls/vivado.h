@@ -27,6 +27,6 @@ struct Argument {
   std::string name;
 };
 
-std::string GenerateVivadoHLSTemplate(const std::shared_ptr<Kernel>& set);
+std::string GenerateVivadoHLSTemplate(const Kernel& kernel);
 
-} //namespace fletchgen::hls
+}  // namespace fletchgen::hls
