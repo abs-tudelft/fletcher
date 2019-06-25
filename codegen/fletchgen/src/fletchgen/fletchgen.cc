@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   // Generate simulation top level
   if (options->MustGenerateDesign() && options->sim_top) {
     std::ofstream sim_file;
-    std::string sim_file_path = "vhdl/sim_top.vhd";
+    std::string sim_file_path = "vhdl/sim_top_tc.vhd";
     if (cerata::FileExists(sim_file_path) && !options->overwrite) {
       sim_file_path += 't';
     }
