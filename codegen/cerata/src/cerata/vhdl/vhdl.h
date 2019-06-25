@@ -53,7 +53,7 @@ namespace metakeys {
   constexpr char WAS_EXPANDED[] = "vhdl_expanded_stream_done";
   /// Reserved metadata key for stream expansion.
   constexpr char EXPAND_TYPE[] = "vhdl_expand_stream";
-}
+}  // namespace metakeys
 
 class VHDLOutputGenerator : public OutputGenerator {
  public:

@@ -20,7 +20,7 @@
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/instantiation.h"
-#include "vhdl.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 

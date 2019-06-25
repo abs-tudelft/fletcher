@@ -27,7 +27,7 @@
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
-#include "vhdl.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 

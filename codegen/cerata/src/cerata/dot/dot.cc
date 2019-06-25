@@ -54,7 +54,6 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       drawn_edges.push_back(e);
 
       // Check if edge is complete
-      //if (e->IsComplete()) {
       auto dst = e->dst();
       auto src = e->src();
       // Don't draw literals

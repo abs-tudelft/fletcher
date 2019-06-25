@@ -143,9 +143,6 @@ static void ExpandMappers(Type *type, const std::deque<std::shared_ptr<TypeMappe
       continue;
     }
 
-    CERATA_LOG(DEBUG, "Expanding mapper " + mapper->name());
-    // CERATA_LOG(DEBUG, "Old Mapper: \n" + mapper->ToString());
-
     // Get a copy of the old matrix.
     auto old_matrix = mapper->map_matrix();
     // Create a new mapper
@@ -209,8 +206,6 @@ static void ExpandMappers(Type *type, const std::deque<std::shared_ptr<TypeMappe
     // Set the mapping matrix of the new mapper to the new matrix
     new_mapper->SetMappingMatrix(new_matrix);
     new_mapper->meta[metakeys::WAS_EXPANDED] = "true";
-
-    // CERATA_LOG(DEBUG, "New Mapper: \n" + new_mapper->ToString());
 
     // Add the mapper to the type
     type->AddMapper(new_mapper);

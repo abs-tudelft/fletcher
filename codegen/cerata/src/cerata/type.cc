@@ -118,7 +118,6 @@ void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_exis
   }
 
   // Add the converter to this Type
-  CERATA_LOG(DEBUG, "Adding Mapper: \n" + mapper->ToString());
   mappers_.push_back(mapper);
 
   // If the other type doesnt already have it, add the inverse map there as well.
