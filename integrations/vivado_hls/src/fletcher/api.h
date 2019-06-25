@@ -81,27 +81,27 @@ struct f_packet : public f_packet_base
 	}
 	friend f_packet<T> operator+(f_packet<T> &lhs, f_packet<T> &rhs)
 	{
-		return f_packet<T>(lhs.data + rhs.data);
+		return f_packet<T>(lhs.data + rhs.data, lhs.dvalid, lhs.last);
 	}
 	friend f_packet<T> operator+(f_packet<T> &rhs)
 	{
-		return f_packet<T>(+rhs.data);
+		return f_packet<T>(+rhs.data, rhs.dvalid, rhs.last);
 	}
 	friend f_packet<T> operator-(f_packet<T> &lhs, f_packet<T> &rhs)
 	{
-		return f_packet<T>(lhs.data - rhs.data);
+		return f_packet<T>(lhs.data - rhs.data, lhs.dvalid, lhs.last);
 	}
 	friend f_packet<T> operator-(f_packet<T> &rhs)
 	{
-		return f_packet<T>(-rhs.data);
+		return f_packet<T>(-rhs.data, rhs.dvalid, rhs.last);
 	}
 	friend f_packet<T> operator*(f_packet<T> &lhs, f_packet<T> &rhs)
 	{
-		return f_packet<T>(lhs.data * rhs.data);
+		return f_packet<T>(lhs.data * rhs.data, lhs.dvalid, lhs.last);
 	}
 	friend f_packet<T> operator/(f_packet<T> &lhs, f_packet<T> &rhs)
 	{
-		return f_packet<T>(lhs.data / rhs.data);
+		return f_packet<T>(lhs.data / rhs.data, lhs.dvalid, lhs.last);
 	}
 	friend bool operator==(f_packet<T> &lhs, f_packet<T> &rhs)
 	{
@@ -178,6 +178,8 @@ struct nullable : public T
 	nullable(bool _valid,Args &&... args) : T(std::forward<Args>(args)...), valid(_valid) {}
 
 	nullable(bool _valid) : T(), valid(_valid) {}
+
+	nullable(bool _valid, nullable<T> _nullable) : T(_nullable.data, _nullable.dvalid, _nullable.last), valid(_valid) {}
 
 	template <typename IT>
 	nullable(nullable_tb<IT> _nullable_tb) : T(_nullable_tb.data), valid(_nullable_tb.valid) {}
