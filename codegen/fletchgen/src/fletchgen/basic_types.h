@@ -27,6 +27,9 @@ namespace fletchgen {
 namespace metakeys {
   /// Key for automated type mapping.
   constexpr char ARRAY_DATA[] = "fletchgen_array_data";
+
+  constexpr char EPC[] = "fletcher_epc";
+  constexpr char LEPC[] = "fletcher_lepc";
 }
 
 using cerata::Type;

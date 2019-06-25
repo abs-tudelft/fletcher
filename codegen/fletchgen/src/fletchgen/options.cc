@@ -19,7 +19,7 @@
 
 namespace fletchgen {
 
-int Options::Parse(Options *options, int argc, char **argv) {
+bool Options::Parse(Options *options, int argc, char **argv) {
   CLI::App app{"Fletchgen - The Fletcher Design Generator"};
 
   app.get_formatter()->column_width(40);

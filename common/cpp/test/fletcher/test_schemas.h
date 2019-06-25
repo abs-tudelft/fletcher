@@ -49,8 +49,7 @@ inline std::shared_ptr<arrow::Schema> GetPrimWriteSchema() {
 }
 
 inline std::shared_ptr<arrow::Schema> GetStringReadSchema() {
-  auto name_field = arrow::field("Name", arrow::utf8(), false);
-  AppendMetaEPC(*name_field, 4);
+  auto name_field = AppendMetaEPC(*arrow::field("Name", arrow::utf8(), false), 4);
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {name_field};
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
   return AppendMetaRequired(*schema, "StringRead", Mode::READ);
