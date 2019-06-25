@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/vhdl/instantiation.h"
+#include <deque>
+#include <string>
 
 #include "cerata/logging.h"
-#include "cerata/edges.h"
-#include "cerata/nodes.h"
-#include "cerata/arrays.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include "cerata/edge.h"
+#include "cerata/node.h"
+#include "cerata/expression.h"
+#include "cerata/node_array.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
+#include "cerata/pool.h"
+
+#include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 
-static std::string lit2vhdl(const Literal& lit) {
+static std::string lit2vhdl(const Literal &lit) {
   switch (lit.type()->id()) {
     default:return lit.ToString();
     case Type::STRING:
@@ -33,36 +39,36 @@ static std::string lit2vhdl(const Literal& lit) {
       return "\"" + lit.ToString() + "\"";
     case Type::BOOLEAN:
       // Convert to VHDL boolean
-      if (lit.bool_val_) return "true";
-      else return "false";
+      if (lit.BoolValue()) {
+        return "true";
+      } else {
+        return "false";
+      }
   }
 }
 
-static bool IsInputTerminator(const std::shared_ptr<Object> &obj) {
-  auto t = Cast<Term>(obj);
-  if (t) {
-    return (*t)->IsInput();
-  } else {
-    throw std::runtime_error("Object is not a terminator.");
+static bool IsInputTerminator(const Object &obj) {
+  try {
+    auto term = dynamic_cast<const Term &>(obj);
+    return term.IsInput();
+  }
+  catch (const std::bad_cast &e) {
+    return false;
   }
 }
 
-Block Inst::GenerateGenericMap(const std::shared_ptr<Parameter> &par) {
+Block Inst::GenerateGenericMap(const Parameter &par) {
   Block ret;
   Line l;
-  l << to_upper(par->name()) << " => ";
-  std::shared_ptr<Node> val;
-  // Check what value to apply, either an assigned value or a default value
-  if (par->value()) {
-    val = *par->value();
-  } else if (par->default_value) {
-    val = (*par->default_value);
-  }
-  // Check if some value existed at all
-  if (val != nullptr) {
+  l << to_upper(par.name()) << " => ";
+  // Get the value to apply
+  auto optional_value = par.GetValue();
+  if (optional_value.has_value()) {
+    const Node *val = optional_value.value();
     // If it is a literal, make it VHDL compatible
     if (val->IsLiteral()) {
-      l << lit2vhdl(**Cast<Literal>(val));
+      auto *lit = dynamic_cast<const Literal *>(val);
+      l << lit2vhdl(*lit);
     } else {
       l << val->ToString();
     }
@@ -88,8 +94,8 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
   auto a_width = p.flat_type_a(ia).type_->width();
   auto b_width = p.flat_type_b(ib).type_->width();
 
-  next_offset_a = offset_a + (b_width ? *b_width : intl<0>());
-  next_offset_b = offset_b + (a_width ? *a_width : intl<0>());
+  next_offset_a = (offset_a + (b_width ? b_width.value() : rintl(0)));
+  next_offset_b = (offset_b + (a_width ? a_width.value() : rintl(0)));
 
   if (p.flat_type_a(0).type_->Is(Type::STREAM)) {
     // Don't output anything for the abstract stream type.
@@ -105,7 +111,8 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_a->ToString() + ")";
       } else {
-        l += "(" + (next_offset_a - 1)->ToString() + " downto " + offset_a->ToString() + ")";
+        l += "(" + (next_offset_a - 1)->ToString();
+        l += " downto " + offset_a->ToString() + ")";
       }
     }
     l << " => ";
@@ -114,7 +121,8 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
       if (p.flat_type_b(ib).type_->Is(Type::BIT)) {
         l += "(" + offset_b->ToString() + ")";
       } else {
-        l += "(" + (next_offset_b - 1)->ToString() + " downto " + offset_b->ToString() + ")";
+        l += "(" + (next_offset_b - 1)->ToString();
+        l += " downto " + offset_b->ToString() + ")";
       }
     }
     ret << l;
@@ -123,9 +131,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
   return ret;
 }
 
-Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
-                                    const std::shared_ptr<Node> &a,
-                                    const std::shared_ptr<Node> &b) {
+Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b) {
   Block ret;
   // Sort the pair in order of appearance on the flatmap
   std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
@@ -136,96 +142,100 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs,
   size_t a_idx = 0;
   size_t b_idx = 0;
   // Figure out if these nodes are on NodeArrays and what their index is
-  if (a->array()) {
+  if (a.array()) {
     a_array = true;
-    a_idx = (*a->array())->IndexOf(a);
+    a_idx = a.array().value()->IndexOf(a);
   }
-  if (b->array()) {
+  if (b.array()) {
     b_array = true;
-    b_idx = (*b->array())->IndexOf(b);
+    b_idx = b.array().value()->IndexOf(b);
   }
-  if (a->type()->meta.count("VHDL:ForceStreamVector") > 0) {
+  if (a.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
     a_array = true;
   }
-  if (b->type()->meta.count("VHDL:ForceStreamVector") > 0) {
+  if (b.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
     b_array = true;
   }
   // Loop over all pairs
-  for (const auto &pair: pairs) {
+  for (const auto &pair : pairs) {
     // Offset on the right side
-    std::shared_ptr<Node> b_offset = pair.width_a(intl<1>()) * Literal::Make(static_cast<int>(b_idx));
+    std::shared_ptr<Node> b_offset = pair.width_a(intl(1)) * intl(b_idx);
     // Loop over everything on the left side
-    for (size_t ia = 0; ia < pair.num_a(); ia++) {
+    for (int64_t ia = 0; ia < pair.num_a(); ia++) {
       // Get the width of the left side.
       auto a_width = pair.flat_type_a(ia).type_->width();
       // Offset on the left side.
-      std::shared_ptr<Node> a_offset = pair.width_b(intl<1>()) * Literal::Make(static_cast<int>(a_idx));
-      for (size_t ib = 0; ib < pair.num_b(); ib++) {
+      std::shared_ptr<Node> a_offset = pair.width_b(intl(1)) * intl(a_idx);
+      for (int64_t ib = 0; ib < pair.num_b(); ib++) {
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a->name(), b->name(), a_array, b_array);
+        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a.name(), b.name(), a_array, b_array);
         ret << mpblock;
         // Increase the offset on the left side.
-        a_offset = a_offset + (b_width ? *b_width : intl<1>());
+        a_offset = a_offset + (b_width ? b_width.value() : rintl(1));
       }
       // Increase the offset on the right side.
-      b_offset = b_offset + (a_width ? *a_width : intl<1>());
+      b_offset = b_offset + (a_width ? a_width.value() : rintl(1));
     }
   }
   return ret;
 }
 
-Block Inst::GeneratePortMaps(const std::shared_ptr<Port> &port) {
-  Block ret;
-  std::deque<std::shared_ptr<Edge>> connections;
+Block Inst::GeneratePortMaps(const Port &port) {
+  Block result;
+  std::deque<Edge *> connections;
   // Check if this is an input or output port
   if (IsInputTerminator(port)) {
-    connections = port->sources();
+    connections = port.sources();
   } else {
-    connections = port->sinks();
+    connections = port.sinks();
   }
+  // Get the port type.
+  auto port_type = port.type();
   // Iterate over all connected edges
   for (const auto &edge : connections) {
     // Get the node on the other side of the connection
-    auto other = edge->GetOtherNode(port);
-    // Get type mapper
-    std::shared_ptr<TypeMapper> tm;
+    auto other = *edge->GetOtherNode(port);
+    // Get the other type.
+    auto other_type = other->type();
     // Check if a type mapping exists
-    auto tmo = port->type()->GetMapper(other->type().get());
-    if (tmo) {
-      tm = *tmo;
+    auto optional_type_mapper = port_type->GetMapper(other_type);
+    if (optional_type_mapper) {
+      auto type_mapper = optional_type_mapper.value();
       // Obtain the unique mapping pairs for this mapping
-      auto pairs = tm->GetUniqueMappingPairs();
+      auto pairs = type_mapper->GetUniqueMappingPairs();
       // Generate the mapping for this port-node pair.
-      ret << GeneratePortMappingPair(pairs, port, other);
+      result << GeneratePortMappingPair(pairs, port, *other);
     } else {
-      throw std::runtime_error(
-          "No type mapping available for: Port[" + port->name() + ": " + port->type()->name()
-              + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
+      CERATA_LOG(FATAL, "No type mapping available for: Port[" + port.name() + ": " + port.type()->name()
+          + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
     }
   }
-  return ret;
+  return result;
 }
 
-Block Inst::GeneratePortArrayMaps(const std::shared_ptr<PortArray> &array) {
+Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
   Block ret;
   // Go over each node in the array
-  for (const auto &n : array->nodes()) {
-    auto p = *Cast<Port>(n);
-    ret << GeneratePortMaps(p);
+  for (const auto &node : port_array.nodes()) {
+    if (node->IsPort()) {
+      const auto &port = dynamic_cast<const Port &>(*node);
+      ret << GeneratePortMaps(port);
+    } else {
+      throw std::runtime_error("Port Array contains non-port node.");
+    }
   }
   return ret.sort('(');
 }
 
-MultiBlock Inst::Generate(const Graph *graph) {
+MultiBlock Inst::Generate(const Graph &graph) {
   MultiBlock ret(1);
 
-  auto pinst = Cast<Instance>(graph);
-  if (!pinst) {
-    throw std::runtime_error("Graph is not an instance.");
+  if (!graph.IsInstance()) {
+    return ret;
   }
-  auto inst = *pinst;
+  auto &inst = dynamic_cast<const Instance &>(graph);
 
   Block ih(ret.indent);       // Instantiation header
   Block gmh(ret.indent + 1);  // generic map header
@@ -235,35 +245,35 @@ MultiBlock Inst::Generate(const Graph *graph) {
   Block pmb(ret.indent + 2);  // port map body
   Block pmf(ret.indent + 1);  // port map footer
 
-  ih << inst->name() + " : " + inst->component->name();
+  ih << inst.name() + " : " + inst.component()->name();
 
   // Generic map
-  if (inst->CountNodes(Node::PARAMETER) > 0) {
+  if (inst.CountNodes(Node::NodeID::PARAMETER) > 0) {
     Line gh, gf;
     gh << "generic map (";
     gmh << gh;
-    for (const auto &g : inst->GetAll<Parameter>()) {
-      gmb << GenerateGenericMap(g);
+    for (Parameter *g : inst.GetAll<Parameter>()) {
+      gmb << GenerateGenericMap(*g);
     }
     gmb <<= ",";
     gf << ")";
     gmf << gf;
   }
 
-  auto num_ports = inst->CountNodes(Node::PORT) + inst->CountArrays(Node::PORT);
+  auto num_ports = inst.CountNodes(Node::NodeID::PORT) + inst.CountArrays(Node::NodeID::PORT);
   if (num_ports > 0) {
     // Port map
     Line ph, pf;
     ph << "port map (";
     pmh << ph;
-    for (const auto &p : inst->GetAll<Port>()) {
+    for (const auto &p : inst.GetAll<Port>()) {
       Block pm;
-      pm << GeneratePortMaps(p);
+      pm << GeneratePortMaps(*p);
       pmb << pm;
     }
-    for (const auto &a : inst->GetAll<PortArray>()) {
+    for (const auto &a : inst.GetAll<PortArray>()) {
       Block pm;
-      pm << GeneratePortArrayMaps(a);
+      pm << GeneratePortArrayMaps(*a);
       pmb << pm;
     }
     pmb <<= ",";

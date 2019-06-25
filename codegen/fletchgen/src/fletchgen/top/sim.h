@@ -22,7 +22,7 @@
 namespace fletchgen::top {
 
 /// @brief Generate a simulation top level on supplied output streams from a ColumnWrapper
-std::string GenerateSimTop(const std::shared_ptr<Mantle> &mantle,
+std::string GenerateSimTop(const Mantle &mantle,
                            const std::vector<std::ostream *> &outputs,
                            const std::string &read_srec_path,
                            const std::string &write_srec_path,

@@ -15,7 +15,7 @@
 #include <string>
 #include <memory>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/output.h"
 
 namespace cerata {
@@ -23,9 +23,13 @@ namespace cerata {
 OutputGenerator::OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs)
     : root_dir_(std::move(root_dir)), outputs_(std::move(outputs)) {}
 
-OutputGenerator &OutputGenerator::AddOutput(OutputSpec output) {
-  outputs_.push_back(output);
+OutputGenerator &OutputGenerator::AddOutput(const OutputSpec& output) {
+  if (output.comp != nullptr) {
+    outputs_.push_back(output);
+  } else {
+    throw std::runtime_error("Component is nullptr.");
+  }
   return *this;
 }
 
-} // namespace cerata
+}  // namespace cerata

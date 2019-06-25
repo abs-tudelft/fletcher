@@ -17,10 +17,11 @@
 #include <algorithm>
 #include <string>
 #include <memory>
+#include <deque>
 
-#include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include "cerata/node.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
 
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/vhdl_types.h"
@@ -38,13 +39,11 @@ struct Inst {
                                    bool a_is_array,
                                    bool b_is_array);
 
-  static Block GeneratePortMappingPair(std::deque<MappingPair> pairs,
-                                       const std::shared_ptr<Node> &a,
-                                       const std::shared_ptr<Node> &b);
-  static MultiBlock Generate(const Graph *graph);
-  static Block GeneratePortMaps(const std::shared_ptr<Port> &port);
-  static Block GeneratePortArrayMaps(const std::shared_ptr<PortArray> &array);
-  static Block GenerateGenericMap(const std::shared_ptr<Parameter> &par);
+  static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b);
+  static MultiBlock Generate(const Graph &graph);
+  static Block GeneratePortMaps(const Port &port);
+  static Block GeneratePortArrayMaps(const PortArray &array);
+  static Block GenerateGenericMap(const Parameter &par);
 };
 
 }  // namespace cerata::vhdl

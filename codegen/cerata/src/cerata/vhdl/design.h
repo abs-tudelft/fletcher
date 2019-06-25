@@ -15,8 +15,10 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <utility>
 
-#include "cerata/graphs.h"
+#include "cerata/graph.h"
 #include "cerata/vhdl/vhdl.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/defaults.h"
@@ -24,12 +26,13 @@
 namespace cerata::vhdl {
 
 struct Design {
-  std::shared_ptr<Component> comp;
-  std::string head;
+  std::shared_ptr<Component> component_;
+  std::string notice_;
+  std::string libs_;
 
   Design() = default;
-  explicit Design(std::shared_ptr<Component> component, std::string header = DEFAULT_LIBS)
-      : comp(std::move(component)), head(std::move(header)) {}
+  explicit Design(std::shared_ptr<Component> component, std::string notice = "", std::string header = DEFAULT_LIBS)
+      : component_(std::move(component)), notice_(std::move(notice)), libs_(std::move(header)) {}
   MultiBlock Generate();
 };
 

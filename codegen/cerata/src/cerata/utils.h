@@ -21,8 +21,11 @@
 #include <algorithm>
 #include <optional>
 #include <fstream>
+#include <unordered_map>
 
 namespace cerata {
+
+std::string ToString(const std::unordered_map<std::string, std::string> &meta);
 
 /**
  * @brief Structure to name objects.
@@ -42,25 +45,25 @@ struct Named {
 
 /// @brief Return true if list contains item, false otherwise.
 template<typename T>
-bool contains(const std::deque<std::shared_ptr<T>> &list, const std::shared_ptr<T> &item) {
+bool Contains(const std::deque<std::shared_ptr<T>> &list, const std::shared_ptr<T> &item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
 /// @brief Return true if list contains item, false otherwise.
 template<typename T>
-bool contains(const std::deque<T *> &list, T *item) {
+bool Contains(const std::deque<std::weak_ptr<T>> &list, const std::weak_ptr<T> &item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
 /// @brief Return true if list contains item, false otherwise.
 template<typename T>
-bool contains(const std::deque<const T *> &list, const T *item) {
+bool Contains(const std::deque<T *> &list, T *item) {
   return std::find(std::begin(list), std::end(list), item) != std::end(list);
 }
 
 /// @brief Append list b to list a.
 template<typename T>
-void append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared_ptr<T>> &list_b) {
+void Append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared_ptr<T>> &list_b) {
   list_a->insert(list_a->end(), list_b.begin(), list_b.end());
 }
 /**
@@ -71,7 +74,7 @@ void append(std::deque<std::shared_ptr<T>> *list_a, const std::deque<std::shared
  * @return      True if item was in list and got removed, false otherwise.
  */
 template<typename T>
-bool remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item) {
+bool Remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item) {
   auto it = std::find(std::begin(*list), std::end(*list), item);
   if (it != std::end(*list)) {
     list->erase(it);
@@ -81,8 +84,26 @@ bool remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item
   }
 }
 
-void CreateDir(const std::string& dir_name);
+template<typename T>
+std::deque<T*>ToRawPointers(const std::deque<std::shared_ptr<T>> &list) {
+  std::deque<T*> result;
+  for (auto& value : list) {
+    result.push_back(value.get());
+  }
+  return result;
+}
 
-bool FileExists (const std::string& name);
+template<typename T>
+std::deque<T*>ToRawPointers(const std::deque<std::unique_ptr<T>> &list) {
+  std::deque<T*> result;
+  for (auto& value : list) {
+    result.push_back(value.get());
+  }
+  return result;
+}
+
+void CreateDir(const std::string &dir_name);
+
+bool FileExists(const std::string &name);
 
 }  // namespace cerata

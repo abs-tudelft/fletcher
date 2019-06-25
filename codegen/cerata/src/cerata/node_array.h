@@ -20,13 +20,11 @@
 #include <memory>
 #include <deque>
 
-#include "cerata/nodes.h"
-#include "cerata/edges.h"
-#include "cerata/types.h"
+#include "cerata/node.h"
+#include "cerata/edge.h"
+#include "cerata/type.h"
 
 namespace cerata {
-
-std::shared_ptr<Node> IncrementNode(const std::shared_ptr<Node> &node);
 
 class NodeArray : public Object {
  public:
@@ -38,27 +36,27 @@ class NodeArray : public Object {
     base_->SetArray(this);
   }
 
-  void SetParent(const Graph *parent) override;
+  void SetParent(Graph *parent) override;
 
-  inline std::shared_ptr<Node> size() const { return size_; }
+  inline Node *size() const { return size_.get(); }
   void SetSize(const std::shared_ptr<Node> &size);
 
-  std::shared_ptr<Type> type() const { return base_->type(); }
+  Type *type() const { return base_->type(); }
 
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Append a node to this array. Returns a pointer to that node.
-  std::shared_ptr<Node> Append();
+  Node *Append();
   /// @brief Return all nodes of this NodeArray.
-  std::deque<std::shared_ptr<Node>> nodes() const { return nodes_; };
+  std::deque<Node *> nodes() const { return ToRawPointers(nodes_); }
   /// @brief Return element node i.
-  std::shared_ptr<Node> node(size_t i) const;
+  Node *node(size_t i) const;
   /// @brief Return element node i.
-  std::shared_ptr<Node> operator[](size_t i) const { return node(i); }
+  Node *operator[](size_t i) const { return node(i); }
   /// @brief Return the number of element nodes.
   size_t num_nodes() const { return nodes_.size(); }
   /// @brief Return the index of a specific node.
-  size_t IndexOf(const std::shared_ptr<Node> &n) const;
+  size_t IndexOf(const Node &n) const;
 
   std::string ToString() const { return name(); }
 
@@ -67,7 +65,7 @@ class NodeArray : public Object {
  protected:
   Node::NodeID node_id_;
   /// @brief Increment the size of the ArrayNode.
-  void increment();
+  void IncrementSize();
   /// A node representing the template for each of the element nodes.
   std::shared_ptr<Node> base_;
   /// A node representing the number of concatenated edges.
@@ -81,26 +79,21 @@ class NodeArray : public Object {
  */
 class PortArray : public NodeArray, public Term {
  public:
-  PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir);
-  PortArray(std::string name, std::shared_ptr<Port> base, std::shared_ptr<Node> size);
-
   /// @brief Get a smart pointer to a new ArrayPort.
-  static std::shared_ptr<PortArray> Make(std::string name,
+  static std::shared_ptr<PortArray> Make(const std::string &name,
                                          std::shared_ptr<Type> type,
-                                         std::shared_ptr<Node> size,
-                                         Port::Dir dir = Port::Dir::IN);
-  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Base name.
-  static std::shared_ptr<PortArray> Make(std::shared_ptr<Type> type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
 
   /// @brief Get a smart pointer to a new ArrayPort with a base type other than the default Port.
-  static std::shared_ptr<PortArray> Make(const std::string& name,
-                                         std::shared_ptr<Port> base,
-                                         const std::shared_ptr<Node>& size);
+  static std::shared_ptr<PortArray> Make(const std::shared_ptr<Port> &base_node,
+                                         std::shared_ptr<Node> size);
 
   /// @brief Make a copy of this port array
   std::shared_ptr<Object> Copy() const override;
+
+ protected:
+  PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir);
 };
 
-}
+}  // namespace cerata

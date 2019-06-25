@@ -14,11 +14,11 @@
 
 #include "fletchgen/basic_types.h"
 
-#include <memory>
-#include <cmath>
-
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <memory>
+#include <cmath>
 
 namespace fletchgen {
 
@@ -45,7 +45,7 @@ using cerata::Literal;
 
 #define VEC_FACTORY(NAME, WIDTH)                                                     \
   std::shared_ptr<Type> NAME() {                                                     \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, bit(), intl<WIDTH>()); \
+    static std::shared_ptr<Type> result = Vector::Make(#NAME, WIDTH); \
     return result;                                                                   \
 }
 
@@ -70,17 +70,17 @@ VEC_FACTORY(offset, 32)
 
 #define PARAM_FACTORY(NAME, TYPE, DEFAULT)                    \
 std::shared_ptr<Node> NAME() {                                \
-  static auto result = Parameter::Make(#NAME, TYPE, DEFAULT); \
+  auto result = Parameter::Make(#NAME, TYPE, DEFAULT);        \
   return result;                                              \
 }                                                             \
 
-PARAM_FACTORY(bus_addr_width, integer(), intl<64>())
-PARAM_FACTORY(bus_data_width, integer(), intl<512>())
-PARAM_FACTORY(bus_strobe_width, integer(), intl<64>())
-PARAM_FACTORY(bus_len_width, integer(), intl<8>())
-PARAM_FACTORY(bus_burst_step_len, integer(), intl<4>())
-PARAM_FACTORY(bus_burst_max_len, integer(), intl<16>())
-PARAM_FACTORY(index_width, integer(), intl<32>())
+PARAM_FACTORY(bus_addr_width, integer(), intl(64))
+PARAM_FACTORY(bus_data_width, integer(), intl(512))
+PARAM_FACTORY(bus_strobe_width, integer(), intl(64))
+PARAM_FACTORY(bus_len_width, integer(), intl(8))
+PARAM_FACTORY(bus_burst_step_len, integer(), intl(4))
+PARAM_FACTORY(bus_burst_max_len, integer(), intl(16))
+PARAM_FACTORY(index_width, integer(), intl(32))
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> kernel_domain() {
@@ -109,26 +109,25 @@ std::shared_ptr<Type> bus_cr() {
 }
 
 // Data channel
-std::shared_ptr<Type> data(const std::shared_ptr<Node> &width) {
+std::shared_ptr<Type> data(const std::shared_ptr<Node>& width) {
   std::shared_ptr<Type> result = Vector::Make("data", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta["array_data"] = "true";
+  result->meta[metakeys::ARRAY_DATA] = "true";
   return result;
 }
 
 // Length channel
-std::shared_ptr<Type> length(const std::shared_ptr<Node> &width) {
+std::shared_ptr<Type> length(const std::shared_ptr<Node>& width) {
   std::shared_ptr<Type> result = Vector::Make("length", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta["array_data"] = "true";
+  result->meta[metakeys::ARRAY_DATA] = "true";
   return result;
 }
 
-
-std::shared_ptr<Type> count(const std::shared_ptr<Node> &width) {
+std::shared_ptr<Type> count(const std::shared_ptr<Node>& width) {
   std::shared_ptr<Type> result = Vector::Make("count", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta["array_data"] = "true";
+  result->meta[metakeys::ARRAY_DATA] = "true";
   return result;
 }
 
@@ -143,7 +142,7 @@ std::shared_ptr<Type> last() {
 }
 
 std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type) {
-    // Only need to cover fixed-width data types in this function
+  // Only need to cover fixed-width data types in this function
   switch (arrow_type->id()) {
     case arrow::Type::UINT8: return uint8();
     case arrow::Type::UINT16: return uint16();

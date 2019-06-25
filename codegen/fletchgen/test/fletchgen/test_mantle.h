@@ -27,6 +27,7 @@
 namespace fletchgen {
 
 static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
+  cerata::default_component_pool()->Clear();
   auto set = SchemaSet::Make("test");
   set->AppendSchema(schema);
   auto mantle = Mantle::Make(set);

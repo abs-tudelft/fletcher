@@ -17,10 +17,10 @@
 #include <gtest/gtest.h>
 
 #include <cerata/api.h>
+#include <utility>
 
 #include "fletchgen/bus.h"
-
-#include "./test_utils.h"
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
@@ -29,7 +29,10 @@ using cerata::Instance;
 using cerata::Port;
 
 TEST(Bus, BusArbiter) {
-  auto top = BusArbiter();
+  cerata::default_component_pool()->Clear();
+  BusSpec spec;
+  auto top = Component::Make("top");
+  top->AddChild(std::move(BusArbiterInstance(spec)));
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();
   std::cerr.flush();

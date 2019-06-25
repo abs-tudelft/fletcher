@@ -1,5 +1,3 @@
-#include <utility>
-
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +14,7 @@
 
 #include "cerata/vhdl/identifier.h"
 
+#include <utility>
 #include <string>
 #include <vector>
 #include <deque>
@@ -70,7 +69,7 @@ Identifier Identifier::operator+(const std::string &rhs) const {
 }
 
 std::string to_upper(std::string str) {
-  for (auto & ch: str) ch = std::toupper(ch);
+  for (auto & ch : str) ch = std::toupper(ch);
   return str;
 }
 }  // namespace cerata::vhdl

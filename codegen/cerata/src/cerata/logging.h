@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +18,7 @@
 
 #include <iostream>
 #include <functional>
+#include <string>
 
 namespace cerata {
 
@@ -34,7 +37,7 @@ class Logger {
 
   /// @brief Enable the logger. Can only be done after the callback function was set.
   inline void enable(std::function<CallbackSignature> callback) {
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 
   /// @brief Return true if callback was set, false otherwise.
@@ -61,6 +64,14 @@ inline Logger &logger() {
   return l;
 }
 
-#define CERATA_LOG(level, msg) logger().write(CERATA_LOG_##level, msg,  __FUNCTION__, __FILE__, __LINE__)
+#define CERATA_LOG(level, msg) \
+if (CERATA_LOG_##level == CERATA_LOG_FATAL) { \
+  throw std::runtime_error(std::string(__FILE__) + ":" \
+                         + std::to_string(__LINE__) + ":" \
+                         + std::string(__FUNCTION__) + ": " + msg); \
+} else {  \
+  logger().write(CERATA_LOG_##level, msg,  __FUNCTION__, __FILE__, __LINE__); \
+} \
+(void)0
 
-}
+}  // namespace cerata

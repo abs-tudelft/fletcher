@@ -23,16 +23,8 @@ Currently, there is no front-end language for Cerata, or a storage format for th
 
 ## Overview
 
-Objects:
-- Graph
-  - Component
-  - Instance
-- Node
-  - Literal
-  - Expression
-  - Parameter
-  - Port
-  - Signal
-- NodeArray
-  - SignalArray
-  - PortArray
+Artifacts:
+- Graph: Component, Instance
+    - Object: Node, NodeArray
+      - Node: Literal, Expression, Parameter, Port, Signal
+      - NodeArray: NodeArray, PortArray

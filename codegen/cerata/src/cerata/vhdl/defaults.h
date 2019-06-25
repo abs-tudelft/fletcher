@@ -23,4 +23,4 @@ constexpr char DEFAULT_LIBS[] =
     "use ieee.std_logic_1164.all;\n"
     "use ieee.numeric_std.all;\n";
 
-} // namespace cerata::vhdl
+}  // namespace cerata::vhdl

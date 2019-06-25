@@ -14,14 +14,17 @@
 
 #include <cerata/api.h>
 
+#include <string>
+#include <deque>
+
 #include "fletcher/common.h"
 #include "fletchgen/design.h"
 #include "fletchgen/recordbatch.h"
 
 namespace fletchgen {
 
-using OutputSpec=cerata::OutputGenerator::OutputSpec;
-using RBVector=std::vector<std::shared_ptr<arrow::RecordBatch>>;
+using OutputSpec = cerata::OutputSpec;
+using RBVector = std::vector<std::shared_ptr<arrow::RecordBatch>>;
 
 static std::optional<std::shared_ptr<arrow::RecordBatch>> GetRecordBatchWithName(const RBVector &batches,
                                                                                  const std::string &name) {
@@ -70,35 +73,37 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   // Generate the hardware structure through Mantle and extract all subcomponents.
   FLETCHER_LOG(INFO, "Generating Mantle...");
   ret.mantle = Mantle::Make(ret.schema_set);
-  ret.kernel = ret.mantle->kernel_;
-  for (const auto rbri : ret.mantle->recordbatch_instances) {
-    ret.readers.push_back(*Cast<RecordBatch>(rbri->component));
+  ret.kernel = ret.mantle->kernel();
+  for (const auto &recordbatch_component : ret.mantle->recordbatch_components()) {
+    ret.readers.push_back(recordbatch_component);
   }
 
   return ret;
 }
 
 std::deque<OutputSpec> Design::GetOutputSpec() {
-  std::deque<OutputSpec> ret;
+  std::deque<OutputSpec> result;
 
+  OutputSpec omantle, okernel;
   // Mantle
-  OutputSpec omantle(mantle);
-  omantle.meta["overwrite"] = "true";
-  ret.push_back(omantle);
+  omantle.comp = mantle;
+  omantle.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
+  result.push_back(omantle);
 
   // Kernel
-  OutputSpec okernel(kernel);
-  okernel.meta["overwrite"] = "false";
-  ret.push_back(okernel);
+  okernel.comp = kernel;
+  okernel.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "false";
+  result.push_back(okernel);
 
   // Readers
-  for (const auto &r : readers) {
-    OutputSpec oreader(r);
-    oreader.meta["overwrite"] = "true";
-    ret.push_back(oreader);
+  for (const auto &reader : readers) {
+    OutputSpec oreader;
+    oreader.comp = reader;
+    oreader.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
+    result.push_back(oreader);
   }
 
-  return ret;
+  return result;
 }
 
-} // namespace fletchgen
+}  // namespace fletchgen

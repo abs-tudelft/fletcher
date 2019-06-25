@@ -3,4 +3,6 @@ transcript
 vsim.wlf
 output/
 vhdl/
+dot/
+
 !vhdl/Kernel.vhd

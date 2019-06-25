@@ -1,3 +1,5 @@
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +16,9 @@
 
 #pragma once
 
+#include <deque>
+#include <string>
+
 #include "cerata/vhdl/architecture.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
@@ -28,10 +33,35 @@
 
 namespace cerata::vhdl {
 
+// Metadata that this back-end understands
+namespace metakeys {
+  /// Setting PRIMITIVE = "true" signifies that a component is a primitive (e.g. has no Cerata internal graph).
+  constexpr char PRIMITIVE[] = "vhdl_primitive";
+  /// The VHDL library in which the primitive resides. E.g. LIBRARY = "work"
+  constexpr char LIBRARY[] = "vhdl_library";
+  /// The VHDL package in which the primitive resides. E.g. PACKAGE = "MyPackage_pkg"
+  constexpr char PACKAGE[] = "vhdl_package";
+  /// Node name to use for VHDL generation
+  constexpr char NAME[] = "vhdl_name";
+  /// Forces a signal to be declared as an std_logic_vector, even if its width is only 1.
+  constexpr char FORCE_VECTOR[] = "vhdl_force_vector";
+
+  /// Forces overwriting of generated files.
+  constexpr char OVERWRITE_FILE[] = "overwrite";
+
+  /// Reserved metadata key for stream expansion.
+  constexpr char WAS_EXPANDED[] = "vhdl_expanded_stream_done";
+  /// Reserved metadata key for stream expansion.
+  constexpr char EXPAND_TYPE[] = "vhdl_expand_stream";
+}  // namespace metakeys
+
 class VHDLOutputGenerator : public OutputGenerator {
  public:
-  explicit VHDLOutputGenerator(std::string root_dir, std::deque<OutputGenerator::OutputSpec> outputs = {})
-      : OutputGenerator(std::move(root_dir), std::move(outputs)) {}
+  std::string notice_;
+  explicit VHDLOutputGenerator(std::string root_dir,
+                               std::deque<OutputSpec> outputs = {},
+                               std::string notice = "")
+      : OutputGenerator(std::move(root_dir), std::move(outputs)), notice_(std::move(notice)) {}
   void Generate() override;
   std::string subdir() override { return DEFAULT_SUBDIR; }
 };

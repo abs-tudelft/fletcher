@@ -12,10 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/top.h"
+#pragma once
 
+#include <gtest/gtest.h>
 #include <cerata/api.h>
+#include <string>
+#include <fstream>
 
-namespace fletchgen {
+namespace cerata {
 
-}  // namespace fletchgen
+TEST(Pool, IntPool) {
+  cerata::default_node_pool()->Clear();
+  auto zero = intl(0);
+  auto one = intl(1);
+  auto rzero = rintl(0);
+  auto rone = rintl(1);
+
+  ASSERT_EQ(zero.get(), rzero);
+  ASSERT_EQ(one.get(), rone);
+}
+
+TEST(Pool, StringPool) {
+  cerata::default_node_pool()->Clear();
+  auto empty = strl("");
+  auto some = strl("a");
+  auto rempty = rstrl("");
+  auto rsome = rstrl("a");
+
+  ASSERT_EQ(empty.get(), rempty);
+  ASSERT_EQ(some.get(), rsome);
+}
+
+}

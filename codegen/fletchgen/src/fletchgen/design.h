@@ -14,11 +14,13 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <arrow/api.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <deque>
+#include <memory>
+#include <vector>
 
 #include "fletchgen/schema.h"
 #include "fletchgen/options.h"
@@ -30,19 +32,17 @@
 namespace fletchgen {
 
 struct Design {
-  static Design GenerateFrom(const std::shared_ptr<Options>& opts);
+  static Design GenerateFrom(const std::shared_ptr<Options> &opts);
   std::shared_ptr<Options> options;
 
   std::shared_ptr<SchemaSet> schema_set;
   std::vector<fletcher::RecordBatchDescription> batch_desc;
 
-  std::deque<std::shared_ptr<RecordBatch>> readers;
-
+  std::deque<std::shared_ptr<Component>> readers;
   std::shared_ptr<Kernel> kernel;
   std::shared_ptr<Mantle> mantle;
-  std::shared_ptr<cerata::Component> wrapper;
 
-  std::deque<cerata::OutputGenerator::OutputSpec> GetOutputSpec();
+  std::deque<cerata::OutputSpec> GetOutputSpec();
 };
 
-}
+}  // namespace fletchgen

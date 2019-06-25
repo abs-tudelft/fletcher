@@ -21,10 +21,10 @@
 #include <fstream>
 
 #include "cerata/logging.h"
-#include "cerata/edges.h"
-#include "cerata/nodes.h"
-#include "cerata/types.h"
-#include "cerata/graphs.h"
+#include "cerata/edge.h"
+#include "cerata/node.h"
+#include "cerata/type.h"
+#include "cerata/graph.h"
 #include "cerata/utils.h"
 
 #include "cerata/vhdl/defaults.h"
@@ -36,44 +36,36 @@ void VHDLOutputGenerator::Generate() {
   CreateDir(subdir());
   size_t num_graphs = 0;
   for (const auto &o : outputs_) {
-    if ((o.graph != nullptr)) {
-      if (o.graph->IsComponent()) {
-        CERATA_LOG(INFO, "VHDL: Transforming Component " + o.graph->name() + " to VHDL-compatible version.");
-        auto vhdl_design = Design(*Cast<Component>(o.graph), DEFAULT_LIBS);
+    CERATA_LOG(INFO, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
+    auto vhdl_design = Design(o.comp, notice_, DEFAULT_LIBS);
 
-        CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.graph->name());
-        auto vhdl_source = vhdl_design.Generate();
-        vhdl_source.ToString();
-        auto vhdl_path = subdir() + "/" + o.graph->name() + ".vhd";
+    CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.comp->name());
+    auto vhdl_source = vhdl_design.Generate();
+    vhdl_source.ToString();
+    auto vhdl_path = subdir() + "/" + o.comp->name() + ".vhd";
 
-        bool overwrite = false;
+    bool overwrite = false;
 
-        if (o.meta.count("overwrite") > 0) {
-          if (o.meta.at("overwrite") == "true") {
-            overwrite = true;
-          }
-        }
-
-        CERATA_LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
-        if (!FileExists(vhdl_path) || overwrite) {
-          auto vhdl_file = std::ofstream(vhdl_path);
-          vhdl_file << vhdl_source.ToString();
-          vhdl_file.close();
-        } else {
-          CERATA_LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
-          // Save as a vhdt file.
-          auto vhdl_file = std::ofstream(vhdl_path + "t");
-          vhdl_file << vhdl_source.ToString();
-          vhdl_file.close();
-        }
-
-        num_graphs++;
-      } else {
-        CERATA_LOG(WARNING, "VHDL: Graph " + o.graph->name() + " is not a component. Skipping output generation.");
+    if (o.meta.count(metakeys::OVERWRITE_FILE) > 0) {
+      if (o.meta.at(metakeys::OVERWRITE_FILE) == "true") {
+        overwrite = true;
       }
-    } else {
-      throw std::runtime_error("Graph is nullptr.");
     }
+
+    CERATA_LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
+    if (!FileExists(vhdl_path) || overwrite) {
+      auto vhdl_file = std::ofstream(vhdl_path);
+      vhdl_file << vhdl_source.ToString();
+      vhdl_file.close();
+    } else {
+      CERATA_LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
+      // Save as a vhdt file.
+      auto vhdl_file = std::ofstream(vhdl_path + "t");
+      vhdl_file << vhdl_source.ToString();
+      vhdl_file.close();
+    }
+
+    num_graphs++;
   }
   CERATA_LOG(INFO, "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
 }

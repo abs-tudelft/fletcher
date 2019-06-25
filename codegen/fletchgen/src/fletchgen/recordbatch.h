@@ -14,10 +14,14 @@
 
 #pragma once
 
-#include <utility>
 #include <arrow/api.h>
 #include <cerata/api.h>
 #include <fletcher/common.h>
+
+#include <utility>
+#include <string>
+#include <deque>
+#include <memory>
 
 #include "fletchgen/utils.h"
 #include "fletchgen/basic_types.h"
@@ -89,7 +93,6 @@ struct FieldPort : public Port {
  */
 struct RecordBatch : public Component {
  public:
-  explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
   static std::shared_ptr<RecordBatch> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
   /// @brief Obtain all ports derived from an Arrow field with a specific function.
@@ -97,12 +100,23 @@ struct RecordBatch : public Component {
   /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
   std::shared_ptr<FieldPort> GetArrowPort(const arrow::Field &field) const;
 
-  std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; };
-  std::deque<Instance *> reader_instances() const { return array_instances_; };
+  std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; }
+  std::deque<Instance *> reader_instances() const { return array_instances_; }
   std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
+
  protected:
-  /// @brief Adds all ArrayReaders/Writers, unconcatenates ports and connects it to the top-level of this component.
-  void AddArrays(const FletcherSchema &as);
+  explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
+
+  /**
+   * @brief Adds all ArrayReaders/Writers, unconcatenates ports and connects it to the top-level of this component.
+   *
+   * Fletcher's hardware implementation concatenates each subsignal of potentially multiple streams of an
+   * ArrayReader/Writer onto a single subsignal. This function must unconcatenate these streams.
+   *
+   * @param fletcher_schema   A Fletcherized version of the Arrow Schema that this RecordBatch component will access.
+   */
+  void AddArrays(const FletcherSchema &fletcher_schema);
+
   /// Fletcher schema implemented by this RecordBatch(Reader/Writer)
   std::shared_ptr<FletcherSchema> fletcher_schema_;
   /// Array(Readers/Writers) instantiated
@@ -113,4 +127,4 @@ struct RecordBatch : public Component {
   Mode mode_ = Mode::READ;
 };
 
-} // namespace fletchgen
+}  // namespace fletchgen

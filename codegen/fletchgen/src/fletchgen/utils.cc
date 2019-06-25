@@ -14,9 +14,11 @@
 
 #include "fletchgen/utils.h"
 
-#include <cstdlib> // system()
 #include <fletcher/common.h>
 #include <cerata/api.h>
+#include <cstdlib>  // system()
+
+namespace fletchgen {
 
 std::string GetProgramName(char *argv0) {
   auto arg = std::string(argv0);
@@ -42,25 +44,27 @@ void LogCerata(cerata::LogLevel level,
                char const *source_file,
                int line_number) {
   switch (level) {
-    case cerata::CERATA_LOG_DEBUG: {
+    default: {
       FLETCHER_LOG(DEBUG, message);
       return;
     }
     case cerata::CERATA_LOG_INFO: {
-      FLETCHER_LOG(DEBUG, message);
+      FLETCHER_LOG(INFO, message);
       return;
     }
     case cerata::CERATA_LOG_WARNING: {
-      FLETCHER_LOG(DEBUG, message);
+      FLETCHER_LOG(WARNING, message);
       return;
     }
     case cerata::CERATA_LOG_ERROR: {
-      FLETCHER_LOG(DEBUG, message);
+      FLETCHER_LOG(ERROR, message);
       return;
     }
     case cerata::CERATA_LOG_FATAL: {
-      FLETCHER_LOG(DEBUG, message);
+      FLETCHER_LOG(FATAL, message);
       return;
     }
   }
 }
+
+}  // namespace fletchgen
