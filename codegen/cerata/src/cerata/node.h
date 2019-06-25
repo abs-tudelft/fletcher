@@ -122,7 +122,7 @@ struct MultiOutputNode : public Node {
   /// @brief Return the incoming edges (in this case just the single input edge).
   std::deque<Edge *> sources() const override { return {}; }
   /// @brief The outgoing Edges that sink this Node.
-  std::deque<Edge *> sinks() const override { return ToRawPtrs(outputs_); }
+  std::deque<Edge *> sinks() const override { return ToRawPointers(outputs_); }
 
   /// @brief Add an output edge to this node.
   std::shared_ptr<Edge> AddSink(Node *sink) override;
@@ -221,7 +221,7 @@ LITERAL_DECL_FACTORY(Int, int)
   /// @brief A literal node has no inputs. This function returns an empty list.
   inline std::deque<Edge *> sources() const override { return {}; }
   /// @brief Get the output edges of this Node.
-  inline std::deque<Edge *> sinks() const override { return ToRawPtrs(outputs_); }
+  inline std::deque<Edge *> sinks() const override { return ToRawPointers(outputs_); }
 
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToString() const override;

@@ -21,8 +21,11 @@
 #include <algorithm>
 #include <optional>
 #include <fstream>
+#include <unordered_map>
 
 namespace cerata {
+
+std::string ToString(const std::unordered_map<std::string, std::string> &meta);
 
 /**
  * @brief Structure to name objects.
@@ -39,39 +42,6 @@ struct Named {
   /// @brief The object name.
   std::string name_;
 };
-
-/// @brief Optionally cast a shared pointer to some source type S, to a shared pointer to some destination type D.
-template<typename D, typename S>
-std::optional<std::shared_ptr<D>> Cast(std::shared_ptr<S> obj) {
-  auto result = std::dynamic_pointer_cast<D>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return std::nullopt;
-  }
-}
-
-/// @brief Optionally cast a pointer to some source type S, to a pointer to some destination type D.
-template<typename D, typename S>
-std::optional<D *> Cast(S *obj) {
-  auto result = dynamic_cast<D *>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return std::nullopt;
-  }
-}
-
-/// @brief Optionally cast a pointer to some source type S, to a pointer to some destination type D.
-template<typename D, typename S>
-std::optional<const D *> Cast(const S *obj) {
-  auto result = dynamic_cast<const D *>(obj);
-  if (result != nullptr) {
-    return result;
-  } else {
-    return std::nullopt;
-  }
-}
 
 /// @brief Return true if list contains item, false otherwise.
 template<typename T>
@@ -115,7 +85,7 @@ bool Remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item
 }
 
 template<typename T>
-std::deque<T*>ToRawPtrs(const std::deque<std::shared_ptr<T>>& list) {
+std::deque<T*>ToRawPointers(const std::deque<std::shared_ptr<T>> &list) {
   std::deque<T*> result;
   for (auto& value : list) {
     result.push_back(value.get());
@@ -124,7 +94,7 @@ std::deque<T*>ToRawPtrs(const std::deque<std::shared_ptr<T>>& list) {
 }
 
 template<typename T>
-std::deque<T*>ToRawPtrs(const std::deque<std::unique_ptr<T>>& list) {
+std::deque<T*>ToRawPointers(const std::deque<std::unique_ptr<T>> &list) {
   std::deque<T*> result;
   for (auto& value : list) {
     result.push_back(value.get());

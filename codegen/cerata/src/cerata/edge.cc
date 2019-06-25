@@ -50,15 +50,14 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
 
   // Check if the types can be mapped onto each other
   if (!src->type()->GetMapper(dst->type())) {
-    throw std::logic_error(
-        "No known type mapping available for connection between node "
-            + dst->ToString() + " (" + dst->type()->ToString() + ")  and ("
-            + src->ToString() + " (" + src->type()->ToString() + ")");
+    CERATA_LOG(FATAL, "No known type mapping available for connection between node "
+        + dst->ToString() + " (" + dst->type()->ToString() + ")  and ("
+        + src->ToString() + " (" + src->type()->ToString() + ")");
   }
 
   // If the destination is a terminator
   if (dst->IsPort()) {
-    auto port = dynamic_cast<Port*>(dst);
+    auto port = dynamic_cast<Port *>(dst);
     // Check if it has a parent
     if (dst->parent()) {
       auto parent = *dst->parent();
@@ -100,7 +99,7 @@ std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node *src) {
 }
 
 std::deque<Edge *> GetAllEdges(const Graph &graph) {
-  std::deque<Edge*> all_edges;
+  std::deque<Edge *> all_edges;
 
   // Get all normal nodes
   for (const auto &node : graph.GetAll<Node>()) {
@@ -128,7 +127,7 @@ std::deque<Edge *> GetAllEdges(const Graph &graph) {
   }
 
   if (graph.IsComponent()) {
-    auto& comp = dynamic_cast<const Component&>(graph);
+    auto &comp = dynamic_cast<const Component &>(graph);
     for (const auto &g : comp.children()) {
       auto child_edges = GetAllEdges(*g);
       all_edges.insert(all_edges.end(), child_edges.begin(), child_edges.end());
@@ -138,7 +137,7 @@ std::deque<Edge *> GetAllEdges(const Graph &graph) {
   return all_edges;
 }
 
-std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix) {
+std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix, std::optional<Graph *> new_owner) {
   auto src = edge->src();
   auto dst = edge->dst();
 
@@ -148,16 +147,16 @@ std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix) {
   // Create the signal and take shared ownership of the type
   auto signal = Signal::Make(name, type->shared_from_this());
 
-  // Move ownership to parent graph
-  if (src->parent()) {
-    src->parent().value()->AddObject(signal);
+  // Share ownership of the new signal with the potential new_owner
+  if (new_owner) {
+    new_owner.value()->AddObject(signal);
   }
 
   // Remove the original edge from the source and destination node
   src->RemoveEdge(edge);
   dst->RemoveEdge(edge);
   // From this moment onward, the edge may be deconstructed and should not be used anymore.
-  // Make the new connections, effectively creating two new edges.
+  // Make the new connections, effectively creating two new edges on either side of the signal node.
   signal <<= src;
   dst <<= signal;
   // Return the new signal

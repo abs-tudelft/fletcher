@@ -18,19 +18,20 @@
 #include <algorithm>
 #include <deque>
 
+#include "cerata/vhdl/vhdl.h"
 #include "cerata/type.h"
 
 namespace cerata::vhdl {
 
 std::shared_ptr<Type> valid() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("valid");
-  result->meta["VHDL:ExpandStream"] = "valid";
+  result->meta[metakeys::EXPAND_TYPE] = "valid";
   return result;
 }
 
 std::shared_ptr<Type> ready() {
   static std::shared_ptr<Type> result = std::make_shared<Bit>("ready");
-  result->meta["VHDL:ExpandStream"] = "ready";
+  result->meta[metakeys::EXPAND_TYPE] = "ready";
   return result;
 }
 

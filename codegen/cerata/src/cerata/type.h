@@ -100,7 +100,7 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   /// @brief Return true if type is nested (e.g. Stream or Record), false otherwise.
   bool IsNested() const;
   /// @brief Return the Type ID as a human-readable string.
-  std::string ToString(bool show_meta = false) const;
+  std::string ToString(bool show_meta = false, bool show_mappers = false) const;
 
   /// @brief Return possible type mappers.
   std::deque<std::shared_ptr<TypeMapper>> mappers() const;
@@ -109,7 +109,7 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other);
   /// @brief Remove all mappers to a specific type
-  void RemoveMappersTo(Type *other);
+  int RemoveMappersTo(Type *other);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other);
 
@@ -246,7 +246,7 @@ class Vector : public Type {
   /// @brief Create a new Vector Type of width W and element type bit and name "vec<W>". Returns a shared pointer to it.
   template<int W>
   static std::shared_ptr<Type> Make() {
-    static auto result = std::make_shared<Vector>("vec" + std::to_string(W), bit(), intl(W));
+    auto result = std::make_shared<Vector>("vec" + std::to_string(W), bit(), intl(W));
     return result;
   }
 

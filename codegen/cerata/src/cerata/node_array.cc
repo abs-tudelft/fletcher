@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // Copyright 2018 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,7 +104,7 @@ Node *NodeArray::node(size_t i) const {
 
 std::shared_ptr<Object> NodeArray::Copy() const {
   auto p = parent();
-  auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, *Cast<Node>(size()->Copy()));
+  auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, std::dynamic_pointer_cast<Node>(size()->Copy()));
   if (p) {
     ret->SetParent(*p);
   }
@@ -124,44 +128,33 @@ size_t NodeArray::IndexOf(const Node &n) const {
   throw std::logic_error("Node " + n.ToString() + " is not element of " + this->ToString());
 }
 
-PortArray::PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir)
-    : NodeArray(std::move(name), Node::NodeID::PORT, Port::Make(name, std::move(type), dir), std::move(size)),
-      Term(dir) {}
+PortArray::PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir) :
+    NodeArray(std::move(base->name()), Node::NodeID::PORT, base, std::move(size)), Term(base->dir()) {}
 
-PortArray::PortArray(std::string name, const std::shared_ptr<Port> &base, std::shared_ptr<Node> size)
-    : NodeArray(std::move(name), Node::NodeID::PORT, base, std::move(size)),
-      Term(base->dir()) {}
-
-std::shared_ptr<PortArray> PortArray::Make(std::string name,
+std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
                                            std::shared_ptr<Type> type,
                                            std::shared_ptr<Node> size,
                                            Port::Dir dir) {
-  return std::make_shared<PortArray>(name, type, size, dir);
+  auto base_node = Port::Make(name, std::move(type), dir);
+  auto *port_array = new PortArray(base_node, std::move(size), dir);
+  return std::shared_ptr<PortArray>(port_array);
 }
 
-std::shared_ptr<PortArray> PortArray::Make(const std::shared_ptr<Type> &type,
-                                           std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  return PortArray::Make(type->name(), type, std::move(size), dir);
+std::shared_ptr<PortArray> PortArray::Make(const std::shared_ptr<Port> &base_node,
+                                           std::shared_ptr<Node> size) {
+  auto *port_array = new PortArray(base_node, std::move(size), base_node->dir());
+  return std::shared_ptr<PortArray>(port_array);
 }
 
 std::shared_ptr<Object> PortArray::Copy() const {
-  // Take shared ownership of the type.
-  auto typ = type()->shared_from_this();
   // Make a copy of the size node.
-  auto siz = std::dynamic_pointer_cast<Node>(size()->Copy());
+  auto size_copy = std::dynamic_pointer_cast<Node>(size()->Copy());
+  // Cast the base node pointer to a port pointer
+  auto base_as_port = std::dynamic_pointer_cast<Port>(base_);
   // Create the new PortArray using the new nodes.
-  auto ret = std::make_shared<PortArray>(name(), typ, siz, dir());
-  // Use the same parent if there is a parent.
-  if (parent()) {
-    ret->SetParent(*parent());
-  }
-  return ret;
-}
-std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
-                                           std::shared_ptr<Port> base,
-                                           const std::shared_ptr<Node> &size) {
-  return std::make_shared<PortArray>(name, std::move(base), size);
+  auto *port_array = new PortArray(base_as_port, size_copy, dir());
+  // Return the resulting object.
+  return std::shared_ptr<PortArray>(port_array);
 }
 
 }  // namespace cerata

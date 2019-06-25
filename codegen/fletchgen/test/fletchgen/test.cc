@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 
+#include "fletchgen/test_types.h"
 #include "fletchgen/test_bus.h"
 #include "fletchgen/test_kernel.h"
 #include "fletchgen/test_mantle.h"
@@ -21,7 +22,7 @@
 #include "fletchgen/srec/test_srec.h"
 
 void Log(int level, const std::string &msg, char const *source_fun, char const *source_file, int line_num) {
-  std::cerr << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
+  std::cout << source_file << ":" << line_num << ":" << source_fun << ": " << msg << std::endl;
 }
 
 int main(int argc, char **argv) {

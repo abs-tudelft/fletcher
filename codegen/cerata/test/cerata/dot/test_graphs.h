@@ -27,14 +27,14 @@ TEST(Dot, Component) {
   auto top = GetAllPortTypesComponent();
   // Generate graph
   dot::Grapher dot;
-  std::cout << dot.GenFile(*top, "graph.dot");
+  dot.GenFile(*top, "Dot_Component.dot");
 }
 
-TEST(Example, DOT) {
+TEST(Dot, Example) {
   default_component_pool()->Clear();
   auto top = GetExampleDesign();
   dot::Grapher dot;
-  std::cout << dot.GenFile(*top, "graph.dot");
+  dot.GenFile(*top, "Dot_Example.dot");
 }
 
 }  // namespace cerata

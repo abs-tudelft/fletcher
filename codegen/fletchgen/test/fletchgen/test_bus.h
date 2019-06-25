@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include <cerata/api.h>
+#include <utility>
 
 #include "fletchgen/bus.h"
 #include "fletchgen/test_utils.h"
@@ -29,7 +30,9 @@ using cerata::Port;
 
 TEST(Bus, BusArbiter) {
   cerata::default_component_pool()->Clear();
-  auto top = BusArbiter();
+  BusSpec spec;
+  auto top = Component::Make("top");
+  top->AddChild(std::move(BusArbiterInstance(spec)));
   auto design = cerata::vhdl::Design(top);
   auto code = design.Generate().ToString();
   std::cerr.flush();

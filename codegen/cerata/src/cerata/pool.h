@@ -28,7 +28,26 @@ namespace cerata {
 // Forward decl.
 class Component;
 class Node;
-struct Literal;
+class Literal;
+class Type;
+
+/**
+ * @brief A component pool to keep a collection of components.
+ */
+class TypePool {
+ public:
+  void Add(const std::shared_ptr<Type> &type);
+  std::optional<Type *> Get(const std::string &name);
+  void Clear();
+ protected:
+  std::vector<std::shared_ptr<Type>> types_;
+};
+
+/// @brief Return a global default TypePool.
+inline TypePool *default_type_pool() {
+  static TypePool pool;
+  return &pool;
+}
 
 /**
  * @brief A component pool to keep a collection of components.

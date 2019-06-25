@@ -46,8 +46,8 @@ void VHDLOutputGenerator::Generate() {
 
     bool overwrite = false;
 
-    if (o.meta.count("overwrite") > 0) {
-      if (o.meta.at("overwrite") == "true") {
+    if (o.meta.count(metakeys::OVERWRITE_FILE) > 0) {
+      if (o.meta.at(metakeys::OVERWRITE_FILE) == "true") {
         overwrite = true;
       }
     }

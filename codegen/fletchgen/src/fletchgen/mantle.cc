@@ -31,6 +31,10 @@
 
 namespace fletchgen {
 
+static std::string ArbiterMasterName(BusSpec spec) {
+  return std::string(spec.function == BusFunction::READ ? "rd" : "wr") + "_mst";
+}
+
 Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
@@ -44,7 +48,7 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
 
   AddObject(bus_addr_width());
 
-  // Create and add every RecordBatch/Writer
+  // Create and add every RecordBatch/Writer.
   for (const auto &fs : schema_set_->schemas()) {
     auto rb = RecordBatch::Make(fs);
     recordbatch_components_.push_back(rb);
@@ -54,18 +58,18 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     rb_inst->port("bcd") <<= bcr;
   }
 
-  // Create and add the kernel
-  kernel_ = Kernel::Make(schema_set_->name(), cerata::ToRawPtrs(recordbatch_components()));
+  // Create and add the kernel.
+  kernel_ = Kernel::Make(schema_set_->name(), cerata::ToRawPointers(recordbatch_components()));
   kernel_inst_ = AddInstanceOf(kernel_.get());
   kernel_inst_->port("kcd") <<= kcr;
   kernel_inst_->port("mmio") <<= regs;
 
-  // Connect all Arrow field derived ports
+  // Connect all Arrow field derived ports.
   for (const auto &r : recordbatch_instances_) {
     auto field_ports = r->GetAll<FieldPort>();
     for (const auto &fp : field_ports) {
       if (fp->function_ == FieldPort::Function::ARROW) {
-        // If the port is an output, it's an input for the kernel and vice versa
+        // If the port is an output, it's an input for the kernel and vice versa.
         if (fp->dir() == cerata::Term::Dir::OUT) {
           Connect(kernel_inst_->port(fp->name()), fp);
         } else {
@@ -91,37 +95,42 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     }
   }
 
-  // Leave only unique bus specs
+  // Leave only unique bus specs.
   auto last = std::unique(bus_specs.begin(), bus_specs.end());
   bus_specs.erase(last, bus_specs.end());
 
-  // Generate a BusArbiterVec for every unique bus specification
+  // Generate a BusArbiterVec for every unique bus specification.
   for (const auto &spec : bus_specs) {
     FLETCHER_LOG(DEBUG, "Adding bus arbiter for: " + spec.ToString());
-    auto bus_arb = BusArbiter(spec);
-    auto arbiter = AddInstanceOf(bus_arb.get());
+    auto arbiter_instance = BusArbiterInstance(spec);
+    auto arbiter = arbiter_instance.get();
+    AddChild(std::move(arbiter_instance));
     arbiter->par(bus_addr_width()->name()) <<= intl(spec.addr_width);
     arbiter->par(bus_data_width()->name()) <<= intl(spec.data_width);
     arbiter->par(bus_len_width()->name()) <<= intl(spec.len_width);
+    if (spec.function == BusFunction::WRITE) {
+      arbiter->par(bus_strobe_width()->name()) <<= intl(spec.data_width / 8);
+    }
     arbiters_[spec] = arbiter;
-    // Copy the master side of the bus arbiter
-    auto master = std::dynamic_pointer_cast<BusPort>(arbiter->port("mst")->Copy());
-    // TODO(johanpel): actually support multiple bus specs
-    // Connect the ports
-    master <<= arbiter->port("mst");
+    // Create the bus port on the mantle level.
+    auto master = BusPort::Make(ArbiterMasterName(spec), Port::Dir::OUT, spec);
     AddObject(master);
+    // TODO(johanpel): actually support multiple bus specs
+    // Connect the arbiter master port to the mantle master port.
+    master <<= arbiter->port("mst");
+    // Connect the bus clock domain.
     arbiter->port("bcd") <<= bcr;
   }
 
-  // Connect bus ports to the arbiters
+  // Connect bus ports to the arbiters.
   for (const auto &bp : bus_ports) {
-    // Get the arbiter port
-    auto arb = arbiters_.at(bp->spec_);
-    auto arb_port = arb->porta("bsv");
-    // Generate a mapper. TODO(johanpel): make sure bus ports with same spec can map automatically
-    auto mapper = TypeMapper::MakeImplicit(bp->type(), arb_port->type());
+    // Get the arbiter port.
+    auto arbiter = arbiters_.at(bp->spec_);
+    auto arbiter_port_array = arbiter->porta("bsv");
+    // Generate a mapper. TODO(johanpel): implement bus ports with same spec to map automatically.
+    auto mapper = TypeMapper::MakeImplicit(bp->type(), arbiter_port_array->type());
     bp->type()->AddMapper(mapper);
-    Connect(arb_port->Append(), bp);
+    Connect(arbiter_port_array->Append(), bp);
   }
 }
 

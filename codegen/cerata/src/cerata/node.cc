@@ -179,12 +179,11 @@ std::shared_ptr<Literal> Literal::Make(std::string value) {
 }
 
 std::shared_ptr<Object> Literal::Copy() const {
-  // Take shared ownership of the type
-  auto typ = type()->shared_from_this();
-  // Create a new literal
-  auto lit = new Literal(name(), typ, storage_type_, String_val_, Int_val_, Bool_val_);
-  auto result = std::shared_ptr<Literal>(lit);
-  return result;
+  switch (storage_type_) {
+    default:return strl(String_val_);
+    case StorageType::BOOL:return booll(Bool_val_);
+    case StorageType::INT:return intl(Int_val_);
+  }
 }
 
 template<>
@@ -235,9 +234,7 @@ std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Term::Dir dir) {
 }
 
 std::shared_ptr<Object> Port::Copy() const {
-  // Take shared ownership of the type.
-  auto typ = type()->shared_from_this();
-  return std::make_shared<Port>(name(), typ, dir());
+  return std::make_shared<Port>(name(), type_, dir());
 }
 
 Port::Port(std::string

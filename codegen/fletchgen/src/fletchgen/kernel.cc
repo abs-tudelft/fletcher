@@ -28,8 +28,6 @@
 
 namespace fletchgen {
 
-using cerata::Cast;
-
 Kernel::Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches)
     : Component(std::move(name)) {
 
@@ -46,7 +44,7 @@ Kernel::Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches)
   for (const auto &r : recordbatches) {
     auto field_ports = r->GetFieldPorts();
     for (const auto &fp : field_ports) {
-      auto copied_port = *Cast<FieldPort>(fp->Copy());
+      auto copied_port = std::dynamic_pointer_cast<FieldPort>(fp->Copy());
       copied_port->InvertDirection();
       AddObject(copied_port);
     }

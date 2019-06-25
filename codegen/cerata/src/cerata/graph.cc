@@ -31,7 +31,7 @@ static void AddParamSources(Graph *graph, const Object &obj) {
   if (obj.IsNode()) {
     auto &node = dynamic_cast<const Node &>(obj);
     if (node.IsParameter()) {
-      auto& par = node.AsParameter();
+      auto &par = node.AsParameter();
       // If the parameter node has edges
       if (par.GetValue()) {
         // Obtain shared ownership of the value and add it to the graph
@@ -52,7 +52,7 @@ static void AddObjectParams(Graph *comp, const Object &obj) {
       AddParamSources(comp, obj);
     }
   } else if (obj.IsArray()) {
-    auto &array = dynamic_cast<const NodeArray&>(obj);
+    auto &array = dynamic_cast<const NodeArray &>(obj);
     auto array_size = array.size()->shared_from_this();
     comp->AddObject(array_size);
     AddParamSources(comp, *array_size);
@@ -60,15 +60,24 @@ static void AddObjectParams(Graph *comp, const Object &obj) {
 }
 
 Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
-  if (!Contains(objects_, obj)) {
-    objects_.push_back(obj);
-    obj->SetParent(this);
-    AddObjectParams(this, *obj);
+  // Check for duplicates in name / ownership
+  for (const auto &o : objects_) {
+    if (o->name() == obj->name()) {
+      if (o.get() == obj.get()) {
+        CERATA_LOG(DEBUG, "Graph " + name() + " already owns object " + obj->name() + ". Skipping...");
+        return *this;
+      } else {
+        CERATA_LOG(FATAL, "Graph " + name() + " already contains an object with name " + obj->name());
+      }
+    }
   }
+  objects_.push_back(obj);
+  obj->SetParent(this);
+  AddObjectParams(this, *obj);
   return *this;
 }
 
-Graph &Graph::RemoveObject(Object* obj) {
+Graph &Graph::RemoveObject(Object *obj) {
   for (auto o = objects_.begin(); o < objects_.end(); o++) {
     if (o->get() == obj) {
       objects_.erase(o);
@@ -137,8 +146,17 @@ NodeArray *Graph::GetArray(Node::NodeID node_id, const std::string &array_name) 
   for (const auto &a : GetAll<NodeArray>()) {
     if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  throw std::logic_error("NodeArray " + array_name + " does not exist on Graph " + this->name());
+  CERATA_LOG(FATAL, "NodeArray " + array_name + " does not exist on Graph " + this->name());
   // TODO(johanpel): use std::optional
+}
+
+std::optional<Node *>Graph::GetNode(const std::string &node_name) const {
+  for (const auto &n : GetAll<Node>()) {
+    if (n->name() == node_name) {
+      return n;
+    }
+  }
+  return std::nullopt;
 }
 
 Node *Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
@@ -149,7 +167,7 @@ Node *Graph::GetNode(Node::NodeID node_id, const std::string &node_name) const {
       }
     }
   }
-  throw std::logic_error("Node " + node_name + " does not exist on Graph " + this->name());
+  CERATA_LOG(FATAL, "Node " + node_name + " does not exist on Graph " + this->name());
 }
 
 size_t Graph::CountNodes(Node::NodeID id) const {
@@ -257,47 +275,62 @@ Instance::Instance(Component *comp, std::string name)
     : Graph(std::move(name), INSTANCE), component_(comp) {
   // Create a map that maps an "old" node to a "new" node.
   std::map<Object *, Object *> copies;
+
   // Make copies of ports
   for (const auto &port : component_->GetAll<Port>()) {
-    auto inst_port = port->Copy();
-    AddObject(inst_port);
-    copies[port] = inst_port.get();
+    auto instance_port = port->Copy();
+    AddObject(instance_port);
+    copies[port] = instance_port.get();
   }
+
   // Make copies of port arrays
   for (const auto &array_port : component_->GetAll<PortArray>()) {
-    // Make a copy of the port
-    auto instance_port = array_port->Copy();
-    AddObject(instance_port);
-    copies[array_port] = instance_port.get();
+    auto original_size_node = array_port->size();
+    // Make a copy of the port.
+    auto instance_port_array = std::dynamic_pointer_cast<PortArray>(array_port->Copy());
+    copies[array_port] = instance_port_array.get();
+    AddObject(instance_port_array);
 
-    // Figure out whether the size node was already copied
-    Object *inst_size;
-    if (copies.count(array_port->size()) > 0) {
-      inst_size = copies[array_port->size()];
+    // This has created a copy of the size node as well, but it might be that the size node was already copied before.
+    // In this case, we want the size node to be the same node as copied before.
+
+    // Figure out whether the size node was already copied.
+    Object *copied_size_node = instance_port_array->size();
+    if (copies.count(original_size_node) > 0) {
+      // It was already copied, obtain a pointer to it.
+      copied_size_node = copies[original_size_node];
+      // Obtain ownership of the copied size node and supply it as size node to the port array.
+      auto inst_size_node = dynamic_cast<Node *>(copied_size_node)->shared_from_this();
+      instance_port_array->SetSize(inst_size_node);
     } else {
-      auto inst_size_copy = std::dynamic_pointer_cast<Node>(array_port->size()->Copy());
-      AddObject(inst_size_copy);
-      inst_size = inst_size_copy.get();
-      copies[array_port->size()] = inst_size;
+      copies[original_size_node] = copied_size_node;
     }
-    // Set the size for the copied node
-    auto inst_size_node = dynamic_cast<Node *>(inst_size)->shared_from_this();
-    auto inst_port_array = std::dynamic_pointer_cast<PortArray>(instance_port);
-    inst_port_array->SetSize(inst_size_node);
   }
 
   // Make copies of parameters and literals
-  for (const auto &node : component_->GetNodesOfTypes({Node::NodeID::PARAMETER, Node::NodeID::LITERAL})) {
-    if (copies.count(node) == 0) {
-      auto inst_node = node->Copy();
-      AddObject(inst_node);
-      copies[node] = inst_node.get();
+  auto pars_lits = component_->GetNodesOfTypes({Node::NodeID::PARAMETER, Node::NodeID::LITERAL});
+  for (const auto &node : pars_lits) {
+    // Copies might have already been made by adding ports with node parametrized types to the graph.
+    // We therefore just check if those nodes are already present by name.
+    auto potential_node = GetNode(node->name());
+    if (!potential_node) {
+      if (copies.count(node) == 0) {
+        auto inst_node = node->Copy();
+        AddObject(inst_node);
+        copies[node] = inst_node.get();
+      }
     }
   }
 }
 
 Graph &Instance::AddObject(const std::shared_ptr<Object> &object) {
-  objects_.push_back(object);
+  if (object->IsNode()) {
+    auto node = std::dynamic_pointer_cast<Node>(object);
+    if (node->IsSignal()) {
+      CERATA_LOG(FATAL, "Instance Graph cannot own Signal nodes. " + node->ToString());
+    }
+  }
+  Graph::AddObject(object);
   object->SetParent(this);
   return *this;
 }

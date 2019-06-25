@@ -12,10 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/logging.h"
 #include "cerata/utils.h"
 
-void cerata::CreateDir(const std::string &dir_name) {
+#include <unordered_map>
+#include <string>
+
+#include "cerata/logging.h"
+
+namespace cerata {
+
+std::string ToString(const std::unordered_map<std::string, std::string> &meta) {
+  std::string result;
+  if (!meta.empty()) {
+    result += "{";
+    size_t i = 0;
+    for (const auto &kv : meta) {
+      result += kv.first + "=" + kv.second;
+      if (i != meta.size() - 1) {
+        result += ",";
+      }
+      i++;
+    }
+    result += "}";
+  }
+  return result;
+}
+
+void CreateDir(const std::string &dir_name) {
   // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
   int ret = system(("mkdir -p " + dir_name).c_str());
   if (ret == -1) {
@@ -23,7 +46,9 @@ void cerata::CreateDir(const std::string &dir_name) {
   }
 }
 
-bool cerata::FileExists(const std::string &name) {
+bool FileExists(const std::string &name) {
   std::ifstream f(name.c_str());
   return f.good();
 }
+
+}  // namespace cerata

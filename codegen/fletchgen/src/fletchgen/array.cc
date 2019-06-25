@@ -82,9 +82,9 @@ std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &width) {
   auto d = RecField::Make(data(width));
   auto dv = RecField::Make(dvalid());
   auto l = RecField::Make(last());
-  auto data_record = Record::Make("arr_data_rec", {d, dv, l});
-  auto data_stream = Stream::Make("arr_data_stm", data_record);
-  data_stream->meta["VHDL:ForceStreamVector"] = "true";
+  auto data_record = Record::Make("ARRecord", {d, dv, l});
+  auto data_stream = Stream::Make("ARData", data_record);
+  data_stream->meta[cerata::vhdl::metakeys::FORCE_VECTOR] = "true";
   return data_stream;
 }
 
@@ -92,9 +92,9 @@ std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &width) {
   auto d = RecField::Make(data(width));
   auto dv = RecField::Make(dvalid());
   auto l = RecField::Make(last());
-  auto data_record = Record::Make("arr_data_rec", {d, dv, l});
-  auto data_stream = Stream::Make("arr_data_stm", data_record);
-  data_stream->meta["VHDL:ForceStreamVector"] = "true";
+  auto data_record = Record::Make("AWRecord", {d, dv, l});
+  auto data_stream = Stream::Make("AWData", data_record);
+  data_stream->meta[cerata::vhdl::metakeys::FORCE_VECTOR] = "true";
   return data_stream;
 }
 
@@ -108,7 +108,21 @@ static std::string DataName(fletcher::Mode mode) {
   return result;
 }
 
-std::shared_ptr<Component> Array(Mode mode) {
+/**
+ * @brief Return a Cerata component model of an Array(Reader/Writer).
+ *
+ *  * This model corresponds to either:
+ *    [`hardware/arrays/ArrayReader.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayReader.vhd)
+ * or [`hardware/arrays/ArrayWriter.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayWriter.vhd)
+ * depending on the mode parameter.
+ *
+ * Changes to the implementation of this component in the HDL source must be reflected in the implementation of this
+ * function.
+ *
+ * @param mode        Whether this Array component must Read or Write.
+ * @return            The component model.
+ */
+static std::shared_ptr<Component> Array(Mode mode) {
   std::shared_ptr<BusPort> bus;
   std::shared_ptr<Port> data;
 
@@ -154,13 +168,14 @@ std::shared_ptr<Component> Array(Mode mode) {
 
   auto ret = Component::Make(ArrayName(mode), objects);
 
-  ret->SetMeta("primitive", "true");
-  ret->SetMeta("library", "work");
-  ret->SetMeta("package", "Array_pkg");
+  ret->SetMeta(cerata::vhdl::metakeys::PRIMITIVE, "true");
+  ret->SetMeta(cerata::vhdl::metakeys::LIBRARY, "work");
+  ret->SetMeta(cerata::vhdl::metakeys::PACKAGE, "Array_pkg");
   return ret;
 }
 
-std::unique_ptr<Instance> ArrayInstance(fletcher::Mode mode,
+std::unique_ptr<Instance> ArrayInstance(std::string name,
+                                        fletcher::Mode mode,
                                         const std::shared_ptr<Node> &data_width,
                                         const std::shared_ptr<Node> &ctrl_width,
                                         const std::shared_ptr<Node> &tag_width) {
@@ -173,8 +188,8 @@ std::unique_ptr<Instance> ArrayInstance(fletcher::Mode mode,
   } else {
     array_component = Array(mode).get();
   }
-  // Create the instance
-  result = Instance::Make(array_component);
+  // Create and return an instance of the Array component.
+  result = Instance::Make(array_component, name);
   return result;
 }
 
@@ -341,7 +356,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
   std::shared_ptr<Type> type;
 
   auto arrow_id = field.type()->id();
-  auto name = field.name();
+  const auto &name = field.name();
 
   switch (arrow_id) {
     case arrow::Type::BINARY: {

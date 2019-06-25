@@ -20,6 +20,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "cerata/utils.h"
 #include "cerata/node.h"
 #include "cerata/flattype.h"
 #include "cerata/pool.h"
@@ -45,7 +46,7 @@ bool Type::IsNested() const {
   return (id_ == Type::STREAM) || (id_ == Type::RECORD);
 }
 
-std::string Type::ToString(bool show_meta) const {
+std::string Type::ToString(bool show_meta, bool show_mappers) const {
   std::string ret;
   switch (id_) {
     case CLOCK  : ret = name() + ":Clk";
@@ -68,12 +69,27 @@ std::string Type::ToString(bool show_meta) const {
       break;
     default :throw std::runtime_error("Cannot return unknown Type ID as string.");
   }
-  // Append metadata
-  if (show_meta && !meta.empty()) {
+
+  if (show_meta || show_mappers) {
     ret += "[";
-    for (const auto &k : meta) {
-      ret += k.first + "=" + k.second;
-      ret += ", ";
+    // Append metadata
+    ret += ::cerata::ToString(meta);
+    if (show_mappers && !mappers_.empty()) {
+      ret += " ";
+    }
+
+    // Append mappers
+    if (show_mappers && !mappers_.empty()) {
+      ret += "mappers={";
+      size_t i = 0;
+      for (const auto &m : mappers_) {
+        ret += m->b()->ToString();
+        if (i != mappers_.size() - 1) {
+          ret += ", ";
+        }
+        i++;
+      }
+      ret += "}";
     }
     ret += "]";
   }
@@ -86,22 +102,23 @@ std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
 
 void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing) {
   Type *other = mapper->b();
-
   // Check if a mapper doesn't already exists
   if (GetMapper(other)) {
     if (!remove_existing) {
       throw std::runtime_error(
-          "Mapper already exists to convert from " + this->ToString(true) + " to " + other->ToString(true));
+          "Mapper already exists to convert from " + this->ToString(true, true) + " to " + other->ToString(true, true));
     } else {
       RemoveMappersTo(other);
     }
   }
 
+  // Check if the supplied mapper does not convert from this type.
   if (mapper->a() != this) {
-    throw std::runtime_error("Type converter does not convert from " + name());
+    CERATA_LOG(FATAL, "Type converter does not convert from " + name());
   }
 
   // Add the converter to this Type
+  CERATA_LOG(DEBUG, "Adding Mapper: \n" + mapper->ToString());
   mappers_.push_back(mapper);
 
   // If the other type doesnt already have it, add the inverse map there as well.
@@ -121,13 +138,16 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other) {
       return m;
     }
   }
-  // Implicit type mappers maybe be generated in two cases; if it's exactly the same type object,
-  // or if its an equal type, where the flattened types are compared.
+  // Implicit type mappers maybe be generated in two cases:
+
+  // If it's exactly the same type object,
   // TODO(johanpel): clarify previous comment
   if (other == this) {
     // Generate a type mapper to itself using the TypeMapper constructor.
     return TypeMapper::Make(this);
   }
+
+  // Or if its an "equal" type, where each flattened type is equal.
   if (IsEqual(*other)) {
     // Generate an implicit type mapping.
     return TypeMapper::MakeImplicit(this, other);
@@ -136,12 +156,15 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other) {
   return {};
 }
 
-void Type::RemoveMappersTo(Type *other) {
+int Type::RemoveMappersTo(Type *other) {
+  int removed = 0;
   for (auto m = mappers_.begin(); m < mappers_.end(); m++) {
     if ((*m)->CanConvert(this, other)) {
       mappers_.erase(m);
+      removed++;
     }
   }
+  return removed;
 }
 
 bool Type::IsEqual(const Type &other) const {
@@ -179,7 +202,7 @@ std::shared_ptr<Type> Vector::Make(std::string name, unsigned int width) {
   return ret;
 }
 
-std::optional<Node*> Vector::width() const {
+std::optional<Node *> Vector::width() const {
   if (width_) {
     return width_->get();
   } else {
@@ -289,7 +312,7 @@ std::shared_ptr<Clock> Clock::Make(std::string name, std::shared_ptr<ClockDomain
   return std::make_shared<Clock>(name, domain);
 }
 
-std::optional<Node*> Clock::width() const {
+std::optional<Node *> Clock::width() const {
   return rintl(1);
 }
 
@@ -300,7 +323,7 @@ std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain
   return std::make_shared<Reset>(name, domain);
 }
 
-std::optional<Node*> Reset::width() const {
+std::optional<Node *> Reset::width() const {
   return rintl(1);
 }
 
@@ -310,7 +333,7 @@ std::shared_ptr<Bit> Bit::Make(std::string name) {
   return std::make_shared<Bit>(name);
 }
 
-std::optional<Node*> Bit::width() const {
+std::optional<Node *> Bit::width() const {
   return rintl(1);
 }
 
@@ -372,7 +395,7 @@ bool Stream::IsEqual(const Type &other) const {
 }
 
 void Stream::SetElementType(std::shared_ptr<Type> type) {
-  // Invalidate mappers that point to this type on the other side
+  // Invalidate mappers that point to this type from the other side
   for (auto &mapper : mappers_) {
     mapper->b()->RemoveMappersTo(this);
   }

@@ -48,7 +48,7 @@ class NodeArray : public Object {
   /// @brief Append a node to this array. Returns a pointer to that node.
   Node *Append();
   /// @brief Return all nodes of this NodeArray.
-  std::deque<Node *> nodes() const { return ToRawPtrs(nodes_); }
+  std::deque<Node *> nodes() const { return ToRawPointers(nodes_); }
   /// @brief Return element node i.
   Node *node(size_t i) const;
   /// @brief Return element node i.
@@ -79,26 +79,21 @@ class NodeArray : public Object {
  */
 class PortArray : public NodeArray, public Term {
  public:
-  PortArray(std::string name, std::shared_ptr<Type> type, std::shared_ptr<Node> size, Term::Dir dir);
-  PortArray(std::string name, const std::shared_ptr<Port> &base, std::shared_ptr<Node> size);
-
   /// @brief Get a smart pointer to a new ArrayPort.
-  static std::shared_ptr<PortArray> Make(std::string name,
+  static std::shared_ptr<PortArray> Make(const std::string &name,
                                          std::shared_ptr<Type> type,
-                                         std::shared_ptr<Node> size,
-                                         Port::Dir dir = Port::Dir::IN);
-  /// @brief Get a smart pointer to a new ArrayPort. The ArrayPort name is derived from the Base name.
-  static std::shared_ptr<PortArray> Make(const std::shared_ptr<Type> &type,
                                          std::shared_ptr<Node> size,
                                          Port::Dir dir = Port::Dir::IN);
 
   /// @brief Get a smart pointer to a new ArrayPort with a base type other than the default Port.
-  static std::shared_ptr<PortArray> Make(const std::string &name,
-                                         std::shared_ptr<Port> base,
-                                         const std::shared_ptr<Node> &size);
+  static std::shared_ptr<PortArray> Make(const std::shared_ptr<Port> &base_node,
+                                         std::shared_ptr<Node> size);
 
   /// @brief Make a copy of this port array
   std::shared_ptr<Object> Copy() const override;
+
+ protected:
+  PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir);
 };
 
 }  // namespace cerata

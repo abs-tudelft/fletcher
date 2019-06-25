@@ -69,9 +69,11 @@ std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::sha
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);
 
 /// @brief Split an edge up to create two new edges with a signal node in the middle. Returns the new signal.
-std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix = "int_");
+std::shared_ptr<Signal> insert(Edge *edge,
+                               const std::string &name_prefix = "int_",
+                               std::optional<Graph *> new_owner = std::nullopt);
 
 /// @brief Obtain all edges in a graph.
-std::deque<Edge*> GetAllEdges(const Graph &graph);
+std::deque<Edge *> GetAllEdges(const Graph &graph);
 
 }  // namespace cerata

@@ -29,7 +29,6 @@ using cerata::Port;
 using cerata::Parameter;
 using cerata::PortArray;
 using cerata::integer;
-using cerata::Cast;
 using cerata::Type;
 
 /// @brief MMIO bus specification
@@ -37,9 +36,10 @@ struct MmioSpec {
   size_t data_width = 32;
   size_t addr_width = 32;
   std::string ToString() const;
+  std::string ToMMIOTypeName() const;
 };
 
-/// @brief Fletcher bus read request channel
+/// @brief MMIO type
 std::shared_ptr<Type> mmio(MmioSpec spec = MmioSpec());
 
 /// @brief RegPort

@@ -97,30 +97,16 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other);
 std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mode, int level = 0);
 
 /**
- * @brief Return a Cerata component model of an Array(Reader/Writer).
- *
- *  * This model corresponds to either:
- *    [`hardware/arrays/ArrayReader.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayReader.vhd)
- * or [`hardware/arrays/ArrayWriter.vhd`](https://github.com/johanpel/fletcher/blob/develop/hardware/arrays/ArrayWriter.vhd)
- * depending on the mode parameter.
- *
- * Changes to the implementation of this component in the HDL source must be reflected in the implementation of this
- * function.
- *
- * @param mode        Whether this Array component must Read or Write.
- * @return            The component model.
- */
-std::shared_ptr<Component> Array(fletcher::Mode mode = fletcher::Mode::READ);
-
-/**
  * @brief Return a parameterized Cerata instance of an Array(Reader/Writer)
+ * @param name        Name of the instance.
  * @param mode        Whether the Array(Reader/Writer) instance must READ from memory or WRITE to memory.
  * @param data_width  Data bus width parameter.
  * @param ctrl_width  Command control signal width parameter.
  * @param tag_width   Command/unlock tag width parameter.
  * @return            A unique pointer holding the Array(Reader/Writer) instance.
  */
-std::unique_ptr<Instance> ArrayInstance(fletcher::Mode mode = fletcher::Mode::READ,
+std::unique_ptr<Instance> ArrayInstance(std::string name,
+    fletcher::Mode mode = fletcher::Mode::READ,
                                         const std::shared_ptr<Node> &data_width = intl(1),
                                         const std::shared_ptr<Node> &ctrl_width = intl(1),
                                         const std::shared_ptr<Node> &tag_width = intl(1));

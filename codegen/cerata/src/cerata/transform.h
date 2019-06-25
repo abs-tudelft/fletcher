@@ -21,36 +21,31 @@
 #include "cerata/type.h"
 #include "cerata/graph.h"
 
-// Helper functions for transformations by back-ends.
+// Helper functions for transformations.
 
 namespace cerata {
 
 /**
  * @brief Get all components underlying some top-level component.
- * @param components    The deque of components to append to.
- * @param top_component The top-level component.
+ * @param components          The deque of components to append to.
+ * @param top_component       The top-level component.
  */
-void GetAllGraphsRecursive(Graph *top_graph, std::deque<Graph *> *graphs_out);
+void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool include_components = false);
 
 /**
  * @brief Get all objects from a component and its sub-components.
- * @param objects       The deque of objects to append to.
- * @param top_component The top-level component.
+ * @param objects             The deque of objects to append to.
+ * @param top_component       The top-level component.
+ * @param include_instances   Whether to traverse down the child instances of the component.
  */
-void GetAllObjectsRecursive(Component *top_component, std::deque<Object *> *objects_out);
-
-/**
- * @brief Recursively add all object types used in a component and its sub-components. Does not include subtypes.
- * @param types The deque types to append to.
- * @param graph The top-level component.
- */
-void GetAllObjectTypesRecursive(Component *top_component, std::deque<Type *> *types_out);
+void GetAllObjects(Component *top_component, std::deque<Object *> *objects_out, bool include_instances = false);
 
 /**
  * @brief Recursively add all types used in a component and its sub-components, including subtypes.
- * @param types The deque types to append to.
- * @param graph The top-level component.
+ * @param types               The deque types to append to.
+ * @param graph               The top-level component.
+ * @param recursive           Whether to traverse down the child instances of the component.
  */
-void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types_out);
+void GetAllTypes(Component *top_component, std::deque<Type *> *types_out, bool include_instances = false);
 
 }  // namespace cerata

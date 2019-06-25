@@ -26,7 +26,7 @@
 #include "fletchgen/bus.h"
 #include "fletchgen/schema.h"
 
-#include "./test_utils.h"
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 

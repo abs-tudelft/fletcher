@@ -27,6 +27,7 @@
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
+#include "vhdl.h"
 
 namespace cerata::vhdl {
 
@@ -149,10 +150,10 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a
     b_array = true;
     b_idx = b.array().value()->IndexOf(b);
   }
-  if (a.type()->meta.count("VHDL:ForceStreamVector") > 0) {
+  if (a.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
     a_array = true;
   }
-  if (b.type()->meta.count("VHDL:ForceStreamVector") > 0) {
+  if (b.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
     b_array = true;
   }
   // Loop over all pairs
@@ -182,7 +183,7 @@ Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a
 }
 
 Block Inst::GeneratePortMaps(const Port &port) {
-  Block ret;
+  Block result;
   std::deque<Edge *> connections;
   // Check if this is an input or output port
   if (IsInputTerminator(port)) {
@@ -190,27 +191,28 @@ Block Inst::GeneratePortMaps(const Port &port) {
   } else {
     connections = port.sinks();
   }
+  // Get the port type.
+  auto port_type = port.type();
   // Iterate over all connected edges
   for (const auto &edge : connections) {
     // Get the node on the other side of the connection
     auto other = *edge->GetOtherNode(port);
-    // Get type mapper
-    std::shared_ptr<TypeMapper> tm;
+    // Get the other type.
+    auto other_type = other->type();
     // Check if a type mapping exists
-    auto tmo = port.type()->GetMapper(other->type());
-    if (tmo) {
-      tm = *tmo;
+    auto optional_type_mapper = port_type->GetMapper(other_type);
+    if (optional_type_mapper) {
+      auto type_mapper = optional_type_mapper.value();
       // Obtain the unique mapping pairs for this mapping
-      auto pairs = tm->GetUniqueMappingPairs();
+      auto pairs = type_mapper->GetUniqueMappingPairs();
       // Generate the mapping for this port-node pair.
-      ret << GeneratePortMappingPair(pairs, port, *other);
+      result << GeneratePortMappingPair(pairs, port, *other);
     } else {
-      throw std::runtime_error(
-          "No type mapping available for: Port[" + port.name() + ": " + port.type()->name()
-              + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
+      CERATA_LOG(FATAL, "No type mapping available for: Port[" + port.name() + ": " + port.type()->name()
+          + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
     }
   }
-  return ret;
+  return result;
 }
 
 Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
@@ -218,8 +220,8 @@ Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
   // Go over each node in the array
   for (const auto &node : port_array.nodes()) {
     if (node->IsPort()) {
-      auto port = dynamic_cast<Port *>(node);
-      ret << GeneratePortMaps(*port);
+      const auto &port = dynamic_cast<const Port &>(*node);
+      ret << GeneratePortMaps(port);
     } else {
       throw std::runtime_error("Port Array contains non-port node.");
     }

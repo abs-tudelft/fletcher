@@ -26,83 +26,53 @@
 
 namespace cerata {
 
-void GetAllGraphsRecursive(Graph *top_graph, std::deque<Graph *> *graphs_out) {
-  // If the top_graph is a Component it can have Instances, apply this function recursively to the components of these
-  // instances.
+void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool include_components) {
+  // Insert this graph
+  graphs_out->push_back(top_graph);
+
+  // If this is a component, it may have child graphs.
   if (top_graph->IsComponent()) {
+    // Obtain children, that must always be instances.
     auto comp = dynamic_cast<Component *>(top_graph);
-    // Insert all instances
     auto instances = comp->children();
     graphs_out->insert(graphs_out->end(), instances.begin(), instances.end());
 
-    // Iterate over all instance components
-    for (const auto &inst : instances) {
-      Component* inst_component = inst->component();
-      // Push back its component
-      graphs_out->push_back(inst_component);
-      GetAllGraphsRecursive(inst_component, graphs_out);
+    // Recursively add instance components if required.
+    if (include_components) {
+      for (const auto &instance : instances) {
+        Component *instance_component = instance->component();
+        GetAllGraphs(instance_component, graphs_out);
+      }
     }
   }
 }
 
-void GetAllObjectsRecursive(Component *top_component, std::deque<Object *> *objects) {
-  if (objects == nullptr) {
-    throw std::runtime_error("Objects deque is nullptr.");
-  }
-  // Add all objects of the top component
-  auto top_objects = top_component->objects();
-  objects->insert(objects->end(), top_objects.begin(), top_objects.end());
-
-  // Obtain all subgraphs
+void GetAllObjects(Component *top_component, std::deque<Object *> *objects, bool include_instances) {
   std::deque<Graph *> graphs;
-  GetAllGraphsRecursive(top_component, &graphs);
 
+  if (include_instances) {
+    GetAllGraphs(top_component, &graphs, include_instances);
+  }
   // Add all pointers to the objects of the subgraphs
   for (const auto &graph : graphs) {
+    // CERATA_LOG(DEBUG, "Adding objects from graph: " + graph->name());
     auto comp_objs = graph->objects();
     objects->insert(objects->end(), comp_objs.begin(), comp_objs.end());
   }
 }
 
-void GetAllObjectTypesRecursive(Component *top_component, std::deque<Type *> *types) {
-  if (types == nullptr) {
-    throw std::runtime_error("Types deque is nullptr.");
-  }
+void GetAllTypes(Component *top_component, std::deque<Type *> *types, bool include_instances) {
   std::deque<Object *> objects;
-  GetAllObjectsRecursive(top_component, &objects);
+  GetAllObjects(top_component, &objects, include_instances);
 
   for (const auto &o : objects) {
+    // CERATA_LOG(DEBUG, "Adding types from object: " + o->name());
     if (o->IsNode()) {
-      auto node = dynamic_cast<Node *>(o);
-      types->push_back(node->type());
-    }
-    if (o->IsArray()) {
-      auto array = dynamic_cast<NodeArray *>(o);
-      types->push_back(array->type());
-    }
-  }
-}
-
-void GetAllTypesRecursive(Component *top_component, std::deque<Type *> *types) {
-  if (types == nullptr) {
-    throw std::runtime_error("Types deque is nullptr.");
-  }
-  std::deque<Object *> objects;
-  GetAllObjectsRecursive(top_component, &objects);
-
-  for (const auto &o : objects) {
-    std::deque<FlatType> ft;
-    if (o->IsNode()) {
-      auto n = *Cast<Node>(o);
-      ft = Flatten(n->type());
+      auto *n = dynamic_cast<Node *>(o);
+      types->push_back(n->type());
     } else if (o->IsArray()) {
-      auto a = *Cast<NodeArray>(o);
-      ft = Flatten(a->type());
-    }
-    for (const auto &f : ft) {
-      // Drop the const qualifier, because this function is probably used to transform the type.
-      auto t = const_cast<Type *>(f.type_);
-      types->push_back(t);
+      auto *a = dynamic_cast<NodeArray *>(o);
+      types->push_back(a->type());
     }
   }
   // Filter out duplicates.

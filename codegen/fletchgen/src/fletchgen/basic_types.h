@@ -23,6 +23,12 @@
 
 namespace fletchgen {
 
+/// Metadata keys
+namespace metakeys {
+  /// Key for automated type mapping.
+  constexpr char ARRAY_DATA[] = "fletchgen_array_data";
+}
+
 using cerata::Type;
 using cerata::Node;
 using cerata::ClockDomain;

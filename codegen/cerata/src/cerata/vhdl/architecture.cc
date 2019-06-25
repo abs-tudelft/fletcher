@@ -20,6 +20,7 @@
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/instantiation.h"
+#include "vhdl.h"
 
 namespace cerata::vhdl {
 
@@ -34,7 +35,7 @@ MultiBlock Arch::Generate(const Component &comp) {
   for (const auto &c : components_used) {
     // Check for metadata that this component is not marked primitive
     // In this case, a library package has been added at the top of the design file.
-    if ((c->meta().count("primitive") == 0) || (c->meta().at("primitive") != "true")) {
+    if ((c->meta().count(metakeys::PRIMITIVE) == 0) || (c->meta().at(metakeys::PRIMITIVE) != "true")) {
       // TODO(johanpel): generate packages with component declarations
       auto comp_decl = Decl::Generate(*c);
       ret << comp_decl;

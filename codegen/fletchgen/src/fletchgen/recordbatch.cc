@@ -24,7 +24,6 @@
 
 namespace fletchgen {
 
-using cerata::Cast;
 using cerata::Instance;
 using cerata::Component;
 using cerata::Port;
@@ -43,78 +42,89 @@ RecordBatch::RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema)
   AddArrays(*fletcher_schema);
 }
 
-void RecordBatch::AddArrays(const FletcherSchema &fs) {
-  // Iterate over all fields and add ArrayReader data and control ports.
-  for (const auto &f : fs.arrow_schema()->fields()) {
-    // Check if we must ignore a field
-    if (!fletcher::MustIgnore(*f)) {
-      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fs.mode() == Mode::READ ? "Reader" : "Writer")
-                                                 << " for schema: " << fs.name() << " : " << f->name());
+void RecordBatch::AddArrays(const FletcherSchema &fletcher_schema) {
+  // Iterate over all fields and add ArrayReader/Writer data and control ports.
+  for (const auto &field : fletcher_schema.arrow_schema()->fields()) {
+    // Check if we must ignore the field
+    if (fletcher::MustIgnore(*field)) {
+      FLETCHER_LOG(DEBUG, "Ignoring field " + field->name());
+    } else {
+      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fletcher_schema.mode() == Mode::READ ? "Reader" : "Writer")
+                                                 << " for schema: " << fletcher_schema.name()
+                                                 << " : " << field->name());
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatch.
-      auto arrow_port = FieldPort::MakeArrowPort(fs, f, fs.mode(), true);
-      AddObject(arrow_port);
-      auto arrow_type = arrow_port->type();
+      auto kernel_arrow_port = FieldPort::MakeArrowPort(fletcher_schema, field, fletcher_schema.mode(), true);
+      auto kernel_arrow_type = kernel_arrow_port->type();
+      AddObject(kernel_arrow_port);
+
       // Add a command port for the ArrayReader/Writer
-      auto command_port = FieldPort::MakeCommandPort(fs, f);
+      auto command_port = FieldPort::MakeCommandPort(fletcher_schema, field);
       AddObject(command_port);
+
       // Add an unlock port for the ArrayReader/Writer
-      auto unlock_port = FieldPort::MakeUnlockPort(fs, f);
+      auto unlock_port = FieldPort::MakeUnlockPort(fletcher_schema, field);
       AddObject(unlock_port);
+
       // Instantiate an ArrayReader or Writer
-      auto array_inst_unique = ArrayInstance(fs.mode(), arrow_port->data_width(), ctrl_width(*f), tag_width(*f));
-      // Remember the raw pointer
-      auto array_inst = array_inst_unique.get();
+      auto array_inst_unique = ArrayInstance(field->name() + "_inst",
+                                             fletcher_schema.mode(),
+                                             kernel_arrow_port->data_width(),
+                                             ctrl_width(*field),
+                                             tag_width(*field));
+      auto array_inst = array_inst_unique.get();  // Remember the raw pointer
       array_instances_.push_back(array_inst);
-      // Move ownership to this RecordBatchReader/Writer.
-      AddChild(std::move(array_inst_unique));
+      AddChild(std::move(array_inst_unique));  // Move ownership to this RecordBatchReader/Writer.
+
       // Generate a configuration string for the ArrayReader
       auto cfg_node = array_inst->GetNode(Node::NodeID::PARAMETER, "CFG");
-      // Set the configuration string for this field
-      cfg_node <<= cerata::strl(GenerateConfigString(*f));
+      cfg_node <<= cerata::strl(GenerateConfigString(*field));  // Set the configuration string for this field
+
       // Drive the clocks and resets
       Connect(array_inst->port("kcd"), port("kcd"));
       Connect(array_inst->port("bcd"), port("bcd"));
+
       // Drive the RecordBatch Arrow data port with the ArrayReader/Writer data port, or vice versa
-      if (fs.mode() == Mode::READ) {
-        auto data_port = array_inst->port("out");
+      if (fletcher_schema.mode() == Mode::READ) {
+        auto array_data_port = array_inst->port("out");
+        auto array_data_type = array_data_port->type();
         // Create a mapper between the Arrow port and the Array data port
-        arrow_type->AddMapper(GetStreamTypeMapper(arrow_type, data_port->type()));
+        auto mapper = GetStreamTypeMapper(kernel_arrow_type, array_data_type);
+        kernel_arrow_type->AddMapper(mapper);
         // Connect the ports
-        arrow_port <<= data_port;
+        kernel_arrow_port <<= array_data_port;
       } else {
-        auto data_port = array_inst->port("in");
+        auto array_data_port = array_inst->port("in");
+        auto array_data_type = array_data_port->type();
         // Create a mapper between the Arrow port and the Array data port
-        arrow_port->type()->AddMapper(GetStreamTypeMapper(arrow_type, data_port->type()));
+        auto mapper = GetStreamTypeMapper(kernel_arrow_type, array_data_type);
+        kernel_arrow_type->AddMapper(mapper);
         // Connect the ports
-        data_port <<= arrow_port;
+        array_data_port <<= kernel_arrow_port;
       }
+
       // Drive the ArrayReader command port from the top-level command port
       array_inst->port("cmd") <<= command_port;
       // Drive the unlock port with the ArrayReader/Writer
       unlock_port <<= array_inst->port("unl");
+
       // Copy over the ArrayReader/Writer's bus channels
-      auto bus = *Cast<BusPort>(array_inst->port("bus")->Copy());
+      auto bus = std::dynamic_pointer_cast<BusPort>(array_inst->port("bus")->Copy());
       // Give the new bus port a unique name
       // TODO(johanpel): move the bus renaming to the Mantle level
-      bus->SetName(fs.name() + "_" + f->name() + "_" + bus->name());
-      // Add them to the RecordBatch
-      AddObject(bus);
-      // Remember the port
-      bus_ports_.push_back(bus);
-      // Connect them to the ArrayReader/Writer
-      bus <<= array_inst->port("bus");
-    } else {
-      FLETCHER_LOG(DEBUG, "Ignoring field " + f->name());
+      bus->SetName(fletcher_schema.name() + "_" + field->name() + "_" + bus->name());
+      AddObject(bus);  // Add them to the RecordBatch
+      bus_ports_.push_back(bus);  // Remember the port
+      bus <<= array_inst->port("bus");  // Connect them to the ArrayReader/Writer
     }
   }
 }
 
 std::shared_ptr<FieldPort> RecordBatch::GetArrowPort(const arrow::Field &field) const {
   for (const auto &n : objects_) {
-    auto ap = Cast<FieldPort>(n);
-    if (ap) {
-      if (((*ap)->function_ == FieldPort::ARROW) && ((*ap)->field_->Equals(field))) {
-        return *ap;
+    auto ap = std::dynamic_pointer_cast<FieldPort>(n);
+    if (ap != nullptr) {
+      if ((ap->function_ == FieldPort::ARROW) && (ap->field_->Equals(field))) {
+        return ap;
       }
     }
   }
@@ -125,10 +135,10 @@ std::deque<std::shared_ptr<FieldPort>>
 RecordBatch::GetFieldPorts(const std::optional<FieldPort::Function> &function) const {
   std::deque<std::shared_ptr<FieldPort>> result;
   for (const auto &n : objects_) {
-    auto ap = Cast<FieldPort>(n);
-    if (ap) {
-      if ((function && ((*ap)->function_ == *function)) || !function) {
-        result.push_back(*ap);
+    auto ap = std::dynamic_pointer_cast<FieldPort>(n);
+    if (ap != nullptr) {
+      if ((function && (ap->function_ == *function)) || !function) {
+        result.push_back(ap);
       }
     }
   }

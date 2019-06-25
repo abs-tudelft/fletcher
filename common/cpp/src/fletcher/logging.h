@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <string>
+
 #ifdef FLETCHER_USE_ARROW_LOGGING
 /*
  * Use Arrow's logging facilities
@@ -43,7 +45,7 @@ inline void StopLogging() {
   arrow::util::ArrowLog::ShutDownArrowLog();
 }
 
-} // namespace fletcher
+}  // namespace fletcher
 
 #else
 /*
@@ -51,7 +53,9 @@ inline void StopLogging() {
  */
 #include <iostream>
 
-#define FLETCHER_LOG(level, msg) std::cout << "[" << fletcher::level2str(FLETCHER_LOG_##level) + "]: " << msg << std::endl
+#define FLETCHER_LOG(level, msg) std::cout << "[" << fletcher::level2str(FLETCHER_LOG_##level) + "]: "  \
+                                           << msg                                                       \
+                                           << std::endl
 
 // Default logging
 constexpr int FLETCHER_LOG_DEBUG = -1;
@@ -85,5 +89,5 @@ inline void StopLogging() {
   // No shutdown required.
 }
 
-} // namespace fletcher
+}  // namespace fletcher
 #endif

@@ -55,6 +55,13 @@ int main(int argc, char **argv) {
     fletchgen::srec::GenerateReadSREC(design.batch_desc, &srec_batch_desc, &srec_out, 64);
   }
 
+  // Generate DOT output
+  if (options->MustGenerateDOT()) {
+    FLETCHER_LOG(INFO, "Generating DOT output.");
+    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
+    dot.Generate();
+  }
+
   // Generate VHDL output
   if (options->MustGenerateVHDL()) {
     FLETCHER_LOG(INFO, "Generating VHDL output.");
@@ -62,13 +69,6 @@ int main(int argc, char **argv) {
                                                   design.GetOutputSpec(),
                                                   fletchgen::DEFAULT_NOTICE);
     vhdl.Generate();
-  }
-
-  // Generate DOT output
-  if (options->MustGenerateDOT()) {
-    FLETCHER_LOG(INFO, "Generating DOT output.");
-    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
-    dot.Generate();
   }
 
   // Generate simulation top level

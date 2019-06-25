@@ -87,19 +87,19 @@ std::deque<OutputSpec> Design::GetOutputSpec() {
   OutputSpec omantle, okernel;
   // Mantle
   omantle.comp = mantle;
-  omantle.meta["overwrite"] = "true";
+  omantle.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
   result.push_back(omantle);
 
   // Kernel
   okernel.comp = kernel;
-  okernel.meta["overwrite"] = "false";
+  okernel.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "false";
   result.push_back(okernel);
 
   // Readers
   for (const auto &reader : readers) {
     OutputSpec oreader;
     oreader.comp = reader;
-    oreader.meta["overwrite"] = "true";
+    oreader.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
     result.push_back(oreader);
   }
 

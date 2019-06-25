@@ -335,8 +335,9 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
     if (level == 0) {
       ret << GenEdges(graph, level + 1);
     }
-    ret << tab(level) << "}\n";
   }
+
+  ret << tab(level) << "}\n";
 
   return ret.str();
 }

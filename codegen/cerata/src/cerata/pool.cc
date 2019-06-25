@@ -21,26 +21,38 @@
 
 namespace cerata {
 
-void NodePool::Add(const std::shared_ptr<Node> &node) {
-  nodes_.push_back(node);
+void TypePool::Add(const std::shared_ptr<Type> &type) {
+  // Check for potential duplicate
+  for (const auto &existing_type : types_) {
+    if (existing_type->name() == type->name()) {
+      CERATA_LOG(FATAL, "Type " + type->ToString(true, true) + " already exists in type pool.");
+    }
+  }
+  types_.push_back(type);
 }
 
-void NodePool::Clear() {
-  nodes_.clear();
+std::optional<Type *> TypePool::Get(const std::string &name) {
+  // Check for potential duplicate
+  for (const auto &existing_type : types_) {
+    if (existing_type->name() == name) {
+      return existing_type.get();
+    }
+  }
+  return std::nullopt;
+}
+
+void TypePool::Clear() {
+  types_.clear();
 }
 
 void ComponentPool::Add(const std::shared_ptr<Component> &comp) {
   // Check for potential duplicate
   for (const auto &existing_component : components_) {
     if (existing_component->name() == comp->name()) {
-      throw std::runtime_error("Component " + comp->name() + " already exists in component pool.");
+      CERATA_LOG(FATAL, "Component " + comp->name() + " already exists in component pool.");
     }
   }
   components_.push_back(comp);
-}
-
-void ComponentPool::Clear() {
-  components_.clear();
 }
 
 std::optional<Component *> ComponentPool::Get(const std::string &name) {
@@ -51,6 +63,18 @@ std::optional<Component *> ComponentPool::Get(const std::string &name) {
     }
   }
   return std::nullopt;
+}
+
+void ComponentPool::Clear() {
+  components_.clear();
+}
+
+void NodePool::Add(const std::shared_ptr<Node> &node) {
+  nodes_.push_back(node);
+}
+
+void NodePool::Clear() {
+  nodes_.clear();
 }
 
 }  // namespace cerata

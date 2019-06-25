@@ -76,6 +76,8 @@ class Graph : public Named {
   /// @brief Get a NodeArray object of a specific type with a specific name
   NodeArray *GetArray(Node::NodeID node_id, const std::string &array_name) const;
   /// @brief Get a Node of a specific type with a specific name
+  std::optional<Node *> GetNode(const std::string &node_name) const;
+  /// @brief Get a Node of a specific type with a specific name
   Node *GetNode(Node::NodeID node_id, const std::string &node_name) const;
   /// @brief Obtain all nodes which ids are in a list of Node::IDs
   std::deque<Node *> GetNodesOfTypes(std::initializer_list<Node::NodeID> ids) const;
@@ -104,7 +106,7 @@ class Graph : public Named {
   /// @brief Return a copy of the metadata.
   std::unordered_map<std::string, std::string> meta() const { return meta_; }
   /// @brief Get all objects.
-  std::deque<Object *> objects() const { return ToRawPtrs(objects_); }
+  std::deque<Object *> objects() const { return ToRawPointers(objects_); }
 
   /// @brief Set metadata
   Graph &SetMeta(const std::string &key, std::string value);
@@ -156,7 +158,7 @@ class Component : public Graph {
    * @param graph The graph to gather from.
    * @return      A deque holding pointers to all instances.
    */
-  std::deque<Instance *> children() const { return ToRawPtrs(children_); }
+  std::deque<Instance *> children() const { return ToRawPointers(children_); }
 
   /// @brief Returns all unique component definitions that are referred to by child instances of this component.
   virtual std::deque<const Component *> GetAllUniqueComponents() const;

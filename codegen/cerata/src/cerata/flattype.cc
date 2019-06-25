@@ -96,9 +96,9 @@ void Flatten(std::deque<FlatType> *list,
   list->push_back(result);
 
   switch (type->id()) {
-    case Type::STREAM:FlattenStream(list, *Cast<Stream>(type), result, invert);
+    case Type::STREAM:FlattenStream(list, dynamic_cast<Stream*>(type), result, invert);
       break;
-    case Type::RECORD:FlattenRecord(list, *Cast<Record>(type), result, invert);
+    case Type::RECORD:FlattenRecord(list, dynamic_cast<Record*>(type), result, invert);
       break;
     default:break;
   }
@@ -180,7 +180,8 @@ TypeMapper &TypeMapper::Add(int64_t a, int64_t b) {
 std::string TypeMapper::ToString() const {
   constexpr int w = 20;
   std::stringstream ret;
-  ret << "TypeMapper [" + a()->ToString() + "]=>[" + b()->ToString() << "]:" << std::endl;
+  ret << "TypeMapper " << a()->ToString(true, true) + " => " + b()->ToString(true, true) + "\n";
+  ret << "  Meta: " + ::cerata::ToString(meta) + "\n";
   ret << std::setw(w) << " " << " | ";
 
   for (const auto &x : fb_) {
@@ -191,27 +192,27 @@ std::string TypeMapper::ToString() const {
   for (const auto &x : fb_) {
     ret << std::setw(w) << x.type_->ToString() << " | ";
   }
-  ret << std::endl;
+  ret << "\n";
 
   // Separator
   for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
-  ret << std::endl;
+  ret << "\n";
 
   for (size_t y = 0; y < fa_.size(); y++) {
     ret << std::setw(w) << fa_[y].name() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       ret << std::setw(w) << " " << " | ";
     }
-    ret << std::endl;
+    ret << "\n";
     ret << std::setw(w) << fa_[y].type_->ToString() << " | ";
     for (size_t x = 0; x < fb_.size(); x++) {
       auto val = matrix_(y, x);
       ret << std::setw(w) << val << " | ";
     }
-    ret << std::endl;
+    ret << "\n";
     // Separator
     for (size_t i = 0; i < fb_.size() + 1; i++) { ret << std::string(w, '-') << " | "; }
-    ret << std::endl;
+    ret << "\n";
   }
   return ret.str();
 }
@@ -227,14 +228,14 @@ bool TypeMapper::CanConvert(const Type *a, const Type *b) const {
 }
 
 std::shared_ptr<TypeMapper> TypeMapper::Inverse() const {
-  auto ret = std::make_shared<TypeMapper>(b_, a_);
-  ret->matrix_ = matrix_.Transpose();
-  return ret;
+  auto result = std::make_shared<TypeMapper>(b_, a_);  // Create a new mapper.
+  result->matrix_ = matrix_.Transpose();  // Copy over a transposed version of the mapping matrix.
+  result->meta = this->meta;  // Copy over metadata.
+  return result;
 }
 
 std::deque<MappingPair> TypeMapper::GetUniqueMappingPairs() {
   std::deque<MappingPair> pairs;
-
   // Find mappings that are one to one
   for (size_t ia = 0; ia < fa_.size(); ia++) {
     auto maps_a = matrix_.mapping_row(ia);

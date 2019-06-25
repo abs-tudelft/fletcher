@@ -24,8 +24,10 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <unordered_map>
 
 #include "cerata/utils.h"
+#include "cerata/logging.h"
 
 namespace cerata {
 
@@ -48,7 +50,7 @@ struct FlatType {
   FlatType() = default;
   FlatType(Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
   /// @brief A pointer to the original type.
-  Type *type_;
+  Type *type_ = nullptr;
   /// @brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
   /// @brief Name parts of this flattened type.
@@ -123,14 +125,14 @@ class MappingMatrix {
 
   T &get(int64_t y, int64_t x) {
     if (y >= height_ || x >= width_) {
-      throw std::runtime_error("Indices exceed matrix dimensions.");
+      CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
     }
     return elements_[width_ * y + x];
   }
 
   const T &get(int64_t y, int64_t x) const {
     if (y >= height_ || x >= width_) {
-      throw std::runtime_error("Indices exceed matrix dimensions.");
+      CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
     }
     return elements_[width_ * y + x];
   }
@@ -297,7 +299,10 @@ class TypeMapper : public Named {
   /// @brief Return a human-readable string of this TypeMapper.
   std::string ToString() const;
 
- private:
+  /// @brief KV storage for metadata of tools or specific backend implementations
+  std::unordered_map<std::string, std::string> meta;
+
+ protected:
   std::deque<FlatType> fa_;
   std::deque<FlatType> fb_;
   Type *a_;
