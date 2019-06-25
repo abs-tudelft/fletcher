@@ -45,6 +45,8 @@ struct f_packet_base
 	}
 
 	f_packet_base() = default;
+
+	f_packet_base(bool _dvalid, bool _last) : dvalid(_dvalid), last(_last) {}
 };
 
 /// @brief Packet template.
@@ -54,6 +56,61 @@ struct f_packet : public f_packet_base
 	T data = 0;
 	f_packet() = default;
 	f_packet(T _data) : data(_data), f_packet_base() {}
+	f_packet(T _data, bool dvalid, bool last) : data(_data), f_packet_base(dvalid, last) {}
+
+	friend bool operator<(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return lhs.data < rhs.data;
+	}
+	f_packet<T> &operator=(const T val)
+	{
+		data = val;
+		return *this;
+	}
+	friend bool operator>(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return rhs < lhs;
+	}
+	friend bool operator<=(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return !(rhs < lhs);
+	}
+	friend bool operator>=(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return !(lhs < rhs);
+	}
+	friend f_packet<T> operator+(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return f_packet<T>(lhs.data + rhs.data);
+	}
+	friend f_packet<T> operator+(f_packet<T> &rhs)
+	{
+		return f_packet<T>(+rhs.data);
+	}
+	friend f_packet<T> operator-(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return f_packet<T>(lhs.data - rhs.data);
+	}
+	friend f_packet<T> operator-(f_packet<T> &rhs)
+	{
+		return f_packet<T>(-rhs.data);
+	}
+	friend f_packet<T> operator*(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return f_packet<T>(lhs.data * rhs.data);
+	}
+	friend f_packet<T> operator/(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return f_packet<T>(lhs.data / rhs.data);
+	}
+	friend bool operator==(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return lhs.data == rhs.data;
+	}
+	friend bool operator!=(f_packet<T> &lhs, f_packet<T> &rhs)
+	{
+		return !(rhs == lhs);
+	}
 };
 
 /// @brief Packet template (multi).
@@ -103,6 +160,14 @@ using f_mfpacket = f_mpacket<float, N>;
 template <unsigned int N>
 using f_mdpacket = f_mpacket<double, N>;
 
+//Add valid bit at the end, because data packing in vivado flips the order, and in hardware it needs to be the most significant bit.
+template <typename T>
+struct nullable_tb {   
+   T data;
+   bool valid;
+};
+// Lengths, offsets
+
 /// @brief Wrapper for nullable types
 template <typename T>
 struct nullable : public T
@@ -110,12 +175,18 @@ struct nullable : public T
 	bool valid = true;
 
 	template <typename... Args>
-	nullable(Args &&... args) : T(std::forward<Args>(args)...) {}
+	nullable(bool _valid,Args &&... args) : T(std::forward<Args>(args)...), valid(_valid) {}
+
+	nullable(bool _valid) : T(), valid(_valid) {}
+
+	template <typename IT>
+	nullable(nullable_tb<IT> _nullable_tb) : T(_nullable_tb.data), valid(_nullable_tb.valid) {}
+
+	template <typename IT>
+	nullable(nullable_tb<IT> _nullable_tb, bool _dvalid, bool _last) : T(_nullable_tb.data, _dvalid, _last), valid(_nullable_tb.valid) {}
 
 	nullable() = default;
 };
-
-// Lengths, offsets
 
 using f_size = f_spacket<32>;
 
@@ -166,19 +237,21 @@ template <unsigned int N>
 using f_mdate64 = f_mupacket<64, N>;
 
 //Strings
-using f_string = f_uint8*;
+using f_string = f_uint8 *;
 
 /// @brief Utility function to create f_string arrays from const char arrays.
-f_string new_f_string(const char* src){
-	int len = strlen(src);
-	f_string str = new f_uint8[len];
-	for(int i = 0; i < len; i++){
-		str[i].data = src[i];
-	}
-	str[len-1].last = true;
+// f_string new_f_string(const char *src)
+// {
+// 	int len = strlen(src);
+// 	f_string str = new f_uint8[len];
+// 	for (int i = 0; i < len; i++)
+// 	{
+// 		str[i].data = src[i];
+// 	}
+// 	str[len - 1].last = true;
 
-	return str;
-}
+// 	return str;
+// }
 
 /**
  * RecordBatch & Schema support
@@ -187,5 +260,5 @@ f_string new_f_string(const char* src){
 /// @brief RecordBatch metadata.
 struct RecordBatchMeta
 {
-	int length;
+	unsigned int length;
 };
