@@ -96,6 +96,8 @@ set(COMMON_HEADERS
     ../../common/cpp/src/fletcher/common.h
     ../../common/cpp/src/fletcher/logging.h
     ../../common/cpp/src/fletcher/arrow-utils.h
+    ../../common/cpp/src/fletcher/arrow-recordbatch.h
+    ../../common/cpp/src/fletcher/arrow-schema.h
     ../../common/cpp/src/fletcher/hex-view.h
     ../../common/cpp/src/fletcher/timer.h)
 
