@@ -19,14 +19,14 @@
 
 namespace fletchgen {
 
-int Options::Parse(Options *options, int argc, char **argv) {
-  CLI::App app{"Fletchgen - The Fletcher Wrapper Generator"};
+bool Options::Parse(Options *options, int argc, char **argv) {
+  CLI::App app{"Fletchgen - The Fletcher Design Generator"};
 
   app.get_formatter()->column_width(40);
 
   // Required options:
   app.add_option("-i,--input", options->schema_paths,
-                 "List of Flatbuffer files with Arrow Schemas to base wrapper on, comma seperated. "
+                 "List of files with Arrow Schemas to base design on."
                  "Example: --input file1.fbs file2.fbs file3.fbs")
       ->check(CLI::ExistingFile);
 
@@ -36,12 +36,12 @@ int Options::Parse(Options *options, int argc, char **argv) {
 
   // Simulation options:
   app.add_option("-r,--recordbatch_input", options->recordbatch_paths,
-                 "List of Flatbuffer files with Arrow RecordBatches to convert to SREC format for simulation. "
-                 "Schemas contained in these RecordBatches can be skipped for the --input option.");
+                 "List of files with Arrow RecordBatches to base design on and use in simulation memory models."
+                 "Schemas contained in these RecordBatches may be skipped for the --input option.");
   app.add_option("-s,--recordbatch_output", options->srec_out_path,
-                 "SREC simulation output file.");
+                 "Memory model contents output file (formatted as SREC).");
   app.add_option("-t,--srec_dump", options->srec_sim_dump,
-                 "File to dump memory contents to in SREC format after simulation.");
+                 "Path to dump memory model contents to after simulation (formatted as SREC).");
 
   // Output options:
   app.add_option("-o,--output_path", options->output_dir,
@@ -76,13 +76,19 @@ int Options::Parse(Options *options, int argc, char **argv) {
                "More detailed information on stdout.");
   */
 
-  CLI11_PARSE(app, argc, argv)
+  try {
+    app.parse(argc, argv);
+  } catch (CLI::Error& e) {
+    FLETCHER_LOG(ERROR, e.what());
+    std::cout << app.help();
+    return false;
+  }
 
   // Load input files
   options->LoadRecordBatches();
   options->LoadSchemas();
 
-  return 0;
+  return true;
 }
 
 bool Options::MustGenerateSREC() const {
@@ -114,7 +120,7 @@ bool Options::MustGenerateDOT() const {
 }
 
 bool Options::MustGenerateDesign() const {
-  return !schemas.empty() || !recordbatches.empty();
+  return !schema_paths.empty() || !recordbatch_paths.empty();
 }
 
 void Options::LoadRecordBatches() {

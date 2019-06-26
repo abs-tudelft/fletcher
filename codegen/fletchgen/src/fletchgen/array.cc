@@ -266,8 +266,8 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
     level++;
   }
 
-  int epc = fletcher::GetIntMeta(field, "epc", 1);
-  int lepc = fletcher::GetIntMeta(field, "lepc", 1);
+  int epc = fletcher::GetIntMeta(field, metakeys::EPC, 1);
+  int lepc = fletcher::GetIntMeta(field, metakeys::LEPC, 1);
 
   if (ct == ConfigType::PRIM) {
     auto w = GetWidth(field.type().get());
@@ -350,8 +350,8 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
   // WARNING: Modifications to this function must be reflected in the manual hardware implementation of Fletcher
   // components! See: hardware/arrays/ArrayConfig_pkg.vhd
 
-  int epc = fletcher::GetIntMeta(field, "epc", 1);
-  int lepc = fletcher::GetIntMeta(field, "lepc", 1);
+  int epc = fletcher::GetIntMeta(field, metakeys::EPC, 1);
+  int lepc = fletcher::GetIntMeta(field, metakeys::LEPC, 1);
 
   std::shared_ptr<Type> type;
 

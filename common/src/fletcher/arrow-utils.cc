@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <vector>
-#include <iostream>
-
 #include <arrow/api.h>
 #include <arrow/io/api.h>
 #include <arrow/ipc/api.h>
+
+#include <utility>
+#include <memory>
+#include <vector>
+#include <iostream>
+#include <unordered_map>
 
 #include "fletcher/arrow-utils.h"
 #include "fletcher/logging.h"
@@ -98,9 +100,9 @@ std::shared_ptr<arrow::Field> AppendMetaEPC(const arrow::Field &field, int epc) 
 }
 
 std::shared_ptr<arrow::Field> AppendMetaIgnore(const arrow::Field &field) {
-  const static std::vector<std::string> ignore_key = {"fletcher_ignore"};
-  const static std::vector<std::string> ignore_value = {"true"};
-  const static auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
+  std::vector<std::string> ignore_key = {"fletcher_ignore"};
+  std::vector<std::string> ignore_value = {"true"};
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
   return field.AddMetadata(meta);
 }
 
