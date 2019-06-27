@@ -61,7 +61,7 @@ std::string GenerateSimTop(const Mantle &mantle,
   size_t num_rbs = read_schemas.size() + write_schemas.size();
 
   // Template file for simulation top-level
-  cerata::vhdl::Template t(std::string(fhwd) + "/hardware/sim/SimTop.vhdt");
+  cerata::vhdl::Template t(std::string(fhwd) + "/hardware/sim/SimTop_tc.vhdt");
 
   // Bus properties
   t.Replace("BUS_ADDR_WIDTH", 64);
