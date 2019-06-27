@@ -23,13 +23,13 @@ namespace fletchgen::top {
 
 using cerata::vhdl::Template;
 
-std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle, const std::vector<std::ostream *> &outputs) {
-  const char *fhwd = std::getenv("FLETCHER_HARDWARE_DIR");
+std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream *> &outputs) {
+  const char *fhwd = std::getenv("FLETCHER_DIR");
   if (fhwd == nullptr) {
-    throw std::runtime_error("Environment variable FLETCHER_HARDWARE_DIR not set. Please source env.sh.");
+    throw std::runtime_error("Environment variable FLETCHER_DIR not set. Please source env.sh.");
   }
 
-  Template t(std::string(fhwd) + "/axi/axi_top.vhdt");
+  Template t(std::string(fhwd) + "/hardware/axi/AxiTop.vhdt");
 
   // Bus properties
   t.Replace("BUS_ADDR_WIDTH", 64);
@@ -44,8 +44,134 @@ std::string GenerateAXITop(const std::shared_ptr<Mantle> &mantle, const std::vec
   t.Replace("MMIO_DATA_WIDTH", 32);
 
   // Do not change this order, TODO: fix this in replacement code
-  t.Replace("FLETCHER_WRAPPER_NAME", mantle->name());
-  t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle->name() + "_inst");
+  t.Replace("FLETCHER_WRAPPER_NAME", mantle.name());
+  t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle.name() + "_inst");
+
+  if (mantle.schema_set()->RequiresReading()) {
+    t.Replace("MST_RREQ_DECLARE",
+              "      rd_mst_rreq_valid         : out std_logic;\n"
+              "      rd_mst_rreq_ready         : in  std_logic;\n"
+              "      rd_mst_rreq_addr          : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);\n"
+              "      rd_mst_rreq_len           : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);\n"
+              "      rd_mst_rdat_valid         : in  std_logic;\n"
+              "      rd_mst_rdat_ready         : out std_logic;\n"
+              "      rd_mst_rdat_data          : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);\n"
+              "      rd_mst_rdat_last          : in  std_logic;\n");
+
+    t.Replace("MST_RREQ_INSTANTIATE",
+              "      rd_mst_rreq_valid         => rd_mst_rreq_valid,\n"
+              "      rd_mst_rreq_ready         => rd_mst_rreq_ready,\n"
+              "      rd_mst_rreq_addr          => rd_mst_rreq_addr,\n"
+              "      rd_mst_rreq_len           => rd_mst_rreq_len,\n"
+              "      rd_mst_rdat_valid         => rd_mst_rdat_valid,\n"
+              "      rd_mst_rdat_ready         => rd_mst_rdat_ready,\n"
+              "      rd_mst_rdat_data          => rd_mst_rdat_data,\n"
+              "      rd_mst_rdat_last          => rd_mst_rdat_last,");
+
+    t.Replace("AXI_READ_CONVERTER",
+              "  -----------------------------------------------------------------------------\n"
+              "  -- AXI read converter\n"
+              "  -----------------------------------------------------------------------------\n"
+              "  -- Buffering bursts is disabled (ENABLE_FIFO=false) because BufferReaders\n"
+              "  -- are already able to absorb full bursts.\n"
+              "  axi_read_conv_inst: AxiReadConverter\n"
+              "    generic map (\n"
+              "      ADDR_WIDTH                => BUS_ADDR_WIDTH,\n"
+              "      MASTER_DATA_WIDTH         => BUS_DATA_WIDTH,\n"
+              "      MASTER_LEN_WIDTH          => BUS_LEN_WIDTH,\n"
+              "      SLAVE_DATA_WIDTH          => BUS_DATA_WIDTH,\n"
+              "      SLAVE_LEN_WIDTH           => BUS_LEN_WIDTH,\n"
+              "      SLAVE_MAX_BURST           => BUS_BURST_MAX_LEN,\n"
+              "      ENABLE_FIFO               => false\n"
+              "    )\n"
+              "    port map (\n"
+              "      clk                       => bcd_clk,\n"
+              "      reset_n                   => bcd_reset_n,\n"
+              "      slv_bus_rreq_addr         => rd_mst_rreq_addr,\n"
+              "      slv_bus_rreq_len          => rd_mst_rreq_len,\n"
+              "      slv_bus_rreq_valid        => rd_mst_rreq_valid,\n"
+              "      slv_bus_rreq_ready        => rd_mst_rreq_ready,\n"
+              "      slv_bus_rdat_data         => rd_mst_rdat_data,\n"
+              "      slv_bus_rdat_last         => rd_mst_rdat_last,\n"
+              "      slv_bus_rdat_valid        => rd_mst_rdat_valid,\n"
+              "      slv_bus_rdat_ready        => rd_mst_rdat_ready,\n"
+              "      m_axi_araddr              => m_axi_araddr,\n"
+              "      m_axi_arlen               => m_axi_arlen,\n"
+              "      m_axi_arvalid             => m_axi_arvalid,\n"
+              "      m_axi_arready             => m_axi_arready,\n"
+              "      m_axi_arsize              => m_axi_arsize,\n"
+              "      m_axi_rdata               => m_axi_rdata,\n"
+              "      m_axi_rlast               => m_axi_rlast,\n"
+              "      m_axi_rvalid              => m_axi_rvalid,\n"
+              "      m_axi_rready              => m_axi_rready\n"
+              "    );");
+  } else {
+    t.Replace("MST_RREQ_DECLARE", "");
+    t.Replace("AXI_READ_CONVERTER", "");
+  }
+
+  if (mantle.schema_set()->RequiresWriting()) {
+    t.Replace("MST_WREQ_DECLARE",
+              "      wr_mst_wreq_valid         : out std_logic;\n"
+              "      wr_mst_wreq_ready         : in std_logic;\n"
+              "      wr_mst_wreq_addr          : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);\n"
+              "      wr_mst_wreq_len           : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);\n"
+              "      wr_mst_wdat_valid         : out std_logic;\n"
+              "      wr_mst_wdat_ready         : in std_logic;\n"
+              "      wr_mst_wdat_data          : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);\n"
+              "      wr_mst_wdat_strobe        : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);\n"
+              "      wr_mst_wdat_last          : out std_logic;");
+
+    t.Replace("MST_WREQ_INSTANTIATE",
+              "      wr_mst_wreq_valid         => wr_mst_wreq_valid,\n"
+              "      wr_mst_wreq_ready         => wr_mst_wreq_ready,\n"
+              "      wr_mst_wreq_addr          => wr_mst_wreq_addr,\n"
+              "      wr_mst_wreq_len           => wr_mst_wreq_len,\n"
+              "      wr_mst_wdat_valid         => wr_mst_wdat_valid,\n"
+              "      wr_mst_wdat_ready         => wr_mst_wdat_ready,\n"
+              "      wr_mst_wdat_data          => wr_mst_wdat_data,\n"
+              "      wr_mst_wdat_strobe        => wr_mst_wdat_strobe,\n"
+              "      wr_mst_wdat_last          => wr_mst_wdat_last,");
+    t.Replace("AXI_WRITE_CONVERTER",
+              "  -----------------------------------------------------------------------------\n"
+              "  -- AXI write converter\n"
+              "  -----------------------------------------------------------------------------\n"
+              "  -- Buffering bursts is disabled (ENABLE_FIFO=false) because BufferWriters\n"
+              "  -- are already able to absorb full bursts.\n"
+              "  axi_write_conv_inst: AxiWriteConverter\n"
+              "    generic map (\n"
+              "      ADDR_WIDTH                => BUS_ADDR_WIDTH,\n"
+              "      MASTER_DATA_WIDTH         => BUS_DATA_WIDTH,\n"
+              "      MASTER_LEN_WIDTH          => BUS_LEN_WIDTH,\n"
+              "      SLAVE_DATA_WIDTH          => BUS_DATA_WIDTH,\n"
+              "      SLAVE_LEN_WIDTH           => BUS_LEN_WIDTH,\n"
+              "      SLAVE_MAX_BURST           => BUS_BURST_MAX_LEN,\n"
+              "      ENABLE_FIFO               => false\n"
+              "    )\n"
+              "    port map (\n"
+              "      clk                       => bcd_clk,\n"
+              "      reset_n                   => bcd_reset_n,\n"
+              "      slv_bus_wreq_addr         => wr_mst_wreq_addr,\n"
+              "      slv_bus_wreq_len          => wr_mst_wreq_len,\n"
+              "      slv_bus_wreq_valid        => wr_mst_wreq_valid,\n"
+              "      slv_bus_wreq_ready        => wr_mst_wreq_ready,\n"
+              "      slv_bus_wdat_data         => wr_mst_wdat_data,\n"
+              "      slv_bus_wdat_strobe       => wr_mst_wdat_strobe,\n"
+              "      slv_bus_wdat_last         => wr_mst_wdat_last,\n"
+              "      slv_bus_wdat_valid        => wr_mst_wdat_valid,\n"
+              "      slv_bus_wdat_ready        => wr_mst_wdat_ready,\n"
+              "      m_axi_awaddr              => m_axi_awaddr,\n"
+              "      m_axi_awlen               => m_axi_awlen,\n"
+              "      m_axi_awvalid             => m_axi_awvalid,\n"
+              "      m_axi_awready             => m_axi_awready,\n"
+              "      m_axi_awsize              => m_axi_awsize,\n"
+              "      m_axi_wdata               => m_axi_wdata,\n"
+              "      m_axi_wstrb               => m_axi_wstrb,\n"
+              "      m_axi_wlast               => m_axi_wlast,\n"
+              "      m_axi_wvalid              => m_axi_wvalid,\n"
+              "      m_axi_wready              => m_axi_wready\n"
+              "    );");
+  }
 
   for (auto &o : outputs) {
     o->flush();
