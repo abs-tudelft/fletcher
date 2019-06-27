@@ -21,7 +21,9 @@
 
 namespace cerata::vhdl {
 
+/// Architecture generators.
 struct Arch {
+  /// @brief Generate the VHDL architecture of a component.
   static MultiBlock Generate(const Component &comp);
 };
 

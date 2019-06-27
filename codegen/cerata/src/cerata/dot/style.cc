@@ -95,8 +95,8 @@ StyleBuilder &StyleBuilder::operator<<(const std::string &part) {
   return *this;
 }
 
-bool Config::operator()(const std::shared_ptr<Node> &node) {
-  switch (node->node_id()) {
+bool Config::operator()(const Node &node) {
+  switch (node.node_id()) {
     case Node::NodeID::PARAMETER: return nodes.parameters;
     case Node::NodeID::LITERAL: return nodes.literals;
     case Node::NodeID::SIGNAL: return nodes.signals;
@@ -259,7 +259,7 @@ std::string Style::GetLabel(const Node &n) {
     }
     str << ">";
   } else if (n.IsParameter()) {
-    auto par = dynamic_cast<const Parameter&>(n);
+    auto par = dynamic_cast<const Parameter &>(n);
     str << "label=\"" + sanitize(par.name());
     if (par.GetValue()) {
       auto val = *par.GetValue();

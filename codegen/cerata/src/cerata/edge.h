@@ -35,7 +35,9 @@ class Edge : public Named {
   /// @brief Get the node opposite to the other edge node.
   std::optional<Node *> GetOtherNode(const Node &node) const;
 
+  /// @brief Return the destination node.
   Node *dst() const { return dst_; }
+  /// @brief Return the source node.
   Node *src() const { return src_; }
 
  protected:
@@ -61,11 +63,16 @@ class Edge : public Named {
  */
 std::shared_ptr<Edge> Connect(Node *dst, Node *src);
 
-// Connect shorthands:
+// Connect operators:
+/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src);
+/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node *src);
+/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::weak_ptr<Node> &src);
+/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::shared_ptr<Node> &src);
+/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);
 
 /// @brief Split an edge up to create two new edges with a signal node in the middle. Returns the new signal.

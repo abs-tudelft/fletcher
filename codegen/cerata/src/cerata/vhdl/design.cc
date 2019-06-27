@@ -65,7 +65,7 @@ MultiBlock Design::Generate() {
 
   // Sort and remove duplicate packages for each library
   for (auto &v : libs_and_packages) {
-    auto& vec = v.second;
+    auto &vec = v.second;
     std::sort(vec.begin(), vec.end());
     vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
   }

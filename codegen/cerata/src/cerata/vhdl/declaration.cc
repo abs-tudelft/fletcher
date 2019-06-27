@@ -31,7 +31,8 @@
 
 namespace cerata::vhdl {
 
-std::string Decl::Generate(const Type &type, const std::optional<std::shared_ptr<Node>> &multiplier) {
+static std::string GenerateTypeDecl(const Type &type,
+                                    const std::optional<std::shared_ptr<Node>> &multiplier = std::nullopt) {
   switch (type.id()) {
     default: {
       if (!multiplier) {
@@ -68,7 +69,7 @@ std::string Decl::Generate(const Type &type, const std::optional<std::shared_ptr
     }
     case Type::STREAM: {
       auto stream = dynamic_cast<const Stream &>(type);
-      return Generate(*stream.element_type());
+      return GenerateTypeDecl(*stream.element_type());
     }
     case Type::STRING: {
       return "string";
@@ -82,7 +83,7 @@ std::string Decl::Generate(const Type &type, const std::optional<std::shared_ptr
 Block Decl::Generate(const Parameter &par, int depth) {
   Block ret(depth);
   Line l;
-  l << to_upper(par.name()) << " : " << Generate(*par.type());
+  l << to_upper(par.name()) << " : " << GenerateTypeDecl(*par.type());
   if (par.GetValue()) {
     Node *val = par.GetValue().value();
     l << " := " << val->ToString();
@@ -104,7 +105,7 @@ Block Decl::Generate(const Port &port, int depth) {
     } else {
       l << ToString(port.dir()) + " ";
     }
-    l << Generate(*ft.type_);
+    l << GenerateTypeDecl(*ft.type_);
     ret << l;
   }
   return ret;
@@ -124,7 +125,7 @@ Block Decl::Generate(const PortArray &port, int depth) {
     } else {
       l << ToString(port.dir()) + " ";
     }
-    l << Generate(*ft.type_, std::dynamic_pointer_cast<Node>(port.size()->Copy()));
+    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(port.size()->Copy()));
     ret << l;
   }
   return ret;
@@ -140,7 +141,7 @@ Block Decl::Generate(const Signal &sig, int depth) {
     Line l;
     auto sig_name_prefix = sig.name();
     l << "signal " + ft.name(NamePart(sig_name_prefix, true)) << " : ";
-    l << Generate(*ft.type_) + ";";
+    l << GenerateTypeDecl(*ft.type_) + ";";
     ret << l;
   }
   return ret;

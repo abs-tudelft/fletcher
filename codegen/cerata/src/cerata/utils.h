@@ -25,11 +25,10 @@
 
 namespace cerata {
 
+/// @brief Return a human-readable representation of an unordered map of string key-value pairs.
 std::string ToString(const std::unordered_map<std::string, std::string> &meta);
 
-/**
- * @brief Structure to name objects.
- */
+/// Convenience structure for anything that is named.
 struct Named {
  public:
   /// @brief Named constructor.
@@ -84,26 +83,40 @@ bool Remove(std::deque<std::shared_ptr<T>> *list, const std::shared_ptr<T> &item
   }
 }
 
+/**
+ * @brief Convert a list of shared pointers to raw pointers.
+ * @tparam T    The type of the objects being pointed to.
+ * @param list  The list of shared pointers.
+ * @return      A list of raw pointers.
+ */
 template<typename T>
-std::deque<T*>ToRawPointers(const std::deque<std::shared_ptr<T>> &list) {
-  std::deque<T*> result;
-  for (auto& value : list) {
+std::deque<T *> ToRawPointers(const std::deque<std::shared_ptr<T>> &list) {
+  std::deque<T *> result;
+  for (auto &value : list) {
     result.push_back(value.get());
   }
   return result;
 }
 
+/**
+ * @brief Convert a list of unique pointers to raw pointers.
+ * @tparam T    The type of the objects being pointed to.
+ * @param list  The list of unique pointers.
+ * @return      A list of raw pointers.
+ */
 template<typename T>
-std::deque<T*>ToRawPointers(const std::deque<std::unique_ptr<T>> &list) {
-  std::deque<T*> result;
-  for (auto& value : list) {
+std::deque<T *> ToRawPointers(const std::deque<std::unique_ptr<T>> &list) {
+  std::deque<T *> result;
+  for (auto &value : list) {
     result.push_back(value.get());
   }
   return result;
 }
 
+/// @brief Create a directory.
 void CreateDir(const std::string &dir_name);
 
+/// @brief Check if file exists.
 bool FileExists(const std::string &name);
 
 }  // namespace cerata

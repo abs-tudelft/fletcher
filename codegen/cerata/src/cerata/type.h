@@ -120,7 +120,9 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   std::unordered_map<std::string, std::string> meta;
 
  protected:
+  /// Type ID
   ID id_;
+  /// A list of mappers that can map this type to another type.
   std::deque<std::shared_ptr<TypeMapper>> mappers_;
 };
 
@@ -258,6 +260,8 @@ class Vector : public Type {
 
   /// @brief Return a pointer to the node representing the width of this vector, if specified.
   std::optional<Node *> width() const override;
+
+  /// @brief Set the width of this vector.
   Type &SetWidth(std::shared_ptr<Node> width);
 
   /// @brief Determine if this Type is exactly equal to an other Type.
@@ -267,7 +271,9 @@ class Vector : public Type {
   std::deque<Node *> GetParameters() const override;
 
  private:
+  /// The optional vector width.
   std::optional<std::shared_ptr<Node>> width_;
+  /// The type of elements in this vector.
   std::shared_ptr<Type> element_type_;
 };
 
@@ -286,16 +292,23 @@ class RecField : public Named {
   bool invert() const { return invert_; }
   /// @brief Return true if in name generation of this field name for flattened types a separator should be placed.
   bool sep() const { return sep_; }
+  /// @brief Disable the seperator in name generation of this field.
   void NoSep() { sep_ = false; }
+  /// @brief Enable the seperator in name generation of this field.
   void UseSep() { sep_ = true; }
   /// @brief Metadata for back-end implementations
   std::unordered_map<std::string, std::string> meta;
+
  private:
+  /// The type of the field.
   std::shared_ptr<Type> type_;
+  /// Whether this field should be inverted in directed use of the parent type.
   bool invert_;
+  /// Whether this field should generate a seperator for name/identifier generation in downstream tools.
   bool sep_;
 };
 
+/// @brief Convenience function to disable the seperator for a record field.
 std::shared_ptr<RecField> NoSep(std::shared_ptr<RecField> field);
 
 /// @brief A Record type containing zero or more RecordFields.

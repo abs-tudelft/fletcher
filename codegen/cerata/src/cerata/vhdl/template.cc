@@ -40,7 +40,7 @@ void Template::Replace(const std::string &str, int with) {
 
 void Template::Replace(const std::string &str, const std::string &with) {
   if (replace_list_.find(str) != replace_list_.end()) {
-    for (const auto& loc : replace_list_[str]) {
+    for (const auto &loc : replace_list_[str]) {
       // +3 for ${}
       lines_[loc.line].replace(loc.start, str.length() + 3, with);
     }
@@ -65,7 +65,7 @@ void Template::Analyze() {
 
   // Analyze every line for replacement regex
   size_t line_num = 0;
-  for (const auto& line : lines_) {
+  for (const auto &line : lines_) {
     // Check if the line has any matches
     auto rs_begin = std::sregex_iterator(line.begin(), line.end(), rs_regex);
     auto rs_end = std::sregex_iterator();

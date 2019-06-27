@@ -22,14 +22,18 @@
 
 namespace cerata {
 
-// Default logging
-constexpr int CERATA_LOG_DEBUG = -1;
-constexpr int CERATA_LOG_INFO = 0;
-constexpr int CERATA_LOG_WARNING = 1;
-constexpr int CERATA_LOG_ERROR = 2;
-constexpr int CERATA_LOG_FATAL = 3;
+// Log levels.
+
+/// Type used for the logging level.
 using LogLevel = int;
 
+constexpr LogLevel CERATA_LOG_DEBUG = -1;    ///< Debug level
+constexpr LogLevel CERATA_LOG_INFO = 0;      ///< Information level
+constexpr LogLevel CERATA_LOG_WARNING = 1;   ///< Warning level
+constexpr LogLevel CERATA_LOG_ERROR = 2;     ///< Error level
+constexpr LogLevel CERATA_LOG_FATAL = 3;     ///< Fatal level; tool should exit.
+
+/// Logger class.
 class Logger {
  public:
   /// Signature of the callback function.
@@ -59,6 +63,7 @@ class Logger {
   std::function<void(LogLevel, const std::string &, char const *, char const *, int)> callback_;
 };
 
+/// Return the global Cerata logger.
 inline Logger &logger() {
   static Logger l;
   return l;
