@@ -22,6 +22,7 @@
 
 namespace cerata::vhdl {
 
+/// @brief Return the upper-case version of a string.
 std::string to_upper(std::string str);
 
 /**
@@ -42,11 +43,12 @@ class Identifier {
   Identifier &operator+=(const std::string &rhs);
   /// @brief Create a copy and add a new part to the Identifier.
   Identifier operator+(const std::string &rhs) const;
+  /// @brief Return a human-readable string of the identifier.
   std::string ToString() const;
  private:
-  /// @brief The separator character between different parts of the identifier.
+  /// The separator character between different parts of the identifier.
   std::optional<char> separator_ = '_';
-  /// @brief The parts of the identifier.
+  /// The parts of the identifier.
   std::deque<std::string> parts_;
 };
 

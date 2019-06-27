@@ -36,18 +36,14 @@ class Instance;
  */
 class Graph : public Named {
  public:
+  /// Graph type ID for convenient run-time type checking.
   enum ID {
     COMPONENT,  ///< A component graph
     INSTANCE    ///< An instance graph
   };
 
-  /**
-   * @brief Construct a new graph
-   * @param name    The name of the graph
-   */
-  explicit Graph(std::string name, ID id) : Named(std::move(name)), id_(id) {}
-  Graph(const Graph &graph) = delete;
-  virtual ~Graph() = default;
+  /// @brief Construct a new graph
+  Graph(std::string name, ID id) : Named(std::move(name)), id_(id) {}
 
   /// @brief Return the graph type ID.
   ID id() const { return id_; }
@@ -110,12 +106,15 @@ class Graph : public Named {
   /// @brief Set metadata
   Graph &SetMeta(const std::string &key, std::string value);
 
+  /// @brief Return a human-readable representation.
+  std::string ToString() const { return name(); }
+
  protected:
-  /// @brief Graph type id for convenience
+  /// Graph type id for convenience
   ID id_;
-  /// @brief Graph objects.
+  /// Graph objects.
   std::deque<std::shared_ptr<Object>> objects_;
-  /// @brief KV storage for metadata of tools or specific backend implementations
+  /// KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta_;
 };
 
@@ -138,34 +137,31 @@ class Component : public Graph {
   }
 
   /**
-   * @brief Add a child graph. Only allowed if the child graph is a component. Throws an error otherwise.
+   * @brief Add and take ownership of an Instance graph.
    * @param child   The child graph to add.
    * @return        This component if successful.
    */
   Component &AddChild(std::unique_ptr<Instance> child);
 
   /**
-   * @brief Add a child instance from a component.
-   * @param comp  The component to instantiate and add.
-   * @param inst  Optional pointer to the instance to store.
-   * @return      A reference to this Component if successful.
+   * @brief Add a child Instance from a component.
+   * @param comp    The component to instantiate and add.
+   * @param name    The name of the new instance. If left blank, it will use the Component name + "_inst".
+   * @return        A pointer to the instantiated component.
    */
   Instance *AddInstanceOf(Component *comp, const std::string &name = "");
 
-  /**
-   * @brief Gather all Instance graphs from this Component
-   * @param graph The graph to gather from.
-   * @return      A deque holding pointers to all instances.
-   */
+  /// @brief Returns all Instance graphs from this Component.
   std::deque<Instance *> children() const { return ToRawPointers(children_); }
 
-  /// @brief Returns all unique component definitions that are referred to by child instances of this component.
+  /// @brief Returns all unique Components that are referred to by child Instances of this graph.
   virtual std::deque<const Component *> GetAllUniqueComponents() const;
 
  protected:
-  /// @brief Construct an empty Component
+  /// @brief Construct an empty Component.
   explicit Component(std::string name) : Graph(std::move(name), COMPONENT) {}
-  /// @brief Graph children / subgraphs.
+
+  /// Graph children / subgraphs.
   std::deque<std::unique_ptr<Instance>> children_;
 };
 
@@ -197,8 +193,9 @@ class Instance : public Graph {
  protected:
   /// @brief Construct an Instance of a Component, copying over all its ports and parameters
   explicit Instance(Component *comp, std::string name);
-
+  /// The component that this instance instantiates.
   Component *component_{};
+  /// The parent of this instance.
   Graph *parent_{};
 };
 

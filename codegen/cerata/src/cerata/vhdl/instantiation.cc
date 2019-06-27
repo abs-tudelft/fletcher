@@ -77,15 +77,15 @@ Block Inst::GenerateGenericMap(const Parameter &par) {
   return ret;
 }
 
-Block Inst::GenerateMappingPair(const MappingPair &p,
-                                size_t ia,
-                                const std::shared_ptr<Node> &offset_a,
-                                size_t ib,
-                                const std::shared_ptr<Node> &offset_b,
-                                const std::string &lh_prefix,
-                                const std::string &rh_prefix,
-                                bool a_is_array,
-                                bool b_is_array) {
+static Block GenerateMappingPair(const MappingPair &p,
+                                 size_t ia,
+                                 const std::shared_ptr<Node> &offset_a,
+                                 size_t ib,
+                                 const std::shared_ptr<Node> &offset_b,
+                                 const std::string &lh_prefix,
+                                 const std::string &rh_prefix,
+                                 bool a_is_array,
+                                 bool b_is_array) {
   Block ret;
 
   std::shared_ptr<Node> next_offset_a;
@@ -131,7 +131,7 @@ Block Inst::GenerateMappingPair(const MappingPair &p,
   return ret;
 }
 
-Block Inst::GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b) {
+static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b) {
   Block ret;
   // Sort the pair in order of appearance on the flatmap
   std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
@@ -226,7 +226,7 @@ Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
       throw std::runtime_error("Port Array contains non-port node.");
     }
   }
-  return ret.sort('(');
+  return ret.Sort('(');
 }
 
 MultiBlock Inst::Generate(const Graph &graph) {

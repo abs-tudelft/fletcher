@@ -27,7 +27,7 @@ std::string Identifier::ToString() const {
     ret += p;
     if (separator_) {
       if (p != parts_.back()) {
-        ret +=* separator_;
+        ret += *separator_;
       }
     }
   }
@@ -58,6 +58,11 @@ Identifier &Identifier::prepend(const std::string &part) {
   return *this;
 }
 
+/**
+ * \brief
+ * \param rhs
+ * \return
+ */
 Identifier &Identifier::operator+=(const std::string &rhs) {
   return append(rhs);
 }
@@ -69,7 +74,7 @@ Identifier Identifier::operator+(const std::string &rhs) const {
 }
 
 std::string to_upper(std::string str) {
-  for (auto & ch : str) ch = std::toupper(ch);
+  for (auto &ch : str) ch = std::toupper(ch);
   return str;
 }
 }  // namespace cerata::vhdl

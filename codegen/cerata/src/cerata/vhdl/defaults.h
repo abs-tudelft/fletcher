@@ -16,8 +16,10 @@
 
 namespace cerata::vhdl {
 
+/// Default subdirectory for output generation.
 constexpr char DEFAULT_SUBDIR[] = "vhdl";
 
+/// Default libraries to include.
 constexpr char DEFAULT_LIBS[] =
     "library ieee;\n"
     "use ieee.std_logic_1164.all;\n"

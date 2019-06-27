@@ -36,18 +36,21 @@ class Record;
 class Stream;
 class Node;
 
+/// Convenience struct to generate names in parts.
 struct NamePart {
   NamePart() = default;
+  /// @brief Constuct a new NamePart.
   explicit NamePart(std::string part, bool append_sep = true) : str(std::move(part)), sep(append_sep) {}
+  /// The string of this name part.
   std::string str = "";
+  /// Whether we should insert a separator after this part.
   bool sep = false;
 };
 
-/**
- * @brief A flattened type.
- */
+/// A flattened type.
 struct FlatType {
   FlatType() = default;
+  /// @brief Construct a FlatType.
   FlatType(Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
   /// @brief A pointer to the original type.
   Type *type_ = nullptr;
@@ -61,6 +64,7 @@ struct FlatType {
   std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
 };
 
+/// @brief Compares two FlatTypes first by name, then by nesting level. Useful for sorting.
 bool operator<(const FlatType &a, const FlatType &b);
 
 // Flattening functions for nested types:
@@ -103,16 +107,17 @@ std::string ToString(std::deque<FlatType> flat_type_list);
  */
 template<typename T>
 class MappingMatrix {
- private:
-  std::vector<T> elements_;
-  int64_t height_;
-  int64_t width_;
-
  public:
+  /**
+   * @brief Construct a mapping matrix.
+   * @param height  The height of the matrix.
+   * @param width   The width of the matrix.
+   */
   MappingMatrix(int64_t height, int64_t width) : height_(height), width_(width) {
     elements_ = std::vector<T>(height_ * width_, static_cast<T>(0));
   }
 
+  /// @brief Return a square identity matrix.
   static MappingMatrix Identity(int64_t dim) {
     MappingMatrix ret(dim, dim);
     for (int64_t i = 0; i < dim; i++) {
@@ -120,9 +125,12 @@ class MappingMatrix {
     }
   }
 
+  /// @brief Return the height of the matrix.
   int64_t height() { return height_; }
+  /// @brief Return the width of the matrix.
   int64_t width() { return width_; }
 
+  /// @brief Return a reference to a value in the matrix at some index.
   T &get(int64_t y, int64_t x) {
     if (y >= height_ || x >= width_) {
       CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
@@ -130,6 +138,7 @@ class MappingMatrix {
     return elements_[width_ * y + x];
   }
 
+  /// @brief Return a const references to a value in the matrix at some index.
   const T &get(int64_t y, int64_t x) const {
     if (y >= height_ || x >= width_) {
       CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
@@ -137,14 +146,17 @@ class MappingMatrix {
     return elements_[width_ * y + x];
   }
 
+  /// @brief Return a reference to a value in the matrix at some index.
   T &operator()(int64_t y, int64_t x) {
     return get(y, x);
   }
 
+  /// @brief Return a const references to a value in the matrix at some index.
   const T &operator()(int64_t y, int64_t x) const {
     return get(y, x);
   }
 
+  /// @brief Return the maximum of some column.
   T MaxOfColumn(int64_t x) const {
     T max = 0;
     for (int64_t y = 0; y < height_; y++) {
@@ -155,6 +167,7 @@ class MappingMatrix {
     return max;
   }
 
+  /// @brief Return the maximum of some row.
   T MaxOfRow(int64_t y) const {
     T max = 0;
     for (int64_t x = 0; x < width_; x++) {
@@ -196,11 +209,13 @@ class MappingMatrix {
     return ret;
   }
 
+  /// @brief Set the next (existing maximum + 1) value in a matrix at some position.
   MappingMatrix &SetNext(int64_t y, int64_t x) {
     get(y, x) = std::max(MaxOfColumn(x), MaxOfRow(y)) + 1;
     return *this;
   }
 
+  /// @brief Transpose the matrix.
   MappingMatrix Transpose() const {
     MappingMatrix ret(width_, height_);
     for (int64_t y = 0; y < height_; y++) {
@@ -211,6 +226,7 @@ class MappingMatrix {
     return ret;
   }
 
+  /// @return Return a human-readable representation of the matrix.
   std::string ToString() {
     std::stringstream ret;
     for (int64_t y = 0; y < height_; y++) {
@@ -221,6 +237,14 @@ class MappingMatrix {
     }
     return ret.str();
   }
+
+ private:
+  /// Elements of the matrix.
+  std::vector<T> elements_;
+  /// Height of the matrix.
+  int64_t height_;
+  /// Width of the matrix.
+  int64_t width_;
 };
 
 /**
@@ -232,25 +256,38 @@ class MappingMatrix {
  * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto a.
  */
 struct MappingPair {
-  using index = int64_t;
-  using offset = int64_t;
+  using index = int64_t;  ///< Index type.
+  using offset = int64_t;  ///< Offset type.
+  /// Tuple that stores all information required by a mapping pair on one side.
   using tuple = std::tuple<index, offset, FlatType>;
+  /// Flattype and its index in a mapping matrix on the "a"-side.
   std::deque<tuple> a;
+  /// Flattype and its index in a mapping matrix on the "b"-side.
   std::deque<tuple> b;
+  /// @brief Return the number of FlatTypes on the "a"-side.
   int64_t num_a() const { return a.size(); }
+  /// @brief Return the number of FlatTypes on the "b"-side.
   int64_t num_b() const { return b.size(); }
+  /// @brief Return the index of the i-th FlatType on the "a"-side in the mapping matrix.
   index index_a(int64_t i) const { return std::get<0>(a[i]); }
+  /// @brief Return the index of the i-th FlatType on the "b"-side in the mapping matrix.
   index index_b(int64_t i) const { return std::get<0>(b[i]); }
+  /// @brief Return the offset of the i-th FlatType on the "a"-side in the mapping matrix.
   offset offset_a(int64_t i) const { return std::get<1>(a[i]); }
+  /// @brief Return the offset of the i-th FlatType on the "b"-side in the mapping matrix.
   offset offset_b(int64_t i) const { return std::get<1>(b[i]); }
+  /// @brief Return the i-th FlatType on the "a"-side in the mapping matrix.
   FlatType flat_type_a(int64_t i) const { return std::get<2>(a[i]); }
+  /// @brief Return the i-th FlatType on the "b"-side in the mapping matrix.
   FlatType flat_type_b(int64_t i) const { return std::get<2>(b[i]); }
+
   /**
    * @brief Return the total width of the types on side A.
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
    * @return                    The total width on side A.
    */
   std::shared_ptr<Node> width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment = {}) const;
+
   /**
    * @brief Return the total width of the types on side B.
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
@@ -278,13 +315,20 @@ class TypeMapper : public Named {
   /// @brief Construct a new, empty TypeMapper between two types.
   static std::shared_ptr<TypeMapper> Make(Type *a, Type *b);
 
+  /// @brief Add a mapping between two FlatTypes to the mapper.
   TypeMapper &Add(int64_t a, int64_t b);
+  /// @brief Return the mapping matrix of this TypeMapper.
   MappingMatrix<int64_t> map_matrix();
+  /// @brief Set the mapping matrix of this TypeMapper.
   void SetMappingMatrix(MappingMatrix<int64_t> map_matrix);
 
+  /// @brief Return the list of flattened types on the "a"-side.
   std::deque<FlatType> flat_a() const;
+  /// @brief Return the list of flattened types on the "b"-side.
   std::deque<FlatType> flat_b() const;
+  /// @brief Return the type on the "a"-side.
   Type *a() const { return a_; }
+  /// @brief Return the type on the "b"-side.
   Type *b() const { return b_; }
 
   /// @brief Return true if this TypeMapper can map type a to type b.
@@ -303,10 +347,15 @@ class TypeMapper : public Named {
   std::unordered_map<std::string, std::string> meta;
 
  protected:
+  /// The list of flattened types on the "a"-side.
   std::deque<FlatType> fa_;
+  /// The list of flattened types on the "b"-side.
   std::deque<FlatType> fb_;
+  /// Type of the "a"-side.
   Type *a_;
+  /// Type of the "b"-side.
   Type *b_;
+  /// The mapping matrix.
   MappingMatrix<int64_t> matrix_;
 };
 

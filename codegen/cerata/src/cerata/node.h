@@ -189,6 +189,7 @@ class Literal : public MultiOutputNode {
         Bool_val_(bool_val),
         Int_val_(int_val) {}
 
+  /// The raw storage type of the literal node.
   StorageType storage_type_;
 
   // Macros to generate Literal functions for different storage types.
@@ -205,11 +206,12 @@ class Literal : public MultiOutputNode {
   TYPENAME NAME##_val_{};
 #endif
 
-LITERAL_DECL_FACTORY(String, std::string)
-LITERAL_DECL_FACTORY(Bool, bool)
-LITERAL_DECL_FACTORY(Int, int)
+ LITERAL_DECL_FACTORY(String, std::string)
+ LITERAL_DECL_FACTORY(Bool, bool)
+ LITERAL_DECL_FACTORY(Int, int)
 
  public:
+  /// @brief Make a literal node with raw storage type T.
   template<typename T>
   static std::shared_ptr<Literal> Make(T value) { throw std::runtime_error("Not implemented."); }
 
@@ -226,11 +228,15 @@ LITERAL_DECL_FACTORY(Int, int)
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToString() const override;
 
+  /// @brief Return the raw C++ representation of the literal value.
   template<typename T>
   T raw_value() { throw std::runtime_error("Not implemented."); }
+
+  /// @brief Return whether the raw C++ representation is of type T.
   template<typename T>
   bool IsRaw() { throw std::runtime_error("Not implemented."); }
 
+  /// @brief Return the storage type of the literal.
   StorageType storage_type() const { return storage_type_; }
 };
 
@@ -284,8 +290,9 @@ class Parameter : public NormalNode {
 class Term {
  public:
   /// Terminator direction.
-  enum Dir { NONE, IN, OUT };
+  enum Dir { IN, OUT };
 
+  /// @brief Return the inverse of a direction.
   static Dir Invert(Dir dir);
 
   /// @brief Return the direction of this terminator.
@@ -303,6 +310,7 @@ class Term {
   static std::string str(Dir dir);
 
  protected:
+  /// The direction of this terminator.
   Dir dir_;
 };
 
@@ -310,10 +318,15 @@ class Term {
  * @brief A port is a terminator node on a graph
  */
 struct Port : public NormalNode, public Term {
+  /// @brief Construct a new port.
   Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir);
+  /// @brief Make a new port with some name, type and direction.
   static std::shared_ptr<Port> Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
+  /// @brief Make a new port. The name will be derived from the name of the type.
   static std::shared_ptr<Port> Make(std::shared_ptr<Type> type, Term::Dir dir = Term::IN);
+  /// @brief Deep-copy the port.
   std::shared_ptr<Object> Copy() const override;
+  /// @brief Invert the direction of this port.
   Port &InvertDirection();
 };
 

@@ -26,7 +26,9 @@ namespace cerata {
 
 /// @brief Structure to specify output properties per graph
 struct OutputSpec {
+  /// The component to output.
   std::shared_ptr<Component> comp;
+  /// Metadata for back-ends.
   std::unordered_map<std::string, std::string> meta = {};
 };
 
@@ -35,6 +37,7 @@ struct OutputSpec {
  */
 class OutputGenerator {
  public:
+  /// @brief Construct an OutputGenerator.
   explicit OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs = {});
 
   /// @brief Add a graph to the list of graphs to generate output for.
@@ -47,7 +50,9 @@ class OutputGenerator {
   virtual std::string subdir() = 0;
 
  protected:
+  /// @brief The root directory to generate the output in.
   std::string root_dir_;
+  /// @brief A list of things to put out.
   std::deque<OutputSpec> outputs_;
 };
 

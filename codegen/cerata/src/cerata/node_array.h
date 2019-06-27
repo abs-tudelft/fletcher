@@ -26,8 +26,10 @@
 
 namespace cerata {
 
+/// An array of nodes.
 class NodeArray : public Object {
  public:
+  /// @brief Return the type ID of the nodes in this NodeArray.
   Node::NodeID node_id() { return node_id_; }
 
   /// @brief ArrayNode constructor.
@@ -36,13 +38,19 @@ class NodeArray : public Object {
     base_->SetArray(this);
   }
 
+  /// @brief Set the parent of this NodeArray.
   void SetParent(Graph *parent) override;
 
+  /// @brief Return the size node.
   inline Node *size() const { return size_.get(); }
+
+  /// @brief Set the size node.
   void SetSize(const std::shared_ptr<Node> &size);
 
+  /// @brief Return the type of the nodes in the NodeArray.
   Type *type() const { return base_->type(); }
 
+  /// @brief Deep-copy the NodeArray.
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Append a node to this array. Returns a pointer to that node.
@@ -58,11 +66,14 @@ class NodeArray : public Object {
   /// @brief Return the index of a specific node.
   size_t IndexOf(const Node &n) const;
 
+  /// @brief Return a human-readable representation of this NodeArray.
   std::string ToString() const { return name(); }
 
+  /// @brief Return the base node of this NodeArray.
   std::shared_ptr<Node> base() { return base_; }
 
  protected:
+  /// The type ID of the nodes in this NodeArray.
   Node::NodeID node_id_;
   /// @brief Increment the size of the ArrayNode.
   void IncrementSize();
@@ -93,6 +104,7 @@ class PortArray : public NodeArray, public Term {
   std::shared_ptr<Object> Copy() const override;
 
  protected:
+  /// @brief Construct a new port array.
   PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir);
 };
 

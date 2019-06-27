@@ -48,9 +48,12 @@ class Expression : public MultiOutputNode {
   /// @brief Minimize the expression and convert it to a human-readable string.
   std::string ToString() const override;
 
+  /// @brief Return the left-hand side node of the expression.
   const Node *lhs() const { return lhs_.get(); }
+  /// @brief Return the right-hand side node of the expression.
   const Node *rhs() const { return rhs_.get(); }
 
+  /// @brief Recursively list any nodes that this node owns.
   std::deque<const Node *> ownees() const override {
     std::deque<const Node *> result;
     result.push_back(lhs_.get());
@@ -65,7 +68,9 @@ class Expression : public MultiOutputNode {
  protected:
   /// @brief Minimize a node, if it is an expression, otherwise just returns a copy of the input.
   static std::shared_ptr<const Node> Minimize(const Node *node);
+  /// @brief Merge expressions of integer literals into their resulting integer literal.
   static std::shared_ptr<const Node> MergeIntLiterals(const Expression *exp);
+  /// @brief Eliminate nodes that have zero or one on either side for specific expressions.
   static std::shared_ptr<const Node> EliminateZeroOne(const Expression *exp);
 
   /**
@@ -76,11 +81,15 @@ class Expression : public MultiOutputNode {
   */
   Expression(Op op, std::shared_ptr<const Node> lhs, std::shared_ptr<const Node> rhs);
 
+  /// The binary operator of this expression.
   Op operation_;
+  /// The left hand side node.
   std::shared_ptr<const Node> lhs_;
+  /// The right hand side node.
   std::shared_ptr<const Node> rhs_;
 };
 
+/// @brief Human-readable expression operator.
 std::string ToString(Expression::Op operation);
 
 // Macros to generate expression generators
@@ -116,6 +125,7 @@ inline std::shared_ptr<Node> operator SYMBOL (const Node& lhs, int rhs) {       
   return lhs.shared_from_this() SYMBOL intl(rhs);                                                                 \
 }
 #endif
+
 EXPRESSION_OP_FACTORY(+, ADD)
 EXPRESSION_OP_FACTORY(-, SUB)
 EXPRESSION_OP_FACTORY(*, MUL)

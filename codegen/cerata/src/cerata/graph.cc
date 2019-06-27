@@ -150,7 +150,7 @@ NodeArray *Graph::GetArray(Node::NodeID node_id, const std::string &array_name) 
   // TODO(johanpel): use std::optional
 }
 
-std::optional<Node *>Graph::GetNode(const std::string &node_name) const {
+std::optional<Node *> Graph::GetNode(const std::string &node_name) const {
   for (const auto &n : GetAll<Node>()) {
     if (n->name() == node_name) {
       return n;

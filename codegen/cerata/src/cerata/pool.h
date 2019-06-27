@@ -103,6 +103,7 @@ inline ComponentPool *default_component_pool() {
  */
 class NodePool : public Pool<Node> {
  public:
+  /// @brief Obtain a literal node of raw storage type LitType with some value.
   template<typename LitType>
   std::shared_ptr<Literal> GetLiteral(LitType value) {
     // Attempt to find and return an already existing literal

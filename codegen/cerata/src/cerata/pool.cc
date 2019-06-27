@@ -23,7 +23,7 @@ namespace cerata {
 
 /// @brief Template specialization for Type objects.
 template<>
-std::string Pool<Type>::PoolTypeToString(const Type& object) {
+std::string Pool<Type>::PoolTypeToString(const Type &object) {
   return object.ToString(true, true);
 }
 
