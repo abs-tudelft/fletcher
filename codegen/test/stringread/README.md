@@ -62,21 +62,21 @@ This will produce the following files:
 | vhdl/Kernel.vhdt                      | Kernel template                                                              |
 | vhdl/StringRead.vhd                   | A RecordBatchReader instantiating all ArrayReaders for every Arrow Array (column) of the RecordBatch. |
 | vhdl/Mantle.vhd                       | A wrapper around the Kernel, RecordBatchReaders and bus interconnect.        |
-| vhdl/sim_top_tc.vhd                   | Simulation top-level test case                                               |
+| vhdl/SimTop_tc.vhd                    | Simulation top-level test case                                               |
 | output/stringread.srec                | An SREC file with the contents of the RecordBatch for the memory model in simulation. |
 
 Note that the `vhdl/Kernel.vhdt` file was only generated because there is already an existing `vhdl/Kernel.vhd`. By
 default, Fletchgen will not overwrite a file that a user should modify, but *will* only overwrite any existing 
 `*.vhdt`-file!
 
-Now, `sim_top_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
+Now, `SimTop_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
 At the time of writing, this tool gives us two simulation targets, either [GHDL](https://github.com/ghdl/ghdl) 
 or Questasim/Modelsim.
 
 Suppose we are targeting GHDL, we can invoke vhdeps as follows:
 
 ```console
- vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl sim_top_tc
+ vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl SimTop_tc
 ```
 
 vhdeps will automatically analyze the dependencies of our simulation top level test case. These files are found in 
@@ -99,14 +99,14 @@ outputting the strings that were in the RecordBatch:
 You can see the waveforms if you run the simulation in gui mode with the ```-gui``` flag. 
 In this example, we use QuestaSim as a simulator target for vhdeps.
 ```console
-vhdeps --no-tempdir -i path/to/fletcher/hardware -i . --gui vsim sim_top_tc
+vhdeps --no-tempdir -i path/to/fletcher/hardware -i . --gui vsim SimTop_tc
 ```
 
 You can verify that the string lengths and characters of the names appear on the two streams that were generated from
 the "Names" field. Add the kernel to the simulation waveforms as follows:
 
 ```tcl
-add_waves {{"Kernel" sim:/sim_top_tc/Mantle_inst/Kernel_inst/*}}
+add_waves {{"Kernel" sim:/SimTop_tc/Mantle_inst/Kernel_inst/*}}
 ```
 
 We'll take a look at the StringRead_Name_chars_data signal using ASCII radix, so we can actually read what is going on.

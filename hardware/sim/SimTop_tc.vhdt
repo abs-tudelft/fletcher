@@ -22,7 +22,7 @@ use work.Interconnect_pkg.all;
 use work.UtilStr_pkg.all;
 use work.UtilConv_pkg.all;
 
-entity sim_top_tc is
+entity SimTop_tc is
   generic (
     -- Accelerator properties
     INDEX_WIDTH                 : natural := 32;
@@ -41,9 +41,9 @@ entity sim_top_tc is
     SLV_BUS_ADDR_WIDTH          : natural := 32;
     SLV_BUS_DATA_WIDTH          : natural := 32
   );
-end sim_top_tc;
+end SimTop_tc;
 
-architecture Behavorial of sim_top_tc is
+architecture Behavorial of SimTop_tc is
 
   -----------------------------------------------------------------------------
   -- Default wrapper component.

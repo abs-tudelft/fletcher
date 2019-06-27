@@ -23,6 +23,7 @@
 #include "fletchgen/hls/vivado.h"
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
+#include "fletchgen/top/axi.h"
 
 int main(int argc, char **argv) {
   // Start logging
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
   // Generate simulation top level
   if (options->MustGenerateDesign() && options->sim_top) {
     std::ofstream sim_file;
-    std::string sim_file_path = "vhdl/sim_top_tc.vhd";
+    std::string sim_file_path = "vhdl/SimTop_tc.vhd";
     if (cerata::FileExists(sim_file_path) && !options->overwrite) {
       sim_file_path += 't';
     }
@@ -89,6 +90,17 @@ int main(int argc, char **argv) {
                                    srec_batch_desc);
   }
 
+  // Generate AXI top level
+  if (options->axi_top) {
+    std::ofstream axi_file;
+    std::string axi_file_path = "vhdl/AxiTop.vhd";
+    if (cerata::FileExists(axi_file_path) && !options->overwrite) {
+      axi_file_path += 't';
+    }
+    axi_file = std::ofstream(axi_file_path);
+    fletchgen::top::GenerateAXITop(*design.mantle, {&axi_file});
+  }
+
   // Generate Vivado HLS template
   if (options->vivado_hls) {
     auto hls_template_path = options->output_dir + "/vivado_hls/" + options->kernel_name + ".cpp";
@@ -96,11 +108,6 @@ int main(int argc, char **argv) {
     cerata::CreateDir(options->output_dir + "/vivado_hls");
     auto hls_template_file = std::ofstream(hls_template_path);
     hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(*design.kernel);
-  }
-
-  // Generate AXI top level
-  if (options->axi_top) {
-    FLETCHER_LOG(WARNING, "Generating AXI top-level not yet implemented.");
   }
 
   FLETCHER_LOG(INFO, program_name + " completed.");
