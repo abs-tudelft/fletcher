@@ -118,7 +118,7 @@ so Fletchgen was kind enough not to overwrite it (we've already implemented the 
 It will always overwrite a `.vhdt` file, though!
 * `hardware/vhdl/ExampleBatch.vhd`: a generated "RecordBatchReader".
 * `hardware/vhdl/Mantle.vhd`: a generated top-level wrapper instantiating the "RecordBatchReader" and the "Sum" kernel.
-* `hardware/vhdl/sim_top_tc.vhd`: the simulation top-level, instantiating the memory models and the "Mantle".
+* `hardware/vhdl/SimTop_tc.vhd`: the simulation top-level, instantiating the memory models and the "Mantle".
 
 # 4. Implement the kernel
 
@@ -130,14 +130,14 @@ We'll follow up with an HLS example soon!
 
 # 5. Simulate the design
 
-Now, `sim_top_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
+Now, `SimTop_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
 At the time of writing, this tool gives us two simulation targets, either [GHDL](https://github.com/ghdl/ghdl) 
 or Questasim/Modelsim.
 
 Suppose we are targeting GHDL, we can invoke `vhdeps` as follows (in the `hardware` subdirectory). 
 
 ```console
- vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl sim_top_tc
+ vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl SimTop_tc
 ```
 
 `vhdeps` will automatically analyze the dependencies of our simulation top level test case. These files are found in 
@@ -168,7 +168,7 @@ If you'd like to run the simulation with a waveform GUI, you could use ModelSim 
 follows:
 
 ```console
- vhdeps --no-tempdir -i path/to/fletcher/hardware -i . --gui vsim sim_top_tc
+ vhdeps --no-tempdir -i path/to/fletcher/hardware -i . --gui vsim SimTop_tc
 ```
 
 We just added the `--gui` flag and changed the simulator target to `vsim`.
@@ -177,7 +177,7 @@ In the Modelsim/Questasim GUI, we can add the waveforms for our kernel and zoom 
 following command on the TCL terminal:
 
 ```tcl
-add_waves {{"Kernel" sim:/sim_top_tc/Mantle_inst/Sum_inst/*}}
+add_waves {{"Kernel" sim:/SimTop_tc/Mantle_inst/Sum_inst/*}}
 wave zoom range 0 1700ns
 ```
 
