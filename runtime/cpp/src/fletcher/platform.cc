@@ -57,18 +57,19 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
   }
 }
 
-Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform) {
-  Status err = Status::NO_PLATFORM();
+Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
+  Status status = Status::NO_PLATFORM();
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    err = Make(p, platform);
-    if (err.ok()) {
-      return err;
+    status = Make(p, platform, quiet);
+    if (status.ok()) {
+      // We've found a working platform, use that.
+      return status;
     }
   }
-  return err;
+  return status;
 }
 
 Status Platform::Link(void *handle, bool quiet) {

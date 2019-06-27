@@ -42,7 +42,7 @@ class Platform {
    * @brief Create a new platform instance.
    * @param name        The name of the platform.
    * @param platform    The platform
-   * @param quiet       Whether to surpress any logging messages
+   * @param quiet       Whether to suppress any logging messages
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
   static Status Make(const std::string &name, std::shared_ptr<Platform> *platform, bool quiet = true);
@@ -50,9 +50,10 @@ class Platform {
   /**
    * @brief Create a new platform by attempting to autodetect the platform driver.
    * @param platform    The platform
+   * @param quiet       Whether to suppress any logging messages
    * @return            Status::OK() if successful, Status::ERROR() otherwise.
    */
-  static Status Make(std::shared_ptr<Platform> *platform);
+  static Status Make(std::shared_ptr<Platform> *platform, bool quiet = true);
 
   /// @brief Return the name of the platform
   std::string name();

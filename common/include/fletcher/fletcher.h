@@ -20,6 +20,11 @@
 
 #include <stdint.h>
 
+/**
+ * \brief Names of platforms to attempt to autodetect by checking if a driver is available.
+ *
+ * Echo should always be the last platform to test for, as the platforms are attempted in the order of this list.
+ */
 #define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
 
 #define FLETCHER_STATUS_OK 0
