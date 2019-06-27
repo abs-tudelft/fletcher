@@ -18,28 +18,71 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <optional>
 
+#include "cerata/logging.h"
 #include "cerata/node.h"
 
 namespace cerata {
 
 // Forward decl.
-class Component;
-class Node;
-class Literal;
 class Type;
+class Component;
 
 /**
- * @brief A component pool to keep a collection of components.
+ * @brief A pool to share ownership of objects.
+ *
+ * Useful if these objects that are often used (e.g. integer literals), to be able to prevent unnecessary duplicates.
  */
-class TypePool {
+template<typename T>
+class Pool {
  public:
-  void Add(const std::shared_ptr<Type> &type);
-  std::optional<Type *> Get(const std::string &name);
-  void Clear();
+  /// @brief Add an object to the pool, taking shared ownership. Object may not already exist in the pool.
+  void Add(const std::shared_ptr<T> &object) {
+    for (const auto &existing_object : objects_) {
+      if (existing_object->name() == object->name()) {
+        CERATA_LOG(FATAL, "Object " + PoolTypeToString(*existing_object) + " already exists in pool.");
+      }
+    }
+    objects_.push_back(object);
+  }
+
+  /// @brief Retrieve a component from the pool by name, if it exists. Returns empty option otherwise.
+  std::optional<T *> Get(const std::string &name) {
+    // Check for potential duplicate
+    for (const auto &existing_object : objects_) {
+      if (existing_object->name() == name) {
+        return existing_object.get();
+      }
+    }
+    return std::nullopt;
+  }
+
+  /// @brief Release ownership of all components.
+  void Clear() {
+    objects_.clear();
+  }
+
  protected:
-  std::vector<std::shared_ptr<Type>> types_;
+  /// A list of objects that this pool owns.
+  std::vector<std::shared_ptr<T>> objects_;
+
+ private:
+  /**
+   * @brief Returns a human-readable representation of an object stored in a pool.
+   * @param object  The object itself.
+   * @return        A human-readable string.
+   */
+  std::string PoolTypeToString(const T &object) {
+    return object.ToString();
+  }
 };
+
+/// A pool of Types.
+class TypePool : public Pool<Type> {};
+
+/// A pool of Components.
+class ComponentPool : public Pool<Component> {};
 
 /// @brief Return a global default TypePool.
 inline TypePool *default_type_pool() {
@@ -47,37 +90,27 @@ inline TypePool *default_type_pool() {
   return &pool;
 }
 
-/**
- * @brief A component pool to keep a collection of components.
- */
-class ComponentPool {
- public:
-  void Add(const std::shared_ptr<Component> &comp);
-  std::optional<Component *> Get(const std::string &name);
-  void Clear();
- protected:
-  std::vector<std::shared_ptr<Component>> components_;
-};
-
 /// @brief Return a global default component pool.
 inline ComponentPool *default_component_pool() {
   static ComponentPool pool;
   return &pool;
 }
 
-class NodePool {
+/**
+ * @brief A pool of nodes.
+ *
+ * Useful to prevent duplicates of literal nodes.
+ */
+class NodePool : public Pool<Node> {
  public:
-  void Add(const std::shared_ptr<Node> &node);
-  void Clear();
-
-  template<typename T>
-  std::shared_ptr<Literal> GetLiteral(T value) {
+  template<typename LitType>
+  std::shared_ptr<Literal> GetLiteral(LitType value) {
     // Attempt to find and return an already existing literal
-    for (const auto &node : nodes_) {
+    for (const auto &node : objects_) {
       if (node->IsLiteral()) {
         auto lit_node = std::dynamic_pointer_cast<Literal>(node);
-        if (lit_node->IsRaw<T>()) {
-          T raw_value = lit_node->raw_value<T>();
+        if (lit_node->IsRaw<LitType>()) {
+          auto raw_value = lit_node->raw_value<LitType>();
           if (raw_value == value) {
             return lit_node;
           }
@@ -85,13 +118,10 @@ class NodePool {
       }
     }
     // No literal found, make a new one.
-    std::shared_ptr<Literal> ret = Literal::Make<T>(value);
+    std::shared_ptr<Literal> ret = Literal::Make<LitType>(value);
     Add(ret);
     return ret;
   }
-
- protected:
-  std::vector<std::shared_ptr<Node>> nodes_;
 };
 
 /**
@@ -102,15 +132,18 @@ inline NodePool *default_node_pool() {
   return &pool;
 }
 
-/// @brief Obtain a raw pointer to an integer literal from the default node pool.
-inline Literal *rintl(int i) { return default_node_pool()->GetLiteral(i).get(); }
-/// @brief Obtain a shared pointer to an integer literal from the default node pool.
-inline std::shared_ptr<Literal> intl(int i) { return default_node_pool()->GetLiteral(i); }
+// Convenience functions for fast access to literals in the default node pool.
 
-/// @brief Obtain a raw pointer to a string literal from the default node pool.
-inline Literal *rstrl(std::string str) {
-  return default_node_pool()->GetLiteral<std::string>(std::move(str)).get();
+/// @brief Obtain a raw pointer to an integer literal from the default node pool.
+inline Literal *rintl(int i) {
+  return default_node_pool()->GetLiteral(i).get();
 }
+/// @brief Obtain a shared pointer to an integer literal from the default node pool.
+inline std::shared_ptr<Literal> intl(int i) {
+  return default_node_pool()->GetLiteral(i);
+}
+/// @brief Obtain a raw pointer to a string literal from the default node pool.
+inline Literal *rstrl(std::string str) { return default_node_pool()->GetLiteral<std::string>(std::move(str)).get(); }
 /// @brief Obtain a shared pointer to a string literal from the default node pool.
 inline std::shared_ptr<Literal> strl(std::string str) {
   return default_node_pool()->GetLiteral<std::string>(std::move(str));

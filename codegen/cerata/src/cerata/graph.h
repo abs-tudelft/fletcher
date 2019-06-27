@@ -23,14 +23,13 @@
 
 #include "cerata/node.h"
 #include "cerata/node_array.h"
+#include "cerata/pool.h"
 
 namespace cerata {
 
 // Forward Decl.
 class Component;
 class Instance;
-class ComponentPool;
-ComponentPool *default_component_pool();
 
 /**
  * @brief A graph representing a hardware structure.
