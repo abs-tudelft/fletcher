@@ -1,8 +1,8 @@
 #pragma once
 
-#import "fletcher/components/operators/arith.h"
-#import "fletcher/components/operators/indecrement.h"
-#import "fletcher/components/operators/logical.h"
+#include "fletcher/components/operators/arith.h"
+#include "fletcher/components/operators/indecrement.h"
+#include "fletcher/components/operators/logical.h"
 
 //template <typename T>
 //f_packet<T> operator+(f_packet<T> &rhs) {

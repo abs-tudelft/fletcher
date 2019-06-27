@@ -1,6 +1,6 @@
 #pragma once
 
-#import "packet_base.h"
+#include "packet_base.h"
 
 /// @brief Packet template.
 template <typename T>
