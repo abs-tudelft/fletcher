@@ -25,32 +25,46 @@
 #include "cerata/graph.h"
 #include "cerata/dot/style.h"
 
+/// Contains everything related to the DOT back-end.
 namespace cerata::dot {
 
-/**
- * @brief Dot graph output generator.
- */
+/// Dot graph output generator.
 struct Grapher {
+  /// The style.
   Style style;
+  /// The configuration.
   Config config;
+  /// Edges that were already drawn.
   std::deque<Edge *> drawn_edges = {};
   Grapher() : Grapher(Style::normal()) {}
+  /// Grapher constructor.
   explicit Grapher(Style style) : style(std::move(style)) {}
+  /// @brief Generate edges.
   std::string GenEdges(const Graph &graph, int level = 0);
+  /// @brief Generate a node.
   std::string GenNode(const Node &n, int level = 0);
+  /// @brief Generate nodes.
   std::string GenNodes(const Graph &graph, Node::NodeID id, int level = 0, bool nogroup = false);
+  /// @brief Generate a graph.
   std::string GenGraph(const Graph &graph, int level = 0);
+  /// @brief Generate a DOT file.
   std::string GenFile(const Graph &graph, const std::string &path);
+  /// @brief Generate expressions.
   static std::string GenExpr(const Node &exp, const std::string &prefix = "", int level = 0);
 };
 
+/// @brief Return the DOT name of a node.
 std::string NodeName(const Node &node, const std::string &suffix = "");
 
+/// @brief OutputGenerator for DOT graphs.
 class DOTOutputGenerator : public OutputGenerator {
  public:
+  /// @brief DOTOutputGenerator constructor.
   explicit DOTOutputGenerator(std::string root_dir, std::deque<OutputSpec> graphs = {})
       : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
+  /// @brief Generate the DOT graphs.
   void Generate() override;
+  /// @brief Returns the subdirectory used by this OutputGenerator.
   std::string subdir() override { return "dot"; }
 };
 

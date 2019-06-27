@@ -28,21 +28,15 @@
 
 namespace cerata::vhdl {
 
+/// Functions to generate VHDL instantiation code.
 struct Inst {
-  static Block GenerateMappingPair(const MappingPair &p,
-                                   size_t ia,
-                                   const std::shared_ptr<Node> &offset_a,
-                                   size_t ib,
-                                   const std::shared_ptr<Node> &offset_b,
-                                   const std::string &lh_prefix,
-                                   const std::string &rh_prefix,
-                                   bool a_is_array,
-                                   bool b_is_array);
-
-  static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b);
+  /// @brief Generate a VHDL instantiation of a graph.
   static MultiBlock Generate(const Graph &graph);
+  /// @brief Generate an associativity list for an instantiated Port.
   static Block GeneratePortMaps(const Port &port);
+  /// @brief Generate an associativity list for an instantiated PortArray.
   static Block GeneratePortArrayMaps(const PortArray &array);
+  /// @brief Generate an associativity list for an instantiated Parameter.
   static Block GenerateGenericMap(const Parameter &par);
 };
 

@@ -64,4 +64,13 @@ std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   return result;
 }
 
+std::string Range::ToString() {
+  if (type == SINGLE) {
+    return "(" + bottom + ")";
+  } else if (type == MULTI) {
+    return "(" + top + " downto " + bottom + ")";
+  } else {
+    return "";
+  }
+}
 }  // namespace cerata::vhdl

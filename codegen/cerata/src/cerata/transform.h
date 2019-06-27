@@ -26,25 +26,26 @@
 namespace cerata {
 
 /**
- * @brief Get all components underlying some top-level component.
- * @param components          The deque of components to append to.
- * @param top_component       The top-level component.
+ * @brief Get all potential child graphs of a graph.
+ * @param top_graph           The top-level graph to inspect.
+ * @param graphs_out          A list of graphs to append the output to.
+ * @param include_components  Whether to recurse down the components used by any instances in the graph.
  */
 void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool include_components = false);
 
 /**
- * @brief Get all objects from a component and its sub-components.
- * @param objects             The deque of objects to append to.
- * @param top_component       The top-level component.
- * @param include_instances   Whether to traverse down the child instances of the component.
+ * @brief Get all objects from a component.
+ * @param top_component       The top-level component to inspect.
+ * @param objects_out         A list of objects to append the output to.
+ * @param include_instances   Whether to recurse down the instances in the top-level graph.
  */
 void GetAllObjects(Component *top_component, std::deque<Object *> *objects_out, bool include_instances = false);
 
 /**
- * @brief Recursively add all types used in a component and its sub-components, including subtypes.
- * @param types               The deque types to append to.
- * @param graph               The top-level component.
- * @param recursive           Whether to traverse down the child instances of the component.
+ * @brief Get all types used in a component, including nested types.
+ * @param top_component       The top-level component to inspect.
+ * @param types_out           A list of types to append the output to.
+ * @param include_instances   Whether to recurse down the instances in the top-level graph.
  */
 void GetAllTypes(Component *top_component, std::deque<Type *> *types_out, bool include_instances = false);
 

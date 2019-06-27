@@ -33,3 +33,6 @@
 // Cerata back-ends
 #include "cerata/vhdl/vhdl.h"
 #include "cerata/dot/dot.h"
+
+/// Contains every Cerata class, function, etc...
+namespace cerata {}

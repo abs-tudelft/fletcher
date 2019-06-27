@@ -96,9 +96,9 @@ void Flatten(std::deque<FlatType> *list,
   list->push_back(result);
 
   switch (type->id()) {
-    case Type::STREAM:FlattenStream(list, dynamic_cast<Stream*>(type), result, invert);
+    case Type::STREAM:FlattenStream(list, dynamic_cast<Stream *>(type), result, invert);
       break;
-    case Type::RECORD:FlattenRecord(list, dynamic_cast<Record*>(type), result, invert);
+    case Type::RECORD:FlattenRecord(list, dynamic_cast<Record *>(type), result, invert);
       break;
     default:break;
   }
@@ -318,7 +318,7 @@ std::string MappingPair::ToString() const {
   return ret.str();
 }
 
-std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
   std::shared_ptr<Node> w = intl(0);
   for (int64_t i = 0; i < num_a(); i++) {
     auto fw = flat_type_a(i).type_->width();
@@ -331,7 +331,7 @@ std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<N
   return w;
 }
 
-std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>>& no_width_increment) const {
+std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
   std::shared_ptr<Node> w = intl(0);
   for (int64_t i = 0; i < num_b(); i++) {
     auto fw = flat_type_b(i).type_->width();

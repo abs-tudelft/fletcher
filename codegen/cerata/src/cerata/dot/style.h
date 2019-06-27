@@ -25,14 +25,17 @@
 
 namespace cerata::dot {
 
+/// @brief Return indent string.
 inline std::string tab(uint n) {
   return std::string(2 * n, ' ');
 }
 
+/// @brief Return indent string.
 inline std::string tab(int n) {
   return tab(static_cast<uint>(n));
 }
 
+/// @brief Sanitize a string for usage in DOT.
 inline std::string sanitize(std::string in) {
   std::replace(in.begin(), in.end(), ':', '_');
   std::replace(in.begin(), in.end(), '-', '_');
@@ -40,7 +43,7 @@ inline std::string sanitize(std::string in) {
   return in;
 }
 
-// Assign with quotes
+/// @brief Assign with quotes.
 inline std::string awq(const std::string &attribute, const std::string &style) {
   if (!style.empty()) {
     return attribute + "=\"" + style + "\"";
@@ -49,129 +52,144 @@ inline std::string awq(const std::string &attribute, const std::string &style) {
   }
 }
 
+/// A color Palette.
 struct Palette {
-  int num_colors;
-  std::string black;
-  std::string white;
-  std::string gray;
-  std::string darker;
-  std::string dark;
-  std::string light;
-  std::string lighter;
+  int num_colors;  ///< Number of colors of this Palette.
+  std::string black;  ///< Black color
+  std::string white;  ///< White color
+  std::string gray;  ///< Gray color
+  std::string darker;  ///< Darker gray color
+  std::string dark;  ///< Very dark gray color
+  std::string light;  ///< Light gray color
+  std::string lighter;  ///< Lighter gray color
 
-  std::vector<std::string> b;  // Bright
-  std::vector<std::string> m;  // Medium
-  std::vector<std::string> d;  // Dark
+  std::vector<std::string> b;  ///< Bright
+  std::vector<std::string> m;  ///< Medium
+  std::vector<std::string> d;  ///< Dark
 
-  // Default palette
+  /// @brief Default palette
   static Palette normal();
 };
 
-/**
- * @brief Convenience structure to build up dot styles
- */
+/// Convenience structure to build up dot styles
 struct StyleBuilder {
-  std::vector<std::string> parts;
+  std::vector<std::string> parts;  ///< Parts of the style.
+  /// @brief Append a part to the style.
   StyleBuilder &operator<<(const std::string &part);
+  /// @brief Generate the style string.
   std::string ToString();
 };
 
+/// DOT output configuration. Determines what Cerata constructs will be used for generation.
 struct Config {
+  /// Node configuration.
   struct NodeConfig {
-    bool parameters = true;
-    bool literals = true;
-    bool signals = true;
-    bool ports = true;
-    bool expressions = true;
-    struct ExpandConfig {
-      bool record = false;
-      bool stream = false;
-      bool expression = false;
-    } expand;
-    struct TypeConfig {
-      bool clock = true;
-      bool reset = true;
-      bool bit = true;
-      bool vector = true;
-      bool record = true;
-      bool stream = true;
-    } types;
-  } nodes;
+    bool parameters = true;    ///< Show parameters.
+    bool literals = true;      ///< Show literals.
+    bool signals = true;       ///< Show signals.
+    bool ports = true;         ///< Show ports.
+    bool expressions = true;   ///< Show expressions.
 
+    /// Expansion configuration.
+    struct ExpandConfig {
+      bool record = false;      ///< Expand records.
+      bool stream = false;      ///< Expand streams.
+      bool expression = false;  ///< Expand expressions.
+    } expand;  ///< Configures what types of nodes to expand.
+
+    /// Type configuration.
+    struct TypeConfig {
+      bool clock = true;    ///< Show clock types.
+      bool reset = true;    ///< Show reset types.
+      bool bit = true;      ///< Show bit types.
+      bool vector = true;   ///< Show vector types.
+      bool record = true;   ///< Show record types.
+      bool stream = true;   ///< Show stream types.
+    } types;  ///< Type configuration.
+  } nodes;  ///< Node configuration.
+
+  /// @brief Return a configuration that will generate every construct.
   static Config all();
+  /// @brief Return a configuration that will generate default constructs.
   static Config normal();
+  /// @brief Return a configuration that will generate onnly stream constructs.
   static Config streams();
-  bool operator()(const std::shared_ptr<Node> &node);
+  /// @brief Return whether a node should be generated on the DOT graph.
+  bool operator()(const Node &node);
 };
 
 /**
  * @brief Dot style configuration
  */
 struct Style {
+  /// Short-hand for std::string.
   using str = std::string;
 
-  /// @brief Subgraph configuration
+  /// Subgraph style.
   struct SubGraph {
-    str base;
-    str color;
-  } subgraph;
+    str base;   ///< Subgraph base style.
+    str color;  ///< Subgraph color.
+  } subgraph;   ///< Style for sub graphs.
 
   /// @brief Node group configuration
   struct NodeGroup {
-    str base;
-    str color;
-  } nodegroup;
+    str base;   ///< Base style for groups.
+    str color;  ///< Color for groups.
+  } nodegroup;  ///< Style for group of nodes.
 
+  /// Style for edges.
   struct EdgeStyle {
+    /// Specific edge colors.
     struct Colors {
-      str stream;
-    } color;
+      str stream;  ///< Colors for stream edges.
+    } color;   ///< Colors for specific edges.
 
-    str base;
-    str port_to_sig;
-    str sig_to_port;
-    str port_to_port;
-    str param;
-    str stream;
-    str lit;
-    str expr;
-    str clock;
-    str reset;
-  } edge;
+    str base;          ///< Base style.
+    str port_to_sig;   ///< Style for port-to-signal.
+    str sig_to_port;   ///< Style for signal-to-port.
+    str port_to_port;  ///< Style for port-to-port.
+    str param;         ///< Style for parameter edges.
+    str stream;        ///< Style for stream edges.
+    str lit;           ///< Style for literal edges.
+    str expr;          ///< Style for expressions.
+    str clock;         ///< Style for clocks.
+    str reset;         ///< Style for resets.
+  } edge;              ///< Style for edges.
 
-  /// @brief Node style configuration
+  /// Node style.
   struct NodeStyle {
-    /// @brief Colors for nodes
+    /// Colors for nodes
     struct Colors {
-      str stream;
-      str stream_border;
-      str stream_child;
-      str record;
-      str record_border;
-      str record_child;
-    } color;
-    str base;
-    str port;
-    str signal;
-    str parameter;
-    str literal;
-    str expression;
-    str nested;
+      str stream;         ///< Stream node color.
+      str stream_border;  ///< Stream border color.
+      str stream_child;   ///< Stream child color.
+      str record;         ///< Record node color.
+      str record_border;  ///< Record border color.
+      str record_child;   ///< Record child color.
+    } color;         ///< Colors for specific nodes.
+    str base;        ///< Base node style.
+    str port;        ///< Style for ports.
+    str signal;      ///< Style for signals.
+    str parameter;   ///< Style for parameters.
+    str literal;     ///< Style for literals.
+    str expression;  ///< Style for expressions.
+    str nested;      ///< Style for nested nodes.
 
-    /// @brief Styles for specific node types.
+    /// Styles for specific node types.
     struct TypeStyle {
-      str clock;
-      str reset;
-      str bit;
-      str boolean;
-      str vector;
-      str stream;
-      str record;
-      str integer;
-      str string;
-    } type;
-  } node;
+      str clock;    ///< Style for clocks
+      str reset;    ///< Style for resets
+      str bit;      ///< Style for bits
+      str boolean;  ///< Style for booleans
+      str vector;   ///< Style for vectors
+      str stream;   ///< Style for streams
+      str record;   ///< Style for records
+      str integer;  ///< Style for integers
+      str string;   ///< Style for strings
+    } type;         ///< Styles for types.
+  } node;           ///< Style for nodes.
 
+  /// Configuration of what types of constructs to show or hide for this style.
   Config config;
 
   /// @brief Generate a HTML table cell from a type.

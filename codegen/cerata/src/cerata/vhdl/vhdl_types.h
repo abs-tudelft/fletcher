@@ -31,44 +31,40 @@ std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type);
 
 // VHDL implementation specific types
 
+/// @brief A stream ready-valid handshake "valid" signal.
 std::shared_ptr<Type> valid();
+/// @brief A stream ready-valid handshake "ready" signal.
 std::shared_ptr<Type> ready();
 
 // VHDL port stuff
-
-std::string ToString(Port::Dir dir);
-Port::Dir Reverse(Port::Dir dir);
-
-// VHDL type checking
-
-bool IsCompatible(const std::shared_ptr<Node> &a, const std::shared_ptr<Node> &b);
+/// @brief Return a VHDL version of a terminator direction.
+std::string ToString(Term::Dir dir);
+/// @brief Reverse a terminator direction.
+Term::Dir Reverse(Term::Dir dir);
 
 /**
  * @brief Filter abstract types from a list of flattened types
- * @param list The list to filter
- * @return The filtered list
+ * @param list  The list to filter
+ * @return      The filtered list
  */
 std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list);
 
+/// A VHDL range.
 struct Range {
+  /// Range types.
   enum {
-    NIL,
-    SINGLE,
-    MULTI,
+    NIL,      ///< For null ranges.
+    SINGLE,   ///< For range of size 1.
+    MULTI,    ///< For a range of size > 1.
   } type = NIL;
 
+  /// Bottom of the range.
   std::string bottom;
+  /// Top of the range.
   std::string top;
 
-  std::string ToString() {
-    if (type == SINGLE) {
-      return "(" + bottom + ")";
-    } else if (type == MULTI) {
-      return "(" + top + " downto " + bottom + ")";
-    } else {
-      return "";
-    }
-  }
+  /// @brief Return a human-readable version of the range.
+  std::string ToString();
 };
 
 }  // namespace cerata::vhdl

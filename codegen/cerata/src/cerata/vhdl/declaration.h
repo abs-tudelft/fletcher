@@ -26,12 +26,17 @@
 
 namespace cerata::vhdl {
 
+/// Declaration generators.
 struct Decl {
-  static std::string Generate(const Type &type,  const std::optional<std::shared_ptr<Node>> &multiplier = std::nullopt);
+  /// @brief Generate a parameter declaration as VHDL generic.
   static Block Generate(const Parameter &par, int depth = 0);
+  /// @brief Generate a port declaration.
   static Block Generate(const Port &port, int depth = 0);
+  /// @brief Generate a port array declaration.
   static Block Generate(const PortArray &port, int depth = 0);
+  /// @brief Generate a signal declaration.
   static Block Generate(const Signal &sig, int depth = 0);
+  /// @brief Generate a component or entity declaration.
   static MultiBlock Generate(const Component &comp, bool entity = false);
 };
 

@@ -35,7 +35,7 @@ Line &operator<<(Line &lhs, const Line &rhs) {
   return lhs;
 }
 
-Line &operator+=(Line &lhs, const std::string &str) {
+Line &operator+=(Line &lhs, const std::string &str) { //NOLINT
   lhs.parts.back().append(str);
   return lhs;
 }
@@ -54,7 +54,7 @@ std::vector<size_t> Block::GetAlignments() const {
   return ret;
 }
 
-std::string Block::str() const {
+std::string Block::ToString() const {
   std::stringstream ret;
   auto a = GetAlignments();
   for (const auto &l : lines) {
@@ -77,12 +77,12 @@ std::string Block::str() const {
   return ret.str();
 }
 
-Block &Block::reverse() {
+Block &Block::Reverse() {
   std::reverse(lines.begin(), lines.end());
   return *this;
 }
 
-Block &Block::sort(std::optional<char> c) {
+Block &Block::Sort(std::optional<char> c) {
   std::stable_sort(lines.begin(), lines.end(),
                    [&](const Line &la, const Line &lb) -> bool {
                      auto a = la.ToString();
@@ -138,7 +138,7 @@ Block &operator<<(Block &lhs, const std::string &rhs) {
   return lhs;
 }
 
-Block &operator<<=(Block &lhs, const std::string &rhs) {
+Block &operator<<=(Block &lhs, const std::string &rhs) { //NOLINT
   if (!lhs.lines.empty()) {
     for (uint i = 0; i < lhs.lines.size() - 1; i++) {
       lhs.lines[i].parts.back().append(rhs);
@@ -169,7 +169,7 @@ MultiBlock &operator<<(MultiBlock &lhs, const MultiBlock &rhs) {
 std::string MultiBlock::ToString() const {
   std::stringstream ret;
   for (const auto &b : blocks) {
-    ret << b.str();
+    ret << b.ToString();
   }
   return ret.str();
 }
@@ -177,7 +177,7 @@ std::string MultiBlock::ToString() const {
 std::string ToString(const std::vector<Block> &blocks) {
   std::stringstream ret;
   for (const auto &b : blocks) {
-    ret << b.str();
+    ret << b.ToString();
   }
   return ret.str();
 }

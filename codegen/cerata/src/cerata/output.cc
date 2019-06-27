@@ -23,7 +23,7 @@ namespace cerata {
 OutputGenerator::OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs)
     : root_dir_(std::move(root_dir)), outputs_(std::move(outputs)) {}
 
-OutputGenerator &OutputGenerator::AddOutput(const OutputSpec& output) {
+OutputGenerator &OutputGenerator::AddOutput(const OutputSpec &output) {
   if (output.comp != nullptr) {
     outputs_.push_back(output);
   } else {

@@ -22,10 +22,13 @@
 
 namespace cerata::vhdl {
 
-// @brief Structure to hold a template replacement string location
+/// Structure to hold a template replacement string location
 struct trloc {
+  /// @brief Template replacement location constructor.
   trloc(size_t line, size_t start) : line(line), start(start) {}
+  /// The line.
   size_t line;
+  /// The starting character index on the line.
   size_t start;
 };
 
