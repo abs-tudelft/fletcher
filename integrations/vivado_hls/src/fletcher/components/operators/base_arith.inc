@@ -76,10 +76,10 @@ nullable<T> operator OP(T &&lhs, nullable<T> &rhs){
 // Nullable <-> Base types and ctypes
 template <typename T>
 nullable<T> operator OP(nullable<T> &lhs, typename T::inner_type rhs){
-    return nullable<T>(lhs.valid, (static_cast<T&>(lhs) OP rhs));
+    return nullable<T>(lhs.valid, (static_cast<T&>(lhs) OP static_cast<typename T::inner_type>(rhs)));
 }
 
 template <typename T>
 nullable<T> operator OP(typename T::inner_type lhs, nullable<T> &rhs){
-    return nullable<T>(rhs.valid, (lhs OP static_cast<T&>(rhs)));
+    return nullable<T>(rhs.valid, (static_cast<typename T::inner_type>(lhs) OP static_cast<T&>(rhs)));
 }

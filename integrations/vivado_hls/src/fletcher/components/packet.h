@@ -8,7 +8,6 @@ struct f_packet : public f_packet_base
 {
     T data = 0;
     f_packet() = default;
-    virtual ~f_packet() = default;
     f_packet(T _data) : data(_data), f_packet_base() {}
     f_packet(T _data, bool dvalid, bool last) : data(_data), f_packet_base(dvalid, last) {}
 

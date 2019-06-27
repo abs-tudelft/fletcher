@@ -18,12 +18,12 @@ bool operator OP(f_packet<T> &lhs, f_packet<T> &&rhs) {
 
 // Packet <-> base types
 template <typename T>
-bool operator OP(T &&lhs, f_packet<T> &rhs) {
+bool operator OP(T &lhs, f_packet<T> &rhs) {
     return lhs OP rhs.data;
 }
 
 template <typename T>
-bool operator OP(f_packet<T> &lhs, T &&rhs) {
+bool operator OP(f_packet<T> &lhs, T &rhs) {
     return lhs.data OP rhs;
 }
 
@@ -82,8 +82,8 @@ bool operator OP(T &&lhs, nullable<T> &rhs) {
 // Nullable <-> Base types and ctypes
 template <typename T>
 bool operator OP(nullable<T> &lhs, typename T::inner_type rhs){
-    if (rhs.valid) {
-        return (static_cast<T&>(lhs) OP rhs);
+    if (lhs.valid) {
+        return (static_cast<T&>(lhs) OP static_cast<typename T::inner_type>(rhs));
     }
     return false;
 }
@@ -91,7 +91,7 @@ bool operator OP(nullable<T> &lhs, typename T::inner_type rhs){
 template <typename T>
 bool operator OP(typename T::inner_type lhs, nullable<T> &rhs){
     if (rhs.valid) {
-        return (lhs OP static_cast<T&>(rhs));
+        return (static_cast<typename T::inner_type>(lhs) OP static_cast<T&>(rhs));
     }
     return false;
 }
