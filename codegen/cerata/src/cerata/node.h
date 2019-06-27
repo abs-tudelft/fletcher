@@ -206,9 +206,9 @@ class Literal : public MultiOutputNode {
   TYPENAME NAME##_val_{};
 #endif
 
- LITERAL_DECL_FACTORY(String, std::string)
- LITERAL_DECL_FACTORY(Bool, bool)
- LITERAL_DECL_FACTORY(Int, int)
+ LITERAL_DECL_FACTORY(String, std::string) //NOLINT
+ LITERAL_DECL_FACTORY(Bool, bool) //NOLINT
+ LITERAL_DECL_FACTORY(Int, int) //NOLINT
 
  public:
   /// @brief Make a literal node with raw storage type T.

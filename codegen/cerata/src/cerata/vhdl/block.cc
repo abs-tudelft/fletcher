@@ -35,7 +35,7 @@ Line &operator<<(Line &lhs, const Line &rhs) {
   return lhs;
 }
 
-Line &operator+=(Line &lhs, const std::string &str) {
+Line &operator+=(Line &lhs, const std::string &str) { //NOLINT
   lhs.parts.back().append(str);
   return lhs;
 }
@@ -138,7 +138,7 @@ Block &operator<<(Block &lhs, const std::string &rhs) {
   return lhs;
 }
 
-Block &operator<<=(Block &lhs, const std::string &rhs) {
+Block &operator<<=(Block &lhs, const std::string &rhs) { //NOLINT
   if (!lhs.lines.empty()) {
     for (uint i = 0; i < lhs.lines.size() - 1; i++) {
       lhs.lines[i].parts.back().append(rhs);
