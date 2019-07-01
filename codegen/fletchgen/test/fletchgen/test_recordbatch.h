@@ -49,4 +49,4 @@ TEST(RecordBatch, StringRead) {
   TestRecordBatchReader(fletcher::GetStringReadSchema());
 }
 
-}
+}  // namespace fletchgen

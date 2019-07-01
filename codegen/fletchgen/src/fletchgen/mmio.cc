@@ -81,4 +81,8 @@ std::string MmioSpec::ToMMIOTypeName() const {
   return str.str();
 }
 
+std::shared_ptr<MmioPort> MmioPort::Make(Port::Dir dir, MmioSpec spec) {
+  return std::make_shared<MmioPort>(dir, spec);
+}
+
 }  // namespace fletchgen

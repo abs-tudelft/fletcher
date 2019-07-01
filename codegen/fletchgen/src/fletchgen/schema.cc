@@ -143,4 +143,9 @@ FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schem
   FLETCHER_LOG(DEBUG, "Schema " + name() + ", Direction: " + cerata::Term::str(mode2dir(mode_)));
 }
 
+std::shared_ptr<FletcherSchema> FletcherSchema::Make(const std::shared_ptr<arrow::Schema> &arrow_schema,
+                                                     const std::string &schema_name) {
+  return std::make_shared<FletcherSchema>(arrow_schema, schema_name);
+}
+
 }  // namespace fletchgen

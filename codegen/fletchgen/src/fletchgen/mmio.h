@@ -33,25 +33,35 @@ using cerata::Type;
 
 /// @brief MMIO bus specification
 struct MmioSpec {
+  /// The MMIO bus data width.
   size_t data_width = 32;
+  /// The MMIO bus address width.
   size_t addr_width = 32;
+  /// @brief Return a human-readable representation of this MmmioSpec.
   std::string ToString() const;
+  /// @brief Return a Cerata type name based on this MmioSpec.
   std::string ToMMIOTypeName() const;
 };
 
 /// @brief MMIO type
 std::shared_ptr<Type> mmio(MmioSpec spec = MmioSpec());
 
-/// @brief RegPort
+/// A port derived from an MMIO specification.
 struct MmioPort : public Port {
+  /// The MMIO specification this port was derived from.
   MmioSpec spec_;
 
+  /// @brief Construct a new MmioPort.
   MmioPort(Port::Dir dir, MmioSpec spec, std::string name = "mmio") :
       Port(std::move(name), mmio(spec), dir), spec_(spec) {}
 
-  static std::shared_ptr<MmioPort> Make(Port::Dir dir, MmioSpec spec = MmioSpec()) {
-    return std::make_shared<MmioPort>(dir, spec);
-  }
+  /**
+   * @brief Make a new MmioPort, returning a shared pointer to it.
+   * @param dir   The direction of the port.
+   * @param spec  The specification of the port.
+   * @return      A shared pointer to the new port.
+   */
+  static std::shared_ptr<MmioPort> Make(Port::Dir dir, MmioSpec spec = MmioSpec());
 };
 
 }  // namespace fletchgen

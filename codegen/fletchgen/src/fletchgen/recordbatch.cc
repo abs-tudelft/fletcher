@@ -152,7 +152,7 @@ std::shared_ptr<RecordBatch> RecordBatch::Make(const std::shared_ptr<FletcherSch
   return shared_rb;
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const FletcherSchema &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const FletcherSchema &fletcher_schema,
                                                     const std::shared_ptr<arrow::Field> &field,
                                                     Mode mode,
                                                     bool invert) {
@@ -162,21 +162,25 @@ std::shared_ptr<FieldPort> FieldPort::MakeArrowPort(const FletcherSchema &fs,
   } else {
     dir = mode2dir(mode);
   }
-  return std::make_shared<FieldPort>(fs.name() + "_" + field->name(), ARROW, field, GetStreamType(*field, mode), dir);
+  return std::make_shared<FieldPort>(fletcher_schema.name() + "_" + field->name(),
+                                     ARROW,
+                                     field,
+                                     GetStreamType(*field, mode),
+                                     dir);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(const FletcherSchema &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeCommandPort(const FletcherSchema &fletcher_schema,
                                                       const std::shared_ptr<arrow::Field> &field) {
-  return std::make_shared<FieldPort>(fs.name() + "_" + field->name() + "_cmd",
+  return std::make_shared<FieldPort>(fletcher_schema.name() + "_" + field->name() + "_cmd",
                                      COMMAND,
                                      field,
                                      cmd(ctrl_width(*field), tag_width(*field)),
                                      Dir::IN);
 }
 
-std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(const FletcherSchema &fs,
+std::shared_ptr<FieldPort> FieldPort::MakeUnlockPort(const FletcherSchema &fletcher_schema,
                                                      const std::shared_ptr<arrow::Field> &field) {
-  return std::make_shared<FieldPort>(fs.name() + "_" + field->name() + "_unl",
+  return std::make_shared<FieldPort>(fletcher_schema.name() + "_" + field->name() + "_unl",
                                      UNLOCK,
                                      field,
                                      unlock(tag_width(*field)),

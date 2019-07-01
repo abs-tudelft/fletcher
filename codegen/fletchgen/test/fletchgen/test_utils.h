@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <fstream>
+#include <string>
 
 // Macro to save the test to some VHDL files that can be used to syntax check the tests with e.g. GHDL
 // At some point the reverse might be more interesting - load the test cases from file into the test.

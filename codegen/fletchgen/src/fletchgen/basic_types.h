@@ -28,7 +28,10 @@ namespace metakeys {
   /// Key for automated type mapping.
   constexpr char ARRAY_DATA[] = "fletchgen_array_data";
 
+  /// Key for elements-per-cycle on streams.
   constexpr char EPC[] = "fletcher_epc";
+
+  /// Key for length-elements-per-cycle on length streams. Must be seperate from EPC for "listprim" config string.
   constexpr char LEPC[] = "fletcher_lepc";
 }
 
@@ -37,8 +40,10 @@ using cerata::Node;
 using cerata::ClockDomain;
 using cerata::TypeMapper;
 
-// Create basic types corresponding to and in the manner of Arrow's types
+// Generate declaration for basic types corresponding to and in the manner of Arrow's types
 #define BIT_DECL_FACTORY(NAME)        std::shared_ptr<Type> NAME();
+
+/// Generate declaration for basic, multi-bit types similar to Arrow cpp/type.cc for convenience
 #define VEC_DECL_FACTORY(NAME, WIDTH) std::shared_ptr<Type> NAME();
 
 BIT_DECL_FACTORY(null)
@@ -60,8 +65,7 @@ VEC_DECL_FACTORY(utf8c, 8)
 VEC_DECL_FACTORY(byte, 8)
 VEC_DECL_FACTORY(offset, 32)
 
-/// @brief Fletcher
-
+/// Generate declaration for generic Fletcher parameters.
 #define PARAM_DECL_FACTORY(NAME) std::shared_ptr<Node> NAME();
 
 PARAM_DECL_FACTORY(bus_addr_width)
