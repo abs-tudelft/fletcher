@@ -14,12 +14,12 @@
 
 #pragma once
 
+#include <arrow/api.h>
+#include <cerata/api.h>
 #include <gtest/gtest.h>
 #include <deque>
 #include <memory>
 #include <vector>
-#include <arrow/api.h>
-#include <cerata/api.h>
 
 #include "fletchgen/mantle.h"
 #include "fletchgen/test_utils.h"
@@ -43,4 +43,4 @@ TEST(Mantle, StringRead) {
 }
 
 
-}
+}  // namespace fletchgen

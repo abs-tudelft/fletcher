@@ -35,14 +35,14 @@ std::shared_ptr<Node> tag_width(const arrow::Field &field);
 
 // Default streams of ArrayReaders/ArrayWriters
 
-///< @brief Fletcher command stream
+/// @brief Fletcher command stream
 std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl(1),
                           const std::shared_ptr<Node> &tag_width = intl(1));
-///< @brief Fletcher unlock stream
+/// @brief Fletcher unlock stream
 std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl(1));
-///< @brief Fletcher read data
+/// @brief Fletcher read data
 std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &data_width = intl(1));
-///< @brief Fletcher write data
+/// @brief Fletcher write data
 std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &data_width = intl(1));
 
 /// @brief Types for ArrayReader/Writer configuration string.

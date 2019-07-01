@@ -103,11 +103,14 @@ int main(int argc, char **argv) {
 
   // Generate Vivado HLS template
   if (options->vivado_hls) {
+    FLETCHER_LOG(WARNING, "Vivado HLS template output not yet implemented.");
+    /*
     auto hls_template_path = options->output_dir + "/vivado_hls/" + options->kernel_name + ".cpp";
     FLETCHER_LOG(INFO, "Generating Vivado HLS output: " + hls_template_path);
     cerata::CreateDir(options->output_dir + "/vivado_hls");
     auto hls_template_file = std::ofstream(hls_template_path);
     hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(*design.kernel);
+    */
   }
 
   FLETCHER_LOG(INFO, program_name + " completed.");

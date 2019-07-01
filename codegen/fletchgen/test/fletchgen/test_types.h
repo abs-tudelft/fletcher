@@ -51,4 +51,4 @@ TEST(Types, TypeMapper) {
   std::cout << cerata::vhdl::Design(top).Generate().ToString();
 }
 
-}
+}  // namespace fletchgen

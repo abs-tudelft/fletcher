@@ -29,22 +29,36 @@ namespace fletchgen {
 using fletcher::Mode;
 
 /**
- * @brief An schema augmented with Fletcher specific functions and data
+ * An Arrow schema augmented with Fletcher specific data and functions.
  */
 class FletcherSchema {
  public:
+  /// @brief Construct a new Fletcher schema.
   explicit FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name = "");
+
+  /**
+   * @brief Make a new FletcherSchema, returning a shared pointer to it.
+   * @param arrow_schema  The Arrow schema to derive this FletcherSchema from.
+   * @param schema_name   The name of the FletcherSchema.
+   * @return              A shared pointer to a new FletcherSchema.
+   */
   static std::shared_ptr<FletcherSchema> Make(const std::shared_ptr<arrow::Schema> &arrow_schema,
-                                              const std::string &schema_name = "") {
-    return std::make_shared<FletcherSchema>(arrow_schema, schema_name);
-  }
+                                              const std::string &schema_name = "");
+
+  /// @brief Return the Arrow schema that this FletcherSchema was based on.
   std::shared_ptr<arrow::Schema> arrow_schema() const { return arrow_schema_; }
+
+  /// @brief Return the access mode of the RecordBatch this schema represents.
   Mode mode() const { return mode_; }
+  /// @brief Return the name of this FletcherSchema.
   std::string name() const { return name_; }
 
  private:
+  /// The Arrow schema this FletcherSchema is based on.
   std::shared_ptr<arrow::Schema> arrow_schema_;
+  /// The access mode for the RecordBatch represented by this schema.
   Mode mode_;
+  /// The name of this schema used to identify the components generated from it.
   std::string name_;
 };
 
@@ -53,7 +67,9 @@ class FletcherSchema {
  */
 class SchemaSet : public cerata::Named {
  public:
+  /// @brief SchemaSet constructor.
   explicit SchemaSet(std::string name);
+  /// @brief Make a new, empty SchemaSet, and return a shared pointer to it.
   static std::shared_ptr<SchemaSet> Make(std::string name);
   /// @brief Determine whether any schema in this set requires reading from memory.
   bool RequiresReading() const;

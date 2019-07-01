@@ -23,6 +23,7 @@
 
 namespace fletchgen {
 
+/// Fletcher program options.
 struct Options {
   /// Paths to the schema files
   std::vector<std::string> schema_paths;
@@ -39,21 +40,28 @@ struct Options {
   /// Output languages
   std::vector<std::string> languages = {"vhdl", "dot"};
 
-  /// SREC output path
+  /// SREC output path. This is the path where an SREC file based on input RecordBatches will be placed.
   std::string srec_out_path = "\"\"";
+
+  /// SREC simulation output path, where the simulation should dump the memory contents of written RecordBatches.
   std::string srec_sim_dump = "\"\"";
 
   /// Name of the Kernel
   std::string kernel_name = "Kernel";
 
+  /// Whether to generate an AXI top level.
   bool axi_top = false;
+  /// Whether to simulate an AXI top level.
   bool sim_top = false;
+  /// Whether to overwrite any existing generated files. Only works for .vhd.
   bool overwrite = false;
 
   /// Vivado HLS template
   bool vivado_hls = false;
 
+  /// Make the output quiet. TODO(johanpel): not yet implemented.
   bool quiet = false;
+  /// Make the output verbose. TODO(johanpel): not yet implemented.
   bool verbose = false;
 
   /**

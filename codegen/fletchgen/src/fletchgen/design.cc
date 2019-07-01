@@ -23,7 +23,9 @@
 
 namespace fletchgen {
 
-using OutputSpec = cerata::OutputSpec;
+using cerata::OutputSpec;
+
+/// Short-hand for vector of RecordBatches.
 using RBVector = std::vector<std::shared_ptr<arrow::RecordBatch>>;
 
 static std::optional<std::shared_ptr<arrow::RecordBatch>> GetRecordBatchWithName(const RBVector &batches,
@@ -75,13 +77,13 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   ret.mantle = Mantle::Make(ret.schema_set);
   ret.kernel = ret.mantle->kernel();
   for (const auto &recordbatch_component : ret.mantle->recordbatch_components()) {
-    ret.readers.push_back(recordbatch_component);
+    ret.recordbatches.push_back(recordbatch_component);
   }
 
   return ret;
 }
 
-std::deque<OutputSpec> Design::GetOutputSpec() {
+std::deque<cerata::OutputSpec> Design::GetOutputSpec() {
   std::deque<OutputSpec> result;
 
   OutputSpec omantle, okernel;
@@ -96,7 +98,7 @@ std::deque<OutputSpec> Design::GetOutputSpec() {
   result.push_back(okernel);
 
   // Readers
-  for (const auto &reader : readers) {
+  for (const auto &reader : recordbatches) {
     OutputSpec oreader;
     oreader.comp = reader;
     oreader.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
