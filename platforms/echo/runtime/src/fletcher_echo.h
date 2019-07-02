@@ -16,8 +16,13 @@
 
 #include "fletcher/fletcher.h"
 
+/// Platform name.
 #define FLETCHER_PLATFORM_NAME "echo"
 
+/// Alignment for allocations.
+#define FLETCHER_ECHO_ALIGNMENT 4096
+
+/// Platform options.
 typedef struct {
   int quiet;
 } InitOptions;
