@@ -22,6 +22,8 @@
 #include "fletcher/timer.h"
 #include "fletcher/arrow-utils.h"
 #include "fletcher/hex-view.h"
+#include "fletcher/arrow-recordbatch.h"
+#include "fletcher/arrow-schema.h"
 
 // CPP runtime lib
 #include "fletcher/context.h"

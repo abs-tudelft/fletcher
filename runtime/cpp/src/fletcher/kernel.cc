@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #include "fletcher/kernel.h"
 
 #include <unistd.h>
@@ -45,10 +46,12 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
   }
 
   Status ret;
-  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index, static_cast<uint32_t>(first)).ok()) {
+  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index,
+                                       static_cast<uint32_t>(first)).ok()) {
     ret = Status::ERROR();
   }
-  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index + 1, static_cast<uint32_t>(last)).ok()) {
+  if (!context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + 2 * recordbatch_index + 1,
+                                       static_cast<uint32_t>(last)).ok()) {
     ret = Status::ERROR();
   }
   return Status::OK();
@@ -63,7 +66,15 @@ Status Kernel::SetArguments(std::vector<uint32_t> arguments) {
 }
 
 Status Kernel::Start() {
-  return context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_start);
+  Status status;
+  if (!metadata_written) {
+    WriteMetaData();
+  }
+  FLETCHER_LOG(DEBUG, "Starting kernel.");
+  status = context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, ctrl_start);
+  if (!status.ok())
+    return status;
+  return context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, 0);
 }
 
 Status Kernel::GetStatus(uint32_t *status) {
@@ -84,6 +95,7 @@ Status Kernel::WaitForFinish() {
 }
 
 Status Kernel::WaitForFinish(unsigned int poll_interval_usec) {
+  FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
   uint32_t status = 0;
   if (poll_interval_usec == 0) {
     do {
@@ -95,11 +107,51 @@ Status Kernel::WaitForFinish(unsigned int poll_interval_usec) {
       context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
     } while ((status & done_status_mask) != this->done_status);
   }
+  FLETCHER_LOG(DEBUG, "Kernel status done bit asserted.");
   return Status::OK();
 }
 
 std::shared_ptr<Context> Kernel::context() {
   return context_;
+}
+
+Status Kernel::WriteMetaData() {
+  Status status;
+  FLETCHER_LOG(DEBUG, "Writing context metadata to kernel.");
+
+  // Set the starting offset to the first schema-derived register index.
+  uint64_t offset = FLETCHER_REG_SCHEMA;
+
+  // Get the platform pointer.
+  auto platform = context_->platform();
+
+  // Write RecordBatch ranges.
+  for (size_t i = 0; i < context_->num_recordbatches(); i++) {
+    auto rb = context_->recordbatch(i);
+    status = platform->WriteMMIO(offset, 0);               // First index
+    if (!status.ok()) return status;
+    offset++;
+    status = platform->WriteMMIO(offset, rb->num_rows());  // Last index (exclusive)
+    if (!status.ok()) return status;
+    offset++;
+  }
+
+  // Write buffer addresses
+  for (size_t i = 0; i < context_->num_buffers(); i++) {
+    // Get the device address
+    auto device_buf = context_->device_buffer(i);
+    dau_t address;
+    address.full = device_buf.device_address;
+    // Write the address
+    platform->WriteMMIO(offset, address.lo);
+    if (!status.ok()) return status;
+    offset++;
+    platform->WriteMMIO(offset, address.hi);
+    if (!status.ok()) return status;
+    offset++;
+  }
+  metadata_written = true;
+  return Status::OK();
 }
 
 }

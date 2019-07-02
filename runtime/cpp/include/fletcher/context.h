@@ -78,7 +78,10 @@ struct DeviceBuffer {
 class Context {
  public:
 
+  /// @brief Context constructor.
   explicit Context(std::shared_ptr<Platform> platform) : platform_(std::move(platform)) {}
+
+  /// @brief Deconstruct the context object, freeing all allocated device buffers.
   ~Context();
 
   /**
@@ -108,21 +111,29 @@ class Context {
   /// @brief Enable the usage of the enqueued buffers by the device
   Status Enable();
 
-  /// @brief Return the number of buffers in this context.
-  uint64_t num_buffers() const;
-
+  /// @brief Return the platform this context is active on.
   std::shared_ptr<Platform> platform() const { return platform_; }
 
+  /// @brief Return the number of enabled device buffers in this context.
+  uint64_t num_buffers() const;
+  /// @brief Return the i-th device buffer.
   DeviceBuffer device_buffer(size_t i) const { return device_buffers_[i]; }
 
+  /// @brief Return the number of RecordBatches of this context.
+  uint64_t num_recordbatches() const { return host_batches_.size(); }
+  /// @brief Return the i-th device buffer.
+  std::shared_ptr<arrow::RecordBatch> recordbatch(size_t i) const { return host_batches_[i]; }
+
  protected:
-  bool written_ = false;
   /// The platform this context is running on.
   std::shared_ptr<Platform> platform_;
+  /// The RecordBatches on the host side.
   std::vector<std::shared_ptr<arrow::RecordBatch>> host_batches_;
+  /// The descriptions of the RecordBatches on the host side.
   std::vector<RecordBatchDescription> host_batch_desc_;
+  /// Whether the RecordBatch must be prepared or cached for the device.
   std::vector<MemType> host_batch_memtype_;
-  std::vector<std::shared_ptr<arrow::Buffer>> device_batch_desc_;
+  /// Prepared/cached buffers on the device.
   std::vector<DeviceBuffer> device_buffers_;
 };
 

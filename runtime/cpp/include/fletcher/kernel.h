@@ -14,16 +14,15 @@
 
 #pragma once
 
+#include <arrow/api.h>
+#include <fletcher/fletcher.h>
+
 #include <cstdint>
 #include <vector>
 #include <memory>
 
-#include <arrow/api.h>
-
-#include "./context.h"
-#include "./platform.h"
-
-#include "fletcher/fletcher.h"
+#include "fletcher/context.h"
+#include "fletcher/platform.h"
 
 namespace fletcher {
 
@@ -72,13 +71,18 @@ class Kernel {
   /// @brief Return the context of this Kernel
   std::shared_ptr<Context> context();
 
+  /// @brief Write RecordBatch metadata from the context to the kernel MMIO registers.
+  Status WriteMetaData();
+
   // Default control and status values:
   uint32_t ctrl_start = 1ul << FLETCHER_REG_CONTROL_START;
   uint32_t ctrl_reset = 1ul << FLETCHER_REG_CONTROL_RESET;
   uint32_t done_status = 1ul << FLETCHER_REG_STATUS_DONE;
   uint32_t done_status_mask = 1ul << FLETCHER_REG_STATUS_DONE;
 
- private:
+ protected:
+  bool metadata_written = false;
+  /// @brief The context that this kernel should operate on.
   std::shared_ptr<Context> context_;
 };
 
