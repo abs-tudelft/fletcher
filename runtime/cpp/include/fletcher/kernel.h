@@ -51,8 +51,8 @@ class Kernel {
   /// @brief Read the status register of the Kernel
   Status GetStatus(uint32_t *status);
 
-  /// @brief Read the return registers of the Kernel
-  Status GetReturn(uint32_t *ret0, uint32_t *ret1);
+  /// @brief Read the return registers of the Kernel. If ret1 is nullptr, REG_RETURN1 is ignored.
+  Status GetReturn(uint32_t *ret0, uint32_t *ret1 = nullptr);
 
   /**
    * @brief A blocking function that waits for the Kernel to finish

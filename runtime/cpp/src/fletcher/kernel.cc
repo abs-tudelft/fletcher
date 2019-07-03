@@ -82,12 +82,13 @@ Status Kernel::GetStatus(uint32_t *status) {
 }
 
 Status Kernel::GetReturn(uint32_t *ret0, uint32_t *ret1) {
-  if (context_->platform()->ReadMMIO(FLETCHER_REG_RETURN0, ret0).ok()) {
-    if (context_->platform()->ReadMMIO(FLETCHER_REG_RETURN1, ret1).ok()) {
-      return Status::OK();
-    }
+  Status status;
+  status = context_->platform()->ReadMMIO(FLETCHER_REG_RETURN0, ret0);
+  if ((ret1 == nullptr) || (!status.ok())) {
+    return status;
   }
-  return Status::ERROR();
+  status = context_->platform()->ReadMMIO(FLETCHER_REG_RETURN1, ret1);
+  return status;
 }
 
 Status Kernel::WaitForFinish() {
