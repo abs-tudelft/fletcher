@@ -26,8 +26,8 @@ jobs:
   steps:
   - template: steps/set-cc-cxx.yml@abs-tudelft
     parameters:
-      cc: gcc-7
-      cxx: g++-7
+      cc: gcc-8
+      cxx: g++-8
   # - template: steps/install-arrow.yml@abs-tudelft
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/cmake.yml@abs-tudelft
