@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletcher VERSION 0.0.0 LANGUAGES CXX)
 
-find_package(arrow 0.13 CONFIG REQUIRED)
+find_package(arrow 0.14 CONFIG REQUIRED)
 
 include(FetchContent)
 
@@ -31,7 +31,6 @@ add_compile_unit(
   PRPS
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
-    COMPILE_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0
   SRCS
     src/fletcher/platform.cc
     src/fletcher/context.cc
