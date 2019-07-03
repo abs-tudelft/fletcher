@@ -42,7 +42,6 @@ add_compile_unit(
 )
 
 add_compile_unit(
-  OPT
   NAME cerata::dot
   PRPS
     CXX_STANDARD 17
@@ -57,7 +56,6 @@ add_compile_unit(
 )
 
 add_compile_unit(
-  OPT
   NAME cerata::vhdl
   PRPS
     CXX_STANDARD 17
