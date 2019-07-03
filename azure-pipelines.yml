@@ -22,12 +22,13 @@ jobs:
         source: platforms/echo/runtime
   pool:
     vmImage: ubuntu-latest
+  container: mbrobbel/libarrow:0.14.0
   steps:
   - template: steps/set-cc-cxx.yml@abs-tudelft
     parameters:
       cc: gcc-7
       cxx: g++-7
-  - template: steps/install-arrow.yml@abs-tudelft
+  # - template: steps/install-arrow.yml@abs-tudelft
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/cmake.yml@abs-tudelft
     parameters:
