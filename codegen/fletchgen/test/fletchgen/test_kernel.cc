@@ -13,11 +13,11 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <cerata/api.h>
+#include <memory>
+#include <string>
 
 #include "fletcher/test_schemas.h"
-
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
 
 #include "fletchgen/basic_types.h"
 #include "fletchgen/mantle.h"
@@ -56,4 +56,4 @@ TEST(Kernel, BigSchema) {
   TestReadKernel("Big", fletcher::GetBigSchema());
 }
 
-}
+}  // namespace fletchgen

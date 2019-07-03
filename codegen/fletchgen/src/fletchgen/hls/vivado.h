@@ -20,13 +20,10 @@
 #include "fletchgen/schema.h"
 #include "fletchgen/kernel.h"
 
+// Placeholder for vivado hls support
 namespace fletchgen::hls {
 
-struct Argument {
-  std::string type;
-  std::string name;
-};
-
-std::string GenerateVivadoHLSTemplate(const Kernel& kernel);
+/// @brief Generate a Vivado HLS template for a Fletcher kernel.
+[[deprecated("Not yet implemented.")]] std::string GenerateVivadoHLSTemplate(const Kernel& kernel);
 
 }  // namespace fletchgen::hls

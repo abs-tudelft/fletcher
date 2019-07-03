@@ -31,17 +31,30 @@
 
 namespace fletchgen {
 
+/// A structure for all components in a Fletcher design.
 struct Design {
+  /// Make a new Design structure based on program options.
   static Design GenerateFrom(const std::shared_ptr<Options> &opts);
+
+  /// The program options.
   std::shared_ptr<Options> options;
 
+  /// The SchemaSet to base the design on.
   std::shared_ptr<SchemaSet> schema_set;
+
+  /// The RecordBatchDescriptions to use in SREC generation.
   std::vector<fletcher::RecordBatchDescription> batch_desc;
 
-  std::deque<std::shared_ptr<Component>> readers;
+  /// The RecordBatch(Readers/Writers) in the design.
+  std::deque<std::shared_ptr<Component>> recordbatches;
+  /// The Kernel component of this design.
   std::shared_ptr<Kernel> kernel;
+
+  /// The top-level wrapper (mantle) of the design. This is not called wrapper because this is reserved for future top
+  /// levels that instantiate multiple mantles to operate in parallel.
   std::shared_ptr<Mantle> mantle;
 
+  /// Obtain a Cerata OutputSpec from this design for Cerata back-ends to generate output.
   std::deque<cerata::OutputSpec> GetOutputSpec();
 };
 

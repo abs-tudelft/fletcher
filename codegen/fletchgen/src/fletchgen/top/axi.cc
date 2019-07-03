@@ -107,6 +107,7 @@ std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream 
               "    );");
   } else {
     t.Replace("MST_RREQ_DECLARE", "");
+    t.Replace("MST_RREQ_INSTANTIATE", "");
     t.Replace("AXI_READ_CONVERTER", "");
   }
 
@@ -171,6 +172,10 @@ std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream 
               "      m_axi_wvalid              => m_axi_wvalid,\n"
               "      m_axi_wready              => m_axi_wready\n"
               "    );");
+  } else {
+    t.Replace("MST_WREQ_DECLARE", "");
+    t.Replace("MST_WREQ_INSTANTIATE", "");
+    t.Replace("AXI_WRITE_CONVERTER", "");
   }
 
   for (auto &o : outputs) {

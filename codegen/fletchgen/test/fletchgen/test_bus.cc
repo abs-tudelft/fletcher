@@ -38,4 +38,4 @@ TEST(Bus, BusArbiter) {
   VHDL_DUMP_TEST(code);
 }
 
-}
+}  // namespace fletchgen

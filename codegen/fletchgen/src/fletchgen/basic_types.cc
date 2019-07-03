@@ -36,13 +36,14 @@ using cerata::Record;
 using cerata::Stream;
 using cerata::Literal;
 
-// Create basic types similar to Arrow cpp/type.cc for convenience
+/// Creates basic, single-bit types similar to Arrow cpp/type.cc for convenience
 #define BIT_FACTORY(NAME)                                               \
   std::shared_ptr<Type> NAME() {                                        \
     static std::shared_ptr<Type> result = std::make_shared<Bit>(#NAME); \
     return result;                                                      \
 }
 
+/// Creates basic, multi-bit types similar to Arrow cpp/type.cc for convenience
 #define VEC_FACTORY(NAME, WIDTH)                                                     \
   std::shared_ptr<Type> NAME() {                                                     \
     static std::shared_ptr<Type> result = Vector::Make(#NAME, WIDTH); \
@@ -68,19 +69,20 @@ VEC_FACTORY(utf8c, 8)
 VEC_FACTORY(byte, 8)
 VEC_FACTORY(offset, 32)
 
-#define PARAM_FACTORY(NAME, TYPE, DEFAULT)                    \
-std::shared_ptr<Node> NAME() {                                \
-  auto result = Parameter::Make(#NAME, TYPE, DEFAULT);        \
-  return result;                                              \
-}                                                             \
+/// Creates generic Fletcher parameters.
+#define PARAM_FACTORY(NAME, SIZE)                                              \
+std::shared_ptr<Node> NAME() {                                                 \
+  auto result = Parameter::Make(#NAME, cerata::integer(), cerata::intl(SIZE)); \
+  return result;                                                               \
+}
 
-PARAM_FACTORY(bus_addr_width, integer(), intl(64))
-PARAM_FACTORY(bus_data_width, integer(), intl(512))
-PARAM_FACTORY(bus_strobe_width, integer(), intl(64))
-PARAM_FACTORY(bus_len_width, integer(), intl(8))
-PARAM_FACTORY(bus_burst_step_len, integer(), intl(4))
-PARAM_FACTORY(bus_burst_max_len, integer(), intl(16))
-PARAM_FACTORY(index_width, integer(), intl(32))
+PARAM_FACTORY(bus_addr_width, 64)
+PARAM_FACTORY(bus_data_width, 512)
+PARAM_FACTORY(bus_strobe_width, 64)
+PARAM_FACTORY(bus_len_width, 8)
+PARAM_FACTORY(bus_burst_step_len, 4)
+PARAM_FACTORY(bus_burst_max_len, 16)
+PARAM_FACTORY(index_width, 32)
 
 // Create basic clock domains
 std::shared_ptr<ClockDomain> kernel_domain() {

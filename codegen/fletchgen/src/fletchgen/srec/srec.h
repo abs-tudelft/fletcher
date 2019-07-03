@@ -100,8 +100,11 @@ class Record {
   /// @brief Return the SREC Record string
   std::string ToString(bool line_feed = false);
 
+  /// @brief Return the address of this record.
   inline uint32_t address() const { return address_; }
+  /// @brief Return the size in bytes of this record.
   inline uint32_t size() const { return size_; }
+  /// @brief Return the data source pointer of this record.
   inline uint8_t *data() const { return data_; }
 
  private:
@@ -130,21 +133,20 @@ inline void PutHex(std::stringstream &stream, uint32_t val, int characters = 2) 
  * @brief Structure to build up an SREC file with multiple Record lines.
  */
 struct File {
-  std::vector<Record> records;
-
   File() = default;
 
   /**
-   * @brief Construct a new File
-   * @param start_address
-   * @param data
-   * @param size
+   * @brief Construct a new File from some data source in memory.
+   * @param start_address The start address of the file.
+   * @param data          The data source.
+   * @param size          The number of bytes of source data.
+   * @param header_str    The header string. Default is commonly used "HDR".
    */
   File(uint32_t start_address, const uint8_t *data, size_t size, const std::string &header_str = "HDR");
 
   /**
    * @brief Construct a new File, reading the contents from an input stream.
-   * @param input
+   * @param input   The input stream.
    */
   explicit File(std::istream *input);
 
@@ -163,6 +165,9 @@ struct File {
    * @param size    The size of the buffer.
    */
   void ToBuffer(uint8_t **buffer, size_t *size);
+
+  /// SREC records in this file.
+  std::vector<Record> records;
 };
 
 }  // namespace fletchgen::srec

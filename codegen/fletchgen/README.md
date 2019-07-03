@@ -9,9 +9,9 @@ Currently, the overall structure of a Fletcher hardware design is as follows:
 * For the combination of all Arrow Schemas, a Kernel is generated.
 * All RecordBatch/Writers and the Kernel is wrapped by a Mantle. The Mantle also instantiate the required 
   memory bus interconnection logic.
-  
+
 This can also be shown schematically as follows:
-![](fletchgen.svg)
+![Fletchgen output, schematically](./fletchgen.svg)
 
 Fletchgen does **not** generate the kernel itself, and currently supports only two top-level platforms. One platform
 is a simulation top-level that uses a memory model that can be filled with RecordBatches. The other is a top-level that

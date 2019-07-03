@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <deque>
-#include <memory>
-
 #include <gtest/gtest.h>
-
 #include <arrow/api.h>
 #include <arrow/ipc/api.h>
 #include <arrow/io/api.h>
-
 #include <fletcher/test_recordbatches.h>
+
+#include <deque>
+#include <memory>
 
 #include "fletchgen/srec/srec.h"
 #include "fletchgen/srec/recordbatch.h"
@@ -96,4 +94,4 @@ TEST(SREC, RecordBatchRoundTrip) {
   EXPECT_TRUE(afw->WriteRecordBatch(*rb).ok());
 }
 
-}
+}  // namespace fletchgen::srec

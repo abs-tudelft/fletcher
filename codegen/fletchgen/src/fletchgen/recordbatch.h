@@ -38,7 +38,7 @@ using fletcher::Mode;
 /**
  * @brief A port derived from an Arrow field
  *
- * We currently derive three ports from Arrow fields;
+ * We currently derive ports with three different functions from Arrow fields;
  *  - a data port for reading/writing from/to Arrow Arrays.
  *  - a command port to issue a command to an ArrayReader/Writer .
  *  - an unlock port to know a command sent to an ArrayReader/Writer was completed.
@@ -49,14 +49,24 @@ using fletcher::Mode;
  * other type concatenated onto the ArrayReader/Writer data output/input.
  */
 struct FieldPort : public Port {
+  /// Enumeration of FieldPort functions.
   enum Function {
-    ARROW,
-    COMMAND,
-    UNLOCK
-  } function_;
+    ARROW,      ///< Port with Arrow data
+    COMMAND,    ///< Port to issue commands to the generated interface.
+    UNLOCK      ///< Port that signals the kernel a command was completed.
+  } function_;  ///< The function of this FieldPort.
 
+  /// The Arrow field this port was derived from.
   std::shared_ptr<arrow::Field> field_;
 
+  /**
+   * @brief Construct a new port derived from an Arrow field.
+   * @param name      The name of the field-derived port.
+   * @param function  The function of the field-derived port.
+   * @param field     The Arrow field to derive the port from.
+   * @param type      The Cerata type of the port.
+   * @param dir       The port direction.
+   */
   FieldPort(std::string name,
             Function function,
             std::shared_ptr<arrow::Field> field,
@@ -64,15 +74,37 @@ struct FieldPort : public Port {
             Port::Dir dir)
       : Port(std::move(name), std::move(type), dir), function_(function), field_(std::move(field)) {}
 
-  static std::shared_ptr<FieldPort> MakeArrowPort(const FletcherSchema &fs,
+  /**
+   * @brief Construct a field-derived port for Arrow data.
+   * @param fletcher_schema  The Fletcher-derived schema.
+   * @param field            The Arrow field to derive the port from.
+   * @param mode             The mode of the port, whether to read or write.
+   * @param invert           Invert the direction of the port.
+   * @return                 A shared pointer to a new FieldPort.
+   */
+  static std::shared_ptr<FieldPort> MakeArrowPort(const FletcherSchema &fletcher_schema,
                                                   const std::shared_ptr<arrow::Field> &field,
                                                   Mode mode,
                                                   bool invert);
-  static std::shared_ptr<FieldPort> MakeCommandPort(const FletcherSchema &fs,
+  /**
+   * @brief Construct a field-derived command port.
+   * @param fletcher_schema  The Fletcher-derived schema.
+   * @param field            The Arrow field to derive the port from.
+   * @return                 A shared pointer to a new FieldPort.
+   */
+  static std::shared_ptr<FieldPort> MakeCommandPort(const FletcherSchema &fletcher_schema,
                                                     const std::shared_ptr<arrow::Field> &field);
-  static std::shared_ptr<FieldPort> MakeUnlockPort(const FletcherSchema &fs,
+
+  /**
+   * @brief Construct a field-derived unlock port.
+   * @param fletcher_schema  The Fletcher-derived schema.
+   * @param field            The Arrow field to derive the port from.
+   * @return                 A shared pointer to a new FieldPort.
+   */
+  static std::shared_ptr<FieldPort> MakeUnlockPort(const FletcherSchema &fletcher_schema,
                                                    const std::shared_ptr<arrow::Field> &field);
 
+  /// @brief Create a deep-copy of the FieldPort.
   std::shared_ptr<Object> Copy() const override;
 
   /// @brief Return the width of the data of this field.
@@ -93,6 +125,7 @@ struct FieldPort : public Port {
  */
 struct RecordBatch : public Component {
  public:
+  /// @brief Make a new RecordBatch(Reader/Writer) component, based on a Fletcher schema.
   static std::shared_ptr<RecordBatch> Make(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
   /// @brief Obtain all ports derived from an Arrow field with a specific function.
@@ -100,20 +133,23 @@ struct RecordBatch : public Component {
   /// @brief Obtain the data port derived from a specific Arrow field. Field must point to the exact same field object.
   std::shared_ptr<FieldPort> GetArrowPort(const arrow::Field &field) const;
 
+  /// @brief Return the Fletcher schema this RecordBatch(Reader/Writer) is based on.
   std::shared_ptr<FletcherSchema> fletcher_schema() const { return fletcher_schema_; }
+  /// @brief Return pointers to all Array(Reader/Writer) instances of this component.
   std::deque<Instance *> reader_instances() const { return array_instances_; }
+  /// @brief Return the Fletcher schema this RecordBatch(Reader/Writer) is based on.
   std::deque<std::shared_ptr<BusPort>> bus_ports() const { return bus_ports_; }
 
  protected:
+  /// @brief RecordBatch constructor.
   explicit RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema);
 
   /**
    * @brief Adds all ArrayReaders/Writers, unconcatenates ports and connects it to the top-level of this component.
+   * @param fletcher_schema   A Fletcherized version of the Arrow Schema that this RecordBatch component will access.
    *
    * Fletcher's hardware implementation concatenates each subsignal of potentially multiple streams of an
    * ArrayReader/Writer onto a single subsignal. This function must unconcatenate these streams.
-   *
-   * @param fletcher_schema   A Fletcherized version of the Arrow Schema that this RecordBatch component will access.
    */
   void AddArrays(const FletcherSchema &fletcher_schema);
 

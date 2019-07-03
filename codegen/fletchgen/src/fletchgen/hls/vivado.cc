@@ -21,20 +21,4 @@
 #include "fletchgen/schema.h"
 #include "fletchgen/kernel.h"
 
-std::string fletchgen::hls::GenerateVivadoHLSTemplate(const Kernel &kernel) {
-  std::stringstream str;
-
-  std::vector<Argument> args;
-
-  auto ports = kernel.GetAll<FieldPort>();
-
-  for (const auto &p : ports) {
-    Argument arg;
-    arg.name = p->name();
-    for (const auto &f : p->field_->Flatten()) {
-      std::cout << f->ToString() << std::endl;
-    }
-  }
-
-  return str.str();
-}
+// Placeholder for vivado hls support

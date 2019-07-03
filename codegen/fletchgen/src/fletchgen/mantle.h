@@ -41,8 +41,11 @@ class Mantle : public Component {
   /// @brief Return the SchemaSet on which this Mantle is based.
   std::shared_ptr<SchemaSet> schema_set() const { return schema_set_; }
 
+  /// @brief Return the kernel component of this Mantle.
   std::shared_ptr<Kernel> kernel() const { return kernel_; }
+  /// @brief Return all RecordBatch(Reader/Writer) instances of this Mantle.
   std::deque<Instance *> recordbatch_instances() const { return recordbatch_instances_; }
+  /// @brief Return all RecordBatch(Reader/Writer) components of this Mantle.
   std::deque<std::shared_ptr<RecordBatch>> recordbatch_components() const { return recordbatch_components_; }
 
  protected:

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <arrow/api.h>
+#include <cerata/api.h>
 #include <gtest/gtest.h>
 #include <deque>
 #include <memory>
 #include <vector>
-#include <arrow/api.h>
-#include <cerata/api.h>
 
 #include "fletcher/test_schemas.h"
 #include "fletchgen/mantle.h"
@@ -42,4 +42,4 @@ TEST(Mantle, StringRead) {
 }
 
 
-}
+}  // namespace fletchgen
