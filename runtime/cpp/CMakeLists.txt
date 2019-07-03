@@ -18,7 +18,9 @@ set(TEST_PLATFORM_DEPS)
 if(BUILD_TESTS)
   add_subdirectory(../../platforms/echo/runtime echo)
   list(APPEND TEST_PLATFORM_DEPS "fletcher::echo")
-  list(APPEND TEST_PLATFORM_DEPS "-Wl,--disable-new-dtags")
+  if(UNIX AND NOT APPLE)
+    list(APPEND TEST_PLATFORM_DEPS "-Wl,--disable-new-dtags")
+  endif()
 else()
   add_subdirectory(../../common common)
 endif()
@@ -29,6 +31,7 @@ add_compile_unit(
   PRPS
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
+    COMPILE_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0
   SRCS
     src/fletcher/platform.cc
     src/fletcher/context.cc
