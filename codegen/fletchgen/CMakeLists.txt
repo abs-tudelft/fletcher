@@ -22,8 +22,12 @@ include(CompileUnits)
 
 set(BUILD_CERATA_DOT ON)
 set(BUILD_CERATA_VHDL ON)
-add_subdirectory(../cerata cerata)
-add_subdirectory(../../common/cpp common)
+if(NOT TARGET cerata)
+  add_subdirectory(../cerata cerata)
+endif()
+if(NOT TARGET fletcher::common)
+  add_subdirectory(../../common/cpp common)
+endif()
 
 add_compile_unit(
   OPT

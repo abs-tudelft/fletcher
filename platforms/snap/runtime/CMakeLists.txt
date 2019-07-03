@@ -20,7 +20,9 @@ FetchContent_MakeAvailable(cmake-modules)
 
 include(CompileUnits)
 
-add_subdirectory(../../../common/cpp common)
+if(NOT TARGET fletcher::common)
+  add_subdirectory(../../../common/cpp common)
+endif()
 
 add_compile_unit(
   NAME fletcher::snap
