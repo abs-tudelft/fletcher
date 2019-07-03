@@ -6,8 +6,8 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.1
 ENV PATH=/cmake-3.14.5-Linux-x86_64/bin:$PATH
 
 RUN yum install -y boost-devel
-RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-0.13.0.tar.gz | tar xz && \
-    cd arrow-apache-arrow-0.13.0 && \
+RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-0.14.0.tar.gz | tar xz && \
+    cd arrow-apache-arrow-0.14.0 && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DARROW_BUILD_TESTS=Off \
