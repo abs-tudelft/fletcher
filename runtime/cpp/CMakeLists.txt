@@ -22,7 +22,7 @@ if(BUILD_TESTS)
     list(APPEND TEST_PLATFORM_DEPS "-Wl,--disable-new-dtags")
   endif()
 else()
-  add_subdirectory(../../common common)
+  add_subdirectory(../../common/cpp common)
 endif()
 
 add_compile_unit(

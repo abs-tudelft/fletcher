@@ -23,7 +23,7 @@ include(CompileUnits)
 set(BUILD_CERATA_DOT ON)
 set(BUILD_CERATA_VHDL ON)
 add_subdirectory(../cerata cerata)
-add_subdirectory(../../common common)
+add_subdirectory(../../common/cpp common)
 
 add_compile_unit(
   OPT
