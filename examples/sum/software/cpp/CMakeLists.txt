@@ -9,9 +9,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
 
 add_executable(${PROJECT_NAME}
-        src/sum.cpp)
+        src/sum_tiny.cpp)
 
-find_library(LIB_ARROW arrow)
+find_library(LIB_ARROW arrow 0.14 REQUIRED)
 target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
 
 find_library(LIB_FLETCHER fletcher)

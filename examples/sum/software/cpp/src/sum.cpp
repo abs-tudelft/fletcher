@@ -55,6 +55,14 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  // Initialize the platform.
+  status = platform->Init();
+
+  if (!status.ok()) {
+    std::cerr << "Could not create Fletcher platform." << std::endl;
+    return -1;
+  }
+
   // Create a context for our application on the platform.
   status = fletcher::Context::Make(&context, platform);
 
