@@ -1,12 +1,32 @@
 # Fletcher platform-specific libraries
 
-Currently there are two FPGA platforms supported by Fletcher:
-* [AWS EC2 f1](aws-f1)
-* [CAPI SNAP](snap)
+Fletcher is designed to be as platform-agnostic as possible. To this end, it communicates with real FPGA platforms 
+through a platform-specific run-time library that is linked into the Fletcher run-time library during run-time. These
+platform-specific libraries expose a low-level API to the more abstract and platform-agnostic Fletcher run-time 
+libraries that developers should use to write host-side software.
 
-A third library exists, named [Echo](echo), that can be used for debugging purposes or as a reference implement a new platform 
-libraries. This implementation simply prints out any commands that a language run-time library requests on the standard
-output.
+An overview of the Fletcher stack is seen below:
 
-If you want to use a specific platform, you can build and install the libraries in the runtime folder of the specific 
-platform.
+## Software / hardware stack
+![Fletcher stack](fletcher-stack.svg)
+
+## Supported platforms
+Currently there are two FPGA platforms supported by Fletcher. Please refer to their 
+* [AWS EC2 f1](https://github.com/abs-tudelft/fletcher-aws)
+* [CAPI SNAP](https://github.com/abs-tudelft/fletcher-snap)
+
+They are maintained in separate repositories, because setting up integration tests for these platforms in our 
+Continuous Integration pipeline is hard for two reasons:
+* The platforms use proprietary tools.
+* The platforms could be accessed publicly through cloud services, but spawning FPGA instances incurs significant 
+costs.
+
+These platform-specific repositories are tested manually against a specific tag of our development branch. Our goal is
+to at least test them every time we make a Fletcher release tag.
+
+## Echo platform
+
+A third platform exists, named [Echo](echo), that can be used for debugging purposes or as a reference to implement new 
+platform libraries. This implementation simply prints out any commands that a language run-time library requests on 
+the standard output. Echo does not use any proprietary tools and does not require any actual FPGA hardware to function.
+It is therefore maintained within this repository and even used within the CI pipelines.
