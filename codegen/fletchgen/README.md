@@ -20,7 +20,7 @@ has an AXI4 (full) master port and AXI4-lite slave port.
 # Prerequisites
 * [C++17 compliant compiler](https://clang.llvm.org/)
 * [Apache Arrow 0.13+](https://github.com/apache/arrow)
-* [CMake 3.10+](https://cmake.org/)
+* [CMake 3.14+](https://cmake.org/)
 
 # Build & install
 Fletchgen is under heavy development, so for now we'd recommend to make a debug build using CMake as follows: 

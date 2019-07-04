@@ -1,64 +1,68 @@
-##############################################################################
-# Configuration
-##############################################################################
-cmake_minimum_required(VERSION 3.10)
-project(cerata)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-include(GNUInstallDirs)
+project(cerata VERSION 0.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
+include(FetchContent)
 
-##############################################################################
-# Targets
-##############################################################################
-# Sources
-set(HEADERS
-    src/cerata/utils.h
-    src/cerata/node_array.h
-    src/cerata/edge.h
-    src/cerata/object.h
-    src/cerata/type.h
-    src/cerata/node.h
-    src/cerata/expression.h
-    src/cerata/graph.h
-    src/cerata/flattype.h
-    src/cerata/output.h
-    src/cerata/transform.h
-    src/cerata/logging.h
-    src/cerata/pool.h
+FetchContent_Declare(tinyxml2
+  GIT_REPOSITORY  https://github.com/leethomason/tinyxml2.git
+  GIT_TAG         master
+)
 
-    src/cerata/vhdl/architecture.h
-    src/cerata/vhdl/block.h
-    src/cerata/vhdl/declaration.h
-    src/cerata/vhdl/design.h
-    src/cerata/vhdl/identifier.h
-    src/cerata/vhdl/instantiation.h
-    src/cerata/vhdl/resolve.h
-    src/cerata/vhdl/vhdl.h
-    src/cerata/vhdl/vhdl_types.h
-    src/cerata/vhdl/template.h
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
 
-    src/cerata/dot/dot.h
-    src/cerata/dot/style.h
-    )
+include(CompileUnits)
 
-set(SOURCES
-    src/cerata/utils.cc
-    src/cerata/node_array.cc
+add_compile_unit(
+  NAME cerata::core
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
     src/cerata/edge.cc
-    src/cerata/object.cc
-    src/cerata/type.cc
-    src/cerata/node.cc
     src/cerata/expression.cc
-    src/cerata/graph.cc
     src/cerata/flattype.cc
+    src/cerata/graph.cc
+    src/cerata/node.cc
+    src/cerata/node_array.cc
+    src/cerata/object.cc
     src/cerata/output.cc
-    src/cerata/transform.cc
     src/cerata/pool.cc
+    src/cerata/transform.cc
+    src/cerata/type.cc
+    src/cerata/utils.cc
+  TSTS
+    test/cerata/test_expressions.cc
+    test/cerata/test_pool.cc
+    test/cerata/test_types.cc
+)
 
+add_compile_unit(
+  OPT
+  NAME cerata::dot
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
+    src/cerata/dot/dot.cc
+    src/cerata/dot/style.cc
+  TSTS
+    test/cerata/dot/test_graphs.cc
+  DEPS
+    cerata::core
+)
+
+add_compile_unit(
+  OPT
+  NAME cerata::vhdl
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
     src/cerata/vhdl/architecture.cc
     src/cerata/vhdl/block.cc
     src/cerata/vhdl/declaration.cc
@@ -66,46 +70,48 @@ set(SOURCES
     src/cerata/vhdl/identifier.cc
     src/cerata/vhdl/instantiation.cc
     src/cerata/vhdl/resolve.cc
+    src/cerata/vhdl/template.cc
     src/cerata/vhdl/vhdl.cc
     src/cerata/vhdl/vhdl_types.cc
-    src/cerata/vhdl/template.cc
+  TSTS
+    test/cerata/vhdl/test_declarators.cc
+    test/cerata/vhdl/test_designs.cc
+    test/cerata/vhdl/test_instantiators.cc
+  DEPS
+    cerata::core
+)
 
-    src/cerata/dot/dot.cc
-    src/cerata/dot/style.cc
-    )
+add_compile_unit(
+  OPT
+  NAME cerata::ipxact
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  DEPS
+    cerata::core
+    tinyxml2
+)
 
-include_directories(src)
+set(CERATA_BACKENDS)
+if(BUILD_CERATA_DOT)
+  list(APPEND CERATA_BACKENDS "cerata::dot")
+endif()
+if(BUILD_CERATA_VHDL)
+  list(APPEND CERATA_BACKENDS "cerata::vhdl")
+endif()
+if(BUILD_CERATA_IPXACT)
+  FetchContent_MakeAvailable(tinyxml2)
+  list(APPEND CERATA_BACKENDS "cerata::ipxact")
+endif()
 
-add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
+add_compile_unit(
+  NAME cerata
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  DEPS
+    cerata::core
+    ${CERATA_BACKENDS}
+)
 
-########################################################################################################################
-# TESTS
-########################################################################################################################
-if (CERATA_TESTS)
-  if (NOT TARGET gtest)
-    include(../../BuildGTest.cmake)
-  endif ()
-  include(GoogleTest)
-  enable_testing()
-
-  set(TEST_SOURCES
-      # Intermeditate
-      test/cerata/test.cc
-      test/cerata/test_types.h
-      test/cerata/test_expressions.h
-      test/cerata/test_designs.h
-      test/cerata/test_pool.h
-
-      # Back-ends
-      test/cerata/dot/test_graphs.h
-
-      test/cerata/vhdl/test_declarators.h
-      test/cerata/vhdl/test_instantiators.h
-      )
-  include_directories(test)
-  add_executable(${PROJECT_NAME}-test ${TEST_HEADERS} ${TEST_SOURCES})
-  target_link_libraries(${PROJECT_NAME}-test gtest gtest_main)
-  target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-
-  gtest_discover_tests(cerata-test)
-endif (CERATA_TESTS)
+compile_units()

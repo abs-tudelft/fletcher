@@ -17,7 +17,7 @@
 #include <cassert>
 #include <arrow/api.h>
 
-#include "fletcher/test_schemas.h"
+#include "test_schemas.h"
 
 namespace fletcher {
 

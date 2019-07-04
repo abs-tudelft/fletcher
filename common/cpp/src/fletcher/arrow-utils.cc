@@ -114,7 +114,8 @@ void ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Sch
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not open file for reading: " + file_name + " ARROW:[" + status.ToString() + "]");
   }
-  status = arrow::ipc::ReadSchema(fis.get(), out);
+  // Dictionaries are not supported yet, hence nullptr.
+  status = arrow::ipc::ReadSchema(fis.get(), nullptr, out);
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + status.ToString() + "]");
   }
@@ -128,7 +129,8 @@ void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema
     throw std::runtime_error("Could not allocate resizable Arrow buffer.");
   }
   auto buffer = std::dynamic_pointer_cast<arrow::Buffer>(resizable_buffer);
-  if (!arrow::ipc::SerializeSchema(schema, arrow::default_memory_pool(), &buffer).ok()) {
+  // Dictionaries are not supported yet, hence nullptr.
+  if (!arrow::ipc::SerializeSchema(schema, nullptr, arrow::default_memory_pool(), &buffer).ok()) {
     throw std::runtime_error("Could not serialize schema into buffer.");
   }
   if (arrow::io::FileOutputStream::Open(file_name, &fos).ok()) {

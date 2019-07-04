@@ -40,7 +40,7 @@ std::string Platform::name() {
 Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
   // Attempt to open shared library
   void *handle = nullptr;
-  handle = dlopen(("libfletcher_" + name + ".so").c_str(), RTLD_NOW);
+  handle = dlopen(("libfletcher_" + name + DYLIB_EXT).c_str(), RTLD_NOW);
 
   if (handle) {
     // Create a new platform
@@ -57,18 +57,19 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
   }
 }
 
-Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform) {
-  Status err = Status::NO_PLATFORM();
+Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
+  Status status = Status::NO_PLATFORM();
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    err = Make(p, platform);
-    if (err.ok()) {
-      return err;
+    status = Make(p, platform, quiet);
+    if (status.ok()) {
+      // We've found a working platform, use that.
+      return status;
     }
   }
-  return err;
+  return status;
 }
 
 Status Platform::Link(void *handle, bool quiet) {

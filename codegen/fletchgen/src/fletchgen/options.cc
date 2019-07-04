@@ -15,7 +15,7 @@
 #include "fletchgen/options.h"
 
 #include <fletcher/common.h>
-#include <CLI/CLI11.hpp>
+#include <CLI/CLI.hpp>
 
 namespace fletchgen {
 

@@ -34,7 +34,7 @@ TEST(Platform, EchoPlatform) {
   std::shared_ptr<fletcher::Platform> platform;
 
   // Create
-  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform).ok());
+  ASSERT_TRUE(fletcher::Platform::Make("echo", &platform, false).ok());
   ASSERT_EQ(platform->name(), "echo");
 
   // Init
@@ -68,7 +68,7 @@ TEST(Platform, EchoPlatform) {
 
 TEST(Context, ContextFunctions) {
   std::shared_ptr<fletcher::Platform> platform;
-  ASSERT_TRUE(fletcher::Platform::Make(&platform).ok());
+  ASSERT_TRUE(fletcher::Platform::Make(&platform, false).ok());
   ASSERT_TRUE(platform->Init().ok());
 
   // Create a schema with some stuff
@@ -127,9 +127,4 @@ TEST(Context, ContextFunctions) {
   ASSERT_EQ(context->num_buffers(), 8);
   ASSERT_TRUE(context->Enable().ok());
   ASSERT_TRUE(platform->Terminate().ok());
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }
