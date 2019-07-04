@@ -31,4 +31,18 @@ add_compile_unit(
     arrow_shared
 )
 
+add_compile_unit(
+    OPT
+    NAME fletcher::test_generate
+    TYPE EXECUTABLE
+    PRPS
+      CXX_STANDARD 11
+      CXX_STANDARD_REQUIRED ON
+    SRCS
+      test/fletcher/test_generate.cc
+    DEPS
+      fletcher::common
+      arrow_shared
+)
+
 compile_units()

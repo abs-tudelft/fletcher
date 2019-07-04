@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <cstdlib>
 #include <arrow/api.h>
+#include <cstdlib>
 
+#include "fletcher/test_schemas.h"
+#include "fletcher/test_recordbatches.h"
 #include "fletcher/arrow-utils.h"
-
-#include "test_schemas.h"
-#include "test_recordbatches.h"
 
 // Define extensions for files
 #define SCH_FILE(X) std::string("schemas/") + X + ".as"
@@ -28,7 +25,7 @@
 
 namespace fletcher {
 
-void generateDebugFiles() {
+void GenerateDebugFiles() {
   // TODO(johanpel): Create directories in a portable manner
   int ret = system("mkdir -p schemas");
   if (ret == -1) {
@@ -106,4 +103,9 @@ void generateDebugFiles() {
   fletcher::WriteRecordBatchesToFile(RB_FILE("Hobbits"), {hobbits_rb});
 }
 
+}
+
+int main() {
+  fletcher::GenerateDebugFiles();
+  return 0;
 }
