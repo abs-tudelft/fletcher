@@ -18,13 +18,8 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.Arrow.all;
-
-use work.SimUtils.all;
-
-use work.stringwrite_pkg.all;
+use work.UTF8StringGen_pkg.all;
+use work.Stream_pkg.all;
 
 entity UTF8StringGen is
   generic (
@@ -52,7 +47,7 @@ entity UTF8StringGen is
     cmd_ready                   : out std_logic;
     cmd_len                     : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
     cmd_strlen_min              : in  std_logic_vector(LEN_WIDTH-1 downto 0);
-    cmd_prng_mask               : in  std_logic_vector(LEN_WIDTH-1 downto 0);
+    cmd_strlen_mask             : in  std_logic_vector(LEN_WIDTH-1 downto 0);
 
     len_valid                   : out std_logic;
     len_ready                   : in  std_logic;
@@ -175,7 +170,7 @@ begin
   -- Length stream PRNG
   -----------------------------------------------------------------------------
   -- Instantiate the pseudo random number generator for the length stream
-  len_prng_inst: StreamPseudoRandomGenerator
+  len_prng_inst: StreamPRNG
     generic map (
       DATA_WIDTH => LEN_WIDTH
     )
@@ -205,7 +200,7 @@ begin
   end process;
 
   len_comb_proc: process(r,
-    cmd_valid, cmd_len, cmd_strlen_min, cmd_prng_mask,
+    cmd_valid, cmd_len, cmd_strlen_min, cmd_strlen_mask,
     int_len_ready,
     len_gen_valid, len_gen_data
   ) is
@@ -240,7 +235,7 @@ begin
           -- Register the stream length and string min and max lengths
           v.cmd.len := unsigned(cmd_len);
           v.cmd.min := unsigned(cmd_strlen_min);
-          v.cmd.mask := unsigned(cmd_prng_mask);
+          v.cmd.mask := unsigned(cmd_strlen_mask);
           
           -- Go to PASS
           v.state := PASS;
@@ -311,7 +306,7 @@ begin
     utf8_conv: block
       signal prng_data : std_logic_vector(ELEMENT_WIDTH-1 downto 0);
     begin
-      utf_prng_inst: StreamPseudoRandomGenerator
+      utf_prng_inst: StreamPRNG
         generic map (
           DATA_WIDTH              => ELEMENT_WIDTH
         )
