@@ -199,7 +199,7 @@ begin
     -- through the user core. In this way, the user can create new buffers
     -- without communicating with host software.
     StringRead_Name_cmd_ctrl <= wreg_array( REG_VALUES_BUF_HI) & wreg_array( REG_VALUES_BUF_LO)   -- Values buffer
-                   & wreg_array(REG_OFFSETS_BUF_HI) & wreg_array(REG_OFFSETS_BUF_LO);  -- Offsets buffer
+                              & wreg_array(REG_OFFSETS_BUF_HI) & wreg_array(REG_OFFSETS_BUF_LO);  -- Offsets buffer
                    
     -- Validate the command.
     StringRead_Name_cmd_valid <= '1';
