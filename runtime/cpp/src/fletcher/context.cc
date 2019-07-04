@@ -87,12 +87,7 @@ Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
   if (record_batch == nullptr) {
     return Status::ERROR("RecordBatch is nullptr.");
   }
-  // Check mode is read
-  auto mode = GetMode(*record_batch->schema());
-  if (mode == Mode::WRITE) {
-    return Status::ERROR("Accessing written RecordBatches through QueueRecordBatch is not yet supported."
-                         "Please use the lower-level functions available on the Platform API to solve this.");
-  }
+
   host_batches_.push_back(record_batch);
 
   // Create a description of the RecordBatch
