@@ -59,7 +59,8 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
 
 Status Kernel::SetArguments(std::vector<uint32_t> arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
-    context_->platform()->WriteMMIO(FLETCHER_REG_SCHEMA + context_->num_buffers() * 2 + i, arguments[i]);
+    context_->platform()->WriteMMIO(
+        FLETCHER_REG_SCHEMA + 2 * context_->num_recordbatches() + 2 * context_->num_buffers() + i, arguments[i]);
   }
 
   return Status::OK();
