@@ -5,6 +5,9 @@ resources:
     endpoint: github
     name: abs-tudelft/azure-pipelines-templates
 
+variables:
+  arrowVersion: 0.14.0
+
 jobs:
 
 - job:
@@ -22,13 +25,14 @@ jobs:
         source: platforms/echo/runtime
   pool:
     vmImage: ubuntu-latest
-  container: mbrobbel/libarrow:0.14.0
   steps:
   - template: steps/set-cc-cxx.yml@abs-tudelft
     parameters:
       cc: gcc-8
       cxx: g++-8
-  # - template: steps/install-arrow.yml@abs-tudelft
+  - template: steps/install-arrow.yml@abs-tudelft
+    parameters:
+      version: $(arrowVersion)
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/cmake.yml@abs-tudelft
     parameters:
@@ -41,6 +45,8 @@ jobs:
   steps:
   - template: steps/install-aws-fpga.yml@abs-tudelft
   - template: steps/install-arrow.yml@abs-tudelft
+    parameters:
+      version: $(arrowVersion)
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/cmake.yml@abs-tudelft
     parameters:
@@ -52,6 +58,8 @@ jobs:
   steps:
   - template: steps/install-snap.yml@abs-tudelft
   - template: steps/install-arrow.yml@abs-tudelft
+    parameters:
+      version: $(arrowVersion)
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/cmake.yml@abs-tudelft
     parameters:
@@ -74,6 +82,8 @@ jobs:
     parameters:
       packages: ['pyarrow', 'numpy', 'cython']
   - template: steps/install-arrow.yml@abs-tudelft
+    parameters:
+      version: $(arrowVersion)
   - template: steps/install-cmake.yml@abs-tudelft
   - script: |
       python3 setup.py build
