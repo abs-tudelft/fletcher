@@ -16,6 +16,7 @@
 
 #include <random>
 
+/// Model of the hardware LFSR random generator
 struct LFSRRandomizer {
   uint8_t lfsr = 0;
 
