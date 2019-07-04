@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 
+project(fletcher)
+
 option(FLETCHER_BUILD_CERATA "Build cerata library" OFF)
 option(FLETCHER_BUILD_FLETCHGEN "Build fletchgen" OFF)
 option(FLETCHER_BUILD_COMMON "Build common library" OFF)
