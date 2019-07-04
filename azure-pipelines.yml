@@ -28,8 +28,8 @@ jobs:
   steps:
   - template: steps/set-cc-cxx.yml@abs-tudelft
     parameters:
-      cc: gcc-8
-      cxx: g++-8
+      cc: gcc-7
+      cxx: g++-7
   - template: steps/install-arrow.yml@abs-tudelft
     parameters:
       version: $(arrowVersion)
