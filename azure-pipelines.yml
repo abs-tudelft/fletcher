@@ -97,3 +97,21 @@ jobs:
 - template: jobs/mdbook-gh-pages.yml@abs-tudelft
   parameters:
     ref: refs/heads/develop
+    preSteps:
+    - template: ../steps/install-doxygen.yml
+    - script: |
+        doxygen
+      workingDirectory: $(Build.SourcesDirectory)/codegen/fletchgen
+      displayName: Doxygen (fletchgen)
+    - script: |
+        doxygen
+      workingDirectory: $(Build.SourcesDirectory)/codegen/cerata
+      displayName: Doxygen (cerata)
+    beforePublishSteps:
+    - script: |
+        mkdir -p docs/book/api/cerata && mv codegen/cerata/docs/html docs/book/api/cerata &&
+        mkdir -p docs/book/api/fletchgen && mv codegen/fletchgen/docs/html docs/book/api/fletchgen
+      workingDirectory: $(Build.SourcesDirectory)
+      displayName: Add API docs
+
+
