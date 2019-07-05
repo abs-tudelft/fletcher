@@ -33,7 +33,7 @@ namespace cerata::vhdl {
 
 void VHDLOutputGenerator::Generate() {
   // Make sure the subdirectory exists.
-  CreateDir(subdir());
+  CreateDir(root_dir_ + "/" + subdir());
   size_t num_graphs = 0;
   for (const auto &o : outputs_) {
     CERATA_LOG(INFO, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
@@ -42,7 +42,7 @@ void VHDLOutputGenerator::Generate() {
     CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.comp->name());
     auto vhdl_source = vhdl_design.Generate();
     vhdl_source.ToString();
-    auto vhdl_path = subdir() + "/" + o.comp->name() + ".vhd";
+    auto vhdl_path = root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".vhd";
 
     bool overwrite = false;
 
