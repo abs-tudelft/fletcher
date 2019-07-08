@@ -33,8 +33,12 @@ class Kernel {
  public:
   explicit Kernel(std::shared_ptr<Context> context);
 
-  /// @brief Check if the Schema of this Kernel is compatible with another Schema
-  bool ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema);
+  /**
+   * @brief Returns true if the kernel implements an operation over a set of arrow::Schemas. Not implemented.
+   * @param[in] schema_set A vector of shared pointers to arrow::Schemas to check.
+   * @return Returns true if the kernel implements an operation over a set of arrow::Schemas.
+   */
+  [[deprecated]] bool ImplementsSchemaSet(const std::vector<std::shared_ptr<arrow::Schema>> &schema_set);
 
   /// @brief Reset the Kernel
   Status Reset();
