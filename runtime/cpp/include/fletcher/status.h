@@ -14,48 +14,61 @@
 
 #pragma once
 
+#include <fletcher/fletcher.h>
 #include <cstdlib>
 #include <string>
 #include <iostream>
-
-#include <fletcher/fletcher.h>
+#include <utility>
 
 namespace fletcher {
 
+/// Status return value of all Fletcher run-time functions
 struct Status {
+  /// The raw status value.
   fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
-  std::string message;
+  /// Optional message.
+  std::string message = "";
 
-  Status() = default;
+  /// @brief Construct a new status.
+  explicit Status(fstatus_t val = FLETCHER_STATUS_ERROR, std::string msg = "") : val(val), message(std::move(msg)) {}
 
-  explicit Status(fstatus_t val, std::string msg = "") : val(val), message(std::move(msg)) {}
-
+  /// @brief Return true if the status is OK.
   inline bool ok() { return val == FLETCHER_STATUS_OK; }
 
-  /// @brief Exit when fail
+  /// @brief Exit the program on a failure status, with some message. If no message is supplied, use the status message.
   inline void ewf(const std::string &msg = "") {
     if (!ok()) {
-      std::cerr << msg << std::endl;
+      if (!msg.empty()) {
+        std::cerr << msg << std::endl;
+      } else {
+        std::cerr << msg << std::endl;
+      }
       exit(EXIT_FAILURE);
     }
   }
 
+  /// @brief Compare raw status values for equality.
   inline bool operator==(const Status &rhs) const {
     return val == rhs.val;
   }
 
+  /// @brief Return an OK status.
   inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
+
+  /// @brief Return an ERROR status with some message.
   inline static Status ERROR(std::string msg = "") {
     return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR), std::move(msg));
   }
-  inline static Status NO_PLATFORM() {
-    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM),
-                  "No platform.");
+
+  // Helper macro for error states.
+#define STATUS_FACTORY(RAW_ID, MESSAGE)                                       \
+  inline static Status RAW_ID() {                                             \
+    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_##RAW_ID), MESSAGE); \
   }
-  inline static Status DEVICE_OUT_OF_MEMORY() {
-    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_NO_PLATFORM),
-                  "Device out of memory.");
-  }
+
+  // Other error states:
+  STATUS_FACTORY(NO_PLATFORM, "Could not detect platform.")
+  STATUS_FACTORY(DEVICE_OUT_OF_MEMORY, "Device out of memory.")
 };
 
-} // namespace fletcher
+}  // namespace fletcher
