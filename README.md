@@ -7,76 +7,84 @@
 Fletcher is a framework that helps to integrate FPGA accelerators with tools and frameworks that use Apache Arrow in 
 their back-ends.
 
-[Apache Arrow](https://arrow.apache.org/) specifies an in-memory format for data and provides libraries to various 
-languages to interface with the data in that format. The format prevents the need for serialization and through the
-libraries Arrow, zero-copy interprocess communication is possible. Languages that have Arrow libraries (under 
-development) include C, C++, Go, Java, JavaScript, Python, Ruby and Rust.
+[Apache Arrow](https://arrow.apache.org/) specifies an in-memory format targeting large datasets and provides 
+libraries for various languages to interface with the data in that format. 
+Arrow prevents the need for serialization between different language run-times and provides zero-copy inter-process
+communication of datasets. Languages that have Arrow libraries (under development) include C, C++, Go, Java, 
+JavaScript, Python, Ruby and Rust.
 
-While many software projects can benefit from these advantages, also hardware accelerated applications have seen 
+While many software projects can benefit from these advantages, hardware accelerated applications have also seen 
 serious serialization bottlenecks. Fletcher focuses on FPGA accelerators. Through Fletcher and Arrow, interfacing
-efficiently between FPGA accelerator and language runtime is made available to all the supported languages.
+*efficiently* between FPGA accelerator and high-level language runtimes is made available to all the supported 
+languages.
 
-Given an Arrow Schema (description of a tabular datastructure), Fletcher generates the following:
+Given a set of Arrow [Schemas](https://arrow.apache.org/docs/metadata.html), Fletcher generates the following:
 
-* An **easy-to-use hardware interface** for the functional part of the
-accelerator:
-  * You provide a range indices of your Arrow RecordBatch (rather than byte address)
-  * You receive streams of the data-type specified by the schema (rather than bus words)
-  * No pointer arithmetic, reordering, buffering, etc.. required - Fletcher does this for you, with high throughput.
-* A **template** for the functional part of accelerator (to be implemented manually or using high-level synthesis)
-  * You connect directly to streams of data from/to your RecordBatch rather than some memory bus interface.
+* A **high-performance, easy-to-use hardware interface** for your accelerator kernel:
+  * You provide a range indices of your Arrow RecordBatch (rather than byte address).
+  * You receive (or supply) streams of the data-type specified by the schema (rather than bus words).
+  * No pointer arithmetic, reordering, buffering, etc.. required - Fletcher does this for you, with high throughput
+   (think system bandwidth).
+* A **template** for the accelerator kernel (to be implemented manually or using high-level synthesis)
+  * You connect directly to **streams** of data from/to your RecordBatch rather than some memory bus interface.
     
 ![](fletcher.svg)
 
-## Current state
-Our framework is functional, but in early stages of development.
-
-Especially the development branch (which is currently our main branch) is very active and may break without notice.
-The (platform-specific) examples are quite hard to integrate in a CI pipeline (they would take multiple days to 
-complete and would incur significant costs for platforms such as Amazon's EC F1), so it's best to test them out using 
-the [master branch](https://github.com/abs-tudelft/fletcher/tree/master). 
-The master branch can be rather old, but will be in a state where all examples should work on all supported platforms. 
-
-### Apache Arrow support
-* Fletcher currently supports:
-  * Reading/writing an Arrow Schema created from any combination of:
-    - Fixed-width primitives
-    - Lists
+## Apache Arrow support
+* Fletcher currently supports reading/writing from/to multiple Arrow RecordBatches with an Arrow Schema created from 
+  any (nested) combination of:
+    - Fixed-width primitives (ints, float, etc...)
+    - Lists (strings, vectors, etc...)
     - Structs
-* Validity bitmaps.
+    - Validity bitmaps
 
-* We are working on support for:
+* Once the Arrow reference implementation and format specific reaches ensured stability (i.e. version 1.0), we would
+  like to support:
   - Sparse and dense unions
   - Dictionaries
   - Chunked tabular structures (`Arrow::Table`)
 
-### Platform support
-* Our __core hardware descriptions__ are vendor independent; __we don't use any
-  vendor IP__.
+## Platform support
+  * Fletcher is **vendor-agnostic**. Our core hardware descriptions and generated code are vendor independent; we don't 
+    use any vendor IP.
   * You can simulate a Fletcher based design without a specific target platform.
-  * Tested simulators include Questa/Modelsim, GHDL and XSIM.
+  * Tested simulators include the free and open-source [GHDL](https://github.com/ghdl/ghdl) and the proprietary
+    Mentor Graphics Questa/Modelsim, and Xilinx Vivado XSIM.
   
 * We provide top-level wrappers for the following platforms:
-  * [Amazon EC2 F1](https://github.com/aws/aws-fpga)
+  * [Amazon EC2 F1](https://github.com/aws/aws-fpga) and https://github.com/abs-tudelft/fletcher-aws
   * [OpenPOWER CAPI SNAP](https://github.com/open-power/snap)
   * Our top-level can be generated to speak AXI, so it should be easy to integrate with many existing systems that provide:
     * AXI4 (full) interface to memory, and 
     * AXI4-lite interface for MMIO.
 
+## Current state
+Our framework is functional, but at the same time it is under heavy development.
+
+Especially the development branch (which is currently our main branch) is very active and may break without notice.
+Some larger examples and the several supported platforms are quite hard to integrate in a CI pipeline 
+(they would take multiple days to complete and would incur significant costs for platforms such as Amazon's EC F1). 
+For now, these larger examples and platform support resides in separate repositories and are tested against a specific 
+tag of this repository.
+
 ## Further reading
-  * [Getting Started: Simple Column Sum Example](examples/sum/README.md)
-  * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator converts a set of Arrow schemas to a 
-    Fletcher-based design. It also provides instantiation templates for your kernel for a HDL or HLS (under 
-    construction) design flow.
-  * [Host-side run-time libraries](runtime) - Software libraries for run-time on the host-machine.
-  * [Hardware library](hardware) - Fletcher core hardware components that are not generated by Fletchgen.
+  Tutorials: 
+  * [Simple column sum example](examples/sum/README.md) - The "Hello, World!" of Fletcher.
+    
+  Hardware design flow:
+  * [Fletcher wrapper generator](codegen/fletchgen) - The wrapper generator converts a set of Arrow Schemas to a 
+    hardware design and provides templates for your kernel.
+  * [Hardware library](hardware) - All Fletcher core hardware components that are not generated by Fletchgen.
+  
+  Software design flow:
+  * [Host-side run-time libraries](runtime) - Software libraries for run-time support on the host-machine.
 
 ## Example projects
-  * [Getting Started: Simple Column Sum Example](examples/sum/README.md)  
-  * [Regular Expression Matching](examples/regexp/README.md) (outdated)
-  * [String writer](examples/stringwrite) (outdated)
-  * [K-Means clustering](examples/k-means) (outdated)
+  * [Simple column sum example](examples/sum/README.md) - The "Hello, World!" of Fletcher.
+  * [String writer](examples/stringwrite) - Writes at over 10 GB/s to a column of strings.
 
 External projects using Fletcher:
-  * [Posit BLAS operations](https://github.com/lvandam/posit_blas_hdl) (outdated)
-  * [Posit PairHMM](https://github.com/lvandam/pairhmm_posit_hdl_arrow) (outdated)
+  * [Regular Expression Matching](https://github.com/abs-tudelft/fletcher-example-regexp)
+  * [K-Means clustering](https://github.com/abs-tudelft/fletcher-example-kmeans)
+  * [Posit BLAS operations](https://github.com/lvandam/posit_blas_hdl)
+  * [Posit PairHMM](https://github.com/lvandam/pairhmm_posit_hdl_arrow)

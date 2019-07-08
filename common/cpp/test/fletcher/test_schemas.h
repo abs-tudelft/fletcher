@@ -57,7 +57,7 @@ inline std::shared_ptr<arrow::Schema> GetStringReadSchema() {
 
 inline std::shared_ptr<arrow::Schema> GetStringWriteSchema() {
   auto string_field = arrow::field("String", arrow::utf8(), false);
-  AppendMetaEPC(*string_field, 64);
+  string_field = AppendMetaEPC(*string_field, 64);
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {string_field};
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
   return AppendMetaRequired(*schema, "StringWrite", Mode::WRITE);

@@ -14,13 +14,14 @@
 
 #include "fletcher/platform.h"
 
+#include <arrow/api.h>
+#include <fletcher/common.h>
+
 #include <string>
 #include <vector>
 #include <memory>
 #include <iomanip>
 #include <sstream>
-#include <arrow/api.h>
-#include <fletcher/common.h>
 
 #include "fletcher/status.h"
 
@@ -51,7 +52,7 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
     // Could not open shared library
     platform = nullptr;
     if (!quiet) {
-      FLETCHER_LOG(ERROR, dlerror());
+      FLETCHER_LOG(WARNING, dlerror());
     }
     return Status::NO_PLATFORM();
   }
@@ -59,6 +60,9 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
 
 Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
   Status status = Status::NO_PLATFORM();
+  if (!quiet) {
+    FLETCHER_LOG(INFO, "Attempting to autodetect Fletcher hardware platform...");
+  }
   std::vector<std::string> autodetect_platforms = {FLETCHER_AUTODETECT_PLATFORMS};
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
@@ -67,6 +71,9 @@ Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet)
     if (status.ok()) {
       // We've found a working platform, use that.
       return status;
+    }
+    if (!quiet && (p != autodetect_platforms.back())) {
+      FLETCHER_LOG(INFO, "Attempting next platform...");
     }
   }
   return status;
@@ -102,20 +109,20 @@ Status Platform::Link(void *handle, bool quiet) {
   }
 }
 
-Status Platform::ReadMMIO64(uint64_t offset, uint64_t *value){
+Status Platform::ReadMMIO64(uint64_t offset, uint64_t *value) {
   freg_t hi, lo;
   Status stat;
 
   // Read high bits
   stat = ReadMMIO(offset + 1, &hi);
-  if(!stat.ok()){
+  if (!stat.ok()) {
     return stat;
   }
-  *value = ((uint64_t) hi) << 32;
+  *value = ((uint64_t) hi) << 32u;
 
   // Read low bits
   stat = ReadMMIO(offset, &lo);
-  if(!stat.ok()){
+  if (!stat.ok()) {
     return stat;
   }
   *value |= lo;
@@ -123,7 +130,7 @@ Status Platform::ReadMMIO64(uint64_t offset, uint64_t *value){
   return Status::OK();
 }
 
-Status Platform::MmioToString(std::string* str, uint64_t start, uint64_t stop, bool quiet) {
+Status Platform::MmioToString(std::string *str, uint64_t start, uint64_t stop, bool quiet) {
   std::stringstream ss;
   Status stat;
   for (uint64_t off = start; off < stop; off++) {
@@ -134,8 +141,8 @@ Status Platform::MmioToString(std::string* str, uint64_t start, uint64_t stop, b
     } else {
       if (!quiet) {
         ss << "R" << std::uppercase << std::hex << std::setw(3) << std::setfill('0') << off
-                  << ":" << std::uppercase << std::hex << std::setw(8) << std::setfill('0') << val
-                  << std::endl;
+           << ":" << std::uppercase << std::hex << std::setw(8) << std::setfill('0') << val
+           << std::endl;
       }
     }
   }

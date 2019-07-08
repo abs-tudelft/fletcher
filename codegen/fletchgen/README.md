@@ -13,7 +13,7 @@ Currently, the overall structure of a Fletcher hardware design is as follows:
 This can also be shown schematically as follows:
 ![Fletchgen output, schematically](./fletchgen.svg)
 
-Fletchgen does **not** generate the kernel itself, and currently supports only two top-level platforms. One platform
+Fletchgen does **not** generate the kernel itself. It currently supports only two top-level platforms. One platform
 is a simulation top-level that uses a memory model that can be filled with RecordBatches. The other is a top-level that
 has an AXI4 (full) master port and AXI4-lite slave port.
 

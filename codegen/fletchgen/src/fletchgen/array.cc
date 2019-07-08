@@ -154,7 +154,7 @@ static std::shared_ptr<Component> Array(Mode mode) {
       Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl(16)),
       Parameter::Make("INDEX_WIDTH", integer(), intl(32)),
       Parameter::Make("CFG", string(), strl("")),
-      Parameter::Make("CMD_TAG_ENABLE", boolean(), booll(false)),
+      Parameter::Make("CMD_TAG_ENABLE", boolean(), booll(true)),
       Parameter::Make("CMD_TAG_WIDTH", integer(), intl(1))});
 
   // Insert ports

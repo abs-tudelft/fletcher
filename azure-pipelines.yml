@@ -39,32 +39,6 @@ jobs:
       source: $(source)
       args: -DBUILD_TESTS=ON
 
-- job: aws
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-  - template: steps/install-aws-fpga.yml@abs-tudelft
-  - template: steps/install-arrow.yml@abs-tudelft
-    parameters:
-      version: $(arrowVersion)
-  - template: steps/install-cmake.yml@abs-tudelft
-  - template: steps/cmake.yml@abs-tudelft
-    parameters:
-      source: platforms/aws-f1/runtime
-
-- job: snap
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-  - template: steps/install-snap.yml@abs-tudelft
-  - template: steps/install-arrow.yml@abs-tudelft
-    parameters:
-      version: $(arrowVersion)
-  - template: steps/install-cmake.yml@abs-tudelft
-  - template: steps/cmake.yml@abs-tudelft
-    parameters:
-      source: platforms/snap/runtime
-
 - template: jobs/vhdeps.yml@abs-tudelft
   parameters:
     name: hardware

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fletcher/fletcher.h>
 #include <arrow/api.h>
 #include <arrow/builder.h>
 #include <arrow/record_batch.h>
@@ -58,8 +59,10 @@ TEST(Platform, EchoPlatform) {
 
   // Buffers:
   char buffer[128];
-  ASSERT_TRUE(platform->CopyHostToDevice(reinterpret_cast<uint8_t *>(buffer), 0, sizeof(buffer)).ok());
-  ASSERT_TRUE(platform->CopyDeviceToHost(0, reinterpret_cast<uint8_t *>(buffer), sizeof(buffer)).ok());
+  char device_mock_buffer[128];
+  da_t device_buf_addr = (uint64_t)device_mock_buffer;
+  ASSERT_TRUE(platform->CopyHostToDevice(reinterpret_cast<uint8_t *>(buffer), device_buf_addr, sizeof(buffer)).ok());
+  ASSERT_TRUE(platform->CopyDeviceToHost(device_buf_addr, reinterpret_cast<uint8_t *>(buffer), sizeof(buffer)).ok());
 
   // Terminate:
   ASSERT_TRUE(platform->Terminate().ok());

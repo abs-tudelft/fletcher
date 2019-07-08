@@ -43,14 +43,15 @@ Context::~Context() {
 }
 
 Status Context::Enable() {
+  auto num_batches = host_batches_.size();
   // Sanity check
-  assert(host_batches_.size() == host_batch_desc_.size());
-  assert(host_batches_.size() == host_batch_memtype_.size());
+  assert(num_batches == host_batch_desc_.size());
+  assert(num_batches == host_batch_memtype_.size());
 
-  FLETCHER_LOG(DEBUG, "Enabling Context...");
+  FLETCHER_LOG(DEBUG, "Enabling context for " << num_batches << " queued RecordBatch(es)");
 
   // Loop over all batches queued on host
-  for (size_t i = 0; i < host_batches_.size(); i++) {
+  for (size_t i = 0; i < num_batches; i++) {
     auto rbd = host_batch_desc_[i];
     auto type = host_batch_memtype_[i];
     for (const auto &b : rbd.buffers) {
@@ -62,10 +63,10 @@ Status Context::Enable() {
                                               device_buf.size,
                                               &device_buf.was_alloced);
       } else if (type == MemType::CACHE) {
-        // Cache always allocates on device.
         status = platform_->CacheHostBuffer(device_buf.host_address,
                                             &device_buf.device_address,
                                             device_buf.size);
+        // Cache always allocates on device.
         device_buf.was_alloced = true;
       } else {
         status = Status::ERROR("Invalid / unsupported MemType.");
@@ -76,6 +77,8 @@ Status Context::Enable() {
       device_buffers_.push_back(device_buf);
     }
   }
+
+  FLETCHER_LOG(DEBUG, "Context contains " << device_buffers_.size() << " device buffer(s).");
   return Status::OK();
 }
 
@@ -84,21 +87,16 @@ Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
   if (record_batch == nullptr) {
     return Status::ERROR("RecordBatch is nullptr.");
   }
-  // Check mode is read
-  auto mode = GetMode(*record_batch->schema());
-  if (mode == Mode::WRITE) {
-    return Status::ERROR("Accessing written RecordBatches through QueueRecordBatch is not yet supported."
-                         "Please use the lower-level functions available on the Platform API to solve this.");
-  }
+
   host_batches_.push_back(record_batch);
 
-  // Create a description of the recordbatch
+  // Create a description of the RecordBatch
   RecordBatchDescription rbd;
   RecordBatchAnalyzer rba(&rbd);
   rba.Analyze(*record_batch);
   host_batch_desc_.push_back(rbd);
 
-  // Put the desired memory type of the recordbatch
+  // Put the desired memory type of the RecordBatch
   host_batch_memtype_.push_back(mem_type);
 
   return Status::OK();

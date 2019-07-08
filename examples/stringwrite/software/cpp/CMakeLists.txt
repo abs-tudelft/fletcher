@@ -1,33 +1,33 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(stringwrite)
+include(FetchContent)
+FetchContent_Declare(cmake-modules
+    GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+    GIT_TAG         master
+    )
+FetchContent_MakeAvailable(cmake-modules)
+include(CompileUnits)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -fopenmp")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
+project(stringwrite VERSION 0.0.0 LANGUAGES CXX)
 
-add_executable(${PROJECT_NAME}
-        src/randomizer.h
-        src/stringwrite.cc
-        )
+find_package(arrow 0.14 CONFIG REQUIRED)
+find_package(fletcher CONFIG)
 
-find_library(LIB_ARROW arrow)
+if (NOT fletcher)
+    add_subdirectory(../../../../runtime/cpp fletcher)
+endif()
 
-target_link_libraries(${PROJECT_NAME} ${LIB_ARROW})
+add_compile_unit(
+    NAME stringwrite
+    TYPE EXECUTABLE
+    PRPS
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+    SRCS
+        src/stringwrite.cpp
+    DEPS
+        arrow_shared
+        fletcher
+)
 
-find_library(LIB_FLETCHER fletcher)
-if (NOT LIB_FLETCHER)
-    if (NOT TARGET fletcher)
-        message("Fletcher is not installed. Building stand-alone.")
-        add_subdirectory(../../../../runtime/cpp fletcher-cpp)
-    endif ()
-    target_link_libraries(${PROJECT_NAME} fletcher)
-    include_directories(../../../../runtime/cpp/src)
-    include_directories(../../../../common/cpp/src)
-    include_directories(../../../../common/c/src)
-else ()
-    target_link_libraries(${PROJECT_NAME} ${LIB_FLETCHER})
-endif ()
-
+compile_units()

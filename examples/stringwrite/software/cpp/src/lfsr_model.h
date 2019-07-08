@@ -14,18 +14,16 @@
 
 #pragma once
 
-// Common lib C
-#include "fletcher/fletcher.h"
+#include <random>
 
-// Common lib CPP
-#include "fletcher/status.h"
-#include "fletcher/timer.h"
-#include "fletcher/arrow-utils.h"
-#include "fletcher/hex-view.h"
-#include "fletcher/arrow-recordbatch.h"
-#include "fletcher/arrow-schema.h"
+/// Model of the hardware LFSR random generator
+struct LFSRRandomizer {
+  uint8_t lfsr = 0;
 
-// CPP runtime lib
-#include "fletcher/context.h"
-#include "fletcher/platform.h"
-#include "fletcher/kernel.h"
+  inline uint8_t next() {
+    uint8_t  tap = ~((lfsr >> 7) ^ (lfsr >> 5) ^ (lfsr >> 4) ^ (lfsr >> 3)) & (uint8_t)1;
+    lfsr = (lfsr << 1) | tap;
+    return lfsr;
+  }
+
+};

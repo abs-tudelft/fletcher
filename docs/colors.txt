@@ -1,0 +1,5 @@
+For the sake of aesthetics, this is a color palette that can be used in any documentation on Fletcher:
+
+Bright: {"#ff8181", "#ffe081", "#bfff81", "#81ffd1", "#81ceff", "#9381ff", "#f281ff"}
+Medium: {"#e85858", "#e8c558", "#9fe858", "#58e8b3", "#58b0e8", "#6c58e8", "#d958e8"}
+Dark:   {"#c04040", "#c0a140", "#7fc040", "#40c091", "#408fc0", "#5340c0", "#b340c0"}
