@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+cdef vector[shared_ptr[CSchema]] pyfletcher_unwrap_schemaset(schemaset):
+  cdef vector[shared_ptr[CSchema]] result
+
+  for sch in schemaset:
+    result.push_back(pyarrow_unwrap_schema(sch))
+
+  return result
 
 cdef class Kernel:
     """Python wrapper for Fletcher Kernel.
@@ -61,17 +68,17 @@ cdef class Kernel:
     def done_status_mask(self, uint32_t value):
         self.Kernel.get().done_status_mask = value
 
-    def implements_schema(self, schema):
-        """Check if the schema of this Kernel is compatible with another Schema.
+    def implements_schema(self, schemaset):
+        """Check if this Kernel implements an operation on a specific set of Arrow schemas.
 
         Args:
-            schema: Schema to compare with.
+            schemaset: List of Arrow schemas to compare with.
 
         Returns:
             True if compatible, False otherwise.
 
         """
-        return self.Kernel.get().ImplementsSchema(pyarrow_unwrap_schema(schema))
+        return self.Kernel.get().ImplementsSchemaSet(pyfletcher_unwrap_schemaset(schemaset))
 
     def reset(self):
         check_fletcher_status(self.Kernel.get().Reset())

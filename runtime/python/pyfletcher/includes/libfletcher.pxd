@@ -98,7 +98,7 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         uint32_t done_status_mask
 
         CKernel(shared_ptr[CContext] context)
-        cpp_bool ImplementsSchema(const shared_ptr[CSchema] &schema)
+        cpp_bool ImplementsSchemaSet(const vector[shared_ptr[CSchema]] &schema)
         Status Reset()
         Status SetRange(size_t recordbatch_index, int32_t first, int32_t last)
         Status SetArguments(vector[uint32_t] arguments)

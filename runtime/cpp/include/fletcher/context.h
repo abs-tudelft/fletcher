@@ -14,13 +14,12 @@
 
 #pragma once
 
+#include <arrow/api.h>
+#include <fletcher/common.h>
 #include <utility>
 #include <vector>
 #include <memory>
 #include <iostream>
-#include <arrow/array.h>
-#include <arrow/record_batch.h>
-#include <fletcher/common.h>
 
 #include "fletcher/platform.h"
 #include "fletcher/status.h"
@@ -29,6 +28,7 @@ namespace fletcher {
 
 using fletcher::Mode;
 
+/// Enumeration for different types of memory management.
 enum class MemType {
   /**
    * @brief Apply the least effort to make the data available to the device.
@@ -52,33 +52,40 @@ enum class MemType {
       CACHE
 };
 
-/**
- * A buffer on the device
- */
+/// A buffer on the device
 struct DeviceBuffer {
+  /// The host-side mirror address of this buffer.
   const uint8_t *host_address = nullptr;
+  /// The device-side address of this buffer.
   da_t device_address = D_NULLPTR;
+  /// The size of this buffer in bytes.
   int64_t size = 0;
 
+  /// The memory type of this buffer.
   MemType memory = MemType::CACHE;
+  /// The access mode as seen by the accelerator kernel.
   Mode mode = Mode::READ;
 
+  /// Whether this buffer has been made available to the device.
   bool available_to_device = false;
+  /// Whether this buffer was allocated on the device using Platform malloc.
   bool was_alloced = false;
 
+  /// @brief Construct a default DeviceBuffer.
   DeviceBuffer() = default;
 
+  /// @brief Construct a new DeviceBuffer.
   DeviceBuffer(const uint8_t *host_address, int64_t size, MemType type, Mode access_mode)
       : host_address(host_address), size(size), memory(type), mode(access_mode) {}
 };
 
-/**
- * @brief A Context for a platform where a RecordBatches can be prepared for processing by the Kernel.
- */
+/// A Context for a platform where a RecordBatches can be prepared for processing by the Kernel.
 class Context {
  public:
-
-  /// @brief Context constructor.
+  /**
+   * @brief Context constructor.
+   * @param[in] platform  A platform to construct the context on.
+   */
   explicit Context(std::shared_ptr<Platform> platform) : platform_(std::move(platform)) {}
 
   /// @brief Deconstruct the context object, freeing all allocated device buffers.
@@ -86,9 +93,9 @@ class Context {
 
   /**
    * @brief Create a new context on a specific platform.
-   * @param context     The new context.
-   * @param platform    The platform to create it on.
-   * @return            Status::OK() if successful, Status::ERROR() otherwise.
+   * @param[out] context  A pointer to a shared pointer that will own the new Context.
+   * @param[in] platform  The platform to create the Context on.
+   * @return Status::OK() if successful, otherwise a descriptive error status.
    */
   static Status Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform> &platform);
 
@@ -98,9 +105,9 @@ class Context {
    * This function utilizes Arrow metadata in the schema of the RecordBatch to determine whether or not some field
    * (i.e. some Array in the internal structure) will be used on the device.
    *
-   * @param record_batch  The arrow::RecordBatch to queue
-   * @param mem_type      Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
-   * @return              Status::OK() if successful, Status::ERROR() otherwise.
+   * @param[in] record_batch  The arrow::RecordBatch to queue
+   * @param[in] mem_type      Force caching; i.e. the RecordBatch is guaranteed to be copied to on-board memory.
+   * @return Status::OK() if successful, otherwise a descriptive error status.
    */
   Status QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch,
                           MemType mem_type = MemType::ANY);
@@ -108,20 +115,30 @@ class Context {
   /// @brief Obtain the size (in bytes) of all buffers currently enqueued.
   size_t GetQueueSize() const;
 
-  /// @brief Enable the usage of the enqueued buffers by the device
+  /// @brief Enable the usage of the enqueued buffers by the device.
   Status Enable();
 
   /// @brief Return the platform this context is active on.
   std::shared_ptr<Platform> platform() const { return platform_; }
 
-  /// @brief Return the number of enabled device buffers in this context.
+  /// @brief Return the number of device buffers in this context.
   uint64_t num_buffers() const;
-  /// @brief Return the i-th device buffer.
+
+  /**
+   * @brief Return the i-th DeviceBuffer of this context.
+   * @param[in] i The index of the DeviceBuffer to return.
+   * @return The i-th DeviceBuffer.
+   */
   DeviceBuffer device_buffer(size_t i) const { return device_buffers_[i]; }
 
-  /// @brief Return the number of RecordBatches of this context.
+  /// @brief Return the number of RecordBatches in this context.
   uint64_t num_recordbatches() const { return host_batches_.size(); }
-  /// @brief Return the i-th device buffer.
+
+  /**
+   * @brief Return the i-th arrow::RecordBatch of this context.
+   * @param[in] i The index of the arrow::RecordBatch to return.
+   * @return A shared pointer to the arrow::RecordBatch.
+   */
   std::shared_ptr<arrow::RecordBatch> recordbatch(size_t i) const { return host_batches_[i]; }
 
  protected:

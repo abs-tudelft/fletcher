@@ -23,11 +23,12 @@ namespace fletcher {
 
 Kernel::Kernel(std::shared_ptr<Context> context) : context_(std::move(context)) {}
 
-bool Kernel::ImplementsSchema(const std::shared_ptr<arrow::Schema> &schema) {
-  // TODO(johanpel): Implement checking if the kernel implements the same Schema,
-  //  probably through some checksum register
-  FLETCHER_LOG(INFO, schema->ToString());
-  return true;
+bool Kernel::ImplementsSchemaSet(const std::vector<std::shared_ptr<arrow::Schema>> &schema_set) {
+  // TODO(johanpel): Implement checking if the kernel implements the same Schema, probably through some checksum
+  //  register. We need a hash function for Arrow Schema's for this, that doesn't take into account field names or
+  //  metadata, except the fletcher access mode.
+  FLETCHER_LOG(WARNING, "ImplementsSchemaSet is not implemented.");
+  return false;
 }
 
 Status Kernel::Reset() {
@@ -57,7 +58,7 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
   return Status::OK();
 }
 
-Status Kernel::SetArguments(std::vector<uint32_t> arguments) {
+Status Kernel::SetArguments(const std::vector<uint32_t>& arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
     context_->platform()->WriteMMIO(
         FLETCHER_REG_SCHEMA + 2 * context_->num_recordbatches() + 2 * context_->num_buffers() + i, arguments[i]);
@@ -78,8 +79,8 @@ Status Kernel::Start() {
   return context_->platform()->WriteMMIO(FLETCHER_REG_CONTROL, 0);
 }
 
-Status Kernel::GetStatus(uint32_t *status) {
-  return context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, status);
+Status Kernel::GetStatus(uint32_t *status_out) {
+  return context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, status_out);
 }
 
 Status Kernel::GetReturn(uint32_t *ret0, uint32_t *ret1) {

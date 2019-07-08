@@ -38,19 +38,19 @@ std::string Platform::name() {
   return std::string(buf);
 }
 
-Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
+Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platform> *platform_out, bool quiet) {
   // Attempt to open shared library
   void *handle = nullptr;
   handle = dlopen(("libfletcher_" + name + DYLIB_EXT).c_str(), RTLD_NOW);
 
   if (handle) {
     // Create a new platform
-    *platform = std::make_shared<Platform>();
+    *platform_out = std::make_shared<Platform>();
     // Attempt to link the functions and return the result
-    return (*platform)->Link(handle, quiet);
+    return (*platform_out)->Link(handle, quiet);
   } else {
     // Could not open shared library
-    platform = nullptr;
+    platform_out = nullptr;
     if (!quiet) {
       FLETCHER_LOG(WARNING, dlerror());
     }
@@ -58,7 +58,7 @@ Status Platform::Make(const std::string &name, std::shared_ptr<fletcher::Platfor
   }
 }
 
-Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet) {
+Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform_out, bool quiet) {
   Status status = Status::NO_PLATFORM();
   if (!quiet) {
     FLETCHER_LOG(INFO, "Attempting to autodetect Fletcher hardware platform...");
@@ -67,7 +67,7 @@ Status Platform::Make(std::shared_ptr<fletcher::Platform> *platform, bool quiet)
   std::string logstr;
   for (const auto &p : autodetect_platforms) {
     // Attempt to create platform
-    status = Make(p, platform, quiet);
+    status = Make(p, platform_out, quiet);
     if (status.ok()) {
       // We've found a working platform, use that.
       return status;

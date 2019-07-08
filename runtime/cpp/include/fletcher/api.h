@@ -29,3 +29,7 @@
 #include "fletcher/context.h"
 #include "fletcher/platform.h"
 #include "fletcher/kernel.h"
+
+/// Contains all Fletcher classes and functions for use in run-time applications.
+namespace fletcher {
+}  // namespace fletcher
