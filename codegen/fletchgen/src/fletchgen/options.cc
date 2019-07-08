@@ -45,8 +45,7 @@ bool Options::Parse(Options *options, int argc, char **argv) {
 
   // Output options:
   app.add_option("-o,--output_path", options->output_dir,
-                 "Path to the output directory to place the generated files. (Default: . )")
-      ->check(CLI::ExistingDirectory);
+                 "Path to the output directory to place the generated files. (Default: . )");
 
   app.add_option("-l,--language", options->languages,
                  "Select the output languages for your design. Each type of output will be stored in a "
