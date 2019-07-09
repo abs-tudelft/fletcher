@@ -22,7 +22,7 @@ namespace fletchgen {
 bool Options::Parse(Options *options, int argc, char **argv) {
   CLI::App app{"Fletchgen - The Fletcher Design Generator"};
 
-  app.get_formatter()->column_width(40);
+  app.get_formatter()->column_width(34);
 
   // Required options:
   app.add_option("-i,--input", options->schema_paths,
@@ -50,9 +50,9 @@ bool Options::Parse(Options *options, int argc, char **argv) {
   app.add_option("-l,--language", options->languages,
                  "Select the output languages for your design. Each type of output will be stored in a "
                  "seperate subfolder (e.g. <output folder>/vhdl/...). \n"
-                 "                                        Available languages:\n"
-                 "                                          vhdl: Export as VHDL files (default).\n"
-                 "                                          dot : Export as DOT graphs.");
+                 "Available languages:\n"
+                 "  vhdl: Export as VHDL files (default).\n"
+                 "  dot : Export as DOT graphs.");
 
   app.add_flag("-f,--force", options->overwrite,
                "Force overwriting source code files if they exists already. If this flag is *not* used and the source "
@@ -77,9 +77,12 @@ bool Options::Parse(Options *options, int argc, char **argv) {
 
   try {
     app.parse(argc, argv);
-  } catch (CLI::Error& e) {
-    FLETCHER_LOG(ERROR, e.what());
+  } catch (CLI::CallForHelp &e) {
     std::cout << app.help();
+    options->quit = true;
+    return true;
+  } catch (CLI::Error &e) {
+    FLETCHER_LOG(ERROR, e.get_name() + e.what());
     return false;
   }
 

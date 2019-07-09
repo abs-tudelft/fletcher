@@ -41,10 +41,10 @@ struct Options {
   std::vector<std::string> languages = {"vhdl", "dot"};
 
   /// SREC output path. This is the path where an SREC file based on input RecordBatches will be placed.
-  std::string srec_out_path = "\"\"";
+  std::string srec_out_path;
 
   /// SREC simulation output path, where the simulation should dump the memory contents of written RecordBatches.
-  std::string srec_sim_dump = "\"\"";
+  std::string srec_sim_dump;
 
   /// Name of the Kernel
   std::string kernel_name = "Kernel";
@@ -58,6 +58,9 @@ struct Options {
 
   /// Vivado HLS template
   bool vivado_hls = false;
+
+  /// Whether to quit the program without doing anything (useful for just showing help.)
+  bool quit = false;
 
   /// Make the output quiet. TODO(johanpel): not yet implemented.
   bool quiet = false;

@@ -40,6 +40,12 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  // Quit the program early.
+  if (options->quit) {
+    fletcher::StopLogging();
+    return 0;
+  }
+
   // The resulting design.
   fletchgen::Design design;
   // Potential RecordBatch descriptors for simulation models.
@@ -117,6 +123,5 @@ int main(int argc, char **argv) {
 
   // Shut down logging
   fletcher::StopLogging();
-
   return 0;
 }
