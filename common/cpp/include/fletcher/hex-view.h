@@ -41,8 +41,8 @@ struct HexView {
    */
   void AddData(const uint8_t *ptr, size_t size);
 
-  uint64_t width = 32;
-  uint64_t start = 0;
+  int64_t width = 32;
+  int64_t start = 0;
   std::vector<uint8_t> data;
 };
 
