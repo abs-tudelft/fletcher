@@ -13,87 +13,82 @@
 // limitations under the License.
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <utility>
 
 #include "fletcher/hex-view.h"
 
-#ifdef __APPLE__
-#define ULL_FORMAT "%016lluX: "
-#else
-#define ULL_FORMAT "%016luX: "
-#endif
+#define HEX2 std::hex << std::setfill('0') << std::setw(2) << std::uppercase
+#define HEX16 std::hex << std::setfill('0') << std::setw(16) << std::uppercase
 
 namespace fletcher {
 
-HexView::HexView(uint64_t start, std::string str, uint64_t row, uint64_t col, uint64_t width)
-    : str(std::move(str)), row(row), col(col), width(width), start(start) {}
-
-std::string HexView::ToString(bool header) {
-  char buf[6] = {0};
-  std::string ret;
-  if (header) {
-    ret = "                  ";
-    for (unsigned int i = 0; i < width; i++) {
-      snprintf(buf, sizeof(buf), "%02X ", i);
-      ret.append(buf);
-    }
-  }
-  ret.append(str);
-  return ret;
-}
-
-unsigned char convertToReadable(unsigned char c) {
+/// @brief Convert to readable ASCII
+inline static unsigned char ConvertToReadable(unsigned char c) {
   if ((c < 32) || (c > 126)) {
     return '.';
   }
   return c;
 }
 
-void HexView::AddData(const uint8_t *ptr, size_t size) {
-  char buf[64] = {0};
-  std::string left;
-  std::string right;
+HexView::HexView(uint64_t start, uint64_t width) : width(width), start(start) {}
 
-  unsigned int i = 0;
+std::string HexView::ToString(bool header) {
+  std::stringstream ss;
+  std::string ret;
 
-  if (size == 0) {
-    str.append("\n(zero-length block)\n");
-  } else {
-    while (i < size) {
-      if (col % width == 0) {
-        str.append(left);
-        str.append(" ");
-        str.append(right);
-        str.append("\n");
-        left = "";
-        right = "";
-        snprintf(buf, sizeof(buf), ULL_FORMAT, start + row * width);
-        left.append(buf);
-        row++;
+  // Create a header
+  if (header) {
+    ss << std::string(17, ' ');
+    for (unsigned int i = 0; i < width; i++) {
+      ss << HEX2 << i;
+      if (i != width - 1) {
+        ss << " ";
       }
+    }
+  }
 
-      snprintf(buf, sizeof(buf), "%02X", (unsigned char) ptr[i]);
-      left.append(buf);
+  // Calculate aligned range
+  int64_t size = data.size();
+  int64_t aligned_start = start - (start % width);
+  int64_t aligned_end = aligned_start + size + ((aligned_start + size) % width);
+  int64_t aligned_size = aligned_end - aligned_start;
 
-      snprintf(buf, sizeof(buf), "%c", convertToReadable((unsigned char) ptr[i]));
-      right.append(buf);
+  // Iterate over rows
+  for (int64_t row_offset = 0; row_offset < aligned_size; row_offset += width) {
+    if ((row_offset != 0) || header) {
+      ss << "\n";
+    }
+    // Put row address
+    ss << HEX16 << aligned_start + row_offset << " ";
 
-      if (i == size - 1) {
-        left.append("|");
+    // Put bytes as hex
+    for (int64_t col_offset = 0; col_offset < width; col_offset++) {
+      int64_t pos = row_offset + col_offset - (start - aligned_start);   // Position in the data buffer
+      if ((pos < 0) || (pos >= size)) {
+        ss << "   ";
       } else {
-        left.append(" ");
+        ss << HEX2 << static_cast<uint32_t>(data[pos]) << " ";
       }
-      col++;
-      i++;
     }
 
-    left.append(std::string(18 + 3 * width - left.length(), ' '));
-
-    str.append(left);
-    str.append(" ");
-    str.append(right);
-    str.append("\n");
+    // Put bytes as ascii
+    for (int64_t col_offset = 0; col_offset < width; col_offset++) {
+      int64_t pos = row_offset + col_offset - (start - aligned_start);
+      if ((pos < 0) || (pos >= size)) {
+        ss << " ";
+      } else {
+        ss << ConvertToReadable(data[pos]);
+      }
+    }
   }
+
+  return ss.str();
+}
+
+void HexView::AddData(const uint8_t *ptr, size_t size) {
+  data.insert(data.end(), ptr, ptr + size);
 }
 
 }  // namespace fletcher
