@@ -39,6 +39,8 @@ add_compile_unit(
     test/cerata/test_expressions.cc
     test/cerata/test_pool.cc
     test/cerata/test_types.cc
+  DEPS
+    stdc++fs
 )
 
 add_compile_unit(

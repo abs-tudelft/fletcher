@@ -14,6 +14,7 @@
 
 #include "cerata/utils.h"
 
+#include <filesystem>
 #include <unordered_map>
 #include <string>
 
@@ -39,10 +40,13 @@ std::string ToString(const std::unordered_map<std::string, std::string> &meta) {
 }
 
 void CreateDir(const std::string &dir_name) {
-  // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
-  int ret = system(("mkdir -p " + dir_name).c_str());
-  if (ret == -1) {
-    CERATA_LOG(ERROR, "Could not create directory.");
+  // Check if the directory already exists, if not, create it.
+  if (!std::filesystem::exists(dir_name)) {
+    std::error_code err;
+    bool result = std::filesystem::create_directories(dir_name, err);
+    if (!result) {
+      CERATA_LOG(ERROR, "Could not create directories: " + dir_name + " Error message:" + err.message());
+    }
   }
 }
 
