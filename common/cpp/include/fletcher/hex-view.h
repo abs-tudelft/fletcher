@@ -16,42 +16,34 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 
 namespace fletcher {
 
 /**
- * Structure for hex editor style command-line output
+ * Utility for hex editor style command-line output.
  */
 struct HexView {
   /**
    * @brief Construct a new HexView object
    * @param start Start address of the first byte.
-   * @param str Optional string to append any output to.
-   * @param row Starting row
-   * @param col Starting column
    * @param width Number of bytes per line
    */
-  explicit HexView(uint64_t start,
-                   std::string str = "",
-                   uint64_t row = 0,
-                   uint64_t col = 0,
-                   uint64_t width = 32);
+  explicit HexView(uint64_t start = 0, uint64_t width = 32);
 
-  /// @brief Return a hex editor style view of the memory that was added to this HexView, optionally with a \p header.
+  /// @brief Return a hex editor style view of the data that was added to this HexView, with an optional header.
   std::string ToString(bool header = true);
 
   /**
-   * @brief Add a memory region to be printed to the HexView
-   * @param ptr The memory
-   * @param size The size
+   * @brief Add data to be printed to the HexView.
+   * @param[in]  ptr  The start address of the data.
+   * @param[in] size  The size of the data.
    */
   void AddData(const uint8_t *ptr, size_t size);
 
-  std::string str;
-  uint64_t row;
-  uint64_t col;
-  uint64_t width;
-  uint64_t start;
+  int64_t width = 32;
+  int64_t start = 0;
+  std::vector<uint8_t> data;
 };
 
 }  // namespace fletcher
