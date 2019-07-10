@@ -7,7 +7,7 @@ Everything up to step 5 (simulation) can be done with completely free and open-s
 ### For hardware generation (step 1 - 3):
 The examples in this tutorial are written in Python, so you'll need 
 * Install [Python 3.6+](https://www.python.org/).
-* Install [PyArrow 0.13+](https://arrow.apache.org/docs/python/)
+* Install [PyArrow 0.14+](https://arrow.apache.org/docs/python/)
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design generator tool.
 * Build and install [Fletchgen](../../codegen/fletchgen/README.md).
