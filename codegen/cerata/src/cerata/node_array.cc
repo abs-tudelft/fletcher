@@ -125,7 +125,7 @@ size_t NodeArray::IndexOf(const Node &n) const {
 }
 
 PortArray::PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir) :
-    NodeArray(std::move(base->name()), Node::NodeID::PORT, base, std::move(size)), Term(base->dir()) {}
+    NodeArray(base->name(), Node::NodeID::PORT, base, std::move(size)), Term(base->dir()) {}
 
 std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
                                            std::shared_ptr<Type> type,
