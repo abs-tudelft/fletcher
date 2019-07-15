@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
     FLETCHER_LOG(INFO, "Generating SREC output.");
     auto srec_out = std::ofstream(options->srec_out_path);
     fletchgen::srec::GenerateReadSREC(design.batch_desc, &srec_batch_desc, &srec_out, 64);
+    srec_out.close();
   }
 
   // Generate DOT output
@@ -94,6 +95,7 @@ int main(int argc, char **argv) {
                                    options->srec_out_path,
                                    options->srec_sim_dump,
                                    srec_batch_desc);
+    sim_file.close();
   }
 
   // Generate AXI top level
@@ -105,6 +107,7 @@ int main(int argc, char **argv) {
     }
     axi_file = std::ofstream(axi_file_path);
     fletchgen::top::GenerateAXITop(*design.mantle, {&axi_file});
+    axi_file.close();
   }
 
   // Generate Vivado HLS template
