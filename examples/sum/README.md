@@ -136,9 +136,20 @@ It will always overwrite a `.vhdt` file, though!
 # 4. Implement the kernel
 
 You can choose any tool or flow you'd like to implement your kernel, as long as you adhere to the interface defined by
-the template.
+the template. 
 
-Take a look at the `Sum.vhd` file to see how we've implemented this kernel in HDL.
+Take a look at the [`Sum.vhd`](hardware/vhdl/Sum.vhd) file from the subfolder of this readme to see how we've implemented this kernel in HDL.
+
+The kernel implementation includes 
+* A state machine to:
+  * Generate a command for the generated interface.
+  * Absorb data from the data streams and sum the values. 
+* An AXI4-lite compatible MMIO slave.
+  * Fletcher uses this to communicate control information and RecordBatch metadata to your kernel.
+
+In the future, some of this rather verbose control logic may be generated through Fletchgen as well, but for now we're
+just showing you everything so you can build more advanced kernels with more advanced access patterns.
+
 We'll follow up with an HLS example soon!
 
 # 5. Simulate the design
