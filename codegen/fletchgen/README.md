@@ -25,7 +25,7 @@ has an AXI4 (full) master port and AXI4-lite slave port.
 # Build & install
 Fletchgen is under heavy development, so for now we'd recommend to make a debug build using CMake as follows: 
 ```console
-git clone https://github.com/abs-tudelft/fletcher.git
+git clone https://github.com/abs-tudelft/fletcher.git --recursive
 cd fletcher/codegen/fletchgen
 mkdir debug
 cd debug
