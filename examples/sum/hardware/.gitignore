@@ -1,9 +1,9 @@
-input/*
+recordbatch.rb
+schema.as
 output/*
 vhdl/*
 dot/*
 work/*
-!input/.keep
 !output/.keep
 !vhdl/Sum.vhd
 .ipynb_checkpoints

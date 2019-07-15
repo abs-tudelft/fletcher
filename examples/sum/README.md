@@ -5,8 +5,8 @@ Before you start, you need a few libraries and tools to follow this tutorial.
 Everything up to step 5 (simulation) can be done with completely free and open-source tools.
 
 ### For hardware generation (step 1 - 3):
-The examples in this tutorial are written in Python, so you'll need 
-* Install [Python 3.6+](https://www.python.org/).
+The examples in this part of the tutorial are written in Python, so you'll need 
+* Install [Python 3.6+](https://www.python.org/)
 * Install [PyArrow 0.14+](https://arrow.apache.org/docs/python/)
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design generator tool.
@@ -16,7 +16,20 @@ Furthermore you'll need to build and install Fletchgen - the Fletcher design gen
 * Install a hardware simulator, e.g. [GHDL](https://github.com/ghdl/ghdl) or ModelSim/QuestaSim.
 * Install [vhdeps](https://github.com/abs-tudelft/vhdeps) - A VHDL dependency analyzer.
 
-### For hardware acceleration (step 6 - 7)
+### For host-side software (step 6)
+We will also show how to write a software application, ready to be accelerated using Fletcher and Arrow, that runs 
+on the CPU. We call this the "host-side" application, as the CPU "hosts" the accelerator.
+
+For each language, Fletcher provides a run-time library to manage the data and control flow to and from a 
+Fletcher-based accelerator.
+
+| Language | Run-time library                                           |
+|----------|------------------------------------------------------------|
+| Python   | Install [pyfletcher](https://pypi.org/project/pyfletcher/) |
+| C++      | Build & install [libfletcher](../../runtime/cpp/README.md) |
+
+### For hardware acceleration (step 7)
+
 For actual hardware acceleration, you'll need to access to one of the supported platforms. We currently support:
 * [Amazon EC2 F1](https://github.com/aws/aws-fpga)
 * [OpenPOWER CAPI SNAP](https://github.com/open-power/snap)
@@ -100,7 +113,7 @@ We can call fletchgen from the command line as follow:
 
 ```console
 $ cd hardware
-$ fletchgen -n Sum -r input/recordbatch.rb -s output/recordbatch.srec -l vhdl --sim
+$ fletchgen -n Sum -r recordbatch.rb -s recordbatch.srec -l vhdl --sim
 ```
 
 We've used the following options:
