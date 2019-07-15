@@ -37,6 +37,9 @@ struct Named {
   std::string name() const { return name_; }
   /// @brief Change the name of the object.
   void SetName(std::string name) { name_ = std::move(name); }
+
+  /// Destructor
+  virtual ~Named() = default;
  private:
   /// @brief The object name.
   std::string name_;
