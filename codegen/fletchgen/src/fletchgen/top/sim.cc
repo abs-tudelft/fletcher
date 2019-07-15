@@ -18,6 +18,7 @@
 #include <string>
 #include <iomanip>
 #include <optional>
+#include <cstdlib>
 
 #include "fletchgen/top/sim_template.h"
 #include "fletchgen/mantle.h"
@@ -38,6 +39,19 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
   }
   str << std::endl;
   return str.str();
+}
+
+static std::string CanonicalizePath(const std::string& path) {
+  std::string result;
+  if (!path.empty()) {
+    char *p = canonicalize_file_name(path.c_str());
+    if (p == nullptr) {
+      FLETCHER_LOG(FATAL, "Could not canonicalize path: " << path);
+    }
+    result = std::string(p);
+    free(p);
+  }
+  return result;
 }
 
 std::string GenerateSimTop(const Mantle &mantle,
@@ -103,6 +117,7 @@ std::string GenerateSimTop(const Mantle &mantle,
 
   // Read/write specific memory models
   if (mantle.schema_set()->RequiresReading()) {
+    auto abs_path = CanonicalizePath(read_srec_path);
     t.Replace("BUS_READ_SLAVE_MOCK",
               "  rmem_inst: BusReadSlaveMock\n"
               "  generic map (\n"
@@ -113,7 +128,7 @@ std::string GenerateSimTop(const Mantle &mantle,
               "    RANDOM_REQUEST_TIMING       => false,\n"
               "    RANDOM_RESPONSE_TIMING      => false,\n"
               "    SREC_FILE                   => \"" +
-                  read_srec_path
+                  abs_path
                   + "\"\n"
                     "  )\n"
                     "  port map (\n"
@@ -155,6 +170,7 @@ std::string GenerateSimTop(const Mantle &mantle,
     t.Replace("MST_RREQ_INSTANTIATE", "");
   }
   if (mantle.schema_set()->RequiresWriting()) {
+
     t.Replace("BUS_WRITE_SLAVE_MOCK",
               "  wmem_inst: BusWriteSlaveMock\n"
               "  generic map (\n"
@@ -166,7 +182,7 @@ std::string GenerateSimTop(const Mantle &mantle,
               "    RANDOM_REQUEST_TIMING       => false,\n"
               "    RANDOM_RESPONSE_TIMING      => false,\n"
               "    SREC_FILE                   => \""
-                  + write_srec_path
+                  + CanonicalizePath(write_srec_path)
                   + "\"\n"
                     "  )\n"
                     "  port map (\n"
