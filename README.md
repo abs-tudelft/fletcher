@@ -28,7 +28,7 @@ Given a set of Arrow [Schemas](https://arrow.apache.org/docs/metadata.html), Fle
 * A **template** for the accelerator kernel (to be implemented manually or using high-level synthesis)
   * You connect directly to **streams** of data from/to your RecordBatch rather than some memory bus interface.
     
-![](fletcher.svg)
+![Fletcher overview](fletcher.svg)
 
 ## Apache Arrow support
 * Fletcher currently supports reading/writing from/to multiple Arrow RecordBatches with an Arrow Schema created from 
@@ -52,11 +52,12 @@ Given a set of Arrow [Schemas](https://arrow.apache.org/docs/metadata.html), Fle
     Mentor Graphics Questa/Modelsim, and Xilinx Vivado XSIM.
   
 * We provide top-level wrappers for the following platforms:
-  * [Amazon EC2 F1](https://github.com/aws/aws-fpga) and https://github.com/abs-tudelft/fletcher-aws
+  * [Amazon EC2 F1](https://github.com/aws/aws-fpga)
   * [OpenPOWER CAPI SNAP](https://github.com/open-power/snap)
-  * Our top-level can be generated to speak AXI, so it should be easy to integrate with many existing systems that provide:
-    * AXI4 (full) interface to memory, and 
-    * AXI4-lite interface for MMIO.
+  * Our top-level can be generated to speak AXI, so it should be easy to integrate with many existing systems.
+    Requirements for a platform are that it provides:
+    * An AXI4 (full) interface to memory holding Arrow data structures to operate on (data path), and 
+    * An AXI4-lite interface for MMIO to (control path) registers.
 
 ## Current state
 Our framework is functional, but at the same time it is under heavy development.
