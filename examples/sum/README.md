@@ -125,7 +125,7 @@ We've used the following options:
 
 Now, Fletchgen will generate all the things we've listed above. The output files are as follows:
 
-* `hardware/output/recordbatch.srec`: our memory model contents. 
+* `hardware/recordbatch.srec`: our memory model contents. 
 * `hardware/vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
 so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there). 
 It will always overwrite a `.vhdt` file, though!

@@ -1,10 +1,8 @@
 recordbatch.rb
 schema.as
-output/*
 vhdl/*
 dot/*
 work/*
-!output/.keep
 !vhdl/Sum.vhd
 .ipynb_checkpoints
 vsim.do
