@@ -17,6 +17,7 @@
 #include <cerata/api.h>
 #include <memory>
 
+#include "fletchgen/top/axi_template.h"
 #include "fletchgen/mantle.h"
 
 namespace fletchgen::top {
@@ -24,12 +25,9 @@ namespace fletchgen::top {
 using cerata::vhdl::Template;
 
 std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream *> &outputs) {
-  const char *fhwd = std::getenv("FLETCHER_DIR");
-  if (fhwd == nullptr) {
-    throw std::runtime_error("Environment variable FLETCHER_DIR not set. Please source env.sh.");
-  }
 
-  Template t(std::string(fhwd) + "/hardware/axi/AxiTop.vhdt");
+  // Template for AXI top level
+  auto t = Template::FromString(axi_source);
 
   // Bus properties
   t.Replace("BUS_ADDR_WIDTH", 64);

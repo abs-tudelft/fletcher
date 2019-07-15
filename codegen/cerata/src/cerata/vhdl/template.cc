@@ -14,24 +14,36 @@
 
 #include "cerata/vhdl/template.h"
 
-#include <fstream>
+#include <iostream>
 #include "cerata/logging.h"
 
 namespace cerata::vhdl {
 
-Template::Template(const std::string &filename) {
+Template::Template(std::istream *str) {
+  std::string line;
+  while (std::getline(*str, line)) {
+    lines_.push_back(line);
+  }
+  Analyze();
+}
+
+Template Template::FromString(const std::string &str) {
+  std::stringstream stream;
+  stream << str;
+  Template result(&stream);
+  return result;
+}
+
+Template Template::FromFile(const std::string &filename) {
   std::ifstream ifs(filename);
   if (!ifs.is_open()) {
     throw std::runtime_error("Could not open VHDL template file " + filename);
   } else {
     CERATA_LOG(DEBUG, "Opened template file " + filename);
   }
-  std::string line;
-  while (std::getline(ifs, line)) {
-    lines_.push_back(line);
-  }
-  Analyze();
+  Template result(&ifs);
   ifs.close();
+  return result;
 }
 
 void Template::Replace(const std::string &str, int with) {

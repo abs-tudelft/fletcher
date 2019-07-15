@@ -15,15 +15,17 @@
 #include "fletchgen/top/sim.h"
 
 #include <cerata/api.h>
-
+#include <string>
 #include <iomanip>
 #include <optional>
 
+#include "fletchgen/top/sim_template.h"
 #include "fletchgen/mantle.h"
 
 namespace fletchgen::top {
 
 using fletcher::RecordBatchDescription;
+using cerata::vhdl::Template;
 
 static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string &comment = "") {
   std::stringstream str;
@@ -43,12 +45,8 @@ std::string GenerateSimTop(const Mantle &mantle,
                            const std::string &read_srec_path,
                            const std::string &write_srec_path,
                            const std::vector<RecordBatchDescription> &recordbatches) {
-  // Fletcher hardware dir
-  const char *fhwd = std::getenv("FLETCHER_DIR");
-  if (fhwd == nullptr) {
-    throw std::runtime_error("Environment variable FLETCHER_DIR not set.\n"
-                             "Please point FLETCHER_DIR to the Fletcher repository.");
-  }
+  // Template file for simulation top-level
+  auto t = Template::FromString(sim_source);
 
   // Number of default registers
   constexpr int ndefault = 4;
@@ -59,9 +57,6 @@ std::string GenerateSimTop(const Mantle &mantle,
 
   // Total number of RecordBatches
   size_t num_rbs = read_schemas.size() + write_schemas.size();
-
-  // Template file for simulation top-level
-  cerata::vhdl::Template t(std::string(fhwd) + "/hardware/sim/SimTop_tc.vhdt");
 
   // Bus properties
   t.Replace("BUS_ADDR_WIDTH", 64);
