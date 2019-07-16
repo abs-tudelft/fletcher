@@ -27,6 +27,9 @@ else()
   if(NOT TARGET fletcher::common)
     add_subdirectory(../../common/cpp common)
   endif()
+  if(NOT TARGET fletcher::c)
+    add_subdirectory(../../common/c c)
+  endif()
 endif()
 
 add_compile_unit(
@@ -40,6 +43,7 @@ add_compile_unit(
     src/fletcher/context.cc
     src/fletcher/kernel.cc
   DEPS
+    fletcher::c
     fletcher::common
     arrow_shared
     ${CMAKE_DL_LIBS}

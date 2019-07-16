@@ -13,6 +13,8 @@ jobs:
 - job:
   strategy:
     matrix:
+      c:
+        source: common/c
       common:
         source: common/cpp
       cerata:
@@ -88,7 +90,7 @@ jobs:
     beforePublishSteps:
     - script: |
         mkdir -p docs/book/api/cerata && mv codegen/cerata/docs/html docs/book/api/cerata &&
-        mkdir -p docs/book/api/fletchgen && mv codegen/fletchgen/docs/html docs/book/api/fletchgen && 
+        mkdir -p docs/book/api/fletchgen && mv codegen/fletchgen/docs/html docs/book/api/fletchgen &&
         mkdir -p docs/book/api/fletcher-cpp && mv runtime/cpp/docs/html docs/book/api/fletcher-cpp
       workingDirectory: $(Build.SourcesDirectory)
       displayName: Add API docs
