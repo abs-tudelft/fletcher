@@ -38,6 +38,10 @@ if(FLETCHER_BUILD_COMMON)
   add_subdirectory(common/cpp)
 endif()
 
+IF(FLETCHER_BUILD_VIVADO_HLS)
+  add_subdirectory(integrations/vivado_hls)
+endif()
+
 if(FLETCHER_BUILD_AWS)
   add_subdirectory(platforms/aws-f1/runtime)
 endif()
