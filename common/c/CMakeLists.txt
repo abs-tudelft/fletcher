@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletcher_echo VERSION 0.0.0 LANGUAGES C CXX)
+project(fletcher_c VERSION 0.0.0 LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -12,19 +12,9 @@ FetchContent_MakeAvailable(cmake-modules)
 
 include(CompileUnits)
 
-if(NOT TARGET fletcher::c)
-  add_subdirectory(../../../common/c c)
-endif()
-
 add_compile_unit(
-  NAME fletcher::echo
-  TYPE SHARED
-  PRPS
-    C_STANDARD 99
-  SRCS
-    src/fletcher_echo.c
-  DEPS
-    fletcher::c
+  NAME fletcher::c
+  TYPE INTERFACE
 )
 
 compile_units()

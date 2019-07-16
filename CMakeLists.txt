@@ -30,6 +30,10 @@ if(FLETCHER_BUILD_FLETCHGEN)
   add_subdirectory(codegen/fletchgen)
 endif()
 
+if(FLETCHER_BUILD_C)
+  add_subdirectory(common/c)
+endif()
+
 if(FLETCHER_BUILD_COMMON)
   add_subdirectory(common/cpp)
 endif()
