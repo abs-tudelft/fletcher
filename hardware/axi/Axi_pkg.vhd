@@ -23,14 +23,18 @@ package Axi_pkg is
     generic (
       BUS_ADDR_WIDTH            : natural;
       BUS_DATA_WIDTH            : natural;
-      SLV_BUS_ADDR_WIDTH        : natural;
-      SLV_BUS_DATA_WIDTH        : natural
+      BUS_STROBE_WIDTH          : natural;
+      BUS_LEN_WIDTH             : natural;
+      BUS_BURST_MAX_LEN         : natural;
+      BUS_BURST_STEP_LEN        : natural;
+      MMIO_ADDR_WIDTH           : natural;
+      MMIO_DATA_WIDTH           : natural
     );
     port (
       kcd_clk                   : in  std_logic;
       kcd_reset                 : in  std_logic;
       bcd_clk                   : in  std_logic;
-      bcd_reset_n               : in  std_logic;
+      bcd_reset                 : in  std_logic;
       m_axi_araddr              : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
       m_axi_arlen               : out std_logic_vector(7 downto 0);
       m_axi_arvalid             : out std_logic;
@@ -53,20 +57,20 @@ package Axi_pkg is
       m_axi_wstrb               : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       s_axi_awvalid             : in std_logic;
       s_axi_awready             : out std_logic;
-      s_axi_awaddr              : in std_logic_vector(SLV_BUS_ADDR_WIDTH-1 downto 0);
+      s_axi_awaddr              : in std_logic_vector(MMIO_ADDR_WIDTH-1 downto 0);
       s_axi_wvalid              : in std_logic;
       s_axi_wready              : out std_logic;
-      s_axi_wdata               : in std_logic_vector(SLV_BUS_DATA_WIDTH-1 downto 0);
-      s_axi_wstrb               : in std_logic_vector((SLV_BUS_DATA_WIDTH/8)-1 downto 0);
+      s_axi_wdata               : in std_logic_vector(MMIO_DATA_WIDTH-1 downto 0);
+      s_axi_wstrb               : in std_logic_vector((MMIO_DATA_WIDTH/8)-1 downto 0);
       s_axi_bvalid              : out std_logic;
       s_axi_bready              : in std_logic;
       s_axi_bresp               : out std_logic_vector(1 downto 0);
       s_axi_arvalid             : in std_logic;
       s_axi_arready             : out std_logic;
-      s_axi_araddr              : in std_logic_vector(SLV_BUS_ADDR_WIDTH-1 downto 0);
+      s_axi_araddr              : in std_logic_vector(MMIO_ADDR_WIDTH-1 downto 0);
       s_axi_rvalid              : out std_logic;
       s_axi_rready              : in std_logic;
-      s_axi_rdata               : out std_logic_vector(SLV_BUS_DATA_WIDTH-1 downto 0);
+      s_axi_rdata               : out std_logic_vector(MMIO_DATA_WIDTH-1 downto 0);
       s_axi_rresp               : out std_logic_vector(1 downto 0)
     );
   end component;
