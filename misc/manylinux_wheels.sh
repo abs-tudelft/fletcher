@@ -10,6 +10,14 @@ cwd=`eval "cd $dir;pwd;cd - > /dev/null"`
 dir="$cwd/.."
 project=`eval "cd $dir;pwd;cd - > /dev/null"`
 
+# Remove old build files
+cd $project/runtime/python
+python3 setup.py clean
+
+# Remove eggs
+eggs="$project/runtime/python/.eggs"
+rm -rf $eggs
+
 # Make sure target dir is empty
 target="$project/runtime/python/build"
 rm -rf $target

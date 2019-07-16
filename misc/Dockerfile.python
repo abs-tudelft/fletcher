@@ -1,32 +1,25 @@
 ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64 as pyfletcher-python-base
 
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.tar.gz | tar xz && \
-    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; do $PIP install auditwheel numpy pyarrow; done
-ENV PATH=/cmake-3.14.5-Linux-x86_64/bin:$PATH
+ARG CMAKE_VERSION=3.14.5
+ARG ARROW_VERSION=0.14.0
 
-RUN yum install -y boost-devel
-RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-0.14.0.tar.gz | tar xz && \
-    cd arrow-apache-arrow-0.14.0 && \
+ENV PATH /opt/python/cp35-cp35m/bin:$PATH
+RUN yum install -y boost-devel && \
+    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; \
+      do $PIP install --upgrade \
+        auditwheel \
+        numpy \
+        pyarrow==${ARROW_VERSION} \
+    ;done && \
+    curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1 && \
+    curl -L https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION}.tar.gz | tar xz && \
+    cd arrow-apache-arrow-${ARROW_VERSION} && \
     cmake \
+      -DARROW_PYTHON=On \
       -DCMAKE_BUILD_TYPE=Release \
-      -DARROW_BUILD_TESTS=Off \
-      -DARROW_BOOST_HEADER_ONLY=On \
-      -DARROW_COMPUTE=Off \
-      -DARROW_CUDA=Off \
-      -DARROW_WITH_BROTLI=Off \
-      -DARROW_WITH_BZ2=Off \
-      -DARROW_WITH_LZ4=Off \
-      -DARROW_WITH_SNAPPY=Off \
-      -DARROW_WITH_ZLIB=Off \
-      -DARROW_WITH_ZSTD=Off \
-      -DARROW_ORC=Off \
-      -DARROW_TENSORFLOW=Off \
-      -DARROW_IPC=On \
-      -DARROW_BUILD_BENCHMARKS=Off \
-      -DARROW_DEPENDENCY_SOURCE=BUNDLED \
       cpp/ && \
-    make && \
+    make -j4 && \
     make install
 
 FROM pyfletcher-python-base

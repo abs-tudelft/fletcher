@@ -6,7 +6,7 @@ resources:
     name: abs-tudelft/azure-pipelines-templates
 
 variables:
-  arrowVersion: 0.14.0
+  arrowVersion: 0.14.1
 
 jobs:
 
@@ -69,6 +69,30 @@ jobs:
       python3 setup.py bdist_wheel
     displayName: Wheel
     workingDirectory: $(Build.SourcesDirectory)/runtime/python
+  - script: |
+      pip3 install build/dist/pyfletcher*whl
+    workingDirectory: $(Build.SourcesDirectory)/runtime/python
+    displayName: Install wheel
+  - script: |
+      python3 -c "import pyfletcher"
+    displayName: Test import
+
+- job: manylinux
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - script: |
+      docker build --build-arg MANYLINUX=2010 -t pyfletcher-manylinux:2010 - < misc/Dockerfile.python &&
+      docker run --rm -v $(Build.SourcesDirectory):/io pyfletcher-manylinux:2010
+    displayName: Build pyfletcher manylinux wheels
+  - template: steps/install-python.yml@abs-tudelft
+  - script: |
+      pip3 install build/dist/pyfletcher*37*manylinux*
+    workingDirectory: $(Build.SourcesDirectory)/runtime/python
+    displayName: Test manylinux wheel
+  - script: |
+      python3 -c "import pyfletcher"
+    displayName: Test pyfletcher import
 
 - template: jobs/mdbook-gh-pages.yml@abs-tudelft
   parameters:
