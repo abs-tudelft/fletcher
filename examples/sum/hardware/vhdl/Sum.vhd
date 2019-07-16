@@ -74,7 +74,6 @@ architecture Implementation of Sum is
 
   constant REG_WIDTH            : natural :=  32;
   constant NUM_REGS             : natural :=   8;
-  constant MAX_STR_LEN          : natural := 128;
 
   type reg_array_t is array(natural range <>) of std_logic_vector(31 downto 0);
   

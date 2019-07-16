@@ -1,10 +1,8 @@
-input/*
-output/*
+recordbatch.rb
+schema.as
 vhdl/*
 dot/*
 work/*
-!input/.keep
-!output/.keep
 !vhdl/Sum.vhd
 .ipynb_checkpoints
 vsim.do

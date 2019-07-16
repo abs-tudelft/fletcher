@@ -5,9 +5,9 @@ Before you start, you need a few libraries and tools to follow this tutorial.
 Everything up to step 5 (simulation) can be done with completely free and open-source tools.
 
 ### For hardware generation (step 1 - 3):
-The examples in this tutorial are written in Python, so you'll need 
-* Install [Python 3.6+](https://www.python.org/).
-* Install [PyArrow 0.13+](https://arrow.apache.org/docs/python/)
+The examples in this part of the tutorial are written in Python, so you'll need 
+* Install [Python 3.6+](https://www.python.org/)
+* Install [PyArrow 0.14+](https://arrow.apache.org/docs/python/)
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design generator tool.
 * Build and install [Fletchgen](../../codegen/fletchgen/README.md).
@@ -16,7 +16,20 @@ Furthermore you'll need to build and install Fletchgen - the Fletcher design gen
 * Install a hardware simulator, e.g. [GHDL](https://github.com/ghdl/ghdl) or ModelSim/QuestaSim.
 * Install [vhdeps](https://github.com/abs-tudelft/vhdeps) - A VHDL dependency analyzer.
 
-### For hardware acceleration (step 6 - 7)
+### For host-side software (step 6)
+We will also show how to write a software application, ready to be accelerated using Fletcher and Arrow, that runs 
+on the CPU. We call this the "host-side" application, as the CPU "hosts" the accelerator.
+
+For each language, Fletcher provides a run-time library to manage the data and control flow to and from a 
+Fletcher-based accelerator.
+
+| Language | Run-time library                                           |
+|----------|------------------------------------------------------------|
+| Python   | Install [pyfletcher](https://pypi.org/project/pyfletcher/) |
+| C++      | Build & install [libfletcher](../../runtime/cpp/README.md) |
+
+### For hardware acceleration (step 7)
+
 For actual hardware acceleration, you'll need to access to one of the supported platforms. We currently support:
 * [Amazon EC2 F1](https://github.com/aws/aws-fpga)
 * [OpenPOWER CAPI SNAP](https://github.com/open-power/snap)
@@ -96,11 +109,11 @@ We want Fletchgen to do the following things for us:
 2. Create a design infrastructure based on the schema.
 3. Create a simulation top-level with pre-loaded memory model contents based on the recordbatch.
 
-We can call fletchgen from the command line as follow:
+We can call Fletchgen from the command line as follow:
 
 ```console
 $ cd hardware
-$ fletchgen -n Sum -r input/recordbatch.rb -s output/recordbatch.srec -l vhdl --sim
+$ fletchgen -n Sum -r recordbatch.rb -s recordbatch.srec -l vhdl --sim
 ```
 
 We've used the following options:
@@ -112,7 +125,7 @@ We've used the following options:
 
 Now, Fletchgen will generate all the things we've listed above. The output files are as follows:
 
-* `hardware/output/recordbatch.srec`: our memory model contents. 
+* `hardware/recordbatch.srec`: our memory model contents. 
 * `hardware/vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
 so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there). 
 It will always overwrite a `.vhdt` file, though!
@@ -123,9 +136,20 @@ It will always overwrite a `.vhdt` file, though!
 # 4. Implement the kernel
 
 You can choose any tool or flow you'd like to implement your kernel, as long as you adhere to the interface defined by
-the template.
+the template. 
 
-Take a look at the `Sum.vhd` file to see how we've implemented this kernel in HDL.
+Take a look at the [`Sum.vhd`](hardware/vhdl/Sum.vhd) file from the subfolder of this readme to see how we've implemented this kernel in HDL.
+
+The kernel implementation includes 
+* A state machine to:
+  * Generate a command for the generated interface.
+  * Absorb data from the data streams and sum the values. 
+* An AXI4-lite compatible MMIO slave.
+  * Fletcher uses this to communicate control information and RecordBatch metadata to your kernel.
+
+In the future, some of this rather verbose control logic may be generated through Fletchgen as well, but for now we're
+just showing you everything so you can build more advanced kernels with more advanced access patterns.
+
 We'll follow up with an HLS example soon!
 
 # 5. Simulate the design
@@ -137,13 +161,11 @@ or Questasim/Modelsim.
 Suppose we are targeting GHDL, we can invoke `vhdeps` as follows (in the `hardware` subdirectory). 
 
 ```console
- vhdeps --no-tempdir -i path/to/fletcher/hardware -i . ghdl SimTop_tc
+ vhdeps -i path/to/fletcher/hardware -i . ghdl SimTop_tc
 ```
 
 `vhdeps` will automatically analyze the dependencies of our simulation top level test case. These files are found in 
 the Fletcher hardware directory and the current directory, so we include them using the ```-i``` flag.
-We use the ```--no-tempdir``` flag to tell `vhdeps` to run our test case in the current working directory rather than
-a temporary directory it creates by default.
 
 Once GHDL has compiled all Fletcher core hardware components and the files generated by Fletchgen, you should see the 
 simulation top-level returning some values in the return register.

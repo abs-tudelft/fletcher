@@ -25,7 +25,7 @@ data = [pa.array([1, -3, 3, -7])]
 recordbatch = pa.RecordBatch.from_arrays(data, schema)
 
 # Create an Arrow RecordBatchFileWriter.
-writer = pa.RecordBatchFileWriter('input/recordbatch.rb', schema)
+writer = pa.RecordBatchFileWriter('recordbatch.rb', schema)
 
 # Write the RecordBatch.
 writer.write(recordbatch)
