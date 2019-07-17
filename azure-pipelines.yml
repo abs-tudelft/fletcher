@@ -6,7 +6,7 @@ resources:
     name: abs-tudelft/azure-pipelines-templates
 
 variables:
-  arrowVersion: 0.14.1
+  arrowVersion: 0.14.0
 
 jobs:
 
@@ -82,7 +82,7 @@ jobs:
     vmImage: ubuntu-latest
   steps:
   - script: |
-      docker build --build-arg MANYLINUX=2010 -t pyfletcher-manylinux:2010 - < misc/Dockerfile.python &&
+      docker build --build-arg ARROW_VERSION=$(arrowVersion) --build-arg MANYLINUX=2010 -t pyfletcher-manylinux:2010 - < misc/Dockerfile.python &&
       docker run --rm -v $(Build.SourcesDirectory):/io pyfletcher-manylinux:2010
     displayName: Build pyfletcher manylinux wheels
   - template: steps/install-python.yml@abs-tudelft
