@@ -183,7 +183,7 @@ architecture Behavioral of ArrayWriterListPrim is
   signal b_cmd_tag              : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
   signal b_unlock_valid         : std_logic;
-  signal b_unlock_ready         : std_logic := '1'; -- TODO: fix unlock streams
+  signal b_unlock_ready         : std_logic := '1';
   signal b_unlock_tag           : std_logic_vector(CMD_TAG_WIDTH-1 downto 0);
 
   signal b_valid                : std_logic;
@@ -191,7 +191,7 @@ architecture Behavioral of ArrayWriterListPrim is
   signal b_data                 : std_logic_vector(DATA_WIDTH-1 downto 0);
   signal b_count                : std_logic_vector(COUNT_WIDTH-1 downto 0);
   signal b_last                 : std_logic;
-  signal b_dvalid               : std_logic;
+  signal b_dvalid               : std_logic := '1'; -- elements are always valid
 
   -- Command stream deserialization indices.
   constant CSI : nat_array := cumulative((
