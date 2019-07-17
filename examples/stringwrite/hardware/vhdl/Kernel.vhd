@@ -132,13 +132,12 @@ architecture Behavioral of Kernel is
   constant LEN_WIDTH : natural  := 8;
 
   -- Global control state machine
-  type state_type is (IDLE, STRINGGEN, INTERFACE, UNLOCK);
+  type state_type is (IDLE, START, STRINGGEN, INTERFACE, UNLOCK);
 
   type reg_record is record
     idle                        : std_logic;
     busy                        : std_logic;
     done                        : std_logic;
-    reset_start                 : std_logic;
     state                       : state_type;
   end record;
 
@@ -271,7 +270,6 @@ begin
       -- Reset
       if kcd_reset = '1' then
         r.state         <= IDLE;
-        r.reset_start   <= '0';
         r.busy          <= '0';
         r.done          <= '0';
       end if;
@@ -319,11 +317,18 @@ begin
         v.idle := '1';
 
         if ctrl_start = '1' then
-          v.reset_start := '1';
-          v.state := STRINGGEN;
+          v.state := START;
           v.busy := '1';
           v.done := '0';
           v.idle := '0';
+        end if;
+        
+      when START =>
+        -- Wait for start bit to go low, before actually starting, to prevent
+        -- too early restarts.
+        v.idle := '0';
+        if ctrl_start = '0' then
+          v.state := STRINGGEN;
         end if;
 
       when STRINGGEN =>
