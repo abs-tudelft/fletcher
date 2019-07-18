@@ -149,9 +149,10 @@ static std::shared_ptr<Component> Array(Mode mode) {
   }
 
   // Insert other parameters
+  // TODO(johanpel): should be customizable and propagated from some user-defined arguments/settings
   objects.insert(objects.end(), {
-      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl(4)),
-      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl(16)),
+      Parameter::Make("BUS_BURST_STEP_LEN", integer(), intl(1)),
+      Parameter::Make("BUS_BURST_MAX_LEN", integer(), intl(64)),
       Parameter::Make("INDEX_WIDTH", integer(), intl(32)),
       Parameter::Make("CFG", string(), strl("")),
       Parameter::Make("CMD_TAG_ENABLE", boolean(), booll(true)),

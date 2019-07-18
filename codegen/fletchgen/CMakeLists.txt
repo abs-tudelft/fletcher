@@ -26,7 +26,10 @@ if(NOT TARGET cerata)
   add_subdirectory(../cerata cerata)
 endif()
 if(NOT TARGET fletcher::common)
-  add_subdirectory(../../common/cpp common)
+  add_subdirectory(../../common/cpp common-cpp)
+endif()
+if(NOT TARGET fletcher::c)
+  add_subdirectory(../../common/c common-c)
 endif()
 
 add_compile_unit(
@@ -67,6 +70,7 @@ add_compile_unit(
     cerata
     arrow_shared
     fletcher::common
+    fletcher::c
     CLI11::CLI11
 )
 
