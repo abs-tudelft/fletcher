@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
   }
 
   // Print the return value.
-  std::cout << return_value_0 << std::endl;
+  std::cout << *reinterpret_cast<int32_t*>(&return_value_0) << std::endl;
 
   return 0;
 }
