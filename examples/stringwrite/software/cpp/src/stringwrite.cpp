@@ -171,9 +171,9 @@ int main(int argc, char **argv) {
   uint32_t min_len = 0;
   uint32_t len_msk = 255;
 
-  if (argc == 3) num_str = (uint32_t) std::strtoul(argv[2], nullptr, 10);
-  if (argc == 4) min_len = (uint32_t) std::strtoul(argv[3], nullptr, 10);
-  if (argc == 5) len_msk = (uint32_t) std::strtoul(argv[4], nullptr, 10);
+  if (argc > 2) num_str = (uint32_t) std::strtoul(argv[2], nullptr, 10);
+  if (argc > 3) min_len = (uint32_t) std::strtoul(argv[3], nullptr, 10);
+  if (argc > 4) len_msk = (uint32_t) std::strtoul(argv[4], nullptr, 10);
 
   int32_t num_values = 0;
 
