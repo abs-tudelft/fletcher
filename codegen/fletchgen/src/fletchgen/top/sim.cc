@@ -14,6 +14,7 @@
 
 #include "fletchgen/top/sim.h"
 
+#include <fletcher/fletcher.h>
 #include <cerata/api.h>
 #include <string>
 #include <iomanip>
@@ -62,8 +63,8 @@ std::string GenerateSimTop(const Mantle &mantle,
   // Template file for simulation top-level
   auto t = Template::FromString(sim_source);
 
-  // Number of default registers
-  constexpr int ndefault = 4;
+  // Offset of schema specific registers
+  constexpr int ndefault = FLETCHER_REG_SCHEMA;
 
   // Obtain read/write schemas.
   auto read_schemas = mantle.schema_set()->read_schemas();
