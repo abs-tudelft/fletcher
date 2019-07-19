@@ -2,3 +2,5 @@ Mantle.vhd
 Kernel.vhdt
 SimTop_tc.vhdt
 StringWrite.vhd
+AxiTop.vhd
+AxiTop.vhdt

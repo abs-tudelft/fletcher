@@ -1,3 +1,5 @@
 work
 transcript
 vsim.do
+stringwrite.as
+recordbatch.srec
