@@ -18,18 +18,15 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library work;
-use work.Streams.all;
-use work.Utils.all;
-use work.Arrow.all;
+use work.UTF8StringGen_pkg.all;
+use work.Stream_pkg.all;
+use work.UtilStr_pkg.all;
+use work.UtilConv_pkg.all;
 
-use work.SimUtils.all;
-
-use work.stringwrite_pkg.all;
-
-entity UTF8StringGen_tb is
+entity UTF8StringGen_tc is
 end entity;
 
-architecture Behavorial of UTF8StringGen_tb is
+architecture Behavorial of UTF8StringGen_tc is
 
   constant INDEX_WIDTH               : natural := 32;
   constant ELEMENT_WIDTH             : natural := 8;
@@ -119,7 +116,7 @@ begin
         exit when len_ready = '1' and len_valid = '1';
       end loop;
 
-      dumpStdOut(ii(unsigned(len_data)));
+      println(slvToUDec(len_data));
     end loop;
     
   end process;
@@ -171,7 +168,7 @@ begin
       cmd_ready             => cmd_ready,
       cmd_len               => cmd_len,
       cmd_strlen_min        => cmd_strlen_min,
-      cmd_prng_mask         => cmd_prng_mask,
+      cmd_strlen_mask       => cmd_prng_mask,
       len_valid             => len_valid,
       len_ready             => len_ready,
       len_data              => len_data,
