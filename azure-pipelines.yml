@@ -50,6 +50,48 @@ jobs:
     - checkout: self
       submodules: true
 
+- job: example
+  strategy:
+    matrix:
+      stringwrite:
+        source: examples/stringwrite
+      sum:
+        source: examples/sum
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+    submodules: true
+  - template: steps/install-ghdl.yml@abs-tudelft
+  - template: steps/install-cmake.yml@abs-tudelft
+  - template: steps/install-python.yml@abs-tudelft
+    parameters:
+      packages: ['pyarrow', 'vhdeps']
+  - template: steps/set-cc-cxx.yml@abs-tudelft
+    parameters:
+      cc: gcc-7
+      cxx: g++-7
+  - template: steps/install-arrow.yml@abs-tudelft
+    parameters:
+      version: $(arrowVersion)
+  - template: steps/cmake.yml@abs-tudelft
+    parameters:
+      args: '-DFLETCHER_BUILD_FLETCHGEN=ON'
+  - script: |
+      sudo make install
+    displayName: Install runtime and fletchgen
+  - script: |
+      echo "##vso[task.setvariable variable=FLETCHER_DIR;]$(Build.SourcesDirectory)"
+    displayName: Fletcher env
+  - script: |
+      ./generate-hardware.sh
+    workingDirectory: $(Build.SourcesDirectory)/$(source)/hardware
+    displayName: Generate hardware
+  - script: |
+      ./simulate-hardware.sh
+    workingDirectory: $(Build.SourcesDirectory)/$(source)/hardware
+    displayName: Simulate hardware
+
 - job: pyfletcher
   pool:
     vmImage: ubuntu-latest
