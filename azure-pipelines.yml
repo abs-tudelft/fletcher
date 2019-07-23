@@ -53,6 +53,8 @@ jobs:
 - job: pyfletcher
   pool:
     vmImage: ubuntu-latest
+  variables:
+    PKG_CONFIG_ALLOW_SYSTEM_LIBS: 1
   steps:
   - template: steps/install-python.yml@abs-tudelft
     parameters:
