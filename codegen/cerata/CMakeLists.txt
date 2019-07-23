@@ -4,11 +4,6 @@ project(cerata VERSION 0.0.0 LANGUAGES CXX)
 
 include(FetchContent)
 
-FetchContent_Declare(tinyxml2
-  GIT_REPOSITORY  https://github.com/leethomason/tinyxml2.git
-  GIT_TAG         master
-)
-
 FetchContent_Declare(cmake-modules
   GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
   GIT_TAG         master
@@ -79,27 +74,12 @@ add_compile_unit(
     cerata::core
 )
 
-add_compile_unit(
-  OPT
-  NAME cerata::ipxact
-  PRPS
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-  DEPS
-    cerata::core
-    tinyxml2
-)
-
 set(CERATA_BACKENDS)
 if(BUILD_CERATA_DOT)
   list(APPEND CERATA_BACKENDS "cerata::dot")
 endif()
 if(BUILD_CERATA_VHDL)
   list(APPEND CERATA_BACKENDS "cerata::vhdl")
-endif()
-if(BUILD_CERATA_IPXACT)
-  FetchContent_MakeAvailable(tinyxml2)
-  list(APPEND CERATA_BACKENDS "cerata::ipxact")
 endif()
 
 add_compile_unit(
