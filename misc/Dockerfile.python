@@ -2,7 +2,7 @@ ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64 as pyfletcher-python-base
 
 ARG CMAKE_VERSION=3.14.5
-ARG ARROW_VERSION=0.14.0
+ARG ARROW_VERSION=0.14.1
 
 ENV PATH /opt/python/cp35-cp35m/bin:$PATH
 RUN yum install -y boost-devel && \

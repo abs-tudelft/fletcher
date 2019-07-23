@@ -125,7 +125,7 @@ setup(
                 include_dir
             ],
             libraries=pa.get_libraries() + ["fletcher"],
-            library_dirs=list(filter(None, pa.get_library_dirs())) + lib_dirs,
+            library_dirs=pa.get_library_dirs() + lib_dirs,
             runtime_library_dirs=pa.get_library_dirs() + lib_dirs,
             extra_compile_args=["-std=c++11", "-O3"],
             extra_link_args=["-std=c++11"]
@@ -134,12 +134,12 @@ setup(
     install_requires=[
         'numpy >= 1.14',
         'pandas',
-        'pyarrow == 0.14',
+        'pyarrow == 0.14.1',
     ],
     setup_requires=[
         'cython',
         'numpy',
-        'pyarrow == 0.14',
+        'pyarrow == 0.14.1',
         'plumbum',
         'pytest-runner'
     ],
