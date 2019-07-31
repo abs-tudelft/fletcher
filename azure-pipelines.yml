@@ -137,6 +137,8 @@ jobs:
   - script: |
       python3 -c "import pyfletcher"
     displayName: Test pyfletcher import
+  - publish: $(Build.SourcesDirectory)/runtime/python/build/dist/*manylinux*
+    artifact: pyfletcher-wheels
 
 - template: jobs/mdbook-gh-pages.yml@abs-tudelft
   parameters:
