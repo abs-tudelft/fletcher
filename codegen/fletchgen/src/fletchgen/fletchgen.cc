@@ -85,10 +85,11 @@ int main(int argc, char **argv) {
   // Generate simulation top level
   if (options->MustGenerateDesign() && options->sim_top) {
     std::ofstream sim_file;
-    std::string sim_file_path = "vhdl/SimTop_tc.vhd";
+    std::string sim_file_path = options->output_dir + "/vhdl/SimTop_tc.vhd";
     if (cerata::FileExists(sim_file_path) && !options->overwrite) {
       sim_file_path += 't';
     }
+    FLETCHER_LOG(INFO,"Saving simulation top-level design to: " + sim_file_path);
     sim_file = std::ofstream(sim_file_path);
     fletchgen::top::GenerateSimTop(*design.mantle,
                                    {&sim_file},
@@ -101,10 +102,11 @@ int main(int argc, char **argv) {
   // Generate AXI top level
   if (options->axi_top) {
     std::ofstream axi_file;
-    std::string axi_file_path = "vhdl/AxiTop.vhd";
+    std::string axi_file_path = options->output_dir + "/vhdl/AxiTop.vhd";
     if (cerata::FileExists(axi_file_path) && !options->overwrite) {
       axi_file_path += 't';
     }
+    FLETCHER_LOG(INFO,"Saving AXI top-level design to: " + axi_file_path);
     axi_file = std::ofstream(axi_file_path);
     fletchgen::top::GenerateAXITop(*design.mantle, {&axi_file});
     axi_file.close();
