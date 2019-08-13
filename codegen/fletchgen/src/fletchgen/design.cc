@@ -85,24 +85,27 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
 
 std::deque<cerata::OutputSpec> Design::GetOutputSpec() {
   std::deque<OutputSpec> result;
-
   OutputSpec omantle, okernel;
+
   // Mantle
   omantle.comp = mantle;
+  // Always overwrite mantle, as users should not modify.
   omantle.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
   result.push_back(omantle);
 
   // Kernel
   okernel.comp = kernel;
-  okernel.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "false";
+  // Check the force flag if kernel should be overwritten
+  okernel.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = options->overwrite ? "true" : "false";
   result.push_back(okernel);
 
-  // Readers
-  for (const auto &reader : recordbatches) {
-    OutputSpec oreader;
-    oreader.comp = reader;
-    oreader.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
-    result.push_back(oreader);
+  // RecordBatchReaders/Writers
+  for (const auto &recbatch : recordbatches) {
+    OutputSpec orecbatch;
+    orecbatch.comp = recbatch;
+    // Always overwrite readers/writers, as users should not modify.
+    orecbatch.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
+    result.push_back(orecbatch);
   }
 
   return result;
