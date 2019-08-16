@@ -16,11 +16,11 @@
 
 #pragma once
 
+#include <arrow/api.h>
+
 #include <vector>
 #include <memory>
 #include <string>
-#include <utility>
-#include <arrow/api.h>
 
 #include "fletcher/arrow-utils.h"
 
@@ -31,6 +31,7 @@ class FieldAnalyzer : public arrow::TypeVisitor {
   FieldAnalyzer(FieldMetadata *field, std::vector<BufferMetadata> *buffers, std::string prefix = "")
       : field_out_(field), buffers_out_(buffers), buf_name_(std::move(prefix)) {}
   bool Analyze(const arrow::Field &field);
+
  protected:
   arrow::Status VisitField(const arrow::Field &field);
   arrow::Status VisitType(const arrow::DataType &type);
@@ -100,4 +101,4 @@ class SchemaAnalyzer : public arrow::TypeVisitor {
   RecordBatchDescription *out_{};
 };
 
-} // namespace fletcher
+}  // namespace fletcher

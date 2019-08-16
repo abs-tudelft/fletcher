@@ -41,7 +41,7 @@ std::string HexView::ToString(bool header) {
   // Create a header
   if (header) {
     ss << std::string(17, ' ');
-    for (unsigned int i = 0; i < width; i++) {
+    for (int64_t i = 0; i < width; i++) {
       ss << HEX2 << i;
       if (i != width - 1) {
         ss << " ";

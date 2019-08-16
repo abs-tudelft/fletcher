@@ -14,12 +14,12 @@
 
 #pragma once
 
+#include <arrow/api.h>
+
 #include <vector>
 #include <memory>
 #include <string>
-
-#include <arrow/buffer.h>
-#include <arrow/array.h>
+#include <utility>
 
 namespace fletcher {
 
