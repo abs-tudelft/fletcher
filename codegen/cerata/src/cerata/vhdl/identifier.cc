@@ -16,7 +16,6 @@
 
 #include <utility>
 #include <string>
-#include <vector>
 #include <deque>
 
 namespace cerata::vhdl {
@@ -34,13 +33,13 @@ std::string Identifier::ToString() const {
   return ret;
 }
 
-Identifier::Identifier(std::initializer_list<std::string> parts, std::optional<char> sep) : separator_(std::move(sep)) {
+Identifier::Identifier(std::initializer_list<std::string> parts, std::optional<char> sep) : separator_(sep) {
   for (const auto &p : parts) {
     parts_.push_back(p);
   }
 }
 
-Identifier::Identifier(std::deque<std::string> parts, std::optional<char> sep) : separator_(std::move(sep)) {
+Identifier::Identifier(std::deque<std::string> parts, std::optional<char> sep) : separator_(sep) {
   parts_ = std::move(parts);
 }
 

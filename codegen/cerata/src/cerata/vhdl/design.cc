@@ -15,13 +15,11 @@
 #include "cerata/vhdl/design.h"
 
 #include <string>
-#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
 
 #include "cerata/logging.h"
-#include "cerata/graph.h"
 #include "cerata/vhdl/resolve.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/architecture.h"

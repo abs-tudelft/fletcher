@@ -15,7 +15,6 @@
 #include "cerata/dot/dot.h"
 
 #include <sstream>
-#include <fstream>
 
 #include "cerata/logging.h"
 #include "cerata/edge.h"

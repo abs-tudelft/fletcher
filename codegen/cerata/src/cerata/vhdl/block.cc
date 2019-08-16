@@ -14,8 +14,6 @@
 
 #include "cerata/vhdl/block.h"
 
-#include <iostream>
-#include <sstream>
 #include <regex>
 #include <string>
 
@@ -43,7 +41,7 @@ Line &operator+=(Line &lhs, const std::string &str) { //NOLINT
 std::vector<size_t> Block::GetAlignments() const {
   std::vector<size_t> ret = {0};
   for (const auto &l : lines) {
-    for (uint p = 0; p < l.parts.size(); p++) {
+    for (size_t p = 0; p < l.parts.size(); p++) {
       if (p >= ret.size()) {
         ret.push_back(l.parts[p].length());
       } else if (l.parts[p].length() > ret[p]) {
@@ -140,7 +138,7 @@ Block &operator<<(Block &lhs, const std::string &rhs) {
 
 Block &operator<<=(Block &lhs, const std::string &rhs) { //NOLINT
   if (!lhs.lines.empty()) {
-    for (uint i = 0; i < lhs.lines.size() - 1; i++) {
+    for (size_t i = 0; i < lhs.lines.size() - 1; i++) {
       lhs.lines[i].parts.back().append(rhs);
     }
   }

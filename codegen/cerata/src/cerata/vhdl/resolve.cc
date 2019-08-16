@@ -18,7 +18,6 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "cerata/logging.h"
 #include "cerata/type.h"

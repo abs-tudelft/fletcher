@@ -20,7 +20,6 @@
 
 #include "cerata/utils.h"
 #include "cerata/node.h"
-#include "cerata/edge.h"
 #include "cerata/logging.h"
 #include "cerata/object.h"
 #include "cerata/pool.h"

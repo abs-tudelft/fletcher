@@ -15,7 +15,6 @@
 #include <gmock/gmock.h>
 
 #include <string>
-#include <fstream>
 #include <memory>
 
 #include "cerata/api.h"

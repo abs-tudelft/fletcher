@@ -16,12 +16,8 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include <deque>
-#include <iostream>
-#include <algorithm>
 
-#include "cerata/edge.h"
 #include "cerata/node.h"
 #include "cerata/expression.h"
 #include "cerata/type.h"

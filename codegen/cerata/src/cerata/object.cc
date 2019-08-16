@@ -14,11 +14,8 @@
 
 #include "cerata/object.h"
 
-#include <string>
 #include <memory>
 
-#include "cerata/node.h"
-#include "cerata/node_array.h"
 #include "cerata/utils.h"
 
 namespace cerata {
