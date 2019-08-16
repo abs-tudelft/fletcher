@@ -32,8 +32,6 @@ namespace cerata::dot {
 struct Grapher {
   /// The style.
   Style style;
-  /// The configuration.
-  Config config;
   /// Edges that were already drawn.
   std::deque<Edge *> drawn_edges = {};
   Grapher() : Grapher(Style::normal()) {}
