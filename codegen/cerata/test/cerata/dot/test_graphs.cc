@@ -35,4 +35,12 @@ TEST(Dot, Example) {
   dot.GenFile(*top, "Dot_Example.dot");
 }
 
+TEST(Dot, Expansion) {
+  default_component_pool()->Clear();
+  auto top = GetTypeExpansionComponent();
+  dot::Grapher dot;
+  dot.style.config = dot::Config::all();
+  dot.GenFile(*top, "Dot_Expansion.dot");
+}
+
 }  // namespace cerata

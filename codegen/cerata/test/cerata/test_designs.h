@@ -22,6 +22,26 @@
 
 namespace cerata {
 
+std::shared_ptr<Component> GetTypeExpansionComponent() {
+  auto width = Parameter::Make("width", integer(), intl(8));
+  auto vec_type = Vector::Make("data", width);
+  auto rec_type = Record::Make("rec_type", {
+    RecField::Make("cerata", vec_type),
+    RecField::Make("is", vec_type),
+    RecField::Make("awesome", vec_type)
+  });
+  auto stream_type = Stream::Make("stream_type", rec_type);
+  auto data_in = Port::Make("data", stream_type, Port::Dir::IN);
+  auto data_out = Port::Make("data", stream_type, Port::Dir::OUT);
+  auto foo = Component::Make("foo", {width, data_in});
+  auto bar = Component::Make("bar", {width, data_out});
+  auto top = Component::Make("top");
+  auto foo_inst = top->AddInstanceOf(foo.get(), "foo");
+  auto bar_inst = top->AddInstanceOf(bar.get(), "bar");
+  Connect(foo_inst->port("data"), bar_inst->port("data"));
+  return top;
+}
+
 std::shared_ptr<Component> GetArrayToArrayComponent() {
   auto data = Vector::Make<8>();
 
