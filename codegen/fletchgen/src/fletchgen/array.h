@@ -105,7 +105,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
  * @param tag_width   Command/unlock tag width parameter.
  * @return            A unique pointer holding the Array(Reader/Writer) instance.
  */
-std::unique_ptr<Instance> ArrayInstance(std::string name,
+std::unique_ptr<Instance> ArrayInstance(const std::string& name,
     fletcher::Mode mode = fletcher::Mode::READ,
                                         const std::shared_ptr<Node> &data_width = intl(1),
                                         const std::shared_ptr<Node> &ctrl_width = intl(1),

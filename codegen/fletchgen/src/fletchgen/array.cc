@@ -175,7 +175,7 @@ static std::shared_ptr<Component> Array(Mode mode) {
   return ret;
 }
 
-std::unique_ptr<Instance> ArrayInstance(std::string name,
+std::unique_ptr<Instance> ArrayInstance(const std::string &name,
                                         fletcher::Mode mode,
                                         const std::shared_ptr<Node> &data_width,
                                         const std::shared_ptr<Node> &ctrl_width,

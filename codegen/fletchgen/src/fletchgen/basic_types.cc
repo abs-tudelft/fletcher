@@ -18,7 +18,6 @@
 #include <fletcher/common.h>
 
 #include <memory>
-#include <cmath>
 
 namespace fletchgen {
 

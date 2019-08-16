@@ -14,15 +14,10 @@
 
 #include "fletchgen/kernel.h"
 
-#include <cerata/logging.h>
-#include <fletcher/common.h>
-
 #include <utility>
 #include <string>
 
 #include "fletchgen/basic_types.h"
-#include "fletchgen/schema.h"
-#include "fletchgen/utils.h"
 #include "fletchgen/recordbatch.h"
 #include "fletchgen/mmio.h"
 
@@ -51,7 +46,7 @@ Kernel::Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches)
   }
 }
 
-std::shared_ptr<Kernel> Kernel::Make(std::string name, std::deque<RecordBatch *> recordbatches) {
+std::shared_ptr<Kernel> Kernel::Make(const std::string& name, const std::deque<RecordBatch *>& recordbatches) {
   return std::make_shared<Kernel>(name, recordbatches);
 }
 
