@@ -71,6 +71,22 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
     }
   }
 
+  // If the source is a terminator
+  if (src->IsPort()) {
+    auto port = dynamic_cast<Port *>(src);
+    // Check if it has a parent
+    if (src->parent()) {
+      auto parent = *src->parent();
+      if (parent->IsInstance() && port->IsInput()) {
+        // If the parent is an instance, and the terminator node is an input, then we may not source from it.
+        throw std::logic_error("Cannot source from instance port " + src->ToString() + " of mode input.");
+      } else if (parent->IsComponent() && port->IsOutput()) {
+        // If the parent is a component, and the terminator node is an output, then we may not source from it.
+        throw std::logic_error("Cannot source from component port " + src->ToString() + " of mode output.");
+      }
+    }
+  }
+
   std::string edge_name = src->name() + "_to_" + dst->name();
   auto edge = Edge::Make(edge_name, dst, src);
   src->AddEdge(edge);
