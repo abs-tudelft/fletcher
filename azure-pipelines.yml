@@ -131,13 +131,13 @@ jobs:
     displayName: Build pyfletcher manylinux wheels
   - template: steps/install-python.yml@abs-tudelft
   - script: |
-      pip3 install build/dist/pyfletcher*37*manylinux*
-    workingDirectory: $(Build.SourcesDirectory)/runtime/python
+      pip3 install pyfletcher*37*manylinux*
+    workingDirectory: $(Build.SourcesDirectory)/runtime/python/wheelhouse
     displayName: Test manylinux wheel
   - script: |
       python3 -c "import pyfletcher"
     displayName: Test pyfletcher import
-  - publish: $(Build.SourcesDirectory)/runtime/python/build/dist/*manylinux*
+  - publish: $(Build.SourcesDirectory)/runtime/python/wheelhouse
     artifact: pyfletcher-wheels
 
 - template: jobs/mdbook-gh-pages.yml@abs-tudelft
