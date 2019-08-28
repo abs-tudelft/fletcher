@@ -45,7 +45,7 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
 static std::string CanonicalizePath(const std::string& path) {
   std::string result;
   if (!path.empty()) {
-    char *p = canonicalize_file_name(path.c_str());
+    char *p = realpath(path.c_str(), NULL);
     if (p == nullptr) {
       FLETCHER_LOG(FATAL, "Could not canonicalize path: " << path);
     }
