@@ -63,7 +63,8 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            cmake['../../cpp/']\
+            cmake['../../..']\
+                 ['-DFLETCHER_BUILD_ECHO=ON']\
                  ['-DCMAKE_BUILD_TYPE=Release']\
                  ['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0']\
                  ['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
@@ -84,7 +85,7 @@ class sdist(_sdist):
 class egg_info(_egg_info):
     def initialize_options(self):
         _egg_info.initialize_options(self)
-        self.egg_base = py_target_dir
+        self.egg_base = os.path.relpath(py_target_dir)
 
 setup(
     name="pyfletcher",
@@ -151,4 +152,7 @@ setup(
     },
     license='Apache License, Version 2.0',
     zip_safe = False,
+    data_files= [
+        ('lib', ['build/install/lib64/libfletcher_echo.so']),
+    ],
 )
