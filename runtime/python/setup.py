@@ -21,7 +21,7 @@ from distutils.command.sdist import sdist as _sdist
 from setuptools.command.egg_info import egg_info as _egg_info
 from setuptools import setup, Extension, find_packages
 
-import os, platform, shutil
+import os, platform, shutil, glob
 import numpy as np
 import pyarrow as pa
 
@@ -153,6 +153,6 @@ setup(
     license='Apache License, Version 2.0',
     zip_safe = False,
     data_files= [
-        ('lib', ['build/install/lib64/libfletcher_echo.so']),
+        ('lib', glob.glob('build/install/lib*/libfletcher_echo.so')),
     ],
 )
