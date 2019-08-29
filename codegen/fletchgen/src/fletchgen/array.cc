@@ -448,7 +448,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
 
       // Non-nested types
     default: {
-      type = GenTypeFrom(field.type());
+      type = ConvertFixedWidthType(field.type());
       break;
     }
   }
@@ -463,6 +463,9 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
         RecField::Make("dvalid", dvalid()),
         RecField::Make("last", last()),
         RecField::Make("", type)});
+    if (field.nullable()) {
+      record->AddField(RecField::Make("validity", validity()));
+    }
     auto stream = Stream::Make(name, record);
     return stream;
   } else {

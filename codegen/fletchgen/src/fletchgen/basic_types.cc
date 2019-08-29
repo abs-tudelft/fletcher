@@ -40,16 +40,19 @@ using cerata::Literal;
   std::shared_ptr<Type> NAME() {                                        \
     static std::shared_ptr<Type> result = std::make_shared<Bit>(#NAME); \
     return result;                                                      \
-}
+  }
 
-/// Creates basic, multi-bit types similar to Arrow cpp/type.cc for convenience
-#define VEC_FACTORY(NAME, WIDTH)                                                     \
-  std::shared_ptr<Type> NAME() {                                                     \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, WIDTH); \
-    return result;                                                                   \
-}
+/// Creates basic, multi-bit types similar to Arrow cpp/type.cc for convenience, including their nullable versions.
+#define VEC_FACTORY(NAME, WIDTH)                                        \
+  std::shared_ptr<Type> NAME() {                                        \
+    static std::shared_ptr<Type> result = Vector::Make(#NAME, WIDTH);   \
+    return result;                                                      \
+  }
 
-BIT_FACTORY(null)
+// Validity bit
+BIT_FACTORY(validity)
+
+// Non-nullable fixed-width types.
 VEC_FACTORY(int8, 8)
 VEC_FACTORY(uint8, 8)
 VEC_FACTORY(int16, 16)
@@ -110,7 +113,7 @@ std::shared_ptr<Type> bus_cr() {
 }
 
 // Data channel
-std::shared_ptr<Type> data(const std::shared_ptr<Node>& width) {
+std::shared_ptr<Type> data(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("data", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta[metakeys::ARRAY_DATA] = "true";
@@ -118,14 +121,14 @@ std::shared_ptr<Type> data(const std::shared_ptr<Node>& width) {
 }
 
 // Length channel
-std::shared_ptr<Type> length(const std::shared_ptr<Node>& width) {
+std::shared_ptr<Type> length(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("length", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta[metakeys::ARRAY_DATA] = "true";
   return result;
 }
 
-std::shared_ptr<Type> count(const std::shared_ptr<Node>& width) {
+std::shared_ptr<Type> count(const std::shared_ptr<Node> &width) {
   std::shared_ptr<Type> result = Vector::Make("count", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
   result->meta[metakeys::ARRAY_DATA] = "true";
@@ -142,7 +145,7 @@ std::shared_ptr<Type> last() {
   return result;
 }
 
-std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type) {
+std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type) {
   // Only need to cover fixed-width data types in this function
   switch (arrow_type->id()) {
     case arrow::Type::UINT8: return uint8();

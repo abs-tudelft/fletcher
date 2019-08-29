@@ -47,4 +47,8 @@ TEST(RecordBatch, StringRead) {
   TestRecordBatchReader(fletcher::GetStringReadSchema());
 }
 
+TEST(RecordBatch, NullablePrimRead) {
+  TestRecordBatchReader(fletcher::GetNullablePrimReadSchema());
+}
+
 }  // namespace fletchgen

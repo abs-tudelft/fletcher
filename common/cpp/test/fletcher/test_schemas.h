@@ -19,6 +19,7 @@
 #include <arrow/api.h>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace fletcher {
 
@@ -35,6 +36,15 @@ inline std::shared_ptr<arrow::Schema> GetPrimReadSchema() {
   // Create a vector of fields that will form the schema.
   std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
       arrow::field("number", arrow::int8(), false)
+  };
+  auto schema = std::make_shared<arrow::Schema>(schema_fields);
+  return AppendMetaRequired(*schema, "PrimRead", Mode::READ);
+}
+
+inline std::shared_ptr<arrow::Schema> GetNullablePrimReadSchema() {
+  // Create a vector of fields that will form the schema.
+  std::vector<std::shared_ptr<arrow::Field>> schema_fields = {
+      arrow::field("number", arrow::int8(), true)
   };
   auto schema = std::make_shared<arrow::Schema>(schema_fields);
   return AppendMetaRequired(*schema, "PrimRead", Mode::READ);
