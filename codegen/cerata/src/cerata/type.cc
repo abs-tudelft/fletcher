@@ -17,8 +17,6 @@
 #include <utility>
 #include <string>
 #include <iostream>
-#include <sstream>
-#include <iomanip>
 
 #include "cerata/utils.h"
 #include "cerata/node.h"

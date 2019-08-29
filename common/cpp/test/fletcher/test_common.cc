@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 
 #include "fletcher/test_schemas.h"
 #include "fletcher/test_recordbatches.h"

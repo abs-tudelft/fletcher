@@ -15,14 +15,12 @@
 #include "fletchgen/srec/recordbatch.h"
 
 #include <arrow/api.h>
-#include <cerata/api.h>
 #include <fletcher/common.h>
 
 #include <deque>
 #include <memory>
 #include <ostream>
 
-#include "fletchgen/options.h"
 #include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {

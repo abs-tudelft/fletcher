@@ -14,8 +14,6 @@
 
 #include "cerata/vhdl/architecture.h"
 
-#include <memory>
-
 #include "cerata/graph.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"

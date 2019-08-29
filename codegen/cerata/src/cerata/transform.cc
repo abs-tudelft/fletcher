@@ -14,8 +14,6 @@
 
 #include "cerata/transform.h"
 
-#include <string>
-#include <memory>
 #include <deque>
 
 #include "cerata/graph.h"

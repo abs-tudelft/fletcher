@@ -14,10 +14,7 @@
 
 #include "cerata/dot/style.h"
 
-#include <memory>
-#include <deque>
 #include <string>
-#include <vector>
 #include <sstream>
 
 namespace cerata::dot {

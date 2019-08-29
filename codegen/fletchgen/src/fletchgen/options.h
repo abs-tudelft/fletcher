@@ -79,13 +79,13 @@ struct Options {
   // Option checkers:
 
   /// @brief Return true if a design must be generated.
-  bool MustGenerateDesign() const;
+  [[nodiscard]] bool MustGenerateDesign() const;
   /// @brief Return true if an SREC file must be generated.
-  bool MustGenerateSREC() const;
+  [[nodiscard]] bool MustGenerateSREC() const;
   /// @brief Return true if the design must be outputted as VHDL.
-  bool MustGenerateVHDL() const;
+  [[nodiscard]] bool MustGenerateVHDL() const;
   /// @brief Return true if the design must be outputted as DOT.
-  bool MustGenerateDOT() const;
+  [[nodiscard]] bool MustGenerateDOT() const;
 
   /// @brief Load all specified RecordBatches
   void LoadRecordBatches();
@@ -93,7 +93,7 @@ struct Options {
   void LoadSchemas();
 
   /// @brief Return human-readable options.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
 };
 
 }  // namespace fletchgen

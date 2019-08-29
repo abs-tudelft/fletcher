@@ -16,7 +16,6 @@
 
 #include <fletcher/common.h>
 #include <cerata/api.h>
-#include <cstdlib>  // system()
 
 namespace fletchgen {
 

@@ -46,7 +46,7 @@ using cerata::TypeMapper;
 /// Generate declaration for basic, multi-bit types similar to Arrow cpp/type.cc for convenience
 #define VEC_DECL_FACTORY(NAME, WIDTH) std::shared_ptr<Type> NAME();
 
-BIT_DECL_FACTORY(null)
+BIT_DECL_FACTORY(validity)
 VEC_DECL_FACTORY(int8, 8)
 VEC_DECL_FACTORY(uint8, 8)
 VEC_DECL_FACTORY(int16, 16)
@@ -96,13 +96,13 @@ std::shared_ptr<Type> kernel_cr();
 std::shared_ptr<Type> bus_cr();
 
 /**
- * @brief Convert an arrow::DataType to a Fletcher Type.
+ * @brief Convert a fixed-width arrow::DataType to a fixed-width Fletcher Type.
  *
  * Does not take into consideration nesting.
  *
  * @param arrow_type    The arrow::DataType.
  * @return              The corresponding Type
  */
-std::shared_ptr<Type> GenTypeFrom(const std::shared_ptr<arrow::DataType> &arrow_type);
+std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type);
 
 }  // namespace fletchgen

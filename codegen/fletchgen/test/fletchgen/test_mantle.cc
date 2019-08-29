@@ -41,5 +41,9 @@ TEST(Mantle, StringRead) {
   TestReadMantle(fletcher::GetStringReadSchema());
 }
 
+TEST(Mantle, NullablePrim) {
+  TestReadMantle(fletcher::GetNullablePrimReadSchema());
+}
+
 
 }  // namespace fletchgen

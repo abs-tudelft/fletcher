@@ -175,7 +175,7 @@ static std::shared_ptr<Component> Array(Mode mode) {
   return ret;
 }
 
-std::unique_ptr<Instance> ArrayInstance(std::string name,
+std::unique_ptr<Instance> ArrayInstance(const std::string &name,
                                         fletcher::Mode mode,
                                         const std::shared_ptr<Node> &data_width,
                                         const std::shared_ptr<Node> &ctrl_width,
@@ -448,7 +448,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
 
       // Non-nested types
     default: {
-      type = GenTypeFrom(field.type());
+      type = ConvertFixedWidthType(field.type());
       break;
     }
   }
@@ -463,6 +463,9 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
         RecField::Make("dvalid", dvalid()),
         RecField::Make("last", last()),
         RecField::Make("", type)});
+    if (field.nullable()) {
+      record->AddField(RecField::Make("validity", validity()));
+    }
     auto stream = Stream::Make(name, record);
     return stream;
   } else {

@@ -15,7 +15,6 @@
 #include "cerata/vhdl/vhdl_types.h"
 
 #include <memory>
-#include <algorithm>
 #include <deque>
 
 #include "cerata/vhdl/vhdl.h"

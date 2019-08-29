@@ -14,17 +14,11 @@
 
 #include "cerata/vhdl/vhdl.h"
 
-#include <algorithm>
 #include <vector>
 #include <string>
 #include <memory>
-#include <fstream>
 
 #include "cerata/logging.h"
-#include "cerata/edge.h"
-#include "cerata/node.h"
-#include "cerata/type.h"
-#include "cerata/graph.h"
 #include "cerata/utils.h"
 
 #include "cerata/vhdl/defaults.h"

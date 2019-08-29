@@ -16,8 +16,6 @@
 #include <fletcher/common.h>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <cmath>
 #include <algorithm>
 
 #include "fletchgen/srec/srec.h"

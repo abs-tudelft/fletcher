@@ -20,7 +20,6 @@
 #include "fletchgen/options.h"
 #include "fletchgen/design.h"
 #include "fletchgen/utils.h"
-#include "fletchgen/hls/vivado.h"
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
 #include "fletchgen/top/axi.h"
@@ -89,7 +88,7 @@ int main(int argc, char **argv) {
     if (cerata::FileExists(sim_file_path) && !options->overwrite) {
       sim_file_path += 't';
     }
-    FLETCHER_LOG(INFO,"Saving simulation top-level design to: " + sim_file_path);
+    FLETCHER_LOG(INFO, "Saving simulation top-level design to: " + sim_file_path);
     sim_file = std::ofstream(sim_file_path);
     fletchgen::top::GenerateSimTop(*design.mantle,
                                    {&sim_file},
@@ -106,7 +105,7 @@ int main(int argc, char **argv) {
     if (cerata::FileExists(axi_file_path) && !options->overwrite) {
       axi_file_path += 't';
     }
-    FLETCHER_LOG(INFO,"Saving AXI top-level design to: " + axi_file_path);
+    FLETCHER_LOG(INFO, "Saving AXI top-level design to: " + axi_file_path);
     axi_file = std::ofstream(axi_file_path);
     fletchgen::top::GenerateAXITop(*design.mantle, {&axi_file});
     axi_file.close();

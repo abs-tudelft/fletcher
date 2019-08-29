@@ -111,4 +111,5 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::StructArray &array) {
   }
   return arrow::Status::OK();
 }
-} // namespace fletcher
+
+}  // namespace fletcher

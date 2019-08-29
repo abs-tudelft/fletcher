@@ -15,7 +15,6 @@
 #include "cerata/dot/dot.h"
 
 #include <sstream>
-#include <fstream>
 
 #include "cerata/logging.h"
 #include "cerata/edge.h"
@@ -63,7 +62,7 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
 
       // Draw edge
       ret << tab(level);
-      if (src->IsExpression() && config.nodes.expand.expression) {
+      if (src->IsExpression() && style.config.nodes.expand.expression) {
         auto srcname = ToHex(*src);
         ret << "\"" + srcname + "\"";
       } else {
@@ -108,25 +107,25 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
             + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
       }
 
-      if ((src->IsPort()) && config.nodes.ports) {
+      if ((src->IsPort()) && style.config.nodes.ports) {
         if (dst->IsSignal()) {
           // Port to signal
           sb << style.edge.port_to_sig;
         } else if (dst->IsPort()) {
           sb << style.edge.port_to_port;
         }
-      } else if (src->IsSignal() && config.nodes.signals) {
+      } else if (src->IsSignal() && style.config.nodes.signals) {
         if (dst->IsPort()) {
           // Signal to port
           sb << style.edge.sig_to_port;
         }
-      } else if (src->IsParameter() && config.nodes.parameters) {
+      } else if (src->IsParameter() && style.config.nodes.parameters) {
         sb << style.edge.param;
-      } else if (src->IsLiteral() && config.nodes.literals) {
+      } else if (src->IsLiteral() && style.config.nodes.literals) {
         sb << style.edge.lit;
-      } else if (src->IsExpression() && config.nodes.expressions) {
+      } else if (src->IsExpression() && style.config.nodes.expressions) {
         sb << style.edge.expr;
-        if (config.nodes.expand.expression) {
+        if (style.config.nodes.expand.expression) {
           sb << "lhead=\"cluster_" + NodeName(*src) + "\"";
         }
       } else {
@@ -245,7 +244,7 @@ std::string Style::GenDotRecordCell(const Type &t,
 
 std::string Grapher::GenNode(const Node &n, int level) {
   std::stringstream str;
-  if (n.IsExpression() && config.nodes.expand.expression) {
+  if (n.IsExpression() && style.config.nodes.expand.expression) {
     str << GenExpr(n);
   } else {
     // Indent
@@ -305,19 +304,19 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
   }
 
   // Nodes
-  if (config.nodes.expressions)
+  if (style.config.nodes.expressions)
     ret << GenNodes(graph, Node::NodeID::EXPRESSION, level + 1);
 
   // if (config.nodes.literals)
   //   ret << GenNodes(graph, Node::LITERAL, level + 1);
 
-  if (config.nodes.parameters)
+  if (style.config.nodes.parameters)
     ret << GenNodes(graph, Node::NodeID::PARAMETER, level + 1);
 
-  if (config.nodes.ports)
+  if (style.config.nodes.ports)
     ret << GenNodes(graph, Node::NodeID::PORT, level + 1);
 
-  if (config.nodes.signals)
+  if (style.config.nodes.signals)
     ret << GenNodes(graph, Node::NodeID::SIGNAL, level + 1, true);
 
   if (graph.IsComponent()) {

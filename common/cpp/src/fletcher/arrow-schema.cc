@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <arrow/api.h>
+
 #include <vector>
 #include <memory>
 #include <string>
-#include <utility>
-#include <arrow/api.h>
 
 #include "fletcher/logging.h"
 #include "fletcher/arrow-schema.h"
@@ -118,4 +118,4 @@ arrow::Status FieldAnalyzer::Visit(const arrow::StructType &type) {
   return arrow::Status::OK();
 }
 
-} // namespace fletcher
+}  // namespace fletcher

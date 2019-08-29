@@ -37,10 +37,7 @@ struct Kernel : Component {
   explicit Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches = {});
 
   /// @brief Make a kernel component based on RecordBatch components. Returns a shared pointer to the new Kernel.
-  static std::shared_ptr<Kernel> Make(std::string name, std::deque<RecordBatch *> recordbatches = {});
-
-  /// The SchemaSet this Kernel is based on.
-  std::shared_ptr<SchemaSet> schema_set_;
+  static std::shared_ptr<Kernel> Make(const std::string& name, const std::deque<RecordBatch *>& recordbatches = {});
 };
 
 }  // namespace fletchgen

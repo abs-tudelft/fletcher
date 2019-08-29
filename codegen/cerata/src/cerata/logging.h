@@ -73,7 +73,7 @@ inline Logger &logger() {
 if (CERATA_LOG_##level == CERATA_LOG_FATAL) { \
   throw std::runtime_error(std::string(__FILE__) + ":" \
                          + std::to_string(__LINE__) + ":" \
-                         + std::string(__FUNCTION__) + ": " + msg); \
+                         + std::string(__FUNCTION__) + ": " + (msg)); \
 } else {  \
   logger().write(CERATA_LOG_##level, msg,  __FUNCTION__, __FILE__, __LINE__); \
 } \
