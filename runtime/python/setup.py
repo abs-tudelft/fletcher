@@ -18,11 +18,10 @@ from distutils.command.bdist import bdist as _bdist
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 from setuptools.command.egg_info import egg_info as _egg_info
 from setuptools import setup, Extension, find_packages
 
-import os, platform, shutil
+import os, platform, shutil, glob
 import numpy as np
 import pyarrow as pa
 
@@ -64,7 +63,8 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            cmake['../../cpp/']\
+            cmake['../../..']\
+                 ['-DFLETCHER_BUILD_ECHO=ON']\
                  ['-DCMAKE_BUILD_TYPE=Release']\
                  ['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0']\
                  ['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
@@ -77,16 +77,6 @@ class bdist(_bdist):
         _bdist.finalize_options(self)
         self.dist_dir = py_dist_dir
 
-class bdist_wheel(_bdist_wheel):
-    def run(self):
-        _bdist_wheel.run(self)
-        if 'AUDITWHEEL_PLAT' in os.environ:
-            from auditwheel.repair import repair_wheel
-            impl_tag, abi_tag, plat_tag = self.get_tag()
-            archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
-            wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
-            repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True)
-
 class sdist(_sdist):
     def finalize_options(self):
         _sdist.finalize_options(self)
@@ -95,7 +85,7 @@ class sdist(_sdist):
 class egg_info(_egg_info):
     def initialize_options(self):
         _egg_info.initialize_options(self)
-        self.egg_base = py_target_dir
+        self.egg_base = os.path.relpath(py_target_dir)
 
 setup(
     name="pyfletcher",
@@ -155,7 +145,6 @@ setup(
     ],
     cmdclass = {
         'bdist': bdist,
-        'bdist_wheel': bdist_wheel,
         'build': build,
         'clean': clean,
         'egg_info': egg_info,
@@ -163,4 +152,7 @@ setup(
     },
     license='Apache License, Version 2.0',
     zip_safe = False,
+    data_files= [
+        ('lib', glob.glob('build/install/lib*/libfletcher_echo.so')),
+    ],
 )

@@ -8,6 +8,9 @@ release/
 build/
 python-build/
 
+# Python stuff
+*.whl
+
 *.pyc
 .cproject
 .settings/

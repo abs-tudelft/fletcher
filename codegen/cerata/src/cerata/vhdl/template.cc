@@ -14,6 +14,7 @@
 
 #include "cerata/vhdl/template.h"
 
+#include <sstream>
 #include <iostream>
 #include "cerata/logging.h"
 
