@@ -26,9 +26,8 @@ def test_platform():
     # Info
     print("Platform name: " + platform.name())
 
-    # Malloc/free
+    # Malloc
     address = platform.device_malloc(1024)
-    platform.device_free(address)
 
     # MMIO
     platform.write_mmio(0, 0)
@@ -41,11 +40,15 @@ def test_platform():
     host_bytearray = bytearray([1, 2, 3, 4, 5, 6, 7])
     host_nparray = np.array([1, 2, 3, 4, 5, 6, 7], dtype=np.uint8)
 
-    platform.copy_host_to_device(host_bytes, 0, size)
-    platform.copy_host_to_device(host_bytearray, 7, size)
-    platform.copy_host_to_device(host_nparray, 14, size)
+    platform.copy_host_to_device(host_bytes, address, size)
+    platform.copy_host_to_device(host_bytearray, address + 7, size)
+    platform.copy_host_to_device(host_nparray, address + 14, size)
 
-    buffer = platform.copy_device_to_host(0, 7)
+    buffer = platform.copy_device_to_host(address, 21)
+    assert list(buffer) == [1, 2, 3, 4, 5, 6, 7] * 3
+
+    # Free buffer
+    platform.device_free(address)
 
     platform.terminate()
 
@@ -90,3 +93,6 @@ def test_context():
 
     # Terminate
     platform.terminate()
+
+test_platform()
+# test_context()
