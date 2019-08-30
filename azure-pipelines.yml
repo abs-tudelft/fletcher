@@ -157,7 +157,7 @@ jobs:
   - script: |
       python3 -c "import $(package)"
     displayName: Test import
-  - publish: $(Build.SourcesDirectory)/$(source)
+  - publish: $(Build.SourcesDirectory)/$(source)/wheelhouse
     artifact: $(package)-wheels
 
 - template: jobs/mdbook-gh-pages.yml@abs-tudelft
