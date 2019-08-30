@@ -106,6 +106,10 @@ jobs:
   variables:
     PKG_CONFIG_ALLOW_SYSTEM_LIBS: 1
   steps:
+  - template: steps/set-cc-cxx.yml@abs-tudelft
+    parameters:
+      cc: gcc-7
+      cxx: g++-7
   - template: steps/install-python.yml@abs-tudelft
     parameters:
       packages: ['pyarrow', 'numpy', 'cython']
