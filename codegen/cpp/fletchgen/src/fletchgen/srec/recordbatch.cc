@@ -20,6 +20,7 @@
 #include <deque>
 #include <memory>
 #include <ostream>
+#include <fstream>
 
 #include "fletchgen/srec/srec.h"
 

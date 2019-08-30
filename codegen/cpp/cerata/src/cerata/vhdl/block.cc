@@ -16,6 +16,8 @@
 
 #include <regex>
 #include <string>
+#include <iostream>
+#include <sstream>
 
 namespace cerata::vhdl {
 

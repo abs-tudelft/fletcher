@@ -20,6 +20,7 @@
 
 #include <deque>
 #include <memory>
+#include <fstream>
 
 #include "fletchgen/srec/srec.h"
 #include "fletchgen/srec/recordbatch.h"
