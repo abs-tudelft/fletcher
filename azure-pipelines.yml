@@ -151,7 +151,7 @@ jobs:
     displayName: Build manylinux wheels
   - template: steps/install-python.yml@abs-tudelft
   - script: |
-      pip3 install $(source)/wheelshouse/$(package)*37*manylinux*
+      pip3 install $(source)/wheelhouse/$(package)*37*manylinux*
     workingDirectory: $(Build.SourcesDirectory)
     displayName: Test install
   - script: |
