@@ -23,8 +23,10 @@
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
 #include "fletchgen/top/axi.h"
+#include "fletchgen/fletchgen.h"
 
-int main(int argc, char **argv) {
+namespace fletchgen {
+  int fletchgen(int argc, char **argv) {
   // Start logging
   std::string program_name = fletchgen::GetProgramName(argv[0]);
   fletcher::StartLogging(program_name, FLETCHER_LOG_DEBUG, program_name + ".log");
@@ -129,3 +131,5 @@ int main(int argc, char **argv) {
   fletcher::StopLogging();
   return 0;
 }
+
+}  // namespace fletchgen

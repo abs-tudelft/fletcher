@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include <cerata/api.h>
 #include <arrow/api.h>
 
 #include <vector>

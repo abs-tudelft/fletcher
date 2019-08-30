@@ -1,5 +1,5 @@
 ARG MANYLINUX=1
-FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64:latest as pyfletcher-python-base
+FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64:latest as fletcher-python-base
 
 ARG CMAKE_VERSION=3.14.5
 ARG ARROW_VERSION=0.14.1
@@ -31,7 +31,9 @@ RUN cd arrow-apache-arrow-${ARROW_VERSION}/python && \
       do $PYTHON setup.py build install \
     ;done
 
-FROM pyfletcher-python-base
+FROM fletcher-python-base
 
-WORKDIR /io/runtime/python
+ARG PACKAGE=
+
+WORKDIR /io/${PACKAGE}
 ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL; $PYTHON -m auditwheel repair $WHL; done; rm -rf build/python"]

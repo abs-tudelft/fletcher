@@ -23,11 +23,11 @@ FetchContent_MakeAvailable(cmake-modules)
 include(CompileUnits)
 
 if(FLETCHER_BUILD_CERATA)
-  add_subdirectory(codegen/cerata)
+  add_subdirectory(codegen/cpp/cerata)
 endif()
 
 if(FLETCHER_BUILD_FLETCHGEN)
-  add_subdirectory(codegen/fletchgen)
+  add_subdirectory(codegen/cpp/fletchgen)
 endif()
 
 if(FLETCHER_BUILD_C)
