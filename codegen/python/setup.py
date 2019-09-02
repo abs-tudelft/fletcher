@@ -63,11 +63,10 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            # TODO(mb): abs-tudelft/fletcher/#185
             cmake['../../cpp/fletchgen']\
                  ['-DBUILD_FLETCHGEN_LIB=On']\
                  ['-DBUILD_FLETCHGEN=Off']\
-                 ['-DCMAKE_BUILD_TYPE=Debug']\
+                 ['-DCMAKE_BUILD_TYPE=Release']\
                  ['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
             make['-j4'] & FG
             make['install'] & FG
