@@ -1,5 +1,6 @@
 # C/C++/CLion stuff
 cmake-build-debug/
+cmake-build-release/
 .idea/
 
 # Typical build folders

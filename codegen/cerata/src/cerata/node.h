@@ -211,9 +211,9 @@ class Literal : public MultiOutputNode {
  LITERAL_DECL_FACTORY(Int, int) //NOLINT
 
  public:
-  /// @brief Make a literal node with raw storage type T.
-  template<typename T>
-  static std::shared_ptr<Literal> Make(T value) { throw std::runtime_error("Not implemented."); }
+  static std::shared_ptr<Literal> Make(bool value) { return MakeBool(value); }
+  static std::shared_ptr<Literal> Make(int value) { return MakeInt(value); }
+  static std::shared_ptr<Literal> Make(std::string value) { return MakeString(std::move(value)); }
 
   /// @brief Create a copy of this Literal.
   std::shared_ptr<Object> Copy() const override;
@@ -228,17 +228,34 @@ class Literal : public MultiOutputNode {
   /// @brief Convert the Literal value to a human-readable string.
   std::string ToString() const override;
 
-  /// @brief Return the raw C++ representation of the literal value.
-  template<typename T>
-  T raw_value() { throw std::runtime_error("Not implemented."); }
-
-  /// @brief Return whether the raw C++ representation is of type T.
-  template<typename T>
-  bool IsRaw() { throw std::runtime_error("Not implemented."); }
-
   /// @brief Return the storage type of the literal.
   StorageType storage_type() const { return storage_type_; }
 };
+
+/**
+ * @brief Obtain the raw value of a literal node.
+ * @tparam T    The compile-time return type.
+ * @param node  The node to obtain the value from.
+ * @return      The value of type T.
+ */
+template<typename T>
+T RawValueOf(const Literal& node) { throw std::runtime_error("Can not obtain raw value for type."); }
+template<>
+inline bool RawValueOf(const Literal& node) { return node.BoolValue(); }
+template<>
+inline int RawValueOf(const Literal& node) { return node.IntValue(); }
+template<>
+inline std::string RawValueOf(const Literal& node) { return node.StringValue(); }
+
+/// @brief Obtain the Literal::StorageType enum value of a C++ type T.
+template<typename T>
+Literal::StorageType StorageTypeOf() { throw std::runtime_error("Type has no known StorageType."); }
+template<>
+inline Literal::StorageType StorageTypeOf<bool>() { return Literal::StorageType::BOOL; }
+template<>
+inline Literal::StorageType StorageTypeOf<int>() { return Literal::StorageType::INT; }
+template<>
+inline Literal::StorageType StorageTypeOf<std::string>() { return Literal::StorageType::STRING; }
 
 /**
  * @brief A Signal Node.

@@ -110,8 +110,8 @@ class NodePool : public Pool<Node> {
     for (const auto &node : objects_) {
       if (node->IsLiteral()) {
         auto lit_node = std::dynamic_pointer_cast<Literal>(node);
-        if (lit_node->IsRaw<LitType>()) {
-          auto raw_value = lit_node->raw_value<LitType>();
+        if (lit_node->storage_type() == StorageTypeOf<LitType>()) {
+          auto raw_value = RawValueOf<LitType>(*lit_node);
           if (raw_value == value) {
             return lit_node;
           }
@@ -119,7 +119,7 @@ class NodePool : public Pool<Node> {
       }
     }
     // No literal found, make a new one.
-    std::shared_ptr<Literal> ret = Literal::Make<LitType>(value);
+    std::shared_ptr<Literal> ret = Literal::Make(value);
     Add(ret);
     return ret;
   }

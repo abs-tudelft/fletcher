@@ -163,60 +163,12 @@ LITERAL_IMPL_FACTORY(String, string, STRING, std::string)
 LITERAL_IMPL_FACTORY(Bool, boolean, BOOL, bool)
 LITERAL_IMPL_FACTORY(Int, integer, INT, int)
 
-/// @brief Template specialization to make a boolean literal.
-template<>
-std::shared_ptr<Literal> Literal::Make(bool value) {
-  return MakeBool(value);
-}
-
-/// @brief Template specialization to make an integer literal.
-template<>
-std::shared_ptr<Literal> Literal::Make(int value) {
-  return MakeInt(value);
-}
-
-/// @brief Template specialization to make a string literal.
-template<>
-std::shared_ptr<Literal> Literal::Make(std::string value) {
-  return MakeString(value);
-}
-
 std::shared_ptr<Object> Literal::Copy() const {
   switch (storage_type_) {
     default:return strl(String_val_);
     case StorageType::BOOL:return booll(Bool_val_);
     case StorageType::INT:return intl(Int_val_);
   }
-}
-
-/// @brief Template specialization to return a raw integer literal value.
-template<>
-int Literal::raw_value() { return Int_val_; }
-
-/// @brief Template specialization to return a raw string literal value.
-template<>
-std::string Literal::raw_value() { return String_val_; }
-
-/// @brief Template specialization to return a raw boolean literal value.
-template<>
-bool Literal::raw_value() { return Bool_val_; }
-
-/// @brief Template specialization to return wether the raw value of the literal is of C++ type bool.
-template<>
-bool Literal::IsRaw<bool>() {
-  return storage_type_ == StorageType::BOOL;
-}
-
-/// @brief Template specialization to return wether the raw value of the literal is of C++ type string.
-template<>
-bool Literal::IsRaw<std::string>() {
-  return storage_type_ == StorageType::STRING;
-}
-
-/// @brief Template specialization to return wether the raw value of the literal is of C++ type int.
-template<>
-bool Literal::IsRaw<int>() {
-  return storage_type_ == StorageType::INT;
 }
 
 std::shared_ptr<Edge> Literal::AddSource(Node *source) {
