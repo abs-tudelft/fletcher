@@ -90,10 +90,8 @@ std::shared_ptr<Type> count(const std::shared_ptr<Node> &width);
 std::shared_ptr<Type> dvalid();
 /// @brief Fletcher last
 std::shared_ptr<Type> last();
-/// @brief Fletcher accelerator clock/reset
-std::shared_ptr<Type> kernel_cr();
-/// @brief Fletcher bus clock/reset
-std::shared_ptr<Type> bus_cr();
+/// @brief Fletcher clock/reset;
+std::shared_ptr<Type> cr();
 
 /**
  * @brief Convert a fixed-width arrow::DataType to a fixed-width Fletcher Type.

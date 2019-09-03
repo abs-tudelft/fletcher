@@ -160,8 +160,8 @@ static std::shared_ptr<Component> Array(Mode mode) {
 
   // Insert ports
   objects.insert(objects.end(), {
-      Port::Make(bus_cr()),
-      Port::Make(kernel_cr()),
+      Port::Make("bcd", cr(), Port::Dir::IN, bus_domain()),
+      Port::Make("kcd", cr(), Port::Dir::IN, kernel_domain()),
       bus,
       Port::Make("cmd", cmd(), Port::Dir::IN),
       Port::Make("unl", unlock(), Port::Dir::OUT),

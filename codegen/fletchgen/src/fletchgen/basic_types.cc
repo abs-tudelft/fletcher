@@ -27,8 +27,6 @@ using cerata::Bit;
 using cerata::bit;
 using cerata::intl;
 using cerata::integer;
-using cerata::Clock;
-using cerata::Reset;
 using cerata::Parameter;
 using cerata::RecField;
 using cerata::Record;
@@ -97,18 +95,11 @@ std::shared_ptr<ClockDomain> bus_domain() {
   return result;
 }
 
-// Create basic clocks & resets
-std::shared_ptr<Type> kernel_cr() {
-  static std::shared_ptr<Type> result = Record::Make("kcd", {
-      RecField::Make("clk", std::make_shared<Clock>("kcd_clk", kernel_domain())),
-      RecField::Make("reset", std::make_shared<Reset>("kcd_reset", kernel_domain()))});
-  return result;
-}
-
-std::shared_ptr<Type> bus_cr() {
-  static std::shared_ptr<Type> result = Record::Make("bcd", {
-      RecField::Make("clk", std::make_shared<Clock>("bcd_clk", bus_domain())),
-      RecField::Make("reset", std::make_shared<Reset>("bcd_reset", bus_domain()))});
+// Create basic clock & reset record type
+std::shared_ptr<Type> cr() {
+  static std::shared_ptr<Type> result = Record::Make("cr", {
+      RecField::Make("clk", std::make_shared<Bit>("clk")),
+      RecField::Make("reset", std::make_shared<Bit>("reset"))});
   return result;
 }
 

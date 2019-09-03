@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "fletchgen/basic_types.h"
 
@@ -78,14 +79,16 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
                                 const std::shared_ptr<Node> &len_width,
                                 const std::shared_ptr<Node> &data_width);
 
-
 /// A port derived from a BusSpec.
 struct BusPort : public Port {
   /// Bus specification.
   BusSpec spec_;
   /// @brief Construct a new port based on a bus specification.
-  BusPort(Port::Dir dir, BusSpec spec, const std::string &name = "")
-      : Port(name.empty() ? "bus" : name, bus(spec), dir), spec_(spec) {}
+  BusPort(Port::Dir dir,
+          BusSpec spec,
+          const std::string &name = "",
+          std::shared_ptr<ClockDomain> domain = cerata::default_domain())
+      : Port(name.empty() ? "bus" : name, bus(spec), dir, std::move(domain)), spec_(spec) {}
   /// @brief Make a new port and return a shared pointer to it.
   static std::shared_ptr<BusPort> Make(std::string name, Port::Dir dir, BusSpec spec);
   /// @brief Make a new port, name it automatically based on the bus specification, and return a shared pointer to it.

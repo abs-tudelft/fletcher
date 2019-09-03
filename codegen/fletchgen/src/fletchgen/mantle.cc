@@ -39,8 +39,8 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
   // Add default ports
-  auto bcr = Port::Make(bus_cr());
-  auto kcr = Port::Make(kernel_cr());
+  auto bcr = Port::Make("bcd", cr(), Port::Dir::IN, bus_domain());
+  auto kcr = Port::Make("kcd", cr(), Port::Dir::IN, kernel_domain());
   auto regs = MmioPort::Make(Port::Dir::IN);
   AddObject(bcr);
   AddObject(kcr);
