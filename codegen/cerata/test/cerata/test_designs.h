@@ -242,8 +242,8 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
   auto s_type = Stream::Make("stream", Vector::Make<16>());
 
   auto clk_domain = ClockDomain::Make("domain0");
-  auto clk_port = Port::Make(Clock::Make("clk", clk_domain));
-  auto rst_port = Port::Make(Reset::Make("reset", clk_domain));
+  auto clk_port = Port::Make("clk", bit(), Port::Dir::IN, clk_domain);
+  auto rst_port = Port::Make("reset", bit(), Port::Dir::IN, clk_domain);
   auto b_port = Port::Make("some_bool", boolean(), Port::OUT);
   auto v_port = Port::Make("some_vector", Vector::Make<64>());
   auto r_port = Port::Make("some_record", r_type, Port::OUT);
