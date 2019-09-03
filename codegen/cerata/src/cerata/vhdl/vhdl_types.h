@@ -21,6 +21,7 @@
 #include "cerata/type.h"
 #include "cerata/flattype.h"
 #include "cerata/node.h"
+#include "cerata/port.h"
 
 namespace cerata::vhdl {
 

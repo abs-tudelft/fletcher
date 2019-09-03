@@ -302,28 +302,6 @@ std::shared_ptr<Type> String::Make(std::string name) {
   return std::make_shared<String>(name);
 }
 
-Clock::Clock(std::string name, std::shared_ptr<ClockDomain> domain)
-    : Type(std::move(name), Type::CLOCK), domain(std::move(domain)) {}
-
-std::shared_ptr<Clock> Clock::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-  return std::make_shared<Clock>(name, domain);
-}
-
-std::optional<Node *> Clock::width() const {
-  return rintl(1);
-}
-
-Reset::Reset(std::string name, std::shared_ptr<ClockDomain> domain)
-    : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
-
-std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-  return std::make_shared<Reset>(name, domain);
-}
-
-std::optional<Node *> Reset::width() const {
-  return rintl(1);
-}
-
 Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
 
 std::shared_ptr<Bit> Bit::Make(std::string name) {
@@ -361,26 +339,6 @@ Record &Record::AddField(const std::shared_ptr<RecField> &field) {
 
 Record::Record(std::string name, std::deque<std::shared_ptr<RecField>> fields)
     : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
-
-bool Clock::IsEqual(const Type &other) const {
-  if (other.id() == Type::CLOCK) {
-    auto &oc = dynamic_cast<const Clock &>(other);
-    if (oc.domain == this->domain) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool Reset::IsEqual(const Type &other) const {
-  if (other.id() == Type::RESET) {
-    auto &other_reset = dynamic_cast<const Reset &>(other);
-    if (other_reset.domain == this->domain) {
-      return true;
-    }
-  }
-  return false;
-}
 
 bool Stream::IsEqual(const Type &other) const {
   if (other.Is(Type::STREAM)) {
@@ -435,7 +393,5 @@ std::deque<Node *> Record::GetParameters() const {
   }
   return result;
 }
-
-ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 
 }  // namespace cerata

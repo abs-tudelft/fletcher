@@ -124,14 +124,17 @@ size_t NodeArray::IndexOf(const Node &n) const {
   throw std::logic_error("Node " + n.ToString() + " is not element of " + this->ToString());
 }
 
-PortArray::PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir) :
+PortArray::PortArray(const std::shared_ptr<Port> &base,
+                     std::shared_ptr<Node> size,
+                     Term::Dir dir) :
     NodeArray(base->name(), Node::NodeID::PORT, base, std::move(size)), Term(base->dir()) {}
 
 std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
-                                           std::shared_ptr<Type> type,
+                                           const std::shared_ptr<Type>& type,
                                            std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  auto base_node = Port::Make(name, std::move(type), dir);
+                                           Port::Dir dir,
+                                           const std::shared_ptr<ClockDomain>& domain) {
+  auto base_node = Port::Make(name, type, dir, domain);
   auto *port_array = new PortArray(base_node, std::move(size), dir);
   return std::shared_ptr<PortArray>(port_array);
 }

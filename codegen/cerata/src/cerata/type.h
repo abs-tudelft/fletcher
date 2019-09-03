@@ -23,6 +23,7 @@
 
 #include "cerata/utils.h"
 #include "cerata/flattype.h"
+#include "cerata/domain.h"
 
 namespace cerata {
 
@@ -126,47 +127,7 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   std::deque<std::shared_ptr<TypeMapper>> mappers_;
 };
 
-/**
- * @brief A clock domain
- *
- * Placeholder for automatically generated clock domain crossing support
- */
-struct ClockDomain : public Named {
-  /// @brief Clock domain constructor
-  explicit ClockDomain(std::string name);
-  /// @brief Create a new clock domain and return a shared pointer to it.
-  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
-};
-
 // Physical Primitive types:
-
-/// @brief Clock type.
-struct Clock : public Type {
-  /// @brief The clock domain of this clock.
-  std::shared_ptr<ClockDomain> domain;
-  /// @brief Clock constructor.
-  Clock(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Create a new clock, and return a shared pointer to it.
-  static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Clock width returns integer literal 1.
-  std::optional<Node *> width() const override;
-  /// @brief Determine if this Clock is exactly equal to an other Clock.
-  bool IsEqual(const Type &other) const override;
-};
-
-/// @brief Reset type.
-struct Reset : public Type {
-  /// @brief The clock domain of this reset.
-  std::shared_ptr<ClockDomain> domain;
-  /// @brief Reset constructor.
-  explicit Reset(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Create a new Reset, and return a shared pointer to it.
-  static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Reset width returns integer literal 1.
-  std::optional<Node *> width() const override;
-  /// @brief Determine if this Reset is exactly equal to an other Reset.
-  bool IsEqual(const Type &other) const override;
-};
 
 /// @brief A bit type.
 struct Bit : public Type {

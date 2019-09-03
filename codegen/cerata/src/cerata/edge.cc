@@ -48,6 +48,20 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
     return nullptr;
   }
 
+  // Check if the clock domains correspond. Currently, this doesn't result in an error as automated CDC support is not
+  // in place yet. Just generate a warning for now:
+  if ((src->IsPort() || src->IsSignal()) && (dst->IsPort() || dst->IsSignal())) {
+    auto src_dom = dynamic_cast<Synchronous *>(src)->domain();
+    auto dst_dom = dynamic_cast<Synchronous *>(dst)->domain();
+    if (src_dom != dst_dom) {
+      CERATA_LOG(WARNING, std::string("Attempting to connect Synchronous nodes, but clock domains differ.")
+          + " Dst: [" + dst->ToString() + "] in domain: [" + src_dom->name()
+          + "] Src: [" + src->ToString() + "] in domain: [" + dst_dom->name()
+          + "] Automated CDC crossings are not yet implemented or instantiated."
+            " This behavior may cause incorrect designs.");
+    }
+  }
+
   // Check if the types can be mapped onto each other
   if (!src->type()->GetMapper(dst->type())) {
     CERATA_LOG(FATAL, "No known type mapping available for connection between node "
