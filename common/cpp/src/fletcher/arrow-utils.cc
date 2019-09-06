@@ -71,7 +71,7 @@ bool MustIgnore(const arrow::Field &field) {
   return ret;
 }
 
-int GetIntMeta(const arrow::Field &field, const std::string& key, int default_to) {
+int GetIntMeta(const arrow::Field &field, const std::string &key, int default_to) {
   int ret = default_to;
   auto strepc = GetMeta(field, key);
   if (!strepc.empty()) {
@@ -106,20 +106,24 @@ std::shared_ptr<arrow::Field> AppendMetaIgnore(const arrow::Field &field) {
   return field.AddMetadata(meta);
 }
 
-void ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Schema> *out) {
+bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Schema> *out) {
   std::shared_ptr<arrow::Schema> schema;
   std::shared_ptr<arrow::io::ReadableFile> fis;
   arrow::Status status;
   status = arrow::io::ReadableFile::Open(file_name, &fis);
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not open file for reading: " + file_name + " ARROW:[" + status.ToString() + "]");
+    return false;
   }
   // Dictionaries are not supported yet, hence nullptr.
   status = arrow::ipc::ReadSchema(fis.get(), nullptr, out);
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + status.ToString() + "]");
+    return false;
   }
   status = fis->Close();
+
+  return true;
 }
 
 void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema) {
@@ -156,7 +160,7 @@ void WriteRecordBatchesToFile(const std::string &filename,
   status = file->Close();
 }
 
-void ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out) {
+bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out) {
   arrow::Status status;
   std::shared_ptr<arrow::io::ReadableFile> file;
   std::shared_ptr<arrow::ipc::RecordBatchFileReader> reader;
@@ -164,13 +168,13 @@ void ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
   status = arrow::io::ReadableFile::Open(file_name, &file);
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not open file for reading. " + file_name + " ARROW:[" + status.ToString() + "]");
-    return;
+    return false;
   }
 
   status = arrow::ipc::RecordBatchFileReader::Open(file, &reader);
   if (!status.ok()) {
     FLETCHER_LOG(ERROR, "Could not open RecordBatchFileReader. ARROW:[" + status.ToString() + "]");
-    return;
+    return false;
   }
 
   for (int i = 0; i < reader->num_record_batches(); i++) {
@@ -178,9 +182,12 @@ void ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
     status = reader->ReadRecordBatch(i, &recordbatch);
     if (!status.ok()) {
       FLETCHER_LOG(ERROR, "Could not read RecordBatch " << i << " from file. ARROW:[" + status.ToString() + "]");
+      return false;
     }
     out->push_back(recordbatch);
   }
+
+  return true;
 }
 
 void AppendExpectedBuffersFromField(std::vector<std::string> *buffers, const arrow::Field &field) {
