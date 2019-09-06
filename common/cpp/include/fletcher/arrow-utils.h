@@ -141,14 +141,16 @@ void WriteRecordBatchesToFile(const std::string &filename,
  * @brief Read one or multiple arrow::RecordBatch from a file.
  * @param file_name The path to the input file.
  * @param out       Vector to store the RecordBatches.
+ * @return          True if successful, false otherwise.
  */
-void ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out);
+bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out);
 
 /**
  * @brief Reads a schema from a file.
  * @param file_path Path to the file to read from.
  * @param out       The schema
+ * @return          True if successful, false otherwise.
  */
-void ReadSchemaFromFile(const std::string &file_path, std::shared_ptr<arrow::Schema> *out);
+bool ReadSchemaFromFile(const std::string &file_path, std::shared_ptr<arrow::Schema> *out);
 
 }  // namespace fletcher
