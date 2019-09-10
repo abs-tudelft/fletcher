@@ -26,15 +26,15 @@ if(NOT TARGET cerata)
   add_subdirectory(../cerata cerata)
 endif()
 if(NOT TARGET fletcher::common)
-  add_subdirectory(../../common/cpp common-cpp)
+  add_subdirectory(../../../common/cpp common-cpp)
 endif()
 if(NOT TARGET fletcher::c)
-  add_subdirectory(../../common/c common-c)
+  add_subdirectory(../../../common/c common-c)
 endif()
 
 add_compile_unit(
   OPT
-  NAME fletchgen::lib
+  NAME fletchgen::obj
   TYPE OBJECT
   PRPS
     CXX_STANDARD 17
@@ -51,6 +51,7 @@ add_compile_unit(
     src/fletchgen/design.cc
     src/fletchgen/utils.cc
     src/fletchgen/recordbatch.cc
+    src/fletchgen/fletchgen.cc
 
     src/fletchgen/srec/recordbatch.cc
     src/fletchgen/srec/srec.cc
@@ -75,15 +76,26 @@ add_compile_unit(
 )
 
 add_compile_unit(
+  OPT
+  NAME fletchgen::lib
+  TYPE SHARED
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  DEPS
+    fletchgen::obj
+)
+
+add_compile_unit(
   NAME fletchgen
   TYPE EXECUTABLE
   PRPS
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
   SRCS
-    src/fletchgen/fletchgen.cc
+    src/fletchgen/main.cc
   DEPS
-    fletchgen::lib
+    fletchgen::obj
 )
 
 compile_units()

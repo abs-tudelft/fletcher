@@ -10,20 +10,16 @@ cwd=`eval "cd $dir;pwd;cd - > /dev/null"`
 dir="$cwd/.."
 project=`eval "cd $dir;pwd;cd - > /dev/null"`
 
-# Remove old build files
-cd $project/runtime/python
-python3 setup.py clean
+for package in runtime/python codegen/python; do
+  # Remove old build files
+  cd $project/$package
+  python3 setup.py clean
 
-# Remove eggs
-eggs="$project/runtime/python/.eggs"
-rm -rf $eggs
+  # Remove eggs
+  eggs="$project/$package/.eggs"
+  rm -rf $eggs
 
-# Make sure target dir is empty
-target="$project/runtime/python/build"
-rm -rf $target
+  docker build --build-arg MANYLINUX=2010 --build-arg PACKAGE=$package -t manylinux-$package:2010 -f "$cwd/Dockerfile.python" "$cwd"
+  docker run --rm -v "$project":/io manylinux-$package:2010
+done
 
-# docker build -t pyfletcher-manylinux:1 -f "$cwd/Dockerfile.python" "$cwd"
-# docker run --rm -v "$project":/io pyfletcher-manylinux:1
-
-docker build --build-arg MANYLINUX=2010 -t pyfletcher-manylinux:2010 -f "$cwd/Dockerfile.python" "$cwd"
-docker run --rm -v "$project":/io pyfletcher-manylinux:2010
