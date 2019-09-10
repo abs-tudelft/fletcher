@@ -89,7 +89,7 @@ class egg_info(_egg_info):
 
 setup(
     name="pyfletchgen",
-    version="0.0.0",
+    version="0.0.1",
     author="abs-tudelft",
     packages=find_packages(),
     url="https://github.com/abs-tudelft/fletcher",

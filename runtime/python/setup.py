@@ -89,7 +89,7 @@ class egg_info(_egg_info):
 
 setup(
     name="pyfletcher",
-    version="0.0.8",
+    version="0.0.9",
     author="Lars van Leeuwen",
     packages=find_packages(),
     description="A Python wrapper for the Fletcher runtime library",
