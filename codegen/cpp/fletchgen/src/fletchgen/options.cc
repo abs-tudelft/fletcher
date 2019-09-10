@@ -87,8 +87,8 @@ bool Options::Parse(Options *options, int argc, char **argv) {
   }
 
   // Load input files
-  options->LoadRecordBatches();
-  options->LoadSchemas();
+  if (!options->LoadRecordBatches()) return false;
+  if (!options->LoadSchemas()) return false;
 
   return true;
 }
@@ -125,22 +125,28 @@ bool Options::MustGenerateDesign() const {
   return !schema_paths.empty() || !recordbatch_paths.empty();
 }
 
-void Options::LoadRecordBatches() {
+bool Options::LoadRecordBatches() {
   for (const auto &path : recordbatch_paths) {
     std::vector<std::shared_ptr<arrow::RecordBatch>> rbs;
     FLETCHER_LOG(INFO, "Loading RecordBatch(es) from " + path);
-    fletcher::ReadRecordBatchesFromFile(path, &rbs);
+    if (!fletcher::ReadRecordBatchesFromFile(path, &rbs)) {
+      return false;
+    }
     recordbatches.insert(recordbatches.end(), rbs.begin(), rbs.end());
   }
+  return true;
 }
 
-void Options::LoadSchemas() {
+bool Options::LoadSchemas() {
   for (const auto &path : schema_paths) {
     std::shared_ptr<arrow::Schema> schema;
     FLETCHER_LOG(INFO, "Loading Schema from " + path);
-    fletcher::ReadSchemaFromFile(path, &schema);
+    if (!fletcher::ReadSchemaFromFile(path, &schema)) {
+      return false;
+    }
     schemas.push_back(schema);
   }
+  return true;
 }
 
 std::string Options::ToString() const {

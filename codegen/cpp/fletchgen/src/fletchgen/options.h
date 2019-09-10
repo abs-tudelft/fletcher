@@ -86,10 +86,10 @@ struct Options {
   /// @brief Return true if the design must be outputted as DOT.
   [[nodiscard]] bool MustGenerateDOT() const;
 
-  /// @brief Load all specified RecordBatches
-  void LoadRecordBatches();
-  /// @brief Load all specified Schemas
-  void LoadSchemas();
+  /// @brief Load all specified RecordBatches. Returns true if successful, false otherwise.
+  [[nodiscard]] bool LoadRecordBatches();
+  /// @brief Load all specified Schemas.  Returns true if successful, false otherwise.
+  [[nodiscard]] bool LoadSchemas();
 
   /// @brief Return human-readable options.
   [[nodiscard]] std::string ToString() const;
