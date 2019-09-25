@@ -29,33 +29,37 @@ enum class Mode {
   WRITE  ///< Write mode
 };
 
-struct FieldMetadata {
-  std::shared_ptr<arrow::DataType> type_{};
-  int64_t length_ = 0;
-  int64_t null_count_ = 0;
-  FieldMetadata() = default;
-  FieldMetadata(std::shared_ptr<arrow::DataType> type, int64_t length, int64_t null_count)
-      : type_(std::move(type)), length_(length), null_count_(null_count) {}
-};
-
 struct BufferMetadata {
   const uint8_t *raw_buffer_;
   int64_t size_;
-  std::string desc_;
+  std::vector<std::string> desc_;
   int level_ = 0;
 
   /// Implicit means the buffer might exists physically but is not required logically (e.g. an empty validity bitmap for
   /// non-nullable fields).
   bool implicit_ = false;
 
-  BufferMetadata(const uint8_t *raw_buffer, int64_t size, std::string desc, int level = 0, bool implicit = false)
+  BufferMetadata(const uint8_t *raw_buffer,
+                 int64_t size,
+                 std::vector<std::string> desc,
+                 int level = 0,
+                 bool implicit = false)
       : raw_buffer_(raw_buffer), size_(size), desc_(std::move(desc)), level_(level), implicit_(implicit) {}
+};
+
+struct FieldMetadata {
+  std::shared_ptr<arrow::DataType> type_{};
+  int64_t length = 0;
+  int64_t null_count = 0;
+  FieldMetadata() = default;
+  FieldMetadata(std::shared_ptr<arrow::DataType> type, int64_t length, int64_t null_count)
+      : type_(std::move(type)), length(length), null_count(null_count) {}
+  std::vector<BufferMetadata> buffers;
 };
 
 struct RecordBatchDescription {
   std::string name;
   int64_t rows;
-  std::vector<BufferMetadata> buffers;
   std::vector<FieldMetadata> fields;
   Mode mode = Mode::READ;
   // Virtual means that the RecordBatch might exist logically but is not defined physically. This is useful when
@@ -152,5 +156,7 @@ bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
  * @return          True if successful, false otherwise.
  */
 bool ReadSchemaFromFile(const std::string &file_path, std::shared_ptr<arrow::Schema> *out);
+
+std::string ToString(const std::vector<std::string> &strvec, const std::string &sep = "_");
 
 }  // namespace fletcher

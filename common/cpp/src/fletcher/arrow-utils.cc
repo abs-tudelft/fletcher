@@ -190,6 +190,17 @@ bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
   return true;
 }
 
+std::string ToString(const std::vector<std::string> &strvec, const std::string &sep) {
+  std::string result;
+  for (const auto &s : strvec) {
+    result += s;
+    if (s != strvec.back()) {
+      result += sep;
+    }
+  }
+  return result;
+}
+
 void AppendExpectedBuffersFromField(std::vector<std::string> *buffers, const arrow::Field &field) {
   // Flatten in case this is a struct:
   auto flat_fields = field.Flatten();
