@@ -29,41 +29,130 @@
 
 namespace cerata::vhdl {
 
-Component *Resolve::ResolvePortToPort(Component *comp) {
-  std::deque<Node *> resolved;
-  CERATA_LOG(DEBUG, "VHDL: Resolve port-to-port connections...");
-  for (const auto &inst : comp->children()) {
-    for (const auto &port : inst->GetAll<Port>()) {
-      for (const auto &edge : port->sinks()) {
+static void InsertSignal(Component *comp, Edge *edge, std::deque<Object *> *resolved) {
+  CERATA_LOG(DEBUG, "VHDL:   Resolving " + edge->src()->ToString() + " --> " + edge->dst()->ToString());
+  std::string prefix;
+  if (edge->src()->parent()) {
+    prefix = edge->src()->parent().value()->name() + "_";
+  } else if (edge->dst()->parent()) {
+    prefix = edge->dst()->parent().value()->name() + "_";
+  }
+  // Remember we've touched these nodes already
+  resolved->push_back(edge->src());
+  resolved->push_back(edge->dst());
+  // Insert a new signal, after this, the original edge may potentially be destroyed.
+  auto sig = insert(edge, prefix, comp);
+}
+
+static void ResolvePorts(Component *comp, Instance *inst, std::deque<Object *> *resolved) {
+  // First get all normal ports.
+  for (const auto &port : inst->GetAll<Port>()) {
+    // Iterate over all edges that are sinks or sources of this port.
+    for (const auto &edge : port->sinks()) {
+      // If the destination is not a port, continue
+      if (!edge->dst()->IsPort()) { continue; }
+      // If the source or destination is a component node on the component we're working on,
+      // rather than an instance node, continue.
+      if ((edge->src()->parent() == comp) || (edge->dst()->parent() == comp)) { continue; }
+      // If the destination is already resolved, continue.
+      if (Contains(*resolved, dynamic_cast<Object *>(edge->dst()))) { continue; }
+      // We are now sure to be dealing with a port-to-port connection on two instances.
+      // VHDL cannot handle port-to-port connections of instances.
+      // Insert a signal in between and add it to the component.
+      InsertSignal(comp, edge, resolved);
+    }
+  }
+}
+
+static void InsertSignalArray(Component *comp, Edge *edge, std::deque<Object *> *resolved) {
+  auto port = dynamic_cast<Port *>(edge->src());
+  if (!port->array()) {
+    throw std::runtime_error("Expected edge source to be child of NodeArray.");
+  }
+  auto na = port->array().value();
+  auto pa = dynamic_cast<const PortArray *>(na);
+  if (pa == nullptr) {
+    throw std::runtime_error("Edge source is child of NodeArray, but not PortArray.");
+  }
+  if (!pa->parent()) {
+    throw std::runtime_error("PortArray has no parent.");
+  }
+
+  CERATA_LOG(DEBUG, "VHDL:   Resolving port array " + pa->name() + " --> " + edge->dst()->ToString());
+
+  std::string prefix;
+  if (edge->src()->parent()) {
+    prefix = edge->src()->parent().value()->name() + "_";
+  } else if (edge->dst()->parent()) {
+    prefix = edge->dst()->parent().value()->name() + "_";
+  }
+
+  auto sig_name = prefix + port->name();
+  auto size_name = sig_name + "_" + pa->size()->name();
+
+  // Make a copy of the size node.
+  auto size_node = std::dynamic_pointer_cast<Node>(pa->size()->Copy());
+  size_node->SetName(size_name);
+
+  // Create a new SignalArray.
+  // This array is going to live on the component graph, so we also need a copy of the size node, since the current
+  // size node lives on the instance graph only. We can only use an instance parameter from top to bottom, not vice
+  // versa in VHDL.
+  auto sa = SignalArray::Make(sig_name, port->type()->shared_from_this(), size_node, port->domain());
+
+  // Add the SignalArray to the component.
+  comp->AddObject(sa);
+
+  // Now for all nodes on the PortArray.
+  for (size_t n = 0; n < pa->num_nodes(); n++) {
+    // Create a new child node inside the signal array.
+    // Don't increment the size, since we can just share the existing size node.
+    auto sn = sa->Append();
+    // All sinks of this port should now be sourced by the signal array child node.
+    for (auto &e : pa->node(n)->sinks()) {
+      // Get the destination node.
+      auto dn = e->dst();
+      Connect(dn, sn);
+      // Mark both ends as resolved.
+      resolved->push_back(dn);
+      resolved->push_back(sn);
+      // Remove the original edge from the port array child node.
+      pa->node(n)->RemoveEdge(e);
+    }
+    // Connect the port array node as source to destination signal array node.
+    Connect(sn, pa->node(n));
+  }
+}
+
+static void ResolvePortArrays(Component *comp, Instance *inst, std::deque<Object *> *resolved) {
+  // First get all port arrays.
+  for (const auto &pa : inst->GetAll<PortArray>()) {
+    // We first figure out if a port array child node has a connection to another instance port.
+    for (const auto &pac : pa->nodes()) {
+      for (const auto &edge : pac->sinks()) {
         // If either side is not a port, continue with the next edge.
-        if (!edge->src()->IsPort() || !edge->dst()->IsPort()) {
-          continue;
-        }
+        if (!edge->dst()->IsPort()) { continue; }
         // If either sides of the edges are a port node on this component, continue, since this is allowed in VHDL.
-        if ((edge->src()->parent() == comp) || (edge->dst()->parent() == comp)) {
-          continue;
-        }
+        if ((edge->src()->parent() == comp) || (edge->dst()->parent() == comp)) { continue; }
         // If the destination is already resolved, continue.
-        if (Contains(resolved, edge->dst())) {
-          continue;
-        }
-        // Dealing with two port nodes that are not on the component itself. VHDL cannot handle port-to-port connections
-        // of instances. Insert a signal in between and add it to the component.
-        CERATA_LOG(DEBUG, "VHDL:   Resolving " + edge->src()->ToString() + " --> " + edge->dst()->ToString());
-        std::string prefix;
-        if (edge->src()->parent()) {
-          prefix = edge->src()->parent().value()->name() + "_";
-        } else if (edge->dst()->parent()) {
-          prefix = edge->dst()->parent().value()->name() + "_";
-        }
-        // Remember we've touched these nodes already
-        resolved.push_back(edge->src());
-        resolved.push_back(edge->dst());
-        // Insert a new signal, after this, the original edge may potentially be destroyed.
-        auto sig = insert(edge, prefix, comp);
+        if (Contains(*resolved, dynamic_cast<Object *>(edge->src()))) { continue; }
+        if (Contains(*resolved, dynamic_cast<Object *>(edge->dst()))) { continue; }
+        // We are now sure we are dealing with a PortArray child - to - port.
+        // InsertSignalArray will solve this for us.
+        InsertSignalArray(comp, edge, resolved);
       }
     }
   }
+}
+
+Component *Resolve::ResolvePortToPort(Component *comp) {
+  std::deque<Object *> resolved;
+  CERATA_LOG(DEBUG, "VHDL: Resolving port-to-port connections...");
+  for (const auto &inst : comp->children()) {
+    ResolvePorts(comp, inst, &resolved);
+    ResolvePortArrays(comp, inst, &resolved);
+  }
+  CERATA_LOG(DEBUG, "VHDL: Resolved " + std::to_string(resolved.size()) + " port-to-port connections...");
   return comp;
 }
 

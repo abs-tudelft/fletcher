@@ -55,7 +55,7 @@ static std::shared_ptr<Node> IncrementNode(const Node &node) {
     }
     return new_param;
   } else {
-    throw std::runtime_error("Cannot increment node " + node.name() + " of type " + ToString(node.node_id()));
+    CERATA_LOG(FATAL, "Cannot increment node " + node.name() + " of type " + ToString(node.node_id()));
   }
 }
 
@@ -75,18 +75,20 @@ void NodeArray::IncrementSize() {
     auto new_size = IncrementNode(*size_);
     SetSize(new_size);
   } else {
-    throw std::runtime_error("Invalid ArrayNode. Size is nullptr.");
+    throw std::runtime_error("Corrupted NodeArray. Size is nullptr.");
   }
 }
 
-Node *NodeArray::Append() {
+Node *NodeArray::Append(bool increment_size) {
   auto elem = std::dynamic_pointer_cast<Node>(base_->Copy());
   if (parent()) {
     elem->SetParent(*parent());
   }
   elem->SetArray(this);
   nodes_.push_back(elem);
-  IncrementSize();
+  if (increment_size) {
+    IncrementSize();
+  }
   return elem.get();
 }
 
@@ -94,7 +96,7 @@ Node *NodeArray::node(size_t i) const {
   if (i < nodes_.size()) {
     return nodes_[i].get();
   } else {
-    throw std::runtime_error("Index " + std::to_string(i) + " out of bounds for node " + ToString());
+    CERATA_LOG(FATAL, "Index " + std::to_string(i) + " out of bounds for node " + ToString());
   }
 }
 
@@ -121,17 +123,20 @@ size_t NodeArray::IndexOf(const Node &n) const {
       return i;
     }
   }
-  throw std::logic_error("Node " + n.ToString() + " is not element of " + this->ToString());
+  CERATA_LOG(FATAL, "Node " + n.ToString() + " is not element of " + this->ToString());
 }
 
-PortArray::PortArray(const std::shared_ptr<Port> &base, std::shared_ptr<Node> size, Term::Dir dir) :
+PortArray::PortArray(const std::shared_ptr<Port> &base,
+                     std::shared_ptr<Node> size,
+                     Term::Dir dir) :
     NodeArray(base->name(), Node::NodeID::PORT, base, std::move(size)), Term(base->dir()) {}
 
 std::shared_ptr<PortArray> PortArray::Make(const std::string &name,
-                                           std::shared_ptr<Type> type,
+                                           const std::shared_ptr<Type> &type,
                                            std::shared_ptr<Node> size,
-                                           Port::Dir dir) {
-  auto base_node = Port::Make(name, std::move(type), dir);
+                                           Port::Dir dir,
+                                           const std::shared_ptr<ClockDomain> &domain) {
+  auto base_node = Port::Make(name, type, dir, domain);
   auto *port_array = new PortArray(base_node, std::move(size), dir);
   return std::shared_ptr<PortArray>(port_array);
 }
@@ -151,6 +156,15 @@ std::shared_ptr<Object> PortArray::Copy() const {
   auto *port_array = new PortArray(base_as_port, size_copy, dir());
   // Return the resulting object.
   return std::shared_ptr<PortArray>(port_array);
+}
+
+std::shared_ptr<NodeArray> SignalArray::Make(const std::string &name,
+                                             const std::shared_ptr<Type> &type,
+                                             std::shared_ptr<Node> size,
+                                             const std::shared_ptr<ClockDomain> &domain) {
+  auto base_node = Signal::Make(name, type, domain);
+  auto *sig_array = new SignalArray(base_node, std::move(size));
+  return std::shared_ptr<SignalArray>(sig_array);
 }
 
 }  // namespace cerata

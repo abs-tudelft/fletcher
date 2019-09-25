@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,31 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <memory>
+#include <string>
+#include <utility>
 
-// Cerata intermediate
 #include "cerata/domain.h"
-#include "cerata/edge.h"
-#include "cerata/expression.h"
-#include "cerata/flattype.h"
-#include "cerata/graph.h"
-#include "cerata/literal.h"
 #include "cerata/node.h"
-#include "cerata/node_array.h"
-#include "cerata/object.h"
-#include "cerata/output.h"
-#include "cerata/pool.h"
-#include "cerata/transform.h"
 #include "cerata/port.h"
-#include "cerata/type.h"
 
-// Cerata utilities
-#include "cerata/logging.h"
-#include "cerata/utils.h"
+namespace cerata {
 
-// Cerata back-ends
-#include "cerata/dot/dot.h"
-#include "cerata/vhdl/vhdl.h"
+ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 
-/// Contains every Cerata class, function, etc...
-namespace cerata {}
+std::shared_ptr<ClockDomain> default_domain() {
+  static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("default");
+  return result;
+}
+
+std::optional<std::shared_ptr<ClockDomain>> GetDomain(const Node &node) {
+  if (node.IsPort()) {
+    return node.AsPort().domain();
+  } else if (node.IsSignal()) {
+    return node.AsSignal().domain();
+  }
+  return std::nullopt;
+}
+
+}  // namespace cerata
+
+

@@ -63,7 +63,7 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
   for (const auto &o : objects_) {
     if (o->name() == obj->name()) {
       if (o.get() == obj.get()) {
-        CERATA_LOG(DEBUG, "Graph " + name() + " already owns object " + obj->name() + ". Skipping...");
+        // Graph already owns object. We can skip adding.
         return *this;
       } else {
         CERATA_LOG(FATAL, "Graph " + name() + " already contains an object with name " + obj->name());
@@ -73,6 +73,13 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
   objects_.push_back(obj);
   obj->SetParent(this);
   AddObjectParams(this, *obj);
+  return *this;
+}
+
+Graph &Graph::AddObjects(const std::initializer_list<std::shared_ptr<Object>> &objs) {
+  for (const auto &obj : objs) {
+    AddObject(obj);
+  }
   return *this;
 }
 
@@ -89,7 +96,7 @@ std::shared_ptr<Component> Component::Make(std::string name,
                                            const std::deque<std::shared_ptr<Object>> &objects,
                                            ComponentPool *component_pool) {
   // Create the new component.
-  Component *ptr = new Component(std::move(name));
+  auto *ptr = new Component(std::move(name));
   auto ret = std::shared_ptr<Component>(ptr);
 
   // Add the component to the pool.
@@ -141,12 +148,12 @@ std::deque<const Component *> Component::GetAllUniqueComponents() const {
   return ret;
 }
 
-NodeArray *Graph::GetArray(Node::NodeID node_id, const std::string &array_name) const {
+std::optional<NodeArray *> Graph::GetArray(Node::NodeID node_id, const std::string &array_name) const {
   for (const auto &a : GetAll<NodeArray>()) {
     if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  CERATA_LOG(FATAL, "NodeArray " + array_name + " does not exist on Graph " + this->name());
-  // TODO(johanpel): use std::optional
+  CERATA_LOG(DEBUG, "NodeArray " + array_name + " does not exist on Graph " + this->name());
+  return std::nullopt;
 }
 
 std::optional<Node *> Graph::GetNode(const std::string &node_name) const {
@@ -213,14 +220,22 @@ std::deque<NodeArray *> Graph::GetArraysOfType(Node::NodeID id) const {
 Port *Graph::port(const std::string &port_name) const {
   return dynamic_cast<Port *>(GetNode(Node::NodeID::PORT, port_name));
 }
+
 Signal *Graph::sig(const std::string &signal_name) const {
   return dynamic_cast<Signal *>(GetNode(Node::NodeID::SIGNAL, signal_name));
 }
+
 Parameter *Graph::par(const std::string &signal_name) const {
   return dynamic_cast<Parameter *>(GetNode(Node::NodeID::PARAMETER, signal_name));
 }
+
 PortArray *Graph::porta(const std::string &port_name) const {
-  return dynamic_cast<PortArray *>(GetArray(Node::NodeID::PORT, port_name));
+  auto opa = GetArray(Node::NodeID::PORT, port_name);
+  if (opa) {
+    return dynamic_cast<PortArray *>(*opa);
+  } else {
+    return nullptr;
+  }
 }
 
 std::deque<Node *> Graph::GetImplicitNodes() const {

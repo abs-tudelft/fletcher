@@ -21,6 +21,7 @@
 #include <deque>
 
 #include "cerata/node.h"
+#include "cerata/port.h"
 #include "cerata/edge.h"
 #include "cerata/type.h"
 
@@ -53,8 +54,8 @@ class NodeArray : public Object {
   /// @brief Deep-copy the NodeArray.
   std::shared_ptr<Object> Copy() const override;
 
-  /// @brief Append a node to this array. Returns a pointer to that node.
-  Node *Append();
+  /// @brief Append a node to this array, optionally incrementing the size node. Returns a pointer to that node.
+  Node *Append(bool increment_size = true);
   /// @brief Return all nodes of this NodeArray.
   std::deque<Node *> nodes() const { return ToRawPointers(nodes_); }
   /// @brief Return element node i.
@@ -85,6 +86,17 @@ class NodeArray : public Object {
   std::deque<std::shared_ptr<Node>> nodes_;
 };
 
+class SignalArray : public NodeArray {
+ public:
+  static std::shared_ptr<NodeArray> Make(const std::string &name,
+                                         const std::shared_ptr<Type> &type,
+                                         std::shared_ptr<Node> size,
+                                         const std::shared_ptr<ClockDomain> &domain = default_domain());
+ protected:
+  SignalArray(const std::shared_ptr<Signal> &base, std::shared_ptr<Node> size) :
+      NodeArray(base->name(), Node::NodeID::SIGNAL, std::dynamic_pointer_cast<Node>(base), std::move(size)) {}
+};
+
 /**
  * @brief An array of port nodes
  */
@@ -92,9 +104,10 @@ class PortArray : public NodeArray, public Term {
  public:
   /// @brief Get a smart pointer to a new ArrayPort.
   static std::shared_ptr<PortArray> Make(const std::string &name,
-                                         std::shared_ptr<Type> type,
+                                         const std::shared_ptr<Type> &type,
                                          std::shared_ptr<Node> size,
-                                         Port::Dir dir = Port::Dir::IN);
+                                         Port::Dir dir = Port::Dir::IN,
+                                         const std::shared_ptr<ClockDomain> &domain = default_domain());
 
   /// @brief Get a smart pointer to a new ArrayPort with a base type other than the default Port.
   static std::shared_ptr<PortArray> Make(const std::shared_ptr<Port> &base_node,

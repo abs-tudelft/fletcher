@@ -68,7 +68,7 @@ std::shared_ptr<const Node> Expression::EliminateZeroOne(const Expression *exp) 
     }
     case Op::DIV: {
       if (exp->lhs_ == intl(0) && exp->rhs_ != intl(0)) return intl(0);
-      if (exp->rhs_ == intl(0)) throw std::runtime_error("Division by 0.");
+      if (exp->rhs_ == intl(0)) { CERATA_LOG(FATAL, "Division by 0."); }
       if (exp->rhs_ == intl(1)) return exp->lhs_;
       break;
     }
@@ -134,7 +134,8 @@ std::shared_ptr<Object> Expression::Copy() const {
 }
 
 std::shared_ptr<Edge> Expression::AddSource(Node *source) {
-  throw std::runtime_error("Cannot drive an expression node.");
+  CERATA_LOG(FATAL, "Cannot drive an expression node.");
+  return nullptr;
 }
 
 }  // namespace cerata

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,15 @@ Node::Node(std::string name, Node::NodeID id, std::shared_ptr<Type> type)
 
 std::string Node::ToString() const {
   return name();
+}
+
+std::deque<Edge *> Node::edges() const {
+  auto snk = sinks();
+  auto src = sources();
+  std::deque<Edge *> edges;
+  edges.insert(edges.end(), snk.begin(), snk.end());
+  edges.insert(edges.end(), src.begin(), src.end());
+  return edges;
 }
 
 // Generate node casting convenience functions.
@@ -133,48 +142,6 @@ std::shared_ptr<Edge> NormalNode::AddSource(Node *source) {
   return Connect(this, source);
 }
 
-std::string Literal::ToString() const {
-  if (storage_type_ == StorageType::BOOL) {
-    return std::to_string(Bool_val_);
-  } else if (storage_type_ == StorageType::STRING) {
-    return String_val_;
-  } else {
-    return std::to_string(Int_val_);
-  }
-}
-
-#ifndef LITERAL_IMPL_FACTORY
-
-#define LITERAL_IMPL_FACTORY(NAME, BASETYPE, IDNAME, TYPENAME)                                                       \
-  Literal::Literal(std::string name, const std::shared_ptr<Type> &type, TYPENAME value) \
-    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type), \
-      storage_type_(StorageType::IDNAME), \
-      NAME##_val_(std::move(value)) {} \
-      \
-  std::shared_ptr<Literal> Literal::Make##NAME(TYPENAME value) {  \
-  std::stringstream str;  \
-  str << #NAME << "_" << value; \
-  auto ret = std::make_shared<Literal>(str.str(), BASETYPE(), value); \
-  return ret; \
-}
-#endif
-
-LITERAL_IMPL_FACTORY(String, string, STRING, std::string)
-LITERAL_IMPL_FACTORY(Bool, boolean, BOOL, bool)
-LITERAL_IMPL_FACTORY(Int, integer, INT, int)
-
-std::shared_ptr<Object> Literal::Copy() const {
-  switch (storage_type_) {
-    default:return strl(String_val_);
-    case StorageType::BOOL:return booll(Bool_val_);
-    case StorageType::INT:return intl(Int_val_);
-  }
-}
-
-std::shared_ptr<Edge> Literal::AddSource(Node *source) {
-  throw std::runtime_error("Cannot drive a literal node.");
-}
-
 std::string ToString(Node::NodeID id) {
   switch (id) {
     case Node::NodeID::PORT:return "Port";
@@ -182,31 +149,8 @@ std::string ToString(Node::NodeID id) {
     case Node::NodeID::LITERAL:return "Literal";
     case Node::NodeID::PARAMETER:return "Parameter";
     case Node::NodeID::EXPRESSION:return "Expression";
-    default:throw std::runtime_error("Unsupported Node type");
+    default:throw std::runtime_error("Corrupted node type.");
   }
-}
-
-std::shared_ptr<Port> Port::Make(std::string name, std::shared_ptr<Type> type, Term::Dir dir) {
-  return std::make_shared<Port>(name, type, dir);
-}
-
-std::shared_ptr<Port> Port::Make(std::shared_ptr<Type> type, Term::Dir dir) {
-  return std::make_shared<Port>(type->name(), type, dir);
-}
-
-std::shared_ptr<Object> Port::Copy() const {
-  return std::make_shared<Port>(name(), type_, dir());
-}
-
-Port::Port(std::string
-           name, std::shared_ptr<Type>
-           type, Term::Dir
-           dir)
-    : NormalNode(std::move(name), Node::NodeID::PORT, std::move(type)), Term(dir) {}
-
-Port &Port::InvertDirection() {
-  dir_ = Term::Invert(dir_);
-  return *this;
 }
 
 std::shared_ptr<Object> Parameter::Copy() const {
@@ -234,21 +178,24 @@ std::optional<Node *> Parameter::GetValue() const {
   return std::nullopt;
 }
 
-Signal::Signal(std::string name, std::shared_ptr<Type> type)
-    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)) {}
+Signal::Signal(std::string name, std::shared_ptr<Type> type, std::shared_ptr<ClockDomain> domain)
+    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)), Synchronous(domain) {}
 
-std::shared_ptr<Signal> Signal::Make(std::string name, const std::shared_ptr<Type> &type) {
-  auto ret = std::make_shared<Signal>(name, type);
+std::shared_ptr<Signal> Signal::Make(std::string name,
+                                     const std::shared_ptr<Type> &type,
+                                     std::shared_ptr<ClockDomain> domain) {
+  auto ret = std::make_shared<Signal>(name, type, domain);
   return ret;
 }
 
-std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type) {
-  auto ret = std::make_shared<Signal>(type->name() + "_signal", type);
+std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type,
+                                     std::shared_ptr<ClockDomain> domain) {
+  auto ret = std::make_shared<Signal>(type->name() + "_signal", type, domain);
   return ret;
 }
 
 std::shared_ptr<Object> Signal::Copy() const {
-  auto ret = std::make_shared<Signal>(this->name(), this->type_);
+  auto ret = std::make_shared<Signal>(this->name(), this->type_, this->domain_);
   return ret;
 }
 

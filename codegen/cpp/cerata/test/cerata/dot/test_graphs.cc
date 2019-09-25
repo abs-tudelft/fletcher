@@ -43,4 +43,12 @@ TEST(Dot, Expansion) {
   dot.GenFile(*top, "Dot_Expansion.dot");
 }
 
+TEST(Dot, ArrayToArray) {
+  default_component_pool()->Clear();
+  auto top = GetArrayToArrayInternalComponent();
+  dot::Grapher dot;
+  dot.style.config = dot::Config::all();
+  dot.GenFile(*top, "Dot_ArrayToArray.dot");
+}
+
 }  // namespace cerata

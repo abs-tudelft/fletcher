@@ -29,17 +29,22 @@ namespace cerata::vhdl {
 MultiBlock Design::Generate() {
   MultiBlock ret;
 
-  // TODO(johanpel): when proper copy is in place, make a copy of the whole structure before sanitizing,
+  // TODO(johanpel): when proper copy is in place, make a deep copy of the whole structure before sanitizing,
   // in case multiple back ends are processing the graph. This currently modifies the original structure.
 
   // Resolve VHDL specific problems
   CERATA_LOG(DEBUG, "VHDL: Transforming Cerata graph to VHDL-compatible.");
+
   Resolve::ResolvePortToPort(component_.get());
   Resolve::ExpandStreams(component_.get());
 
   // Place header
+  Block h;
+  if (!notice_.empty()) {
+    h << notice_;
+  }
+
   if (!libs_.empty()) {
-    Block h;
     h << Line(libs_);
     ret << h;
   }

@@ -226,6 +226,11 @@ class MappingMatrix {
     return ret;
   }
 
+  MappingMatrix Empty() const {
+    MappingMatrix ret(height_, width_);
+    return ret;
+  }
+
   /// @return Return a human-readable representation of the matrix.
   std::string ToString() {
     std::stringstream ret;

@@ -30,6 +30,12 @@ void VHDLOutputGenerator::Generate() {
   CreateDir(root_dir_ + "/" + subdir());
   size_t num_graphs = 0;
   for (const auto &o : outputs_) {
+    // Check if output spec is valid
+    if (o.comp == nullptr) {
+      CERATA_LOG(ERROR, "OutputSpec contained no component.");
+      continue;
+    }
+
     CERATA_LOG(INFO, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
     auto vhdl_design = Design(o.comp, notice_, DEFAULT_LIBS);
 

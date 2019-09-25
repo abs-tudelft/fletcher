@@ -33,7 +33,7 @@ Type::Type(std::string name, Type::ID id)
     : Named(std::move(name)), id_(id) {}
 
 bool Type::IsAbstract() const {
-  return Is(STRING) || Is(BOOLEAN) || Is(RECORD) || Is(STREAM);
+  return Is(STRING) || Is(BOOLEAN) || Is(RECORD) || Is(STREAM) || Is(NUL);
 }
 
 bool Type::IsPhysical() const {
@@ -65,7 +65,7 @@ std::string Type::ToString(bool show_meta, bool show_mappers) const {
       break;
     case STREAM : ret = name() + ":Stm";
       break;
-    default :throw std::runtime_error("Cannot return unknown Type ID as string.");
+    default :throw std::runtime_error("Corrupted Type ID.");
   }
 
   if (show_meta || show_mappers) {
@@ -101,10 +101,10 @@ std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
 void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing) {
   Type *other = mapper->b();
   // Check if a mapper doesn't already exists
-  if (GetMapper(other)) {
+  if (GetMapper(other, false)) {
     if (!remove_existing) {
-      throw std::runtime_error(
-          "Mapper already exists to convert from " + this->ToString(true, true) + " to " + other->ToString(true, true));
+      CERATA_LOG(FATAL, "Mapper already exists to convert "
+                        "from " + this->ToString(true, true) + " to " + other->ToString(true, true));
     } else {
       RemoveMappersTo(other);
     }
@@ -128,27 +128,38 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const std::shared_ptr
   return GetMapper(other.get());
 }
 
-std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other) {
-  // Search for an explicit type mapper.
+std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other, bool generate_implicit) {
+  // Search for an existing type mapper.
   for (const auto &m : mappers_) {
     if (m->CanConvert(this, other)) {
       return m;
     }
   }
-  // Implicit type mappers maybe be generated in two cases:
 
-  // If it's exactly the same type object,
-  // TODO(johanpel): clarify previous comment
-  if (other == this) {
-    // Generate a type mapper to itself using the TypeMapper constructor.
-    return TypeMapper::Make(this);
+  if (generate_implicit) {
+    // Implicit type mappers maybe be generated in three cases:
+
+    // If it's exactly the same type object,
+    if (other == this) {
+      // Generate a type mapper to itself using the TypeMapper constructor.
+      return TypeMapper::Make(this);
+    }
+
+    // If there is an explicit function in this Type to generate a mapper:
+    if (CanGenerateMapper(*other)) {
+      // Generate, add and return the new mapper.
+      auto new_mapper = GenerateMapper(other);
+      this->AddMapper(new_mapper);
+      return new_mapper;
+    }
+
+    // Or if its an "equal" type, where each flattened type is equal.
+    if (IsEqual(*other)) {
+      // Generate an implicit type mapping.
+      return TypeMapper::MakeImplicit(this, other);
+    }
   }
 
-  // Or if its an "equal" type, where each flattened type is equal.
-  if (IsEqual(*other)) {
-    // Generate an implicit type mapping.
-    return TypeMapper::MakeImplicit(this, other);
-  }
   // There is no mapper
   return {};
 }
@@ -173,7 +184,7 @@ Vector::Vector(std::string name, std::shared_ptr<Type> element_type, const std::
   // Check if width is parameter or literal node
   if (width) {
     if (!(width.value()->IsParameter() || width.value()->IsLiteral() || width.value()->IsExpression())) {
-      throw std::runtime_error("Vector width can only be Parameter, Literal or Expression node.");
+      CERATA_LOG(FATAL, "Vector width can only be Parameter, Literal or Expression node.");
     }
   }
   width_ = width;
@@ -262,6 +273,11 @@ std::shared_ptr<Type> bit() {
   return result;
 }
 
+std::shared_ptr<Type> nul() {
+  static std::shared_ptr<Type> result = std::make_shared<Nul>("nul");
+  return result;
+}
+
 std::shared_ptr<Type> string() {
   static std::shared_ptr<Type> result = std::make_shared<String>("string");
   return result;
@@ -302,28 +318,6 @@ std::shared_ptr<Type> String::Make(std::string name) {
   return std::make_shared<String>(name);
 }
 
-Clock::Clock(std::string name, std::shared_ptr<ClockDomain> domain)
-    : Type(std::move(name), Type::CLOCK), domain(std::move(domain)) {}
-
-std::shared_ptr<Clock> Clock::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-  return std::make_shared<Clock>(name, domain);
-}
-
-std::optional<Node *> Clock::width() const {
-  return rintl(1);
-}
-
-Reset::Reset(std::string name, std::shared_ptr<ClockDomain> domain)
-    : Type(std::move(name), Type::RESET), domain(std::move(domain)) {}
-
-std::shared_ptr<Reset> Reset::Make(std::string name, std::shared_ptr<ClockDomain> domain) {
-  return std::make_shared<Reset>(name, domain);
-}
-
-std::optional<Node *> Reset::width() const {
-  return rintl(1);
-}
-
 Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
 
 std::shared_ptr<Bit> Bit::Make(std::string name) {
@@ -350,37 +344,22 @@ std::shared_ptr<RecField> NoSep(std::shared_ptr<RecField> field) {
   return field;
 }
 
-std::shared_ptr<Record> Record::Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields) {
+std::shared_ptr<Record> Record::Make(const std::string &name, const std::deque<std::shared_ptr<RecField>> &fields) {
   return std::make_shared<Record>(name, fields);
 }
 
-Record &Record::AddField(const std::shared_ptr<RecField> &field) {
-  fields_.push_back(field);
+Record &Record::AddField(const std::shared_ptr<RecField> &field, std::optional<size_t> index) {
+  if (index) {
+    auto it = fields_.begin() + *index;
+    fields_.insert(it, field);
+  } else {
+    fields_.push_back(field);
+  }
   return *this;
 }
 
 Record::Record(std::string name, std::deque<std::shared_ptr<RecField>> fields)
     : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
-
-bool Clock::IsEqual(const Type &other) const {
-  if (other.id() == Type::CLOCK) {
-    auto &oc = dynamic_cast<const Clock &>(other);
-    if (oc.domain == this->domain) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool Reset::IsEqual(const Type &other) const {
-  if (other.id() == Type::RESET) {
-    auto &other_reset = dynamic_cast<const Reset &>(other);
-    if (other_reset.domain == this->domain) {
-      return true;
-    }
-  }
-  return false;
-}
 
 bool Stream::IsEqual(const Type &other) const {
   if (other.Is(Type::STREAM)) {
@@ -400,6 +379,44 @@ void Stream::SetElementType(std::shared_ptr<Type> type) {
   mappers_ = {};
   // Set the new element type
   element_type_ = std::move(type);
+}
+
+bool Stream::CanGenerateMapper(const Type &other) const {
+  switch (other.id()) {
+    case Type::STREAM:
+      // If this and the other streams are "equal", a mapper can be generated
+      if (IsEqual(other)) {
+        return true;
+      } else {
+        // We can also map an empty stream, without mapping the elements. In practise, a back-end might emit e.g.
+        // additional ready/valid/count wires, connect those, but not any data elements.
+        if ((this->element_type() == nul()) || (dynamic_cast<const Stream &>(other).element_type() == nul())) {
+          return true;
+        }
+      }
+    default:return false;
+  }
+}
+
+std::shared_ptr<TypeMapper> Stream::GenerateMapper(Type *other) {
+  // Check if we can even do this:
+  if (!CanGenerateMapper(*other)) {
+    CERATA_LOG(FATAL, "No mapper generator known from Stream to " + other->name() + ToString(other->id()));
+  }
+  if (IsEqual(*other)) {
+    return TypeMapper::MakeImplicit(this, other);
+  } else {
+    // If this or the other stream has a no element type:
+    if ((this->element_type() == nul()) || (dynamic_cast<Stream *>(other)->element_type() == nul())) {
+      auto mapper = TypeMapper::Make(this, other);
+      // Only connect the two stream flat types.
+      auto matrix = mapper->map_matrix();
+      matrix(0, 0) = 1;
+      mapper->SetMappingMatrix(matrix);
+      return mapper;
+    }
+  }
+  return nullptr;
 }
 
 bool Record::IsEqual(const Type &other) const {
@@ -435,7 +452,5 @@ std::deque<Node *> Record::GetParameters() const {
   }
   return result;
 }
-
-ClockDomain::ClockDomain(std::string name) : Named(std::move(name)) {}
 
 }  // namespace cerata

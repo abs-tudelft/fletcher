@@ -107,26 +107,6 @@ Block Decl::Generate(const Port &port, int depth) {
   return ret;
 }
 
-Block Decl::Generate(const PortArray &port, int depth) {
-  Block ret(depth);
-  // Flatten the type of this port
-  auto flat_types = FilterForVHDL(Flatten(port.type()));
-
-  for (const auto &ft : flat_types) {
-    Line l;
-    auto port_name_prefix = port.name();
-    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
-    if (ft.invert_) {
-      l << ToString(Term::Invert(port.dir())) + " ";
-    } else {
-      l << ToString(port.dir()) + " ";
-    }
-    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(port.size()->Copy()));
-    ret << l;
-  }
-  return ret;
-}
-
 Block Decl::Generate(const Signal &sig, int depth) {
   Block ret(depth);
   // Flatten the type of this port
@@ -138,6 +118,41 @@ Block Decl::Generate(const Signal &sig, int depth) {
     auto sig_name_prefix = sig.name();
     l << "signal " + ft.name(NamePart(sig_name_prefix, true)) << " : ";
     l << GenerateTypeDecl(*ft.type_) + ";";
+    ret << l;
+  }
+  return ret;
+}
+
+Block Decl::Generate(const PortArray &porta, int depth) {
+  Block ret(depth);
+  // Flatten the type of this port
+  auto flat_types = FilterForVHDL(Flatten(porta.type()));
+
+  for (const auto &ft : flat_types) {
+    Line l;
+    auto port_name_prefix = porta.name();
+    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
+    if (ft.invert_) {
+      l << ToString(Term::Invert(porta.dir())) + " ";
+    } else {
+      l << ToString(porta.dir()) + " ";
+    }
+    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(porta.size()->Copy()));
+    ret << l;
+  }
+  return ret;
+}
+
+Block Decl::Generate(const SignalArray &siga, int depth) {
+  Block ret(depth);
+  // Flatten the type of this port
+  auto flat_types = FilterForVHDL(Flatten(siga.type()));
+
+  for (const auto &ft : flat_types) {
+    Line l;
+    auto port_name_prefix = siga.name();
+    l << "signal " + ft.name(NamePart(port_name_prefix, true)) << " : ";
+    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(siga.size()->Copy()));
     ret << l;
   }
   return ret;
