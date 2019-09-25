@@ -92,6 +92,12 @@ namespace fletchgen {
     }
     FLETCHER_LOG(INFO, "Saving simulation top-level design to: " + sim_file_path);
     sim_file = std::ofstream(sim_file_path);
+    // If the srec simulation dump path doesn't exist, it can't be canonicalized later on.
+    if (!cerata::FileExists(options->srec_sim_dump)) {
+      // Just touch the file.
+      std::ofstream srec_out(options->srec_sim_dump);
+      srec_out.close();
+    }
     fletchgen::top::GenerateSimTop(*design.mantle,
                                    {&sim_file},
                                    options->srec_out_path,
