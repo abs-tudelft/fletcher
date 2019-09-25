@@ -41,22 +41,25 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
     fletcher::RecordBatchDescription desc_out = desc_in;
     // We can only copy data from physically existing recordbatches into the SREC
     if (!desc_in.is_virtual) {
-      desc_out.buffers.clear();
-      FLETCHER_LOG(DEBUG, "RecordBatch " + desc_in.name + " buffers: \n" + desc_in.ToString());
-      for (const auto &buf : desc_in.buffers) {
-        // May the force be with us
-        auto srec_buf_address = reinterpret_cast<uint8_t *>(offset);
-        // Determine the place of the buffer in the SREC output
-        desc_out.buffers.emplace_back(srec_buf_address, buf.size_, buf.desc_, buf.level_);
+      desc_out.fields.clear();
+      for (const auto &f : desc_in.fields) {
+        desc_out.fields.emplace_back(f.type_, f.length, f.null_count);
+        FLETCHER_LOG(DEBUG, "RecordBatch " + desc_in.name + " buffers: \n" + desc_in.ToString());
+        for (const auto &buf : f.buffers) {
+          // May the force be with us
+          auto srec_buf_address = reinterpret_cast<uint8_t *>(offset);
+          // Determine the place of the buffer in the SREC output
+          desc_out.fields.back().buffers.emplace_back(srec_buf_address, buf.size_, buf.desc_, buf.level_);
 
-        // Print some debug info
-        auto hv = fletcher::HexView(offset);
-        hv.AddData(buf.raw_buffer_, buf.size_);
-        FLETCHER_LOG(DEBUG, buf.desc_ + "\n" + hv.ToString());
+          // Print some debug info
+          auto hv = fletcher::HexView(offset);
+          hv.AddData(buf.raw_buffer_, buf.size_);
+          FLETCHER_LOG(DEBUG, fletcher::ToString(buf.desc_) + "\n" + hv.ToString());
 
-        // Calculate the padded length and calculate the next offset.
-        auto padded_size = PaddedLength(buf.size_, buffer_align);
-        offset = offset + padded_size;
+          // Calculate the padded length and calculate the next offset.
+          auto padded_size = PaddedLength(buf.size_, buffer_align);
+          offset = offset + padded_size;
+        }
       }
     }
     meta_out->push_back(desc_out);
@@ -68,14 +71,16 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
   // Copy over every buffer.
   for (size_t r = 0; r < meta_in.size(); r++) {
     if (!meta_in[r].is_virtual) {
-      for (size_t b = 0; b < meta_in[r].buffers.size(); b++) {
-        auto srec_off = reinterpret_cast<size_t>(meta_out->at(r).buffers[b].raw_buffer_);
-        auto dest = srec_buffer + srec_off;
-        auto src = meta_in[r].buffers[b].raw_buffer_;
-        auto size = meta_in[r].buffers[b].size_;
-        // skip empty buffers (typically implicit validity buffers)
-        if (src != nullptr) {
-          memcpy(dest, src, size);
+      for (size_t f = 0; f < meta_in[r].fields.size(); f++) {
+        for (size_t b = 0; b < meta_in[r].fields[f].buffers.size(); b++) {
+          auto srec_off = reinterpret_cast<size_t>(meta_out->at(r).fields[f].buffers[b].raw_buffer_);
+          auto dest = srec_buffer + srec_off;
+          auto src = meta_in[r].fields[f].buffers[b].raw_buffer_;
+          auto size = meta_in[r].fields[f].buffers[b].size_;
+          // skip empty buffers (typically implicit validity buffers)
+          if (src != nullptr) {
+            memcpy(dest, src, size);
+          }
         }
       }
     }

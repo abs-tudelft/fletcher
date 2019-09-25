@@ -29,15 +29,18 @@ namespace fletchgen {
 using cerata::Port;
 using cerata::Component;
 
+constexpr char MMIO_KERNEL[] = "fletchgen_mmio_kernel";
+constexpr char MMIO_BUFFER[] = "fletchgen_mmio_buffer";
+
 /**
  * @brief The Kernel component to be implemented by the user
  */
 struct Kernel : Component {
   /// @brief Construct a new kernel.
-  explicit Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches = {});
+  explicit Kernel(std::string name, Component *nucleus);
 
   /// @brief Make a kernel component based on RecordBatch components. Returns a shared pointer to the new Kernel.
-  static std::shared_ptr<Kernel> Make(const std::string& name, const std::deque<RecordBatch *>& recordbatches = {});
+  static std::shared_ptr<Kernel> Make(const std::string &name, Component *nucleus);
 };
 
 }  // namespace fletchgen

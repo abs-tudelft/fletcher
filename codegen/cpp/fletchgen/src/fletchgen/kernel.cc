@@ -14,6 +14,7 @@
 
 #include "fletchgen/kernel.h"
 
+#include <cerata/api.h>
 #include <utility>
 #include <string>
 
@@ -23,31 +24,16 @@
 
 namespace fletchgen {
 
-Kernel::Kernel(std::string name, const std::deque<RecordBatch *> &recordbatches)
+Kernel::Kernel(std::string name, Component* nucleus)
     : Component(std::move(name)) {
 
-  // Add address width
-  AddObject(bus_addr_width());
-
   // Add clock/reset
-  AddObject(Port::Make(kernel_cr()));
+  AddObject(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
 
-  // Add MMIO
-  AddObject(MmioPort::Make(Port::Dir::IN));
-
-  // Add ports derived from arrow fields
-  for (const auto &r : recordbatches) {
-    auto field_ports = r->GetFieldPorts();
-    for (const auto &fp : field_ports) {
-      auto copied_port = std::dynamic_pointer_cast<FieldPort>(fp->Copy());
-      copied_port->InvertDirection();
-      AddObject(copied_port);
-    }
-  }
 }
 
-std::shared_ptr<Kernel> Kernel::Make(const std::string& name, const std::deque<RecordBatch *>& recordbatches) {
-  return std::make_shared<Kernel>(name, recordbatches);
+std::shared_ptr<Kernel> Kernel::Make(const std::string& name, Component* nucleus) {
+  return std::make_shared<Kernel>(name, nucleus);
 }
 
 }  // namespace fletchgen

@@ -66,7 +66,7 @@ jobs:
   - template: steps/install-cmake.yml@abs-tudelft
   - template: steps/install-python.yml@abs-tudelft
     parameters:
-      packages: ['pyarrow', 'vhdeps']
+      packages: ['pyarrow', 'vhdeps', 'vhdmmio']
   - template: steps/set-cc-cxx.yml@abs-tudelft
     parameters:
       cc: gcc-7

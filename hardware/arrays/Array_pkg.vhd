@@ -591,5 +591,28 @@ package Array_pkg is
       ctrl_count                : out std_logic_vector(COUNT_WIDTH-1 downto 0)
     );
   end component;
+  
+  component ArrayCmdCtrlMerger is
+    generic (
+      BUS_ADDR_WIDTH            : positive := 64;
+      NUM_ADDR                  : positive := 1;
+      TAG_WIDTH                 : positive := 1;
+      INDEX_WIDTH               : positive := 32
+    );
+    port (
+      nucleus_cmd_valid         : out std_logic;
+      nucleus_cmd_ready         : in  std_logic;
+      nucleus_cmd_firstIdx      : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      nucleus_cmd_lastidx       : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+      nucleus_cmd_ctrl          : out std_logic_vector(NUM_ADDR * BUS_ADDR_WIDTH-1 downto 0);
+      nucleus_cmd_tag           : out std_logic_vector(TAG_WIDTH-1 downto 0);
+      kernel_cmd_valid          : in  std_logic;
+      kernel_cmd_ready          : out std_logic;
+      kernel_cmd_firstIdx       : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      kernel_cmd_lastidx        : in  std_logic_vector(INDEX_WIDTH-1 downto 0);
+      kernel_cmd_tag            : in  std_logic_vector(TAG_WIDTH-1 downto 0);
+      ctrl                      : in  std_logic_vector(NUM_ADDR * BUS_ADDR_WIDTH-1 downto 0)
+    );
+  end component;
 
 end Array_pkg;

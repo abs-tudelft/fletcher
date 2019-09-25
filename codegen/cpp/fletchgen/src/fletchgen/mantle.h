@@ -20,9 +20,11 @@
 #include <unordered_map>
 #include <memory>
 #include <deque>
+#include <vector>
 
 #include "fletchgen/kernel.h"
 #include "fletchgen/bus.h"
+#include "fletchgen/nucleus.h"
 
 namespace fletchgen {
 
@@ -34,15 +36,18 @@ using cerata::Instance;
 class Mantle : public Component {
  public:
   /// @brief Construct a Mantle and return a shared pointer to it.
-  static std::shared_ptr<Mantle> Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set);
+  static std::shared_ptr<Mantle> Make(std::string name,
+                                      const SchemaSet &schema_set,
+                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc);
   /// @brief Construct a Mantle and return a shared pointer to it.
-  static std::shared_ptr<Mantle> Make(const std::shared_ptr<SchemaSet> &schema_set);
+  static std::shared_ptr<Mantle> Make(const SchemaSet &schema_set,
+                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc);
 
   /// @brief Return the SchemaSet on which this Mantle is based.
-  std::shared_ptr<SchemaSet> schema_set() const { return schema_set_; }
+  SchemaSet schema_set() const { return schema_set_; }
 
   /// @brief Return the kernel component of this Mantle.
-  std::shared_ptr<Kernel> kernel() const { return kernel_; }
+  std::shared_ptr<Nucleus> nucleus() const { return nucleus_; }
   /// @brief Return all RecordBatch(Reader/Writer) instances of this Mantle.
   std::deque<Instance *> recordbatch_instances() const { return recordbatch_instances_; }
   /// @brief Return all RecordBatch(Reader/Writer) components of this Mantle.
@@ -50,14 +55,16 @@ class Mantle : public Component {
 
  protected:
   /// @brief Construct a Mantle based on a SchemaSet
-  explicit Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set);
+  explicit Mantle(std::string name,
+                  SchemaSet schema_set,
+                  const std::vector<fletcher::RecordBatchDescription> &batch_desc);
 
-  /// The Kernel to be instantiated by this Mantle.
-  std::shared_ptr<Kernel> kernel_;
-  /// Shortcut to the instantiated kernel.
-  Instance *kernel_inst_;
+  /// The Nucleus to be instantiated by this Mantle.
+  std::shared_ptr<Nucleus> nucleus_;
+  /// Shortcut to the instantiated Nucleus.
+  Instance *nucleus_inst_;
   /// The schema set on which this Mantle is based.
-  std::shared_ptr<SchemaSet> schema_set_;
+  SchemaSet schema_set_;
   /// The bus arbiters instantiated by this mantle for a specific bus specification.
   std::unordered_map<BusSpec, Instance *> arbiters_;
   /// The RecordBatch instances.

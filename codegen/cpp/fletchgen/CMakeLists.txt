@@ -52,6 +52,8 @@ add_compile_unit(
     src/fletchgen/utils.cc
     src/fletchgen/recordbatch.cc
     src/fletchgen/fletchgen.cc
+    src/fletchgen/profiler.cc
+    src/fletchgen/nucleus.cc
 
     src/fletchgen/srec/recordbatch.cc
     src/fletchgen/srec/srec.cc
@@ -66,6 +68,7 @@ add_compile_unit(
     test/fletchgen/test_mantle.cc
     test/fletchgen/test_recordbatch.cc
     test/fletchgen/test_types.cc
+    test/fletchgen/test_profiler.cc
     test/fletchgen/srec/test_srec.cc
   DEPS
     cerata

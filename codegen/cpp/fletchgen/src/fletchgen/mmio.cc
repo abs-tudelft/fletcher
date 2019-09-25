@@ -14,10 +14,15 @@
 
 #include "fletchgen/mmio.h"
 
+#include <fletcher/fletcher.h>
+#include <fletcher/common.h>
 #include <cerata/api.h>
-#include <fletcher/logging.h>
 #include <memory>
 #include <string>
+#include <fstream>
+
+#include "fletchgen/basic_types.h"
+#include "fletchgen/kernel.h"
 
 namespace fletchgen {
 
@@ -81,8 +86,171 @@ std::string MmioSpec::ToMMIOTypeName() const {
   return str.str();
 }
 
-std::shared_ptr<MmioPort> MmioPort::Make(Port::Dir dir, MmioSpec spec) {
-  return std::make_shared<MmioPort>(dir, spec);
+std::shared_ptr<MmioPort> MmioPort::Make(Port::Dir dir, MmioSpec spec, const std::shared_ptr<ClockDomain> &domain) {
+  return std::make_shared<MmioPort>(dir, spec, "mmio", domain);
+}
+
+void GenerateVhdmmioYaml(const std::vector<fletcher::RecordBatchDescription> &batches) {
+  auto ofs = std::ofstream("fletchgen.mmio.yaml");
+  ofs << "metadata:\n"
+         "  name: mmio\n"
+         "  doc: Fletchgen generated MMIO configuration.\n"
+         "  \n"
+         "entity:\n"
+         "  bus-flatten:  yes\n"
+         "  bus-prefix:   mmio_\n"
+         "  clock-name:   kcd_clk\n"
+         "  reset-name:   kcd_reset\n"
+         "\n"
+         "features:\n"
+         "  bus-width:    32\n"
+         "  optimize:     yes\n"
+         "\n"
+         "interface:\n"
+         "  flatten:      yes\n"
+         "\n"
+         "fields: \n"
+         "  - address: 0\n"
+         "    register-name: control\n"
+         "    bitrange: 0\n"
+         "    name: start\n"
+         "    behavior: strobe\n"
+         "\n"
+         "  - address: 0\n"
+         "    register-name: control\n"
+         "    bitrange: 1\n"
+         "    name: stop\n"
+         "    behavior: strobe\n"
+         "\n"
+         "  - address: 0\n"
+         "    register-name: control\n"
+         "    bitrange: 2\n"
+         "    name: reset\n"
+         "    behavior: strobe\n"
+         "\n"
+         "  - address: 4\n"
+         "    register-name: status\n"
+         "    bitrange: 0\n"
+         "    name: idle\n"
+         "    behavior: status\n"
+         "\n"
+         "  - address: 4\n"
+         "    register-name: status\n"
+         "    bitrange: 1\n"
+         "    name: busy\n"
+         "    behavior: status\n"
+         "\n"
+         "  - address: 4\n"
+         "    register-name: status\n"
+         "    bitrange: 2\n"
+         "    name: done\n"
+         "    behavior: status\n"
+         "\n"
+         "  - address: 8\n"
+         "    bitrange: 63..0\n"
+         "    name: result\n"
+         "    behavior: status\n"
+         "\n";
+
+  int addr = 4 * FLETCHER_REG_SCHEMA;
+  for (const auto &r : batches) {
+    ofs << "  - address: " << addr << "\n";
+    ofs << "    doc: " << "First index to process from Arrow RecordBatch " << r.name << "\n";
+    ofs << "    name: " << r.name << "_firstidx" << "\n";
+    ofs << "    behavior: control\n";
+    addr += 4;
+    ofs << "  - address: " << addr << "\n";
+    ofs << "    doc: " << "Last index to process from Arrow RecordBatch " << r.name << "\n";
+    ofs << "    name: " << r.name << "_lastidx" << "\n";
+    ofs << "    behavior: control\n";
+    addr += 4;
+    ofs << "\n";
+  }
+
+  for (const auto &r : batches) {
+    for (const auto &f : r.fields) {
+      for (const auto &b : f.buffers) {
+        ofs << "  - address: " << addr << "\n";
+        ofs << "    doc: " << "RecordBatch " + r.name + " field " + b.desc_[0] + "\n";
+        ofs << "    name: " << r.name + "_" + fletcher::ToString(b.desc_) << "\n";
+        ofs << "    bitrange: 63..0\n";
+        ofs << "    behavior: control\n";
+        ofs << "\n";
+        addr += 8;
+      }
+    }
+  }
+}
+
+/// @brief Create a port, but rename it to the vhdmmio naming convention.
+static std::shared_ptr<Port> MmioPort(const std::string &name,
+                                      const std::shared_ptr<Type> &type,
+                                      Port::Dir dir = Port::Dir::IN) {
+  std::string suffix = std::string(dir == Port::Dir::IN ? "_write" : "") + "_data";
+  auto result = Port::Make("f_" + name + suffix, type, dir, kernel_cd());
+  return result;
+}
+
+/// @brief Create a port, but rename it to the vhdmmio naming convention, and place the intended name in metadata.
+static std::shared_ptr<Port> MmioKernelPort(const std::string &name,
+                                            const std::shared_ptr<Type> &type,
+                                            Port::Dir dir = Port::Dir::IN) {
+  auto result = MmioPort(name, type, dir);
+  result->meta[MMIO_KERNEL] = name;
+  return result;
+}
+/// @brief Create a port, but rename it to the vhdmmio naming convention, and annotate with buffer address annotation
+static std::shared_ptr<Port> MmioBufferPort(const std::string &name,
+                                            const std::shared_ptr<Type> &type,
+                                            Port::Dir dir = Port::Dir::IN) {
+  auto result = MmioPort(name, type, dir);
+  result->meta[MMIO_BUFFER] = name;
+  return result;
+}
+
+std::shared_ptr<Component> GenerateMmioComponent(const std::vector<fletcher::RecordBatchDescription> &batches,
+                                                 std::vector<std::string> *buf_port_names) {
+  auto reg32 = Vector::Make(32);
+  auto reg64 = Vector::Make(64);
+
+  auto kcd = Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd());
+
+  // Kernel ports, i.e. ports that should be exposed to the kernel
+  auto comp = Component::Make("mmio",
+                              {kcd,
+                               MmioKernelPort("start", bit(), Port::Dir::OUT),
+                               MmioKernelPort("stop", bit(), Port::Dir::OUT),
+                               MmioKernelPort("reset", bit(), Port::Dir::OUT),
+                               MmioKernelPort("idle", bit()),
+                               MmioKernelPort("busy", bit()),
+                               MmioKernelPort("done", bit()),
+                               MmioKernelPort("result", reg64)});
+
+  for (const auto &b : batches) {
+    comp->AddObject(MmioKernelPort(b.name + "_firstidx", reg32, Port::Dir::OUT));
+    comp->AddObject(MmioKernelPort(b.name + "_lastidx", reg32, Port::Dir::OUT));
+  }
+
+  for (const auto &r : batches) {
+    for (const auto &f : r.fields) {
+      for (const auto &b : f.buffers) {
+        auto buffer_port_name = r.name + "_" + fletcher::ToString(b.desc_);
+        comp->AddObject(MmioBufferPort(buffer_port_name, reg64, Port::Dir::OUT));
+        buf_port_names->push_back(buffer_port_name);
+      }
+    }
+  }
+
+  auto bus = Port::Make("mmio", mmio(), Port::Dir::IN, kernel_cd());
+
+  comp->AddObject(bus);
+
+  // This will be a primitive component generated by VHDMMIO
+  comp->SetMeta(cerata::vhdl::metakeys::PRIMITIVE, "true");
+  comp->SetMeta(cerata::vhdl::metakeys::LIBRARY, "work");
+  comp->SetMeta(cerata::vhdl::metakeys::PACKAGE, "mmio_pkg");
+
+  return comp;
 }
 
 }  // namespace fletchgen

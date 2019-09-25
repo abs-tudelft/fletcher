@@ -35,9 +35,10 @@ std::shared_ptr<Node> tag_width(const arrow::Field &field);
 
 // Default streams of ArrayReaders/ArrayWriters
 
-/// @brief Fletcher command stream
-std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width = intl(1),
-                          const std::shared_ptr<Node> &tag_width = intl(1));
+/// @brief Return a Fletcher command stream type.
+std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &tag_width,
+                          const std::optional<std::shared_ptr<Node>> &ctrl_width = std::nullopt);
+
 /// @brief Fletcher unlock stream
 std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl(1));
 /// @brief Fletcher read data
@@ -105,8 +106,8 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mo
  * @param tag_width   Command/unlock tag width parameter.
  * @return            A unique pointer holding the Array(Reader/Writer) instance.
  */
-std::unique_ptr<Instance> ArrayInstance(const std::string& name,
-    fletcher::Mode mode = fletcher::Mode::READ,
+std::unique_ptr<Instance> ArrayInstance(const std::string &name,
+                                        fletcher::Mode mode = fletcher::Mode::READ,
                                         const std::shared_ptr<Node> &data_width = intl(1),
                                         const std::shared_ptr<Node> &ctrl_width = intl(1),
                                         const std::shared_ptr<Node> &tag_width = intl(1));

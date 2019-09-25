@@ -34,7 +34,7 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
   str << "    mmio_write("
       << std::dec << idx << ", "
       << "X\"" << std::setfill('0') << std::setw(8) << std::hex << value << "\","
-      << " mmio_source, mmio_sink);";
+      << " mmio_source, mmio_sink, bcd_clk, bcd_reset);";
   if (!comment.empty()) {
     str << " -- " << comment;
   }
@@ -42,7 +42,7 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
   return str.str();
 }
 
-static std::string CanonicalizePath(const std::string& path) {
+static std::string CanonicalizePath(const std::string &path) {
   std::string result;
   if (!path.empty()) {
     char *p = realpath(path.c_str(), NULL);
@@ -67,8 +67,8 @@ std::string GenerateSimTop(const Mantle &mantle,
   constexpr int ndefault = FLETCHER_REG_SCHEMA;
 
   // Obtain read/write schemas.
-  auto read_schemas = mantle.schema_set()->read_schemas();
-  auto write_schemas = mantle.schema_set()->write_schemas();
+  auto read_schemas = mantle.schema_set().read_schemas();
+  auto write_schemas = mantle.schema_set().write_schemas();
 
   // Total number of RecordBatches
   size_t num_rbs = read_schemas.size() + write_schemas.size();
@@ -98,15 +98,17 @@ std::string GenerateSimTop(const Mantle &mantle,
   size_t buffer_offset = 0;
   size_t rb_offset = 0;
   for (const auto &rb : recordbatches) {
-    for (unsigned int i = 0; i < rb.buffers.size(); i++) {
-      // Get the low and high part of the address
-      auto addr = reinterpret_cast<uint64_t>(rb.buffers[i].raw_buffer_);
-      auto addr_lo = (uint32_t) (addr & 0xFFFFFFFF);
-      auto addr_hi = (uint32_t) (addr >> 32u);
-      uint32_t buffer_idx = 2 * (buffer_offset) + (ndefault + 2 * num_rbs);
-      buffer_meta << GenMMIOWrite(buffer_idx, addr_lo, rb.name + " " + rb.buffers[i].desc_);
-      buffer_meta << GenMMIOWrite(buffer_idx + 1, addr_hi);
-      buffer_offset++;
+    for (const auto &f : rb.fields) {
+      for (const auto &b : f.buffers) {
+        // Get the low and high part of the address
+        auto addr = reinterpret_cast<uint64_t>(b.raw_buffer_);
+        auto addr_lo = (uint32_t) (addr & 0xFFFFFFFF);
+        auto addr_hi = (uint32_t) (addr >> 32u);
+        uint32_t buffer_idx = 2 * (buffer_offset) + (ndefault + 2 * num_rbs);
+        buffer_meta << GenMMIOWrite(buffer_idx, addr_lo, rb.name + " " + fletcher::ToString(b.desc_));
+        buffer_meta << GenMMIOWrite(buffer_idx + 1, addr_hi);
+        buffer_offset++;
+      }
     }
     uint32_t rb_idx = 2 * (rb_offset) + ndefault;
     rb_meta << GenMMIOWrite(rb_idx, 0, rb.name + " first index");
@@ -117,7 +119,7 @@ std::string GenerateSimTop(const Mantle &mantle,
   t.Replace("SREC_FIRSTLAST_INDICES", rb_meta.str());
 
   // Read/write specific memory models
-  if (mantle.schema_set()->RequiresReading()) {
+  if (mantle.schema_set().RequiresReading()) {
     auto abs_path = CanonicalizePath(read_srec_path);
     t.Replace("BUS_READ_SLAVE_MOCK",
               "  rmem_inst: BusReadSlaveMock\n"
@@ -170,7 +172,7 @@ std::string GenerateSimTop(const Mantle &mantle,
     t.Replace("MST_RREQ_DECLARE", "");
     t.Replace("MST_RREQ_INSTANTIATE", "");
   }
-  if (mantle.schema_set()->RequiresWriting()) {
+  if (mantle.schema_set().RequiresWriting()) {
 
     t.Replace("BUS_WRITE_SLAVE_MOCK",
               "  wmem_inst: BusWriteSlaveMock\n"

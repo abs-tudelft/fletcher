@@ -20,6 +20,8 @@
 #include "fletcher/common.h"
 #include "fletchgen/design.h"
 #include "fletchgen/recordbatch.h"
+#include "fletchgen/profiler.h"
+#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 
@@ -38,29 +40,31 @@ static std::optional<std::shared_ptr<arrow::RecordBatch>> GetRecordBatchWithName
   return std::nullopt;
 }
 
-fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options> &opts) {
-  Design ret;
-  ret.options = opts;
-
+void Design::AnalyzeSchemas() {
   // Attempt to create a SchemaSet from all schemas that can be detected in the options.
   FLETCHER_LOG(INFO, "Creating SchemaSet.");
-  ret.schema_set = SchemaSet::Make(ret.options->kernel_name);
+  schema_set = SchemaSet::Make(options->kernel_name);
   // Add all schemas from the list of schema files
-  for (const auto &arrow_schema : ret.options->schemas) {
-    ret.schema_set->AppendSchema(arrow_schema);
+  for (const auto &arrow_schema : options->schemas) {
+    schema_set->AppendSchema(arrow_schema);
   }
   // Add all schemas from the recordbatches and add all recordbatches.
-  for (const auto &recordbatch : ret.options->recordbatches) {
-    ret.schema_set->AppendSchema(recordbatch->schema());
+  for (const auto &recordbatch : options->recordbatches) {
+    schema_set->AppendSchema(recordbatch->schema());
   }
 
-  ret.schema_set->Sort();
+  // Sort the schema set according to the recordbatch ordering specification.
+  // Important for the control flow through MMIO / buffer addresses.
+  // First we sort recordbatches by name, then by mode.
+  schema_set->Sort();
+}
 
+void Design::AnalyzeRecordBatches() {
   // Now that we have every Schema, for every Schema, figure out if there is a RecordBatch in the input options.
   // If there is, add a description of the RecordBatch to this design.
   // If there isn't, create a virtual RecordBatch based on the schema.
-  for (const auto &fletcher_schema : ret.schema_set->schemas()) {
-    auto rb = GetRecordBatchWithName(ret.options->recordbatches, fletcher_schema->name());
+  for (const auto &fletcher_schema : schema_set->schemas()) {
+    auto rb = GetRecordBatchWithName(options->recordbatches, fletcher_schema->name());
     fletcher::RecordBatchDescription rbd;
     if (rb) {
       fletcher::RecordBatchAnalyzer rba(&rbd);
@@ -69,29 +73,56 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
       fletcher::SchemaAnalyzer sa(&rbd);
       sa.Analyze(*fletcher_schema->arrow_schema());
     }
-    ret.batch_desc.push_back(rbd);
+    batch_desc.push_back(rbd);
   }
+}
+
+fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options> &opts) {
+  Design ret;
+  ret.options = opts;
+
+  // Analyze schemas and recordbatches to get schema_set and batch_desc
+  ret.AnalyzeSchemas();
+  ret.AnalyzeRecordBatches();
 
   // Generate the hardware structure through Mantle and extract all subcomponents.
   FLETCHER_LOG(INFO, "Generating Mantle...");
-  ret.mantle = Mantle::Make(ret.schema_set);
-  ret.kernel = ret.mantle->kernel();
+  ret.mantle = Mantle::Make(*ret.schema_set, ret.batch_desc);
+  ret.kernel = ret.mantle->nucleus()->kernel;
+  ret.nucleus = ret.mantle->nucleus();
   for (const auto &recordbatch_component : ret.mantle->recordbatch_components()) {
     ret.recordbatches.push_back(recordbatch_component);
   }
+
+  // Generate a Yaml file for vhdmmio based on the recordbatch description
+  GenerateVhdmmioYaml(ret.batch_desc);
+
+  // ret.mmio = GenerateVhdmmioComponent(ret.batch_desc);
+  // ret.mantle->AddInstanceOf(ret.mmio.get());
+
+  // TODO(johanpel): fix this:
+  system("vhdmmio -V vhdl -H -P vhdl");
+
+  // EnableStreamProfiling(ret.mantle.get());
 
   return ret;
 }
 
 std::deque<cerata::OutputSpec> Design::GetOutputSpec() {
   std::deque<OutputSpec> result;
-  OutputSpec omantle, okernel;
+  OutputSpec omantle, okernel, onucleus;
 
   // Mantle
   omantle.comp = mantle;
   // Always overwrite mantle, as users should not modify.
   omantle.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
   result.push_back(omantle);
+
+  // Nucleus
+  onucleus.comp = nucleus;
+  // Check the force flag if kernel should be overwritten
+  onucleus.meta[cerata::vhdl::metakeys::OVERWRITE_FILE] = "true";
+  result.push_back(onucleus);
 
   // Kernel
   okernel.comp = kernel;

@@ -25,7 +25,6 @@ namespace fletchgen::top {
 using cerata::vhdl::Template;
 
 std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream *> &outputs) {
-
   // Template for AXI top level
   auto t = Template::FromString(axi_source);
 
@@ -45,7 +44,7 @@ std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream 
   t.Replace("FLETCHER_WRAPPER_NAME", mantle.name());
   t.Replace("FLETCHER_WRAPPER_INST_NAME", mantle.name() + "_inst");
 
-  if (mantle.schema_set()->RequiresReading()) {
+  if (mantle.schema_set().RequiresReading()) {
     t.Replace("MST_RREQ_DECLARE",
               "      rd_mst_rreq_valid         : out std_logic;\n"
               "      rd_mst_rreq_ready         : in  std_logic;\n"
@@ -113,7 +112,7 @@ std::string GenerateAXITop(const Mantle &mantle, const std::vector<std::ostream 
     t.Replace("AXI_READ_CONVERTER", "");
   }
 
-  if (mantle.schema_set()->RequiresWriting()) {
+  if (mantle.schema_set().RequiresWriting()) {
     t.Replace("MST_WREQ_DECLARE",
               "      wr_mst_wreq_valid         : out std_logic;\n"
               "      wr_mst_wreq_ready         : in std_logic;\n"

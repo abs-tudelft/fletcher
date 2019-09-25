@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <arrow/api.h>
 #include <cerata/api.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -22,9 +21,6 @@
 #include "fletchgen/array.h"
 #include "fletchgen/recordbatch.h"
 
-
-#include "fletchgen/test_utils.h"
-
 namespace fletchgen {
 
 TEST(Types, TypeMapper) {
@@ -32,7 +28,7 @@ TEST(Types, TypeMapper) {
   auto schema = fletcher::GetPrimReadSchema();
   auto fletcher_schema = FletcherSchema::Make(schema);
 
-  auto arrow_port = FieldPort::MakeArrowPort(*fletcher_schema, schema->field(0), fletcher_schema->mode(), true);
+  auto arrow_port = FieldPort::MakeArrowPort(fletcher_schema, schema->field(0), fletcher_schema->mode(), true);
   auto arrow_type = arrow_port->type();
   auto top = Component::Make("top", {arrow_port});
 

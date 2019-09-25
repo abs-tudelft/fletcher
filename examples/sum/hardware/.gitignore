@@ -9,3 +9,5 @@ work/*
 vsim.do
 transcript
 *.cf
+vhdmmio-doc/*
+fletchgen.mmio.yaml

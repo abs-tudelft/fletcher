@@ -14,10 +14,12 @@
 
 #pragma once
 
+#include <fletcher/arrow-utils.h>
 #include <cerata/api.h>
 #include <string>
 #include <memory>
 #include <utility>
+#include <vector>
 
 namespace fletchgen {
 
@@ -30,6 +32,7 @@ using cerata::Parameter;
 using cerata::PortArray;
 using cerata::integer;
 using cerata::Type;
+using cerata::ClockDomain;
 
 /// @brief MMIO bus specification
 struct MmioSpec {
@@ -38,9 +41,9 @@ struct MmioSpec {
   /// The MMIO bus address width.
   size_t addr_width = 32;
   /// @brief Return a human-readable representation of this MmmioSpec.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
   /// @brief Return a Cerata type name based on this MmioSpec.
-  std::string ToMMIOTypeName() const;
+  [[nodiscard]] std::string ToMMIOTypeName() const;
 };
 
 /// @brief MMIO type
@@ -52,8 +55,11 @@ struct MmioPort : public Port {
   MmioSpec spec_;
 
   /// @brief Construct a new MmioPort.
-  MmioPort(Port::Dir dir, MmioSpec spec, std::string name = "mmio") :
-      Port(std::move(name), mmio(spec), dir), spec_(spec) {}
+  MmioPort(Port::Dir dir,
+           MmioSpec spec,
+           std::string name = "mmio",
+           std::shared_ptr<ClockDomain> domain = cerata::default_domain()) :
+      Port(std::move(name), mmio(spec), dir, std::move(domain)), spec_(spec) {}
 
   /**
    * @brief Make a new MmioPort, returning a shared pointer to it.
@@ -61,7 +67,28 @@ struct MmioPort : public Port {
    * @param spec  The specification of the port.
    * @return      A shared pointer to the new port.
    */
-  static std::shared_ptr<MmioPort> Make(Port::Dir dir, MmioSpec spec = MmioSpec());
+  static std::shared_ptr<MmioPort> Make(Port::Dir dir,
+                                        MmioSpec spec = MmioSpec(),
+                                        const std::shared_ptr<ClockDomain> &domain = cerata::default_domain());
 };
+
+/**
+ * @brief Generates a YAML file for the vhdmmio tool based on required the RecordBatches in the design.
+ * @param batches The RecordBatchDescriptions.
+ */
+void GenerateVhdmmioYaml(const std::vector<fletcher::RecordBatchDescription> &batches);
+
+/**
+ * @brief Generate the MMIO component for the nucleus.
+ *
+ * Must generate the component in such a way that GenerateVhdmmioYaml in combination with the vhdmmio tool creates
+ * an identical component interface.
+ *
+ * @param[in]   batches         The RecordBatchDescriptions of the recordbatches in the design.
+ * @param[out]  buf_port_names  The resulting port names of all buffers.
+ * @return A component.
+ */
+std::shared_ptr<Component> GenerateMmioComponent(const std::vector<fletcher::RecordBatchDescription> &batches,
+                                                 std::vector<std::string> *buf_port_names);
 
 }  // namespace fletchgen
