@@ -160,7 +160,8 @@ architecture Behavioral of ArrayWriterListPrim is
   -- performance. Therefore, it is not a good idea to set this to false, unless
   -- there is a very good reason to do so (e.g. a kernel already takes this
   -- sort of last signaling into consideration).
-  constant LAST_FROM_LENGTH     : boolean := parse_param(CFG, "last_from_length", true);
+  -- last signaling.
+  constant LAST_FROM_LENGTH     : boolean := parse_param(CFG, "last_from_length", false);
 
   -- Signals for offsets buffer writer.
   signal a_unlock_valid         : std_logic;
