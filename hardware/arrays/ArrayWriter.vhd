@@ -150,6 +150,7 @@ begin
 
   -- pragma translate off
   process is begin
+    println("WARNING: ArrayWriter support is in early, experimental stage.");
     println("ArrayWriter");
     println("--------------------------------------------------------------");
     println("Config            : " & CFG);

@@ -49,9 +49,20 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fletcher_sche
     if (fletcher::MustIgnore(*field)) {
       FLETCHER_LOG(DEBUG, "Ignoring field " + field->name());
     } else {
-      FLETCHER_LOG(DEBUG, "Instantiating Array " << (fletcher_schema->mode() == Mode::READ ? "Reader" : "Writer")
-                                                 << " for schema: " << fletcher_schema->name()
-                                                 << " : " << field->name());
+      FLETCHER_LOG(DEBUG, "Instantiating Array" << (fletcher_schema.mode() == Mode::READ ? "Reader" : "Writer")
+                                                << " for schema: " << fletcher_schema.name()
+                                                << " : " << field->name());
+      // Generate a warning for Writers as they are still experimental.
+      if (fletcher_schema.mode() == Mode::WRITE) {
+        FLETCHER_LOG(WARNING, "ArrayWriter implementation is highly experimental. Use with caution! Features that are "
+                              "not implemented include:\n"
+                              "  - dvalid bit is ignored (so you cannot supply handshakes on the values stream for "
+                              "empty lists or use empty handshakes to close streams)\n"
+                              "  - lists of primitives (e.g. strings) values stream last signal must signal the last "
+                              "value for all lists, not single lists in the Arrow Array).\n"
+                              "  - clock domain crossings.");
+      }
+
       // Convert to and add an Arrow port. We must invert it because it is an output of the RecordBatch.
       auto kernel_arrow_port = FieldPort::MakeArrowPort(fletcher_schema,
                                                         field,
