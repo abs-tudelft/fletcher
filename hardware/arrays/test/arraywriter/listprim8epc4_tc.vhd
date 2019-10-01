@@ -40,7 +40,7 @@ architecture tb of listprim8epc4_tc is
   constant BUS_BURST_STEP_LEN : natural := 1;
   constant BUS_BURST_MAX_LEN  : natural := 16;
 
-  constant CFG                : string  := "listprim(8;lepc=4,epc=4,last_from_length=true)";
+  constant CFG                : string  := "listprim(8;lepc=4,epc=4,last_from_length=1)";
   constant CMD_TAG_ENABLE     : boolean := false;
   constant CMD_TAG_WIDTH      : natural := 1;
 
