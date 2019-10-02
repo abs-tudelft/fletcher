@@ -28,7 +28,7 @@ Kernel::Kernel(std::string name, Component* nucleus)
     : Component(std::move(name)) {
 
   // Add clock/reset
-  AddObject(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
+  Add(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
 
 }
 

@@ -39,7 +39,7 @@ ArrayCmdCtrlMerger::ArrayCmdCtrlMerger() : Component("ArrayCmdCtrlMerger") {
   auto nucleus_side_cmd = Port::Make("nucleus_cmd", cmd(tw, cw), Port::Dir::OUT, kernel_cd());
   auto kernel_side_cmd = Port::Make("kernel_cmd", cmd(tw), Port::Dir::IN, kernel_cd());
   auto ctrl = PortArray::Make("ctrl", reg64, cw, Port::Dir::IN, kernel_cd());
-  AddObjects({baw, idw, tw, nucleus_side_cmd, kernel_side_cmd, ctrl});
+  Add({baw, idw, tw, nucleus_side_cmd, kernel_side_cmd, ctrl});
 }
 
 std::unique_ptr<Instance> ArrayCmdCtrlMergerInstance(const std::string &name) {
@@ -66,15 +66,16 @@ void CopyFieldPorts(Component *nucleus, Component *kernel, const RecordBatch &re
     // Create a copy and invert for the Nucleus
     auto copied_port = std::dynamic_pointer_cast<FieldPort>(fp->Copy());
     copied_port->InvertDirection();
-    nucleus->AddObject(copied_port);
+    nucleus->Add(copied_port);
     // Create and add another copy for the kernel component
-    kernel->AddObject(copied_port->Copy());
+    kernel->Add(copied_port->Copy());
   }
 }
 
 Nucleus::Nucleus(const std::string &name,
                  const std::deque<RecordBatch *> &recordbatches,
-                 const std::vector<fletcher::RecordBatchDescription> &batch_desc)
+                 const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                 const std::vector<MmioReg>& custom_regs)
     : Component("Nucleus_" + name) {
 
   // TODO(johanpel): move this sanity check to where it should be
@@ -83,22 +84,22 @@ Nucleus::Nucleus(const std::string &name,
   }
 
   // Add address width
-  AddObject(bus_addr_width());
+  Add(bus_addr_width());
 
   // Add clock/reset
   auto kcd = Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd());
-  AddObject(kcd);
+  Add(kcd);
 
   // Create kernel
   kernel = Kernel::Make(name, this);
 
   // Add MMIO port
   auto mmio = MmioPort::Make(Port::Dir::IN);
-  AddObject(mmio);
+  Add(mmio);
 
   // Add VHDMMIO component
   std::vector<std::string> vhdmmio_buf_port_names;
-  auto vhdmmio = GenerateMmioComponent(batch_desc, &vhdmmio_buf_port_names);
+  auto vhdmmio = GenerateMmioComponent(batch_desc, custom_regs, &vhdmmio_buf_port_names);
   auto vhdmmio_inst = AddInstanceOf(vhdmmio.get());
 
   vhdmmio_inst->port("mmio") <<= mmio;
@@ -111,7 +112,7 @@ Nucleus::Nucleus(const std::string &name,
       auto kernel_mmio_port = std::dynamic_pointer_cast<Port>(p->Copy());
       kernel_mmio_port->InvertDirection();
       kernel_mmio_port->SetName(name_intended);
-      kernel->AddObject(kernel_mmio_port);
+      kernel->Add(kernel_mmio_port);
     }
   }
 
@@ -134,12 +135,12 @@ Nucleus::Nucleus(const std::string &name,
       // expose all command stream fields to the nucleus user.
       auto nucleus_cmd = std::dynamic_pointer_cast<FieldPort>(cp->Copy());
       nucleus_cmd->InvertDirection();
-      AddObject(nucleus_cmd);
+      Add(nucleus_cmd);
 
       // Next, make an abstracted version of the command stream for the kernel user.
       auto kernel_cmd = FieldPort::MakeCommandPort(cp->fletcher_schema_, cp->field_, false, kernel_cd());
       kernel_cmd->InvertDirection();
-      kernel->AddObject(kernel_cmd);
+      kernel->Add(kernel_cmd);
 
       // Now, create a dirty little ACCM to solve this issue.
       // This is dirty in the sense that the addresses are actually not streams, so there is no synchronization.
@@ -222,8 +223,9 @@ Nucleus::Nucleus(const std::string &name,
 
 std::shared_ptr<Nucleus> Nucleus::Make(const std::string &name,
                                        const std::deque<RecordBatch *> &recordbatches,
-                                       const std::vector<fletcher::RecordBatchDescription> &batch_desc) {
-  return std::make_shared<Nucleus>(name, recordbatches, batch_desc);
+                                       const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                       const std::vector<MmioReg>& custom_regs) {
+  return std::make_shared<Nucleus>(name, recordbatches, batch_desc, custom_regs);
 }
 
 }  // namespace fletchgen

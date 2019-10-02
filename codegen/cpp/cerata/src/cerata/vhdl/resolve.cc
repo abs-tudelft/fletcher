@@ -101,7 +101,7 @@ static void InsertSignalArray(Component *comp, Edge *edge, std::deque<Object *> 
   auto sa = SignalArray::Make(sig_name, port->type()->shared_from_this(), size_node, port->domain());
 
   // Add the SignalArray to the component.
-  comp->AddObject(sa);
+  comp->Add(sa);
 
   // Now for all nodes on the PortArray.
   for (size_t n = 0; n < pa->num_nodes(); n++) {

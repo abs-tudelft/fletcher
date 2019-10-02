@@ -35,9 +35,9 @@ RecordBatch::RecordBatch(const std::shared_ptr<FletcherSchema> &fletcher_schema)
   // Get Arrow Schema
   auto as = fletcher_schema_->arrow_schema();
   // Add default port nodes
-  AddObject(Port::Make("bcd", cr(), Port::Dir::IN, bus_cd()));
-  AddObject(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
-  AddObject(bus_addr_width());
+  Add(Port::Make("bcd", cr(), Port::Dir::IN, bus_cd()));
+  Add(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
+  Add(bus_addr_width());
   // Add and connect all array readers and resulting ports
   AddArrays(fletcher_schema);
 }
@@ -49,11 +49,11 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fletcher_sche
     if (fletcher::MustIgnore(*field)) {
       FLETCHER_LOG(DEBUG, "Ignoring field " + field->name());
     } else {
-      FLETCHER_LOG(DEBUG, "Instantiating Array" << (fletcher_schema.mode() == Mode::READ ? "Reader" : "Writer")
-                                                << " for schema: " << fletcher_schema.name()
+      FLETCHER_LOG(DEBUG, "Instantiating Array" << (fletcher_schema->mode() == Mode::READ ? "Reader" : "Writer")
+                                                << " for schema: " << fletcher_schema->name()
                                                 << " : " << field->name());
       // Generate a warning for Writers as they are still experimental.
-      if (fletcher_schema.mode() == Mode::WRITE) {
+      if (fletcher_schema->mode() == Mode::WRITE) {
         FLETCHER_LOG(WARNING, "ArrayWriter implementation is highly experimental. Use with caution! Features that are "
                               "not implemented include:\n"
                               "  - dvalid bit is ignored (so you cannot supply handshakes on the values stream for "
@@ -70,15 +70,15 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fletcher_sche
                                                         true,
                                                         kernel_cd());
       auto kernel_arrow_type = kernel_arrow_port->type();
-      AddObject(kernel_arrow_port);
+      Add(kernel_arrow_port);
 
       // Add a command port for the ArrayReader/Writer
       auto command_port = FieldPort::MakeCommandPort(fletcher_schema, field, true, kernel_cd());
-      AddObject(command_port);
+      Add(command_port);
 
       // Add an unlock port for the ArrayReader/Writer
       auto unlock_port = FieldPort::MakeUnlockPort(fletcher_schema, field, kernel_cd());
-      AddObject(unlock_port);
+      Add(unlock_port);
 
       // Instantiate an ArrayReader or Writer
       auto array_inst_unique = ArrayInstance(field->name() + "_inst",
@@ -127,7 +127,7 @@ void RecordBatch::AddArrays(const std::shared_ptr<FletcherSchema> &fletcher_sche
       // Give the new bus port a unique name
       // TODO(johanpel): move the bus renaming to the Mantle level
       bus->SetName(fletcher_schema->name() + "_" + field->name() + "_" + bus->name());
-      AddObject(bus);  // Add them to the RecordBatch
+      Add(bus);  // Add them to the RecordBatch
       bus_ports_.push_back(bus);  // Remember the port
       bus <<= array_inst->port("bus");  // Connect them to the ArrayReader/Writer
     }

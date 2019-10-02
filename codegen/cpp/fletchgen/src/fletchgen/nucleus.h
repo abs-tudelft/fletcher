@@ -26,6 +26,7 @@
 #include "fletchgen/recordbatch.h"
 #include "fletchgen/kernel.h"
 #include "fletchgen/array.h"
+#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 
@@ -45,12 +46,14 @@ struct Nucleus : Component {
   /// @brief Construct a new Nucleus.
   explicit Nucleus(const std::string &name,
                    const std::deque<RecordBatch *> &recordbatches,
-                   const std::vector<fletcher::RecordBatchDescription> &batch_desc);
+                   const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                   const std::vector<MmioReg>& custom_regs);
 
   /// @brief Make an Nucleus component based on RecordBatch components. Returns a shared pointer to the new Nucleus.
   static std::shared_ptr<Nucleus> Make(const std::string &name,
                                        const std::deque<RecordBatch *> &recordbatches,
-                                       const std::vector<fletcher::RecordBatchDescription> &batch_desc);
+                                       const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                       const std::vector<MmioReg>& custom_regs);
 
   std::shared_ptr<Kernel> kernel;
   Instance *kernel_inst;

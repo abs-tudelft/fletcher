@@ -207,7 +207,7 @@ std::shared_ptr<Signal> insert(Edge *edge, const std::string &name_prefix, std::
 
   // Share ownership of the new signal with the potential new_owner
   if (new_owner) {
-    (*new_owner)->AddObject(signal);
+    (*new_owner)->Add(signal);
   }
 
   // Remove the original edge from the source and destination node

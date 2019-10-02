@@ -48,6 +48,9 @@ struct Options {
   /// Name of the Kernel
   std::string kernel_name = "Kernel";
 
+  /// Custom 32-bit registers
+  std::vector<std::string> regs = {};
+
   /// Whether to generate an AXI top level.
   bool axi_top = false;
   /// Whether to simulate an AXI top level.

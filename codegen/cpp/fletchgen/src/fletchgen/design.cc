@@ -16,11 +16,12 @@
 
 #include <string>
 #include <deque>
+#include <regex>
+#include <algorithm>
 
 #include "fletcher/common.h"
 #include "fletchgen/design.h"
 #include "fletchgen/recordbatch.h"
-#include "fletchgen/profiler.h"
 #include "fletchgen/mmio.h"
 
 namespace fletchgen {
@@ -77,6 +78,34 @@ void Design::AnalyzeRecordBatches() {
   }
 }
 
+static std::vector<MmioReg> ParseRegs(const std::vector<std::string> &regs) {
+  std::vector<MmioReg> result;
+
+  for (const auto &reg_str : regs) {
+    std::regex expr(R"([c|s][\:][\d]+[\:][\w]+)");
+    if (std::regex_match(reg_str, expr)) {
+      MmioReg reg;
+      auto w_start = reg_str.find(':') + 1;
+      auto i_start = reg_str.find(':', w_start) + 1;
+      auto width_str = reg_str.substr(w_start, i_start - w_start);
+      reg.name = reg_str.substr(i_start);
+      reg.width = static_cast<uint32_t>(std::strtoul(width_str.c_str(), nullptr, 10));
+      switch (reg_str[0]) {
+        case 'c':reg.behavior = MmioReg::Behavior::CONTROL;
+          break;
+        case 's':reg.behavior = MmioReg::Behavior::CONTROL;
+          break;
+        default:FLETCHER_LOG(FATAL, "Register argument behavior character invalid for " + reg.name);
+      }
+      // Calculate how much address space this register needs by rounding up to AXI4-lite words,
+      // that are byte addressed.
+      reg.addr_space_used = 4 * (reg.width / 32 + (reg.width % 32 != 0));
+      result.push_back(reg);
+    }
+  }
+  return result;
+}
+
 fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options> &opts) {
   Design ret;
   ret.options = opts;
@@ -87,7 +116,8 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
 
   // Generate the hardware structure through Mantle and extract all subcomponents.
   FLETCHER_LOG(INFO, "Generating Mantle...");
-  ret.mantle = Mantle::Make(*ret.schema_set, ret.batch_desc);
+  ret.custom_regs = ParseRegs(opts->regs);
+  ret.mantle = Mantle::Make(*ret.schema_set, ret.batch_desc, ret.custom_regs);
   ret.kernel = ret.mantle->nucleus()->kernel;
   ret.nucleus = ret.mantle->nucleus();
   for (const auto &recordbatch_component : ret.mantle->recordbatch_components()) {
@@ -95,15 +125,14 @@ fletchgen::Design fletchgen::Design::GenerateFrom(const std::shared_ptr<Options>
   }
 
   // Generate a Yaml file for vhdmmio based on the recordbatch description
-  GenerateVhdmmioYaml(ret.batch_desc);
+  GenerateVhdmmioYaml(ret.batch_desc, ret.custom_regs);
 
-  // ret.mmio = GenerateVhdmmioComponent(ret.batch_desc);
-  // ret.mantle->AddInstanceOf(ret.mmio.get());
-
-  // TODO(johanpel): fix this:
-  system("vhdmmio -V vhdl -H -P vhdl");
-
-  // EnableStreamProfiling(ret.mantle.get());
+  // TODO(johanpel): run vhdmmio in a nicer way
+  // Run vhdmmio
+  auto vhdmmio_result = system("vhdmmio -V vhdl -H -P vhdl");
+  if (vhdmmio_result != 0) {
+    FLETCHER_LOG(FATAL, "vhdmmio exited with status " << vhdmmio_result);
+  }
 
   return ret;
 }
