@@ -39,7 +39,7 @@ static std::shared_ptr<Node> IncrementNode(const Node &node) {
     std::shared_ptr<Node> new_param = std::dynamic_pointer_cast<Node>(param.Copy());
     // Figure out who should own the copy.
     if (param.parent()) {
-      param.parent().value()->AddObject(new_param);
+      param.parent().value()->Add(new_param);
     } else {
       // If theres no parent, place it in the default node pool.
       // TODO(johanpel): this is a bit ugly.
@@ -70,7 +70,7 @@ void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
 void NodeArray::IncrementSize() {
   if (size_ != nullptr) {
     if (parent_) {
-      parent_.value()->RemoveObject(size_.get());
+      parent_.value()->Remove(size_.get());
     }
     auto new_size = IncrementNode(*size_);
     SetSize(new_size);
