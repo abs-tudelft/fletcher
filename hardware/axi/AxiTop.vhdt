@@ -179,7 +179,7 @@ ${MST_WREQ_DECLARE}
 begin
 
   -- Active low reset
-  bcd_reset_n <= '0' when bcd_reset = '1' else '0';
+  bcd_reset_n <= not bcd_reset;
 
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
