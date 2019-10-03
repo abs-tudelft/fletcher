@@ -131,26 +131,26 @@ architecture rtl of AxiWriteConverter is
   signal buf_slv_wdat_strobe    : std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
   signal buf_slv_wdat_last      : std_logic;
 
-  -- StreamGearboxSerializer input & output for data
+  -- StreamGearboxParallelizer input & output for data
   signal ser_dat_i_ready        : std_logic;
   signal ser_dat_i_valid        : std_logic;
-  signal ser_dat_i_data         : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
+  signal ser_dat_i_data         : std_logic_vector(SLAVE_DATA_WIDTH-1 downto 0);
   signal ser_dat_i_last         : std_logic;
 
   signal ser_dat_o_ready        : std_logic;
   signal ser_dat_o_valid        : std_logic;
-  signal ser_dat_o_data         : std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
+  signal ser_dat_o_data         : std_logic_vector(MASTER_DATA_WIDTH-1 downto 0);
   signal ser_dat_o_last         : std_logic;
 
-  -- StreamGearboxSerializer input & output for strobe
+  -- StreamGearboxParallelizer input & output for strobe
   signal ser_stb_i_ready        : std_logic;
   signal ser_stb_i_valid        : std_logic;
-  signal ser_stb_i_data         : std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
+  signal ser_stb_i_data         : std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
   signal ser_stb_i_last         : std_logic;
 
   signal ser_stb_o_ready        : std_logic;
   signal ser_stb_o_valid        : std_logic;
-  signal ser_stb_o_data         : std_logic_vector(SLAVE_DATA_WIDTH/8-1 downto 0);
+  signal ser_stb_o_data         : std_logic_vector(MASTER_DATA_WIDTH/8-1 downto 0);
   signal ser_stb_o_last         : std_logic;
 
   signal reset                  : std_logic;
@@ -235,8 +235,8 @@ begin
     int_m_axi_wvalid            <= int_slv_bus_wdat_valid;
   end generate;
 
-  -- If the ratio is larger than 1, instantiate the serializer, etc..
-  serialize_gen: if RATIO > 1 generate
+  -- If the ratio is larger than 1, instantiate the parallelizer, etc..
+  parallelize_gen: if RATIO > 1 generate
     -----------------------------------------------------------------------------
     -- Write Request channels
     -----------------------------------------------------------------------------
@@ -258,14 +258,14 @@ begin
     -----------------------------------------------------------------------------
     -- Write Data channel
     -----------------------------------------------------------------------------
-    -- From slave port to StreamGearboxSerializer
+    -- From slave port to StreamGearboxParallelizer
     ser_dat_i_data              <= int_slv_bus_wdat_data;
     ser_dat_i_last              <= int_slv_bus_wdat_last;
     
     ser_stb_i_data              <= int_slv_bus_wdat_strobe;
     ser_stb_i_last              <= int_slv_bus_wdat_last;
     
-    -- Split the write data stream into data and strobe for serialization
+    -- Split the write data stream into data and strobe for parallelization
     wdat_split: StreamSync
       generic map (
         NUM_INPUTS              => 1,
@@ -282,15 +282,15 @@ begin
         out_ready(1)            => ser_stb_i_ready
       );
     
-    -- Serialize the data
-    data_serializer: StreamGearboxSerializer
+    -- Parallelize the data
+    data_parallelizer: StreamGearboxParallelizer
       generic map (
         ELEMENT_WIDTH           => SLAVE_DATA_WIDTH,
         CTRL_WIDTH              => 0,
-        IN_COUNT_MAX            => RATIO,
-        IN_COUNT_WIDTH          => log2ceil(RATIO),
-        OUT_COUNT_MAX           => 1,
-        OUT_COUNT_WIDTH         => 1
+        IN_COUNT_MAX            => 1,
+        IN_COUNT_WIDTH          => 1,
+        OUT_COUNT_MAX           => RATIO,
+        OUT_COUNT_WIDTH         => log2ceil(RATIO)
       )
       port map (
         clk                     => clk,
@@ -307,15 +307,15 @@ begin
         out_last                => ser_dat_o_last
       );
       
-    -- Serialize the strobe
-    strobe_serializer: StreamGearboxSerializer
+    -- Parallelize the strobe
+    strobe_parallelizer: StreamGearboxParallelizer
       generic map (
         ELEMENT_WIDTH           => SLAVE_DATA_WIDTH/8,
         CTRL_WIDTH              => 0,
-        IN_COUNT_MAX            => RATIO,
-        IN_COUNT_WIDTH          => log2ceil(RATIO),
-        OUT_COUNT_MAX           => 1,
-        OUT_COUNT_WIDTH         => 1
+        IN_COUNT_MAX            => 1,
+        IN_COUNT_WIDTH          => 1,
+        OUT_COUNT_MAX           => RATIO,
+        OUT_COUNT_WIDTH         => log2ceil(RATIO)
       )
       port map (
         clk                     => clk,
@@ -350,7 +350,7 @@ begin
       );
       
         
-    -- From StreamGearboxSerializer to BusBuffer
+    -- From StreamGearboxParallelizer to BusBuffer
     buf_mst_wdat_data           <= ser_dat_o_data;
     buf_mst_wdat_strobe         <= ser_stb_o_data;
     buf_mst_wdat_last           <= ser_dat_o_last and ser_stb_o_last;
@@ -397,11 +397,11 @@ begin
       buf_slv_wreq_addr         <= buf_mst_wreq_addr;
       buf_slv_wreq_len          <= buf_mst_wreq_len;
 
-      buf_mst_wdat_valid        <= buf_slv_wdat_valid;
-      buf_slv_wdat_ready        <= buf_mst_wdat_ready;
-      buf_mst_wdat_data         <= buf_slv_wdat_data;
-      buf_mst_wdat_strobe       <= buf_slv_wdat_strobe;
-      buf_mst_wdat_last         <= buf_slv_wdat_last;
+      buf_slv_wdat_valid        <= buf_mst_wdat_valid;
+      buf_mst_wdat_ready        <= buf_slv_wdat_ready;
+      buf_slv_wdat_data         <= buf_mst_wdat_data;
+      buf_slv_wdat_strobe       <= buf_mst_wdat_strobe;
+      buf_slv_wdat_last         <= buf_mst_wdat_last;
     end generate;
     
       -- Write data channel BusWriteBuffer to AXI Master Port
