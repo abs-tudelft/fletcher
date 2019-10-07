@@ -19,8 +19,6 @@
 #include <string>
 
 #include "fletchgen/basic_types.h"
-#include "fletchgen/recordbatch.h"
-#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 

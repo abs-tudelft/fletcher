@@ -89,7 +89,7 @@ bool Options::Parse(Options *options, int argc, char **argv) {
     options->quit = true;
     return true;
   } catch (CLI::Error &e) {
-    FLETCHER_LOG(ERROR, e.get_name() + e.what());
+    FLETCHER_LOG(ERROR, e.get_name() + ":\n" + e.what());
     return false;
   }
 

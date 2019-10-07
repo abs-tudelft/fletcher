@@ -93,7 +93,7 @@ static std::vector<MmioReg> ParseRegs(const std::vector<std::string> &regs) {
       switch (reg_str[0]) {
         case 'c':reg.behavior = MmioReg::Behavior::CONTROL;
           break;
-        case 's':reg.behavior = MmioReg::Behavior::CONTROL;
+        case 's':reg.behavior = MmioReg::Behavior::STATUS;
           break;
         default:FLETCHER_LOG(FATAL, "Register argument behavior character invalid for " + reg.name);
       }
