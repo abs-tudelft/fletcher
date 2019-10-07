@@ -50,7 +50,7 @@ hierarchy:
 To flatten any child buffers, a depth-first traversal of the hierarchy is applied. 
 
 The implementation used in both Fletchgen and the C++ run-time library can be found 
-[here](../common/cpp/src/fletcher/arrow-utils.h).
+[here](../common/cpp/include/fletcher/arrow-utils.h).
 
 When the number of RecordBatches used in the accelerator design is N and the number of Arrow Buffers used in all 
 RecordBatches (either read or write) is M, the register mapping is defined as follows:

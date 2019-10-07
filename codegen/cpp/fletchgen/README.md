@@ -51,10 +51,10 @@ sudo make install
 fletchgen -h
 ```
 
-An example how to use Fletchgen [can be found here.](../test/stringread/README.md)
+An example how to use Fletchgen [can be found here.](../../test/stringread/README.md)
 
 A very gentle tutorial / introduction to Fletcher including how to use Fletchgen and how to generate input files for
-Fletchgen [can be found here.](../../examples/sum/README.md)
+Fletchgen [can be found here.](../../../examples/sum/README.md)
 
 # Supported/required metadata for Arrow Schemas
 Fletchgen derives how to use an Arrow Schema from attached key-value metadata that is stored in Arrow Schemas.
@@ -80,4 +80,4 @@ to use in your kernel implementation.
 
 You can generate a simulation top level and provide a Flatbuffer file with a RecordBatch to the simulation environment.
 You can use this to debug your designs in simulation, independent of an FPGA platform specific simulation environment.
-[An example is shown here.](../test/stringread/README.md).
+[An example is shown here.](../../test/stringread/README.md).
