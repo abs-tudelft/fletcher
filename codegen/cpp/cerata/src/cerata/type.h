@@ -150,6 +150,7 @@ std::shared_ptr<Type> bit();
 
 /// @brief Void type. Useful for e.g. empty streams.
 struct Nul : public Type {
+  /// Void type constructor.
   explicit Nul(std::string name) : Type(std::move(name), Type::NUL) {}
 };
 /// @brief Return a static Nul type.
@@ -290,7 +291,8 @@ class Record : public Type {
   /// @brief Record constructor.
   explicit Record(std::string name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Create a new Record Type, and return a shared pointer to it.
-  static std::shared_ptr<Record> Make(const std::string &name, const std::deque<std::shared_ptr<RecField>>& fields = {});
+  static std::shared_ptr<Record> Make(const std::string &name,
+                                      const std::deque<std::shared_ptr<RecField>> &fields = {});
   /// @brief Add a RecordField to this Record.
   Record &AddField(const std::shared_ptr<RecField> &field, std::optional<size_t> index = std::nullopt);
   /// @brief Return the RecordField at index i contained by this record.

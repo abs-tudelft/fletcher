@@ -86,13 +86,23 @@ class NodeArray : public Object {
   std::deque<std::shared_ptr<Node>> nodes_;
 };
 
+/// An array of signal nodes.
 class SignalArray : public NodeArray {
  public:
+  /**
+   * @brief Construct a new node array and return a shared pointer to it.
+   * @param name    The name of the node array.
+   * @param type    The type of the nodes in the node array.
+   * @param size    The size node of the node array.
+   * @param domain  The clock domain of the nodes in the node array.
+   * @return        A shared pointer to the new node array.
+   */
   static std::shared_ptr<NodeArray> Make(const std::string &name,
                                          const std::shared_ptr<Type> &type,
                                          std::shared_ptr<Node> size,
                                          const std::shared_ptr<ClockDomain> &domain = default_domain());
  protected:
+  /// SignalArray constructor.
   SignalArray(const std::shared_ptr<Signal> &base, std::shared_ptr<Node> size) :
       NodeArray(base->name(), Node::NodeID::SIGNAL, std::dynamic_pointer_cast<Node>(base), std::move(size)) {}
 };

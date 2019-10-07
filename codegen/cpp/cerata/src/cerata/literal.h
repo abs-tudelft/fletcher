@@ -47,9 +47,9 @@ class Literal : public MultiOutputNode {
           bool bool_val)
       : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),
         storage_type_(st),
-        String_val_(std::move(str_val)),
         Bool_val_(bool_val),
-        Int_val_(int_val) {}
+        Int_val_(int_val),
+        String_val_(std::move(str_val)) {}
 
   /// The raw storage type of the literal node.
   StorageType storage_type_;
@@ -68,13 +68,19 @@ class Literal : public MultiOutputNode {
   TYPENAME NAME##_val_{};
 #endif
 
- LITERAL_DECL_FACTORY(String, std::string) //NOLINT
+  /// Bools
  LITERAL_DECL_FACTORY(Bool, bool) //NOLINT
+  /// Ints
  LITERAL_DECL_FACTORY(Int, int) //NOLINT
+  /// Strings
+ LITERAL_DECL_FACTORY(String, std::string) //NOLINT
 
  public:
+  /// @brief Create a boolean literal.
   static std::shared_ptr<Literal> Make(bool value) { return MakeBool(value); }
+  /// @brief Create an integer literal.
   static std::shared_ptr<Literal> Make(int value) { return MakeInt(value); }
+  /// @brief Create a string literal.
   static std::shared_ptr<Literal> Make(std::string value) { return MakeString(std::move(value)); }
 
   /// @brief Create a copy of this Literal.
@@ -102,20 +108,32 @@ class Literal : public MultiOutputNode {
  */
 template<typename T>
 T RawValueOf(const Literal &node) { throw std::runtime_error("Can not obtain raw value for type."); }
+
+/// @brief Template specialization for RawValueOf<bool>
 template<>
 inline bool RawValueOf(const Literal &node) { return node.BoolValue(); }
+
+/// @brief Template specialization for RawValueOf<int>
 template<>
 inline int RawValueOf(const Literal &node) { return node.IntValue(); }
+
+/// @brief Template specialization for RawValueOf<std::string>
 template<>
 inline std::string RawValueOf(const Literal &node) { return node.StringValue(); }
 
 /// @brief Obtain the Literal::StorageType enum value of a C++ type T.
 template<typename T>
 Literal::StorageType StorageTypeOf() { throw std::runtime_error("Type has no known StorageType."); }
+
+/// @brief Template specialization for StorageTypeOf<bool>
 template<>
 inline Literal::StorageType StorageTypeOf<bool>() { return Literal::StorageType::BOOL; }
+
+/// @brief Template specialization for StorageTypeOf<int>
 template<>
 inline Literal::StorageType StorageTypeOf<int>() { return Literal::StorageType::INT; }
+
+/// @brief Template specialization for StorageTypeOf<std::string>
 template<>
 inline Literal::StorageType StorageTypeOf<std::string>() { return Literal::StorageType::STRING; }
 

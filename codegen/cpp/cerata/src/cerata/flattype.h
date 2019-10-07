@@ -226,6 +226,7 @@ class MappingMatrix {
     return ret;
   }
 
+  /// @brief Create an empty matrix of the same size.
   MappingMatrix Empty() const {
     MappingMatrix ret(height_, width_);
     return ret;

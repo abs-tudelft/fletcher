@@ -172,10 +172,14 @@ struct NormalNode : public MultiOutputNode {
  */
 class Synchronous {
  public:
+  /// @brief Synchronous constructor.
   explicit Synchronous(std::shared_ptr<ClockDomain> domain) : domain_(std::move(domain)) {}
+  /// @brief Return the clock domain to which something is synchronized.
   std::shared_ptr<ClockDomain> domain() const { return domain_; }
+  /// @brief Set the clock domain to which something should be synchronized.
   void SetDomain(std::shared_ptr<ClockDomain> domain) { domain_ = std::move(domain); }
  protected:
+  /// The clock domain.
   std::shared_ptr<ClockDomain> domain_;
 };
 
