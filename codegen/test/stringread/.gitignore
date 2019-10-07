@@ -4,5 +4,8 @@ vsim.wlf
 output/
 vhdl/
 dot/
+vhdmmio-doc/
 
 !vhdl/Kernel.vhd
+fletchgen.mmio.yaml
+memory.srec
