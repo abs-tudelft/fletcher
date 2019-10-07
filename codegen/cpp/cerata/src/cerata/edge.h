@@ -33,12 +33,12 @@ class Edge : public Named {
   static std::shared_ptr<Edge> Make(const std::string &name, Node *dst, Node *src);
 
   /// @brief Get the node opposite to the other edge node.
-  std::optional<Node *> GetOtherNode(const Node &node) const;
+  [[nodiscard]] std::optional<Node *> GetOtherNode(const Node &node) const;
 
   /// @brief Return the destination node.
-  Node *dst() const { return dst_; }
+  [[nodiscard]] Node *dst() const { return dst_; }
   /// @brief Return the source node.
-  Node *src() const { return src_; }
+  [[nodiscard]] Node *src() const { return src_; }
 
  protected:
   /**

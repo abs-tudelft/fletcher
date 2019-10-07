@@ -61,7 +61,7 @@ struct FlatType {
   /// @brief Whether to invert this flattened type if it would be on a terminator node.
   bool invert_ = false;
   /// @brief Return the name of this flattened type, constructed from the name parts.
-  std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
+  [[nodiscard]] std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
 };
 
 /// @brief Compares two FlatTypes first by name, then by nesting level. Useful for sorting.
@@ -139,7 +139,7 @@ class MappingMatrix {
   }
 
   /// @brief Return a const references to a value in the matrix at some index.
-  const T &get(int64_t y, int64_t x) const {
+  [[nodiscard]] const T &get(int64_t y, int64_t x) const {
     if (y >= height_ || x >= width_) {
       CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
     }
@@ -157,7 +157,7 @@ class MappingMatrix {
   }
 
   /// @brief Return the maximum of some column.
-  T MaxOfColumn(int64_t x) const {
+  [[nodiscard]] T MaxOfColumn(int64_t x) const {
     T max = 0;
     for (int64_t y = 0; y < height_; y++) {
       if (get(y, x) > max) {
@@ -168,7 +168,7 @@ class MappingMatrix {
   }
 
   /// @brief Return the maximum of some row.
-  T MaxOfRow(int64_t y) const {
+  [[nodiscard]] T MaxOfRow(int64_t y) const {
     T max = 0;
     for (int64_t x = 0; x < width_; x++) {
       if (get(y, x) > max) {
@@ -216,7 +216,7 @@ class MappingMatrix {
   }
 
   /// @brief Transpose the matrix.
-  MappingMatrix Transpose() const {
+  [[nodiscard]] MappingMatrix Transpose() const {
     MappingMatrix ret(width_, height_);
     for (int64_t y = 0; y < height_; y++) {
       for (int64_t x = 0; x < width_; x++) {
@@ -227,7 +227,7 @@ class MappingMatrix {
   }
 
   /// @brief Create an empty matrix of the same size.
-  MappingMatrix Empty() const {
+  [[nodiscard]] MappingMatrix Empty() const {
     MappingMatrix ret(height_, width_);
     return ret;
   }
@@ -262,6 +262,7 @@ class MappingMatrix {
  * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto a.
  */
 struct MappingPair {
+  using OptionalNode = std::optional<std::shared_ptr<Node>>; ///< Optional shared pointer to a node.
   using index = int64_t;  ///< Index type.
   using offset = int64_t;  ///< Offset type.
   /// Tuple that stores all information required by a mapping pair on one side.
@@ -271,38 +272,38 @@ struct MappingPair {
   /// Flattype and its index in a mapping matrix on the "b"-side.
   std::deque<tuple> b;
   /// @brief Return the number of FlatTypes on the "a"-side.
-  int64_t num_a() const { return a.size(); }
+  [[nodiscard]] int64_t num_a() const { return a.size(); }
   /// @brief Return the number of FlatTypes on the "b"-side.
-  int64_t num_b() const { return b.size(); }
+  [[nodiscard]] int64_t num_b() const { return b.size(); }
   /// @brief Return the index of the i-th FlatType on the "a"-side in the mapping matrix.
-  index index_a(int64_t i) const { return std::get<0>(a[i]); }
+  [[nodiscard]] index index_a(int64_t i) const { return std::get<0>(a[i]); }
   /// @brief Return the index of the i-th FlatType on the "b"-side in the mapping matrix.
-  index index_b(int64_t i) const { return std::get<0>(b[i]); }
+  [[nodiscard]] index index_b(int64_t i) const { return std::get<0>(b[i]); }
   /// @brief Return the offset of the i-th FlatType on the "a"-side in the mapping matrix.
-  offset offset_a(int64_t i) const { return std::get<1>(a[i]); }
+  [[nodiscard]] offset offset_a(int64_t i) const { return std::get<1>(a[i]); }
   /// @brief Return the offset of the i-th FlatType on the "b"-side in the mapping matrix.
-  offset offset_b(int64_t i) const { return std::get<1>(b[i]); }
+  [[nodiscard]] offset offset_b(int64_t i) const { return std::get<1>(b[i]); }
   /// @brief Return the i-th FlatType on the "a"-side in the mapping matrix.
-  FlatType flat_type_a(int64_t i) const { return std::get<2>(a[i]); }
+  [[nodiscard]] FlatType flat_type_a(int64_t i) const { return std::get<2>(a[i]); }
   /// @brief Return the i-th FlatType on the "b"-side in the mapping matrix.
-  FlatType flat_type_b(int64_t i) const { return std::get<2>(b[i]); }
+  [[nodiscard]] FlatType flat_type_b(int64_t i) const { return std::get<2>(b[i]); }
 
   /**
    * @brief Return the total width of the types on side A.
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
    * @return                    The total width on side A.
    */
-  std::shared_ptr<Node> width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment = {}) const;
+  [[nodiscard]] std::shared_ptr<Node> width_a(const OptionalNode &no_width_increment = {}) const;
 
   /**
    * @brief Return the total width of the types on side B.
    * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
    * @return                    The total width on side B.
    */
-  std::shared_ptr<Node> width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment = {}) const;
+  [[nodiscard]] std::shared_ptr<Node> width_b(const OptionalNode &no_width_increment = {}) const;
 
   /// @brief Generate a human-readable version of this MappingPair
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
 };
 
 /**

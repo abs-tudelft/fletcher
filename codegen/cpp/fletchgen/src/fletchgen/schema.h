@@ -46,12 +46,12 @@ class FletcherSchema {
                                               const std::string &schema_name = "");
 
   /// @brief Return the Arrow schema that this FletcherSchema was based on.
-  std::shared_ptr<arrow::Schema> arrow_schema() const { return arrow_schema_; }
+  [[nodiscard]] std::shared_ptr<arrow::Schema> arrow_schema() const { return arrow_schema_; }
 
   /// @brief Return the access mode of the RecordBatch this schema represents.
-  Mode mode() const { return mode_; }
+  [[nodiscard]] Mode mode() const { return mode_; }
   /// @brief Return the name of this FletcherSchema.
-  std::string name() const { return name_; }
+  [[nodiscard]] std::string name() const { return name_; }
 
  private:
   /// The Arrow schema this FletcherSchema is based on.
@@ -70,23 +70,23 @@ class SchemaSet : public cerata::Named {
   /// @brief SchemaSet constructor.
   explicit SchemaSet(std::string name);
   /// @brief Make a new, empty SchemaSet, and return a shared pointer to it.
-  static std::shared_ptr<SchemaSet> Make(std::string name);
+  static std::shared_ptr<SchemaSet> Make(const std::string& name);
   /// @brief Determine whether any schema in this set requires reading from memory.
-  bool RequiresReading() const;
+  [[nodiscard]] bool RequiresReading() const;
   /// @brief Determine whether any schema in this set requires writing to memory.
-  bool RequiresWriting() const;
+  [[nodiscard]] bool RequiresWriting() const;
   /// @brief Return true if set contains schema with some name, false otherwise.
-  bool HasSchemaWithName(const std::string& name) const;
+  [[nodiscard]] bool HasSchemaWithName(const std::string& name) const;
   /// @brief Optionally return a schema with name, if it exists.
-  std::optional<std::shared_ptr<FletcherSchema>> GetSchema(const std::string& name) const;
+  [[nodiscard]] std::optional<std::shared_ptr<FletcherSchema>> GetSchema(const std::string& name) const;
   /// @brief Append a schema
-  void AppendSchema(std::shared_ptr<arrow::Schema> schema);
+  void AppendSchema(const std::shared_ptr<arrow::Schema>& schema);
   /// @brief Return all schemas of this schemaset.
-  std::deque<std::shared_ptr<FletcherSchema>> schemas() const { return schemas_; }
+  [[nodiscard]] std::deque<std::shared_ptr<FletcherSchema>> schemas() const { return schemas_; }
   /// @brief Return all schemas with read mode.
-  std::deque<std::shared_ptr<FletcherSchema>> read_schemas() const;
+  [[nodiscard]] std::deque<std::shared_ptr<FletcherSchema>> read_schemas() const;
   /// @brief Return all schemas with write mode.
-  std::deque<std::shared_ptr<FletcherSchema>> write_schemas() const;
+  [[nodiscard]] std::deque<std::shared_ptr<FletcherSchema>> write_schemas() const;
   /// @brief Sort the schemas by name, then by read/write mode.
   void Sort();
 

@@ -190,18 +190,18 @@ Vector::Vector(std::string name, std::shared_ptr<Type> element_type, const std::
   width_ = width;
 }
 
-std::shared_ptr<Type> Vector::Make(std::string name,
-                                   std::shared_ptr<Type> element_type,
-                                   std::optional<std::shared_ptr<Node>> width) {
+std::shared_ptr<Type> Vector::Make(const std::string& name,
+                                   const std::shared_ptr<Type>& element_type,
+                                   const std::optional<std::shared_ptr<Node>>& width) {
   return std::make_shared<Vector>(name, element_type, width);
 }
 
-std::shared_ptr<Type> Vector::Make(std::string name, std::optional<std::shared_ptr<Node>> width) {
+std::shared_ptr<Type> Vector::Make(const std::string& name, const std::optional<std::shared_ptr<Node>>& width) {
   return std::make_shared<Vector>(name, bit(), width);
 }
 
 std::shared_ptr<Type> Vector::Make(unsigned int width) {
-  return Make("vec_" + std::to_string(width), intl(width));
+  return Make("vec_" + std::to_string(width), intl(static_cast<int>(width)));
 }
 
 std::shared_ptr<Type> Vector::Make(std::string name, unsigned int width) {
@@ -243,18 +243,18 @@ Type &Vector::SetWidth(std::shared_ptr<Node> width) {
   return *this;
 }
 
-std::shared_ptr<Stream> Stream::Make(std::string name, std::shared_ptr<Type> element_type, int epc) {
+std::shared_ptr<Stream> Stream::Make(const std::string& name, const std::shared_ptr<Type>& element_type, int epc) {
   return std::make_shared<Stream>(name, element_type, "", epc);
 }
 
-std::shared_ptr<Stream> Stream::Make(std::string name,
-                                     std::shared_ptr<Type> element_type,
-                                     std::string element_name,
+std::shared_ptr<Stream> Stream::Make(const std::string& name,
+                                     const std::shared_ptr<Type>& element_type,
+                                     const std::string& element_name,
                                      int epc) {
   return std::make_shared<Stream>(name, element_type, element_name, epc);
 }
 
-std::shared_ptr<Stream> Stream::Make(std::shared_ptr<Type> element_type, int epc) {
+std::shared_ptr<Stream> Stream::Make(const std::shared_ptr<Type>& element_type, int epc) {
   return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "", epc);
 }
 
@@ -298,29 +298,29 @@ std::shared_ptr<Type> boolean() {
   return result;
 }
 
-std::shared_ptr<Type> Integer::Make(std::string name) {
+std::shared_ptr<Type> Integer::Make(const std::string& name) {
   return std::make_shared<Integer>(name);
 }
 
-std::shared_ptr<Type> Natural::Make(std::string name) {
+std::shared_ptr<Type> Natural::Make(const std::string& name) {
   return std::make_shared<Natural>(name);
 }
 
 Boolean::Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
 
-std::shared_ptr<Type> Boolean::Make(std::string name) {
+std::shared_ptr<Type> Boolean::Make(const std::string& name) {
   return std::make_shared<Boolean>(name);
 }
 
 String::String(std::string name) : Type(std::move(name), Type::STRING) {}
 
-std::shared_ptr<Type> String::Make(std::string name) {
+std::shared_ptr<Type> String::Make(const std::string& name) {
   return std::make_shared<String>(name);
 }
 
 Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
 
-std::shared_ptr<Bit> Bit::Make(std::string name) {
+std::shared_ptr<Bit> Bit::Make(const std::string& name) {
   return std::make_shared<Bit>(name);
 }
 
@@ -331,11 +331,11 @@ std::optional<Node *> Bit::width() const {
 RecField::RecField(std::string name, std::shared_ptr<Type> type, bool invert)
     : Named(std::move(name)), type_(std::move(type)), invert_(invert), sep_(true) {}
 
-std::shared_ptr<RecField> RecField::Make(std::string name, std::shared_ptr<Type> type, bool invert) {
+std::shared_ptr<RecField> RecField::Make(const std::string& name, const std::shared_ptr<Type>& type, bool invert) {
   return std::make_shared<RecField>(name, type, invert);
 }
 
-std::shared_ptr<RecField> RecField::Make(std::shared_ptr<Type> type, bool invert) {
+std::shared_ptr<RecField> RecField::Make(const std::shared_ptr<Type>& type, bool invert) {
   return std::make_shared<RecField>(type->name(), type, invert);
 }
 

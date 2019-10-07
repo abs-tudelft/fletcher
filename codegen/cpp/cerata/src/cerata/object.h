@@ -62,9 +62,6 @@ class Object : public Named {
   /// @brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;
 
-  /// Destructor
-  virtual ~Object() = default;
-
  protected:
   /// The object type ID.
   ID obj_id_;

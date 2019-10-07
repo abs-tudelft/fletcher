@@ -33,7 +33,7 @@ class Term {
   static Dir Invert(Dir dir);
 
   /// @brief Return the direction of this terminator.
-  inline Dir dir() const { return dir_; }
+  [[nodiscard]] inline Dir dir() const { return dir_; }
 
   /// @brief Construct a new Term.
   explicit Term(Dir dir) : dir_(dir) {}

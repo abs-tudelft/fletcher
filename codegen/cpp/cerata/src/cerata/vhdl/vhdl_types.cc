@@ -53,11 +53,8 @@ Port::Dir Reverse(Port::Dir dir) {
 std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list) {
   std::deque<FlatType> result;
   for (const auto &ft : list) {
-    // If the type is abstract, we can't represent it, so it is filtered out
-    if (ft.type_->IsAbstract() && !ft.type_->Is(Type::BOOLEAN)) {
-
-    } else {
-      // Otherwise VHDL can express the type already
+    // Only keep types that are not abstract, or boolean.
+    if (!ft.type_->IsAbstract() || ft.type_->Is(Type::BOOLEAN)) {
       result.push_back(ft);
     }
   }

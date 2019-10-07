@@ -175,7 +175,7 @@ class Synchronous {
   /// @brief Synchronous constructor.
   explicit Synchronous(std::shared_ptr<ClockDomain> domain) : domain_(std::move(domain)) {}
   /// @brief Return the clock domain to which something is synchronized.
-  std::shared_ptr<ClockDomain> domain() const { return domain_; }
+  [[nodiscard]] std::shared_ptr<ClockDomain> domain() const { return domain_; }
   /// @brief Set the clock domain to which something should be synchronized.
   void SetDomain(std::shared_ptr<ClockDomain> domain) { domain_ = std::move(domain); }
  protected:
@@ -193,12 +193,12 @@ class Signal : public NormalNode, public Synchronous {
   /// @brief Signal constructor.
   Signal(std::string name, std::shared_ptr<Type> type, std::shared_ptr<ClockDomain> domain = default_domain());
   /// @brief Create a new Signal and return a smart pointer to it.
-  static std::shared_ptr<Signal> Make(std::string name,
+  static std::shared_ptr<Signal> Make(const std::string& name,
                                       const std::shared_ptr<Type> &type,
-                                      std::shared_ptr<ClockDomain> domain = default_domain());
+                                      const std::shared_ptr<ClockDomain>& domain = default_domain());
   /// @brief Create a new Signal and return a smart pointer to it. The Signal name is derived from the Type name.
   static std::shared_ptr<Signal> Make(const std::shared_ptr<Type> &type,
-                                      std::shared_ptr<ClockDomain> domain = default_domain());
+                                      const std::shared_ptr<ClockDomain>& domain = default_domain());
   /// @brief Create a copy of this Signal.
   std::shared_ptr<Object> Copy() const override;
 };

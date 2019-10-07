@@ -40,8 +40,7 @@ void VHDLOutputGenerator::Generate() {
     auto vhdl_design = Design(o.comp, notice_, DEFAULT_LIBS);
 
     CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.comp->name());
-    auto vhdl_source = vhdl_design.Generate();
-    vhdl_source.ToString();
+    auto vhdl_source = vhdl_design.Generate().ToString();
     auto vhdl_path = root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".vhd";
 
     bool overwrite = false;
@@ -55,13 +54,13 @@ void VHDLOutputGenerator::Generate() {
     CERATA_LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
     if (!FileExists(vhdl_path) || overwrite) {
       auto vhdl_file = std::ofstream(vhdl_path);
-      vhdl_file << vhdl_source.ToString();
+      vhdl_file << vhdl_source;
       vhdl_file.close();
     } else {
       CERATA_LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
       // Save as a vhdt file.
       auto vhdl_file = std::ofstream(vhdl_path + "t");
-      vhdl_file << vhdl_source.ToString();
+      vhdl_file << vhdl_source;
       vhdl_file.close();
     }
 

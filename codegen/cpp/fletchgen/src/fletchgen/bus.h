@@ -90,7 +90,7 @@ struct BusPort : public Port {
           std::shared_ptr<ClockDomain> domain = bus_cd())
       : Port(name.empty() ? "bus" : name, bus(spec), dir, std::move(domain)), spec_(spec) {}
   /// @brief Make a new port and return a shared pointer to it.
-  static std::shared_ptr<BusPort> Make(std::string name, Port::Dir dir, BusSpec spec);
+  static std::shared_ptr<BusPort> Make(const std::string& name, Port::Dir dir, BusSpec spec);
   /// @brief Make a new port, name it automatically based on the bus specification, and return a shared pointer to it.
   static std::shared_ptr<BusPort> Make(Port::Dir dir, BusSpec spec);
   /// @brief Deep-copy the BusPort.

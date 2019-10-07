@@ -149,8 +149,8 @@ std::string ToString(Node::NodeID id) {
     case Node::NodeID::LITERAL:return "Literal";
     case Node::NodeID::PARAMETER:return "Parameter";
     case Node::NodeID::EXPRESSION:return "Expression";
-    default:throw std::runtime_error("Corrupted node type.");
   }
+  throw std::runtime_error("Corrupted node type.");
 }
 
 std::shared_ptr<Object> Parameter::Copy() const {
@@ -179,17 +179,17 @@ std::optional<Node *> Parameter::GetValue() const {
 }
 
 Signal::Signal(std::string name, std::shared_ptr<Type> type, std::shared_ptr<ClockDomain> domain)
-    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)), Synchronous(domain) {}
+    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)), Synchronous(std::move(domain)) {}
 
-std::shared_ptr<Signal> Signal::Make(std::string name,
+std::shared_ptr<Signal> Signal::Make(const std::string& name,
                                      const std::shared_ptr<Type> &type,
-                                     std::shared_ptr<ClockDomain> domain) {
+                                     const std::shared_ptr<ClockDomain>& domain) {
   auto ret = std::make_shared<Signal>(name, type, domain);
   return ret;
 }
 
 std::shared_ptr<Signal> Signal::Make(const std::shared_ptr<Type> &type,
-                                     std::shared_ptr<ClockDomain> domain) {
+                                     const std::shared_ptr<ClockDomain>& domain) {
   auto ret = std::make_shared<Signal>(type->name() + "_signal", type, domain);
   return ret;
 }

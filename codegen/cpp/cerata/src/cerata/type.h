@@ -78,9 +78,6 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
    */
   explicit Type(std::string name, ID id);
 
-  /// @brief Type virtual destructor.
-  virtual ~Type() = default;
-
   /// @brief Return the Type ID.
   inline ID id() const { return id_; }
 
@@ -139,7 +136,7 @@ struct Bit : public Type {
   /// @brief Bit type constructor.
   explicit Bit(std::string name);
   /// @brief Create a new Bit type, and return a shared pointer to it.
-  static std::shared_ptr<Bit> Make(std::string name);
+  static std::shared_ptr<Bit> Make(const std::string &name);
   /// @brief Bit width returns integer literal 1.
   std::optional<Node *> width() const override;
 };
@@ -161,7 +158,7 @@ struct Integer : public Type {
   /// @brief Integer type constructor.
   explicit Integer(std::string name) : Type(std::move(name), Type::INTEGER) {}
   /// @brief Create a new Integer type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Return a generic static Integer type.
 std::shared_ptr<Type> integer();
@@ -171,7 +168,7 @@ struct Natural : public Type {
   /// @brief Integer type constructor.
   explicit Natural(std::string name) : Type(std::move(name), Type::NATURAL) {}
   /// @brief Create a new Integer type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Return a generic static Integer type.
 std::shared_ptr<Type> natural();
@@ -181,7 +178,7 @@ struct Boolean : public Type {
   /// @brief Boolean type constructor.
   explicit Boolean(std::string name);
   /// @brief Create a new Boolean type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Generic static Boolean type.
 std::shared_ptr<Type> boolean();
@@ -191,7 +188,7 @@ struct String : public Type {
   /// @brief String type constructor.
   explicit String(std::string name);
   /// @brief Create a new String type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Generic static String type.
 std::shared_ptr<Type> string();
@@ -206,12 +203,12 @@ class Vector : public Type {
   Vector(std::string name, std::shared_ptr<Type> element_type, const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name,
-                                    std::shared_ptr<Type> element_type,
-                                    std::optional<std::shared_ptr<Node>> width);
+  static std::shared_ptr<Type> Make(const std::string &name,
+                                    const std::shared_ptr<Type> &element_type,
+                                    const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type, and return a shared pointer to it. The element type is the generic Bit type.
-  static std::shared_ptr<Type> Make(std::string name, std::optional<std::shared_ptr<Node>> width);
+  static std::shared_ptr<Type> Make(const std::string &name, const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type of width W and element type bit. Returns a shared pointer to it.
   template<int W>
@@ -257,9 +254,11 @@ class RecField : public Named {
   /// @brief RecordField constructor.
   RecField(std::string name, std::shared_ptr<Type> type, bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it.
-  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type, bool invert = false);
+  static std::shared_ptr<RecField> Make(const std::string &name,
+                                        const std::shared_ptr<Type> &type,
+                                        bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert = false);
+  static std::shared_ptr<RecField> Make(const std::shared_ptr<Type> &type, bool invert = false);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
   /// @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
@@ -321,13 +320,13 @@ class Stream : public Type {
    */
   Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
   /// @brief Create a smart pointer to a new Stream type. Stream name will be stream:\<type name\>, the elements "data".
-  static std::shared_ptr<Stream> Make(std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(const std::shared_ptr<Type> &element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named "data".
-  static std::shared_ptr<Stream> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(const std::string &name, const std::shared_ptr<Type> &element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type.
-  static std::shared_ptr<Stream> Make(std::string name,
-                                      std::shared_ptr<Type> element_type,
-                                      std::string element_name,
+  static std::shared_ptr<Stream> Make(const std::string &name,
+                                      const std::shared_ptr<Type> &element_type,
+                                      const std::string &element_name,
                                       int epc = 1);
 
   /// @brief Set the type of the elements of this stream. Forgets any existing mappers.

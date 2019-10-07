@@ -18,7 +18,6 @@
 #include <cerata/api.h>
 #include <string>
 #include <iomanip>
-#include <optional>
 #include <cstdlib>
 
 #include "fletchgen/top/sim_template.h"
@@ -45,7 +44,7 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
 static std::string CanonicalizePath(const std::string &path) {
   std::string result;
   if (!path.empty()) {
-    char *p = realpath(path.c_str(), NULL);
+    char *p = realpath(path.c_str(), nullptr);
     if (p == nullptr) {
       FLETCHER_LOG(FATAL, "Could not canonicalize path: " << path);
     }
@@ -173,7 +172,6 @@ std::string GenerateSimTop(const Mantle &mantle,
     t.Replace("MST_RREQ_INSTANTIATE", "");
   }
   if (mantle.schema_set().RequiresWriting()) {
-
     t.Replace("BUS_WRITE_SLAVE_MOCK",
               "  wmem_inst: BusWriteSlaveMock\n"
               "  generic map (\n"

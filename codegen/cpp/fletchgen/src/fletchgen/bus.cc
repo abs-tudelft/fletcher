@@ -170,14 +170,12 @@ std::shared_ptr<Type> bus(BusSpec spec) {
         break;
       case BusFunction::WRITE:result = bus_write(addr_width, len_width, data_width);
         break;
-      default:FLETCHER_LOG(FATAL, "Corrupted bus function field.");
-        break;
     }
   }
   return result;
 }
 
-std::shared_ptr<BusPort> BusPort::Make(std::string name, Port::Dir dir, BusSpec spec) {
+std::shared_ptr<BusPort> BusPort::Make(const std::string& name, Port::Dir dir, BusSpec spec) {
   return std::make_shared<BusPort>(dir, spec, name);
 }
 

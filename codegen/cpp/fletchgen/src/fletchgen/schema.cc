@@ -27,7 +27,7 @@ namespace fletchgen {
 
 SchemaSet::SchemaSet(std::string name) : Named(std::move(name)) {}
 
-std::shared_ptr<SchemaSet> SchemaSet::Make(std::string name) {
+std::shared_ptr<SchemaSet> SchemaSet::Make(const std::string& name) {
   return std::make_shared<SchemaSet>(name);
 }
 
@@ -58,7 +58,7 @@ bool SchemaSet::HasSchemaWithName(const std::string &name) const {
   return false;
 }
 
-void SchemaSet::AppendSchema(std::shared_ptr<arrow::Schema> arrow_schema) {
+void SchemaSet::AppendSchema(const std::shared_ptr<arrow::Schema>& arrow_schema) {
   auto name = fletcher::GetMeta(*arrow_schema, "fletcher_name");
   if (name.empty()) {
     FLETCHER_LOG(WARNING, "Skipping anonymous schema with the following contents:\n" + arrow_schema->ToString());

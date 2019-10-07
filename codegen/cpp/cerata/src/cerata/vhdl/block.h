@@ -29,7 +29,7 @@ struct Line {
     parts.push_back(str);
   }
   /// @brief Return the line as a single string.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
   /// The parts of the line of code.
   std::vector<std::string> parts;
 };
@@ -39,7 +39,7 @@ struct Block {
   /// @brief Block constructor.
   explicit Block(int indent = 0) : indent(indent) {}
   /// @brief Return the alignment for each line.
-  std::vector<size_t> GetAlignments() const;
+  [[nodiscard]] std::vector<size_t> GetAlignments() const;
   /// @brief Return the block in reverse.
   Block &Reverse();
 
@@ -51,7 +51,7 @@ struct Block {
   Block &Sort(std::optional<char> c = std::nullopt);
 
   /// @brief Return this block as a single string.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
 
   /// Lines in the blocks.
   std::vector<Line> lines;
@@ -64,7 +64,7 @@ struct MultiBlock {
   /// @brief Multiblock constructor.
   explicit MultiBlock(int indent = 0) : indent(indent) {}
   /// @brief Return this multiblock as a single string.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
   /// The blocks in this multiblock.
   std::vector<Block> blocks;
   /// Indent level.

@@ -27,7 +27,6 @@ Kernel::Kernel(std::string name, Component* nucleus)
 
   // Add clock/reset
   Add(Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()));
-
 }
 
 std::shared_ptr<Kernel> Kernel::Make(const std::string& name, Component* nucleus) {

@@ -110,8 +110,8 @@ std::string ToString(Expression::Op operation) {
     case Expression::Op::SUB:return "-";
     case Expression::Op::MUL:return "*";
     case Expression::Op::DIV:return "/";
-    default:return "INVALID OP";
   }
+  return "INVALID OP";
 }
 
 std::string Expression::ToString() const {
