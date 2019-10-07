@@ -18,10 +18,11 @@
 #include <deque>
 #include <memory>
 #include <vector>
-
-#include "fletcher/test_schemas.h"
 #include "fletchgen/mantle.h"
 #include "fletchgen/test_utils.h"
+#include "fletcher/arrow-utils.h"
+#include "fletcher/arrow-schema.h"
+#include "fletcher/test_schemas.h"
 
 namespace fletchgen {
 
@@ -29,8 +30,15 @@ static void TestReadMantle(const std::shared_ptr<arrow::Schema>& schema) {
   cerata::default_component_pool()->Clear();
   auto set = SchemaSet::Make("test");
   set->AppendSchema(schema);
-  auto mantle = Mantle::Make(set);
+
+  fletcher::RecordBatchDescription rbd;
+  fletcher::SchemaAnalyzer sa(&rbd);
+  sa.Analyze(*schema);
+  std::vector<fletcher::RecordBatchDescription> rbds = {rbd};
+
+  auto mantle = Mantle::Make(*set, rbds);
   auto design = cerata::vhdl::Design(mantle);
+
   auto code = design.Generate().ToString();
   std::cerr.flush();
   std::cout << code << std::endl;

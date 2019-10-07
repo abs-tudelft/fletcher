@@ -2,20 +2,30 @@
 Fletchgen is a command-line utility that generates the upper layers of a hardware design, including simulation and
 platform-specific top-levels, based on Arrow Schemas and Recordbatches.
 
-Currently, the overall structure of a Fletcher hardware design is as follows:
+#### What does Fletchgen generate?
 
-* For each Arrow Field, an ArrayReader/Writer is instantiated.
-* For each Arrow Schema, a RecordBatch/Writer is generated and wrapper around all ArrayReader/Writer instances.
-* For the combination of all Arrow Schemas, a Kernel is generated.
-* All RecordBatch/Writers and the Kernel is wrapped by a Mantle. The Mantle also instantiate the required
+* For each **Arrow Field**, an **ArrayReader/Writer** is instantiated.
+* For **each Arrow Schema**, a **RecordBatchReader/Writer** is generated and wrapper around all ArrayR/W instances.
+* For **all Arrow Schemas**, a **Kernel template** is generated.
+* The Kernel is wrapped in a **Nucleus** that hides low-level control flow to RecordBatchR/W's and instantiates the
+  MMIO component that handles AXI4-lite memory-mapped input/output.
+* All RecordBatchR/W's and the Nucleus is wrapped by a **Mantle**. The Mantle also instantiate the required
   memory bus interconnection logic.
 
 This can also be shown schematically as follows:
 ![Fletchgen output, schematically](./fletchgen.svg)
 
-Fletchgen does **not** generate the kernel itself. It currently supports only two top-level platforms. One platform
-is a simulation top-level that uses a memory model that can be filled with RecordBatches. The other is a top-level that
-has an AXI4 (full) master port and AXI4-lite slave port.
+#### What does Fletchgen NOT generate?
+
+Fletchgen does **not** generate the kernel itself. 
+
+#### What top-levels does Fletcher generate?
+It currently supports only two top-level platforms.
+
+* One platform is a **simulation top-level** that uses a memory model that can be filled with RecordBatches. 
+  * To enable this top-level, use the `--sim` flag.
+* The other is an **AXI top-level** that has an AXI4 (full) master port and AXI4-lite slave port.
+  * To enable this top-level, use the `--axi` flag.
 
 # Prerequisites
 * [C++17 compliant compiler](https://clang.llvm.org/)

@@ -6,15 +6,18 @@ Everything up to step 5 (simulation) can be done with completely free and open-s
 
 ### For hardware generation (step 1 - 3):
 The examples in this part of the tutorial are written in Python, so you'll need
-* Install [Python 3.6+](https://www.python.org/)
-* Install [PyArrow 0.15.0+](https://arrow.apache.org/docs/python/)
+* Install [Python 3.6+](https://www.python.org/).
+* Install [PyArrow 0.15.0+](https://arrow.apache.org/docs/python/).
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design generator tool.
 * Build and install [Fletchgen](../../codegen/fletchgen/README.md).
 
+Also, we make use of vhdmmio - A code generator for AXI4-lite compatible memory-mapped I/O.
+* Install [vhdmmio](https://github.com/abs-tudelft/vhdmmio).
+
 ### For simulation (step 5)
 * Install a hardware simulator, e.g. [GHDL](https://github.com/ghdl/ghdl) or ModelSim/QuestaSim.
-* Install [vhdeps](https://github.com/abs-tudelft/vhdeps) - A VHDL dependency analyzer.
+* Install [vhdeps](https://github.com/abs-tudelft/vhdeps) - A VHDL dependency analyzer. 
 
 ### For host-side software (step 6)
 We will also show how to write a software application, ready to be accelerated using Fletcher and Arrow, that runs
@@ -123,32 +126,40 @@ We've used the following options:
 * `-l` specifies the output language for the design files, in our case VHDL (luckily we don't have to write any!).
 * `--sim` specifies that we'd like to generate a simulation top-level.
 
-Now, Fletchgen will generate all the things we've listed above. The output files are as follows:
+Now, Fletchgen will generate all the things we've listed above. The output files in the `hardware/` folder are as 
+follows:
 
-* `hardware/recordbatch.srec`: our memory model contents.
-* `hardware/vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
+* `recordbatch.srec`: our memory model contents.
+* `vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
 so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there).
 It will always overwrite a `.vhdt` file, though!
-* `hardware/vhdl/ExampleBatch.vhd`: a generated "RecordBatchReader".
-* `hardware/vhdl/Mantle.vhd`: a generated top-level wrapper instantiating the "RecordBatchReader" and the "Sum" kernel.
-* `hardware/vhdl/SimTop_tc.vhd`: the simulation top-level, instantiating the memory models and the "Mantle".
+* `vhdl/ExampleBatch.vhd`: a generated "RecordBatchReader".
+* `vhdl/Mantle.vhd`: a generated top-level wrapper instantiating the "RecordBatchReader" and the "Sum" kernel.
+* `vhdl/SimTop_tc.vhd`: the simulation top-level, instantiating the memory models and the "Mantle".
+
+Internally, Fletchgen will also run **vhdmmio**. 
+Vhdmmio is a tool that generates code for AXI4-lite compatible memory-mapped I/O (MMIO) register files and bus 
+infrastructure. We use this tool to simplify the control flow for you. For example, setting Arrow buffer addresses in 
+the generated interface is automated this way. Vhdmmio will also output some files, including:
+
+* `vhdmmio-doc/`: folder containing documentation.
+* `fletchgen.mmio.yaml`: A YAML file created by Fletchgen and used by vhdmmio as input.
+* `vhdl/vhdmmio_pkg.gen.vhd`: Global vhdmmio related type definitions package.
+* `vhdl/mmio_pkg.gen.vhd`: Generated custom mmio component package.
+* `vhdl/mmio.gen.vhd`: Generated custom mmio component implementation.
 
 # 4. Implement the kernel
 
 You can choose any tool or flow you'd like to implement your kernel, as long as you adhere to the interface defined by
 the template.
 
-Take a look at the [`Sum.vhd`](hardware/vhdl/Sum.vhd) file from the subfolder of this readme to see how we've implemented this kernel in HDL.
+Take a look at the [`Sum.vhd`](hardware/vhdl/Sum.vhd) file from the subfolder of this readme to see how we've 
+implemented this kernel in HDL.
 
 The kernel implementation includes
 * A state machine to:
   * Generate a command for the generated interface.
   * Absorb data from the data streams and sum the values.
-* An AXI4-lite compatible MMIO slave.
-  * Fletcher uses this to communicate control information and RecordBatch metadata to your kernel.
-
-In the future, some of this rather verbose control logic may be generated through Fletchgen as well, but for now we're
-just showing you everything so you can build more advanced kernels with more advanced access patterns.
 
 We'll follow up with an HLS example soon!
 
