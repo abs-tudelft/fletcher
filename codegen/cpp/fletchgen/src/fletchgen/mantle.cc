@@ -40,18 +40,17 @@ static std::string ArbiterMasterName(BusSpec spec) {
 
 Mantle::Mantle(std::string name,
                SchemaSet schema_set,
-               const std::vector<fletcher::RecordBatchDescription> &batch_desc)
+               const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+               const std::vector<MmioReg> &custom_regs)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
   // Add default ports
   auto bcr = Port::Make("bcd", cr(), Port::Dir::IN, bus_cd());
   auto kcr = Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd());
   auto regs = MmioPort::Make(Port::Dir::IN);
-  AddObject(bcr);
-  AddObject(kcr);
-  AddObject(regs);
+  Add({bcr, kcr, regs});
 
-  AddObject(bus_addr_width());
+  Add(bus_addr_width());
 
   // Create and add every RecordBatch/Writer.
   for (const auto &fs : schema_set_.schemas()) {
@@ -64,7 +63,10 @@ Mantle::Mantle(std::string name,
   }
 
   // Create and add the Nucleus.
-  nucleus_ = Nucleus::Make(schema_set_.name(), cerata::ToRawPointers(recordbatch_components()), batch_desc);
+  nucleus_ = Nucleus::Make(schema_set_.name(),
+                           cerata::ToRawPointers(recordbatch_components()),
+                           batch_desc,
+                           custom_regs);
   nucleus_inst_ = AddInstanceOf(nucleus_.get());
   nucleus_inst_->port("kcd") <<= kcr;
   nucleus_inst_->port("mmio") <<= regs;
@@ -125,7 +127,7 @@ Mantle::Mantle(std::string name,
     arbiters_[spec] = arbiter;
     // Create the bus port on the mantle level.
     auto master = BusPort::Make(ArbiterMasterName(spec), Port::Dir::OUT, spec);
-    AddObject(master);
+    Add(master);
     // TODO(johanpel): actually support multiple bus specs
     // Connect the arbiter master port to the mantle master port.
     master <<= arbiter->port("mst");
@@ -145,18 +147,20 @@ Mantle::Mantle(std::string name,
   }
 }
 
-std::shared_ptr<Mantle> Mantle::Make(std::string name,
+std::shared_ptr<Mantle> Mantle::Make(const std::string& name,
                                      const SchemaSet &schema_set,
-                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc) {
-  auto mantle = new Mantle(std::move(name), schema_set, batch_desc);
+                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                     const std::vector<MmioReg>& custom_regs) {
+  auto mantle = new Mantle(name, schema_set, batch_desc, custom_regs);
   auto mantle_shared = std::shared_ptr<Mantle>(mantle);
   cerata::default_component_pool()->Add(mantle_shared);
   return mantle_shared;
 }
 
 std::shared_ptr<Mantle> Mantle::Make(const SchemaSet &schema_set,
-                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc) {
-  return Make("Mantle", schema_set, batch_desc);
+                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                     const std::vector<MmioReg>& custom_regs) {
+  return Make("Mantle", schema_set, batch_desc, custom_regs);
 }
 
 }  // namespace fletchgen

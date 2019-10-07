@@ -1,4 +1,4 @@
--- Copyright 2018 Delft University of Technology
+-- Copyright 2018-2019 Delft University of Technology
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -149,9 +149,6 @@ architecture Behavorial of SimTop_tc is
 
   -- Mmio signals to sink in mmio procedures
   type mmio_sink_t is record
-    clk               : std_logic;
-    reset             : std_logic;
-
     wready            : std_logic;
 
     awready           : std_logic;
@@ -191,36 +188,40 @@ architecture Behavorial of SimTop_tc is
   procedure mmio_write (constant idx    : in  natural;
                         constant data   : in  std_logic_vector(31 downto 0);
                         signal   source : out mmio_source_t;
-                        signal   sink   : in  mmio_sink_t)
+                        signal   sink   : in  mmio_sink_t;
+                        signal   clk    : in  std_logic;
+                        signal   reset  : in  std_logic)
   is
   begin
     -- Wait for reset
     loop
-      exit when sink.reset = '0';
-      wait until rising_edge(sink.clk);
+      exit when reset = '0';
+      wait until rising_edge(clk);
     end loop;
     -- Address write channel
     source.awaddr <= slv((REG_WIDTH/8)*idx, 32);
     source.awvalid <= '1';
     loop
-      wait until rising_edge(sink.clk);
+      wait until rising_edge(clk);
       exit when sink.awready = '1';
     end loop;
     source.awvalid <= '0';
     source.awaddr <= (others => 'U');
     -- Write channel
     source.wdata <= data;
+    source.wstrb <= X"F";
     source.wvalid <= '1';
     loop
-      wait until rising_edge(sink.clk);
+      wait until rising_edge(clk);
       exit when sink.wready = '1';
     end loop;
     source.wvalid <= '0';
     source.wdata <= (others => 'U');
+    source.wstrb <= (others => 'U');
     -- Write response channel.
     source.bready <= '1';
     loop
-      wait until rising_edge(sink.clk);
+      wait until rising_edge(clk);
       exit when sink.bvalid = '1';
     end loop;
     source.bready <= '0';
@@ -229,19 +230,21 @@ architecture Behavorial of SimTop_tc is
   procedure mmio_read(constant idx    : in  natural;
                       variable data   : out std_logic_vector(31 downto 0);
                       signal   source : out mmio_source_t;
-                      signal   sink   : in  mmio_sink_t)
+                      signal   sink   : in  mmio_sink_t;
+                      signal   clk    : in  std_logic;
+                      signal   reset  : in  std_logic)
   is
   begin
     -- Wait for reset
     loop
-      exit when sink.reset = '0';
-      wait until rising_edge(sink.clk);
+      exit when reset = '0';
+      wait until rising_edge(clk);
     end loop;
     -- Address read channel
     source.araddr <= slv((REG_WIDTH/8)*idx, 32);
     source.arvalid <= '1';
     loop
-      wait until rising_edge(sink.clk);
+      wait until rising_edge(clk);
       exit when sink.arready = '1';
     end loop;
     source.arvalid <= '0';
@@ -249,7 +252,7 @@ architecture Behavorial of SimTop_tc is
     -- Read channel
     loop
       source.rready <= '1';
-      wait until rising_edge(sink.clk);
+      wait until rising_edge(clk);
       if sink.rvalid = '1' then
         data := sink.rdata;
         exit;
@@ -272,8 +275,6 @@ begin
   mmio_araddr  <= mmio_source.araddr;
   mmio_rready  <= mmio_source.rready;
 
-  mmio_sink.clk     <= kcd_clk;
-  mmio_sink.reset   <= kcd_reset;
   mmio_sink.wready  <= mmio_wready;
   mmio_sink.awready <= mmio_awready;
   mmio_sink.bvalid  <= mmio_bvalid;
@@ -299,37 +300,37 @@ begin
     wait until kcd_reset = '1' and bcd_reset = '1';
 
     -- 1. Reset the user core
-    mmio_write(REG_CONTROL, CONTROL_RESET, mmio_source, mmio_sink);
-    mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink);
+    mmio_write(REG_CONTROL, CONTROL_RESET, mmio_source, mmio_sink, bcd_clk, bcd_reset);
+    mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink, bcd_clk, bcd_reset);
 
     -- 2. Write addresses of the arrow buffers in the SREC file.
-    mmio_write(4, X"00000000", mmio_source, mmio_sink);  -- First idx
-    mmio_write(5, X"00000010", mmio_source, mmio_sink); -- Last idx
+    mmio_write(4, X"00000000", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- First idx
+    mmio_write(5, X"00000010", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Last idx
     
-    mmio_write(6, X"00000000", mmio_source, mmio_sink); -- Offset buf lo
-    mmio_write(7, X"00000000", mmio_source, mmio_sink); -- Offset buf hi
-    mmio_write(8, X"00001000", mmio_source, mmio_sink); -- Values buf lo
-    mmio_write(9, X"00000000", mmio_source, mmio_sink); -- Values buf hi
+    mmio_write(6, X"00000000", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Offset buf lo
+    mmio_write(7, X"00000000", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Offset buf hi
+    mmio_write(8, X"00001000", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Values buf lo
+    mmio_write(9, X"00000000", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Values buf hi
 
     -- 3. Write recordbatch bounds.
 
     -- 4. Write any kernel-specific registers.
-    mmio_write(10, X"00000010", mmio_source, mmio_sink); -- Str len min
-    mmio_write(11, X"FFFFFFFF", mmio_source, mmio_sink); -- UTF8 PRNG mask
+    mmio_write(10, X"00000010", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- Str len min
+    mmio_write(11, X"FFFFFFFF", mmio_source, mmio_sink, bcd_clk, bcd_reset); -- UTF8 PRNG mask
 
     -- 5. Start the user core.
-    mmio_write(REG_CONTROL, CONTROL_START, mmio_source, mmio_sink);
-    mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink);
+    mmio_write(REG_CONTROL, CONTROL_START, mmio_source, mmio_sink, bcd_clk, bcd_reset);
+    mmio_write(REG_CONTROL, CONTROL_CLEAR, mmio_source, mmio_sink, bcd_clk, bcd_reset);
 
     -- 6. Poll for completion
     loop
       -- Wait a bunch of cycles.
-      for I in 0 to 128 loop
+      for I in 0 to 64 loop
         wait until rising_edge(kcd_clk);
       end loop;
 
       -- Read the status register.
-      mmio_read(REG_STATUS, read_data, mmio_source, mmio_sink);
+      mmio_read(REG_STATUS, read_data, mmio_source, mmio_sink, bcd_clk, bcd_reset);
 
       -- Check if we're done.
       read_data_masked := read_data and STATUS_DONE;
@@ -337,9 +338,9 @@ begin
     end loop;
 
     -- 7. Read return register.
-    mmio_read(REG_RETURN0, read_data, mmio_source, mmio_sink);
+    mmio_read(REG_RETURN0, read_data, mmio_source, mmio_sink, bcd_clk, bcd_reset);
     println("Return register 0: " & slvToHex(read_data));
-    mmio_read(REG_RETURN1, read_data, mmio_source, mmio_sink);
+    mmio_read(REG_RETURN1, read_data, mmio_source, mmio_sink, bcd_clk, bcd_reset);
     println("Return register 1: " & slvToHex(read_data));
 
     -- 8. Finish and stop simulation.
@@ -384,7 +385,7 @@ begin
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
-    SREC_FILE                   => "recordbatch.srec"
+    SREC_FILE                   => "memory.srec"
   )
   port map (
     clk                         => bcd_clk,
@@ -443,4 +444,3 @@ begin
     );
 
 end architecture;
-

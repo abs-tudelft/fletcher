@@ -36,12 +36,14 @@ using cerata::Instance;
 class Mantle : public Component {
  public:
   /// @brief Construct a Mantle and return a shared pointer to it.
-  static std::shared_ptr<Mantle> Make(std::string name,
+  static std::shared_ptr<Mantle> Make(const std::string& name,
                                       const SchemaSet &schema_set,
-                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc);
+                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                      const std::vector<MmioReg>& custom_regs = {});
   /// @brief Construct a Mantle and return a shared pointer to it.
   static std::shared_ptr<Mantle> Make(const SchemaSet &schema_set,
-                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc);
+                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                      const std::vector<MmioReg>& custom_regs = {});
 
   /// @brief Return the SchemaSet on which this Mantle is based.
   SchemaSet schema_set() const { return schema_set_; }
@@ -57,7 +59,8 @@ class Mantle : public Component {
   /// @brief Construct a Mantle based on a SchemaSet
   explicit Mantle(std::string name,
                   SchemaSet schema_set,
-                  const std::vector<fletcher::RecordBatchDescription> &batch_desc);
+                  const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                  const std::vector<MmioReg>& custom_regs);
 
   /// The Nucleus to be instantiated by this Mantle.
   std::shared_ptr<Nucleus> nucleus_;

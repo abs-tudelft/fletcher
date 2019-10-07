@@ -28,6 +28,7 @@
 #include "fletchgen/mantle.h"
 #include "fletchgen/bus.h"
 #include "fletchgen/recordbatch.h"
+#include "fletchgen/mmio.h"
 
 namespace fletchgen {
 
@@ -44,6 +45,9 @@ struct Design {
 
   /// The SchemaSet to base the design on.
   std::shared_ptr<SchemaSet> schema_set;
+
+  /// Custom registers
+  std::vector<MmioReg> custom_regs;
 
   /// The RecordBatchDescriptions to use in SREC generation.
   std::vector<fletcher::RecordBatchDescription> batch_desc;
