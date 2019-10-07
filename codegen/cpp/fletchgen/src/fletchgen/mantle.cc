@@ -27,7 +27,6 @@
 #include "fletchgen/schema.h"
 #include "fletchgen/bus.h"
 #include "fletchgen/mmio.h"
-#include "fletchgen/profiler.h"
 #include "fletchgen/nucleus.h"
 
 namespace fletchgen {
@@ -84,10 +83,6 @@ Mantle::Mantle(std::string name,
         } else {
           e = Connect(fp, nucleus_inst_->port(fp->name()));
         }
-        // if profiling enabled...insert a signal between the edge.
-        auto s = cerata::insert(e.get(), "p_", this);
-        s->meta[PROFILE] = "true";
-
       } else if (fp->function_ == FieldPort::Function::COMMAND) {
         Connect(fp, nucleus_inst_->port(fp->name()));
       } else if (fp->function_ == FieldPort::Function::UNLOCK) {
