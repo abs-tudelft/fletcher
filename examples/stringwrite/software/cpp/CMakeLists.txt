@@ -10,7 +10,7 @@ include(CompileUnits)
 
 project(stringwrite VERSION 0.0.0 LANGUAGES CXX)
 
-find_package(arrow 0.14 CONFIG REQUIRED)
+find_package(arrow 0.15 CONFIG REQUIRED)
 find_package(fletcher CONFIG)
 
 if (NOT fletcher)

@@ -6,7 +6,7 @@ The Fletcher C++ Run-time Library enables support for Fletcher-based accelerated
 
 To build this library, the following packages are required to be installed:
 
-* [Apache Arrow 0.14+ C++ run-time and development headers](https://arrow.apache.org/install)
+* [Apache Arrow 0.15.0+ C++ run-time and development headers](https://arrow.apache.org/install)
 
 # Build & install
 

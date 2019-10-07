@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletchgen VERSION 0.0.0 LANGUAGES CXX)
 
-find_package(arrow 0.14 CONFIG REQUIRED)
+find_package(arrow 0.15 CONFIG REQUIRED)
 
 include(FetchContent)
 
