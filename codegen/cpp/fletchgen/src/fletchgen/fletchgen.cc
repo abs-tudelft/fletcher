@@ -26,7 +26,8 @@
 #include "fletchgen/fletchgen.h"
 
 namespace fletchgen {
-  int fletchgen(int argc, char **argv) {
+
+int fletchgen(int argc, char **argv) {
   // Start logging
   std::string program_name = fletchgen::GetProgramName(argv[0]);
   fletcher::StartLogging(program_name, FLETCHER_LOG_DEBUG, program_name + ".log");

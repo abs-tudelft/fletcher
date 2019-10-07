@@ -34,17 +34,19 @@ using cerata::integer;
 using cerata::Type;
 using cerata::ClockDomain;
 
+/// @brief Structure to represent an mmio register
 struct MmioReg {
-  /// Register access behavior.
+  /// Register access behavior enumeration.
   enum class Behavior {
-    CONTROL,  ///< Register contents is controlled by host software.
-    STATUS    ///< Register contents is controlled by hardware kernel.
-  } behavior;
+    CONTROL,   ///< Register contents is controlled by host software.
+    STATUS     ///< Register contents is controlled by hardware kernel.
+  } behavior;  ///< Register access behavior.
+
   /// Addressable bytes used by this register.
   uint32_t addr_space_used;
-  ///< Bit width.
+  /// Bit width.
   uint32_t width;
-  ///< Name.
+  /// Name.
   std::string name;
 };
 
@@ -77,9 +79,10 @@ struct MmioPort : public Port {
 
   /**
    * @brief Make a new MmioPort, returning a shared pointer to it.
-   * @param dir   The direction of the port.
-   * @param spec  The specification of the port.
-   * @return      A shared pointer to the new port.
+   * @param dir    The direction of the port.
+   * @param spec   The specification of the port.
+   * @param domain The clock domain.
+   * @return       A shared pointer to the new port.
    */
   static std::shared_ptr<MmioPort> Make(Port::Dir dir,
                                         MmioSpec spec = MmioSpec(),

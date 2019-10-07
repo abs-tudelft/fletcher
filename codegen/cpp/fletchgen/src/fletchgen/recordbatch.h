@@ -59,16 +59,18 @@ struct FieldPort : public Port {
 
   /// The Arrow field this port was derived from.
   std::shared_ptr<arrow::Field> field_;
-  // The Fletcher schema this port was derived from.
+  /// The Fletcher schema this port was derived from.
   std::shared_ptr<FletcherSchema> fletcher_schema_;
 
   /**
    * @brief Construct a new port derived from an Arrow field.
-   * @param name      The name of the field-derived port.
-   * @param function  The function of the field-derived port.
-   * @param field     The Arrow field to derive the port from.
-   * @param type      The Cerata type of the port.
-   * @param dir       The port direction.
+   * @param name            The name of the field-derived port.
+   * @param function        The function of the field-derived port.
+   * @param field           The Arrow field to derive the port from.
+   * @param fletcher_schema The Fletcher Schema.
+   * @param type            The Cerata type of the port.
+   * @param dir             The port direction.
+   * @param domain          The clock domain.
    */
   FieldPort(std::string name,
             Function function,
@@ -101,6 +103,7 @@ struct FieldPort : public Port {
    * @param fletcher_schema  The Fletcher-derived schema.
    * @param field            The Arrow field to derive the port from.
    * @param ctrl             Whether to generate this command port with or without ctrl field.
+   * @param domain           The clock domain.
    * @return                 A shared pointer to a new FieldPort.
    */
   static std::shared_ptr<FieldPort> MakeCommandPort(const std::shared_ptr<FletcherSchema> &fletcher_schema,
@@ -112,6 +115,7 @@ struct FieldPort : public Port {
    * @brief Construct a field-derived unlock port.
    * @param fletcher_schema  The Fletcher-derived schema.
    * @param field            The Arrow field to derive the port from.
+   * @param domain           The clock domain.
    * @return                 A shared pointer to a new FieldPort.
    */
   static std::shared_ptr<FieldPort> MakeUnlockPort(const std::shared_ptr<FletcherSchema> &fletcher_schema,

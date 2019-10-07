@@ -16,6 +16,7 @@
 
 namespace fletchgen {
 
+/// @brief Fletchgen main entry. Used to wrap into PyFletchgen.
 int fletchgen(int argc, char **argv);
-}
 
+}  // namespace fletchgen

@@ -29,7 +29,9 @@ namespace fletchgen {
 using cerata::Port;
 using cerata::Component;
 
+/// Fletchgen metadata for mmio-controlled kernel ports.
 constexpr char MMIO_KERNEL[] = "fletchgen_mmio_kernel";
+/// Fletchgen metadata for mmio-controlled buffer address ports.
 constexpr char MMIO_BUFFER[] = "fletchgen_mmio_buffer";
 
 /**

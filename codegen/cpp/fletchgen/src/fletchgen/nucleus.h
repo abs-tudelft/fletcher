@@ -55,7 +55,10 @@ struct Nucleus : Component {
                                        const std::vector<fletcher::RecordBatchDescription> &batch_desc,
                                        const std::vector<MmioReg>& custom_regs);
 
+  /// The kernel component.
   std::shared_ptr<Kernel> kernel;
+
+  /// The kernel instance.
   Instance *kernel_inst;
 };
 

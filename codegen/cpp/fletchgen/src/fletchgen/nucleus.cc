@@ -59,7 +59,10 @@ std::unique_ptr<Instance> ArrayCmdCtrlMergerInstance(const std::string &name) {
   return result;
 }
 
-void CopyFieldPorts(Component *nucleus, Component *kernel, const RecordBatch &record_batch, FieldPort::Function fun) {
+static void CopyFieldPorts(Component *nucleus,
+                           Component *kernel,
+                           const RecordBatch &record_batch,
+                           FieldPort::Function fun) {
   // Add Arrow field derived ports with some function.
   auto field_ports = record_batch.GetFieldPorts(fun);
   for (const auto &fp : field_ports) {
@@ -75,7 +78,7 @@ void CopyFieldPorts(Component *nucleus, Component *kernel, const RecordBatch &re
 Nucleus::Nucleus(const std::string &name,
                  const std::deque<RecordBatch *> &recordbatches,
                  const std::vector<fletcher::RecordBatchDescription> &batch_desc,
-                 const std::vector<MmioReg>& custom_regs)
+                 const std::vector<MmioReg> &custom_regs)
     : Component("Nucleus_" + name) {
 
   // TODO(johanpel): move this sanity check to where it should be
@@ -224,7 +227,7 @@ Nucleus::Nucleus(const std::string &name,
 std::shared_ptr<Nucleus> Nucleus::Make(const std::string &name,
                                        const std::deque<RecordBatch *> &recordbatches,
                                        const std::vector<fletcher::RecordBatchDescription> &batch_desc,
-                                       const std::vector<MmioReg>& custom_regs) {
+                                       const std::vector<MmioReg> &custom_regs) {
   return std::make_shared<Nucleus>(name, recordbatches, batch_desc, custom_regs);
 }
 
