@@ -89,10 +89,10 @@ TEST(RecordBatchAnalyzer, VisitStruct) {
   ASSERT_TRUE(rbd.fields[0].type_->Equals(arrow::struct_(struct_fields)));
   ASSERT_EQ(rbd.fields[0].null_count_, 0);
   ASSERT_EQ(rbd.buffers[0].level_, 1);
-  ASSERT_EQ(rbd.buffers[0].desc_, "S:struct<A: uint16, B: uint32>:uint16 (values)");
+  ASSERT_EQ(rbd.buffers[0].desc_, "S:struct<A: uint16 not null, B: uint32 not null>:uint16 (values)");
   ASSERT_EQ(rbd.buffers[0].size_, 4 * sizeof(uint16_t));
   ASSERT_EQ(rbd.buffers[1].level_, 1);
-  ASSERT_EQ(rbd.buffers[1].desc_, "S:struct<A: uint16, B: uint32>:uint32 (values)");
+  ASSERT_EQ(rbd.buffers[1].desc_, "S:struct<A: uint16 not null, B: uint32 not null>:uint32 (values)");
   ASSERT_EQ(rbd.buffers[1].size_, 4 * sizeof(uint32_t));
 }
 
@@ -148,9 +148,9 @@ TEST(SchemaAnalyzer, VisitStruct) {
   ASSERT_TRUE(rbd.fields[0].type_->Equals(arrow::struct_(struct_fields)));
   ASSERT_EQ(rbd.fields[0].null_count_, 0);
   ASSERT_EQ(rbd.buffers[0].level_, 1);
-  ASSERT_EQ(rbd.buffers[0].desc_, "S:struct<A: uint16, B: uint32>:uint16 (values)");
+  ASSERT_EQ(rbd.buffers[0].desc_, "S:struct<A: uint16 not null, B: uint32 not null>:uint16 (values)");
   ASSERT_EQ(rbd.buffers[0].size_, 0);
   ASSERT_EQ(rbd.buffers[1].level_, 1);
-  ASSERT_EQ(rbd.buffers[1].desc_, "S:struct<A: uint16, B: uint32>:uint32 (values)");
+  ASSERT_EQ(rbd.buffers[1].desc_, "S:struct<A: uint16 not null, B: uint32 not null>:uint32 (values)");
   ASSERT_EQ(rbd.buffers[1].size_, 0);
 }
