@@ -90,20 +90,20 @@ std::shared_ptr<arrow::Schema> AppendMetaRequired(const arrow::Schema &schema,
   else
     values.emplace_back("write");
   auto meta = std::make_shared<arrow::KeyValueMetadata>(keys, values);
-  return schema.AddMetadata(meta);
+  return schema.WithMetadata(meta);
 }
 
 std::shared_ptr<arrow::Field> AppendMetaEPC(const arrow::Field &field, int epc) {
   auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({"fletcher_epc"}),
                                                         std::vector<std::string>({std::to_string(epc)}));
-  return field.AddMetadata(meta);
+  return field.WithMetadata(meta);
 }
 
 std::shared_ptr<arrow::Field> AppendMetaIgnore(const arrow::Field &field) {
   std::vector<std::string> ignore_key = {"fletcher_ignore"};
   std::vector<std::string> ignore_value = {"true"};
   auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
-  return field.AddMetadata(meta);
+  return field.WithMetadata(meta);
 }
 
 bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Schema> *out) {
