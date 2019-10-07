@@ -5,9 +5,9 @@ Before you start, you need a few libraries and tools to follow this tutorial.
 Everything up to step 5 (simulation) can be done with completely free and open-source tools.
 
 ### For hardware generation (step 1 - 3):
-The examples in this part of the tutorial are written in Python, so you'll need 
+The examples in this part of the tutorial are written in Python, so you'll need
 * Install [Python 3.6+](https://www.python.org/)
-* Install [PyArrow 0.14+](https://arrow.apache.org/docs/python/)
+* Install [PyArrow 0.15.0+](https://arrow.apache.org/docs/python/)
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design generator tool.
 * Build and install [Fletchgen](../../codegen/fletchgen/README.md).
@@ -17,10 +17,10 @@ Furthermore you'll need to build and install Fletchgen - the Fletcher design gen
 * Install [vhdeps](https://github.com/abs-tudelft/vhdeps) - A VHDL dependency analyzer.
 
 ### For host-side software (step 6)
-We will also show how to write a software application, ready to be accelerated using Fletcher and Arrow, that runs 
+We will also show how to write a software application, ready to be accelerated using Fletcher and Arrow, that runs
 on the CPU. We call this the "host-side" application, as the CPU "hosts" the accelerator.
 
-For each language, Fletcher provides a run-time library to manage the data and control flow to and from a 
+For each language, Fletcher provides a run-time library to manage the data and control flow to and from a
 Fletcher-based accelerator.
 
 | Language | Run-time library                                           |
@@ -37,48 +37,48 @@ For actual hardware acceleration, you'll need to access to one of the supported 
 # Tutorial
 The main goal of this tutorial is to learn the basics of working with the Fletcher framework.
 
-To this end, let's assume we want to create a very simple FPGA accelerator design that just sums a column of integers 
-in a table, or in Apache Arrow terminology: sums an array (column) of integers of some recordbatch (tabular data 
+To this end, let's assume we want to create a very simple FPGA accelerator design that just sums a column of integers
+in a table, or in Apache Arrow terminology: sums an array (column) of integers of some recordbatch (tabular data
 structure).
 
 Schematically, our desired functionality would look as follows:
 
 ![](doc/sum_top.svg)
 
-We've included some dummy data in our ExampleBatch "table" that we'll also use throughout this example. 
+We've included some dummy data in our ExampleBatch "table" that we'll also use throughout this example.
 
 The next few steps will take us through how we can use Fletcher to realize the functionality shown above.
 
-1. [Generate a Schema](#1-generate-a-schema)                    to represent the type of RecordBatch the kernel must 
+1. [Generate a Schema](#1-generate-a-schema)                    to represent the type of RecordBatch the kernel must
                                                                 operate on.
 2. [Generate a RecordBatch](#2-generate-a-recordbatch)          with some dummy data for simulation.
-3. [Run Fletchgen](#3-run-fletchgen)                            to create a design and kernel template from the Schema 
+3. [Run Fletchgen](#3-run-fletchgen)                            to create a design and kernel template from the Schema
                                                                 and RecordBatch.
 4. [Implement the kernel](#4-implement-the-kernel)              using a HDL or HLS.
 5. [Simulate the design](#5-simulate-the-design)                to verify its functionality.
-6. [Write the host-side software](#6-write-host-side-software)  that integrates with your accelerator through 
+6. [Write the host-side software](#6-write-host-side-software)  that integrates with your accelerator through
                                                                 Apache Arrow.
-7. [Target a platform](#7-target-a-platform)                    to place and route for a real FPGA accelerator 
+7. [Target a platform](#7-target-a-platform)                    to place and route for a real FPGA accelerator
                                                                 implementation.
-                                                                
+
 # 1. Generate a Schema
 
-Fletchgen is the design generator tool of Fletcher. It requires an Arrow *schema* as input. A schema is nothing more 
-than a description of the type of data that you can find in an Arrow *recordbatch*. A recordbatch is a tabular 
-datastructure with columns. These columns are called Arrow *arrays*. Don't confuse them with C-like arrays! 
+Fletchgen is the design generator tool of Fletcher. It requires an Arrow *schema* as input. A schema is nothing more
+than a description of the type of data that you can find in an Arrow *recordbatch*. A recordbatch is a tabular
+datastructure with columns. These columns are called Arrow *arrays*. Don't confuse them with C-like arrays!
 They can be much more complex than that!
 
 When we look at the figure above, we see that our computational kernel (the Sum kernel) will just take one column from
-one RecordBatch, and spit out the sum of all the numbers in the column. 
+one RecordBatch, and spit out the sum of all the numbers in the column.
 
-We observe that name of the column with the numbers is `number`. Suppose we'll choose the numbers to be of Arrow type 
-`int64`. We may now describe an Arrow *field* of the schema that corresponds to our `number` column. 
+We observe that name of the column with the numbers is `number`. Suppose we'll choose the numbers to be of Arrow type
+`int64`. We may now describe an Arrow *field* of the schema that corresponds to our `number` column.
 
-There is one more thing that Arrow needs to know about the field; whether or not it's *nullable*, meaning that the 
+There is one more thing that Arrow needs to know about the field; whether or not it's *nullable*, meaning that the
 number can also be invalid (for example, there was a corrupted sample in some measurement).  For now, we'll assume that
 the numbers are not nullable (i.e. they are always valid).
 
-We will use a little Python script to generate the field. 
+We will use a little Python script to generate the field.
 
 [Continue the tutorial by checking out this iPython Notebook.](hardware/generate-schema.ipynb)
 
@@ -125,9 +125,9 @@ We've used the following options:
 
 Now, Fletchgen will generate all the things we've listed above. The output files are as follows:
 
-* `hardware/recordbatch.srec`: our memory model contents. 
+* `hardware/recordbatch.srec`: our memory model contents.
 * `hardware/vhdl/Sum.vhdt`: a template for the Sum kernel. Note that there was already a `Sum.vhd` file in that folder,
-so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there). 
+so Fletchgen was kind enough not to overwrite it (we've already implemented the kernel there).
 It will always overwrite a `.vhdt` file, though!
 * `hardware/vhdl/ExampleBatch.vhd`: a generated "RecordBatchReader".
 * `hardware/vhdl/Mantle.vhd`: a generated top-level wrapper instantiating the "RecordBatchReader" and the "Sum" kernel.
@@ -136,14 +136,14 @@ It will always overwrite a `.vhdt` file, though!
 # 4. Implement the kernel
 
 You can choose any tool or flow you'd like to implement your kernel, as long as you adhere to the interface defined by
-the template. 
+the template.
 
 Take a look at the [`Sum.vhd`](hardware/vhdl/Sum.vhd) file from the subfolder of this readme to see how we've implemented this kernel in HDL.
 
-The kernel implementation includes 
+The kernel implementation includes
 * A state machine to:
   * Generate a command for the generated interface.
-  * Absorb data from the data streams and sum the values. 
+  * Absorb data from the data streams and sum the values.
 * An AXI4-lite compatible MMIO slave.
   * Fletcher uses this to communicate control information and RecordBatch metadata to your kernel.
 
@@ -154,27 +154,27 @@ We'll follow up with an HLS example soon!
 
 # 5. Simulate the design
 
-Now, `SimTop_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool. 
-At the time of writing, this tool gives us two simulation targets, either [GHDL](https://github.com/ghdl/ghdl) 
+Now, `SimTop_tc.vhd` can be simulated. We will do this using the [vhdeps](https://github.com/abs-tudelft/vhdeps) tool.
+At the time of writing, this tool gives us two simulation targets, either [GHDL](https://github.com/ghdl/ghdl)
 or Questasim/Modelsim.
 
-Suppose we are targeting GHDL, we can invoke `vhdeps` as follows (in the `hardware` subdirectory). 
+Suppose we are targeting GHDL, we can invoke `vhdeps` as follows (in the `hardware` subdirectory).
 
 ```console
  vhdeps -i path/to/fletcher/hardware -i . ghdl SimTop_tc
 ```
 
-`vhdeps` will automatically analyze the dependencies of our simulation top level test case. These files are found in 
+`vhdeps` will automatically analyze the dependencies of our simulation top level test case. These files are found in
 the Fletcher hardware directory and the current directory, so we include them using the ```-i``` flag.
 
-Once GHDL has compiled all Fletcher core hardware components and the files generated by Fletchgen, you should see the 
+Once GHDL has compiled all Fletcher core hardware components and the files generated by Fletchgen, you should see the
 simulation top-level returning some values in the return register.
 ```
 Return register 0: 0xFFFFFFFA
 Return register 1: 0xFFFFFFFF
 ```
-In the implementation of our kernel (`Sum.vhd`), we return the summed value on return register 0. You can see that it 
-returned `0xFFFFFFFA`, which is -6 in two's complement hexadecimal format. It seems our kernel works properly according 
+In the implementation of our kernel (`Sum.vhd`), we return the summed value on return register 0. You can see that it
+returned `0xFFFFFFFA`, which is -6 in two's complement hexadecimal format. It seems our kernel works properly according
 to our test case!
 
 To summarize what we've done so far:
@@ -186,7 +186,7 @@ To summarize what we've done so far:
 * We've implemented the kernel (not in this tutorial).
 * We've run the example using the free and open-source tools `vhdeps` and `GHDL`.
 
-If you'd like to run the simulation with a waveform GUI, you could use ModelSim or QuestaSim through ```vhdeps``` as 
+If you'd like to run the simulation with a waveform GUI, you could use ModelSim or QuestaSim through ```vhdeps``` as
 follows:
 
 ```console
@@ -195,7 +195,7 @@ follows:
 
 We just added the `--gui` flag and changed the simulator target to `vsim`.
 
-In the Modelsim/Questasim GUI, we can add the waveforms for our kernel and zoom in on our waveforms by issuing the 
+In the Modelsim/Questasim GUI, we can add the waveforms for our kernel and zoom in on our waveforms by issuing the
 following command on the TCL terminal:
 
 ```tcl
