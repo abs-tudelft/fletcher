@@ -44,7 +44,7 @@ class Identifier {
   /// @brief Create a copy and add a new part to the Identifier.
   Identifier operator+(const std::string &rhs) const;
   /// @brief Return a human-readable string of the identifier.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
  private:
   /// The separator character between different parts of the identifier.
   std::optional<char> separator_ = '_';

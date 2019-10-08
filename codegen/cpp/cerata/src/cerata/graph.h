@@ -51,10 +51,12 @@ class Graph : public Named {
   bool IsComponent() const { return id_ == COMPONENT; }
   /// @brief Return true if this graph is an instance, false otherwise.
   bool IsInstance() const { return id_ == INSTANCE; }
-  /// @brief Add an object to the component
-  virtual Graph &AddObject(const std::shared_ptr<Object> &obj);
+  /// @brief Add an object to the component.
+  virtual Graph &Add(const std::shared_ptr<Object> &obj);
+  /// @brief Add a list of objects to the component.
+  virtual Graph &Add(const std::initializer_list<std::shared_ptr<Object>> &objs);
   /// @brief Remove an object from the component
-  virtual Graph &RemoveObject(Object *obj);
+  virtual Graph &Remove(Object *obj);
 
   /// @brief Get all objects of a specific type.
   template<typename T>
@@ -69,7 +71,7 @@ class Graph : public Named {
   }
 
   /// @brief Get a NodeArray object of a specific type with a specific name
-  NodeArray *GetArray(Node::NodeID node_id, const std::string &array_name) const;
+  std::optional<NodeArray *> GetArray(Node::NodeID node_id, const std::string &array_name) const;
   /// @brief Get a Node of a specific type with a specific name
   std::optional<Node *> GetNode(const std::string &node_name) const;
   /// @brief Get a Node of a specific type with a specific name
@@ -179,7 +181,7 @@ class Instance : public Graph {
   static std::unique_ptr<Instance> Make(Component *component);
 
   /// @brief Add a node to the component, throwing an exception if the node is a signal.
-  Graph &AddObject(const std::shared_ptr<Object> &obj) override;
+  Graph &Add(const std::shared_ptr<Object> &obj) override;
 
   /// @brief Return the component this is an instance of.
   Component *component() const { return component_; }

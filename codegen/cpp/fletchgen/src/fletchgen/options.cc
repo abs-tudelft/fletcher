@@ -59,6 +59,13 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                "file exists already in the specified path, the output filename will be <filename>.<extension>t. This "
                "file IS always overwritten. This applies only to files that the user should modify.");
 
+  app.add_option("--regs", options->regs,
+                 "Names of custom registers in the following format: \"<behavior>:<width>:<name>\", where <behavior> "
+                 "is one character from the following options:\n"
+                 "  c : (control) register content is controlled by host-side software.\n"
+                 "  s : (status) register content is controlled by hardware kernel.\n"
+                 "Example: \"-reg32 c:my_host_to_kernel_signaling_reg s:my_kernel_to_host_signaling_reg\"");
+
   app.add_flag("--axi", options->axi_top,
                "Generate AXI top-level template (VHDL only).");
   app.add_flag("--sim", options->sim_top,
@@ -82,7 +89,7 @@ bool Options::Parse(Options *options, int argc, char **argv) {
     options->quit = true;
     return true;
   } catch (CLI::Error &e) {
-    FLETCHER_LOG(ERROR, e.get_name() + e.what());
+    FLETCHER_LOG(ERROR, e.get_name() + ":\n" + e.what());
     return false;
   }
 

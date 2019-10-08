@@ -102,7 +102,7 @@ static std::shared_ptr<Component> BusArbiter(BusSpec spec) {
       Parameter::Make("MST_REQ_SLICE", boolean(), booll(true)),
       Parameter::Make("MST_DAT_SLICE", boolean(), booll(true)),
       Parameter::Make("SLV_DAT_SLICES", boolean(), booll(true)),
-      Port::Make(bus_cr()),
+      Port::Make("bcd", cr(), Port::Dir::IN, bus_cd()),
       mst,
       slaves_array,
   });
@@ -118,7 +118,7 @@ static std::shared_ptr<Component> BusArbiter(BusSpec spec) {
 std::unique_ptr<Instance> BusArbiterInstance(BusSpec spec) {
   auto optional_existing_component = cerata::default_component_pool()->Get(BusArbiterName(spec));
   if (optional_existing_component) {
-    return Instance::Make(optional_existing_component.value());
+    return Instance::Make(*optional_existing_component);
   } else {
     auto new_component = BusArbiter(spec);
     return BusArbiterInstance(spec);
@@ -139,7 +139,7 @@ std::shared_ptr<Component> BusReadSerializer() {
       Parameter::Make("SLV_DAT_SLICE_DEPTH", integer(), intl(2)),
       Parameter::Make("MST_REQ_SLICE_DEPTH", integer(), intl(2)),
       Parameter::Make("MST_DAT_SLICE_DEPTH", integer(), intl(2)),
-      Port::Make(bus_cr()),
+      Port::Make("bcd", cr(), Port::Dir::IN, bus_cd()),
       Port::Make("mst", bus_read(aw, mlw, mdw), Port::Dir::OUT),
       Port::Make("slv", bus_read(aw, slw, sdw), Port::Dir::OUT),
   });
@@ -166,21 +166,16 @@ std::shared_ptr<Type> bus(BusSpec spec) {
     auto len_width = intl(spec.len_width);
     auto data_width = intl(spec.data_width);
     switch (spec.function) {
-      case BusFunction::READ:
-        result = bus_read(addr_width, len_width, data_width);
+      case BusFunction::READ:result = bus_read(addr_width, len_width, data_width);
         break;
-      case BusFunction::WRITE:
-        result = bus_write(addr_width, len_width, data_width);
-        break;
-      default:
-        FLETCHER_LOG(FATAL, "Corrupted bus function field.");
+      case BusFunction::WRITE:result = bus_write(addr_width, len_width, data_width);
         break;
     }
   }
   return result;
 }
 
-std::shared_ptr<BusPort> BusPort::Make(std::string name, Port::Dir dir, BusSpec spec) {
+std::shared_ptr<BusPort> BusPort::Make(const std::string& name, Port::Dir dir, BusSpec spec) {
   return std::make_shared<BusPort>(dir, spec, name);
 }
 

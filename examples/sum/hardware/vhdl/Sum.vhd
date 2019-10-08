@@ -1,4 +1,4 @@
--- Copyright 2019 Delft University of Technology
+-- Copyright 2018-2019 Delft University of Technology
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -16,257 +16,203 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.Axi_pkg.all;
-use work.UtilStr_pkg.all;
+-- This kernel sums the values of an integer column.
 
--- This components implements the sum example kernel.
 entity Sum is
-  generic (
-    BUS_ADDR_WIDTH : integer := 64
-  );
   port (
     kcd_clk                          : in  std_logic;
     kcd_reset                        : in  std_logic;
-    mmio_awvalid                     : in  std_logic;
-    mmio_awready                     : out std_logic;
-    mmio_awaddr                      : in  std_logic_vector(31 downto 0);
-    mmio_wvalid                      : in  std_logic;
-    mmio_wready                      : out std_logic;
-    mmio_wdata                       : in  std_logic_vector(31 downto 0);
-    mmio_wstrb                       : in  std_logic_vector(3 downto 0);
-    mmio_bvalid                      : out std_logic;
-    mmio_bready                      : in  std_logic;
-    mmio_bresp                       : out std_logic_vector(1 downto 0);
-    mmio_arvalid                     : in  std_logic;
-    mmio_arready                     : out std_logic;
-    mmio_araddr                      : in  std_logic_vector(31 downto 0);
-    mmio_rvalid                      : out std_logic;
-    mmio_rready                      : in  std_logic;
-    mmio_rdata                       : out std_logic_vector(31 downto 0);
-    mmio_rresp                       : out std_logic_vector(1 downto 0);
+    start                            : in  std_logic;
+    stop                             : in  std_logic;
+    reset                            : in  std_logic;
+    idle                             : out std_logic;
+    busy                             : out std_logic;
+    done                             : out std_logic;
+    result                           : out std_logic_vector(63 downto 0);
+    ExampleBatch_firstidx            : in  std_logic_vector(31 downto 0);
+    ExampleBatch_lastidx             : in  std_logic_vector(31 downto 0);
     ExampleBatch_number_valid        : in  std_logic;
     ExampleBatch_number_ready        : out std_logic;
     ExampleBatch_number_dvalid       : in  std_logic;
     ExampleBatch_number_last         : in  std_logic;
     ExampleBatch_number              : in  std_logic_vector(63 downto 0);
+    ExampleBatch_number_unl_valid    : in  std_logic;
+    ExampleBatch_number_unl_ready    : out std_logic;
+    ExampleBatch_number_unl_tag      : in  std_logic_vector(0 downto 0);
     ExampleBatch_number_cmd_valid    : out std_logic;
     ExampleBatch_number_cmd_ready    : in  std_logic;
     ExampleBatch_number_cmd_firstIdx : out std_logic_vector(31 downto 0);
     ExampleBatch_number_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    ExampleBatch_number_cmd_ctrl     : out std_logic_vector(1*bus_addr_width-1 downto 0);
-    ExampleBatch_number_cmd_tag      : out std_logic_vector(0 downto 0);
-    ExampleBatch_number_unl_valid    : in  std_logic;
-    ExampleBatch_number_unl_ready    : out std_logic;
-    ExampleBatch_number_unl_tag      : in  std_logic_vector(0 downto 0)
+    ExampleBatch_number_cmd_tag      : out std_logic_vector(0 downto 0)
   );
 end entity;
+
 architecture Implementation of Sum is
-  -- Registers used:
-  constant REG_CONTROL          : natural :=  0;
-  constant REG_STATUS           : natural :=  1;
-  constant REG_RETURN0          : natural :=  2;
-  constant REG_RETURN1          : natural :=  3;
-  constant REG_NUMBER_FIRSTIDX  : natural :=  4;
-  constant REG_NUMBER_LASTIDX   : natural :=  5;
-  constant REG_NUMBER_VALUES_LO : natural :=  6;
-  constant REG_NUMBER_VALUES_HI : natural :=  7;
-
-  constant REG_WIDTH            : natural :=  32;
-  constant NUM_REGS             : natural :=   8;
-
-  type reg_array_t is array(natural range <>) of std_logic_vector(31 downto 0);
   
-  -- Register signals, where rreg is read reg and wreg write reg as seen from 
-  -- host side.
-  signal rreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
-  signal rreg_array             : reg_array_t(0 to NUM_REGS-1);
-  signal rreg_en                : std_logic_vector(NUM_REGS-1 downto 0);
+  -- Enumeration type for our state machine.
+  type state_t is (STATE_IDLE, 
+                   STATE_COMMAND, 
+                   STATE_CALCULATING, 
+                   STATE_UNLOCK, 
+                   STATE_DONE);
   
-  signal wreg_array             : reg_array_t(0 to NUM_REGS-1);
-  signal wreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
-
-  signal stat_done              : std_logic;
-  signal stat_busy              : std_logic;
-  signal stat_idle              : std_logic;
-  signal ctrl_reset             : std_logic;
-  signal ctrl_stop              : std_logic;
-  signal ctrl_start             : std_logic;
-  
-  type haf_state_t IS (RESET, WAITING, SETUP, RUNNING, DONE);
-	signal state, state_next : haf_state_t;
+  -- Current state register and next state signal.
+	signal state, state_next : state_t;
 
   -- Accumulate the total sum here
-  signal accumulator, accumulator_next : signed(2*REG_WIDTH-1 downto 0);
-  
-  signal kcd_reset_n            : std_logic;
+  signal accumulator, accumulator_next : signed(63 downto 0);  
   
 begin
-  kcd_reset_n <= not(kcd_reset);
-  -- Instantiate the AXI mmio component to communicate with host more easily 
-  -- through registers.
-  axi_mmio_inst : AxiMmio
-    generic map (
-      BUS_ADDR_WIDTH     => 32,
-      BUS_DATA_WIDTH     => 32,
-      NUM_REGS           => NUM_REGS,
-      REG_CONFIG         => "WRRRWWWW",
-      SLV_R_SLICE_DEPTH  => 0,
-      SLV_W_SLICE_DEPTH  => 0
-    )
-    port map (
-      clk                => kcd_clk,
-      reset_n            => kcd_reset_n,
-      s_axi_awvalid      => mmio_awvalid,
-      s_axi_awready      => mmio_awready,
-      s_axi_awaddr       => mmio_awaddr,
-      s_axi_wvalid       => mmio_wvalid,
-      s_axi_wready       => mmio_wready,
-      s_axi_wdata        => mmio_wdata,
-      s_axi_wstrb        => mmio_wstrb,
-      s_axi_bvalid       => mmio_bvalid,
-      s_axi_bready       => mmio_bready,
-      s_axi_bresp        => mmio_bresp,
-      s_axi_arvalid      => mmio_arvalid,
-      s_axi_arready      => mmio_arready,
-      s_axi_araddr       => mmio_araddr,
-      s_axi_rvalid       => mmio_rvalid,
-      s_axi_rready       => mmio_rready,
-      s_axi_rdata        => mmio_rdata,
-      s_axi_rresp        => mmio_rresp,
-      regs_out           => wreg_concat,
-      regs_in            => rreg_concat,
-      regs_in_en         => rreg_en
-    );
 
-  -- Turn signals into something more readable
-  write_regs_unconcat: for I in 0 to NUM_REGS-1 generate
-    wreg_array(I) <= wreg_concat((I+1)*32-1 downto I*32);
-  end generate;
-  read_regs_concat: for I in 0 to NUM_REGS-1 generate
-    rreg_concat((I+1)*32-1 downto I*32) <= rreg_array(I);
-  end generate;
-
-  -- Always enable read registers
-  rreg_array(REG_STATUS) <= (0 => stat_idle, 1 => stat_busy, 2 => stat_done, others => '0');
-  rreg_en <= (REG_STATUS => '1', REG_RETURN0 => '1', REG_RETURN1 => '1', others => '0');
-    
-  -- Connect the control bits  
-  ctrl_start <= wreg_array(REG_CONTROL)(0);
-  ctrl_stop  <= wreg_array(REG_CONTROL)(1);
-  ctrl_reset <= wreg_array(REG_CONTROL)(2);
-  
   ------------------------------------------------------------------------------
   -- Sum implementation
   ------------------------------------------------------------------------------
   
-  -- Sum output is the accumulator value
-  rreg_array(REG_RETURN0) <= std_logic_vector(accumulator(1*REG_WIDTH-1 downto 0*REG_WIDTH));
-  rreg_array(REG_RETURN1) <= std_logic_vector(accumulator(2*REG_WIDTH-1 downto 1*REG_WIDTH));
+  -- Put the accumulator value on the result register.
+  result <= std_logic_vector(accumulator);
 
-  -- Provide base address to ArrayReader
-  ExampleBatch_number_cmd_ctrl <= wreg_array(REG_NUMBER_VALUES_HI) 
-                                & wreg_array(REG_NUMBER_VALUES_LO);
-
-  -- Set the first and last index on our array
-  ExampleBatch_number_cmd_firstIdx <= wreg_array(REG_NUMBER_FIRSTIDX);
-  ExampleBatch_number_cmd_lastIdx  <= wreg_array(REG_NUMBER_LASTIDX);
-
-  logic_p: process (
-    -- State
-    state, 
-    -- Control signals
-    ctrl_start, ctrl_stop, ctrl_reset, 
-    -- Command stream
-    ExampleBatch_number_cmd_ready, 
-    -- Data stream
-    ExampleBatch_number, ExampleBatch_number_valid, ExampleBatch_number_last, ExampleBatch_number_dvalid,
-    -- Unlock stream
-    ExampleBatch_number_unl_valid,
-    -- Internal
-    accumulator
-  ) is 
+  -- We apply a two-process method coding style. That means we split up our
+  -- whole circuit in a combinatorial part (logic) and a sequential part 
+  -- (registers).
+  
+  -- Combinatorial part:
+  combinatorial_proc : process (all) is 
   begin
     
-    -- Default values:
+    -- We first determine the default outputs of our combinatorial circuit.
+    -- They may be overwritten by sequential statements within this process
+    -- later on.
     
-    -- No command to "number" ArrayReader
-    ExampleBatch_number_cmd_valid <= '0';
-    -- Do not accept values from the "number" ArrayReader
-    ExampleBatch_number_unl_ready <= '0';
-    -- Retain accumulator value
-    accumulator_next <= accumulator;
-    -- Stay in same state
-    state_next <= state;
+    -- Make sure the command stream is deasserted by default.
+    ExampleBatch_number_cmd_valid    <= '0';
+    ExampleBatch_number_cmd_firstIdx <= (others => '0');
+    ExampleBatch_number_cmd_lastIdx  <= (others => '0');
+    ExampleBatch_number_cmd_tag      <= (others => '0');
+    
+    ExampleBatch_number_unl_ready <= '0'; -- Do not accept "unlocks".
+    accumulator_next <= accumulator;      -- Retain accumulator value.
+    state_next <= state;                  -- Retain current state.
 
-    -- States:
+    -- For every state, we will determine the outputs of our combinatorial 
+    -- circuit.
     case state is
-      when RESET =>
-        stat_done <= '0';
-        stat_busy <= '0';
-        stat_idle <= '0';
-        state_next <= WAITING;
-        -- Start sum at 0
+      when STATE_IDLE =>
+        -- Idle: We just wait for the start bit to come up.
+        done <= '0';
+        busy <= '0';
+        idle <= '1';
+                
+        -- Wait for the start signal (typically controlled by the host-side 
+        -- software).
+        if start = '1' then
+          state_next <= STATE_COMMAND;
+        end if;
         accumulator_next <= (others => '0');
 
-      when WAITING =>
-        stat_done <= '0';
-        stat_busy <= '0';
-        stat_idle <= '1';
-        -- Wait for start signal from UserCore (initiated by software)
-        if ctrl_start = '1' then
-          state_next <= SETUP;
-        end if;
-
-      when SETUP =>
-        stat_done <= '0';
-        stat_busy <= '1';
-        stat_idle <= '0';
-        -- Send address and row indices to the ArrayReader
-        ExampleBatch_number_cmd_valid <= '1';
+      when STATE_COMMAND =>
+        -- Command: we send a command to the generated interface.
+        done <= '0';
+        busy <= '1';  
+        idle <= '0';
+                
+        -- The command is a stream, so we assert its valid bit and wait in this
+        -- state until it is accepted by the generated interface. If the valid
+        -- and ready bit are both asserted in the same cycle, the command is
+        -- accepted.        
+        -- We need to supply a command to the generated interface for each 
+        -- Arrow field. In the case of this kernel, that means we just have to
+        -- generate a single command. The command is sent on the command stream 
+        -- to the generated interface.
+        -- The command includes a range of rows from the recordbatch we want to
+        -- work on. In this simple example, we just want this kernel to work on 
+        -- all the rows in the RecordBatch. 
+        -- The starting row and ending row (exclusive) that this kernel should 
+        -- work on is supplied via MMIO and appears on the firstIdx and lastIdx 
+        -- ports.
+        -- We can use the tag field of the command stream to identify different 
+        -- commands. We don't really use it for this example, so we just set it
+        -- to zero.
+        ExampleBatch_number_cmd_valid    <= '1';
+        ExampleBatch_number_cmd_firstIdx <= ExampleBatch_firstIdx;
+        ExampleBatch_number_cmd_lastIdx  <= ExampleBatch_lastIdx;
+        ExampleBatch_number_cmd_tag      <= (others => '0');
+        
         if ExampleBatch_number_cmd_ready = '1' then
-          -- ArrayReader has received the command
-          state_next <= RUNNING;
+          state_next <= STATE_CALCULATING;
         end if;
 
-      when RUNNING =>
-        stat_done <= '0';
-        stat_busy <= '1';
-        stat_idle <= '0';
-        -- Always ready to accept input
+      when STATE_CALCULATING =>
+        -- Calculating: we stream in and accumulate the numbers one by one.
+        done <= '0';
+        busy <= '1';  
+        idle <= '0';
+        
+        -- In this state, we are always ready to process input from the "number"
+        -- stream. We don't have to generate backpressure to the generated 
+        -- interface. The addition can be performed in one cycle.
         ExampleBatch_number_ready <= '1';
+        
+        -- When the generated interface has valid data for us on our "number"
+        -- stream, we just add the input to whatever the accumulator currently
+        -- holds and throw that on the output of this combinatorial circuit.
         if ExampleBatch_number_valid = '1' then
-          -- Sum the record to the accumulator
           accumulator_next <= accumulator + signed(ExampleBatch_number);
-          -- Wait for last element from ArrayReader
+          
+          -- All we have to do now is check if the last number was supplied.
+          -- If that is the case, we can go to the "done" state.
           if ExampleBatch_number_last = '1' then
-            state_next <= DONE;
+            state_next <= STATE_UNLOCK;
           end if;
         end if;
+        
+      when STATE_UNLOCK =>
+        -- Unlock: the generated interface delivered all items in the stream.
+        -- The unlock stream is supplied to make sure all bus transfers of the
+        -- corresponding command are completed.
+        done <= '1';
+        busy <= '0';
+        idle <= '1';
+        
+        -- Ready to handshake the unlock stream:
+        ExampleBatch_number_unl_ready <= '1';
+        -- Handshake when it is valid and go to the done state.
+        if ExampleBatch_number_unl_valid = '1' then
+          state_next <= STATE_DONE;
+        end if;
 
-      when DONE =>
-        stat_done <= '1';
-        stat_busy <= '0';
-        stat_idle <= '1';
-
-      when others =>
-        stat_done <= '0';
-        stat_busy <= '0';
-        stat_idle <= '0';
+      when STATE_DONE =>
+        -- Done: the kernel is done with its job.
+        done <= '1';
+        busy <= '0';
+        idle <= '1';
+        
+        -- Wait for the reset signal (typically controlled by the host-side 
+        -- software), so we can go to idle again. This reset is not to be
+        -- confused with the system-wide reset that travels into the kernel
+        -- alongside the clock (kcd_reset).
+        if reset = '1' then
+          state_next <= STATE_IDLE;
+        end if;
+        
     end case;
   end process;
 
 
-  state_p: process (kcd_clk)
+ -- Sequential part:
+  sequential_proc: process (kcd_clk)
   begin
-    -- Control state machine
+    -- On the rising edge of the kernel clock:
     if rising_edge(kcd_clk) then
-      if kcd_reset = '1' or ctrl_reset = '1' then
-        state <= RESET;
+      -- Register the next state.
+      state <= state_next;
+      -- Register the next accumulator value.
+      accumulator <= accumulator_next;
+        
+      -- If there is a (synchronous) reset, go to idle and make the 
+      -- accumulator hold zero.
+      if kcd_reset = '1' then
+        state <= STATE_IDLE;
         accumulator <= (others => '0');
-      else
-        state <= state_next;
-        accumulator <= accumulator_next;
       end if;
     end if;
   end process;

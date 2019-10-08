@@ -53,7 +53,6 @@ void GetAllObjects(Component *top_component, std::deque<Object *> *objects, bool
   }
   // Add all pointers to the objects of the subgraphs
   for (const auto &graph : graphs) {
-    // CERATA_LOG(DEBUG, "Adding objects from graph: " + graph->name());
     auto comp_objs = graph->objects();
     objects->insert(objects->end(), comp_objs.begin(), comp_objs.end());
   }
@@ -64,7 +63,6 @@ void GetAllTypes(Component *top_component, std::deque<Type *> *types, bool inclu
   GetAllObjects(top_component, &objects, include_instances);
 
   for (const auto &o : objects) {
-    // CERATA_LOG(DEBUG, "Adding types from object: " + o->name());
     if (o->IsNode()) {
       auto *n = dynamic_cast<Node *>(o);
       types->push_back(n->type());

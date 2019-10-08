@@ -35,7 +35,7 @@ static void AddParamSources(Graph *graph, const Object &obj) {
       if (par.GetValue()) {
         // Obtain shared ownership of the value and add it to the graph
         auto val = par.GetValue().value()->shared_from_this();
-        graph->AddObject(val);
+        graph->Add(val);
       }
     }
   }
@@ -47,23 +47,23 @@ static void AddObjectParams(Graph *comp, const Object &obj) {
     auto params = node.type()->GetParameters();
     for (const auto &p : params) {
       // Take ownership of the node and add it to the component.
-      comp->AddObject(p->shared_from_this());
+      comp->Add(p->shared_from_this());
       AddParamSources(comp, obj);
     }
   } else if (obj.IsArray()) {
     auto &array = dynamic_cast<const NodeArray &>(obj);
     auto array_size = array.size()->shared_from_this();
-    comp->AddObject(array_size);
+    comp->Add(array_size);
     AddParamSources(comp, *array_size);
   }
 }
 
-Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
+Graph &Graph::Add(const std::shared_ptr<Object> &obj) {
   // Check for duplicates in name / ownership
   for (const auto &o : objects_) {
     if (o->name() == obj->name()) {
       if (o.get() == obj.get()) {
-        CERATA_LOG(DEBUG, "Graph " + name() + " already owns object " + obj->name() + ". Skipping...");
+        // Graph already owns object. We can skip adding.
         return *this;
       } else {
         CERATA_LOG(FATAL, "Graph " + name() + " already contains an object with name " + obj->name());
@@ -76,7 +76,14 @@ Graph &Graph::AddObject(const std::shared_ptr<Object> &obj) {
   return *this;
 }
 
-Graph &Graph::RemoveObject(Object *obj) {
+Graph &Graph::Add(const std::initializer_list<std::shared_ptr<Object>> &objs) {
+  for (const auto &obj : objs) {
+    Add(obj);
+  }
+  return *this;
+}
+
+Graph &Graph::Remove(Object *obj) {
   for (auto o = objects_.begin(); o < objects_.end(); o++) {
     if (o->get() == obj) {
       objects_.erase(o);
@@ -89,7 +96,7 @@ std::shared_ptr<Component> Component::Make(std::string name,
                                            const std::deque<std::shared_ptr<Object>> &objects,
                                            ComponentPool *component_pool) {
   // Create the new component.
-  Component *ptr = new Component(std::move(name));
+  auto *ptr = new Component(std::move(name));
   auto ret = std::shared_ptr<Component>(ptr);
 
   // Add the component to the pool.
@@ -98,7 +105,7 @@ std::shared_ptr<Component> Component::Make(std::string name,
   // Add the objects shown in the queue.
   for (const auto &object : objects) {
     // Add the object to the graph.
-    ret->AddObject(object);
+    ret->Add(object);
   }
   return ret;
 }
@@ -141,12 +148,12 @@ std::deque<const Component *> Component::GetAllUniqueComponents() const {
   return ret;
 }
 
-NodeArray *Graph::GetArray(Node::NodeID node_id, const std::string &array_name) const {
+std::optional<NodeArray *> Graph::GetArray(Node::NodeID node_id, const std::string &array_name) const {
   for (const auto &a : GetAll<NodeArray>()) {
     if ((a->name() == array_name) && (a->node_id() == node_id)) return a;
   }
-  CERATA_LOG(FATAL, "NodeArray " + array_name + " does not exist on Graph " + this->name());
-  // TODO(johanpel): use std::optional
+  CERATA_LOG(DEBUG, "NodeArray " + array_name + " does not exist on Graph " + this->name());
+  return std::nullopt;
 }
 
 std::optional<Node *> Graph::GetNode(const std::string &node_name) const {
@@ -213,14 +220,22 @@ std::deque<NodeArray *> Graph::GetArraysOfType(Node::NodeID id) const {
 Port *Graph::port(const std::string &port_name) const {
   return dynamic_cast<Port *>(GetNode(Node::NodeID::PORT, port_name));
 }
+
 Signal *Graph::sig(const std::string &signal_name) const {
   return dynamic_cast<Signal *>(GetNode(Node::NodeID::SIGNAL, signal_name));
 }
+
 Parameter *Graph::par(const std::string &signal_name) const {
   return dynamic_cast<Parameter *>(GetNode(Node::NodeID::PARAMETER, signal_name));
 }
+
 PortArray *Graph::porta(const std::string &port_name) const {
-  return dynamic_cast<PortArray *>(GetArray(Node::NodeID::PORT, port_name));
+  auto opa = GetArray(Node::NodeID::PORT, port_name);
+  if (opa) {
+    return dynamic_cast<PortArray *>(*opa);
+  } else {
+    return nullptr;
+  }
 }
 
 std::deque<Node *> Graph::GetImplicitNodes() const {
@@ -278,7 +293,7 @@ Instance::Instance(Component *comp, std::string name)
   // Make copies of ports
   for (const auto &port : component_->GetAll<Port>()) {
     auto instance_port = port->Copy();
-    AddObject(instance_port);
+    Add(instance_port);
     copies[port] = instance_port.get();
   }
 
@@ -288,7 +303,7 @@ Instance::Instance(Component *comp, std::string name)
     // Make a copy of the port.
     auto instance_port_array = std::dynamic_pointer_cast<PortArray>(array_port->Copy());
     copies[array_port] = instance_port_array.get();
-    AddObject(instance_port_array);
+    Add(instance_port_array);
 
     // This has created a copy of the size node as well, but it might be that the size node was already copied before.
     // In this case, we want the size node to be the same node as copied before.
@@ -315,21 +330,21 @@ Instance::Instance(Component *comp, std::string name)
     if (!potential_node) {
       if (copies.count(node) == 0) {
         auto inst_node = node->Copy();
-        AddObject(inst_node);
+        Add(inst_node);
         copies[node] = inst_node.get();
       }
     }
   }
 }
 
-Graph &Instance::AddObject(const std::shared_ptr<Object> &object) {
+Graph &Instance::Add(const std::shared_ptr<Object> &object) {
   if (object->IsNode()) {
     auto node = std::dynamic_pointer_cast<Node>(object);
     if (node->IsSignal()) {
       CERATA_LOG(FATAL, "Instance Graph cannot own Signal nodes. " + node->ToString());
     }
   }
-  Graph::AddObject(object);
+  Graph::Add(object);
   object->SetParent(this);
   return *this;
 }

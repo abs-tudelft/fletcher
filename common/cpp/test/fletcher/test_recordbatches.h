@@ -14,10 +14,13 @@
 
 #pragma once
 
-#include <cassert>
 #include <arrow/api.h>
+#include <cassert>
+#include <string>
+#include <memory>
+#include <vector>
 
-#include "test_schemas.h"
+#include "fletcher/test_schemas.h"
 
 namespace fletcher {
 
@@ -82,7 +85,7 @@ inline std::shared_ptr<arrow::RecordBatch> GetListUint8RB() {
 }
 
 inline std::shared_ptr<arrow::RecordBatch> GetFloat64RB() {
-  std::vector<double> numbers = {1.2, 0.6, 1.4, 0.3, 4.5, -1.2, 5.1, -1.3,};
+  std::vector<double> numbers = {1.2, 0.6, 1.4, 0.3, 4.5, -1.2, 5.1, -1.3};
   // Make a float builder
   auto float_builder = std::make_shared<arrow::DoubleBuilder>();
   // Make a list builder
@@ -91,10 +94,10 @@ inline std::shared_ptr<arrow::RecordBatch> GetFloat64RB() {
       float_builder);
   // Create individual lists of this length
   const unsigned int list_length = 2;
-  for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
+  for (size_t list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
     assert(list_builder.Append().ok());
-    for (unsigned int index = list_start; index < list_start + list_length; index++) {
+    for (size_t index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
       assert(float_builder->Append(numbers[index]).ok());
     }
@@ -111,7 +114,7 @@ inline std::shared_ptr<arrow::RecordBatch> GetFloat64RB() {
 }
 
 inline std::shared_ptr<arrow::RecordBatch> GetInt64RB() {
-  std::vector<int64_t> numbers = {12, 6, 14, 3, 13, 0, 45, -500, 51, -520,};
+  std::vector<int64_t> numbers = {12, 6, 14, 3, 13, 0, 45, -500, 51, -520};
   // Make an int builder
   auto int_builder = std::make_shared<arrow::Int64Builder>();
   // Make a list builder
@@ -120,10 +123,10 @@ inline std::shared_ptr<arrow::RecordBatch> GetInt64RB() {
       int_builder);
   // Create individual lists of this length
   const unsigned int list_length = 2;
-  for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
+  for (size_t list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
     assert(list_builder.Append().ok());
-    for (unsigned int index = list_start; index < list_start + list_length; index++) {
+    for (size_t index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
       assert(int_builder->Append(numbers[index]).ok());
     }
@@ -151,10 +154,10 @@ inline std::shared_ptr<arrow::RecordBatch> GetInt64ListWideRB() {
   arrow::ListBuilder list_builder(arrow::default_memory_pool(), int_builder);
   // Create individual lists of this length
   const unsigned int list_length = 8;
-  for (unsigned int list_start = 0; list_start < numbers.size(); list_start += list_length) {
+  for (size_t list_start = 0; list_start < numbers.size(); list_start += list_length) {
     // Append single list
     assert(list_builder.Append().ok());
-    for (unsigned int index = list_start; index < list_start + list_length; index++) {
+    for (size_t index = list_start; index < list_start + list_length; index++) {
       // Append number to current list
       assert(int_builder->Append(numbers[index]).ok());
     }
@@ -214,7 +217,7 @@ inline std::shared_ptr<arrow::RecordBatch> GetFilterRB() {
 }
 
 inline std::shared_ptr<arrow::RecordBatch> GetSodaBeerRB(
-    const std::shared_ptr<arrow::Schema>& schema,
+    const std::shared_ptr<arrow::Schema> &schema,
     const std::vector<std::string> &names,
     const std::vector<uint8_t> &ages) {
   assert(names.size() == ages.size());

@@ -38,7 +38,7 @@ Template Template::FromString(const std::string &str) {
 Template Template::FromFile(const std::string &filename) {
   std::ifstream ifs(filename);
   if (!ifs.is_open()) {
-    throw std::runtime_error("Could not open VHDL template file " + filename);
+    CERATA_LOG(FATAL, "Could not open VHDL template file " + filename);
   } else {
     CERATA_LOG(DEBUG, "Opened template file " + filename);
   }

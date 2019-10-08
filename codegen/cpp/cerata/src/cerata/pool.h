@@ -22,6 +22,7 @@
 
 #include "cerata/logging.h"
 #include "cerata/node.h"
+#include "cerata/literal.h"
 
 namespace cerata {
 

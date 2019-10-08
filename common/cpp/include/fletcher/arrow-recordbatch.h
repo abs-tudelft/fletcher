@@ -42,7 +42,9 @@ class RecordBatchAnalyzer : public arrow::ArrayVisitor {
   template<typename ArrayType>
   arrow::Status VisitFixedWidth(const ArrayType &array) {
     std::shared_ptr<arrow::Buffer> buf = array.values();
-    out_->buffers.emplace_back(buf->data(), buf->size(), buf_name + " (values)", level);
+    auto desc = buf_name;
+    desc.emplace_back("values");
+    out_->fields.back().buffers.emplace_back(buf->data(), buf->size(), desc, level);
     return arrow::Status::OK();
   }
 
@@ -81,7 +83,7 @@ class RecordBatchAnalyzer : public arrow::ArrayVisitor {
   //arrow::Status Visit(const DictionaryArray& array) override {}
   //arrow::Status Visit(const ExtensionArray& array) override {}
 
-  std::string buf_name;
+  std::vector<std::string> buf_name;
   int level = 0;
   RecordBatchDescription *out_{};
   std::shared_ptr<arrow::Field> field;

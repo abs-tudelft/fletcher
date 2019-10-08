@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdlib.h>
+#include "fletchgen/srec/srec.h"
 #include <fletcher/common.h>
+#include <cstdlib>
 #include <sstream>
 #include <string>
 #include <algorithm>
-
-#include "fletchgen/srec/srec.h"
 
 namespace fletchgen::srec {
 
@@ -72,10 +71,10 @@ uint8_t Record::checksum() {
   sum += (address_ & 0x0000FF00u) >> 8u;
   sum += (address_ & 0x000000FFu);
   // Data
-  for (unsigned int i = 0; i < size_; i++)
+  for (size_t i = 0; i < size_; i++)
     sum += data_[i];
   // Keep the least significant byte
-  uint8_t ret = sum & 0xFFu;
+  auto ret = static_cast<uint8_t>(sum & 0xFFu);
   // Get one's complement
   ret = ~ret;
   // Return 1's complement
@@ -92,7 +91,7 @@ std::string Record::ToString(bool line_feed) {
   // Address
   PutHex(output, address_, 2 * address_width());
   // Data
-  for (unsigned int i = 0; i < size_; i++) {
+  for (size_t i = 0; i < size_; i++) {
     PutHex(output, data_[i]);
   }
   // Checksum
@@ -133,8 +132,8 @@ std::optional<Record> Record::FromString(const std::string &line) {
   // Obtain the address (addr. width * (2 chars or 1 byte))
   uint32_t addr = 0;
   for (int i = ret.address_width() - 1; i >= 0; i--) {
-    uint8_t byte = std::stoul(line.substr(offset, 2), nullptr, 16);
-    addr |= byte << (8u * i);
+    uint8_t byte = static_cast<uint8_t>(std::stoul(line.substr(offset, 2), nullptr, 16));
+    addr |= static_cast<uint32_t>(byte) << (8u * i);
     offset += 2;
   }
   ret.address_ = addr;
@@ -150,7 +149,7 @@ std::optional<Record> Record::FromString(const std::string &line) {
   }
 
   // Validate checksum
-  uint8_t sum = std::stoul(line.substr(offset, 2), nullptr, 16);
+  uint8_t sum = static_cast<uint8_t>(std::stoul(line.substr(offset, 2), nullptr, 16));
   if (ret.checksum() != sum) {
     return std::nullopt;
   }

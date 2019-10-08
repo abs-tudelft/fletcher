@@ -1,6 +1,9 @@
+*.vhdt
 Mantle.vhd
-Kernel.vhdt
-SimTop_tc.vhdt
 StringWrite.vhd
 AxiTop.vhd
-AxiTop.vhdt
+memory.srec
+mmio.gen.vhd
+mmio_pkg.gen.vhd
+vhdmmio_pkg.gen.vhd
+Nucleus_Kernel.vhd

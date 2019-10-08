@@ -1,5 +1,9 @@
+dot/
+vhdmmio-doc/
 work
 transcript
 vsim.do
 stringwrite.as
 recordbatch.srec
+memory.srec
+fletchgen.mmio.yaml

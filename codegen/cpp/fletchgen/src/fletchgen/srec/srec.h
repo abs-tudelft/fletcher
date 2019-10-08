@@ -23,6 +23,8 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <sstream>
+#include <iomanip>
 
 namespace fletchgen::srec {
 
@@ -101,11 +103,11 @@ class Record {
   std::string ToString(bool line_feed = false);
 
   /// @brief Return the address of this record.
-  inline uint32_t address() const { return address_; }
+  [[nodiscard]] inline uint32_t address() const { return address_; }
   /// @brief Return the size in bytes of this record.
-  inline uint32_t size() const { return size_; }
+  [[nodiscard]] inline size_t size() const { return size_; }
   /// @brief Return the data source pointer of this record.
-  inline uint8_t *data() const { return data_; }
+  [[nodiscard]] inline uint8_t *data() const { return data_; }
 
  private:
   /// Record type.

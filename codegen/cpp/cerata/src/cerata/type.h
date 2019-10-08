@@ -23,6 +23,7 @@
 
 #include "cerata/utils.h"
 #include "cerata/flattype.h"
+#include "cerata/domain.h"
 
 namespace cerata {
 
@@ -60,6 +61,7 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
     BIT,      ///< Physical, primitive
     VECTOR,   ///< t.b.d.
 
+    NUL,      ///< Abstract, primitive
     INTEGER,  ///< Abstract, primitive
     NATURAL,  ///< Abstract, primitive
     STRING,   ///< Abstract, primitive
@@ -75,9 +77,6 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
    * @param id      The Type::ID.
    */
   explicit Type(std::string name, ID id);
-
-  /// @brief Type virtual destructor.
-  virtual ~Type() = default;
 
   /// @brief Return the Type ID.
   inline ID id() const { return id_; }
@@ -106,12 +105,16 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   std::deque<std::shared_ptr<TypeMapper>> mappers() const;
   /// @brief Add a type mapper.
   void AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_existing = true);
-  /// @brief Get a mapper to another type, if it exists.
-  std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other);
+  /// @brief Get a mapper to another type, if it exists. Generates one, if possible, when generate_implicit = true.
+  std::optional<std::shared_ptr<TypeMapper>> GetMapper(Type *other, bool generate_implicit = true);
   /// @brief Remove all mappers to a specific type
   int RemoveMappersTo(Type *other);
   /// @brief Get a mapper to another type, if it exists.
   std::optional<std::shared_ptr<TypeMapper>> GetMapper(const std::shared_ptr<Type> &other);
+  /// @brief Check if a mapper can be generated to another specific type.
+  virtual bool CanGenerateMapper(const Type &other) const { return false; }
+  /// @brief Generate a new mapper to a specific other type. Should be checked with CanGenerateMapper first, or throws.
+  virtual std::shared_ptr<TypeMapper> GenerateMapper(Type *other) { return nullptr; }
 
   /// @brief Obtain any Nodes that parametrize this type.
   virtual std::deque<Node *> GetParameters() const { return {}; }
@@ -126,54 +129,14 @@ class Type : public Named, public std::enable_shared_from_this<Type> {
   std::deque<std::shared_ptr<TypeMapper>> mappers_;
 };
 
-/**
- * @brief A clock domain
- *
- * Placeholder for automatically generated clock domain crossing support
- */
-struct ClockDomain : public Named {
-  /// @brief Clock domain constructor
-  explicit ClockDomain(std::string name);
-  /// @brief Create a new clock domain and return a shared pointer to it.
-  static std::shared_ptr<ClockDomain> Make(std::string name) { return std::make_shared<ClockDomain>(name); }
-};
-
 // Physical Primitive types:
-
-/// @brief Clock type.
-struct Clock : public Type {
-  /// @brief The clock domain of this clock.
-  std::shared_ptr<ClockDomain> domain;
-  /// @brief Clock constructor.
-  Clock(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Create a new clock, and return a shared pointer to it.
-  static std::shared_ptr<Clock> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Clock width returns integer literal 1.
-  std::optional<Node *> width() const override;
-  /// @brief Determine if this Clock is exactly equal to an other Clock.
-  bool IsEqual(const Type &other) const override;
-};
-
-/// @brief Reset type.
-struct Reset : public Type {
-  /// @brief The clock domain of this reset.
-  std::shared_ptr<ClockDomain> domain;
-  /// @brief Reset constructor.
-  explicit Reset(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Create a new Reset, and return a shared pointer to it.
-  static std::shared_ptr<Reset> Make(std::string name, std::shared_ptr<ClockDomain> domain);
-  /// @brief Reset width returns integer literal 1.
-  std::optional<Node *> width() const override;
-  /// @brief Determine if this Reset is exactly equal to an other Reset.
-  bool IsEqual(const Type &other) const override;
-};
 
 /// @brief A bit type.
 struct Bit : public Type {
   /// @brief Bit type constructor.
   explicit Bit(std::string name);
   /// @brief Create a new Bit type, and return a shared pointer to it.
-  static std::shared_ptr<Bit> Make(std::string name);
+  static std::shared_ptr<Bit> Make(const std::string &name);
   /// @brief Bit width returns integer literal 1.
   std::optional<Node *> width() const override;
 };
@@ -182,12 +145,20 @@ std::shared_ptr<Type> bit();
 
 // Abstract Primitive types:
 
+/// @brief Void type. Useful for e.g. empty streams.
+struct Nul : public Type {
+  /// Void type constructor.
+  explicit Nul(std::string name) : Type(std::move(name), Type::NUL) {}
+};
+/// @brief Return a static Nul type.
+std::shared_ptr<Type> nul();
+
 /// @brief Integer type.
 struct Integer : public Type {
   /// @brief Integer type constructor.
   explicit Integer(std::string name) : Type(std::move(name), Type::INTEGER) {}
   /// @brief Create a new Integer type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Return a generic static Integer type.
 std::shared_ptr<Type> integer();
@@ -197,7 +168,7 @@ struct Natural : public Type {
   /// @brief Integer type constructor.
   explicit Natural(std::string name) : Type(std::move(name), Type::NATURAL) {}
   /// @brief Create a new Integer type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Return a generic static Integer type.
 std::shared_ptr<Type> natural();
@@ -207,7 +178,7 @@ struct Boolean : public Type {
   /// @brief Boolean type constructor.
   explicit Boolean(std::string name);
   /// @brief Create a new Boolean type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Generic static Boolean type.
 std::shared_ptr<Type> boolean();
@@ -217,7 +188,7 @@ struct String : public Type {
   /// @brief String type constructor.
   explicit String(std::string name);
   /// @brief Create a new String type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name);
+  static std::shared_ptr<Type> Make(const std::string &name);
 };
 /// @brief Generic static String type.
 std::shared_ptr<Type> string();
@@ -232,12 +203,12 @@ class Vector : public Type {
   Vector(std::string name, std::shared_ptr<Type> element_type, const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type, and return a shared pointer to it.
-  static std::shared_ptr<Type> Make(std::string name,
-                                    std::shared_ptr<Type> element_type,
-                                    std::optional<std::shared_ptr<Node>> width);
+  static std::shared_ptr<Type> Make(const std::string &name,
+                                    const std::shared_ptr<Type> &element_type,
+                                    const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type, and return a shared pointer to it. The element type is the generic Bit type.
-  static std::shared_ptr<Type> Make(std::string name, std::optional<std::shared_ptr<Node>> width);
+  static std::shared_ptr<Type> Make(const std::string &name, const std::optional<std::shared_ptr<Node>> &width);
 
   /// @brief Create a new Vector Type of width W and element type bit. Returns a shared pointer to it.
   template<int W>
@@ -283,9 +254,11 @@ class RecField : public Named {
   /// @brief RecordField constructor.
   RecField(std::string name, std::shared_ptr<Type> type, bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it.
-  static std::shared_ptr<RecField> Make(std::string name, std::shared_ptr<Type> type, bool invert = false);
+  static std::shared_ptr<RecField> Make(const std::string &name,
+                                        const std::shared_ptr<Type> &type,
+                                        bool invert = false);
   /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-  static std::shared_ptr<RecField> Make(std::shared_ptr<Type> type, bool invert = false);
+  static std::shared_ptr<RecField> Make(const std::shared_ptr<Type> &type, bool invert = false);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
   /// @brief Return if this individual field should be inverted w.r.t. parent Record type itself on graph edges.
@@ -317,9 +290,10 @@ class Record : public Type {
   /// @brief Record constructor.
   explicit Record(std::string name, std::deque<std::shared_ptr<RecField>> fields = {});
   /// @brief Create a new Record Type, and return a shared pointer to it.
-  static std::shared_ptr<Record> Make(const std::string &name, std::deque<std::shared_ptr<RecField>> fields = {});
+  static std::shared_ptr<Record> Make(const std::string &name,
+                                      const std::deque<std::shared_ptr<RecField>> &fields = {});
   /// @brief Add a RecordField to this Record.
-  Record &AddField(const std::shared_ptr<RecField> &field);;
+  Record &AddField(const std::shared_ptr<RecField> &field, std::optional<size_t> index = std::nullopt);
   /// @brief Return the RecordField at index i contained by this record.
   std::shared_ptr<RecField> field(size_t i) const { return fields_[i]; }
   /// @brief Return all fields contained by this record.
@@ -346,13 +320,13 @@ class Stream : public Type {
    */
   Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc = 1);
   /// @brief Create a smart pointer to a new Stream type. Stream name will be stream:\<type name\>, the elements "data".
-  static std::shared_ptr<Stream> Make(std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(const std::shared_ptr<Type> &element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type. The elements are named "data".
-  static std::shared_ptr<Stream> Make(std::string name, std::shared_ptr<Type> element_type, int epc = 1);
+  static std::shared_ptr<Stream> Make(const std::string &name, const std::shared_ptr<Type> &element_type, int epc = 1);
   /// @brief Shorthand to create a smart pointer to a new Stream type.
-  static std::shared_ptr<Stream> Make(std::string name,
-                                      std::shared_ptr<Type> element_type,
-                                      std::string element_name,
+  static std::shared_ptr<Stream> Make(const std::string &name,
+                                      const std::shared_ptr<Type> &element_type,
+                                      const std::string &element_name,
                                       int epc = 1);
 
   /// @brief Set the type of the elements of this stream. Forgets any existing mappers.
@@ -371,11 +345,18 @@ class Stream : public Type {
   /// @brief Determine if this Stream is exactly equal to another Stream.
   bool IsEqual(const Type &other) const override;
 
+  /// @brief Check if a mapper can be generated to another specific type.
+  bool CanGenerateMapper(const Type &other) const override;
+  /// @brief Generate a new mapper to a specific other type. Should be checked with CanGenerateMapper first, or throws.
+  std::shared_ptr<TypeMapper> GenerateMapper(Type *other) override;
+
  private:
   /// @brief The type of the elements traveling over this stream.
   std::shared_ptr<Type> element_type_;
   /// @brief The name of the elements traveling over this stream.
   std::string element_name_;
+
+  /// TODO(johanpel): let streams have a clock domain so we can instantiate CDC automatically.
 
   /// @brief Elements Per Cycle
   int epc_ = 1;

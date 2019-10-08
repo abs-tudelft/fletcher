@@ -21,24 +21,27 @@ namespace fletcher {
 
 std::string RecordBatchDescription::ToString() const {
   std::stringstream str;
-  for (const auto &b : buffers) {
-    str << std::setfill(' ') << std::setw(2 * b.level_) << ':' << b.desc_ << ':' << b.size_ << '\n';
+  for (const auto &f : fields) {
+    for (const auto &b : f.buffers) {
+      str << std::setfill(' ') << std::setw(2 * b.level_) << ':'
+          << ::fletcher::ToString(b.desc_) << ':' << b.size_ << '\n';
+    }
   }
   return str.str();
 }
 
 arrow::Status RecordBatchAnalyzer::VisitArray(const arrow::Array &arr) {
-  buf_name += ":" + arr.type()->ToString();
+  // buf_name += ":" + arr.type()->ToString();
+  // buf_name.push_back(arr.type()->ToString());
   // Check if the field is nullable. If so, add the (implicit) validity bitmap buffer
   if (field->nullable()) {
+    auto desc = buf_name;
+    desc.emplace_back("validity");
     if (arr.null_count() > 0) {
-      out_->buffers.emplace_back(arr.null_bitmap()->data(),
-                                 arr.null_bitmap()->size(),
-                                 buf_name + " (null bitmap)",
-                                 level);
+      out_->fields.back().buffers.emplace_back(arr.null_bitmap()->data(), arr.null_bitmap()->size(), desc, level);
     } else {
       auto dummy = std::make_shared<arrow::Buffer>(nullptr, 0);
-      out_->buffers.emplace_back(dummy->data(), dummy->size(), buf_name + " (empty null bitmap)", level, true);
+      out_->fields.back().buffers.emplace_back(dummy->data(), dummy->size(), desc, level, true);
     }
   }
   return arr.Accept(this);
@@ -52,7 +55,7 @@ bool RecordBatchAnalyzer::Analyze(const arrow::RecordBatch &batch) {
     auto arr = batch.column(i);
     // Remember what field we are at
     field = batch.schema()->field(i);
-    buf_name = field->name();
+    buf_name = {field->name()};
     out_->fields.emplace_back(arr->type(), arr->length(), arr->null_count());
     if (!VisitArray(*arr).ok()) {
       return false;
@@ -62,19 +65,19 @@ bool RecordBatchAnalyzer::Analyze(const arrow::RecordBatch &batch) {
 }
 
 arrow::Status RecordBatchAnalyzer::VisitBinary(const arrow::BinaryArray &array) {
-  out_->buffers.emplace_back(array.value_offsets()->data(),
-                             array.value_offsets()->size(),
-                             buf_name + " (offsets)",
-                             level);
-  out_->buffers.emplace_back(array.value_data()->data(), array.value_data()->size(), buf_name + " (values)", level);
+  auto odesc = buf_name;
+  odesc.emplace_back("offsets");
+  auto vdesc = buf_name;
+  vdesc.emplace_back("values");
+  out_->fields.back().buffers.emplace_back(array.value_offsets()->data(), array.value_offsets()->size(), odesc, level);
+  out_->fields.back().buffers.emplace_back(array.value_data()->data(), array.value_data()->size(), vdesc, level);
   return arrow::Status::OK();
 }
 
 arrow::Status RecordBatchAnalyzer::Visit(const arrow::ListArray &array) {
-  out_->buffers.emplace_back(array.value_offsets()->data(),
-                             array.value_offsets()->size(),
-                             buf_name + " (offsets)",
-                             level);
+  auto desc = buf_name;
+  desc.emplace_back("offsets");
+  out_->fields.back().buffers.emplace_back(array.value_offsets()->data(), array.value_offsets()->size(), desc, level);
   // Advance to the next nesting level.
   level++;
   // A list should only have one child.
@@ -90,7 +93,7 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::StructArray &array) {
   arrow::Status status;
   // Remember this field and name
   std::shared_ptr<arrow::Field> struct_field = field;
-  std::string struct_name = buf_name;
+  auto struct_name = buf_name;
   // Check if number of child arrays is the same as the number of child fields in the struct type.
   if (array.num_fields() != struct_field->type()->num_children()) {
     return arrow::Status::TypeError(
@@ -103,6 +106,7 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::StructArray &array) {
     // Select the struct field
     field = struct_field->type()->child(i);
     buf_name = struct_name;
+    buf_name.push_back(field->name());
     // Visit the child array
     status = VisitArray(*child_array);
     if (!status.ok())

@@ -43,7 +43,7 @@ void LogCerata(cerata::LogLevel level,
                int line_number);
 
 /// Default copyright notice.
-constexpr char DEFAULT_NOTICE[] = "-- Copyright 2018 Delft University of Technology\n"
+constexpr char DEFAULT_NOTICE[] = "-- Copyright 2018-2019 Delft University of Technology\n"
                                   "--\n"
                                   "-- Licensed under the Apache License, Version 2.0 (the \"License\");\n"
                                   "-- you may not use this file except in compliance with the License.\n"

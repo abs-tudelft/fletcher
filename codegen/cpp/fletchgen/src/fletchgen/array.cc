@@ -46,10 +46,9 @@ using cerata::Stream;
 
 std::shared_ptr<Node> ctrl_width(const arrow::Field &field) {
   fletcher::FieldMetadata field_meta;
-  std::vector<fletcher::BufferMetadata> buffer_meta;
-  fletcher::FieldAnalyzer fa(&field_meta, &buffer_meta);
+  fletcher::FieldAnalyzer fa(&field_meta);
   fa.Analyze(field);
-  std::shared_ptr<Node> width = intl(buffer_meta.size());
+  std::shared_ptr<Node> width = intl(field_meta.buffers.size());
   return width * bus_addr_width();
 }
 
@@ -62,12 +61,24 @@ std::shared_ptr<Node> tag_width(const arrow::Field &field) {
   }
 }
 
-std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &ctrl_width, const std::shared_ptr<Node> &tag_width) {
+std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &tag_width = intl(1),
+                          const std::optional<std::shared_ptr<Node>> &ctrl_width) {
+  // Create fields
   auto firstidx = RecField::Make(Vector::Make("firstIdx", 32));
   auto lastidx = RecField::Make(Vector::Make("lastidx", 32));
-  auto ctrl = RecField::Make(Vector::Make("ctrl", ctrl_width));
   auto tag = RecField::Make(Vector::Make("tag", tag_width));
-  auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, ctrl, tag});
+
+  // Create record
+  auto cmd_record = Record::Make("command_rec", {firstidx, lastidx, tag});
+
+  // If we want the ctrl field to be visible on this type, create that as well. This field is used to pass addresses.
+  // Depending on how advanced the developer is, we want to expose this or leave it out through the Nucleus layer.
+  if (ctrl_width) {
+    auto ctrl = RecField::Make(Vector::Make("ctrl", *ctrl_width));
+    cmd_record->AddField(ctrl, 2);
+  }
+
+  // Create the stream type.
   auto result = Stream::Make("command", cmd_record);
   return result;
 }
@@ -130,11 +141,11 @@ static std::shared_ptr<Component> Array(Mode mode) {
 
   if (mode == Mode::READ) {
     spec.function = BusFunction::READ;
-    data = Port::Make(DataName(mode), read_data(), Port::Dir::OUT);
+    data = Port::Make(DataName(mode), read_data(), Port::Dir::OUT, kernel_cd());
     bus = BusPort::Make(Port::Dir::OUT, spec);
   } else {
     spec.function = BusFunction::WRITE;
-    data = Port::Make(DataName(mode), write_data(), Port::Dir::IN);
+    data = Port::Make(DataName(mode), write_data(), Port::Dir::IN, kernel_cd());
     bus = BusPort::Make(Port::Dir::OUT, spec);
   }
 
@@ -160,11 +171,11 @@ static std::shared_ptr<Component> Array(Mode mode) {
 
   // Insert ports
   objects.insert(objects.end(), {
-      Port::Make(bus_cr()),
-      Port::Make(kernel_cr()),
+      Port::Make("bcd", cr(), Port::Dir::IN, bus_cd()),
+      Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd()),
       bus,
-      Port::Make("cmd", cmd(), Port::Dir::IN),
-      Port::Make("unl", unlock(), Port::Dir::OUT),
+      Port::Make("cmd", cmd(intl(1), intl(1)), Port::Dir::IN, kernel_cd()),
+      Port::Make("unl", unlock(), Port::Dir::OUT, kernel_cd()),
       data});
 
   auto ret = Component::Make(ArrayName(mode), objects);

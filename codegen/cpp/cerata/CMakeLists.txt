@@ -18,15 +18,18 @@ add_compile_unit(
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
   SRCS
+    src/cerata/domain.cc
     src/cerata/edge.cc
     src/cerata/expression.cc
     src/cerata/flattype.cc
     src/cerata/graph.cc
+    src/cerata/literal.cc
     src/cerata/node.cc
     src/cerata/node_array.cc
     src/cerata/object.cc
     src/cerata/output.cc
     src/cerata/pool.cc
+    src/cerata/port.cc
     src/cerata/transform.cc
     src/cerata/type.cc
     src/cerata/utils.cc
@@ -72,6 +75,7 @@ add_compile_unit(
     test/cerata/vhdl/test_instantiators.cc
   DEPS
     cerata::core
+    cerata::dot
 )
 
 set(CERATA_BACKENDS)

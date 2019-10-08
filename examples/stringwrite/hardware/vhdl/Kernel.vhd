@@ -17,35 +17,25 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.Axi_pkg.all;
 use work.UtilStr_pkg.all;
 use work.UtilInt_pkg.all;
 use work.UTF8StringGen_pkg.all;
 
 entity Kernel is
-  generic (
-    BUS_ADDR_WIDTH                  : integer := 64
-  );
   port (
     kcd_clk                         : in  std_logic;
     kcd_reset                       : in  std_logic;
-    mmio_awvalid                    : in  std_logic;
-    mmio_awready                    : out std_logic;
-    mmio_awaddr                     : in  std_logic_vector(31 downto 0);
-    mmio_wvalid                     : in  std_logic;
-    mmio_wready                     : out std_logic;
-    mmio_wdata                      : in  std_logic_vector(31 downto 0);
-    mmio_wstrb                      : in  std_logic_vector(3 downto 0);
-    mmio_bvalid                     : out std_logic;
-    mmio_bready                     : in  std_logic;
-    mmio_bresp                      : out std_logic_vector(1 downto 0);
-    mmio_arvalid                    : in  std_logic;
-    mmio_arready                    : out std_logic;
-    mmio_araddr                     : in  std_logic_vector(31 downto 0);
-    mmio_rvalid                     : out std_logic;
-    mmio_rready                     : in  std_logic;
-    mmio_rdata                      : out std_logic_vector(31 downto 0);
-    mmio_rresp                      : out std_logic_vector(1 downto 0);
+    start                           : in  std_logic;
+    stop                            : in  std_logic;
+    reset                           : in  std_logic;
+    idle                            : out std_logic;
+    busy                            : out std_logic;
+    done                            : out std_logic;
+    result                          : out std_logic_vector(63 downto 0);
+    strlen_min                      : in  std_logic_vector(31 downto 0);
+    strlen_mask                     : in  std_logic_vector(31 downto 0);
+    StringWrite_firstidx            : in  std_logic_vector(31 downto 0);
+    StringWrite_lastidx             : in  std_logic_vector(31 downto 0);
     StringWrite_String_valid        : out std_logic;
     StringWrite_String_ready        : in  std_logic;
     StringWrite_String_dvalid       : out std_logic;
@@ -58,66 +48,18 @@ entity Kernel is
     StringWrite_String_chars_last   : out std_logic;
     StringWrite_String_chars_data   : out std_logic_vector(511 downto 0);
     StringWrite_String_chars_count  : out std_logic_vector(6 downto 0);
+    StringWrite_String_unl_valid    : in  std_logic;
+    StringWrite_String_unl_ready    : out std_logic;
+    StringWrite_String_unl_tag      : in  std_logic_vector(0 downto 0);
     StringWrite_String_cmd_valid    : out std_logic;
     StringWrite_String_cmd_ready    : in  std_logic;
     StringWrite_String_cmd_firstIdx : out std_logic_vector(31 downto 0);
     StringWrite_String_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    StringWrite_String_cmd_ctrl     : out std_logic_vector(2*bus_addr_width-1 downto 0);
-    StringWrite_String_cmd_tag      : out std_logic_vector(0 downto 0);
-    StringWrite_String_unl_valid    : in  std_logic;
-    StringWrite_String_unl_ready    : out std_logic;
-    StringWrite_String_unl_tag      : in  std_logic_vector(0 downto 0)
+    StringWrite_String_cmd_tag      : out std_logic_vector(0 downto 0)
   );
 end entity;
 
 architecture Behavioral of Kernel is
-  -----------------------------------------------------------------------------
-  -- MMIO
-  -----------------------------------------------------------------------------
-  -- Default Fletcher registers:
-  constant REG_CONTROL                            : natural :=  0;
-  constant REG_STATUS                             : natural :=  1;
-  constant REG_RETURN0                            : natural :=  2;
-  constant REG_RETURN1                            : natural :=  3;
-
-  -- RecordBatch ranges:
-  constant REG_STRINGWRITE_FIRSTIDX               : natural :=  4;
-  constant REG_STRINGWRITE_LASTIDX                : natural :=  5;
-
-  -- Buffer addresses:
-  constant REG_STRINGWRITE_STRING_OFFSETS_BUF_LO  : natural :=  6;
-  constant REG_STRINGWRITE_STRING_OFFSETS_BUF_HI  : natural :=  7;
-  constant REG_STRINGWRITE_STRING_VALUES_BUF_LO   : natural :=  8;
-  constant REG_STRINGWRITE_STRING_VALUES_BUF_HI   : natural :=  9;
-
-  -- Custom application registers
-  constant REG_CUSTOM_STRLEN_MIN                  : natural := 10;
-  constant REG_CUSTOM_STRLEN_MASK                 : natural := 11;
-
-  -- Array of MMIO registers:
-  constant NUM_REGS                               : natural := 12;
-  constant REG_WIDTH                              : natural := 32;
-
-  type reg_array_t is array(natural range <>) of std_logic_vector(31 downto 0);
-
-  signal rreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
-  signal rreg_array             : reg_array_t(0 to NUM_REGS-1);
-  signal rreg_en                : std_logic_vector(NUM_REGS-1 downto 0);
-
-  signal wreg_array             : reg_array_t(0 to NUM_REGS-1);
-  signal wreg_concat            : std_logic_vector(NUM_REGS*32-1 downto 0);
-
-  -----------------------------------------------------------------------------
-  -- Control signals
-  -----------------------------------------------------------------------------
-  signal stat_done              : std_logic;
-  signal stat_busy              : std_logic;
-  signal stat_idle              : std_logic;
-  signal ctrl_reset             : std_logic;
-  signal ctrl_stop              : std_logic;
-  signal ctrl_start             : std_logic;
-  signal kcd_reset_n            : std_logic;
-
  ------------------------------------------------------------------------------
   -- Application constants
   -----------------------------------------------------------------------------
@@ -132,7 +74,7 @@ architecture Behavioral of Kernel is
   constant LEN_WIDTH : natural  := 8;
 
   -- Global control state machine
-  type state_type is (IDLE, START, STRINGGEN, INTERFACE, UNLOCK);
+  type state_type is (SIDLE, SSTART, STRINGGEN, INTERFACE, UNLOCK);
 
   type reg_record is record
     idle                        : std_logic;
@@ -192,68 +134,8 @@ architecture Behavioral of Kernel is
   signal ssg_utf8_dvalid        : std_logic;
 
 begin
-
-  -----------------------------------------------------------------------------
-  -- MMIO
-  -----------------------------------------------------------------------------
-  kcd_reset_n <= not(kcd_reset);
-
-  -- Instantiate the AXI mmio component to communicate with host more easily
-  -- through registers.
-  axi_mmio_inst : AxiMmio
-    generic map (
-      BUS_ADDR_WIDTH     => 32,
-      BUS_DATA_WIDTH     => 32,
-      NUM_REGS           => NUM_REGS,
-      REG_CONFIG         => "WRRRWWWWWWWW",
-      SLV_R_SLICE_DEPTH  => 0,
-      SLV_W_SLICE_DEPTH  => 0
-    )
-    port map (
-      clk                => kcd_clk,
-      reset_n            => kcd_reset_n,
-      s_axi_awvalid      => mmio_awvalid,
-      s_axi_awready      => mmio_awready,
-      s_axi_awaddr       => mmio_awaddr,
-      s_axi_wvalid       => mmio_wvalid,
-      s_axi_wready       => mmio_wready,
-      s_axi_wdata        => mmio_wdata,
-      s_axi_wstrb        => mmio_wstrb,
-      s_axi_bvalid       => mmio_bvalid,
-      s_axi_bready       => mmio_bready,
-      s_axi_bresp        => mmio_bresp,
-      s_axi_arvalid      => mmio_arvalid,
-      s_axi_arready      => mmio_arready,
-      s_axi_araddr       => mmio_araddr,
-      s_axi_rvalid       => mmio_rvalid,
-      s_axi_rready       => mmio_rready,
-      s_axi_rdata        => mmio_rdata,
-      s_axi_rresp        => mmio_rresp,
-      regs_out           => wreg_concat,
-      regs_in            => rreg_concat,
-      regs_in_en         => rreg_en
-    );
-
-  -- Turn signals into something more readable
-  write_regs_unconcat: for I in 0 to NUM_REGS-1 generate
-    wreg_array(I) <= wreg_concat((I+1)*32-1 downto I*32);
-  end generate;
-  read_regs_concat: for I in 0 to NUM_REGS-1 generate
-    rreg_concat((I+1)*32-1 downto I*32) <= rreg_array(I);
-  end generate;
-
-  -- Always enable read registers
-  rreg_array(REG_STATUS) <= (0 => stat_idle, 1 => stat_busy, 2 => stat_done, others => '0');
-  rreg_en <= (REG_STATUS => '1', REG_RETURN0 => '1', REG_RETURN1 => '1', others => '0');
-
-  -- We don't use the return registers for this kernel. Put some random data.
-  rreg_array(REG_RETURN0) <= X"42001337";
-  rreg_array(REG_RETURN1) <= X"0DDF00D5";
-
-  -- Connect the control bits
-  ctrl_start <= wreg_array(REG_CONTROL)(0);
-  ctrl_stop  <= wreg_array(REG_CONTROL)(1);
-  ctrl_reset <= wreg_array(REG_CONTROL)(2);
+  -- We don't use the result register for this kernel. Put some random data.
+  result <= X"420013370DDF00D5";
 
   -----------------------------------------------------------------------------
   -- Kernel state machine
@@ -261,7 +143,6 @@ begin
 
   -----------------------------------------------------------------------------
   -- Register process
-
   seq_proc: process(kcd_clk) is
   begin
     if rising_edge(kcd_clk) then
@@ -269,7 +150,7 @@ begin
 
       -- Reset
       if kcd_reset = '1' then
-        r.state         <= IDLE;
+        r.state         <= SIDLE;
         r.busy          <= '0';
         r.done          <= '0';
       end if;
@@ -280,8 +161,7 @@ begin
   -- Combinatorial process
 
   comb_proc: process(r,
-    wreg_array,
-    ctrl_start, ctrl_stop, ctrl_reset,
+    start, stop, reset,
     StringWrite_String_cmd_ready,
     StringWrite_String_unl_valid,
     ssg_cmd_ready)
@@ -297,15 +177,15 @@ begin
     o.unl.ready               := '0';
 
     -- Default outputs
-    o.cmd.firstIdx            := wreg_array(REG_STRINGWRITE_FIRSTIDX);
-    o.cmd.lastIdx             := wreg_array(REG_STRINGWRITE_LASTIDX);
+    o.cmd.firstIdx            := StringWrite_firstIdx;
+    o.cmd.lastIdx             := StringWrite_lastIdx;
     o.cmd.tag                 := (others => '0');
 
     -- We use the last index to determine how many strings have to be
     -- generated. This assumes firstIdx is 0.
-    o.str.len  := wreg_array(REG_STRINGWRITE_LASTIDX);
-    o.str.min  := wreg_array(REG_CUSTOM_STRLEN_MIN)(7 downto 0);
-    o.str.mask := wreg_array(REG_CUSTOM_STRLEN_MASK)(7 downto 0);
+    o.str.len  := StringWrite_lastIdx;
+    o.str.min  := strlen_min(7 downto 0);
+    o.str.mask := strlen_mask(7 downto 0);
 
     -- Note: string lengths that are generated will be:
     -- (minimum string length) + ((PRNG output) bitwise and (PRNG mask))
@@ -313,21 +193,21 @@ begin
     -- recommended) to generate all possible string lengths.
 
     case r.state is
-      when IDLE =>
+      when SIDLE =>
         v.idle := '1';
 
-        if ctrl_start = '1' then
-          v.state := START;
+        if start = '1' then
+          v.state := SSTART;
           v.busy := '1';
           v.done := '0';
           v.idle := '0';
         end if;
         
-      when START =>
+      when SSTART =>
         -- Wait for start bit to go low, before actually starting, to prevent
         -- too early restarts.
         v.idle := '0';
-        if ctrl_start = '0' then
+        if start = '0' then
           v.state := STRINGGEN;
         end if;
 
@@ -353,7 +233,7 @@ begin
         o.unl.ready := '1';
 
         if StringWrite_String_unl_valid = '1' then
-          v.state := IDLE;
+          v.state := SIDLE;
           -- Make done and reset busy
           v.done := '1';
           v.busy := '0';
@@ -373,11 +253,7 @@ begin
     ssg_cmd_strlen_mask           <= o.str.mask;
     ssg_cmd_strlen_min          <= o.str.min;
 
-    -- Interface
-    StringWrite_String_cmd_ctrl <= wreg_array(REG_STRINGWRITE_STRING_VALUES_BUF_HI)   -- Values buffer
-                                 & wreg_array(REG_STRINGWRITE_STRING_VALUES_BUF_LO)
-                                 & wreg_array(REG_STRINGWRITE_STRING_OFFSETS_BUF_HI)  -- Offsets buffer
-                                 & wreg_array(REG_STRINGWRITE_STRING_OFFSETS_BUF_LO);
+    -- Command stream to generated interface
     StringWrite_String_cmd_valid    <= o.cmd.valid;
     StringWrite_String_cmd_firstIdx <= o.cmd.firstIdx;
     StringWrite_String_cmd_lastIdx  <= o.cmd.lastIdx;
@@ -386,9 +262,9 @@ begin
     StringWrite_String_unl_ready    <= o.unl.ready;
 
     -- Registered outputs:
-    stat_idle                   <= r.idle;
-    stat_busy                   <= r.busy;
-    stat_done                   <= r.done;
+    idle                   <= r.idle;
+    busy                   <= r.busy;
+    done                   <= r.done;
   end process;
 
   -----------------------------------------------------------------------------

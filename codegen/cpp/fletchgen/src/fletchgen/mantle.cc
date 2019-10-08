@@ -17,39 +17,42 @@
 #include <cerata/api.h>
 #include <fletcher/common.h>
 
-#include <unordered_map>
 #include <memory>
 #include <deque>
 #include <utility>
 #include <string>
+#include <vector>
 
 #include "fletchgen/basic_types.h"
-#include "fletchgen/array.h"
 #include "fletchgen/schema.h"
 #include "fletchgen/bus.h"
 #include "fletchgen/mmio.h"
+#include "fletchgen/nucleus.h"
 
 namespace fletchgen {
+
+using cerata::intl;
 
 static std::string ArbiterMasterName(BusSpec spec) {
   return std::string(spec.function == BusFunction::READ ? "rd" : "wr") + "_mst";
 }
 
-Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
+Mantle::Mantle(std::string name,
+               SchemaSet schema_set,
+               const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+               const std::vector<MmioReg> &custom_regs)
     : Component(std::move(name)), schema_set_(std::move(schema_set)) {
 
   // Add default ports
-  auto bcr = Port::Make(bus_cr());
-  auto kcr = Port::Make(kernel_cr());
+  auto bcr = Port::Make("bcd", cr(), Port::Dir::IN, bus_cd());
+  auto kcr = Port::Make("kcd", cr(), Port::Dir::IN, kernel_cd());
   auto regs = MmioPort::Make(Port::Dir::IN);
-  AddObject(bcr);
-  AddObject(kcr);
-  AddObject(regs);
+  Add({bcr, kcr, regs});
 
-  AddObject(bus_addr_width());
+  Add(bus_addr_width());
 
   // Create and add every RecordBatch/Writer.
-  for (const auto &fs : schema_set_->schemas()) {
+  for (const auto &fs : schema_set_.schemas()) {
     auto rb = RecordBatch::Make(fs);
     recordbatch_components_.push_back(rb);
     auto rb_inst = AddInstanceOf(rb.get());
@@ -58,11 +61,14 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     rb_inst->port("bcd") <<= bcr;
   }
 
-  // Create and add the kernel.
-  kernel_ = Kernel::Make(schema_set_->name(), cerata::ToRawPointers(recordbatch_components()));
-  kernel_inst_ = AddInstanceOf(kernel_.get());
-  kernel_inst_->port("kcd") <<= kcr;
-  kernel_inst_->port("mmio") <<= regs;
+  // Create and add the Nucleus.
+  nucleus_ = Nucleus::Make(schema_set_.name(),
+                           cerata::ToRawPointers(recordbatch_components()),
+                           batch_desc,
+                           custom_regs);
+  nucleus_inst_ = AddInstanceOf(nucleus_.get());
+  nucleus_inst_->port("kcd") <<= kcr;
+  nucleus_inst_->port("mmio") <<= regs;
 
   // Connect all Arrow field derived ports.
   for (const auto &r : recordbatch_instances_) {
@@ -70,15 +76,17 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     for (const auto &fp : field_ports) {
       if (fp->function_ == FieldPort::Function::ARROW) {
         // If the port is an output, it's an input for the kernel and vice versa.
+        // Connect the ports and remember the edge.
+        std::shared_ptr<cerata::Edge> e;
         if (fp->dir() == cerata::Term::Dir::OUT) {
-          Connect(kernel_inst_->port(fp->name()), fp);
+          e = Connect(nucleus_inst_->port(fp->name()), fp);
         } else {
-          Connect(fp, kernel_inst_->port(fp->name()));
+          e = Connect(fp, nucleus_inst_->port(fp->name()));
         }
       } else if (fp->function_ == FieldPort::Function::COMMAND) {
-        Connect(fp, kernel_inst_->port(fp->name()));
+        Connect(fp, nucleus_inst_->port(fp->name()));
       } else if (fp->function_ == FieldPort::Function::UNLOCK) {
-        Connect(kernel_inst_->port(fp->name()), fp);
+        Connect(nucleus_inst_->port(fp->name()), fp);
       }
     }
   }
@@ -109,12 +117,12 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
     arbiter->par(bus_data_width()->name()) <<= intl(spec.data_width);
     arbiter->par(bus_len_width()->name()) <<= intl(spec.len_width);
     if (spec.function == BusFunction::WRITE) {
-      arbiter->par(bus_strobe_width()->name()) <<= intl(spec.data_width / 8);
+      arbiter->par(bus_strobe_width()->name()) <<= intl(static_cast<int>(spec.data_width / 8));
     }
     arbiters_[spec] = arbiter;
     // Create the bus port on the mantle level.
     auto master = BusPort::Make(ArbiterMasterName(spec), Port::Dir::OUT, spec);
-    AddObject(master);
+    Add(master);
     // TODO(johanpel): actually support multiple bus specs
     // Connect the arbiter master port to the mantle master port.
     master <<= arbiter->port("mst");
@@ -134,15 +142,20 @@ Mantle::Mantle(std::string name, std::shared_ptr<SchemaSet> schema_set)
   }
 }
 
-std::shared_ptr<Mantle> Mantle::Make(std::string name, const std::shared_ptr<SchemaSet> &schema_set) {
-  auto mantle = new Mantle(std::move(name), schema_set);
+std::shared_ptr<Mantle> Mantle::Make(const std::string& name,
+                                     const SchemaSet &schema_set,
+                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                     const std::vector<MmioReg>& custom_regs) {
+  auto mantle = new Mantle(name, schema_set, batch_desc, custom_regs);
   auto mantle_shared = std::shared_ptr<Mantle>(mantle);
   cerata::default_component_pool()->Add(mantle_shared);
   return mantle_shared;
 }
 
-std::shared_ptr<Mantle> Mantle::Make(const std::shared_ptr<SchemaSet> &schema_set) {
-  return Make("Mantle", schema_set);
+std::shared_ptr<Mantle> Mantle::Make(const SchemaSet &schema_set,
+                                     const std::vector<fletcher::RecordBatchDescription> &batch_desc,
+                                     const std::vector<MmioReg>& custom_regs) {
+  return Make("Mantle", schema_set, batch_desc, custom_regs);
 }
 
 }  // namespace fletchgen

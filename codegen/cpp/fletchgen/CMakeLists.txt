@@ -52,6 +52,7 @@ add_compile_unit(
     src/fletchgen/utils.cc
     src/fletchgen/recordbatch.cc
     src/fletchgen/fletchgen.cc
+    src/fletchgen/nucleus.cc
 
     src/fletchgen/srec/recordbatch.cc
     src/fletchgen/srec/srec.cc

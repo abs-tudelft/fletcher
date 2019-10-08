@@ -27,8 +27,6 @@ using cerata::Bit;
 using cerata::bit;
 using cerata::intl;
 using cerata::integer;
-using cerata::Clock;
-using cerata::Reset;
 using cerata::Parameter;
 using cerata::RecField;
 using cerata::Record;
@@ -87,28 +85,21 @@ PARAM_FACTORY(bus_burst_max_len, 16)
 PARAM_FACTORY(index_width, 32)
 
 // Create basic clock domains
-std::shared_ptr<ClockDomain> kernel_domain() {
+std::shared_ptr<ClockDomain> kernel_cd() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("kcd");
   return result;
 }
 
-std::shared_ptr<ClockDomain> bus_domain() {
+std::shared_ptr<ClockDomain> bus_cd() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("bcd");
   return result;
 }
 
-// Create basic clocks & resets
-std::shared_ptr<Type> kernel_cr() {
-  static std::shared_ptr<Type> result = Record::Make("kcd", {
-      RecField::Make("clk", std::make_shared<Clock>("kcd_clk", kernel_domain())),
-      RecField::Make("reset", std::make_shared<Reset>("kcd_reset", kernel_domain()))});
-  return result;
-}
-
-std::shared_ptr<Type> bus_cr() {
-  static std::shared_ptr<Type> result = Record::Make("bcd", {
-      RecField::Make("clk", std::make_shared<Clock>("bcd_clk", bus_domain())),
-      RecField::Make("reset", std::make_shared<Reset>("bcd_reset", bus_domain()))});
+// Create basic clock & reset record type
+std::shared_ptr<Type> cr() {
+  static std::shared_ptr<Type> result = Record::Make("cr", {
+      RecField::Make("clk", std::make_shared<Bit>("clk")),
+      RecField::Make("reset", std::make_shared<Bit>("reset"))});
   return result;
 }
 
@@ -161,6 +152,18 @@ std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataTyp
     case arrow::Type::DOUBLE: return float64();
     default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
   }
+}
+
+std::optional<cerata::Port *> GetClockResetPort(cerata::Graph *graph, const ClockDomain &domain) {
+  for (auto crn : graph->GetNodes()) {
+    if (crn->type()->IsEqual(*cr()) && crn->IsPort()) {
+      // TODO(johanpel): better comparison
+      if (crn->AsPort().domain().get() == &domain) {
+        return &crn->AsPort();
+      }
+    }
+  }
+  return std::nullopt;
 }
 
 }  // namespace fletchgen

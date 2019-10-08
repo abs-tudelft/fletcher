@@ -34,7 +34,7 @@ struct Named {
   /// @brief Named constructor.
   explicit Named(std::string name) : name_(std::move(name)) {}
   /// @brief Return the name of the object.
-  std::string name() const { return name_; }
+  [[nodiscard]] std::string name() const { return name_; }
   /// @brief Change the name of the object.
   void SetName(std::string name) { name_ = std::move(name); }
 

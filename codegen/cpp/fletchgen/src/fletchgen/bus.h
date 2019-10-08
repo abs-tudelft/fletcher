@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "fletchgen/basic_types.h"
 
@@ -44,22 +45,22 @@ enum class BusFunction {
 /// @brief Bus specification
 struct BusSpec {
   /// Width of data bus.
-  size_t data_width = 512;
+  uint32_t data_width = 512;
   /// Width of address bus.
-  size_t addr_width = 64;
+  uint32_t addr_width = 64;
   /// Width of burst length field.
-  size_t len_width = 8;
+  uint32_t len_width = 8;
   /// Minimum burst size.
-  size_t burst_step = 1;
+  uint32_t burst_step = 1;
   /// Maximum burst size.
-  size_t max_burst = 128;
+  uint32_t max_burst = 128;
   /// Bus function.
   BusFunction function = BusFunction::READ;
 
   /// @brief Return a human-readable version of the bus specification.
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
   /// @brief Return a type name for a Cerata type based on this bus specification.
-  std::string ToBusTypeName() const;
+  [[nodiscard]] std::string ToBusTypeName() const;
 };
 
 /// @brief Returns true if bus specifications are equal, false otherwise.
@@ -78,16 +79,18 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
                                 const std::shared_ptr<Node> &len_width,
                                 const std::shared_ptr<Node> &data_width);
 
-
 /// A port derived from a BusSpec.
 struct BusPort : public Port {
   /// Bus specification.
   BusSpec spec_;
   /// @brief Construct a new port based on a bus specification.
-  BusPort(Port::Dir dir, BusSpec spec, const std::string &name = "")
-      : Port(name.empty() ? "bus" : name, bus(spec), dir), spec_(spec) {}
+  BusPort(Port::Dir dir,
+          BusSpec spec,
+          const std::string &name = "",
+          std::shared_ptr<ClockDomain> domain = bus_cd())
+      : Port(name.empty() ? "bus" : name, bus(spec), dir, std::move(domain)), spec_(spec) {}
   /// @brief Make a new port and return a shared pointer to it.
-  static std::shared_ptr<BusPort> Make(std::string name, Port::Dir dir, BusSpec spec);
+  static std::shared_ptr<BusPort> Make(const std::string& name, Port::Dir dir, BusSpec spec);
   /// @brief Make a new port, name it automatically based on the bus specification, and return a shared pointer to it.
   static std::shared_ptr<BusPort> Make(Port::Dir dir, BusSpec spec);
   /// @brief Deep-copy the BusPort.

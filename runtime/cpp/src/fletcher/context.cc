@@ -14,7 +14,6 @@
 
 #include <arrow/api.h>
 #include <fletcher/common.h>
-#include <algorithm>
 #include <vector>
 #include <memory>
 
@@ -53,27 +52,29 @@ Status Context::Enable() {
   for (size_t i = 0; i < num_batches; i++) {
     auto rbd = host_batch_desc_[i];
     auto type = host_batch_memtype_[i];
-    for (const auto &b : rbd.buffers) {
-      fletcher::Status status;
-      DeviceBuffer device_buf(b.raw_buffer_, b.size_, type, rbd.mode);
-      if (type == MemType::ANY) {
-        status = platform_->PrepareHostBuffer(device_buf.host_address,
+    for (const auto &f : rbd.fields) {
+      for (const auto &b : f.buffers) {
+        fletcher::Status status;
+        DeviceBuffer device_buf(b.raw_buffer_, b.size_, type, rbd.mode);
+        if (type == MemType::ANY) {
+          status = platform_->PrepareHostBuffer(device_buf.host_address,
+                                                &device_buf.device_address,
+                                                device_buf.size,
+                                                &device_buf.was_alloced);
+        } else if (type == MemType::CACHE) {
+          status = platform_->CacheHostBuffer(device_buf.host_address,
                                               &device_buf.device_address,
-                                              device_buf.size,
-                                              &device_buf.was_alloced);
-      } else if (type == MemType::CACHE) {
-        status = platform_->CacheHostBuffer(device_buf.host_address,
-                                            &device_buf.device_address,
-                                            device_buf.size);
-        // Cache always allocates on device.
-        device_buf.was_alloced = true;
-      } else {
-        status = Status::ERROR("Invalid / unsupported MemType.");
+                                              device_buf.size);
+          // Cache always allocates on device.
+          device_buf.was_alloced = true;
+        } else {
+          status = Status::ERROR("Invalid / unsupported MemType.");
+        }
+        if (!status.ok()) {
+          return status;
+        }
+        device_buffers_.push_back(device_buf);
       }
-      if (!status.ok()) {
-        return status;
-      }
-      device_buffers_.push_back(device_buf);
     }
   }
 
@@ -104,7 +105,9 @@ Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &reco
 uint64_t Context::num_buffers() const {
   uint64_t ret = 0;
   for (const auto &rbd : host_batch_desc_) {
-    ret += rbd.buffers.size();
+    for (const auto &f : rbd.fields) {
+      ret += f.buffers.size();
+    }
   }
   return ret;
 }
@@ -112,8 +115,10 @@ uint64_t Context::num_buffers() const {
 size_t Context::GetQueueSize() const {
   size_t size = 0;
   for (const auto &desc : host_batch_desc_) {
-    for (const auto &buf : desc.buffers) {
-      size += buf.size_;
+    for (const auto &f : desc.fields) {
+      for (const auto &buf : f.buffers) {
+        size += buf.size_;
+      }
     }
   }
   return size;

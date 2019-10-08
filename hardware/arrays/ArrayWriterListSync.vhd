@@ -189,6 +189,7 @@ begin
     c.in_val_ready  := out_val_ready;
     c.out_val_last  := in_val_last;
 
+    -- Count values stream lists when it is handshaked and last.
     if in_val_valid = '1' and out_val_ready = '1' and in_val_last = '1' then
       v.val_list_count := r.val_list_count + 1;
     end if;

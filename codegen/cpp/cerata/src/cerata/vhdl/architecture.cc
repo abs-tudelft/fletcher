@@ -47,6 +47,13 @@ MultiBlock Arch::Generate(const Component &comp) {
     ret << signal_decl;
   }
 
+  // Signal array declarations
+  auto signal_arrays = comp.GetAll<SignalArray>();
+  for (const auto &s : signal_arrays) {
+    auto signal_array_decl = Decl::Generate(*s, 1);
+    ret << signal_array_decl;
+  }
+
   Line header_end;
   header_end << "begin";
   ret << header_end;

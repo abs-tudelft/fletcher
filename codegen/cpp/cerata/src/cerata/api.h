@@ -15,24 +15,28 @@
 #pragma once
 
 // Cerata intermediate
-#include "cerata/node_array.h"
+#include "cerata/domain.h"
 #include "cerata/edge.h"
+#include "cerata/expression.h"
 #include "cerata/flattype.h"
 #include "cerata/graph.h"
-#include "cerata/type.h"
+#include "cerata/literal.h"
 #include "cerata/node.h"
+#include "cerata/node_array.h"
 #include "cerata/object.h"
 #include "cerata/output.h"
 #include "cerata/pool.h"
-#include "cerata/expression.h"
+#include "cerata/transform.h"
+#include "cerata/port.h"
+#include "cerata/type.h"
 
 // Cerata utilities
-#include "cerata/utils.h"
 #include "cerata/logging.h"
+#include "cerata/utils.h"
 
 // Cerata back-ends
-#include "cerata/vhdl/vhdl.h"
 #include "cerata/dot/dot.h"
+#include "cerata/vhdl/vhdl.h"
 
 /// Contains every Cerata class, function, etc...
 namespace cerata {}
