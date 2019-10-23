@@ -270,8 +270,8 @@ begin
         BUS_STROBE_WIDTH        => BUS_STROBE_WIDTH,
         NUM_SLAVE_PORTS         => A_BUS_COUNT,
 
-        ARB_METHOD              => parse_param(CFG, "method", "ROUND-ROBIN"),
-        MAX_OUTSTANDING         => parse_param(CFG, "max_outstanding", 2),
+        ARB_METHOD              => parse_param(CFG, "method", "RR-STICKY"),
+        MAX_OUTSTANDING         => parse_param(CFG, "max_outstanding", 4),
         RAM_CONFIG              => parse_param(CFG, "ram_config", ""),
 
         -- TODO: change config parameters:
