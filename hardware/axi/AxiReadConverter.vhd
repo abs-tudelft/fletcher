@@ -293,10 +293,10 @@ begin
       buf_slv_req_addr          <= buf_mst_req_addr;
       buf_slv_req_len           <= buf_mst_req_len;
 
-      buf_mst_resp_ready        <= buf_slv_resp_ready;
-      buf_slv_resp_valid        <= buf_mst_resp_valid;
-      buf_slv_resp_data         <= buf_mst_resp_data;
-      buf_slv_resp_last         <= buf_mst_resp_last;
+      buf_slv_resp_ready        <= buf_mst_resp_ready;
+      buf_mst_resp_valid        <= buf_slv_resp_valid;
+      buf_mst_resp_data         <= buf_slv_resp_data;
+      buf_mst_resp_last         <= buf_slv_resp_last;
     end generate;
     ---------------------------------------------------------------------------
     serializer: StreamGearboxSerializer
