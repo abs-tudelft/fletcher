@@ -36,4 +36,4 @@ FROM fletcher-python-base
 ARG PACKAGE=
 
 WORKDIR /io/${PACKAGE}
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL; $PYTHON -m auditwheel repair $WHL; done; rm -rf build/python"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
