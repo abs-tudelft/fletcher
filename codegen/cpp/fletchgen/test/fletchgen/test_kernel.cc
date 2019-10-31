@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,16 +28,20 @@
 
 namespace fletchgen {
 
-static void TestReadKernel(const std::string& test_name, const std::shared_ptr<arrow::Schema>& schema) {
+static void TestReadKernel(const std::string &test_name, const std::shared_ptr<arrow::Schema> &schema) {
   cerata::default_component_pool()->Clear();
   auto fs = FletcherSchema::Make(schema);
-  auto rbr = RecordBatch::Make(fs);
-  auto top = Kernel::Make("Test" + test_name, {rbr.get()});
-  auto design = cerata::vhdl::Design(top);
-  auto code = design.Generate().ToString();
-  std::cerr.flush();
-  std::cout << code << std::endl;
-  VHDL_DUMP_TEST(code);
+  fletcher::RecordBatchDescription rbd;
+  fletcher::SchemaAnalyzer sa(&rbd);
+  sa.Analyze(*schema);
+  auto rbr = record_batch("Test_" + fs->name(), fs, rbd);
+  auto mmio_comp = mmio({rbd}, {});
+  auto top = kernel("Test" + test_name, {rbr}, mmio_comp);
+  GenerateTestAll(top);
+}
+
+TEST(Kernel, TwoPrimRead) {
+  TestReadKernel("PrimRead", fletcher::GetTwoPrimReadSchema());
 }
 
 TEST(Kernel, PrimRead) {

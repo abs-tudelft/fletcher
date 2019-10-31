@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <string>
 #include <memory>
-#include <deque>
+#include <vector>
 
 #include "cerata/node.h"
 #include "cerata/type.h"
@@ -33,7 +33,7 @@ struct Inst {
   /// @brief Generate a VHDL instantiation of a graph.
   static MultiBlock Generate(const Graph &graph);
   /// @brief Generate an associativity list for an instantiated Port.
-  static Block GeneratePortMaps(const Port &port);
+  static Block GeneratePortMaps(const Port &port, bool full_array = false);
   /// @brief Generate an associativity list for an instantiated PortArray.
   static Block GeneratePortArrayMaps(const PortArray &array);
   /// @brief Generate an associativity list for an instantiated Parameter.

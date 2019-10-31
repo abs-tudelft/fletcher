@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,23 +13,65 @@
 // limitations under the License.
 
 #include <memory>
+#include <utility>
 
 #include "cerata/expression.h"
+#include "cerata/graph.h"
 
 namespace cerata {
 
-std::shared_ptr<Expression> Expression::Make(Op op, std::shared_ptr<const Node> lhs, std::shared_ptr<const Node> rhs) {
-  auto e = new Expression(op, std::move(lhs), std::move(rhs));
-  return std::shared_ptr<Expression>(e);
+static std::string ToString(Node *n) {
+  std::stringstream ss;
+  ss << n;
+  return ss.str();
 }
 
-Expression::Expression(Expression::Op op, std::shared_ptr<const Node> lhs, std::shared_ptr<const Node> rhs)
-    : MultiOutputNode(::cerata::ToString(op), NodeID::EXPRESSION, string()),
+static std::string ToString(const std::shared_ptr<Node>& n) {
+  std::stringstream ss;
+  ss << n;
+  return ss.str();
+}
+
+std::shared_ptr<Expression> Expression::Make(Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs) {
+  auto e = new Expression(op, std::move(lhs), std::move(rhs));
+  auto result = std::shared_ptr<Expression>(e);
+  if (e->parent()) {
+    e->parent().value()->Add(result);
+  }
+  return result;
+}
+
+// Hash the the node pointers into a short string.
+static std::string GenerateName(Expression *expr, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs) {
+  auto l = ::cerata::ToString(std::move(lhs));
+  auto e = ::cerata::ToString(expr);
+  auto r = ::cerata::ToString(std::move(rhs));
+  std::string result = "Expr_" + l + e + r;
+  return result;
+}
+
+Expression::Expression(Expression::Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs)
+    : MultiOutputNode(GenerateName(this, lhs, rhs), NodeID::EXPRESSION, string()),
       operation_(op),
       lhs_(std::move(lhs)),
-      rhs_(std::move(rhs)) {}
+      rhs_(std::move(rhs)) {
+  if (lhs_->parent() && rhs_->parent()) {
+    auto lp = *lhs_->parent();
+    auto rp = *rhs_->parent();
+    if (lp != rp) {
+      CERATA_LOG(ERROR, "Can only generate expressions between nodes on same parent.");
+    }
+  }
+  if (lhs_->parent()) {
+    auto lp = *lhs_->parent();
+    SetParent(lp);
+  } else if (rhs_->parent()) {
+    auto rp = *rhs_->parent();
+    SetParent(rp);
+  }
+}
 
-std::shared_ptr<const Node> Expression::MergeIntLiterals(const Expression *exp) {
+std::shared_ptr<Node> Expression::MergeIntLiterals(Expression *exp) {
   if (exp->lhs_->IsLiteral() && exp->rhs_->IsLiteral()) {
     auto l = std::dynamic_pointer_cast<const Literal>(exp->lhs_);
     auto r = std::dynamic_pointer_cast<const Literal>(exp->rhs_);
@@ -48,7 +90,7 @@ std::shared_ptr<const Node> Expression::MergeIntLiterals(const Expression *exp) 
   return exp->shared_from_this();
 }
 
-std::shared_ptr<const Node> Expression::EliminateZeroOne(const Expression *exp) {
+std::shared_ptr<Node> Expression::EliminateZeroOne(Expression *exp) {
   switch (exp->operation_) {
     case Op::ADD: {
       if (exp->lhs_ == intl(0)) return exp->rhs_;
@@ -76,12 +118,12 @@ std::shared_ptr<const Node> Expression::EliminateZeroOne(const Expression *exp) 
   return exp->shared_from_this();
 }
 
-std::shared_ptr<const Node> Expression::Minimize(const Node *node) {
-  std::shared_ptr<const Node> result = node->shared_from_this();
+std::shared_ptr<Node> Expression::Minimize(Node *node) {
+  std::shared_ptr<Node> result = node->shared_from_this();
 
-  // If this node is an expression, we need to mimize its lhs and rhs first.
+  // If this node is an expression, we need to minimize its lhs and rhs first.
   if (node->IsExpression()) {
-    auto expr = std::dynamic_pointer_cast<const Expression>(result);
+    auto expr = std::dynamic_pointer_cast<Expression>(result);
     // Attempt to minimize children.
     auto min_lhs = Minimize(expr->lhs());
     auto min_rhs = Minimize(expr->rhs());
@@ -96,7 +138,7 @@ std::shared_ptr<const Node> Expression::Minimize(const Node *node) {
 
     // Integer literal merging
     if (result->IsExpression()) {
-      expr = std::dynamic_pointer_cast<const Expression>(result);
+      expr = std::dynamic_pointer_cast<Expression>(result);
       result = MergeIntLiterals(expr.get());
     }
     // TODO(johanpel): put some more elaborate minimization function/rules etc.. here
@@ -115,11 +157,11 @@ std::string ToString(Expression::Op operation) {
 }
 
 std::string Expression::ToString() const {
-  auto min = Minimize(this);
+  auto min = Minimize(const_cast<Expression *>(this));
   if (min->IsExpression()) {
-    auto mine = std::dynamic_pointer_cast<const Expression>(min);
+    auto mine = std::dynamic_pointer_cast<Expression>(min);
     auto ls = mine->lhs_->ToString();
-    auto op = cerata::ToString(operation_);
+    auto op = cerata::ToString(mine->operation_);
     auto rs = mine->rhs_->ToString();
     return ls + op + rs;
   } else {
@@ -133,9 +175,33 @@ std::shared_ptr<Object> Expression::Copy() const {
                           std::dynamic_pointer_cast<Node>(rhs_->Copy()));
 }
 
-std::shared_ptr<Edge> Expression::AddSource(Node *source) {
-  CERATA_LOG(FATAL, "Cannot drive an expression node.");
-  return nullptr;
+Node *Expression::CopyOnto(Graph *dst, const std::string &name, NodeMap *rebinding) const {
+  auto new_lhs = this->lhs_;
+  auto new_rhs = this->rhs_;
+  ImplicitlyRebindNodes(dst, {lhs_.get(), rhs_.get()}, rebinding);
+  // Check for both sides if they were already in the rebind map.
+  // If not, make copies onto the graph for those nodes as well.
+  if (rebinding->count(lhs_.get()) > 0) {
+    new_lhs = rebinding->at(lhs_.get())->shared_from_this();
+  } else {
+    new_lhs = lhs_->CopyOnto(dst, lhs_->name(), rebinding)->shared_from_this();
+  }
+  if (rebinding->count(rhs_.get()) > 0) {
+    new_rhs = rebinding->at(rhs_.get())->shared_from_this();
+  } else {
+    new_rhs = rhs_->CopyOnto(dst, rhs_->name(), rebinding)->shared_from_this();
+  }
+  auto result = Expression::Make(operation_, new_lhs, new_rhs);
+  (*rebinding)[this] = result.get();
+  dst->Add(result);
+  return result.get();
+}
+
+void Expression::AppendReferences(std::vector<Object *> *out) const {
+  out->push_back(lhs_.get());
+  lhs_->AppendReferences(out);
+  out->push_back(rhs_.get());
+  rhs_->AppendReferences(out);
 }
 
 }  // namespace cerata

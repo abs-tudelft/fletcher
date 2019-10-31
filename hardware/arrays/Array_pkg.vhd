@@ -29,7 +29,6 @@ package Array_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
@@ -73,7 +72,6 @@ package Array_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
@@ -117,7 +115,6 @@ package Array_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;
@@ -161,7 +158,6 @@ package Array_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       BUS_BURST_STEP_LEN        : natural;
       BUS_BURST_MAX_LEN         : natural;
       INDEX_WIDTH               : natural;

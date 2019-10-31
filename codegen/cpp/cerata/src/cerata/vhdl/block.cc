@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -93,6 +93,15 @@ Block &Block::Sort(std::optional<char> c) {
                        return a > b;
                      }
                    });
+  return *this;
+}
+
+Block &Block::AppendBlankLineIfNotEmpty() {
+  if (!lines.empty()) {
+    if (!lines.back().IsBlank()) {
+      lines.emplace_back();
+    }
+  }
   return *this;
 }
 

@@ -48,7 +48,7 @@ arrow::Status RecordBatchAnalyzer::VisitArray(const arrow::Array &arr) {
 }
 
 bool RecordBatchAnalyzer::Analyze(const arrow::RecordBatch &batch) {
-  out_->name = fletcher::GetMeta(*batch.schema(), "fletcher_name");
+  out_->name = fletcher::GetMeta(*batch.schema(), fletcher::meta::NAME);
   out_->rows = batch.num_rows();
   // Depth-first search every column (arrow::Array) for buffers.
   for (int i = 0; i < batch.num_columns(); ++i) {

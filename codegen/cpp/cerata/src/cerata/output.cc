@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 namespace cerata {
 
-OutputGenerator::OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs)
+OutputGenerator::OutputGenerator(std::string root_dir, std::vector<OutputSpec> outputs)
     : root_dir_(std::move(root_dir)), outputs_(std::move(outputs)) {}
 
 OutputGenerator &OutputGenerator::AddOutput(const OutputSpec &output) {

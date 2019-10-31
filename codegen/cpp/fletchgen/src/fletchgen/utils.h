@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ cerata::Port::Dir mode2dir(fletcher::Mode mode);
 /**
  * @brief Callback function for the Cerata logger.
  * @param level             The logging level.
- * @param message
- * @param source_function
- * @param source_file
- * @param line_number
+ * @param message           The message.
+ * @param source_function   The source code line.
+ * @param source_file       The source code file.
+ * @param line_number       The line number.
  */
 void LogCerata(cerata::LogLevel level,
                std::string const &message,

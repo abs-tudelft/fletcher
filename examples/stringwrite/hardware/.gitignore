@@ -7,3 +7,4 @@ stringwrite.as
 recordbatch.srec
 memory.srec
 fletchgen.mmio.yaml
+*.gen.*

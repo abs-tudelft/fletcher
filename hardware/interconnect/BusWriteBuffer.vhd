@@ -42,9 +42,6 @@ entity BusWriteBuffer is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
-    -- Bus strobe width.
-    BUS_STROBE_WIDTH            : natural := 32/8;
-
     -- Width of any other data that can be passed through along with the data
     -- stream. Must be at least 1 to prevent null ranges
     CTRL_WIDTH                  : natural := 1;
@@ -105,7 +102,7 @@ entity BusWriteBuffer is
     slv_wdat_valid              : in  std_logic;
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    slv_wdat_strobe             : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    slv_wdat_strobe             : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     slv_wdat_last               : in  std_logic;
     slv_wdat_ctrl               : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => 'U');
 
@@ -120,7 +117,7 @@ entity BusWriteBuffer is
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     mst_wdat_last               : out std_logic;
     mst_wdat_ctrl               : out std_logic_vector(CTRL_WIDTH-1 downto 0)
 
@@ -142,7 +139,7 @@ architecture Behavioral of BusWriteBuffer is
   -- Fifo data stream serialization indices.
   constant FDI : nat_array := cumulative((
     3 => CTRL_WIDTH,
-    2 => BUS_STROBE_WIDTH,
+    2 => BUS_DATA_WIDTH/8,
     1 => BUS_DATA_WIDTH,
     0 => 1 -- last bit
   ));
@@ -165,7 +162,7 @@ architecture Behavioral of BusWriteBuffer is
   signal s_slv_wdat_valid       : std_logic;
   signal s_slv_wdat_ready       : std_logic;
   signal s_slv_wdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_slv_wdat_strobe      : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_slv_wdat_strobe      : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal s_slv_wdat_last        : std_logic;
   signal s_slv_wdat_ctrl        : std_logic_vector(CTRL_WIDTH-1 downto 0);
   signal slv_wdat_all           : std_logic_vector(FDI(4)-1 downto 0);
@@ -174,7 +171,7 @@ architecture Behavioral of BusWriteBuffer is
   signal s_mst_wdat_valid       : std_logic;
   signal s_mst_wdat_ready       : std_logic;
   signal s_mst_wdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal s_mst_wdat_strobe      : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal s_mst_wdat_strobe      : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal s_mst_wdat_last        : std_logic;
   signal s_mst_wdat_ctrl        : std_logic_vector(CTRL_WIDTH-1 downto 0);
   signal s_mst_wdat_all         : std_logic_vector(FDI(4)-1 downto 0);

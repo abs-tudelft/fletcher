@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 #include <string>
 #include <memory>
-#include <deque>
+#include <vector>
 
 #include "cerata/type.h"
 #include "cerata/graph.h"
@@ -31,7 +31,7 @@ namespace cerata {
  * @param graphs_out          A list of graphs to append the output to.
  * @param include_components  Whether to recurse down the components used by any instances in the graph.
  */
-void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool include_components = false);
+void GetAllGraphs(Graph *top_graph, std::vector<Graph *> *graphs_out, bool include_components = false);
 
 /**
  * @brief Get all objects from a component.
@@ -39,7 +39,7 @@ void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool includ
  * @param objects_out         A list of objects to append the output to.
  * @param include_instances   Whether to recurse down the instances in the top-level graph.
  */
-void GetAllObjects(Component *top_component, std::deque<Object *> *objects_out, bool include_instances = false);
+void GetAllObjects(Component *top_component, std::vector<Object *> *objects_out, bool include_instances = false);
 
 /**
  * @brief Get all types used in a component, including nested types.
@@ -47,6 +47,6 @@ void GetAllObjects(Component *top_component, std::deque<Object *> *objects_out, 
  * @param types_out           A list of types to append the output to.
  * @param include_instances   Whether to recurse down the instances in the top-level graph.
  */
-void GetAllTypes(Component *top_component, std::deque<Type *> *types_out, bool include_instances = false);
+void GetAllTypes(Component *top_component, std::vector<Type *> *types_out, bool include_instances = false);
 
 }  // namespace cerata

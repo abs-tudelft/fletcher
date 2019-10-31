@@ -32,7 +32,6 @@ entity SimTop_tc is
     -- Host bus properties
     BUS_ADDR_WIDTH              : natural := 64;
     BUS_DATA_WIDTH              : natural := 512;
-    BUS_STROBE_WIDTH            : natural := 64;
     BUS_LEN_WIDTH               : natural := 8;
     BUS_BURST_MAX_LEN           : natural := 64;
     BUS_BURST_STEP_LEN          : natural := 1;
@@ -43,12 +42,12 @@ entity SimTop_tc is
   );
 end SimTop_tc;
 
-architecture Behavorial of SimTop_tc is
+architecture Behavioral of SimTop_tc is
 
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  component Mantle is
+  component Kernel_Mantle is
     generic(
       BUS_ADDR_WIDTH            : natural
     );
@@ -65,7 +64,7 @@ architecture Behavorial of SimTop_tc is
       wr_mst_wdat_valid          : out std_logic;
       wr_mst_wdat_ready          : in std_logic;
       wr_mst_wdat_data           : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wr_mst_wdat_strobe         : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wr_mst_wdat_strobe         : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       wr_mst_wdat_last           : out std_logic;
       mmio_awvalid              : in  std_logic;
       mmio_awready              : out std_logic;
@@ -180,7 +179,7 @@ architecture Behavorial of SimTop_tc is
   signal bus_wreq_valid         : std_logic;
   signal bus_wreq_ready         : std_logic;
   signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bus_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wdat_last          : std_logic;
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
@@ -381,7 +380,6 @@ begin
     BUS_ADDR_WIDTH              => BUS_ADDR_WIDTH,
     BUS_LEN_WIDTH               => BUS_LEN_WIDTH,
     BUS_DATA_WIDTH              => BUS_DATA_WIDTH,
-    BUS_STROBE_WIDTH            => BUS_STROBE_WIDTH,
     SEED                        => 1337,
     RANDOM_REQUEST_TIMING       => false,
     RANDOM_RESPONSE_TIMING      => false,
@@ -405,7 +403,7 @@ begin
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
-  Mantle_inst : Mantle
+  Kernel_Mantle_inst : Kernel_Mantle
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH
     )

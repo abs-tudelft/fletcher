@@ -25,18 +25,23 @@ add_compile_unit(
     src/cerata/graph.cc
     src/cerata/literal.cc
     src/cerata/node.cc
-    src/cerata/node_array.cc
+    src/cerata/array.cc
     src/cerata/object.cc
     src/cerata/output.cc
+    src/cerata/parameter.cc
     src/cerata/pool.cc
     src/cerata/port.cc
+    src/cerata/signal.cc
     src/cerata/transform.cc
     src/cerata/type.cc
+    src/cerata/stream.cc
     src/cerata/utils.cc
   TSTS
     test/cerata/test_expressions.cc
     test/cerata/test_pool.cc
     test/cerata/test_types.cc
+    test/cerata/test_nodes.cc
+    test/cerata/test_graphs.cc
 )
 
 add_compile_unit(
@@ -48,7 +53,7 @@ add_compile_unit(
     src/cerata/dot/dot.cc
     src/cerata/dot/style.cc
   TSTS
-    test/cerata/dot/test_graphs.cc
+    test/cerata/dot/test_dot.cc
   DEPS
     cerata::core
 )
@@ -73,6 +78,7 @@ add_compile_unit(
     test/cerata/vhdl/test_declarators.cc
     test/cerata/vhdl/test_designs.cc
     test/cerata/vhdl/test_instantiators.cc
+    test/cerata/vhdl/test_assignments.cc
   DEPS
     cerata::core
     cerata::dot

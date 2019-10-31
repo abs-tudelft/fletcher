@@ -22,20 +22,13 @@ use work.UtilInt_pkg.all;
 use work.UTF8StringGen_pkg.all;
 
 entity Kernel is
+  generic (
+    INDEX_WIDTH : integer := 32;
+    TAG_WIDTH   : integer := 1
+  );
   port (
     kcd_clk                         : in  std_logic;
     kcd_reset                       : in  std_logic;
-    start                           : in  std_logic;
-    stop                            : in  std_logic;
-    reset                           : in  std_logic;
-    idle                            : out std_logic;
-    busy                            : out std_logic;
-    done                            : out std_logic;
-    result                          : out std_logic_vector(63 downto 0);
-    strlen_min                      : in  std_logic_vector(31 downto 0);
-    strlen_mask                     : in  std_logic_vector(31 downto 0);
-    StringWrite_firstidx            : in  std_logic_vector(31 downto 0);
-    StringWrite_lastidx             : in  std_logic_vector(31 downto 0);
     StringWrite_String_valid        : out std_logic;
     StringWrite_String_ready        : in  std_logic;
     StringWrite_String_dvalid       : out std_logic;
@@ -46,16 +39,27 @@ entity Kernel is
     StringWrite_String_chars_ready  : in  std_logic;
     StringWrite_String_chars_dvalid : out std_logic;
     StringWrite_String_chars_last   : out std_logic;
-    StringWrite_String_chars_data   : out std_logic_vector(511 downto 0);
+    StringWrite_String_chars        : out std_logic_vector(511 downto 0);
     StringWrite_String_chars_count  : out std_logic_vector(6 downto 0);
     StringWrite_String_unl_valid    : in  std_logic;
     StringWrite_String_unl_ready    : out std_logic;
-    StringWrite_String_unl_tag      : in  std_logic_vector(0 downto 0);
+    StringWrite_String_unl_tag      : in  std_logic_vector(TAG_WIDTH-1 downto 0);
     StringWrite_String_cmd_valid    : out std_logic;
     StringWrite_String_cmd_ready    : in  std_logic;
-    StringWrite_String_cmd_firstIdx : out std_logic_vector(31 downto 0);
-    StringWrite_String_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    StringWrite_String_cmd_tag      : out std_logic_vector(0 downto 0)
+    StringWrite_String_cmd_firstIdx : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    StringWrite_String_cmd_lastIdx  : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    StringWrite_String_cmd_tag      : out std_logic_vector(TAG_WIDTH-1 downto 0);
+    start                           : in  std_logic;
+    stop                            : in  std_logic;
+    reset                           : in  std_logic;
+    idle                            : out std_logic;
+    busy                            : out std_logic;
+    done                            : out std_logic;
+    result                          : out std_logic_vector(63 downto 0);
+    StringWrite_firstidx            : in  std_logic_vector(31 downto 0);
+    StringWrite_lastidx             : in  std_logic_vector(31 downto 0);
+    strlen_min                      : in  std_logic_vector(31 downto 0);
+    strlen_mask                     : in  std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -63,9 +67,6 @@ architecture Behavioral of Kernel is
  ------------------------------------------------------------------------------
   -- Application constants
   -----------------------------------------------------------------------------
-  constant INDEX_WIDTH          : natural := 32;
-  constant TAG_WIDTH            : natural := 1;
-
   constant ELEMENT_WIDTH        : natural := 8;
   constant ELEMENT_COUNT_MAX    : natural := 64;
   constant ELEMENT_COUNT_WIDTH  : natural := log2ceil(ELEMENT_COUNT_MAX+1);
@@ -310,7 +311,7 @@ begin
   -----------------------------------------------------------------------------
   StringWrite_String_chars_valid  <= ssg_utf8_valid;
   ssg_utf8_ready                  <= StringWrite_String_chars_ready;
-  StringWrite_String_chars_data   <= ssg_utf8_data;
+  StringWrite_String_chars        <= ssg_utf8_data;
   StringWrite_String_chars_count  <= ssg_utf8_count;
   StringWrite_String_chars_dvalid <= ssg_utf8_dvalid;
   StringWrite_String_chars_last   <= ssg_utf8_last;

@@ -6,6 +6,7 @@ vhdl/
 dot/
 vhdmmio-doc/
 
-!vhdl/Kernel.vhd
+*.gen.*
 fletchgen.mmio.yaml
 memory.srec
+vhdmmio.log

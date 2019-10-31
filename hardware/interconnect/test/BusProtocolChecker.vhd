@@ -26,7 +26,6 @@ entity BusProtocolChecker is
   generic (
     BUS_ADDR_WIDTH              : natural;
     BUS_DATA_WIDTH              : natural;
-    BUS_STROBE_WIDTH            : natural;
     BUS_LEN_WIDTH               : natural;
     BUS_BURST_MAX_LEN           : natural;
     BUS_BURST_STEP_LEN          : natural;
@@ -50,7 +49,7 @@ entity BusProtocolChecker is
     bus_wdat_valid              : in std_logic;
     bus_wdat_ready              : in std_logic;
     bus_wdat_data               : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    bus_wdat_strobe             : in std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    bus_wdat_strobe             : in std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : in std_logic
   );
 end BusProtocolChecker;

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@
 #include <utility>
 #include <memory>
 #include <string>
-#include <deque>
+#include <vector>
 
 #include "cerata/utils.h"
 #include "cerata/node.h"
+#include "cerata/array.h"
+#include "cerata/pool.h"
 
 namespace cerata {
+
+// Forward decl.
+class Component;
 
 /// @brief A directed edge between two nodes.
 class Edge : public Named {
@@ -63,24 +68,67 @@ class Edge : public Named {
  */
 std::shared_ptr<Edge> Connect(Node *dst, Node *src);
 
+/**
+ * @brief Connect two nodes, returns the corresponding edge.
+ * @param dst The destination node.
+ * @param src The source node.
+ * @return The edge connecting the nodes.
+ */
+std::shared_ptr<Edge> Connect(Node *dst, const std::shared_ptr<Node> &src);
+
+/**
+ * @brief Connect two nodes, returns the corresponding edge.
+ * @param dst The destination node.
+ * @param src The source node.
+ * @return The edge connecting the nodes.
+ */
+std::shared_ptr<Edge> Connect(const std::shared_ptr<Node> &dst, Node *src);
+
+/**
+ * @brief Connect two nodes, returns the corresponding edge.
+ * @param dst The destination node.
+ * @param src The source node.
+ * @return The edge connecting the nodes.
+ */
+std::shared_ptr<Edge> Connect(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);
+
+/**
+ * @brief Connect a string literal to another node.
+ * @param dst The destination node.
+ * @param str A string out of which a string literal node will be created..
+ * @return The edge connecting the nodes.
+ */
+std::shared_ptr<Edge> Connect(Node *dst, std::string str);
+
 // Connect operators:
+
 /// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src);
 /// @brief Create an edge, connecting the src node to the dst node.
-std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, Node *src);
-/// @brief Create an edge, connecting the src node to the dst node.
-std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::weak_ptr<Node> &src);
-/// @brief Create an edge, connecting the src node to the dst node.
-std::shared_ptr<Edge> operator<<=(const std::weak_ptr<Node> &dst, const std::shared_ptr<Node> &src);
-/// @brief Create an edge, connecting the src node to the dst node.
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src);
-
-/// @brief Split an edge up to create two new edges with a signal node in the middle. Returns the new signal.
-std::shared_ptr<Signal> insert(Edge *edge,
-                               const std::string &name_prefix = "int_",
-                               std::optional<Graph *> new_owner = std::nullopt);
+/// @brief Create an edge, connecting the src node to the dst node.
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, Node *src);
 
 /// @brief Obtain all edges in a graph.
-std::deque<Edge *> GetAllEdges(const Graph &graph);
+std::vector<Edge *> GetAllEdges(const Graph &graph);
+
+/**
+ * @brief Attach a Signal to a Node, redirecting all edges through the new Signal.
+ * @param comp        The component to add and own the Signal.
+ * @param node        The Node to attach the Signal to.
+ * @param rebinding   A pointer to a NodeMap to which all rebound Nodes will be appended.
+ * @param name        A name for the new Signal.
+ * @return            A pointer to the new Signal.
+ */
+Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding, std::string name = "");
+
+/**
+ * @brief Attach a SignalArray to a Node, redirecting all edges through the new SignalArray.
+ * @param comp        The component to add and own the SignalArray.
+ * @param array       The NodeArray to attach the SignalArray to.
+ * @param rebinding   A pointer to a NodeMap to which all rebound Nodes will be appended.
+ * @return            A pointer to the new SignalArray.
+ */
+SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, NodeMap *rebinding);
 
 }  // namespace cerata

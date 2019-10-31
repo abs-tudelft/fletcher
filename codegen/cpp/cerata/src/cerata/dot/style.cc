@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 #include <string>
 #include <sstream>
+
+#include "cerata/api.h"
 
 namespace cerata::dot {
 
@@ -40,8 +42,6 @@ Style Style::normal() {
   ret.edge.stream = "penwidth=3";
   ret.edge.lit = "style=dotted, arrowhead=none, arrowtail=none";
   ret.edge.expr = "style=dotted, arrowhead=none, arrowtail=none";
-  ret.edge.clock = "shape=diamond, color=\"#000000\", penwidth=1";
-  ret.edge.reset = "shape=diamond, color=\"#000000\", penwidth=1";
 
   ret.node.color.stream = Palette::normal().b[3];
   ret.node.color.stream_border = Palette::normal().d[3];
@@ -54,15 +54,13 @@ Style Style::normal() {
   ret.node.base = "style=filled, width=0, height=0, margin=0.025";
 
   ret.node.port = "shape=rect";
-  ret.node.signal = "shape=rect, style=\"rounded, filled\", margin=0.1";
+  ret.node.signal = "shape=ellipse, margin=-0.2";
   ret.node.parameter = "shape=note, fontsize = 8";
   ret.node.literal = "shape=plaintext, fontsize = 8";
   ret.node.expression = "shape=signature";
 
   ret.node.nested = "html";
 
-  ret.node.type.clock = awq("fillcolor", Palette::normal().gray);
-  ret.node.type.reset = awq("fillcolor", Palette::normal().gray);
   ret.node.type.bit = awq("fillcolor", Palette::normal().b[0]);
   ret.node.type.boolean = awq("fillcolor", Palette::normal().b[1]);
   ret.node.type.vector = awq("fillcolor", Palette::normal().b[2]);
@@ -110,8 +108,6 @@ Config Config::streams() {
   ret.nodes.signals = true;
   ret.nodes.ports = true;
   ret.nodes.expressions = false;
-  ret.nodes.types.clock = false;
-  ret.nodes.types.reset = false;
   ret.nodes.types.bit = false;
   ret.nodes.types.vector = false;
   ret.nodes.types.record = false;
@@ -121,7 +117,7 @@ Config Config::streams() {
 
 Config Config::normal() {
   static Config ret;
-  ret.nodes.parameters = true;
+  ret.nodes.parameters = false;
   ret.nodes.literals = false;
   ret.nodes.signals = true;
   ret.nodes.ports = true;
@@ -131,8 +127,6 @@ Config Config::normal() {
   ret.nodes.expand.stream = false;
   ret.nodes.expand.expression = false;
 
-  ret.nodes.types.clock = true;
-  ret.nodes.types.reset = true;
   ret.nodes.types.bit = true;
   ret.nodes.types.vector = true;
   ret.nodes.types.record = true;
@@ -154,8 +148,6 @@ Config Config::all() {
   ret.nodes.expand.stream = true;
   ret.nodes.expand.expression = true;
 
-  ret.nodes.types.clock = true;
-  ret.nodes.types.reset = true;
   ret.nodes.types.bit = true;
   ret.nodes.types.vector = true;
   ret.nodes.types.record = true;
@@ -188,11 +180,6 @@ std::string Style::GetStyle(const Node &n) {
   // Add label
   switch (n.type()->id()) {
     case Type::RECORD:break;
-    case Type::STREAM:break;
-    case Type::CLOCK:sb << node.type.clock;
-      break;
-    case Type::RESET:sb << node.type.reset;
-      break;
     case Type::VECTOR: sb << node.type.vector;
       break;
     case Type::BIT:sb << node.type.bit;
@@ -228,15 +215,8 @@ std::string Style::GetStyle(const Node &n) {
 std::string Style::GetLabel(const Node &n) {
   StyleBuilder sb;
   bool expand = false;
-  if (n.type()->Is(Type::STREAM)) {
-    expand |= config.nodes.expand.stream;
-    if (config.nodes.expand.stream) {
-      sb << awq("fillcolor", node.color.stream_child);
-      sb << awq("color", node.color.stream_border);
-    } else {
-      sb << node.type.stream;
-    }
-  } else if (n.type()->Is(Type::RECORD)) {
+
+  if (n.type()->Is(Type::RECORD)) {
     expand |= config.nodes.expand.record;
     if (config.nodes.expand.record) {
       sb << awq("fillcolor", node.color.record_child);
@@ -258,10 +238,8 @@ std::string Style::GetLabel(const Node &n) {
   } else if (n.IsParameter()) {
     auto par = dynamic_cast<const Parameter &>(n);
     str << "label=\"" + sanitize(par.name());
-    if (par.GetValue()) {
-      auto val = *par.GetValue();
-      str << ":" << sanitize(val->ToString());
-    }
+    auto val = par.value();
+    str << ":" << sanitize(val->ToString());
     str << "\"";
   } else {
     str << "label=\"" + sanitize(n.name()) + "\"";

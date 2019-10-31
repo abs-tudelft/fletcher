@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <deque>
+#include <vector>
 #include <utility>
 #include <string>
 #include <memory>
@@ -27,7 +27,7 @@ namespace cerata {
 /// @brief Structure to specify output properties per graph
 struct OutputSpec {
   /// The component to output.
-  std::shared_ptr<Component> comp;
+  Component *comp;
   /// Metadata for back-ends.
   std::unordered_map<std::string, std::string> meta = {};
 };
@@ -38,7 +38,7 @@ struct OutputSpec {
 class OutputGenerator {
  public:
   /// @brief Construct an OutputGenerator.
-  explicit OutputGenerator(std::string root_dir, std::deque<OutputSpec> outputs = {});
+  explicit OutputGenerator(std::string root_dir, std::vector<OutputSpec> outputs = {});
 
   /// @brief Add a graph to the list of graphs to generate output for.
   OutputGenerator &AddOutput(const OutputSpec &output);
@@ -53,7 +53,7 @@ class OutputGenerator {
   /// @brief The root directory to generate the output in.
   std::string root_dir_;
   /// @brief A list of things to put out.
-  std::deque<OutputSpec> outputs_;
+  std::vector<OutputSpec> outputs_;
 };
 
 }  // namespace cerata

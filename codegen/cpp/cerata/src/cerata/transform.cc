@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
 
 #include "cerata/transform.h"
 
-#include <deque>
+#include <vector>
 
 #include "cerata/graph.h"
 #include "cerata/type.h"
 #include "cerata/object.h"
 #include "cerata/node.h"
-#include "cerata/node_array.h"
+#include "cerata/array.h"
 
 namespace cerata {
 
-void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool include_components) {
+void GetAllGraphs(Graph *top_graph, std::vector<Graph *> *graphs_out, bool include_components) {
   // Insert this graph
   graphs_out->push_back(top_graph);
 
@@ -45,21 +45,21 @@ void GetAllGraphs(Graph *top_graph, std::deque<Graph *> *graphs_out, bool includ
   }
 }
 
-void GetAllObjects(Component *top_component, std::deque<Object *> *objects, bool include_instances) {
-  std::deque<Graph *> graphs;
+void GetAllObjects(Component *top_component, std::vector<Object *> *objects, bool include_instances) {
+  std::vector<Graph *> graphs;
 
   if (include_instances) {
     GetAllGraphs(top_component, &graphs, include_instances);
   }
-  // Add all pointers to the objects of the subgraphs
+  // Add all pointers to the objects of the sub-graphs
   for (const auto &graph : graphs) {
     auto comp_objs = graph->objects();
     objects->insert(objects->end(), comp_objs.begin(), comp_objs.end());
   }
 }
 
-void GetAllTypes(Component *top_component, std::deque<Type *> *types, bool include_instances) {
-  std::deque<Object *> objects;
+void GetAllTypes(Component *top_component, std::vector<Type *> *types, bool include_instances) {
+  std::vector<Object *> objects;
   GetAllObjects(top_component, &objects, include_instances);
 
   for (const auto &o : objects) {
@@ -72,8 +72,7 @@ void GetAllTypes(Component *top_component, std::deque<Type *> *types, bool inclu
     }
   }
   // Filter out duplicates.
-  auto i = std::unique(types->begin(), types->end());
-  types->resize(std::distance(types->begin(), i));
+  FilterDuplicates(types);
 }
 
 }  // namespace cerata

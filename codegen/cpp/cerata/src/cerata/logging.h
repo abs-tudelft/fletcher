@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,9 +68,9 @@ inline Logger &logger() {
   return l;
 }
 
-// TODO(johanpel): do we want to throw or exit some other way?
+// TODO(johanpel): do we want to throw or exit some other way? For debugging, this is quite handy.
 #define CERATA_LOG(level, msg) \
-if (CERATA_LOG_##level == CERATA_LOG_FATAL) { \
+if (CERATA_LOG_##level > CERATA_LOG_WARNING) { \
   throw std::runtime_error(std::string(__FILE__) + ":" \
                           + std::string(__FUNCTION__) + ":" \
                           + std::to_string(__LINE__) + ":\n" + (msg)); \

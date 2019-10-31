@@ -1,0 +1,19 @@
+Wed Oct 30 09:18:56 CET 2019
+Trace back: can't read "tbX(tbf21)": no such element in array
+    while executing
+"lappend orderx($tbX($tb)) $tb"
+    (object "::.dockbar" method "::mtiwidgets::Dockbar::redoPack" body line 34)
+    invoked from within
+"redoPack again"
+    ("eval" body line 1)
+    invoked from within
+"eval $args"
+    (object "::.dockbar" method "::mtiwidgets::Dockbar::_delayedEval" body line 3)
+    invoked from within
+"::.dockbar _delayedEval redoPack again"
+    (in namespace inscope "::mtiwidgets::Dockbar" script line 1)
+    invoked from within
+"namespace inscope ::mtiwidgets::Dockbar ::.dockbar _delayedEval redoPack again"
+    ("after" script)
+  <2:/opt/applics/questasim-10.6a/questasim/linux_x86_64/tk8.6/bgerror.tcl:106: ::tkerror {can't read "tbX(tbf21)": no such element in array}
+  <1:eval:1: ::tk::dialog::error::bgerror {can't read "tbX(tbf21)": no such element in array}

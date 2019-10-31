@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,41 +24,37 @@ namespace fletchgen {
 
 /// Fletcher program options.
 struct Options {
-  /// Paths to the schema files
+  /// Paths to the schema files.
   std::vector<std::string> schema_paths;
-  /// Loaded schemas
+  /// Loaded schemas.
   std::vector<std::shared_ptr<arrow::Schema>> schemas;
-  /// Paths to RecordBatches
+  /// Paths to RecordBatches.
   std::vector<std::string> recordbatch_paths;
-  /// Loaded RecordBatches
+  /// Loaded RecordBatches.
   std::vector<std::shared_ptr<arrow::RecordBatch>> recordbatches;
-
-  /// Output directory
+  /// Output directory.
   std::string output_dir = ".";
-
-  /// Output languages
+  /// Output languages.
   std::vector<std::string> languages = {"vhdl", "dot"};
-
   /// SREC output path. This is the path where an SREC file based on input RecordBatches will be placed.
   std::string srec_out_path;
-
   /// SREC simulation output path, where the simulation should dump the memory contents of written RecordBatches.
   std::string srec_sim_dump;
-
-  /// Name of the Kernel
+  /// Name of the Kernel.
   std::string kernel_name = "Kernel";
-
-  /// Custom 32-bit registers
-  std::vector<std::string> regs = {};
+  /// Custom 32-bit registers.
+  std::vector<std::string> regs;
+  /// Bus dimensions strings.
+  std::vector<std::string> bus_dims = {"64,512,8,1,16"};
 
   /// Whether to generate an AXI top level.
   bool axi_top = false;
   /// Whether to simulate an AXI top level.
   bool sim_top = false;
-  /// Whether to overwrite any existing generated files. Only works for .vhd.
-  bool overwrite = false;
+  /// Whether to backup any existing generated files.
+  bool backup = false;
 
-  /// Vivado HLS template
+  /// Vivado HLS template. TODO(johanpel): not yet implemented.
   bool vivado_hls = false;
 
   /// Whether to quit the program without doing anything (useful for just showing help.)

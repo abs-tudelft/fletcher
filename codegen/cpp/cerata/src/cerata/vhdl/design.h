@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,17 +28,21 @@ namespace cerata::vhdl {
 /// A VHDL design that can generate code for a single file.
 struct Design {
   /// The component for this design file.
-  std::shared_ptr<Component> component_;
+  Component *component_;
   /// A potential copyright notice to place in the header.
   std::string notice_;
   /// Libraries to place after the header.
   std::string libs_;
 
-  Design() = default;
+  /// @brief Design constructor.
+  explicit Design(Component *component, std::string notice = "", std::string header = DEFAULT_LIBS)
+      : component_(component), notice_(std::move(notice)), libs_(std::move(header)) {}
 
   /// @brief Design constructor.
-  explicit Design(std::shared_ptr<Component> component, std::string notice = "", std::string header = DEFAULT_LIBS)
-      : component_(std::move(component)), notice_(std::move(notice)), libs_(std::move(header)) {}
+  explicit Design(const std::shared_ptr<Component> &component,
+                  std::string notice = "",
+                  std::string header = DEFAULT_LIBS)
+      : Design(component.get(), std::move(notice), std::move(header)) {}
 
   /// @brief Generate the design VHDL code.
   MultiBlock Generate();

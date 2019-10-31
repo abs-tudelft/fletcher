@@ -20,6 +20,7 @@
 
 #include "fletcher/logging.h"
 #include "fletcher/arrow-schema.h"
+#include "fletcher/meta/meta.h"
 
 namespace fletcher {
 
@@ -27,7 +28,7 @@ bool SchemaAnalyzer::Analyze(const arrow::Schema &schema) {
   // RecordBatch is virtual, i.e. there is no physically stored RecordBatch
   out_->is_virtual = true;
   // Get schema/recordbatch name
-  out_->name = fletcher::GetMeta(schema, "fletcher_name");
+  out_->name = fletcher::GetMeta(schema, fletcher::meta::NAME);
   // Set number of rows to 0
   out_->rows = 0;
 

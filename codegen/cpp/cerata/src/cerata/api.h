@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #pragma once
 
 // Cerata intermediate
+#include "cerata/array.h"
 #include "cerata/domain.h"
 #include "cerata/edge.h"
 #include "cerata/expression.h"
@@ -22,12 +23,13 @@
 #include "cerata/graph.h"
 #include "cerata/literal.h"
 #include "cerata/node.h"
-#include "cerata/node_array.h"
 #include "cerata/object.h"
 #include "cerata/output.h"
+#include "cerata/parameter.h"
 #include "cerata/pool.h"
-#include "cerata/transform.h"
 #include "cerata/port.h"
+#include "cerata/stream.h"
+#include "cerata/transform.h"
 #include "cerata/type.h"
 
 // Cerata utilities

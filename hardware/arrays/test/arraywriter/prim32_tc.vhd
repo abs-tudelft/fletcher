@@ -35,7 +35,6 @@ architecture tb of prim32_tc is
 
   constant BUS_ADDR_WIDTH       : natural := 64;
   constant BUS_DATA_WIDTH       : natural := 512;
-  constant BUS_STROBE_WIDTH     : natural := 512/8;
   constant BUS_BURST_STEP_LEN   : natural := 1;
   constant BUS_BURST_MAX_LEN    : natural := 32;
   constant BUS_LEN_WIDTH        : natural := log2ceil(BUS_BURST_MAX_LEN) + 1;
@@ -73,7 +72,7 @@ architecture tb of prim32_tc is
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
   signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bus_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wdat_last          : std_logic;
 
   signal in_valid               : std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -263,7 +262,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_BOUNDARY        => BUS_BURST_BOUNDARY
@@ -295,7 +293,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       INDEX_WIDTH               => INDEX_WIDTH,

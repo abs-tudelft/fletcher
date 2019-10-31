@@ -35,9 +35,6 @@ entity BusWriteArbiter is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
     
-    -- Bus strobe width
-    BUS_STROBE_WIDTH            : natural := 32/8;
-
     -- Number of bus masters to arbitrate between.
     NUM_SLAVE_PORTS             : natural := 2;
 
@@ -79,7 +76,7 @@ entity BusWriteArbiter is
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     mst_wdat_last               : out std_logic;
 
     -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
@@ -92,7 +89,7 @@ entity BusWriteArbiter is
     bs00_wdat_valid             : in  std_logic := '0';
     bs00_wdat_ready             : out std_logic := '1';
     bs00_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs00_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs00_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs00_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 1.
@@ -103,7 +100,7 @@ entity BusWriteArbiter is
     bs01_wdat_valid             : in  std_logic := '0';
     bs01_wdat_ready             : out std_logic := '1';
     bs01_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs01_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs01_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs01_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 2.
@@ -114,7 +111,7 @@ entity BusWriteArbiter is
     bs02_wdat_valid             : in  std_logic := '0';
     bs02_wdat_ready             : out std_logic := '1';
     bs02_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs02_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs02_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs02_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 3.
@@ -125,7 +122,7 @@ entity BusWriteArbiter is
     bs03_wdat_valid             : in  std_logic := '0';
     bs03_wdat_ready             : out std_logic := '1';
     bs03_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs03_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs03_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs03_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 4.
@@ -136,7 +133,7 @@ entity BusWriteArbiter is
     bs04_wdat_valid             : in  std_logic := '0';
     bs04_wdat_ready             : out std_logic := '1';
     bs04_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs04_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs04_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs04_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 5.
@@ -147,7 +144,7 @@ entity BusWriteArbiter is
     bs05_wdat_valid             : in  std_logic := '0';
     bs05_wdat_ready             : out std_logic := '1';
     bs05_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs05_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs05_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs05_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 6.
@@ -158,7 +155,7 @@ entity BusWriteArbiter is
     bs06_wdat_valid             : in  std_logic := '0';
     bs06_wdat_ready             : out std_logic := '1';
     bs06_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs06_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs06_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs06_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 7.
@@ -169,7 +166,7 @@ entity BusWriteArbiter is
     bs07_wdat_valid             : in  std_logic := '0';
     bs07_wdat_ready             : out std_logic := '1';
     bs07_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs07_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs07_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs07_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 8.
@@ -180,7 +177,7 @@ entity BusWriteArbiter is
     bs08_wdat_valid             : in  std_logic := '0';
     bs08_wdat_ready             : out std_logic := '1';
     bs08_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs08_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs08_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs08_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 9.
@@ -191,7 +188,7 @@ entity BusWriteArbiter is
     bs09_wdat_valid             : in  std_logic := '0';
     bs09_wdat_ready             : out std_logic := '1';
     bs09_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs09_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs09_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs09_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 10.
@@ -202,7 +199,7 @@ entity BusWriteArbiter is
     bs10_wdat_valid             : in  std_logic := '0';
     bs10_wdat_ready             : out std_logic := '1';
     bs10_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs10_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs10_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs10_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 11.
@@ -213,7 +210,7 @@ entity BusWriteArbiter is
     bs11_wdat_valid             : in  std_logic := '0';
     bs11_wdat_ready             : out std_logic := '1';
     bs11_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs11_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs11_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs11_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 12.
@@ -224,7 +221,7 @@ entity BusWriteArbiter is
     bs12_wdat_valid             : in  std_logic := '0';
     bs12_wdat_ready             : out std_logic := '1';
     bs12_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs12_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs12_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs12_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 13.
@@ -235,7 +232,7 @@ entity BusWriteArbiter is
     bs13_wdat_valid             : in  std_logic := '0';
     bs13_wdat_ready             : out std_logic := '1';
     bs13_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs13_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs13_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs13_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 14.
@@ -246,7 +243,7 @@ entity BusWriteArbiter is
     bs14_wdat_valid             : in  std_logic := '0';
     bs14_wdat_ready             : out std_logic := '1';
     bs14_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs14_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs14_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs14_wdat_last              : in  std_logic := 'U';
 
     -- Slave port 15.
@@ -257,7 +254,7 @@ entity BusWriteArbiter is
     bs15_wdat_valid             : in  std_logic := '0';
     bs15_wdat_ready             : out std_logic := '1';
     bs15_wdat_data              : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-    bs15_wdat_strobe            : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+    bs15_wdat_strobe            : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
     bs15_wdat_last              : in  std_logic := 'U'
   );
 end BusWriteArbiter;
@@ -272,7 +269,7 @@ architecture Behavioral of BusWriteArbiter is
   signal bsv_wdat_valid          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
   signal bsv_wdat_ready          : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
   signal bsv_wdat_data           : std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
-  signal bsv_wdat_strobe         : std_logic_vector(NUM_SLAVE_PORTS*BUS_STROBE_WIDTH-1 downto 0);
+  signal bsv_wdat_strobe         : std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH/8-1 downto 0);
   signal bsv_wdat_last           : std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
 begin
 
@@ -286,7 +283,7 @@ begin
     bsv_wdat_valid ( 0)                                               <= bs00_wdat_valid;        
     bs00_wdat_ready                                                   <= bsv_wdat_ready( 0);     
     bsv_wdat_data  ( 1*BUS_DATA_WIDTH-1 downto  0*BUS_DATA_WIDTH)     <= bs00_wdat_data;        
-    bsv_wdat_strobe( 1*BUS_STROBE_WIDTH-1 downto  0*BUS_STROBE_WIDTH) <= bs00_wdat_strobe;      
+    bsv_wdat_strobe( 1*BUS_DATA_WIDTH/8-1 downto  0*BUS_DATA_WIDTH/8) <= bs00_wdat_strobe;      
     bsv_wdat_last  ( 0)                                               <= bs00_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -300,7 +297,7 @@ begin
     bsv_wdat_valid ( 1)                                               <= bs01_wdat_valid;        
     bs01_wdat_ready                                                   <= bsv_wdat_ready( 1);     
     bsv_wdat_data  ( 2*BUS_DATA_WIDTH-1 downto  1*BUS_DATA_WIDTH)     <= bs01_wdat_data;        
-    bsv_wdat_strobe( 2*BUS_STROBE_WIDTH-1 downto  1*BUS_STROBE_WIDTH) <= bs01_wdat_strobe;      
+    bsv_wdat_strobe( 2*BUS_DATA_WIDTH/8-1 downto  1*BUS_DATA_WIDTH/8) <= bs01_wdat_strobe;      
     bsv_wdat_last  ( 1)                                               <= bs01_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -314,7 +311,7 @@ begin
     bsv_wdat_valid ( 2)                                               <= bs02_wdat_valid;        
     bs02_wdat_ready                                                   <= bsv_wdat_ready( 2);     
     bsv_wdat_data  ( 3*BUS_DATA_WIDTH-1 downto  2*BUS_DATA_WIDTH)     <= bs02_wdat_data;        
-    bsv_wdat_strobe( 3*BUS_STROBE_WIDTH-1 downto  2*BUS_STROBE_WIDTH) <= bs02_wdat_strobe;      
+    bsv_wdat_strobe( 3*BUS_DATA_WIDTH/8-1 downto  2*BUS_DATA_WIDTH/8) <= bs02_wdat_strobe;      
     bsv_wdat_last  ( 2)                                               <= bs02_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -328,7 +325,7 @@ begin
     bsv_wdat_valid ( 3)                                               <= bs03_wdat_valid;        
     bs03_wdat_ready                                                   <= bsv_wdat_ready( 3);     
     bsv_wdat_data  ( 4*BUS_DATA_WIDTH-1 downto  3*BUS_DATA_WIDTH)     <= bs03_wdat_data;        
-    bsv_wdat_strobe( 4*BUS_STROBE_WIDTH-1 downto  3*BUS_STROBE_WIDTH) <= bs03_wdat_strobe;      
+    bsv_wdat_strobe( 4*BUS_DATA_WIDTH/8-1 downto  3*BUS_DATA_WIDTH/8) <= bs03_wdat_strobe;      
     bsv_wdat_last  ( 3)                                               <= bs03_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -342,7 +339,7 @@ begin
     bsv_wdat_valid ( 4)                                               <= bs04_wdat_valid;        
     bs04_wdat_ready                                                   <= bsv_wdat_ready( 4);     
     bsv_wdat_data  ( 5*BUS_DATA_WIDTH-1 downto  4*BUS_DATA_WIDTH)     <= bs04_wdat_data;        
-    bsv_wdat_strobe( 5*BUS_STROBE_WIDTH-1 downto  4*BUS_STROBE_WIDTH) <= bs04_wdat_strobe;      
+    bsv_wdat_strobe( 5*BUS_DATA_WIDTH/8-1 downto  4*BUS_DATA_WIDTH/8) <= bs04_wdat_strobe;      
     bsv_wdat_last  ( 4)                                               <= bs04_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -356,7 +353,7 @@ begin
     bsv_wdat_valid ( 5)                                               <= bs05_wdat_valid;        
     bs05_wdat_ready                                                   <= bsv_wdat_ready( 5);     
     bsv_wdat_data  ( 6*BUS_DATA_WIDTH-1 downto  5*BUS_DATA_WIDTH)     <= bs05_wdat_data;        
-    bsv_wdat_strobe( 6*BUS_STROBE_WIDTH-1 downto  5*BUS_STROBE_WIDTH) <= bs05_wdat_strobe;      
+    bsv_wdat_strobe( 6*BUS_DATA_WIDTH/8-1 downto  5*BUS_DATA_WIDTH/8) <= bs05_wdat_strobe;      
     bsv_wdat_last  ( 5)                                               <= bs05_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -370,7 +367,7 @@ begin
     bsv_wdat_valid ( 6)                                               <= bs06_wdat_valid;        
     bs06_wdat_ready                                                   <= bsv_wdat_ready( 6);     
     bsv_wdat_data  ( 7*BUS_DATA_WIDTH-1 downto  6*BUS_DATA_WIDTH)     <= bs06_wdat_data;        
-    bsv_wdat_strobe( 7*BUS_STROBE_WIDTH-1 downto  6*BUS_STROBE_WIDTH) <= bs06_wdat_strobe;      
+    bsv_wdat_strobe( 7*BUS_DATA_WIDTH/8-1 downto  6*BUS_DATA_WIDTH/8) <= bs06_wdat_strobe;      
     bsv_wdat_last  ( 6)                                               <= bs06_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -384,7 +381,7 @@ begin
     bsv_wdat_valid ( 7)                                               <= bs07_wdat_valid;        
     bs07_wdat_ready                                                   <= bsv_wdat_ready( 7);     
     bsv_wdat_data  ( 8*BUS_DATA_WIDTH-1 downto  7*BUS_DATA_WIDTH)     <= bs07_wdat_data;        
-    bsv_wdat_strobe( 8*BUS_STROBE_WIDTH-1 downto  7*BUS_STROBE_WIDTH) <= bs07_wdat_strobe;      
+    bsv_wdat_strobe( 8*BUS_DATA_WIDTH/8-1 downto  7*BUS_DATA_WIDTH/8) <= bs07_wdat_strobe;      
     bsv_wdat_last  ( 7)                                               <= bs07_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -398,7 +395,7 @@ begin
     bsv_wdat_valid ( 8)                                               <= bs08_wdat_valid;        
     bs08_wdat_ready                                                   <= bsv_wdat_ready( 8);     
     bsv_wdat_data  ( 9*BUS_DATA_WIDTH-1 downto  8*BUS_DATA_WIDTH)     <= bs08_wdat_data;        
-    bsv_wdat_strobe( 9*BUS_STROBE_WIDTH-1 downto  8*BUS_STROBE_WIDTH) <= bs08_wdat_strobe;      
+    bsv_wdat_strobe( 9*BUS_DATA_WIDTH/8-1 downto  8*BUS_DATA_WIDTH/8) <= bs08_wdat_strobe;      
     bsv_wdat_last  ( 8)                                               <= bs08_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -412,7 +409,7 @@ begin
     bsv_wdat_valid ( 9)                                               <= bs09_wdat_valid;        
     bs09_wdat_ready                                                   <= bsv_wdat_ready( 9);     
     bsv_wdat_data  (10*BUS_DATA_WIDTH-1 downto  9*BUS_DATA_WIDTH)     <= bs09_wdat_data;        
-    bsv_wdat_strobe(10*BUS_STROBE_WIDTH-1 downto  9*BUS_STROBE_WIDTH) <= bs09_wdat_strobe;      
+    bsv_wdat_strobe(10*BUS_DATA_WIDTH/8-1 downto  9*BUS_DATA_WIDTH/8) <= bs09_wdat_strobe;      
     bsv_wdat_last  ( 9)                                               <= bs09_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -426,7 +423,7 @@ begin
     bsv_wdat_valid (10)                                               <= bs10_wdat_valid;        
     bs10_wdat_ready                                                   <= bsv_wdat_ready(10);     
     bsv_wdat_data  (11*BUS_DATA_WIDTH-1 downto 10*BUS_DATA_WIDTH)     <= bs10_wdat_data;        
-    bsv_wdat_strobe(11*BUS_STROBE_WIDTH-1 downto 10*BUS_STROBE_WIDTH) <= bs10_wdat_strobe;      
+    bsv_wdat_strobe(11*BUS_DATA_WIDTH/8-1 downto 10*BUS_DATA_WIDTH/8) <= bs10_wdat_strobe;      
     bsv_wdat_last  (10)                                               <= bs10_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -440,7 +437,7 @@ begin
     bsv_wdat_valid (11)                                               <= bs11_wdat_valid;        
     bs11_wdat_ready                                                   <= bsv_wdat_ready(11);     
     bsv_wdat_data  (12*BUS_DATA_WIDTH-1 downto 11*BUS_DATA_WIDTH)     <= bs11_wdat_data;        
-    bsv_wdat_strobe(12*BUS_STROBE_WIDTH-1 downto 11*BUS_STROBE_WIDTH) <= bs11_wdat_strobe;      
+    bsv_wdat_strobe(12*BUS_DATA_WIDTH/8-1 downto 11*BUS_DATA_WIDTH/8) <= bs11_wdat_strobe;      
     bsv_wdat_last  (11)                                               <= bs11_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -454,7 +451,7 @@ begin
     bsv_wdat_valid (12)                                               <= bs12_wdat_valid;        
     bs12_wdat_ready                                                   <= bsv_wdat_ready(12);     
     bsv_wdat_data  (13*BUS_DATA_WIDTH-1 downto 12*BUS_DATA_WIDTH)     <= bs12_wdat_data;        
-    bsv_wdat_strobe(13*BUS_STROBE_WIDTH-1 downto 12*BUS_STROBE_WIDTH) <= bs12_wdat_strobe;      
+    bsv_wdat_strobe(13*BUS_DATA_WIDTH/8-1 downto 12*BUS_DATA_WIDTH/8) <= bs12_wdat_strobe;      
     bsv_wdat_last  (12)                                               <= bs12_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -468,7 +465,7 @@ begin
     bsv_wdat_valid (13)                                               <= bs13_wdat_valid;        
     bs13_wdat_ready                                                   <= bsv_wdat_ready(13);     
     bsv_wdat_data  (14*BUS_DATA_WIDTH-1 downto 13*BUS_DATA_WIDTH)     <= bs13_wdat_data;        
-    bsv_wdat_strobe(14*BUS_STROBE_WIDTH-1 downto 13*BUS_STROBE_WIDTH) <= bs13_wdat_strobe;      
+    bsv_wdat_strobe(14*BUS_DATA_WIDTH/8-1 downto 13*BUS_DATA_WIDTH/8) <= bs13_wdat_strobe;      
     bsv_wdat_last  (13)                                               <= bs13_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -482,7 +479,7 @@ begin
     bsv_wdat_valid (14)                                               <= bs14_wdat_valid;        
     bs14_wdat_ready                                                   <= bsv_wdat_ready(14);     
     bsv_wdat_data  (15*BUS_DATA_WIDTH-1 downto 14*BUS_DATA_WIDTH)     <= bs14_wdat_data;        
-    bsv_wdat_strobe(15*BUS_STROBE_WIDTH-1 downto 14*BUS_STROBE_WIDTH) <= bs14_wdat_strobe;      
+    bsv_wdat_strobe(15*BUS_DATA_WIDTH/8-1 downto 14*BUS_DATA_WIDTH/8) <= bs14_wdat_strobe;      
     bsv_wdat_last  (14)                                               <= bs14_wdat_last;         
   end generate;                                                                                             
                                                                                                             
@@ -496,7 +493,7 @@ begin
     bsv_wdat_valid (15)                                               <= bs15_wdat_valid;        
     bs15_wdat_ready                                                   <= bsv_wdat_ready(15);     
     bsv_wdat_data  (16*BUS_DATA_WIDTH-1 downto 15*BUS_DATA_WIDTH)     <= bs15_wdat_data;        
-    bsv_wdat_strobe(16*BUS_STROBE_WIDTH-1 downto 15*BUS_STROBE_WIDTH) <= bs15_wdat_strobe;      
+    bsv_wdat_strobe(16*BUS_DATA_WIDTH/8-1 downto 15*BUS_DATA_WIDTH/8) <= bs15_wdat_strobe;      
     bsv_wdat_last  (15)                                               <= bs15_wdat_last;         
   end generate;
 
@@ -506,7 +503,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       NUM_SLAVE_PORTS           => NUM_SLAVE_PORTS,
       ARB_METHOD                => ARB_METHOD,
       MAX_OUTSTANDING           => MAX_OUTSTANDING,

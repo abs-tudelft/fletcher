@@ -38,9 +38,6 @@ entity ArrayWriterLevel is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
-    
-    -- Bus strobe width.
-    BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
@@ -120,7 +117,7 @@ entity ArrayWriterLevel is
     bus_wdat_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-    bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
+    bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
@@ -169,7 +166,7 @@ begin
         BUS_ADDR_WIDTH          => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH           => BUS_LEN_WIDTH,
         BUS_DATA_WIDTH          => BUS_DATA_WIDTH,
-        BUS_STROBE_WIDTH        => BUS_STROBE_WIDTH,
+        BUS_STROBE_WIDTH        => BUS_DATA_WIDTH/8,
         BUS_BURST_MAX_LEN       => BUS_BURST_MAX_LEN,
         BUS_BURST_STEP_LEN      => BUS_BURST_STEP_LEN,
         INDEX_WIDTH             => INDEX_WIDTH,
@@ -228,7 +225,6 @@ begin
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
         BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-        BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
         BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
         BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
         INDEX_WIDTH               => INDEX_WIDTH,
@@ -431,7 +427,6 @@ begin
         BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
         BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
         BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-        BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
         BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
         BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
         INDEX_WIDTH               => INDEX_WIDTH,

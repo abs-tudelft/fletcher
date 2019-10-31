@@ -36,9 +36,6 @@ entity BusWriteArbiterVec is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
-    
-    -- Bus strobe width.
-    BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Number of slaves ports to arbitrate between.
     NUM_SLAVE_PORTS             : natural := 2;
@@ -82,7 +79,7 @@ entity BusWriteArbiterVec is
     bsv_wdat_valid              : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
     bsv_wdat_ready              : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
     bsv_wdat_data               : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
-    bsv_wdat_strobe             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_STROBE_WIDTH-1 downto 0);
+    bsv_wdat_strobe             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH/8-1 downto 0);
     bsv_wdat_last               : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
     
     -- Master port.
@@ -93,7 +90,7 @@ entity BusWriteArbiterVec is
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    mst_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    mst_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     mst_wdat_last               : out  std_logic
 
   );
@@ -108,7 +105,7 @@ architecture Behavioral of BusWriteArbiterVec is
   subtype bus_addr_type   is std_logic_vector(BUS_ADDR_WIDTH-1   downto 0);
   subtype bus_len_type    is std_logic_vector(BUS_LEN_WIDTH-1    downto 0);
   subtype bus_data_type   is std_logic_vector(BUS_DATA_WIDTH-1   downto 0);
-  subtype bus_strobe_type is std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  subtype bus_strobe_type is std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
 
   type bus_addr_array   is array (natural range <>) of bus_addr_type;
   type bus_len_array    is array (natural range <>) of bus_len_type;
@@ -129,7 +126,7 @@ architecture Behavioral of BusWriteArbiterVec is
 
   -- Bus data channel serialization indices.
   constant BPI : nat_array := cumulative((
-    2 => BUS_STROBE_WIDTH,
+    2 => BUS_DATA_WIDTH/8,
     1 => BUS_DATA_WIDTH,
     0 => 1
   ));
@@ -194,7 +191,7 @@ architecture Behavioral of BusWriteArbiterVec is
   signal mux_wdat_valid         : std_logic;
   signal mux_wdat_ready         : std_logic;
   signal mux_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal mux_wdat_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal mux_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal mux_wdat_last          : std_logic;
 
 begin
@@ -209,7 +206,7 @@ begin
     bs_wdat_valid (i) <= bsv_wdat_valid(i);
     bsv_wdat_ready(i) <= bs_wdat_ready (i);
     bs_wdat_data  (i) <= bsv_wdat_data((i+1)*BUS_DATA_WIDTH-1 downto i*BUS_DATA_WIDTH);
-    bs_wdat_strobe(i) <= bsv_wdat_strobe((i+1)*BUS_STROBE_WIDTH-1 downto i*BUS_STROBE_WIDTH);
+    bs_wdat_strobe(i) <= bsv_wdat_strobe((i+1)*BUS_DATA_WIDTH/8-1 downto i*BUS_DATA_WIDTH/8);
     bs_wdat_last  (i) <= bsv_wdat_last (i);
   end generate;
 

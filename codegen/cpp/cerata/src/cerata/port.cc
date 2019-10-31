@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@
 
 namespace cerata {
 
-std::shared_ptr<Port> Port::Make(const std::string &name,
-                                 const std::shared_ptr<Type> &type,
-                                 Term::Dir dir,
-                                 const std::shared_ptr<ClockDomain> &domain) {
+std::shared_ptr<Port> port(const std::string &name,
+                           const std::shared_ptr<Type> &type,
+                           Term::Dir dir,
+                           const std::shared_ptr<ClockDomain> &domain) {
   return std::make_shared<Port>(name, type, dir, domain);
 }
 
-std::shared_ptr<Port> Port::Make(const std::shared_ptr<Type> &type,
-                                 Term::Dir dir,
-                                 const std::shared_ptr<ClockDomain> &domain) {
+std::shared_ptr<Port> port(const std::shared_ptr<Type> &type,
+                           Term::Dir dir,
+                           const std::shared_ptr<ClockDomain> &domain) {
   return std::make_shared<Port>(type->name(), type, dir, domain);
 }
 
@@ -41,9 +41,32 @@ std::shared_ptr<Object> Port::Copy() const {
 Port::Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir, std::shared_ptr<ClockDomain> domain)
     : NormalNode(std::move(name), Node::NodeID::PORT, std::move(type)), Synchronous(std::move(domain)), Term(dir) {}
 
-Port &Port::InvertDirection() {
-  dir_ = Term::Invert(dir_);
+Port &Port::Reverse() {
+  for (auto &e : edges()) {
+    RemoveEdge(e);
+  }
+  dir_ = Term::Reverse(dir_);
   return *this;
+}
+
+std::string Port::ToString() const {
+  return name() + ":" + type()->name() + ":" + Term::str(dir_);
+}
+
+std::string Term::str(Term::Dir dir) {
+  switch (dir) {
+    case IN: return "in";
+    case OUT: return "out";
+  }
+  return "corrupt";
+}
+
+Term::Dir Term::Reverse(Term::Dir dir) {
+  switch (dir) {
+    case IN: return OUT;
+    case OUT: return IN;
+  }
+  CERATA_LOG(FATAL, "Corrupted terminator direction.");
 }
 
 }  // namespace cerata

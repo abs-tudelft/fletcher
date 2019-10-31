@@ -363,7 +363,6 @@ begin
           BUS_ADDR_WIDTH        => ADDR_WIDTH,
           BUS_LEN_WIDTH         => MASTER_LEN_WIDTH+1,
           BUS_DATA_WIDTH        => MASTER_DATA_WIDTH,
-          BUS_STROBE_WIDTH      => MASTER_DATA_WIDTH/8,
           FIFO_DEPTH            => MASTER_MAX_BURST+1
         )                           
         port map (                  
