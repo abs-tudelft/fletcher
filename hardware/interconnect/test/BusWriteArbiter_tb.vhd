@@ -28,7 +28,6 @@ architecture Behavioral of BusWriteArbiter_tb is
   constant BUS_ADDR_WIDTH       : natural := 32;
   constant BUS_LEN_WIDTH        : natural := 8;
   constant BUS_DATA_WIDTH       : natural := 32;
-  constant BUS_STROBE_WIDTH     : natural := 32/8;
 
   signal clk                    : std_logic := '1';
   signal reset                  : std_logic;
@@ -41,7 +40,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal ma2b_wdat_valid        : std_logic := '0';
   signal ma2b_wdat_ready        : std_logic;
   signal ma2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal ma2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal ma2b_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal ma2b_wdat_last         : std_logic;
 
   signal ma2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -55,7 +54,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal mb2b_wdat_valid        : std_logic := '0';
   signal mb2b_wdat_ready        : std_logic;
   signal mb2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal mb2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal mb2b_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal mb2b_wdat_last         : std_logic;
 
   signal mb2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -69,7 +68,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal mc2b_wdat_valid        : std_logic := '0';
   signal mc2b_wdat_ready        : std_logic;
   signal mc2b_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal mc2b_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal mc2b_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal mc2b_wdat_last         : std_logic;
 
   signal mc2b_wdat_data_m       : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
@@ -84,7 +83,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal ba2a_wdat_valid        : std_logic := '0';
   signal ba2a_wdat_ready        : std_logic;
   signal ba2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal ba2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal ba2a_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal ba2a_wdat_last         : std_logic;
 
   signal bb2a_wreq_valid        : std_logic := '0';
@@ -94,7 +93,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal bb2a_wdat_valid        : std_logic := '0';
   signal bb2a_wdat_ready        : std_logic;
   signal bb2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bb2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bb2a_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bb2a_wdat_last         : std_logic;
 
   signal bc2a_wreq_valid        : std_logic := '0';
@@ -104,7 +103,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal bc2a_wdat_valid        : std_logic := '0';
   signal bc2a_wdat_ready        : std_logic;
   signal bc2a_wdat_data         : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bc2a_wdat_strobe       : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal bc2a_wdat_strobe       : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bc2a_wdat_last         : std_logic;
 
   -- Arbiter to slave.
@@ -115,7 +114,7 @@ architecture Behavioral of BusWriteArbiter_tb is
   signal a2s_wdat_valid          : std_logic := '0';
   signal a2s_wdat_ready          : std_logic;
   signal a2s_wdat_data           : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal a2s_wdat_strobe         : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+  signal a2s_wdat_strobe         : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal a2s_wdat_last           : std_logic;
 
 begin
@@ -152,7 +151,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 1
     )
     port map (
@@ -174,7 +172,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -210,7 +207,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 2
     )
     port map (
@@ -232,7 +228,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -268,7 +263,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 3
     )
     port map (
@@ -290,7 +284,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => 16,
       RAM_CONFIG                => "",
       LEN_SHIFT                 => 0,
@@ -326,7 +319,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       NUM_SLAVE_PORTS           => 3,
       ARB_METHOD                => "ROUND-ROBIN",
       MAX_OUTSTANDING           => 4,
@@ -386,7 +378,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       SEED                      => 4
     )
     port map (

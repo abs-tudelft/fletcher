@@ -79,7 +79,6 @@ package Interconnect_pkg is
       BUS_ADDR_WIDTH            : natural := 32;
       BUS_LEN_WIDTH             : natural := 8;
       BUS_DATA_WIDTH            : natural := 32;
-      BUS_STROBE_WIDTH          : natural := 32/8;
       NUM_SLAVE_PORTS           : natural := 2;
       ARB_METHOD                : string  := "ROUND-ROBIN";
       MAX_OUTSTANDING           : natural := 2;
@@ -100,7 +99,7 @@ package Interconnect_pkg is
       bsv_wdat_valid            : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
       bsv_wdat_ready            : out std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
       bsv_wdat_data             : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH-1 downto 0);
-      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_STROBE_WIDTH-1 downto 0);
+      bsv_wdat_strobe           : in  std_logic_vector(NUM_SLAVE_PORTS*BUS_DATA_WIDTH/8-1 downto 0);
       bsv_wdat_last             : in  std_logic_vector(NUM_SLAVE_PORTS-1 downto 0);
       
       mst_wreq_valid            : out std_logic;
@@ -110,7 +109,7 @@ package Interconnect_pkg is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       mst_wdat_last             : out  std_logic
     );
   end component;
@@ -156,7 +155,6 @@ package Interconnect_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       CTRL_WIDTH                : natural := 1;
       FIFO_DEPTH                : natural;
       LEN_SHIFT                 : natural := 0;
@@ -181,7 +179,7 @@ package Interconnect_pkg is
       slv_wdat_valid            : in  std_logic;
       slv_wdat_ready            : out std_logic;
       slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      slv_wdat_strobe           : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      slv_wdat_strobe           : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       slv_wdat_ctrl             : in  std_logic_vector(CTRL_WIDTH-1 downto 0)  := (others => 'U');
       slv_wdat_last             : in  std_logic;
       
@@ -192,7 +190,7 @@ package Interconnect_pkg is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
       mst_wdat_last             : out std_logic
     );
@@ -378,7 +376,6 @@ package Interconnect_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       NUM_SLAVE_PORTS           : natural;
       ARB_METHOD                : string;
       MAX_OUTSTANDING           : natural;
@@ -399,7 +396,7 @@ package Interconnect_pkg is
       mst_wdat_valid            : out std_logic;
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      mst_wdat_strobe           : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       mst_wdat_last             : out std_logic;
 
       -- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
@@ -412,7 +409,7 @@ package Interconnect_pkg is
       bs00_wdat_valid           : in  std_logic := '0';
       bs00_wdat_ready           : out std_logic := '1';
       bs00_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs00_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs00_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs00_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 1.
@@ -423,7 +420,7 @@ package Interconnect_pkg is
       bs01_wdat_valid           : in  std_logic := '0';
       bs01_wdat_ready           : out std_logic := '1';
       bs01_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs01_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs01_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs01_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 2.
@@ -434,7 +431,7 @@ package Interconnect_pkg is
       bs02_wdat_valid           : in  std_logic := '0';
       bs02_wdat_ready           : out std_logic := '1';
       bs02_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs02_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs02_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs02_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 3.
@@ -445,7 +442,7 @@ package Interconnect_pkg is
       bs03_wdat_valid           : in  std_logic := '0';
       bs03_wdat_ready           : out std_logic := '1';
       bs03_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs03_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs03_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs03_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 4.
@@ -456,7 +453,7 @@ package Interconnect_pkg is
       bs04_wdat_valid           : in  std_logic := '0';
       bs04_wdat_ready           : out std_logic := '1';
       bs04_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs04_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs04_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs04_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 5.
@@ -467,7 +464,7 @@ package Interconnect_pkg is
       bs05_wdat_valid           : in  std_logic := '0';
       bs05_wdat_ready           : out std_logic := '1';
       bs05_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs05_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs05_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs05_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 6.
@@ -478,7 +475,7 @@ package Interconnect_pkg is
       bs06_wdat_valid           : in  std_logic := '0';
       bs06_wdat_ready           : out std_logic := '1';
       bs06_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs06_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs06_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs06_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 7.
@@ -489,7 +486,7 @@ package Interconnect_pkg is
       bs07_wdat_valid           : in  std_logic := '0';
       bs07_wdat_ready           : out std_logic := '1';
       bs07_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs07_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs07_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs07_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 8.
@@ -500,7 +497,7 @@ package Interconnect_pkg is
       bs08_wdat_valid           : in  std_logic := '0';
       bs08_wdat_ready           : out std_logic := '1';
       bs08_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs08_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs08_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs08_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 9.
@@ -511,7 +508,7 @@ package Interconnect_pkg is
       bs09_wdat_valid           : in  std_logic := '0';
       bs09_wdat_ready           : out std_logic := '1';
       bs09_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs09_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs09_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs09_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 10.
@@ -522,7 +519,7 @@ package Interconnect_pkg is
       bs10_wdat_valid           : in  std_logic := '0';
       bs10_wdat_ready           : out std_logic := '1';
       bs10_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs10_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs10_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs10_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 11.
@@ -533,7 +530,7 @@ package Interconnect_pkg is
       bs11_wdat_valid           : in  std_logic := '0';
       bs11_wdat_ready           : out std_logic := '1';
       bs11_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs11_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs11_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs11_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 12.
@@ -544,7 +541,7 @@ package Interconnect_pkg is
       bs12_wdat_valid           : in  std_logic := '0';
       bs12_wdat_ready           : out std_logic := '1';
       bs12_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs12_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs12_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs12_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 13.
@@ -555,7 +552,7 @@ package Interconnect_pkg is
       bs13_wdat_valid           : in  std_logic := '0';
       bs13_wdat_ready           : out std_logic := '1';
       bs13_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs13_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs13_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs13_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 14.
@@ -566,7 +563,7 @@ package Interconnect_pkg is
       bs14_wdat_valid           : in  std_logic := '0';
       bs14_wdat_ready           : out std_logic := '1';
       bs14_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs14_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs14_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs14_wdat_last            : in  std_logic := 'U';
 
       -- Slave port 15.
@@ -577,7 +574,7 @@ package Interconnect_pkg is
       bs15_wdat_valid           : in  std_logic := '0';
       bs15_wdat_ready           : out std_logic := '1';
       bs15_wdat_data            : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0) := (others => 'U');
-      bs15_wdat_strobe          : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0) := (others => 'U');
+      bs15_wdat_strobe          : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0) := (others => 'U');
       bs15_wdat_last            : in  std_logic := 'U'
     );
   end component;
@@ -622,7 +619,6 @@ package Interconnect_pkg is
     port (
       clk                       : in  std_logic;
       reset                     : in  std_logic;
-
       rreq_valid                : in  std_logic;
       rreq_ready                : out std_logic;
       rreq_addr                 : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
@@ -639,9 +635,7 @@ package Interconnect_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       SEED                      : positive
-
     );
     port (
       clk                       : in  std_logic;
@@ -653,7 +647,7 @@ package Interconnect_pkg is
       wdat_valid                : out std_logic;
       wdat_ready                : in  std_logic;
       wdat_data                 : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wdat_strobe               : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_strobe               : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       wdat_last                 : out std_logic
     );
   end component;
@@ -663,7 +657,6 @@ package Interconnect_pkg is
       BUS_ADDR_WIDTH            : natural;
       BUS_LEN_WIDTH             : natural;
       BUS_DATA_WIDTH            : natural;
-      BUS_STROBE_WIDTH          : natural;
       SEED                      : positive;
       RANDOM_REQUEST_TIMING     : boolean := false;
       RANDOM_RESPONSE_TIMING    : boolean := false;
@@ -679,7 +672,7 @@ package Interconnect_pkg is
       wdat_valid                : in  std_logic;
       wdat_ready                : out std_logic;
       wdat_data                 : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wdat_strobe               : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+      wdat_strobe               : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
       wdat_last                 : in  std_logic
     );
   end component;

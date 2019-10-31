@@ -492,7 +492,6 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
       FIFO_DEPTH                => WRITE_BUFFER_DEPTH,
       LEN_SHIFT                 => BUS_FIFO_THRES_SHIFT,
       RAM_CONFIG                => "",

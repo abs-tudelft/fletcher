@@ -40,9 +40,6 @@ entity ArrayWriterListPrim is
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
 
-    -- Bus strobe width.
-    BUS_STROBE_WIDTH            : natural := 32/8;
-
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
 
@@ -122,7 +119,7 @@ entity ArrayWriterListPrim is
     bus_wdat_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
-    bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_STROBE_WIDTH-1 downto 0);
+    bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
@@ -295,7 +292,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_DATA_WIDTH/8,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_FIFO_DEPTH            => parse_param(CFG, "idx_bus_fifo_depth", 16),
@@ -347,7 +344,7 @@ begin
       bus_wdat_valid            => bus_wdat_valid(0),
       bus_wdat_ready            => bus_wdat_ready(0),
       bus_wdat_data             => bus_wdat_data(BUS_DATA_WIDTH-1 downto 0),
-      bus_wdat_strobe           => bus_wdat_strobe(BUS_STROBE_WIDTH-1 downto 0),
+      bus_wdat_strobe           => bus_wdat_strobe(BUS_DATA_WIDTH/8-1 downto 0),
       bus_wdat_last             => bus_wdat_last(0)
     );
 
@@ -357,7 +354,7 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_DATA_WIDTH,
-      BUS_STROBE_WIDTH          => BUS_STROBE_WIDTH,
+      BUS_STROBE_WIDTH          => BUS_DATA_WIDTH/8,
       BUS_BURST_MAX_LEN         => BUS_BURST_MAX_LEN,
       BUS_BURST_STEP_LEN        => BUS_BURST_STEP_LEN,
       BUS_FIFO_DEPTH            => parse_param(CFG, "bus_fifo_depth", 16),
@@ -402,7 +399,7 @@ begin
       bus_wdat_valid            => bus_wdat_valid(1),
       bus_wdat_ready            => bus_wdat_ready(1),
       bus_wdat_data             => bus_wdat_data(2*BUS_DATA_WIDTH-1 downto BUS_DATA_WIDTH),
-      bus_wdat_strobe           => bus_wdat_strobe(2*BUS_STROBE_WIDTH-1 downto BUS_STROBE_WIDTH),
+      bus_wdat_strobe           => bus_wdat_strobe(2*BUS_DATA_WIDTH/8-1 downto BUS_DATA_WIDTH/8),
       bus_wdat_last             => bus_wdat_last(1)
     );
 

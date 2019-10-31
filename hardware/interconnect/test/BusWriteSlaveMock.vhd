@@ -38,9 +38,6 @@ entity BusWriteSlaveMock is
 
     -- Bus data width.
     BUS_DATA_WIDTH              : natural := 32;
-    
-    -- Bus strobe width
-    BUS_STROBE_WIDTH            : natural := 32/8;
 
     -- Random seed. This should be different for every instantiation if
     -- randomized handshake signals are used.
@@ -72,7 +69,7 @@ entity BusWriteSlaveMock is
     wdat_valid                  : in  std_logic;
     wdat_ready                  : out std_logic;
     wdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-    wdat_strobe                 : in  std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
+    wdat_strobe                 : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     wdat_last                   : in  std_logic
 
   );
