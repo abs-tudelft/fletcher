@@ -4,6 +4,7 @@ project(fletchgen VERSION 0.0.0 LANGUAGES CXX)
 
 find_package(arrow 0.15 CONFIG REQUIRED)
 
+include(FindThreads)
 include(FetchContent)
 
 FetchContent_Declare(CLI11
@@ -53,6 +54,8 @@ add_compile_unit(
     src/fletchgen/recordbatch.cc
     src/fletchgen/fletchgen.cc
     src/fletchgen/nucleus.cc
+    src/fletchgen/profiler.cc
+    src/fletchgen/axi4_lite.cc
 
     src/fletchgen/srec/recordbatch.cc
     src/fletchgen/srec/srec.cc
@@ -62,11 +65,15 @@ add_compile_unit(
 
     src/fletchgen/hls/vivado.cc
   TSTS
+    test/fletchgen/test_array.cc
     test/fletchgen/test_bus.cc
     test/fletchgen/test_kernel.cc
+    test/fletchgen/test_nucleus.cc
     test/fletchgen/test_mantle.cc
+    test/fletchgen/test_misc.cc
     test/fletchgen/test_recordbatch.cc
     test/fletchgen/test_types.cc
+    test/fletchgen/test_profiler.cc
     test/fletchgen/srec/test_srec.cc
   DEPS
     cerata
@@ -74,6 +81,7 @@ add_compile_unit(
     fletcher::common
     fletcher::c
     CLI11::CLI11
+    Threads::Threads
 )
 
 add_compile_unit(

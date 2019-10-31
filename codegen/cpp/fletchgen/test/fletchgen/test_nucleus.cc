@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <arrow/api.h>
-#include <cerata/api.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include <cerata/api.h>
 #include <memory>
+#include <string>
 
-#include "fletchgen/design.h"
-#include "fletchgen/mantle.h"
-#include "fletchgen/profiler.h"
-#include "fletchgen/test_utils.h"
 #include "fletcher/test_schemas.h"
+
+#include "fletchgen/mantle.h"
+#include "fletchgen/schema.h"
+#include "fletchgen/design.h"
+#include "fletchgen/profiler.h"
+
+#include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
-static void TestReadMantle(const std::shared_ptr<arrow::Schema> &schema) {
+static void TestNucleus(const std::string &test_name, const std::shared_ptr<arrow::Schema> &schema) {
   cerata::default_component_pool()->Clear();
   auto fs = std::make_shared<FletcherSchema>(schema, "TestSchema");
   fletcher::RecordBatchDescription rbd;
@@ -42,20 +44,15 @@ static void TestReadMantle(const std::shared_ptr<arrow::Schema> &schema) {
   auto m = mmio({rbd}, regs);
   auto k = kernel("Test_Kernel", {r}, m);
   auto n = nucleus("Test_Nucleus", {r}, k, m);
-  auto man = mantle("Test_Mantle", {r}, n, BusDim());
-  GenerateTestAll(man);
+  GenerateTestAll(n);
 }
 
-TEST(Mantle, TwoPrim) {
-  TestReadMantle(fletcher::GetTwoPrimReadSchema());
+TEST(Nucleus, PrimRead) {
+  TestNucleus("TestNucleus", fletcher::GetPrimReadSchema());
 }
 
-TEST(Mantle, StringRead) {
-  TestReadMantle(fletcher::GetStringReadSchema());
-}
-
-TEST(Mantle, NullablePrim) {
-  TestReadMantle(fletcher::GetNullablePrimReadSchema());
+TEST(Nucleus, TwoPrimRead) {
+  TestNucleus("TestNucleus", fletcher::GetTwoPrimReadSchema());
 }
 
 }  // namespace fletchgen

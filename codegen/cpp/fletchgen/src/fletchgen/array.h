@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 #pragma once
 
 #include <cerata/api.h>
+#include <fletcher/common.h>
 
 #include <string>
 #include <memory>
+#include <utility>
 
 #include "fletchgen/basic_types.h"
 
@@ -26,25 +28,35 @@ namespace fletchgen {
 using cerata::Component;
 using cerata::Instance;
 using cerata::intl;
+using cerata::Literal;
 
-/// @brief Return the width of the control data of this field.
-std::shared_ptr<Node> ctrl_width(const arrow::Field &field);
+// ArrayReader/Writer parameters:
+PARAM_DECL_FACTORY(index_width, 32)
+PARAM_DECL_FACTORY(tag_width, 1)
 
-/// @brief Return the tag width of this field. Settable through Arrow metadata. Default = 1.
-std::shared_ptr<Node> tag_width(const arrow::Field &field);
+/// @brief Return the number of buffers for the control field.
+size_t GetCtrlBufferCount(const arrow::Field &field);
+/// @brief Return the tag width of this field as a literal node. Settable through Arrow metadata. Default: 1.
+uint32_t GetTagWidth(const arrow::Field &field);
 
-// Default streams of ArrayReaders/ArrayWriters
+// ArrayReader/Writer types:
 
 /// @brief Return a Fletcher command stream type.
-std::shared_ptr<Type> cmd(const std::shared_ptr<Node> &tag_width,
-                          const std::optional<std::shared_ptr<Node>> &ctrl_width = std::nullopt);
-
+std::shared_ptr<Type> cmd_type(const std::shared_ptr<Node> &index_width,
+                               const std::shared_ptr<Node> &tag_width,
+                               const std::optional<std::shared_ptr<Node>> &ctrl_width = std::nullopt);
 /// @brief Fletcher unlock stream
-std::shared_ptr<Type> unlock(const std::shared_ptr<Node> &tag_width = intl(1));
+std::shared_ptr<Type> unlock_type(const std::shared_ptr<Node> &tag_width);
+
 /// @brief Fletcher read data
-std::shared_ptr<Type> read_data(const std::shared_ptr<Node> &data_width = intl(1));
+std::shared_ptr<Type> array_reader_out(uint32_t num_streams = 0, uint32_t full_width = 0);
+/// @brief Fletcher read data, where the pair contains {num_streams, full_width}.
+std::shared_ptr<Type> array_reader_out(std::pair<uint32_t, uint32_t> spec);
+
 /// @brief Fletcher write data
-std::shared_ptr<Type> write_data(const std::shared_ptr<Node> &data_width = intl(1));
+std::shared_ptr<Type> array_writer_in(uint32_t num_streams = 0, uint32_t full_width = 0);
+/// @brief Fletcher write data, where the pair contains {num_streams, full_width}.
+std::shared_ptr<Type> array_writer_in(std::pair<uint32_t, uint32_t> spec);
 
 /// @brief Types for ArrayReader/Writer configuration string.
 enum class ConfigType {
@@ -52,7 +64,7 @@ enum class ConfigType {
   NUL,        ///< Null bitmap.
   PRIM,       ///< Primitive (fixed-width) fields.
   LIST,       ///< Variable length fields.
-  LISTPRIM,   ///< List of primitives. Can have EPC > 1.
+  LIST_PRIM,  ///< List of primitives. Can have EPC > 1.
   STRUCT      ///< Structs, composed of multiple fields.
 };
 
@@ -90,26 +102,25 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other);
 
 /**
  * @brief Convert an Arrow::Field into a stream type.
- * @param field The Arrow::Field to convert.
+ * @param arrow_field The Arrow::Field to convert.
  * @param mode Whether this stream is used for reading or writing.
  * @param level Nesting level.
  * @return The Stream Type.
  */
-std::shared_ptr<Type> GetStreamType(const arrow::Field &field, fletcher::Mode mode, int level = 0);
+std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::Mode mode, int level = 0);
 
 /**
- * @brief Return a parameterized Cerata instance of an Array(Reader/Writer)
- * @param name        Name of the instance.
+ * @brief Get the ArrayR/W number of streams and data width from an Arrow Field.
+ * @param arrow_field   The field
+ * @return              A tuple containing the {no. streams, full data width}.
+ */
+std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field);
+
+/**
+ * @brief Return a Cerata component model of an ArrayReader/Writers.
  * @param mode        Whether the Array(Reader/Writer) instance must READ from memory or WRITE to memory.
- * @param data_width  Data bus width parameter.
- * @param ctrl_width  Command control signal width parameter.
- * @param tag_width   Command/unlock tag width parameter.
  * @return            A unique pointer holding the Array(Reader/Writer) instance.
  */
-std::unique_ptr<Instance> ArrayInstance(const std::string &name,
-                                        fletcher::Mode mode = fletcher::Mode::READ,
-                                        const std::shared_ptr<Node> &data_width = intl(1),
-                                        const std::shared_ptr<Node> &ctrl_width = intl(1),
-                                        const std::shared_ptr<Node> &tag_width = intl(1));
+Component *array(fletcher::Mode mode);
 
 }  // namespace fletchgen

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #include <arrow/io/api.h>
 #include <fletcher/test_recordbatches.h>
 
-#include <deque>
+#include <vector>
 #include <memory>
 #include <fstream>
 
@@ -51,7 +51,7 @@ TEST(SREC, ToString) {
   ASSERT_EQ(Record::Data<16>(0x30, data3, 4).ToString(), "S107003000144ED492");
 }
 
-#define TEST_SREC_STR(X) ASSERT_EQ((*Record::FromString(X)).ToString(), X);
+#define TEST_SREC_STR(X) ASSERT_EQ((*Record::FromString(X)).ToString(), X)
 
 TEST(SREC, FromString) {
   // Test a round trip

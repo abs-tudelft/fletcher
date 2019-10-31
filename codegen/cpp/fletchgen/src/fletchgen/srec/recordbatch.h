@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <fletcher/common.h>
 
 #include <vector>
-#include <deque>
 #include <memory>
 
 #include "fletchgen/options.h"
@@ -47,7 +46,7 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
  * @return              SREC buffer offsets of the flattened buffers of the RecordBatches
  */
 std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
-                                               const std::deque<std::shared_ptr<arrow::RecordBatch>> &recordbatches);
+                                               const std::vector<std::shared_ptr<arrow::RecordBatch>> &recordbatches);
 
 /**
  * @brief Read an SREC formatted input stream and turn it into a RecordBatch
@@ -55,14 +54,14 @@ std::vector<uint64_t> WriteRecordBatchesToSREC(std::ostream *output,
  * Buffer offsets should follow
  *
  * @param input         The input stream to read from.
- * @param schemas       A deque of Arrow Schemas.
+ * @param schemas       A vector of Arrow Schemas.
  * @param num_rows      Number of rows for each RecordBatch.
  * @param buf_offsets   The offsets of the flattened buffer.
- * @return              A deque of Arrow RecordBatches filled with contents from the SREC input stream.
+ * @return              A vector of Arrow RecordBatches filled with contents from the SREC input stream.
  */
-std::deque<std::shared_ptr<arrow::RecordBatch>>
+std::vector<std::shared_ptr<arrow::RecordBatch>>
 ReadRecordBatchesFromSREC(std::istream *input,
-                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
+                          const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
                           const std::vector<uint64_t> &num_rows,
                           const std::vector<uint64_t> &buf_offsets);
 

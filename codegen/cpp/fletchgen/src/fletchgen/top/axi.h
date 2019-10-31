@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ namespace fletchgen::top {
 
 /// @brief Generate an AXI top level on supplied output streams from a ColumnWrapper
 std::string GenerateAXITop(const Mantle &mantle,
+                           const SchemaSet &schema_set,
                            const std::vector<std::ostream *> &outputs);
 
 }  // namespace fletchgen::top

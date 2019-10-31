@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,16 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <deque>
+#include <vector>
 #include <optional>
+
+#include "fletchgen/bus.h"
 
 namespace fletchgen {
 
 SchemaSet::SchemaSet(std::string name) : Named(std::move(name)) {}
 
-std::shared_ptr<SchemaSet> SchemaSet::Make(const std::string& name) {
+std::shared_ptr<SchemaSet> SchemaSet::Make(const std::string &name) {
   return std::make_shared<SchemaSet>(name);
 }
 
@@ -58,8 +60,8 @@ bool SchemaSet::HasSchemaWithName(const std::string &name) const {
   return false;
 }
 
-void SchemaSet::AppendSchema(const std::shared_ptr<arrow::Schema>& arrow_schema) {
-  auto name = fletcher::GetMeta(*arrow_schema, "fletcher_name");
+void SchemaSet::AppendSchema(const std::shared_ptr<arrow::Schema> &arrow_schema) {
+  auto name = fletcher::GetMeta(*arrow_schema, fletcher::meta::NAME);
   if (name.empty()) {
     FLETCHER_LOG(WARNING, "Skipping anonymous schema with the following contents:\n" + arrow_schema->ToString());
     FLETCHER_LOG(WARNING, "Append {'fletcher_name' : '<name>'} kv-metadata to the schema "
@@ -86,9 +88,9 @@ std::optional<std::shared_ptr<FletcherSchema>> SchemaSet::GetSchema(const std::s
   return std::nullopt;
 }
 
-std::deque<std::shared_ptr<FletcherSchema>> SchemaSet::read_schemas() const {
-  std::deque<std::shared_ptr<FletcherSchema>> ret;
-  for (const auto& s : schemas_) {
+std::vector<std::shared_ptr<FletcherSchema>> SchemaSet::read_schemas() const {
+  std::vector<std::shared_ptr<FletcherSchema>> ret;
+  for (const auto &s : schemas_) {
     if (s->mode() == Mode::READ) {
       ret.push_back(s);
     }
@@ -96,9 +98,9 @@ std::deque<std::shared_ptr<FletcherSchema>> SchemaSet::read_schemas() const {
   return ret;
 }
 
-std::deque<std::shared_ptr<FletcherSchema>> SchemaSet::write_schemas() const {
-  std::deque<std::shared_ptr<FletcherSchema>> ret;
-  for (const auto& s : schemas_) {
+std::vector<std::shared_ptr<FletcherSchema>> SchemaSet::write_schemas() const {
+  std::vector<std::shared_ptr<FletcherSchema>> ret;
+  for (const auto &s : schemas_) {
     if (s->mode() == Mode::WRITE) {
       ret.push_back(s);
     }
@@ -126,21 +128,24 @@ void SchemaSet::Sort() {
 
   // Sort the schemas by name, then by mode
   std::sort(schemas_.begin(), schemas_.end(), NameSort);
+  // Important to keep stable sorting here, else we might lose name order.
   std::stable_sort(schemas_.begin(), schemas_.end(), ModeSort);
 }
 
 FletcherSchema::FletcherSchema(const std::shared_ptr<arrow::Schema> &arrow_schema, const std::string &schema_name)
     : arrow_schema_(arrow_schema), mode_(fletcher::GetMode(*arrow_schema)) {
+
   // Get name from metadata, if available
-  name_ = fletcher::GetMeta(*arrow_schema_, "fletcher_name");
+  name_ = fletcher::GetMeta(*arrow_schema_, fletcher::meta::NAME);
   if (name_.empty()) {
-    FLETCHER_LOG(ERROR, "Schema has no name. "
-                        "Append {'fletcher_name' : '<name>'} kv-metadata to the schema."
-        + arrow_schema->ToString());
-    name_ = "ERROR_ANONYMOUS_SCHEMA";
+    FLETCHER_LOG(FATAL, "Schema has no name. Append {'fletcher_name' : '<name>'} kv-metadata to the schema. "
+                        "Schema: " + arrow_schema->ToString());
   }
-  // Show some debug information about the schema
-  FLETCHER_LOG(DEBUG, "Schema " + name() + ", Direction: " + cerata::Term::str(mode2dir(mode_)));
+  auto bus_spec_val = fletcher::GetMeta(*arrow_schema_, fletcher::meta::BUS_SPEC);
+  bus_dims_ = BusDim::FromString(bus_spec_val, BusDim());
+  FLETCHER_LOG(DEBUG, "Schema " + name() + ":");
+  FLETCHER_LOG(DEBUG, "  Direction : " + cerata::Term::str(mode2dir(mode_)));
+  FLETCHER_LOG(DEBUG, "  Bus spec  : " + bus_dims_.ToString());
 }
 
 std::shared_ptr<FletcherSchema> FletcherSchema::Make(const std::shared_ptr<arrow::Schema> &arrow_schema,

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,55 @@
 
 #pragma once
 
+#include <cerata/api.h>
 #include <fstream>
 #include <string>
+#include <utility>
 
-// Macro to save the test to some VHDL files that can be used to syntax check the tests with e.g. GHDL
-// At some point the reverse might be more interesting - load the test cases from file into the test.
-#define VHDL_DUMP_TEST(str) \
-  std::ofstream(std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) \
-  + "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".vhd") << str
+namespace fletchgen {
+
+inline std::string GenerateTestDecl(cerata::Component *comp, std::string name = "") {
+  if (name.empty()) {
+    name = comp->name();
+  }
+  auto src = cerata::vhdl::Decl::Generate(*comp, false).ToString();
+  auto o = std::ofstream(name + ".test.gen.vhd");
+  o << src;
+  o.close();
+
+  std::cout << "VHDL SOURCE:\n";
+  std::cout << src << std::endl;
+
+  cerata::dot::Grapher dot;
+  dot.style.config = cerata::dot::Config::all();
+  dot.GenFile(*comp, name);
+
+  return src;
+}
+
+inline std::string GenerateTestAll(cerata::Component *comp, std::string name = "") {
+  if (name.empty()) {
+    name = comp->name();
+  }
+
+  auto design = cerata::vhdl::Design(comp);
+  auto src = design.Generate().ToString();
+  auto o = std::ofstream(name + ".test.gen.vhd");
+  o << src;
+  o.close();
+
+  std::cout << "VHDL SOURCE:\n";
+  std::cout << src << std::endl;
+
+  cerata::dot::Grapher dot;
+  dot.style.config = cerata::dot::Config::all();
+  dot.GenFile(*comp, name);
+
+  return src;
+}
+
+inline std::string GenerateTestAll(const std::shared_ptr<cerata::Component>& comp, std::string name = "") {
+  return GenerateTestAll(comp.get(), std::move(name));
+}
+
+}  // namespace fletchgen

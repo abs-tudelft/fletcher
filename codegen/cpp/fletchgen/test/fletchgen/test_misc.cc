@@ -12,13 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/hls/vivado.h"
-
+#include <arrow/api.h>
+#include <cerata/api.h>
+#include <gtest/gtest.h>
 #include <vector>
 #include <memory>
-#include <string>
 
-#include "fletchgen/schema.h"
-#include "fletchgen/kernel.h"
+#include "fletchgen/design.h"
 
-// Placeholder for vivado hls support
+namespace fletchgen {
+
+TEST(Misc, ParseCustomRegs) {
+  auto result = Design::ParseCustomRegs({"c:32:my_host_to_kernel_signaling_reg:0xDEADBEEF",
+                                         "s:32:my_kernel_to_host_signaling_reg"});
+}
+
+}  // namespace fletchgen

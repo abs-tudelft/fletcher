@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,33 +14,31 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <cerata/api.h>
 
 #include "fletcher/test_schemas.h"
-
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/dot/dot.h"
-
-#include "fletchgen/basic_types.h"
-#include "fletchgen/mantle.h"
-#include "fletchgen/bus.h"
 #include "fletchgen/schema.h"
 #include "fletchgen/recordbatch.h"
-
 #include "fletchgen/test_utils.h"
 
 namespace fletchgen {
 
-static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema>& schema) {
+static void TestRecordBatchReader(const std::shared_ptr<arrow::Schema> &schema) {
   cerata::default_component_pool()->Clear();
   auto fs = FletcherSchema::Make(schema);
-  auto rbr = RecordBatch::Make(fs);
-  auto design = cerata::vhdl::Design(rbr);
-  auto code = design.Generate().ToString();
-  std::cerr.flush();
-  std::cout << code << std::endl;
-  VHDL_DUMP_TEST(code);
-  cerata::dot::Grapher dot;
-  dot.GenFile(*rbr, "graph.dot");
+  fletcher::RecordBatchDescription rbd;
+  fletcher::SchemaAnalyzer sa(&rbd);
+  sa.Analyze(*schema);
+  auto rbr = record_batch("Test_" + fs->name(), fs, rbd);
+  GenerateTestAll(rbr);
+}
+
+TEST(RecordBatch, PrimRead) {
+  TestRecordBatchReader(fletcher::GetPrimReadSchema());
+}
+
+TEST(RecordBatch, TwoPrimRead) {
+  TestRecordBatchReader(fletcher::GetTwoPrimReadSchema());
 }
 
 TEST(RecordBatch, StringRead) {

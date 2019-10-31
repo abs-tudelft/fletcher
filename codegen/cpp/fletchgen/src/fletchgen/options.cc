@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,20 +51,34 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                  "Select the output languages for your design. Each type of output will be stored in a "
                  "seperate subfolder (e.g. <output folder>/vhdl/...). \n"
                  "Available languages:\n"
-                 "  vhdl: Export as VHDL files (default).\n"
-                 "  dot : Export as DOT graphs.");
+                 "  vhdl : Export as VHDL files (default).\n"
+                 "  dot  : Export as DOT graphs.");
 
-  app.add_flag("-f,--force", options->overwrite,
-               "Force overwriting source code files if they exists already. If this flag is *not* used and the source "
-               "file exists already in the specified path, the output filename will be <filename>.<extension>t. This "
-               "file IS always overwritten. This applies only to files that the user should modify.");
+  app.add_flag("-b,--backup", options->backup,
+               "Backup generated source code files if they exists already. If this flag is used and the source "
+               "file exists already in the specified path, the output filename will be <filename>.bak. This "
+               "file is always overwritten.");
 
   app.add_option("--regs", options->regs,
-                 "Names of custom registers in the following format: \"<behavior>:<width>:<name>\", where <behavior> "
-                 "is one character from the following options:\n"
+                 "Names of custom registers in the following format: \"<behavior>:<width>:<name>:<init>\", "
+                 "where <behavior> is one character from the following options:\n"
                  "  c : (control) register content is controlled by host-side software.\n"
                  "  s : (status) register content is controlled by hardware kernel.\n"
-                 "Example: \"-reg32 c:my_host_to_kernel_signaling_reg s:my_kernel_to_host_signaling_reg\"");
+                 "<init> is optional, and can be used to automatically write to the register in the initialization "
+                 "step of the simulation. Init must be a hexadecimal value in the form of 0x01234ABCD.\n"
+                 "Example: \"-reg32 c:32:my_host_to_kernel_signaling_reg:0xDEADBEEF s:64:my_kernel_to_host_signaling_reg\"");
+
+  app.add_option("--bus_specs", options->bus_dims,
+                 "Specify top-level bus parameters.\n"
+                 "Value must be a tuple of the following form: \"aw,dw,sw,lw,bs,bm\"\n"
+                 "Where:\n"
+                 "  aw : Bus address width.\n"
+                 "  dw : Bus data width.\n"
+                 "  sw : Bus strobe width.\n"
+                 "  lw : Bus burst length width.\n"
+                 "  bs : Bus minimum burst size.\n"
+                 "  bm : Bus maximum burst size.\n"
+                 "Currently supports only one top-level bus specification. Default: \"64,512,64,8,1,16\"");
 
   app.add_flag("--axi", options->axi_top,
                "Generate AXI top-level template (VHDL only).");

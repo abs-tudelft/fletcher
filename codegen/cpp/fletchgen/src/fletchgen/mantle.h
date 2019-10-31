@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <deque>
 #include <vector>
+#include <utility>
 
 #include "fletchgen/kernel.h"
 #include "fletchgen/bus.h"
@@ -35,45 +35,44 @@ using cerata::Instance;
  */
 class Mantle : public Component {
  public:
-  /// @brief Construct a Mantle and return a shared pointer to it.
-  static std::shared_ptr<Mantle> Make(const std::string& name,
-                                      const SchemaSet &schema_set,
-                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc,
-                                      const std::vector<MmioReg>& custom_regs = {});
-  /// @brief Construct a Mantle and return a shared pointer to it.
-  static std::shared_ptr<Mantle> Make(const SchemaSet &schema_set,
-                                      const std::vector<fletcher::RecordBatchDescription> &batch_desc,
-                                      const std::vector<MmioReg>& custom_regs = {});
-
-  /// @brief Return the SchemaSet on which this Mantle is based.
-  SchemaSet schema_set() const { return schema_set_; }
-
+  /// @brief Construct a Mantle based on a SchemaSet
+  explicit Mantle(std::string name,
+                  const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
+                  const std::shared_ptr<Nucleus> &nucleus,
+                  BusDim bus_dim);
   /// @brief Return the kernel component of this Mantle.
   std::shared_ptr<Nucleus> nucleus() const { return nucleus_; }
   /// @brief Return all RecordBatch(Reader/Writer) instances of this Mantle.
-  std::deque<Instance *> recordbatch_instances() const { return recordbatch_instances_; }
+  std::vector<Instance *> recordbatch_instances() const { return recordbatch_instances_; }
   /// @brief Return all RecordBatch(Reader/Writer) components of this Mantle.
-  std::deque<std::shared_ptr<RecordBatch>> recordbatch_components() const { return recordbatch_components_; }
+  std::vector<std::shared_ptr<RecordBatch>> recordbatch_components() const { return recordbatch_components_; }
 
  protected:
-  /// @brief Construct a Mantle based on a SchemaSet
-  explicit Mantle(std::string name,
-                  SchemaSet schema_set,
-                  const std::vector<fletcher::RecordBatchDescription> &batch_desc,
-                  const std::vector<MmioReg>& custom_regs);
-
+  /// Top-level bus dimensions.
+  BusDim bus_dim_;
   /// The Nucleus to be instantiated by this Mantle.
   std::shared_ptr<Nucleus> nucleus_;
   /// Shortcut to the instantiated Nucleus.
   Instance *nucleus_inst_;
-  /// The schema set on which this Mantle is based.
-  SchemaSet schema_set_;
-  /// The bus arbiters instantiated by this mantle for a specific bus specification.
-  std::unordered_map<BusSpec, Instance *> arbiters_;
   /// The RecordBatch instances.
-  std::deque<Instance *> recordbatch_instances_;
+  std::vector<Instance *> recordbatch_instances_;
   /// The RecordBatch components.
-  std::deque<std::shared_ptr<RecordBatch>> recordbatch_components_;
+  std::vector<std::shared_ptr<RecordBatch>> recordbatch_components_;
+  /// A mapping of bus port (containing the bus parameters and function) to arbiter instances.
+  std::unordered_map<BusPort *, Instance *> arbiters_;
 };
+
+/**
+ * @brief Construct the mantle component and return a shared pointer to it.
+ * @param name          The name of the mantle.
+ * @param recordbatches The RecordBatch components to instantiate.
+ * @param nucleus       The Nucleus to instantiate.
+ * @param bus_spec      The specification of the top-level bus.
+ * @return              A shared pointer to the mantle component.
+ */
+std::shared_ptr<Mantle> mantle(const std::string &name,
+                               const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
+                               const std::shared_ptr<Nucleus> &nucleus,
+                               BusDim bus_spec);
 
 }  // namespace fletchgen

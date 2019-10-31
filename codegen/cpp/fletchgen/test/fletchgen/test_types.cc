@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,19 +28,19 @@ TEST(Types, TypeMapper) {
   auto schema = fletcher::GetPrimReadSchema();
   auto fletcher_schema = FletcherSchema::Make(schema);
 
-  auto arrow_port = FieldPort::MakeArrowPort(fletcher_schema, schema->field(0), fletcher_schema->mode(), true);
-  auto arrow_type = arrow_port->type();
-  auto top = Component::Make("top", {arrow_port});
+  auto ap = arrow_port(fletcher_schema, schema->field(0), true);
+  auto at = ap->type();
+  auto top = cerata::component("top", {ap});
 
-  auto array_port = cerata::Port::Make("out", read_data(), Port::Dir::OUT);
+  auto array_port = cerata::port("out", array_reader_out(), Port::Dir::OUT);
   auto array_type = array_port->type();
-  auto array = Component::Make("array_mock", {array_port});
+  auto array = cerata::component("array_mock", {array_port});
 
-  auto mapper = GetStreamTypeMapper(arrow_type, array_type);
-  arrow_type->AddMapper(mapper);
+  auto mapper = GetStreamTypeMapper(at, array_type);
+  at->AddMapper(mapper);
 
-  auto array_inst = top->AddInstanceOf(array.get());
-  std::static_pointer_cast<Node>(arrow_port) <<= array_inst->port("out");
+  auto array_inst = top->Instantiate(array.get());
+  ap <<= array_inst->prt("out");
 
   std::cout << cerata::vhdl::Design(top).Generate().ToString();
 }

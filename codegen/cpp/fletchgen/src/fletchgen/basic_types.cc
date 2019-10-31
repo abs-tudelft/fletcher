@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,31 +21,14 @@
 
 namespace fletchgen {
 
-using cerata::Type;
-using cerata::Vector;
-using cerata::Bit;
+using cerata::vector;
 using cerata::bit;
 using cerata::intl;
 using cerata::integer;
-using cerata::Parameter;
-using cerata::RecField;
-using cerata::Record;
-using cerata::Stream;
-using cerata::Literal;
-
-/// Creates basic, single-bit types similar to Arrow cpp/type.cc for convenience
-#define BIT_FACTORY(NAME)                                               \
-  std::shared_ptr<Type> NAME() {                                        \
-    static std::shared_ptr<Type> result = std::make_shared<Bit>(#NAME); \
-    return result;                                                      \
-  }
-
-/// Creates basic, multi-bit types similar to Arrow cpp/type.cc for convenience, including their nullable versions.
-#define VEC_FACTORY(NAME, WIDTH)                                        \
-  std::shared_ptr<Type> NAME() {                                        \
-    static std::shared_ptr<Type> result = Vector::Make(#NAME, WIDTH);   \
-    return result;                                                      \
-  }
+using cerata::parameter;
+using cerata::field;
+using cerata::record;
+using cerata::stream;
 
 // Validity bit
 BIT_FACTORY(validity)
@@ -69,21 +52,6 @@ VEC_FACTORY(utf8c, 8)
 VEC_FACTORY(byte, 8)
 VEC_FACTORY(offset, 32)
 
-/// Creates generic Fletcher parameters.
-#define PARAM_FACTORY(NAME, SIZE)                                              \
-std::shared_ptr<Node> NAME() {                                                 \
-  auto result = Parameter::Make(#NAME, cerata::integer(), cerata::intl(SIZE)); \
-  return result;                                                               \
-}
-
-PARAM_FACTORY(bus_addr_width, 64)
-PARAM_FACTORY(bus_data_width, 512)
-PARAM_FACTORY(bus_strobe_width, 64)
-PARAM_FACTORY(bus_len_width, 8)
-PARAM_FACTORY(bus_burst_step_len, 4)
-PARAM_FACTORY(bus_burst_max_len, 16)
-PARAM_FACTORY(index_width, 32)
-
 // Create basic clock domains
 std::shared_ptr<ClockDomain> kernel_cd() {
   static std::shared_ptr<ClockDomain> result = std::make_shared<ClockDomain>("kcd");
@@ -97,42 +65,68 @@ std::shared_ptr<ClockDomain> bus_cd() {
 
 // Create basic clock & reset record type
 std::shared_ptr<Type> cr() {
-  static std::shared_ptr<Type> result = Record::Make("cr", {
-      RecField::Make("clk", std::make_shared<Bit>("clk")),
-      RecField::Make("reset", std::make_shared<Bit>("reset"))});
+  static std::shared_ptr<Type> result = record("cr", {
+      field("clk", bit()),
+      field("reset", bit())});
   return result;
 }
 
+std::shared_ptr<Type> valid(int width, bool on_primitive) {
+  if (width > 1 || on_primitive) {
+    return vector("valid", width);
+  } else {
+    return bit("valid");
+  }
+}
+
+std::shared_ptr<Type> ready(int width, bool on_primitive) {
+  if (width > 1 || on_primitive) {
+    return vector("ready", width);
+  } else {
+    return bit("ready");
+  }
+}
+
 // Data channel
-std::shared_ptr<Type> data(const std::shared_ptr<Node> &width) {
-  std::shared_ptr<Type> result = Vector::Make("data", width);
+std::shared_ptr<Type> data(int width) {
+  std::shared_ptr<Type> result = vector("data", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta[metakeys::ARRAY_DATA] = "true";
+  result->meta[meta::ARRAY_DATA] = "true";
   return result;
 }
 
 // Length channel
-std::shared_ptr<Type> length(const std::shared_ptr<Node> &width) {
-  std::shared_ptr<Type> result = Vector::Make("length", width);
+std::shared_ptr<Type> length(int width) {
+  std::shared_ptr<Type> result = vector("length", width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta[metakeys::ARRAY_DATA] = "true";
+  result->meta[meta::ARRAY_DATA] = "true";
   return result;
 }
 
-std::shared_ptr<Type> count(const std::shared_ptr<Node> &width) {
-  std::shared_ptr<Type> result = Vector::Make("count", width);
+std::shared_ptr<Type> count(int width) {
+  std::shared_ptr<Type> result = vector(width);
   // Mark this type so later we can figure out that it was concatenated onto the data port of an ArrayReader/Writer.
-  result->meta[metakeys::ARRAY_DATA] = "true";
+  result->meta[meta::ARRAY_DATA] = "true";
+  result->meta[meta::COUNT] = std::to_string(width);
   return result;
 }
 
-std::shared_ptr<Type> dvalid() {
-  static std::shared_ptr<Type> result = std::make_shared<Bit>("dvalid");
-  return result;
+std::shared_ptr<Type> dvalid(int width, bool on_primitive) {
+  if (width > 1 || on_primitive) {
+    return vector("dvalid", width);
+  } else {
+    return bit("dvalid");
+  }
 }
 
-std::shared_ptr<Type> last() {
-  static std::shared_ptr<Type> result = std::make_shared<Bit>("last");
+std::shared_ptr<Type> last(int width, bool on_primitive) {
+  std::shared_ptr<Type> result;
+  if (width > 1 || on_primitive) {
+    result = vector("last", width);
+  } else {
+    result = bit("last");
+  }
+  result->meta[meta::LAST] = "true";
   return result;
 }
 
@@ -158,8 +152,8 @@ std::optional<cerata::Port *> GetClockResetPort(cerata::Graph *graph, const Cloc
   for (auto crn : graph->GetNodes()) {
     if (crn->type()->IsEqual(*cr()) && crn->IsPort()) {
       // TODO(johanpel): better comparison
-      if (crn->AsPort().domain().get() == &domain) {
-        return &crn->AsPort();
+      if (crn->AsPort()->domain().get() == &domain) {
+        return crn->AsPort();
       }
     }
   }

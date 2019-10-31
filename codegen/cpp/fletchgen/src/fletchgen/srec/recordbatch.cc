@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #include <arrow/api.h>
 #include <fletcher/common.h>
 
-#include <deque>
+#include <vector>
 #include <memory>
 #include <ostream>
 #include <fstream>
@@ -97,12 +97,12 @@ void GenerateReadSREC(const std::vector<fletcher::RecordBatchDescription> &meta_
   free(srec_buffer);
 }
 
-std::deque<std::shared_ptr<arrow::RecordBatch>>
+std::vector<std::shared_ptr<arrow::RecordBatch>>
 ReadRecordBatchesFromSREC(std::istream *input,
-                          const std::deque<std::shared_ptr<arrow::Schema>> &schemas,
+                          const std::vector<std::shared_ptr<arrow::Schema>> &schemas,
                           const std::vector<uint64_t> &num_rows,
                           const std::vector<uint64_t> &buf_offsets) {
-  std::deque<std::shared_ptr<arrow::RecordBatch>> ret;
+  std::vector<std::shared_ptr<arrow::RecordBatch>> ret;
   // TODO(johanpel): implement this
   FLETCHER_LOG(ERROR, "SREC to RecordBatch not yet implemented.");
   return ret;
