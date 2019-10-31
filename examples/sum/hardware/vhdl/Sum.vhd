@@ -19,9 +19,26 @@ use ieee.numeric_std.all;
 -- This kernel sums the values of an integer column.
 
 entity Sum is
+  generic (
+    INDEX_WIDTH : integer := 32;
+    TAG_WIDTH   : integer := 1
+  );
   port (
     kcd_clk                          : in  std_logic;
     kcd_reset                        : in  std_logic;
+    ExampleBatch_number_valid        : in  std_logic;
+    ExampleBatch_number_ready        : out std_logic;
+    ExampleBatch_number_dvalid       : in  std_logic;
+    ExampleBatch_number_last         : in  std_logic;
+    ExampleBatch_number              : in  std_logic_vector(63 downto 0);
+    ExampleBatch_number_unl_valid    : in  std_logic;
+    ExampleBatch_number_unl_ready    : out std_logic;
+    ExampleBatch_number_unl_tag      : in  std_logic_vector(TAG_WIDTH-1 downto 0);
+    ExampleBatch_number_cmd_valid    : out std_logic;
+    ExampleBatch_number_cmd_ready    : in  std_logic;
+    ExampleBatch_number_cmd_firstIdx : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    ExampleBatch_number_cmd_lastIdx  : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    ExampleBatch_number_cmd_tag      : out std_logic_vector(TAG_WIDTH-1 downto 0);
     start                            : in  std_logic;
     stop                             : in  std_logic;
     reset                            : in  std_logic;
@@ -30,20 +47,7 @@ entity Sum is
     done                             : out std_logic;
     result                           : out std_logic_vector(63 downto 0);
     ExampleBatch_firstidx            : in  std_logic_vector(31 downto 0);
-    ExampleBatch_lastidx             : in  std_logic_vector(31 downto 0);
-    ExampleBatch_number_valid        : in  std_logic;
-    ExampleBatch_number_ready        : out std_logic;
-    ExampleBatch_number_dvalid       : in  std_logic;
-    ExampleBatch_number_last         : in  std_logic;
-    ExampleBatch_number              : in  std_logic_vector(63 downto 0);
-    ExampleBatch_number_unl_valid    : in  std_logic;
-    ExampleBatch_number_unl_ready    : out std_logic;
-    ExampleBatch_number_unl_tag      : in  std_logic_vector(0 downto 0);
-    ExampleBatch_number_cmd_valid    : out std_logic;
-    ExampleBatch_number_cmd_ready    : in  std_logic;
-    ExampleBatch_number_cmd_firstIdx : out std_logic_vector(31 downto 0);
-    ExampleBatch_number_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    ExampleBatch_number_cmd_tag      : out std_logic_vector(0 downto 0)
+    ExampleBatch_lastidx             : in  std_logic_vector(31 downto 0)
   );
 end entity;
 
