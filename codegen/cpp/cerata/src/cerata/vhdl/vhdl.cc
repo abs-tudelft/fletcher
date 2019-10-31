@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,37 +36,35 @@ void VHDLOutputGenerator::Generate() {
       continue;
     }
 
-    CERATA_LOG(INFO, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
+    CERATA_LOG(DEBUG, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
     auto vhdl_design = Design(o.comp, notice_, DEFAULT_LIBS);
 
-    CERATA_LOG(INFO, "VHDL: Generating sources for component " + o.comp->name());
+    CERATA_LOG(DEBUG, "VHDL: Generating sources for component " + o.comp->name());
     auto vhdl_source = vhdl_design.Generate().ToString();
-    auto vhdl_path = root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".vhd";
+    auto vhdl_path = root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".gen.vhd";
 
-    bool overwrite = false;
+    // Disable backup by default.
+    bool backup = (o.meta.count(meta::BACKUP_EXISTING) > 0) && (o.meta.at(meta::BACKUP_EXISTING) == "true");
 
-    if (o.meta.count(metakeys::OVERWRITE_FILE) > 0) {
-      if (o.meta.at(metakeys::OVERWRITE_FILE) == "true") {
-        overwrite = true;
-      }
-    }
-
-    CERATA_LOG(INFO, "VHDL: Saving design to: " + vhdl_path);
-    if (!FileExists(vhdl_path) || overwrite) {
+    CERATA_LOG(DEBUG, "VHDL: Saving design to: " + vhdl_path);
+    if (!FileExists(vhdl_path) || !backup) {
       auto vhdl_file = std::ofstream(vhdl_path);
       vhdl_file << vhdl_source;
       vhdl_file.close();
     } else {
-      CERATA_LOG(INFO, "VHDL: File exists, saving to " + vhdl_path + "t");
-      // Save as a vhdt file.
-      auto vhdl_file = std::ofstream(vhdl_path + "t");
+      CERATA_LOG(DEBUG, "VHDL: File exists, backing up and saving to " + vhdl_path + "t");
+      // Copy the old file.
+      auto original = std::ifstream(vhdl_path, std::ios::binary);
+      auto copy = std::ofstream(vhdl_path + ".bak", std::ios::binary);
+      copy << original.rdbuf();
+      // Save the new file.
+      auto vhdl_file = std::ofstream(vhdl_path);
       vhdl_file << vhdl_source;
-      vhdl_file.close();
     }
 
     num_graphs++;
   }
-  CERATA_LOG(INFO, "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
+  CERATA_LOG(DEBUG, "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
 }
 
 }  // namespace cerata::vhdl

@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "cerata/utils.h"
 
@@ -36,10 +37,26 @@ struct ClockDomain : public Named {
   // TODO(johanpel): add other properties
 };
 
-/// @brief Return a static default clock domain to be used in the whole design.
+/// @brief Return a static default clock domain.
 std::shared_ptr<ClockDomain> default_domain();
 
-/// @brief Return the clock domain of a node, if it has one.
+/**
+ * @brief Class to mark nodes with information for synchronous designs, e.g. clock domain.
+ */
+class Synchronous {
+ public:
+  /// @brief Synchronous constructor.
+  explicit Synchronous(std::shared_ptr<ClockDomain> domain) : domain_(std::move(domain)) {}
+  /// @brief Return the clock domain to which something is synchronized.
+  [[nodiscard]] std::shared_ptr<ClockDomain> domain() const { return domain_; }
+  /// @brief Set the clock domain to which something should be synchronized.
+  void SetDomain(std::shared_ptr<ClockDomain> domain) { domain_ = std::move(domain); }
+ protected:
+  /// The clock domain.
+  std::shared_ptr<ClockDomain> domain_;
+};
+
+/// @brief Return the clock domain of a node, if it is a synchronous node.
 std::optional<std::shared_ptr<ClockDomain>> GetDomain(const Node& node);
 
 }  // namespace cerata

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,28 +29,11 @@ bool Type::Is(Type::ID type_id) const {
   return type_id == id_;
 }
 
-Type::Type(std::string name, Type::ID id)
-    : Named(std::move(name)), id_(id) {}
-
-bool Type::IsAbstract() const {
-  return Is(STRING) || Is(BOOLEAN) || Is(RECORD) || Is(STREAM) || Is(NUL);
-}
-
-bool Type::IsPhysical() const {
-  return Is(CLOCK) || Is(RESET) || Is(BIT) || Is(VECTOR);
-}
-
-bool Type::IsNested() const {
-  return (id_ == Type::STREAM) || (id_ == Type::RECORD);
-}
+Type::Type(std::string name, Type::ID id) : Named(std::move(name)), id_(id) {}
 
 std::string Type::ToString(bool show_meta, bool show_mappers) const {
   std::string ret;
   switch (id_) {
-    case CLOCK  : ret = name() + ":Clk";
-      break;
-    case RESET  : ret = name() + ":Rec";
-      break;
     case BIT    : ret = name() + ":Bit";
       break;
     case VECTOR : ret = name() + ":Vec";
@@ -62,8 +45,6 @@ std::string Type::ToString(bool show_meta, bool show_mappers) const {
     case BOOLEAN: ret = name() + ":Bo";
       break;
     case RECORD : ret = name() + ":Rec";
-      break;
-    case STREAM : ret = name() + ":Stm";
       break;
     default :throw std::runtime_error("Corrupted Type ID.");
   }
@@ -94,7 +75,7 @@ std::string Type::ToString(bool show_meta, bool show_mappers) const {
   return ret;
 }
 
-std::deque<std::shared_ptr<TypeMapper>> Type::mappers() const {
+std::vector<std::shared_ptr<TypeMapper>> Type::mappers() const {
   return mappers_;
 }
 
@@ -154,7 +135,7 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other, bool gen
     }
 
     // Or if its an "equal" type, where each flattened type is equal.
-    if (IsEqual(*other)) {
+    if (this->IsEqual(*other)) {
       // Generate an implicit type mapping.
       return TypeMapper::MakeImplicit(this, other);
     }
@@ -179,43 +160,56 @@ bool Type::IsEqual(const Type &other) const {
   return other.id() == id_;
 }
 
-Vector::Vector(std::string name, std::shared_ptr<Type> element_type, const std::optional<std::shared_ptr<Node>> &width)
-    : Type(std::move(name), Type::VECTOR), element_type_(std::move(element_type)) {
-  // Check if width is parameter or literal node
-  if (width) {
-    if (!(width.value()->IsParameter() || width.value()->IsLiteral() || width.value()->IsExpression())) {
-      CERATA_LOG(FATAL, "Vector width can only be Parameter, Literal or Expression node.");
-    }
+std::shared_ptr<Type> Type::operator()(std::vector<Node *> nodes) {
+  auto generics = GetGenerics();
+
+  if (nodes.size() != generics.size()) {
+    CERATA_LOG(ERROR, "Type contains " + std::to_string(generics.size())
+        + " generics, but only " + std::to_string(nodes.size())
+        + " arguments were supplied.");
+  }
+
+  NodeMap map;
+  for (size_t i = 0; i < generics.size(); i++) {
+    map[generics[i]] = nodes[i];
+  }
+
+  return Copy(map);
+}
+
+std::shared_ptr<Type> Type::operator()(const std::vector<std::shared_ptr<Node>> &nodes) {
+  return this->operator()(ToRawPointers(nodes));
+}
+
+Vector::Vector(std::string name, const std::shared_ptr<Node> &width)
+    : Type(std::move(name), Type::VECTOR) {
+  // Sanity check the width generic node.
+  if (!(width->IsParameter() || width->IsLiteral() || width->IsExpression())) {
+    CERATA_LOG(FATAL, "Vector width can only be Parameter, Literal or Expression node.");
   }
   width_ = width;
 }
 
-std::shared_ptr<Type> Vector::Make(const std::string& name,
-                                   const std::shared_ptr<Type>& element_type,
-                                   const std::optional<std::shared_ptr<Node>>& width) {
-  return std::make_shared<Vector>(name, element_type, width);
+std::shared_ptr<Type> vector(const std::string &name, const std::shared_ptr<Node> &width) {
+  return std::make_shared<Vector>(name, width);
 }
 
-std::shared_ptr<Type> Vector::Make(const std::string& name, const std::optional<std::shared_ptr<Node>>& width) {
-  return std::make_shared<Vector>(name, bit(), width);
+std::shared_ptr<Type> vector(const std::shared_ptr<Node> &width) {
+  return std::make_shared<Vector>("Vec_" + width->ToString(), width);
 }
 
-std::shared_ptr<Type> Vector::Make(unsigned int width) {
-  return Make("vec_" + std::to_string(width), intl(static_cast<int>(width)));
+std::shared_ptr<Type> vector(unsigned int width) {
+  return vector("vec_" + std::to_string(width), intl(static_cast<int>(width)));
 }
 
-std::shared_ptr<Type> Vector::Make(std::string name, unsigned int width) {
-  auto ret = Make(width);
+std::shared_ptr<Type> vector(std::string name, unsigned int width) {
+  auto ret = vector(width);
   ret->SetName(std::move(name));
   return ret;
 }
 
 std::optional<Node *> Vector::width() const {
-  if (width_) {
-    return width_->get();
-  } else {
-    return std::nullopt;
-  }
+  return width_.get();
 }
 
 bool Vector::IsEqual(const Type &other) const {
@@ -230,56 +224,32 @@ bool Vector::IsEqual(const Type &other) const {
   return false;
 }
 
-std::deque<Node *> Vector::GetParameters() const {
-  if (width_) {
-    return std::deque({width_.value().get()});
+std::vector<Node *> Vector::GetGenerics() const {
+  if (!width_->IsLiteral()) {
+    return {width_.get()};
   } else {
     return {};
   }
 }
 
 Type &Vector::SetWidth(std::shared_ptr<Node> width) {
-  width_ = width;
+  width_ = std::move(width);
   return *this;
 }
 
-std::shared_ptr<Stream> Stream::Make(const std::string& name, const std::shared_ptr<Type>& element_type, int epc) {
-  return std::make_shared<Stream>(name, element_type, "", epc);
-}
-
-std::shared_ptr<Stream> Stream::Make(const std::string& name,
-                                     const std::shared_ptr<Type>& element_type,
-                                     const std::string& element_name,
-                                     int epc) {
-  return std::make_shared<Stream>(name, element_type, element_name, epc);
-}
-
-std::shared_ptr<Stream> Stream::Make(const std::shared_ptr<Type>& element_type, int epc) {
-  return std::make_shared<Stream>("stream-" + element_type->name(), element_type, "", epc);
-}
-
-Stream::Stream(const std::string &type_name, std::shared_ptr<Type> element_type, std::string element_name, int epc)
-    : Type(type_name, Type::STREAM),
-      element_type_(std::move(element_type)),
-      element_name_(std::move(element_name)),
-      epc_(epc) {
-  if (element_type_ == nullptr) {
-    throw std::runtime_error("Stream element type cannot be nullptr.");
+std::shared_ptr<Type> bit(const std::string &name) {
+  if (name == "bit") {
+    // Return a static bit for the default bit.
+    static std::shared_ptr<Type> result = std::make_shared<Bit>(name);
+    return result;
+  } else {
+    std::shared_ptr<Type> result = std::make_shared<Bit>(name);
+    return result;
   }
 }
 
-std::shared_ptr<Type> bit() {
-  static std::shared_ptr<Type> result = std::make_shared<Bit>("bit");
-  return result;
-}
-
-std::shared_ptr<Type> nul() {
-  static std::shared_ptr<Type> result = std::make_shared<Nul>("nul");
-  return result;
-}
-
-std::shared_ptr<Type> string() {
-  static std::shared_ptr<Type> result = std::make_shared<String>("string");
+std::shared_ptr<Type> boolean() {
+  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
   return result;
 }
 
@@ -288,67 +258,32 @@ std::shared_ptr<Type> integer() {
   return result;
 }
 
-std::shared_ptr<Type> natural() {
-  static std::shared_ptr<Type> result = std::make_shared<Natural>("natural");
+std::shared_ptr<Type> string() {
+  static std::shared_ptr<Type> result = std::make_shared<String>("string");
   return result;
-}
-
-std::shared_ptr<Type> boolean() {
-  static std::shared_ptr<Type> result = std::make_shared<Boolean>("boolean");
-  return result;
-}
-
-std::shared_ptr<Type> Integer::Make(const std::string& name) {
-  return std::make_shared<Integer>(name);
-}
-
-std::shared_ptr<Type> Natural::Make(const std::string& name) {
-  return std::make_shared<Natural>(name);
-}
-
-Boolean::Boolean(std::string name) : Type(std::move(name), Type::BOOLEAN) {}
-
-std::shared_ptr<Type> Boolean::Make(const std::string& name) {
-  return std::make_shared<Boolean>(name);
-}
-
-String::String(std::string name) : Type(std::move(name), Type::STRING) {}
-
-std::shared_ptr<Type> String::Make(const std::string& name) {
-  return std::make_shared<String>(name);
-}
-
-Bit::Bit(std::string name) : Type(std::move(name), Type::BIT) {}
-
-std::shared_ptr<Bit> Bit::Make(const std::string& name) {
-  return std::make_shared<Bit>(name);
 }
 
 std::optional<Node *> Bit::width() const {
   return rintl(1);
 }
 
-RecField::RecField(std::string name, std::shared_ptr<Type> type, bool invert)
-    : Named(std::move(name)), type_(std::move(type)), invert_(invert), sep_(true) {}
+Field::Field(std::string name, std::shared_ptr<Type> type, bool invert, bool sep)
+    : Named(std::move(name)), type_(std::move(type)), invert_(invert), sep_(sep) {}
 
-std::shared_ptr<RecField> RecField::Make(const std::string& name, const std::shared_ptr<Type>& type, bool invert) {
-  return std::make_shared<RecField>(name, type, invert);
+std::shared_ptr<Field> field(const std::string &name, const std::shared_ptr<Type> &type, bool invert, bool sep) {
+  return std::make_shared<Field>(name, type, invert, sep);
 }
 
-std::shared_ptr<RecField> RecField::Make(const std::shared_ptr<Type>& type, bool invert) {
-  return std::make_shared<RecField>(type->name(), type, invert);
+std::shared_ptr<Field> field(const std::shared_ptr<Type> &type, bool invert, bool sep) {
+  return std::make_shared<Field>(type->name(), type, invert, sep);
 }
 
-std::shared_ptr<RecField> NoSep(std::shared_ptr<RecField> field) {
+std::shared_ptr<Field> NoSep(std::shared_ptr<Field> field) {
   field->NoSep();
   return field;
 }
 
-std::shared_ptr<Record> Record::Make(const std::string &name, const std::deque<std::shared_ptr<RecField>> &fields) {
-  return std::make_shared<Record>(name, fields);
-}
-
-Record &Record::AddField(const std::shared_ptr<RecField> &field, std::optional<size_t> index) {
+Record &Record::AddField(const std::shared_ptr<Field> &field, std::optional<size_t> index) {
   if (index) {
     auto it = fields_.begin() + *index;
     fields_.insert(it, field);
@@ -358,65 +293,32 @@ Record &Record::AddField(const std::shared_ptr<RecField> &field, std::optional<s
   return *this;
 }
 
-Record::Record(std::string name, std::deque<std::shared_ptr<RecField>> fields)
-    : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {}
-
-bool Stream::IsEqual(const Type &other) const {
-  if (other.Is(Type::STREAM)) {
-    auto &other_stream = dynamic_cast<const Stream &>(other);
-    bool eq = element_type()->IsEqual(*other_stream.element_type());
-    return eq;
+Record::Record(std::string name, std::vector<std::shared_ptr<Field>> fields)
+    : Type(std::move(name), Type::RECORD), fields_(std::move(fields)) {
+  // Check for duplicate field names.
+  std::vector<std::string> names;
+  for (const auto &field : fields_) {
+    names.push_back(field->name());
   }
-  return false;
-}
-
-void Stream::SetElementType(std::shared_ptr<Type> type) {
-  // Invalidate mappers that point to this type from the other side
-  for (auto &mapper : mappers_) {
-    mapper->b()->RemoveMappersTo(this);
-  }
-  // Invalidate all mappers from this type
-  mappers_ = {};
-  // Set the new element type
-  element_type_ = std::move(type);
-}
-
-bool Stream::CanGenerateMapper(const Type &other) const {
-  switch (other.id()) {
-    case Type::STREAM:
-      // If this and the other streams are "equal", a mapper can be generated
-      if (IsEqual(other)) {
-        return true;
-      } else {
-        // We can also map an empty stream, without mapping the elements. In practise, a back-end might emit e.g.
-        // additional ready/valid/count wires, connect those, but not any data elements.
-        if ((this->element_type() == nul()) || (dynamic_cast<const Stream &>(other).element_type() == nul())) {
-          return true;
-        }
-      }
-    default:return false;
+  if (Unique(names).size() != fields_.size()) {
+    CERATA_LOG(ERROR, "Record field names must be unique.");
   }
 }
 
-std::shared_ptr<TypeMapper> Stream::GenerateMapper(Type *other) {
-  // Check if we can even do this:
-  if (!CanGenerateMapper(*other)) {
-    CERATA_LOG(FATAL, "No mapper generator known from Stream to " + other->name() + ToString(other->id()));
-  }
-  if (IsEqual(*other)) {
-    return TypeMapper::MakeImplicit(this, other);
-  } else {
-    // If this or the other stream has a no element type:
-    if ((this->element_type() == nul()) || (dynamic_cast<Stream *>(other)->element_type() == nul())) {
-      auto mapper = TypeMapper::Make(this, other);
-      // Only connect the two stream flat types.
-      auto matrix = mapper->map_matrix();
-      matrix(0, 0) = 1;
-      mapper->SetMappingMatrix(matrix);
-      return mapper;
-    }
-  }
-  return nullptr;
+std::shared_ptr<Record> record(const std::string &name, const std::vector<std::shared_ptr<Field>> &fields) {
+  return std::make_shared<Record>(name, fields);
+}
+
+std::shared_ptr<Record> record(const std::string &name) {
+  return record(name, std::vector<std::shared_ptr<Field>>());
+}
+
+std::shared_ptr<Record> record(const std::vector<std::shared_ptr<Field>> &fields) {
+  return record(std::string(""), fields);
+}
+
+std::shared_ptr<Record> record(const std::initializer_list<std::shared_ptr<Field>> &fields) {
+  return record(std::string(""), std::vector<std::shared_ptr<Field>>(fields.begin(), fields.end()));
 }
 
 bool Record::IsEqual(const Type &other) const {
@@ -434,8 +336,8 @@ bool Record::IsEqual(const Type &other) const {
   }
   // Each field must also be of equal type
   for (size_t i = 0; i < this->num_fields(); i++) {
-    auto a = this->field(i)->type();
-    auto b = other_record.field(i)->type();
+    auto a = this->at(i)->type();
+    auto b = other_record.at(i)->type();
     if (!a->IsEqual(*b)) {
       return false;
     }
@@ -444,13 +346,158 @@ bool Record::IsEqual(const Type &other) const {
   return true;
 }
 
-std::deque<Node *> Record::GetParameters() const {
-  std::deque<Node *> result;
+std::vector<Node *> Record::GetGenerics() const {
+  std::vector<Node *> result;
   for (const auto &field : fields_) {
-    auto field_params = field->type()->GetParameters();
+    auto field_params = field->type()->GetGenerics();
     result.insert(result.end(), field_params.begin(), field_params.end());
   }
   return result;
+}
+
+std::vector<Type *> Record::GetNested() const {
+  std::vector<Type *> result;
+  for (const auto &field : fields_) {
+    // Push back the field type itself.
+    result.push_back(field->type().get());
+    // Push back any nested types.
+    auto nested = field->type()->GetNested();
+    result.insert(result.end(), nested.begin(), nested.end());
+  }
+  return result;
+}
+
+bool Record::IsPhysical() const {
+  for (const auto &f : fields_) {
+    if (!f->type()->IsPhysical()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Record::IsGeneric() const {
+  for (const auto &f : fields_) {
+    if (f->type()->IsGeneric()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::shared_ptr<Type> Bit::Copy(const NodeMap &rebinding) const {
+  std::shared_ptr<Type> result;
+  result = bit(name());
+
+  result->meta = meta;
+
+  for (const auto &mapper : mappers_) {
+    auto new_mapper = mapper->Make(result.get(), mapper->b());
+    new_mapper->SetMappingMatrix(mapper->map_matrix());
+    result->AddMapper(new_mapper);
+  }
+
+  return result;
+}
+
+std::shared_ptr<Type> Vector::Copy(const NodeMap &rebinding) const {
+  std::shared_ptr<Type> result;
+  std::optional<std::shared_ptr<Node>> new_width = width_;
+  if (rebinding.count(width_.get()) > 0) {
+    new_width = rebinding.at(width_.get())->shared_from_this();
+  }
+  result = vector(name(), *new_width);
+
+  result->meta = meta;
+
+  for (const auto &mapper : mappers_) {
+    auto new_mapper = mapper->Make(result.get(), mapper->b());
+    new_mapper->SetMappingMatrix(mapper->map_matrix());
+    result->AddMapper(new_mapper);
+  }
+
+  return result;
+}
+
+std::shared_ptr<Field> Field::Copy(const NodeMap &rebinding) const {
+  std::shared_ptr<Field> result;
+  auto type = type_;
+  if (type_->IsGeneric()) {
+    type = type_->Copy(rebinding);
+  }
+  result = field(name(), type, invert_, sep_);
+  result->meta = meta;
+  return result;
+}
+
+Field &Field::SetType(std::shared_ptr<Type> type) {
+  type_ = std::move(type);
+  return *this;
+}
+
+std::shared_ptr<Field> Field::Reverse() {
+  invert_ = true;
+  return shared_from_this();
+}
+
+std::shared_ptr<Type> Record::Copy(const NodeMap &rebinding) const {
+  std::shared_ptr<Type> result;
+  std::vector<std::shared_ptr<Field>> fields;
+  for (const auto &f : fields_) {
+    fields.push_back(f->Copy(rebinding));
+  }
+  result = record(name(), fields);
+
+  result->meta = meta;
+
+  for (const auto &mapper : mappers_) {
+    auto new_mapper = mapper->Make(result.get(), mapper->b());
+    new_mapper->SetMappingMatrix(mapper->map_matrix());
+    result->AddMapper(new_mapper);
+  }
+
+  return result;
+}
+
+Field *Record::at(size_t i) const {
+  if (i > fields_.size()) {
+    CERATA_LOG(FATAL, "Field index out of bounds.");
+  }
+  return fields_[i].get();
+}
+
+Field *Record::operator[](size_t i) const { return at(i); }
+
+bool Record::Has(const std::string &name) const {
+  for (const auto &field : fields_) {
+    if (field->name() == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Field *Record::at(const std::string &name) const {
+  for (auto &f : fields_) {
+    if (f->name() == name) {
+      return f.get();
+    }
+  }
+  CERATA_LOG(ERROR, "Field with name " + name + " does not exist on Record type " + this->name()
+      + " Must one of: " + ToStringFieldNames());
+}
+
+Field *Record::operator[](const std::string &name) const { return at(name); }
+
+std::string Record::ToStringFieldNames() const {
+  std::stringstream ss;
+  for (const auto &f : fields_) {
+    ss << f->name();
+    if (f != fields_.back()) {
+      ss << ", ";
+    }
+  }
+  return ss.str();
 }
 
 }  // namespace cerata

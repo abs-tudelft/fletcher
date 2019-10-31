@@ -12,18 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
+#include <gmock/gmock.h>
 
-#include "cerata/pool.h"
-#include "cerata/node.h"
-#include "cerata/graph.h"
+#include <string>
+#include <fstream>
+#include <cerata/api.h>
 
 namespace cerata {
 
-/// @brief Template specialization for Type objects.
-template<>
-std::string Pool<Type>::PoolTypeToString(const Type &object) {
-  return object.ToString(true, true);
+TEST(Nodes, ParamTrace) {
+  auto lit = strl("foo");
+  auto a = parameter("a", string(), lit);
+  auto b = parameter("b", std::string("bdef"));
+  auto c = parameter("c", std::string("cdef"));
+  auto expr = c * 2;
+  auto d = parameter("d", std::string("ddef"));
+
+  a <<= lit;
+  b <<= a;
+  c <<= b;
+  d <<= expr;
+
+  std::vector<Node *> trace;
+  d->TraceValue(&trace);
+
+  for (const auto &t : trace) {
+    std::cout << "T: " + t->ToString() << std::endl;
+  }
+
+  ASSERT_EQ(trace[0], d.get());
+  ASSERT_EQ(trace[1], expr.get());
+
 }
 
 }  // namespace cerata

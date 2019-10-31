@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,16 @@
 #include "cerata/logging.h"
 
 namespace cerata {
+
+std::string ToUpper(std::string str) {
+  for (auto &ch : str) ch = std::toupper(ch);
+  return str;
+}
+
+std::string ToLower(std::string str) {
+  for (auto &ch : str) ch = std::tolower(ch);
+  return str;
+}
 
 std::string ToString(const std::unordered_map<std::string, std::string> &meta) {
   std::string result;

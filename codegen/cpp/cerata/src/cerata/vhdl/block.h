@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,9 +24,21 @@ namespace cerata::vhdl {
 /// A line of code.
 struct Line {
   Line() = default;
-  /// Line constructor.
+  /// @brief Line constructor.
   explicit Line(const std::string &str) {
     parts.push_back(str);
+  }
+  /// @brief Return true if line is blank.
+  [[nodiscard]] bool IsBlank() const {
+    if (parts.empty()) {
+      return true;
+    }
+    if (parts.size() == 1) {
+      if (parts[0] == "\n") {
+        return true;
+      }
+    }
+    return false;
   }
   /// @brief Return the line as a single string.
   [[nodiscard]] std::string ToString() const;
@@ -42,6 +54,8 @@ struct Block {
   [[nodiscard]] std::vector<size_t> GetAlignments() const;
   /// @brief Return the block in reverse.
   Block &Reverse();
+  /// @brief Append a blank line if the block is not empty.
+  Block &AppendBlankLineIfNotEmpty();
 
   /**
    * @brief Sort the lines in the block. Supply a character to stop sorting per line after encountering the character.

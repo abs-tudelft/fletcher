@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <deque>
+#include <vector>
 #include <string>
 
 #include "cerata/logging.h"
 #include "cerata/edge.h"
 #include "cerata/node.h"
 #include "cerata/expression.h"
-#include "cerata/node_array.h"
+#include "cerata/array.h"
 #include "cerata/type.h"
 #include "cerata/graph.h"
 #include "cerata/pool.h"
+#include "cerata/parameter.h"
 
 #include "cerata/vhdl/instantiation.h"
 #include "cerata/vhdl/identifier.h"
@@ -59,18 +60,15 @@ static bool IsInputTerminator(const Object &obj) {
 Block Inst::GenerateGenericMap(const Parameter &par) {
   Block ret;
   Line l;
-  l << to_upper(par.name()) << " => ";
+  l << ToUpper(par.name()) << " => ";
   // Get the value to apply
-  auto optional_value = par.GetValue();
-  if (optional_value.has_value()) {
-    const Node *val = optional_value.value();
-    // If it is a literal, make it VHDL compatible
-    if (val->IsLiteral()) {
-      auto *lit = dynamic_cast<const Literal *>(val);
-      l << lit2vhdl(*lit);
-    } else {
-      l << val->ToString();
-    }
+  auto val = par.value();
+  // If it is a literal, make it VHDL compatible
+  if (val->IsLiteral()) {
+    auto *lit = dynamic_cast<const Literal *>(val);
+    l << lit2vhdl(*lit);
+  } else {
+    l << ToUpper(val->ToString());
   }
   ret << l;
   return ret;
@@ -84,7 +82,8 @@ static Block GenerateMappingPair(const MappingPair &p,
                                  const std::string &lh_prefix,
                                  const std::string &rh_prefix,
                                  bool a_is_array,
-                                 bool b_is_array) {
+                                 bool b_is_array,
+                                 bool full_array) {
   Block ret;
 
   std::shared_ptr<Node> next_offset_a;
@@ -96,17 +95,14 @@ static Block GenerateMappingPair(const MappingPair &p,
   next_offset_a = (offset_a + (b_width ? b_width.value() : rintl(0)));
   next_offset_b = (offset_b + (a_width ? a_width.value() : rintl(0)));
 
-  if (p.flat_type_a(0).type_->Is(Type::STREAM)) {
-    // Don't output anything for the abstract stream type.
-  } else if (p.flat_type_a(0).type_->Is(Type::RECORD)) {
+  if (p.flat_type_a(0).type_->Is(Type::RECORD)) {
     // Don't output anything for the abstract record type.
   } else {
     Line l;
     l << p.flat_type_a(ia).name(NamePart(lh_prefix, true));
-
     // if right side is concatenated onto the left side
     // or the left side is an array (right is also concatenated onto the left side)
-    if ((p.num_b() > 1) || a_is_array) {
+    if ((p.num_b() > 1) || (a_is_array && !full_array)) {
       if (p.flat_type_a(ia).type_->Is(Type::BIT)) {
         l += "(" + offset_a->ToString() + ")";
       } else {
@@ -116,7 +112,7 @@ static Block GenerateMappingPair(const MappingPair &p,
     }
     l << " => ";
     l << p.flat_type_b(ib).name(NamePart(rh_prefix, true));
-    if ((p.num_a() > 1) || b_is_array) {
+    if ((p.num_a() > 1) || (b_is_array && !full_array)) {
       if (p.flat_type_b(ib).type_->Is(Type::BIT)) {
         l += "(" + offset_b->ToString() + ")";
       } else {
@@ -130,9 +126,9 @@ static Block GenerateMappingPair(const MappingPair &p,
   return ret;
 }
 
-static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &a, const Node &b) {
+static Block GeneratePortMappingPair(std::vector<MappingPair> pairs, const Node &a, const Node &b, bool full_array) {
   Block ret;
-  // Sort the pair in order of appearance on the flatmap
+  // Sort the pair in order of appearance on the flat map
   std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
     return x.index_a(0) < y.index_a(0);
   });
@@ -149,10 +145,10 @@ static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &
     b_array = true;
     b_idx = b.array().value()->IndexOf(b);
   }
-  if (a.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
+  if (a.type()->meta.count(meta::FORCE_VECTOR) > 0) {
     a_array = true;
   }
-  if (b.type()->meta.count(metakeys::FORCE_VECTOR) > 0) {
+  if (b.type()->meta.count(meta::FORCE_VECTOR) > 0) {
     b_array = true;
   }
   // Loop over all pairs
@@ -169,7 +165,8 @@ static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a.name(), b.name(), a_array, b_array);
+        auto mpblock =
+            GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a.name(), b.name(), a_array, b_array, full_array);
         ret << mpblock;
         // Increase the offset on the left side.
         a_offset = a_offset + (b_width ? b_width.value() : rintl(1));
@@ -181,9 +178,9 @@ static Block GeneratePortMappingPair(std::deque<MappingPair> pairs, const Node &
   return ret;
 }
 
-Block Inst::GeneratePortMaps(const Port &port) {
+Block Inst::GeneratePortMaps(const Port &port, bool full_array) {
   Block result;
-  std::deque<Edge *> connections;
+  std::vector<Edge *> connections;
   // Check if this is an input or output port
   if (IsInputTerminator(port)) {
     connections = port.sources();
@@ -205,7 +202,7 @@ Block Inst::GeneratePortMaps(const Port &port) {
       // Obtain the unique mapping pairs for this mapping
       auto pairs = type_mapper->GetUniqueMappingPairs();
       // Generate the mapping for this port-node pair.
-      result << GeneratePortMappingPair(pairs, port, *other);
+      result << GeneratePortMappingPair(pairs, port, *other, full_array);
     } else {
       CERATA_LOG(FATAL, "No type mapping available for: Port[" + port.name() + ": " + port.type()->name()
           + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
@@ -216,13 +213,31 @@ Block Inst::GeneratePortMaps(const Port &port) {
 
 Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
   Block ret;
+  // Figure out if this whole array is connected to a single other array.
+  std::vector<NodeArray *> others;
+  for (const auto &node : port_array.nodes()) {
+    for (const auto &e : node->edges()) {
+      auto other = e->GetOtherNode(*node);
+      if (other) {
+        if (other.value()->array()) {
+          if (other.value()->array().value()->IsArray()) {
+            auto na = dynamic_cast<NodeArray *>(other.value()->array().value());
+            others.push_back(na);
+          }
+        }
+      }
+    }
+  }
+  // Remove duplicates.
+  others.erase(std::unique(others.begin(), others.end()), others.end());
+  bool full_array = others.size() == 1;
+
   // Go over each node in the array
   for (const auto &node : port_array.nodes()) {
-    if (node->IsPort()) {
-      const auto &port = dynamic_cast<const Port &>(*node);
-      ret << GeneratePortMaps(port);
-    } else {
-      throw std::runtime_error("Port Array contains non-port node.");
+    const auto &port = dynamic_cast<const Port &>(*node);
+    ret << GeneratePortMaps(port, full_array);
+    if (full_array) {
+      break;
     }
   }
   return ret.Sort('(');

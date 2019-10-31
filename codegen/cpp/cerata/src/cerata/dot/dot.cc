@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ void DOTOutputGenerator::Generate() {
   cerata::dot::Grapher dot;
   for (const auto &o : outputs_) {
     if (o.comp != nullptr) {
-      CERATA_LOG(INFO, "DOT: Generating output for Graph: " + o.comp->name());
+      CERATA_LOG(DEBUG, "DOT: Generating output for Graph: " + o.comp->name());
       dot.GenFile(*o.comp, root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".dot");
     }
   }
@@ -46,7 +46,6 @@ static std::string ToHex(const Node &n) {
 std::string Grapher::GenEdges(const Graph &graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
-  int ei = 0;
   for (const auto &e : all_edges) {
     if (!Contains(drawn_edges, e)) {
       // Remember we've drawn this edge
@@ -55,6 +54,9 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       // Check if edge is complete
       auto dst = e->dst();
       auto src = e->src();
+      if ((dst == nullptr) || (src == nullptr)) {
+        continue;
+      }
       // Don't draw literals
       if (dst->IsLiteral() || src->IsLiteral()) {
         continue;
@@ -76,19 +78,6 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       StyleBuilder sb;
       ret << " [";
       switch (src->type()->id()) {
-        case Type::STREAM: {
-          sb << style.edge.stream;
-          sb << awq("color", style.edge.color.stream);
-          break;
-        }
-        case Type::CLOCK: {
-          sb << style.edge.clock;
-          break;
-        }
-        case Type::RESET: {
-          sb << style.edge.reset;
-          break;
-        }
         default: {
           sb << style.edge.base;
           break;
@@ -129,6 +118,7 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
           sb << "lhead=\"cluster_" + NodeName(*src) + "\"";
         }
       } else {
+        ret << "]\n";
         continue;
       }
       ret << sb.ToString();
@@ -136,7 +126,6 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       ret << "]\n";
     }
   }
-  ei++;
 
   return ret.str();
 }
@@ -146,25 +135,7 @@ std::string Style::GenHTMLTableCell(const Type &t,
                                     int level) {
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-  if (t.Is(Type::STREAM)) {
-    auto stream = dynamic_cast<const Stream &>(t);
-    str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
-    if (level == 0) {
-      str << R"( PORT="cell")";
-    }
-    str << ">";
-    str << "<TR>";
-    str << "<TD";
-    str << R"( BGCOLOR=")" + node.color.stream + R"(">)";
-    str << name;
-    str << "</TD>";
-    str << "<TD ";
-    str << R"( BGCOLOR=")" + node.color.stream_child + R"(">)";
-    str << GenHTMLTableCell(*stream.element_type(), stream.element_name(), level + 1);
-    str << "</TD>";
-    str << "</TR>";
-    str << "</TABLE>";
-  } else if (t.Is(Type::RECORD)) {
+  if (t.Is(Type::RECORD)) {
     auto rec = dynamic_cast<const Record &>(t);
     str << R"(<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0")";
     if (level == 0) {
@@ -210,17 +181,7 @@ std::string Style::GenDotRecordCell(const Type &t,
                                     int level) {
   std::stringstream str;
   // Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-  if (t.Is(Type::STREAM)) {
-    auto stream = dynamic_cast<const Stream &>(t);
-    if (level == 0) {
-      str << "<cell>";
-    }
-    str << name;
-    str << "|";
-    str << "{";
-    str << GenDotRecordCell(*stream.element_type(), stream.element_name(), level + 1);
-    str << "}";
-  } else if (t.Is(Type::RECORD)) {
+  if (t.Is(Type::RECORD)) {
     auto rec = dynamic_cast<const Record &>(t);
     if (level == 0) {
       str << "<cell>";
@@ -258,12 +219,12 @@ std::string Grapher::GenNode(const Node &n, int level) {
   return str.str();
 }
 
-std::string Grapher::GenNodes(const Graph &graph, Node::NodeID id, int level, bool nogroup) {
+std::string Grapher::GenNodes(const Graph &graph, Node::NodeID id, int level, bool no_group) {
   std::stringstream ret;
   auto nodes = graph.GetNodesOfType(id);
   auto arrays = graph.GetArraysOfType(id);
   if (!nodes.empty() || !arrays.empty()) {
-    if (!nogroup) {
+    if (!no_group) {
       ret << tab(level) << "subgraph cluster_" << sanitize(graph.name()) + "_" + ToString(id) << " {\n";
       // ret << tab(level + 1) << "label=\"" << ToString(id) << "s\";\n";
       ret << tab(level + 1) << "rankdir=LR;\n";
@@ -272,12 +233,12 @@ std::string Grapher::GenNodes(const Graph &graph, Node::NodeID id, int level, bo
       ret << tab(level + 1) << "color=\"" + style.nodegroup.color + "\";\n";
     }
     for (const auto &n : nodes) {
-      ret << GenNode(*n, level + nogroup + 1);
+      ret << GenNode(*n, level + no_group + 1);
     }
     for (const auto &a : arrays) {
-      ret << GenNode(*a->base(), level + nogroup + 1);
+      ret << GenNode(*a->base(), level + no_group + 1);
     }
-    if (!nogroup) {
+    if (!no_group) {
       ret << tab(level) << "}\n";
     }
   }
@@ -307,8 +268,8 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
   if (style.config.nodes.expressions)
     ret << GenNodes(graph, Node::NodeID::EXPRESSION, level + 1);
 
-  // if (config.nodes.literals)
-  //   ret << GenNodes(graph, Node::LITERAL, level + 1);
+  if (style.config.nodes.literals)
+    ret << GenNodes(graph, Node::NodeID::LITERAL, level + 1);
 
   if (style.config.nodes.parameters)
     ret << GenNodes(graph, Node::NodeID::PARAMETER, level + 1);
@@ -324,7 +285,6 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
     if (!comp.children().empty()) {
       ret << "\n";
     }
-
 
     // Graph children
     for (const auto &child : comp.children()) {

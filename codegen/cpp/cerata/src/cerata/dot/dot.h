@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 #pragma once
 
 #include <memory>
-#include <deque>
-#include <string>
 #include <vector>
+#include <string>
 #include <sstream>
 #include <utility>
 
@@ -33,7 +32,7 @@ struct Grapher {
   /// The style.
   Style style;
   /// Edges that were already drawn.
-  std::deque<Edge *> drawn_edges = {};
+  std::vector<Edge *> drawn_edges = {};
   Grapher() : Grapher(Style::normal()) {}
   /// Grapher constructor.
   explicit Grapher(Style style) : style(std::move(style)) {}
@@ -42,7 +41,7 @@ struct Grapher {
   /// @brief Generate a node.
   std::string GenNode(const Node &n, int level = 0);
   /// @brief Generate nodes.
-  std::string GenNodes(const Graph &graph, Node::NodeID id, int level = 0, bool nogroup = false);
+  std::string GenNodes(const Graph &graph, Node::NodeID id, int level = 0, bool no_group = false);
   /// @brief Generate a graph.
   std::string GenGraph(const Graph &graph, int level = 0);
   /// @brief Generate a DOT file.
@@ -58,7 +57,7 @@ std::string NodeName(const Node &node, const std::string &suffix = "");
 class DOTOutputGenerator : public OutputGenerator {
  public:
   /// @brief DOTOutputGenerator constructor.
-  explicit DOTOutputGenerator(std::string root_dir, std::deque<OutputSpec> graphs = {})
+  explicit DOTOutputGenerator(std::string root_dir, std::vector<OutputSpec> graphs = {})
       : OutputGenerator(std::move(root_dir), std::move(graphs)) {}
   /// @brief Generate the DOT graphs.
   void Generate() override;

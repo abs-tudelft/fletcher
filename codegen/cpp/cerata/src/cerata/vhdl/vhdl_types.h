@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <deque>
+#include <vector>
 #include <memory>
 #include <string>
 
@@ -48,7 +48,7 @@ Term::Dir Reverse(Term::Dir dir);
  * @param list  The list to filter
  * @return      The filtered list
  */
-std::deque<FlatType> FilterForVHDL(const std::deque<FlatType> &list);
+std::vector<FlatType> FilterForVHDL(const std::vector<FlatType> &list);
 
 /// A VHDL range.
 struct Range {

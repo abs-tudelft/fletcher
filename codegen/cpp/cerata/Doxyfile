@@ -2,7 +2,7 @@ DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = Cerata
 PROJECT_NUMBER         = 
 PROJECT_BRIEF          = "A library to generate structural hardware designs"
-PROJECT_LOGO           = cerata.svg
+PROJECT_LOGO           = docs/cerata.svg
 INPUT                  = README.md \
                          src
 INPUT_ENCODING         = UTF-8

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,13 +33,13 @@ struct Decl {
   /// @brief Generate a port declaration.
   static Block Generate(const Port &port, int depth = 0);
   /// @brief Generate a port array declaration.
-  static Block Generate(const PortArray &porta, int depth = 0);
+  static Block Generate(const PortArray &port_array, int depth = 0);
   /// @brief Generate a signal declaration.
   static Block Generate(const Signal &sig, int depth = 0);
   /// @brief Generate a signal array declaration.
-  static Block Generate(const SignalArray &siga, int depth = 0);
+  static Block Generate(const SignalArray &sig_array, int depth = 0);
   /// @brief Generate a component or entity declaration.
-  static MultiBlock Generate(const Component &comp, bool entity = false);
+  static MultiBlock Generate(const Component &comp, bool entity = false, int indent = 1);
 };
 
 }  // namespace cerata::vhdl

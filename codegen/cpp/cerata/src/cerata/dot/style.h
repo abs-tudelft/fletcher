@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 #pragma once
 
 #include <memory>
-#include <deque>
-#include <string>
 #include <vector>
+#include <string>
 #include <sstream>
 
 #include "cerata/graph.h"
@@ -99,8 +98,6 @@ struct Config {
 
     /// Type configuration.
     struct TypeConfig {
-      bool clock = true;    ///< Show clock types.
-      bool reset = true;    ///< Show reset types.
       bool bit = true;      ///< Show bit types.
       bool vector = true;   ///< Show vector types.
       bool record = true;   ///< Show record types.
@@ -152,13 +149,11 @@ struct Style {
     str stream;        ///< Style for stream edges.
     str lit;           ///< Style for literal edges.
     str expr;          ///< Style for expressions.
-    str clock;         ///< Style for clocks.
-    str reset;         ///< Style for resets.
   } edge;              ///< Style for edges.
 
   /// Node style.
   struct NodeStyle {
-    /// Colors for nodes
+    /// Colors for types
     struct Colors {
       str stream;         ///< Stream node color.
       str stream_border;  ///< Stream border color.
@@ -177,8 +172,6 @@ struct Style {
 
     /// Styles for specific node types.
     struct TypeStyle {
-      str clock;    ///< Style for clocks
-      str reset;    ///< Style for resets
       str bit;      ///< Style for bits
       str boolean;  ///< Style for booleans
       str vector;   ///< Style for vectors

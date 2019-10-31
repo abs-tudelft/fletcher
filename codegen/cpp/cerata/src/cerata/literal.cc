@@ -19,7 +19,7 @@ namespace cerata {
 
 std::string Literal::ToString() const {
   if (storage_type_ == StorageType::BOOL) {
-    return std::to_string(Bool_val_);
+    return Bool_val_ ? "true" : "false";
   } else if (storage_type_ == StorageType::STRING) {
     return String_val_;
   } else {
@@ -44,7 +44,7 @@ std::string Literal::ToString() const {
 
 LITERAL_IMPL_FACTORY(String, string, STRING, std::string)
 LITERAL_IMPL_FACTORY(Bool, boolean, BOOL, bool)
-LITERAL_IMPL_FACTORY(Int, integer, INT, int)
+LITERAL_IMPL_FACTORY(Int, integer, INT, int64_t)
 
 std::shared_ptr<Object> Literal::Copy() const {
   switch (storage_type_) {
@@ -54,9 +54,8 @@ std::shared_ptr<Object> Literal::Copy() const {
   }
 }
 
-std::shared_ptr<Edge> Literal::AddSource(Node *source) {
-  CERATA_LOG(FATAL, "Cannot drive a literal node.");
-  return nullptr;
+void Literal::SetParent(Graph *graph) {
+  parent_ = std::nullopt;
 }
 
 }  // namespace cerata

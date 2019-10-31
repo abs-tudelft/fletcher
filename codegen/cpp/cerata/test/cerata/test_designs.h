@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,145 +24,119 @@
 namespace cerata {
 
 std::shared_ptr<Component> GetTypeExpansionComponent() {
-  auto width = Parameter::Make("width", integer(), intl(8));
-  auto vec_type = Vector::Make("data", width);
-  auto rec_type = Record::Make("rec_type", {
-      RecField::Make("cerata", vec_type),
-      RecField::Make("is", vec_type),
-      RecField::Make("awesome", vec_type)
-  });
-  auto stream_type = Stream::Make("stream_type", rec_type);
-  auto data_in = Port::Make("data", stream_type, Port::Dir::IN);
-  auto data_out = Port::Make("data", stream_type, Port::Dir::OUT);
-  auto foo = Component::Make("foo", {width, data_in});
-  auto bar = Component::Make("bar", {width, data_out});
-  auto top = Component::Make("top");
-  auto foo_inst = top->AddInstanceOf(foo.get(), "foo");
-  auto bar_inst = top->AddInstanceOf(bar.get(), "bar");
-  Connect(foo_inst->port("data"), bar_inst->port("data"));
+  auto w1 = parameter("width", integer(), intl(8));
+  auto w2 = parameter("width", integer(), intl(8));
+  NodeMap rb;
+  rb[w1.get()] = w2.get();
+  auto vec = vector("data", w1);
+  auto rec = record({field("cerata", vec),
+                     field("is", vec),
+                     field("awesome", vec)});
+  auto str = stream(rec);
+  auto data_in = port("data", str, Port::Dir::IN);
+  auto data_out = port("data", str->Copy(rb), Port::Dir::OUT);
+  auto foo = component("foo", {w1, data_in});
+  auto bar = component("bar", {w2, data_out});
+  auto top = component("top");
+  auto foo_inst = top->Instantiate(foo, "foo");
+  auto bar_inst = top->Instantiate(bar, "bar");
+  Connect(foo_inst->prt("data"), bar_inst->prt("data"));
   return top;
 }
 
 std::shared_ptr<Component> GetArrayToArrayInternalComponent(bool invert = false) {
-  auto data = Vector::Make<8>();
+  auto data = vector(8);
 
-  std::string a = invert ? "src" : "dst";
-  std::string x = invert ? "dst0" : "src0";
-  std::string y = invert ? "dst1" : "src1";
+  std::string a = !invert ? "src" : "dst";
+  std::string x = !invert ? "dst0" : "src0";
+  std::string y = !invert ? "dst1" : "src1";
 
-  auto top_comp = Component::Make("top_comp");
+  auto top_comp = component("top_comp");
 
-  auto a_size = Parameter::Make("size", integer(), intl(0));
-  auto a_array = PortArray::Make("array", data, a_size, invert ? Term::IN : Term::OUT);
-  auto a_comp = Component::Make(a, {a_size, a_array});
-  auto a_inst = Instance::Make(a_comp.get());
+  auto a_size = parameter("size", integer(), intl(0));
+  auto a_array = port_array("array", data, a_size, invert ? Term::IN : Term::OUT);
+  auto a_comp = component(a, {a_size, a_array});
+  auto a_inst = top_comp->Instantiate(a_comp);
 
-  auto x_size = Parameter::Make("size", integer(), intl(0));
-  auto x_array = PortArray::Make("array", data, x_size, invert ? Term::OUT : Term::IN);
-  auto x_comp = Component::Make(x, {x_size, x_array});
-  auto x_inst = Instance::Make(x_comp.get());
+  auto x_size = parameter("size", integer(), intl(0));
+  auto x_array = port_array("array", data, x_size, invert ? Term::OUT : Term::IN);
+  auto x_comp = component(x, {x_size, x_array});
+  auto x_inst = top_comp->Instantiate(x_comp);
 
-  auto y_size = Parameter::Make("size", integer(), intl(0));
-  auto y_array = PortArray::Make("array", data, y_size, invert ? Term::OUT : Term::IN);
-  auto y_comp = Component::Make(y, {y_size, y_array});
-  auto y_inst = Instance::Make(y_comp.get());
+  auto y_size = parameter("size", integer(), intl(0));
+  auto y_array = port_array("array", data, y_size, invert ? Term::OUT : Term::IN);
+  auto y_comp = component(y, {y_size, y_array});
+  auto y_inst = top_comp->Instantiate(y_comp);
 
-  a_inst->porta("array")->Append();
-  a_inst->porta("array")->Append();
-  a_inst->porta("array")->Append();
-  a_inst->porta("array")->Append();
+  a_inst->prt_arr("array")->Append();
+  a_inst->prt_arr("array")->Append();
+  a_inst->prt_arr("array")->Append();
+  a_inst->prt_arr("array")->Append();
 
-  x_inst->porta("array")->Append();
-  x_inst->porta("array")->Append();
-  y_inst->porta("array")->Append();
-  y_inst->porta("array")->Append();
+  x_inst->prt_arr("array")->Append();
+  x_inst->prt_arr("array")->Append();
+  y_inst->prt_arr("array")->Append();
+  y_inst->prt_arr("array")->Append();
 
   if (!invert) {
-    Connect(x_inst->porta("array")->node(0), a_inst->porta("array")->node(1));
-    Connect(x_inst->porta("array")->node(1), a_inst->porta("array")->node(0));
-    Connect(y_inst->porta("array")->node(0), a_inst->porta("array")->node(3));
-    Connect(y_inst->porta("array")->node(1), a_inst->porta("array")->node(2));
+    Connect(x_inst->prt_arr("array")->node(0), a_inst->prt_arr("array")->node(1));
+    Connect(x_inst->prt_arr("array")->node(1), a_inst->prt_arr("array")->node(0));
+    Connect(y_inst->prt_arr("array")->node(0), a_inst->prt_arr("array")->node(3));
+    Connect(y_inst->prt_arr("array")->node(1), a_inst->prt_arr("array")->node(2));
   } else {
-    Connect(a_inst->porta("array")->node(1), x_inst->porta("array")->node(0));
-    Connect(a_inst->porta("array")->node(0), x_inst->porta("array")->node(1));
-    Connect(a_inst->porta("array")->node(3), y_inst->porta("array")->node(0));
-    Connect(a_inst->porta("array")->node(2), y_inst->porta("array")->node(1));
+    Connect(a_inst->prt_arr("array")->node(1), x_inst->prt_arr("array")->node(0));
+    Connect(a_inst->prt_arr("array")->node(0), x_inst->prt_arr("array")->node(1));
+    Connect(a_inst->prt_arr("array")->node(3), y_inst->prt_arr("array")->node(0));
+    Connect(a_inst->prt_arr("array")->node(2), y_inst->prt_arr("array")->node(1));
   }
 
-  top_comp->AddChild(std::move(a_inst));
-  top_comp->AddChild(std::move(x_inst));
-  top_comp->AddChild(std::move(y_inst));
   return top_comp;
 }
 
 std::shared_ptr<Component> GetArrayToArrayComponent(bool invert = false) {
-  auto data = Vector::Make<8>();
+  auto data = vector(8);
 
-  auto top_size = Parameter::Make("top_size", integer(), intl(0));
-  auto top_array = PortArray::Make("top_array", data, top_size, invert ? Term::OUT : Term::IN);
-  auto top_comp = Component::Make("top_comp", {top_size, top_array});
+  auto top_size = parameter("top_size", integer(), intl(0));
+  auto top_array = port_array("top_array", data, top_size, invert ? Term::OUT : Term::IN);
+  auto top_comp = component("top_comp", {top_size, top_array});
 
-  auto child_size = Parameter::Make("child_size", integer(), intl(0));
-  auto child_array = PortArray::Make("child_array", data, child_size, invert ? Term::OUT : Term::IN);
-  auto child_comp = Component::Make("child_comp", {child_size, child_array});
-  auto child_inst = Instance::Make(child_comp.get());
+  auto child_size = parameter("child_size", integer(), intl(0));
+  auto child_array = port_array("child_array", data, child_size, invert ? Term::OUT : Term::IN);
+  auto child_comp = component("child_comp", {child_size, child_array});
+  auto child_inst = top_comp->Instantiate(child_comp);
 
   if (invert) {
-    child_inst->porta("child_array")->Append();
+    child_inst->prt_arr("child_array")->Append();
     top_array->Append();
     top_array->Append();
-    Connect(top_array->node(0), child_inst->porta("child_array")->node(0));
-    Connect(top_array->node(1), child_inst->porta("child_array")->node(0));
+    Connect(top_array->node(0), child_inst->prt_arr("child_array")->node(0));
+    Connect(top_array->node(1), child_inst->prt_arr("child_array")->node(0));
   } else {
-    child_inst->porta("child_array")->Append();
-    child_inst->porta("child_array")->Append();
+    child_inst->prt_arr("child_array")->Append();
+    child_inst->prt_arr("child_array")->Append();
     top_array->Append();
-    Connect(child_inst->porta("child_array")->node(0), top_array->node(0));
-    Connect(child_inst->porta("child_array")->node(1), top_array->node(0));
+    Connect(child_inst->prt_arr("child_array")->node(0), top_array->node(0));
+    Connect(child_inst->prt_arr("child_array")->node(1), top_array->node(0));
   }
-  top_comp->AddChild(std::move(child_inst));
   return top_comp;
 }
 
-std::shared_ptr<Component> GetArrayComponent() {
-  auto size = Parameter::Make("size", integer(), intl(0));
-  auto data = Vector::Make<8>();
-  auto pA = PortArray::Make("A", data, size, Term::OUT);
-  auto pB = Port::Make("B", data, Term::IN);
-  auto pC = Port::Make("C", data, Term::IN);
-
-  auto top = Component::Make("top");
-  auto x_comp = Component::Make("X", {size, pA});
-  auto y_comp = Component::Make("Y", {pB, pC});
-
-  auto x = Instance::Make(x_comp.get());
-  auto y = Instance::Make(y_comp.get());
-
-  Connect(y->port("B"), x->porta("A")->Append());
-  Connect(y->port("C"), x->porta("A")->Append());
-
-  top->AddChild(std::move(x))
-      .AddChild(std::move(y));
-
-  return top;
-}
-
 std::shared_ptr<Component> GetTypeConvComponent() {
-  auto t_wide = Vector::Make<4>();
-  auto t_narrow = Vector::Make<2>();
+  auto t_wide = vector(4);
+  auto t_narrow = vector(2);
   // Flat indices:
-  auto tA = Record::Make("rec_A", {       // 0
-      RecField::Make("q", t_wide),     // 1
-      RecField::Make("r", t_narrow),   // 2
-      RecField::Make("s", t_narrow),   // 3
-      RecField::Make("t", t_wide),     // 4
+  auto tA = record("rec_A", {  // 0
+      field("q", t_wide),      // 1
+      field("r", t_narrow),    // 2
+      field("s", t_narrow),    // 3
+      field("t", t_wide),      // 4
   });
 
-  auto tB = Record::Make("rec_B", {       // 0
-      RecField::Make("u", t_wide),     // 1
-      RecField::Make("v", t_narrow),   // 2
-      RecField::Make("w", t_narrow),   // 3
-      RecField::Make("x", t_wide),     // 4
+  auto tB = record("rec_B", {  // 0
+      field("u", t_wide),      // 1
+      field("v", t_narrow),    // 2
+      field("w", t_narrow),    // 3
+      field("x", t_wide),      // 4
   });
 
   // Create a type mapping from tA to tE
@@ -175,83 +149,41 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   tA->AddMapper(mapper);
 
   // Ports
-  auto pA = Port::Make("A", tA, Port::OUT);
-  auto pB = Port::Make("B", tB, Port::IN);
+  auto pA = port("A", tA, Port::OUT);
+  auto pB = port("B", tB, Port::IN);
 
   // Components and instantiations
-  auto top = Component::Make("top");
-  auto x_comp = Component::Make("X", {pA});
-  auto y_comp = Component::Make("Y", {pB});
-  auto x = Instance::Make(x_comp.get());
-  auto y = Instance::Make(y_comp.get());
-  auto xr = x.get();
-  auto yr = y.get();
-  top->AddChild(std::move(x))
-      .AddChild(std::move(y));
+  auto top = component("top");
+  auto x_comp = component("X", {pA});
+  auto y_comp = component("Y", {pB});
+  auto x = top->Instantiate(x_comp);
+  auto y = top->Instantiate(y_comp);
 
   // Connect ports
-  Connect(yr->port("B"), xr->port("A"));
-
-  return top;
-}
-
-std::shared_ptr<Component> GetArrayTypeConvComponent() {
-  auto t_wide = Vector::Make<4>();
-  auto t_narrow = Vector::Make<2>();
-  // Flat indices:
-  auto tA = Record::Make("Type _A", {    // 0
-      RecField::Make("q", t_wide),     // 1
-  });
-
-  auto tB = Record::Make("Type B", {    // 0
-      RecField::Make("r", t_narrow),   // 1
-      RecField::Make("s", t_narrow),   // 2
-  });
-
-  // Create a type mapping from tA to tE
-  auto mapper = std::make_shared<TypeMapper>(tA.get(), tB.get());
-  mapper->Add(1, 1);
-  mapper->Add(1, 2);
-  tA->AddMapper(mapper);
-
-  // Ports
-  auto parSize = Parameter::Make("ARRAY_SIZE", integer(), intl(0));
-  auto pA = PortArray::Make("A", tA, parSize, Port::OUT);
-  auto pB = Port::Make("B", tB, Port::OUT);
-  auto pC = Port::Make("C", tB, Port::OUT);
-
-  // Components and instantiations
-  auto top = Component::Make("top", {pB, pC});
-  auto x_comp = Component::Make("X", {pA});
-  auto x = Instance::Make(x_comp.get());
-  auto xr = x.get();
-  top->AddChild(std::move(x));
-
-  // Drive B and C from A
-  pB <<= xr->porta("A")->Append();
-  pC <<= xr->porta("A")->Append();
+  Connect(y->prt("B"), x->prt("A"));
 
   return top;
 }
 
 std::shared_ptr<Component> GetStreamConcatComponent() {
   // Flat indices:
-  auto tA = Stream::Make("split",                                 // 0
-                         Record::Make("a", {                      // 1
-                             RecField::Make("other",
-                                            bit()),               // 2
-                             RecField::Make("child",
-                                            Stream::Make("se",    // 3
-                                                         bit()))  // 4
-                         }));
+  auto tA = stream("split",                  // 0
+                   record("a", {             // 1
+                       field("other",
+                             bit()),         // 2
+                       field("child",
+                             stream("se",    // 3
+                                    bit()))  // 4
+                   }));
 
-  auto tB = Stream::Make("concat",  // 0
-                         bit(),     // 1
-                         "data");
+  auto tB = stream("concat",  // 0
+                   "data",
+                   bit());    // 1
 
-  auto tC = Stream::Make("concat",  // 0
-                         bit(),     // 1
-                         "data");
+
+  auto tC = stream("concat",  // 0
+                   "data",
+                   bit());    // 1
 
   // Create a type mapping from tA to tB
   auto mapperB = std::make_shared<TypeMapper>(tA.get(), tB.get());
@@ -270,81 +202,114 @@ std::shared_ptr<Component> GetStreamConcatComponent() {
   tA->AddMapper(mapperC);
 
   // Ports
-  auto pA0 = Port::Make("A0", tA, Port::OUT);
-  auto pA1 = Port::Make("A1", tA, Port::OUT);
-  auto pB = Port::Make("B", tB, Port::OUT);
-  auto pC = Port::Make("C", tC, Port::OUT);
+  auto pA0 = port("A0", tA, Port::OUT);
+  auto pA1 = port("A1", tA, Port::OUT);
+  auto pB = port("B", tB, Port::OUT);
+  auto pC = port("C", tC, Port::OUT);
 
   // Components and instantiations
-  auto x_comp = Component::Make("X", {pA0, pA1});
-  auto y_comp = Component::Make("Y", {pB, pC});
-  y_comp->meta()[vhdl::metakeys::PRIMITIVE] = "true";
-  y_comp->meta()[vhdl::metakeys::LIBRARY] = "test";
-  y_comp->meta()[vhdl::metakeys::PACKAGE] = "test";
-  auto y = Instance::Make(y_comp.get());
-  auto yr = y.get();
-  x_comp->AddChild(std::move(y));
+  auto x_comp = component("X", {pA0, pA1});
+  auto y_comp = component("Y", {pB, pC});
+  y_comp->meta()[vhdl::meta::PRIMITIVE] = "true";
+  y_comp->meta()[vhdl::meta::LIBRARY] = "test";
+  y_comp->meta()[vhdl::meta::PACKAGE] = "test";
+  auto y = x_comp->Instantiate(y_comp);
 
   // Connect ports
-  Connect(x_comp->port("A0"), yr->port("B"));
-  Connect(x_comp->port("A1"), yr->port("C"));
+  Connect(x_comp->prt("A0"), y->prt("B"));
+  Connect(x_comp->prt("A1"), y->prt("C"));
 
   return x_comp;
 }
 
 std::shared_ptr<Component> GetAllPortTypesComponent() {
-  auto r_type = Record::Make("rec", {
-      RecField::Make("a", Vector::Make<8>()),
-      RecField::Make("b", Vector::Make<32>())
+  auto r_type = record("rec", {
+      field("a", vector(8)),
+      field("b", vector(32))
   });
-  auto s_type = Stream::Make("stream", Vector::Make<16>());
+  auto s_type = stream("stream", vector(16));
 
   auto clk_domain = ClockDomain::Make("domain0");
-  auto clk_port = Port::Make("clk", bit(), Port::Dir::IN, clk_domain);
-  auto rst_port = Port::Make("reset", bit(), Port::Dir::IN, clk_domain);
-  auto b_port = Port::Make("some_bool", boolean(), Port::OUT);
-  auto v_port = Port::Make("some_vector", Vector::Make<64>());
-  auto r_port = Port::Make("some_record", r_type, Port::OUT);
-  auto s_port = Port::Make("some_port", s_type);
+  auto clk_port = port("clk", bit(), Port::IN, clk_domain);
+  auto rst_port = port("reset", bit(), Port::IN, clk_domain);
+  auto b_port = port("some_bool", boolean(), Port::OUT);
+  auto v_port = port("some_vector", vector(64), Port::IN);
+  auto r_port = port("some_record", r_type, Port::OUT);
+  auto s_port = port("some_port", s_type, Port::IN);
 
-  auto par = Parameter::Make("depth", integer(), intl(16));
+  auto par = parameter("depth", integer(), intl(16));
 
-  auto a_type = Component::Make("a", {par, clk_port, rst_port, b_port, v_port, r_port, s_port});
+  auto a_type = component("a", {par, clk_port, rst_port, b_port, v_port, r_port, s_port});
 
   return a_type;
 }
 
 std::shared_ptr<Component> GetExampleDesign() {
-  auto vec_width = Parameter::Make("vec_width", integer(), intl(32));
-  // Construct a deeply nested type to showcase Cerata's capabilities.
-  auto my_type = Record::Make("my_record_type", {RecField::Make("bit", bit()),
-                                                 RecField::Make("vec", Vector::Make("param_vec", vec_width)),
-                                                 RecField::Make("stream",
-                                                                Stream::Make("d", Record::Make("other_rec_type", {
-                                                                    RecField::Make("substream",
-                                                                                   Stream::Make(Vector::Make<32>())),
-                                                                    RecField::Make("int", integer())})))});
+  // A parameter node.
+  auto x_width = parameter("width");
 
-  // Construct two components with a port made from these types
-  auto my_array_size = Parameter::Make("array_size", integer());
-  auto my_comp = Component::Make("my_comp", {vec_width,
-                                             PortArray::Make("my_array", my_type, my_array_size, Port::OUT)});
+  // A type using the parameter node as generic.
+  auto rec = record({field("foo", bit()),
+                     field("bar", vector(x_width)),
+                     field("parent", stream("child", stream("data", vector(32))))});
 
-  auto my_other_comp = Component::Make("my_other_comp", {vec_width,
-                                                         Port::Make("my_port", my_type)});
+  // A size parameter for the port array.
+  auto size = parameter("array_size", 0);
 
-  // Create a top level and add instances of each component
-  auto my_top = Component::Make("my_top_level");
-  auto my_inst = my_top->AddInstanceOf(my_comp.get());
+  // A component declaration using all of the above.
+  auto x = component("x", {x_width,
+                           size,
+                           port_array("a", rec, size, Port::IN)});
 
-  // Create a bunch of instances and connect to other component
-  std::vector<Instance *> my_other_instances;
-  for (int i = 0; i < 10; i++) {
-    my_other_instances.push_back(my_top->AddInstanceOf(my_other_comp.get(), "my_inst_" + std::to_string(i)));
-    Connect(my_other_instances[i]->port("my_port"), my_inst->porta("my_array")->Append());
+  // Another parameter for the next component.
+  auto y_width = parameter("width");
+  // Another component. The record type is rebound to use the new parameter as generic.
+  auto y = component("y", {y_width,
+                           port("b", (*rec)({y_width}), Port::OUT)});
+
+  // The top-level component.
+  auto top = component("top");
+  // Instantiate one X component.
+  auto xi = top->Instantiate(x);
+
+  // Instantiate three Y components.
+  for (int i = 0; i < 3; i++) {
+    auto yi = top->Instantiate(y);
+    // Append the port array "a" on X, and source it with port "b" of the new Y instance.
+    xi->prt_arr("a")->Append() <<= yi->prt("b");
+  }
+  return top;
+}
+
+std::shared_ptr<Component> GetExampleDesign2() {
+  // Generate a bunch of components randomly containing some output.
+  std::vector<std::shared_ptr<Component>> random_components;
+  for (int i = 0; i < 3; i++) {
+    // Another parameter for the next component.
+    auto comp = component("RandomComp" + std::to_string(i), {port("clk", bit(), Port::IN)});
+    if (std::rand() % 2 == 1) {
+      comp->Add(port("o", bit(), Port::OUT));
+    }
+    random_components.push_back(comp);
   }
 
-  return my_top;
+  // Instantiate the top level.
+  auto top = component("top", {port("clk", bit(), Port::IN)});
+  int j = 0;
+  for (int i = 0; i < 3; i++) {
+    // Instantiate every random component.
+    auto inst = top->Instantiate(random_components[i]);
+    Connect(inst->prt("clk"), top->prt("clk"));
+    // Check if it has a port we'd also want to expose at the top-level.
+    if (inst->Has("o")) {
+      auto top_port = port("o" + std::to_string(j), bit(), Port::OUT);
+      top_port <<= inst->Get<Port>("o");
+      top->Add(top_port);
+      j++;
+    }
+  }
+
+  return top;
 }
 
 }  // namespace cerata

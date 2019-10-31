@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,41 +16,41 @@
 
 #include <memory>
 #include <string>
-#include <deque>
+#include <vector>
 
 #include "cerata/node.h"
 #include "cerata/expression.h"
+#include "cerata/parameter.h"
 #include "cerata/type.h"
 #include "cerata/graph.h"
 #include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 
-static std::string GenerateTypeDecl(const Type &type,
-                                    const std::optional<std::shared_ptr<Node>> &multiplier = std::nullopt) {
+static std::string GenerateTypeDecl(const Type &type, std::optional<Node *> multiplier = std::nullopt) {
+  std::shared_ptr<Node> mult;
+  if (multiplier) {
+    mult = multiplier.value()->shared_from_this();
+  }
   switch (type.id()) {
     default: {
       if (!multiplier) {
         return "std_logic";
       } else {
-        return "std_logic_vector(" + (*multiplier - 1)->ToString() + " downto 0)";
+        return "std_logic_vector(" + ToUpper((mult - 1)->ToString()) + " downto 0)";
       }
     }
     case Type::VECTOR: {
       auto &vec = dynamic_cast<const Vector &>(type);
-      auto width = vec.width();
-      if (width) {
-        auto wnode = width.value();
-        if (!multiplier) {
-          auto expr = *wnode - 1;
-          return "std_logic_vector(" + expr->ToString() + " downto 0)";
-        } else {
-          auto expr = *multiplier * wnode - 1;
-          return "std_logic_vector(" + expr->ToString() + " downto 0)";
-        }
+      auto width = vec.width().value()->shared_from_this();
+      if (!multiplier) {
+        auto expr = width->shared_from_this() - 1;
+        return "std_logic_vector(" + ToUpper(expr->ToString()) + " downto 0)";
       } else {
-        return "<incomplete type>";
+        auto expr = mult * width - 1;
+        return "std_logic_vector(" + ToUpper(expr->ToString()) + " downto 0)";
       }
     }
     case Type::RECORD: {
@@ -59,13 +59,6 @@ static std::string GenerateTypeDecl(const Type &type,
     }
     case Type::INTEGER: {
       return "integer";
-    }
-    case Type::NATURAL: {
-      return "natural";
-    }
-    case Type::STREAM: {
-      auto stream = dynamic_cast<const Stream &>(type);
-      return GenerateTypeDecl(*stream.element_type());
     }
     case Type::STRING: {
       return "string";
@@ -79,11 +72,13 @@ static std::string GenerateTypeDecl(const Type &type,
 Block Decl::Generate(const Parameter &par, int depth) {
   Block ret(depth);
   Line l;
-  l << to_upper(par.name()) << " : " << GenerateTypeDecl(*par.type());
-  if (par.GetValue()) {
-    Node *val = par.GetValue().value();
-    l << " := " << val->ToString();
+  l << ToUpper(par.name()) << " : " << GenerateTypeDecl(*par.type());
+  Node *val = par.value();
+  auto val_str = val->ToString();
+  if (par.type()->Is(Type::STRING)) {
+    val_str = "\"" + val_str + "\"";
   }
+  l << " := " << val_str;
   ret << l;
   return ret;
 }
@@ -96,8 +91,8 @@ Block Decl::Generate(const Port &port, int depth) {
     Line l;
     auto port_name_prefix = port.name();
     l << ft.name(NamePart(port_name_prefix, true)) << " : ";
-    if (ft.invert_) {
-      l << ToString(Term::Invert(port.dir())) + " ";
+    if (ft.reverse_) {
+      l << ToString(Term::Reverse(port.dir())) + " ";
     } else {
       l << ToString(port.dir()) + " ";
     }
@@ -117,49 +112,53 @@ Block Decl::Generate(const Signal &sig, int depth) {
     Line l;
     auto sig_name_prefix = sig.name();
     l << "signal " + ft.name(NamePart(sig_name_prefix, true)) << " : ";
-    l << GenerateTypeDecl(*ft.type_) + ";";
-    ret << l;
-  }
-  return ret;
-}
-
-Block Decl::Generate(const PortArray &porta, int depth) {
-  Block ret(depth);
-  // Flatten the type of this port
-  auto flat_types = FilterForVHDL(Flatten(porta.type()));
-
-  for (const auto &ft : flat_types) {
-    Line l;
-    auto port_name_prefix = porta.name();
-    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
-    if (ft.invert_) {
-      l << ToString(Term::Invert(porta.dir())) + " ";
+    if (ft.type_->meta.count(meta::FORCE_VECTOR)) {
+      l << GenerateTypeDecl(*ft.type_, intl(1).get()) + ";";
     } else {
-      l << ToString(porta.dir()) + " ";
+      l << GenerateTypeDecl(*ft.type_) + ";";
     }
-    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(porta.size()->Copy()));
     ret << l;
   }
   return ret;
 }
 
-Block Decl::Generate(const SignalArray &siga, int depth) {
+Block Decl::Generate(const PortArray &port_array, int depth) {
   Block ret(depth);
   // Flatten the type of this port
-  auto flat_types = FilterForVHDL(Flatten(siga.type()));
+  auto flat_types = FilterForVHDL(Flatten(port_array.type()));
 
   for (const auto &ft : flat_types) {
     Line l;
-    auto port_name_prefix = siga.name();
-    l << "signal " + ft.name(NamePart(port_name_prefix, true)) << " : ";
-    l << GenerateTypeDecl(*ft.type_, std::dynamic_pointer_cast<Node>(siga.size()->Copy()));
+    auto port_name_prefix = port_array.name();
+    l << ft.name(NamePart(port_name_prefix, true)) << " : ";
+    if (ft.reverse_) {
+      l << ToString(Term::Reverse(port_array.dir())) + " ";
+    } else {
+      l << ToString(port_array.dir()) + " ";
+    }
+    l << GenerateTypeDecl(*ft.type_, port_array.size());
     ret << l;
   }
   return ret;
 }
 
-MultiBlock Decl::Generate(const Component &comp, bool entity) {
-  MultiBlock ret(1);
+Block Decl::Generate(const SignalArray &sig_array, int depth) {
+  Block ret(depth);
+  // Flatten the type of this port
+  auto flat_types = FilterForVHDL(Flatten(sig_array.type()));
+
+  for (const auto &ft : flat_types) {
+    Line l;
+    auto port_name_prefix = sig_array.name();
+    l << "signal " + ft.name(NamePart(port_name_prefix, true)) << " : ";
+    l << GenerateTypeDecl(*ft.type_, sig_array.size()) + ";";
+    ret << l;
+  }
+  return ret;
+}
+
+MultiBlock Decl::Generate(const Component &comp, bool entity, int indent) {
+  MultiBlock ret(indent);
 
   if (entity) {
     ret.indent = 0;
@@ -177,7 +176,7 @@ MultiBlock Decl::Generate(const Component &comp, bool entity) {
   ret << h;
 
   // Generics
-  std::deque<Parameter *> parameters = comp.GetAll<Parameter>();
+  std::vector<Parameter *> parameters = comp.GetAll<Parameter>();
   if (!parameters.empty()) {
     Block gdh(ret.indent + 1);
     Block gd(ret.indent + 2);

@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #include <utility>
 #include <string>
 #include <memory>
+#include <vector>
 #include <unordered_map>
 
 #include "cerata/utils.h"
@@ -26,7 +27,7 @@ namespace cerata {
 class Node;
 class NodeArray;
 class PortArray;
-struct Port;
+class Port;
 class Graph;
 
 /// A Cerata Object on a graph.
@@ -58,6 +59,9 @@ class Object : public Named {
   virtual std::optional<Graph *> parent() const;
   /// @brief Deep-copy the object.
   virtual std::shared_ptr<Object> Copy() const = 0;
+
+  /// @brief Append all objects that this object owns to the output.
+  virtual void AppendReferences(std::vector<Object *> *out) const = 0;
 
   /// @brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;

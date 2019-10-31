@@ -1,4 +1,4 @@
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include <optional>
 #include <utility>
 #include <memory>
-#include <deque>
+#include <vector>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -51,15 +51,15 @@ struct NamePart {
 struct FlatType {
   FlatType() = default;
   /// @brief Construct a FlatType.
-  FlatType(Type *t, std::deque<NamePart> prefix, const std::string &name, int level, bool invert);
+  FlatType(Type *t, std::vector<NamePart> prefix, const std::string &name, bool invert);
   /// @brief A pointer to the original type.
   Type *type_ = nullptr;
   /// @brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
   /// @brief Name parts of this flattened type.
-  std::deque<NamePart> name_parts_;
+  std::vector<NamePart> name_parts_;
   /// @brief Whether to invert this flattened type if it would be on a terminator node.
-  bool invert_ = false;
+  bool reverse_ = false;
   /// @brief Return the name of this flattened type, constructed from the name parts.
   [[nodiscard]] std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
 };
@@ -70,19 +70,19 @@ bool operator<(const FlatType &a, const FlatType &b);
 // Flattening functions for nested types:
 
 /// @brief Flatten a Record.
-void FlattenRecord(std::deque<FlatType> *list,
+void FlattenRecord(std::vector<FlatType> *list,
                    const Record *record,
                    const std::optional<FlatType> &parent,
                    bool invert);
 
 /// @brief Flatten a Stream.
-void FlattenStream(std::deque<FlatType> *list,
+void FlattenStream(std::vector<FlatType> *list,
                    const Stream *stream,
                    const std::optional<FlatType> &parent,
                    bool invert);
 
 /// @brief Flatten any Type.
-void Flatten(std::deque<FlatType> *list,
+void Flatten(std::vector<FlatType> *list,
              Type *type,
              const std::optional<FlatType> &parent,
              const std::string &name,
@@ -90,16 +90,16 @@ void Flatten(std::deque<FlatType> *list,
              bool sep = true);
 
 /// @brief Flatten and return a list of FlatTypes.
-std::deque<FlatType> Flatten(Type *type);
+std::vector<FlatType> Flatten(Type *type);
 
 /// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
-bool ContainsFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
+bool ContainsFlatType(const std::vector<FlatType> &flat_types_list, const Type *type);
 
 /// @brief Return the index of some Type in a list of FlatTypes.
-int64_t IndexOfFlatType(const std::deque<FlatType> &flat_types_list, const Type *type);
+int64_t IndexOfFlatType(const std::vector<FlatType> &flat_types_list, const Type *type);
 
 /// @brief Convert a list of FlatTypes to a human-readable string.
-std::string ToString(std::deque<FlatType> flat_type_list);
+std::string ToString(std::vector<FlatType> flat_type_list);
 
 /**
  * @brief A matrix used for TypeMapper.
@@ -156,6 +156,18 @@ class MappingMatrix {
     return get(y, x);
   }
 
+  /// @brief Return true if this is an identity matrix.
+  [[nodiscard]] bool IsIdentity() const {
+    if (width_ == height_) {
+      for (size_t d = 0; d < width_; d++) {
+        if (get(d, d) != 1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /// @brief Return the maximum of some column.
   [[nodiscard]] T MaxOfColumn(int64_t x) const {
     T max = 0;
@@ -179,8 +191,8 @@ class MappingMatrix {
   }
 
   /// @brief Obtain non-zero element indices and value from column x, sorted by value.
-  std::deque<std::pair<int64_t, T>> mapping_column(int64_t x) {
-    std::deque<std::pair<int64_t, T>> ret;
+  std::vector<std::pair<int64_t, T>> mapping_column(int64_t x) {
+    std::vector<std::pair<int64_t, T>> ret;
     for (int64_t y = 0; y < height_; y++) {
       auto val = get(y, x);
       if (val > 0) {
@@ -194,9 +206,9 @@ class MappingMatrix {
   }
 
   /// @brief Obtain non-zero element indices and value from row y, sorted by value.
-  std::deque<std::pair<int64_t, T>> mapping_row(int64_t y) {
+  std::vector<std::pair<int64_t, T>> mapping_row(int64_t y) {
     using pair = std::pair<int64_t, T>;
-    std::deque<pair> ret;
+    std::vector<pair> ret;
     for (int64_t x = 0; x < width_; x++) {
       auto val = get(y, x);
       if (val > 0) {
@@ -262,15 +274,15 @@ class MappingMatrix {
  * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto a.
  */
 struct MappingPair {
-  using OptionalNode = std::optional<std::shared_ptr<Node>>; ///< Optional shared pointer to a node.
+  using OptionalNode = std::optional<std::shared_ptr<Node>>;  ///< Optional shared pointer to a node.
   using index = int64_t;  ///< Index type.
   using offset = int64_t;  ///< Offset type.
   /// Tuple that stores all information required by a mapping pair on one side.
-  using tuple = std::tuple<index, offset, FlatType>;
+  using IOF = std::tuple<index, offset, FlatType>;
   /// Flattype and its index in a mapping matrix on the "a"-side.
-  std::deque<tuple> a;
+  std::vector<IOF> a;
   /// Flattype and its index in a mapping matrix on the "b"-side.
-  std::deque<tuple> b;
+  std::vector<IOF> b;
   /// @brief Return the number of FlatTypes on the "a"-side.
   [[nodiscard]] int64_t num_a() const { return a.size(); }
   /// @brief Return the number of FlatTypes on the "b"-side.
@@ -321,6 +333,8 @@ class TypeMapper : public Named {
   static std::shared_ptr<TypeMapper> MakeImplicit(Type *a, Type *b);
   /// @brief Construct a new, empty TypeMapper between two types.
   static std::shared_ptr<TypeMapper> Make(Type *a, Type *b);
+  /// @brief Construct a new, empty TypeMapper between two types.
+  static std::shared_ptr<TypeMapper> Make(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b);
 
   /// @brief Add a mapping between two FlatTypes to the mapper.
   TypeMapper &Add(int64_t a, int64_t b);
@@ -330,9 +344,9 @@ class TypeMapper : public Named {
   void SetMappingMatrix(MappingMatrix<int64_t> map_matrix);
 
   /// @brief Return the list of flattened types on the "a"-side.
-  std::deque<FlatType> flat_a() const;
+  std::vector<FlatType> flat_a() const;
   /// @brief Return the list of flattened types on the "b"-side.
-  std::deque<FlatType> flat_b() const;
+  std::vector<FlatType> flat_b() const;
   /// @brief Return the type on the "a"-side.
   Type *a() const { return a_; }
   /// @brief Return the type on the "b"-side.
@@ -345,7 +359,7 @@ class TypeMapper : public Named {
   std::shared_ptr<TypeMapper> Inverse() const;
 
   /// @brief Get a list of unique mapping pairs.
-  std::deque<MappingPair> GetUniqueMappingPairs();
+  std::vector<MappingPair> GetUniqueMappingPairs();
 
   /// @brief Return a human-readable string of this TypeMapper.
   std::string ToString() const;
@@ -355,9 +369,9 @@ class TypeMapper : public Named {
 
  protected:
   /// The list of flattened types on the "a"-side.
-  std::deque<FlatType> fa_;
+  std::vector<FlatType> fa_;
   /// The list of flattened types on the "b"-side.
-  std::deque<FlatType> fb_;
+  std::vector<FlatType> fb_;
   /// Type of the "a"-side.
   Type *a_;
   /// Type of the "b"-side.

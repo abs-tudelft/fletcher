@@ -1,6 +1,4 @@
-#include <utility>
-
-// Copyright 2018 Delft University of Technology
+// Copyright 2018-2019 Delft University of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +14,9 @@
 
 #pragma once
 
-#include <deque>
+#include <vector>
 #include <string>
+#include <utility>
 
 #include "cerata/vhdl/architecture.h"
 #include "cerata/vhdl/block.h"
@@ -35,7 +34,9 @@
 namespace cerata::vhdl {
 
 // Metadata that this back-end understands
-namespace metakeys {
+namespace meta {
+/// Forces backing up of existing *.gen.vhd files when set to "true".
+constexpr char BACKUP_EXISTING[] = "vhdl_backup";
 /// Setting PRIMITIVE = "true" signifies that a component is a primitive (e.g. has no Cerata internal graph).
 constexpr char PRIMITIVE[] = "vhdl_primitive";
 /// The VHDL library in which the primitive resides. E.g. LIBRARY = "work"
@@ -46,15 +47,11 @@ constexpr char PACKAGE[] = "vhdl_package";
 constexpr char NAME[] = "vhdl_name";
 /// Forces a signal to be declared as an std_logic_vector, even if its width is only 1.
 constexpr char FORCE_VECTOR[] = "vhdl_force_vector";
-
-/// Forces overwriting of generated files.
-constexpr char OVERWRITE_FILE[] = "overwrite";
-
 /// Reserved metadata key for stream expansion.
 constexpr char WAS_EXPANDED[] = "vhdl_expanded_stream_done";
 /// Reserved metadata key for stream expansion.
 constexpr char EXPAND_TYPE[] = "vhdl_expand_stream";
-}  // namespace metakeys
+}  // namespace meta
 
 /// VHDL Output Generator.
 class VHDLOutputGenerator : public OutputGenerator {
@@ -64,7 +61,7 @@ class VHDLOutputGenerator : public OutputGenerator {
 
   /// @brief Construct a new VHDLOutputGenerator.
   explicit VHDLOutputGenerator(std::string root_dir,
-                               std::deque<OutputSpec> outputs = {},
+                               std::vector<OutputSpec> outputs = {},
                                std::string notice = "")
       : OutputGenerator(std::move(root_dir), std::move(outputs)), notice_(std::move(notice)) {}
 
