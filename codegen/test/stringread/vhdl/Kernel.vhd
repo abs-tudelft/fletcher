@@ -21,9 +21,33 @@ use work.Axi_pkg.all;
 use work.UtilStr_pkg.all;
 
 entity Kernel is
+  generic (
+    INDEX_WIDTH : integer := 32;
+    TAG_WIDTH   : integer := 1
+  );
   port (
     kcd_clk                      : in  std_logic;
     kcd_reset                    : in  std_logic;
+    StringRead_Name_valid        : in  std_logic;
+    StringRead_Name_ready        : out std_logic;
+    StringRead_Name_dvalid       : in  std_logic;
+    StringRead_Name_last         : in  std_logic;
+    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
+    StringRead_Name_length       : in  std_logic_vector(31 downto 0);
+    StringRead_Name_chars_valid  : in  std_logic;
+    StringRead_Name_chars_ready  : out std_logic;
+    StringRead_Name_chars_dvalid : in  std_logic;
+    StringRead_Name_chars_count  : in  std_logic_vector(2 downto 0);
+    StringRead_Name_chars_last   : in  std_logic;
+    StringRead_Name_chars        : in  std_logic_vector(31 downto 0);
+    StringRead_Name_unl_valid    : in  std_logic;
+    StringRead_Name_unl_ready    : out std_logic;
+    StringRead_Name_unl_tag      : in  std_logic_vector(TAG_WIDTH-1 downto 0);
+    StringRead_Name_cmd_valid    : out std_logic;
+    StringRead_Name_cmd_ready    : in  std_logic;
+    StringRead_Name_cmd_firstIdx : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    StringRead_Name_cmd_lastIdx  : out std_logic_vector(INDEX_WIDTH-1 downto 0);
+    StringRead_Name_cmd_tag      : out std_logic_vector(TAG_WIDTH-1 downto 0);
     start                        : in  std_logic;
     stop                         : in  std_logic;
     reset                        : in  std_logic;
@@ -32,27 +56,7 @@ entity Kernel is
     done                         : out std_logic;
     result                       : out std_logic_vector(63 downto 0);
     StringRead_firstidx          : in  std_logic_vector(31 downto 0);
-    StringRead_lastidx           : in  std_logic_vector(31 downto 0);
-    StringRead_Name_valid        : in  std_logic;
-    StringRead_Name_ready        : out std_logic;
-    StringRead_Name_dvalid       : in  std_logic;
-    StringRead_Name_last         : in  std_logic;
-    StringRead_Name_length       : in  std_logic_vector(31 downto 0);
-    StringRead_Name_count        : in  std_logic_vector(0 downto 0);
-    StringRead_Name_chars_valid  : in  std_logic;
-    StringRead_Name_chars_ready  : out std_logic;
-    StringRead_Name_chars_dvalid : in  std_logic;
-    StringRead_Name_chars_last   : in  std_logic;
-    StringRead_Name_chars_data   : in  std_logic_vector(31 downto 0);
-    StringRead_Name_chars_count  : in  std_logic_vector(2 downto 0);
-    StringRead_Name_unl_valid    : in  std_logic;
-    StringRead_Name_unl_ready    : out std_logic;
-    StringRead_Name_unl_tag      : in  std_logic_vector(0 downto 0);
-    StringRead_Name_cmd_valid    : out std_logic;
-    StringRead_Name_cmd_ready    : in  std_logic;
-    StringRead_Name_cmd_firstIdx : out std_logic_vector(31 downto 0);
-    StringRead_Name_cmd_lastidx  : out std_logic_vector(31 downto 0);
-    StringRead_Name_cmd_tag      : out std_logic_vector(0 downto 0)
+    StringRead_lastidx           : in  std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -143,7 +147,7 @@ begin
         -- For each character in the output
         for I in 0 to num_chars-1 loop
           -- Convert the std_logic_vector part to a character
-          int_char := to_integer(unsigned(StringRead_Name_chars_data(8*(i+1)-1 downto 8*i)));
+          int_char := to_integer(unsigned(StringRead_Name_chars(8*(i+1)-1 downto 8*i)));
           char := character'val(int_char);
 
           -- Set the character in the string
