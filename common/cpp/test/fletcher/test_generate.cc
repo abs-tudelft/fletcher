@@ -48,6 +48,12 @@ void GenerateDebugFiles() {
   schema = fletcher::GetPrimWriteSchema();
   fletcher::WriteSchemaToFile(SCH_FILE("primwrite"), *schema);
 
+  schema = fletcher::GetTwoPrimReadSchema();
+  fletcher::WriteSchemaToFile(SCH_FILE("twoprimread"), *schema);
+  schema = fletcher::GetTwoPrimWriteSchema();
+  fletcher::WriteSchemaToFile(SCH_FILE("twoprimwrite"), *schema);
+  fletcher::WriteRecordBatchesToFile(RB_FILE("twoprimread"), {GetTwoPrimReadRB()});
+
   /* String */
   schema = fletcher::GetStringReadSchema();
   fletcher::WriteSchemaToFile(SCH_FILE("stringread"), *schema);
@@ -105,7 +111,8 @@ void GenerateDebugFiles() {
 
 }
 
-int main() {
+int main(int argc, char** argv) {
+  std::cout << argv[0];
   fletcher::GenerateDebugFiles();
   return 0;
 }

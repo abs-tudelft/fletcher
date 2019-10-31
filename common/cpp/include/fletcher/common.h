@@ -20,3 +20,4 @@
 #include "fletcher/arrow-utils.h"
 #include "fletcher/arrow-recordbatch.h"
 #include "fletcher/arrow-schema.h"
+#include "fletcher/meta/meta.h"

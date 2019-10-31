@@ -21,9 +21,11 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <sstream>
 
 #include "fletcher/arrow-utils.h"
 #include "fletcher/logging.h"
+#include "fletcher/meta/meta.h"
 
 namespace fletcher {
 
@@ -45,7 +47,6 @@ std::string GetMeta(const arrow::Field &field, const std::string &key) {
   if (field.metadata() != nullptr) {
     std::unordered_map<std::string, std::string> meta;
     field.metadata()->ToUnorderedMap(&meta);
-
     auto k = meta.find(key);
     if (k != meta.end()) {
       return k->second;
@@ -57,52 +58,88 @@ std::string GetMeta(const arrow::Field &field, const std::string &key) {
 
 Mode GetMode(const arrow::Schema &schema) {
   Mode mode = Mode::READ;
-  if (GetMeta(schema, "fletcher_mode") == "write") {
+  if (GetMeta(schema, fletcher::meta::MODE) == "write") {
     mode = Mode::WRITE;
   }
   return mode;
 }
 
-bool MustIgnore(const arrow::Field &field) {
-  bool ret = false;
-  if (GetMeta(field, "fletcher_ignore") == "true") {
-    ret = true;
-  }
-  return ret;
-}
-
-int GetIntMeta(const arrow::Field &field, const std::string &key, int default_to) {
+uint64_t GetUIntMeta(const arrow::Field &field, const std::string &key, int default_to) {
   int ret = default_to;
-  auto strepc = GetMeta(field, key);
-  if (!strepc.empty()) {
-    ret = stoi(strepc);
+  auto str = GetMeta(field, key);
+  if (!str.empty()) {
+    ret = std::stoul(str, nullptr, 10);
   }
   return ret;
 }
 
-std::shared_ptr<arrow::Schema> AppendMetaRequired(const arrow::Schema &schema,
-                                                  std::string schema_name,
-                                                  Mode mode) {
-  std::vector<std::string> keys = {"fletcher_name", "fletcher_mode"};
+int64_t GetIntMeta(const arrow::Field &field, const std::string &key, int default_to) {
+  int ret = default_to;
+  auto str = GetMeta(field, key);
+  if (!str.empty()) {
+    ret = std::stol(str, nullptr, 10);
+  }
+  return ret;
+}
+
+bool GetBoolMeta(const arrow::Field &field, const std::string &key, bool default_to) {
+  auto str = GetMeta(field, key);
+  if (!str.empty()) {
+    if (str == "true") {
+      return true;
+    }
+    if (str == "false") {
+      return false;
+    }
+  }
+  return default_to;
+}
+
+std::shared_ptr<arrow::Schema> WithMetaRequired(const arrow::Schema &schema,
+                                                std::string schema_name,
+                                                Mode mode) {
+  std::vector<std::string> keys = {meta::NAME, meta::MODE};
   std::vector<std::string> values = {std::move(schema_name)};
   if (mode == Mode::READ)
-    values.emplace_back("read");
+    values.emplace_back(meta::READ);
   else
-    values.emplace_back("write");
+    values.emplace_back(meta::WRITE);
   auto meta = std::make_shared<arrow::KeyValueMetadata>(keys, values);
   return schema.WithMetadata(meta);
 }
 
-std::shared_ptr<arrow::Field> AppendMetaEPC(const arrow::Field &field, int epc) {
-  auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({"fletcher_epc"}),
-                                                        std::vector<std::string>({std::to_string(epc)}));
+std::shared_ptr<arrow::Schema> WithMetaBusSpec(const arrow::Schema &schema,
+                                               int aw,
+                                               int dw,
+                                               int sw,
+                                               int lw,
+                                               int bs,
+                                               int bm) {
+  std::stringstream ss;
+  ss << aw << "," << aw << "," << dw << "," << sw << "," << lw << "," << bs << "," << bm;
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({meta::BUS_SPEC}),
+                                                        std::vector<std::string>({ss.str()}));
+  return schema.WithMetadata(meta);
+}
+
+std::shared_ptr<arrow::Field> WithMetaEPC(const arrow::Field &field, int epc) {
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(
+      std::vector<std::string>({meta::VALUE_EPC}),
+      std::vector<std::string>({std::to_string(epc)}));
   return field.WithMetadata(meta);
 }
 
-std::shared_ptr<arrow::Field> AppendMetaIgnore(const arrow::Field &field) {
-  std::vector<std::string> ignore_key = {"fletcher_ignore"};
+std::shared_ptr<arrow::Field> WithMetaIgnore(const arrow::Field &field) {
+  std::vector<std::string> ignore_key = {meta::IGNORE};
   std::vector<std::string> ignore_value = {"true"};
   auto meta = std::make_shared<arrow::KeyValueMetadata>(ignore_key, ignore_value);
+  return field.WithMetadata(meta);
+}
+
+std::shared_ptr<arrow::Field> WithMetaProfile(const arrow::Field &field) {
+  std::vector<std::string> profile_key = {meta::PROFILE};
+  std::vector<std::string> profile_value = {"true"};
+  auto meta = std::make_shared<arrow::KeyValueMetadata>(profile_key, profile_value);
   return field.WithMetadata(meta);
 }
 
@@ -199,32 +236,6 @@ std::string ToString(const std::vector<std::string> &strvec, const std::string &
     }
   }
   return result;
-}
-
-void AppendExpectedBuffersFromField(std::vector<std::string> *buffers, const arrow::Field &field) {
-  // Flatten in case this is a struct:
-  auto flat_fields = field.Flatten();
-
-  // Parse the flattened fields:
-  for (const auto &f : flat_fields) {
-    if (f->type() == arrow::utf8()) {
-      buffers->push_back(f->name() + "_offsets");
-      buffers->push_back(f->name() + "_values");
-    } else if (f->type() == arrow::binary()) {
-      buffers->push_back(f->name() + "_offsets");
-      buffers->push_back(f->name() + "_values");
-    } else {
-      if (f->nullable()) {
-        buffers->push_back(f->name() + "_validity");
-      }
-      if (f->type()->id() == arrow::ListType::type_id) {
-        buffers->push_back(f->name() + "_offsets");
-        AppendExpectedBuffersFromField(buffers, *f->type()->child(0));
-      } else {
-        buffers->push_back(f->name() + "_values");
-      }
-    }
-  }
 }
 
 }  // namespace fletcher

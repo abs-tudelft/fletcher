@@ -82,18 +82,25 @@ std::string GetMeta(const arrow::Schema &schema, const std::string &key);
 Mode GetMode(const arrow::Schema &schema);
 
 /**
- * @brief Obtain metadata and convert to integer.
+ * @brief Obtain metadata and convert to 64-bit unsigned integer.
  * @param field   A field
  * @return        The integer the field represents, if it exists. Returns default_to otherwise.
  */
-int GetIntMeta(const arrow::Field &field, const std::string &key, int default_to);
+uint64_t GetUIntMeta(const arrow::Field &field, const std::string &key, int default_to);
 
 /**
- * @brief Check if a field should be ignored in Fletcher.
- * @param field   The field to check the metadata for.
- * @return        Return true if the value for the "ignore" metadata key is set to "true", else false.
+ * @brief Obtain metadata and convert to 64-bit signed integer.
+ * @param field   A field
+ * @return        The integer the field represents, if it exists. Returns default_to otherwise.
  */
-bool MustIgnore(const arrow::Field &field);
+int64_t GetIntMeta(const arrow::Field &field, const std::string &key, int default_to);
+
+/**
+ * @brief Obtain metadata and convert to bool.
+ * @param field   A field
+ * @return        The bool the field represents, if it exists. Returns default_to otherwise.
+ */
+bool GetBoolMeta(const arrow::Field &field, const std::string &key, bool default_to = false);
 
 /**
  * @brief Append the minimum required metadata for Fletcher to a schema. Returns a copy of the schema.
@@ -103,10 +110,27 @@ bool MustIgnore(const arrow::Field &field);
  *                      the accelerator kernel.
  * @return              A copy of the Schema with metadata appended.
  */
-std::shared_ptr<arrow::Schema> AppendMetaRequired(const arrow::Schema &schema,
-                                                  std::string schema_name,
-                                                  Mode schema_mode);
+std::shared_ptr<arrow::Schema> WithMetaRequired(const arrow::Schema &schema, std::string schema_name, Mode schema_mode);
 
+/**
+ * @brief Append bus specification metadata for the resulting RecordBatch(Reader/Writer) to use.
+ *
+ * This functionality will be made available at the field sub-stream level in future releases.
+ *
+ * @param schema   The schema.
+ * @param aw       Bus address width
+ * @param dw       Bus data width.
+ * @param lw       Bus burst length width.
+ * @param bs       Bus minimum burst size.
+ * @param bm       Bus maximum burst size.
+ * @return         A copy of the Schema with metadata appended.
+ */
+std::shared_ptr<arrow::Schema> WithMetaBusSpec(const arrow::Schema &schema,
+                                               int aw = 64,
+                                               int dw = 512,
+                                               int lw = 8,
+                                               int bs = 1,
+                                               int bm = 16);
 /**
  * @brief Append Elements-Per-Cycle metadata to a field. Returns a copy of the field.
  *
@@ -116,14 +140,21 @@ std::shared_ptr<arrow::Schema> AppendMetaRequired(const arrow::Schema &schema,
  * @param epc     The elements-per-cycle.
  * @return        A copy of the field with metadata appended.
  */
-std::shared_ptr<arrow::Field> AppendMetaEPC(const arrow::Field &field, int epc);
+std::shared_ptr<arrow::Field> WithMetaEPC(const arrow::Field &field, int epc);
 
 /**
  * @brief Append metadata to a field to signify Fletcher should ignore this field. Returns a copy of the field.
  * @param field   The field to append to.
  * @return        A copy of the field with metadata appended.
  */
-std::shared_ptr<arrow::Field> AppendMetaIgnore(const arrow::Field &field);
+std::shared_ptr<arrow::Field> WithMetaIgnore(const arrow::Field &field);
+
+/**
+* @brief Append metadata to a field to signify Fletcher should profile the streams resulting from this field. Returns a copy.
+* @param field   The field to append to.
+* @return        A copy of the field with metadata appended.
+*/
+std::shared_ptr<arrow::Field> WithMetaProfile(const arrow::Field &field);
 
 /**
  * Write a schema to a Flatbuffer file
