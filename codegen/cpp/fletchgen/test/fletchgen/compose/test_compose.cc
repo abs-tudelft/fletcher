@@ -34,25 +34,64 @@ TEST(Compose, SchemaCompat) {
   ASSERT_FALSE(HaveSameFieldType(*c, *d));
 }
 
-TEST(Compose, DAG) {
+TEST(Compose, Sum) {
+  auto num_scalar = arrow::int32();
+  auto num_array = arrow::field("number", num_scalar);
+
+  auto g = Graph();
+
+  auto source = g <<= Source(num_array);
+  auto sum = g <<= Sum(num_array);
+  auto sink = g <<= Sink(num_scalar);
+
+  g <<= sum << source;
+  g <<= sink << sum;
+
+  std::cout << std::endl << g.ToDot() << std::endl;
+  std::ofstream("dag.dot") << g.ToDot();
+}
+
+TEST(Compose, WhereSelect) {
+  auto name = arrow::field("name", arrow::utf8());
+  auto age = arrow::field("age", arrow::uint8());
+  auto table = arrow::schema({name, age});
+  auto g = Graph();
+
+  auto age_limit = g <<= Literal(Constant("21"));
+  auto source = g <<= Source(table);
+  auto where = g <<= WhereGT(age, arrow::uint8());
+  auto select = g <<= Select(table, "name");
+  auto sink = g <<= Sink(name);
+
+  g <<= where("in") << source;
+  g <<= where("val") << age_limit;
+  g <<= select("in") << source;
+  g <<= select("index") << where;
+  g <<= sink << select;
+
+  std::cout << std::endl << g.ToDot() << std::endl;
+  std::ofstream("dag.dot") << g.ToDot();
+}
+
+TEST(Compose, WordCount) {
   auto tweet = arrow::field("tweet", arrow::utf8());
   auto word = arrow::field("word", arrow::utf8());
   auto count = arrow::field("count", arrow::int32());
 
   auto g = Graph();
 
-  auto scnd = g <<= Literal(Constant("1"));
+  auto second = g <<= Literal(Constant("1"));
   auto expr = g <<= Literal(Constant("\\s"));
-  auto src = g <<= Source(tweet);
-  auto a = g <<= SplitByRegex();
-  auto b = g <<= TuplicateWithConst(tweet, count);
-  auto snk = g <<= Sink(arrow::schema({word, count}));
+  auto source = g <<= Source(tweet);
+  auto first = g <<= SplitByRegex();
+  auto tuple = g <<= TuplicateWithConst(word, count);
+  auto sink = g <<= Sink(arrow::schema({word, count}));
 
-  g <<= a("in") << src;
-  g <<= a("expr") << expr;
-  g <<= b("first") << a;
-  g <<= b("second") << scnd;
-  g <<= snk("in") << b;
+  g <<= first("in") << source;
+  g <<= first("expr") << expr;
+  g <<= tuple("first") << first;
+  g <<= tuple("second") << second;
+  g <<= sink << tuple;
 
   std::cout << std::endl << g.ToDot() << std::endl;
   std::ofstream("dag.dot") << g.ToDot();

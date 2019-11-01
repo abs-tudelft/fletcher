@@ -32,6 +32,8 @@ using Array = std::shared_ptr<arrow::Field>;
 using Batch = std::shared_ptr<arrow::Schema>;
 using Any = std::variant<Constant, Scalar, Array, Batch>;
 
+inline Scalar Index() { return arrow::int32(); }
+
 bool HaveSameFieldType(const arrow::Schema &a, const arrow::Schema &b);
 
 struct Edge;
@@ -43,7 +45,9 @@ struct Vertex {
   Any type;
 };
 
-struct Transformation {
+std::shared_ptr<Vertex> vertex(const std::string &name, const Any &type);
+
+struct Transform {
   std::string name;
   std::vector<std::shared_ptr<Vertex>> inputs;
   std::shared_ptr<Vertex> output;
@@ -54,6 +58,7 @@ struct Transformation {
 
   [[nodiscard]] bool Has(const Vertex &v) const;
 
+  [[nodiscard]] std::string ToString() const;
   [[nodiscard]] std::string ToStringInputs() const;
 };
 
@@ -65,54 +70,39 @@ struct Edge {
 
 Edge operator<<(const Vertex &dst, const std::string &str);
 Edge operator<<(const Vertex &dst, const Vertex &src);
-Edge operator<<(const Vertex &dst, const Transformation &src);
+Edge operator<<(const Vertex &dst, const Transform &src);
+Edge operator<<(const Transform &dst, const Transform &src);
 
 struct Graph {
   std::string name = "FletcherDAG";
-  std::vector<std::shared_ptr<Transformation>> transformations;
+  std::vector<std::shared_ptr<Transform>> transformations;
   std::vector<std::shared_ptr<Edge>> edges;
 
-  const Transformation &Add(const Transformation &t);
+  const Transform &Add(const Transform &t);
   const Edge &Add(const Edge &e);
 
-  const Transformation &operator<<=(const Transformation &t);
+  const Transform &operator<<=(const Transform &t);
   const Edge &operator<<=(const Edge &e);
 
-  [[nodiscard]] const Transformation &ParentOf(const Vertex &v) const;
+  [[nodiscard]] const Transform &ParentOf(const Vertex &v) const;
 
-  [[nodiscard]] std::string DotName(const Transformation &t) const;
-  [[nodiscard]] std::string DotLabel(const Transformation &t) const;
+  [[nodiscard]] std::string DotName(const Transform &t) const;
+  [[nodiscard]] std::string DotLabel(const Transform &t) const;
   [[nodiscard]] std::string DotName(const Vertex &v) const;
   [[nodiscard]] std::string DotLabel(const Vertex &v) const;
   [[nodiscard]] std::string ToDot() const;
 };
 
-#define VERTEX_DECL_FACTORY(TYPE) Vertex TYPE##_vertex()
+Transform Literal(const Constant &constant_type);
+Transform Source(const Any &output_type);
+Transform Sink(const Any &input_type);
 
-VERTEX_DECL_FACTORY(int8);
-VERTEX_DECL_FACTORY(uint8);
-VERTEX_DECL_FACTORY(int16);
-VERTEX_DECL_FACTORY(uint16);
-VERTEX_DECL_FACTORY(int32);
-VERTEX_DECL_FACTORY(uint32);
-VERTEX_DECL_FACTORY(int64);
-VERTEX_DECL_FACTORY(uint64);
-VERTEX_DECL_FACTORY(float8);
-VERTEX_DECL_FACTORY(float16);
-VERTEX_DECL_FACTORY(float32);
-VERTEX_DECL_FACTORY(float64);
-VERTEX_DECL_FACTORY(date32);
-VERTEX_DECL_FACTORY(date64);
-VERTEX_DECL_FACTORY(utf8);
-VERTEX_DECL_FACTORY(byt);
-VERTEX_DECL_FACTORY(offset);
+Transform WhereGT(const Array &array_type, const Scalar &scalar_type);
 
-Transformation Literal(const Constant &constant_type);
-Transformation Source(const Any &output_type);
-Transformation Sink(const Any &input_type);
+Transform Select(const Batch &batch_type, const std::string &field);
 
-Transformation Sum(const Scalar &type);
-Transformation SplitByRegex();
-Transformation TuplicateWithConst(const Any &input_type, const Array &output_type);
+Transform Sum(const Array &type);
+Transform SplitByRegex();
+Transform TuplicateWithConst(const Any &input_type, const Array &output_type);
 
 }  // namespace compose
