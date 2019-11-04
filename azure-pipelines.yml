@@ -6,7 +6,7 @@ resources:
     name: abs-tudelft/azure-pipelines-templates
 
 variables:
-  arrowVersion: 0.15.0
+  arrowVersion: 0.15.1
 
 jobs:
 
