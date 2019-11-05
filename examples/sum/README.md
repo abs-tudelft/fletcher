@@ -8,7 +8,7 @@ open-source tools.
 ### For hardware generation (step 1 - 3):
 The examples in this part of the tutorial are written in Python, so you'll need
 * Install [Python 3.6+](https://www.python.org/).
-* Install [PyArrow 0.15.0+](https://arrow.apache.org/docs/python/).
+* Install [PyArrow 0.15.1+](https://arrow.apache.org/docs/python/).
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design
 generator tool.
@@ -63,7 +63,7 @@ throughout this example.
 The next few steps will take us through how we can use Fletcher to realize the
 functionality shown above.
 
-1. [Generate a Schema](#1-generate-a-schema)                    
+1. [Generate a Schema](#1-generate-a-schema)
 to represent the type of RecordBatch the kernel must operate on.
 2. [Generate a RecordBatch](#2-generate-a-recordbatch)
 with some dummy data for simulation.
