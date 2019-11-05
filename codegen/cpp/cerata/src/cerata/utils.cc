@@ -18,6 +18,7 @@
 #include <string>
 
 #include "cerata/logging.h"
+#include "cerata_config/config.h"
 
 namespace cerata {
 
@@ -59,6 +60,12 @@ void CreateDir(const std::string &dir_name) {
 bool FileExists(const std::string &name) {
   std::ifstream f(name.c_str());
   return f.good();
+}
+
+std::string version() {
+  return "cerata " + std::to_string(CERATA_VERSION_MAJOR)
+      + "." + std::to_string(CERATA_VERSION_MINOR)
+      + "." + std::to_string(CERATA_VERSION_PATCH);
 }
 
 }  // namespace cerata
