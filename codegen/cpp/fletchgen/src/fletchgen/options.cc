@@ -66,15 +66,14 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                  "  s : (status) register content is controlled by hardware kernel.\n"
                  "<init> is optional, and can be used to automatically write to the register in the initialization "
                  "step of the simulation. Init must be a hexadecimal value in the form of 0x01234ABCD.\n"
-                 "Example: \"-reg32 c:32:my_host_to_kernel_signaling_reg:0xDEADBEEF s:64:my_kernel_to_host_signaling_reg\"");
+                 "Example: \"-reg32 c:32:myh2kreg:0xDEADBEEF s:64:mk2hreg\"");
 
   app.add_option("--bus_specs", options->bus_dims,
                  "Specify top-level bus parameters.\n"
-                 "Value must be a tuple of the following form: \"aw,dw,sw,lw,bs,bm\"\n"
+                 "Value must be a tuple of the following form: \"aw,dw,lw,bs,bm\"\n"
                  "Where:\n"
                  "  aw : Bus address width.\n"
                  "  dw : Bus data width.\n"
-                 "  sw : Bus strobe width.\n"
                  "  lw : Bus burst length width.\n"
                  "  bs : Bus minimum burst size.\n"
                  "  bm : Bus maximum burst size.\n"
@@ -88,6 +87,9 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                "Generate a Vivado HLS kernel template.");
 
   // Other options:
+  app.add_flag("-v,--version", options->version,
+               "Show version.");
+
   // TODO(johanpel): implement the quiet and verbose options
   /*
   app.add_flag("-q,--quiet", options->quiet,
@@ -96,10 +98,11 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                "More detailed information on stdout.");
   */
 
+  // Try to parse and quit if parsing failed.
   try {
     app.parse(argc, argv);
   } catch (CLI::CallForHelp &e) {
-    std::cout << app.help();
+    std::cout << app.help() << std::endl;
     options->quit = true;
     return true;
   } catch (CLI::Error &e) {
@@ -107,9 +110,10 @@ bool Options::Parse(Options *options, int argc, char **argv) {
     return false;
   }
 
-  // Load input files
-  if (!options->LoadRecordBatches()) return false;
-  if (!options->LoadSchemas()) return false;
+  // Also quit when version is called.
+  if (options->version) {
+    options->quit = true;
+  }
 
   return true;
 }
