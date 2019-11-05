@@ -18,6 +18,8 @@
 #include <cerata/api.h>
 #include <cstdlib>
 
+#include "fletchgen_config/config.h"
+
 namespace fletchgen {
 
 std::string GetProgramName(char *argv0) {
@@ -65,6 +67,12 @@ void LogCerata(cerata::LogLevel level,
       std::abort();
     }
   }
+}
+
+std::string version() {
+  return "fletchgen " + std::to_string(FLETCHGEN_VERSION_MAJOR)
+      + "." + std::to_string(FLETCHGEN_VERSION_MINOR)
+      + "." + std::to_string(FLETCHGEN_VERSION_PATCH);
 }
 
 }  // namespace fletchgen

@@ -57,13 +57,16 @@ struct Options {
   /// Vivado HLS template. TODO(johanpel): not yet implemented.
   bool vivado_hls = false;
 
-  /// Whether to quit the program without doing anything (useful for just showing help.)
+  /// Whether to quit the program without doing anything (useful for just showing help or version).
   bool quit = false;
 
   /// Make the output quiet. TODO(johanpel): not yet implemented.
   bool quiet = false;
   /// Make the output verbose. TODO(johanpel): not yet implemented.
   bool verbose = false;
+
+  /// Show version information.
+  bool version = false;
 
   /**
    * @brief Parse command line options and store the result

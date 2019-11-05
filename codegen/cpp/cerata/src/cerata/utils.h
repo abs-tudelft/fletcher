@@ -25,6 +25,9 @@
 
 namespace cerata {
 
+/// @brief Return library version.
+std::string version();
+
 /// @brief Convert string to upper-case.
 std::string ToUpper(std::string str);
 /// @brief Convert string to lower-case.

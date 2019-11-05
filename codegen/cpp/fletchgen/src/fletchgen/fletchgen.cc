@@ -44,11 +44,20 @@ int fletchgen(int argc, char **argv) {
     return -1;
   }
 
+  // Show program version.
+  if (options->version) {
+    std::cout << version() << " (using " << cerata::version() << ")" << std::endl;
+  }
+
   // Quit the program early.
   if (options->quit) {
     fletcher::StopLogging();
     return 0;
   }
+
+  // Load input files
+  if (!options->LoadRecordBatches()) return false;
+  if (!options->LoadSchemas()) return false;
 
   // Potential RecordBatch descriptors for simulation models.
   std::vector<fletcher::RecordBatchDescription> srec_batch_desc;
