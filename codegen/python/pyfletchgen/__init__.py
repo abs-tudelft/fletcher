@@ -17,4 +17,4 @@ name = "pyfletchgen"
 def _run():
     from pyfletchgen.lib import fletchgen
     import sys
-    fletchgen.fletchgen(*sys.argv[1:])
+    fletchgen(*sys.argv[1:])
