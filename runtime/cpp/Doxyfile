@@ -4,10 +4,10 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "Fletcher C++ Run-time Library"
+PROJECT_NAME           = "C++ Run-time Library"
 PROJECT_NUMBER         = 
 PROJECT_BRIEF          = 
-PROJECT_LOGO           = /home/jhpeltenburg/workspace/fletcher/runtime/cpp/fletcher_cpp_logo.svg
+PROJECT_LOGO           = ../../docs/fletcher.svg
 OUTPUT_DIRECTORY       = docs
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
