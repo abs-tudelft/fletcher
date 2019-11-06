@@ -89,8 +89,8 @@ class egg_info(_egg_info):
 
 setup(
     name="pyfletcher",
-    version="0.0.9",
-    author="Lars van Leeuwen",
+    version="0.0.10",
+    author="Accelerated Big Data Systems, Delft University of Technology",
     packages=find_packages(),
     description="A Python wrapper for the Fletcher runtime library",
     long_description=read('README.md'),
