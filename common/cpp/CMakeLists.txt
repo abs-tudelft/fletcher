@@ -1,83 +1,48 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-set(FLETCHER_COMMON fletcher-common)
+project(fletcher_common VERSION 0.0.0 LANGUAGES CXX)
 
-project(${FLETCHER_COMMON})
+find_package(arrow 0.15 CONFIG REQUIRED)
 
-option(FLETCHER_PYTHON
-        "Build Fletcher for use in building pyfletcher"
-        OFF)
+include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native")
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
 
-if (FLETCHER_PYTHON)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-    include_directories(${PYARROW_DIR}/include)
-    message("Building fletcher-common for Pyfletcher")
-endif()
+include(CompileUnits)
 
-set(COMMON_SOURCES
-        src/fletcher/common/arrow-utils.cc
-        src/fletcher/common/hex-view.cc)
+add_compile_unit(
+  NAME fletcher::common
+  PRPS
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+  SRCS
+    src/fletcher/arrow-recordbatch.cc
+    src/fletcher/arrow-schema.cc
+    src/fletcher/arrow-utils.cc
+    src/fletcher/hex-view.cc
+  TSTS
+    test/fletcher/test_common.cc
+    test/fletcher/test_visitors.cc
+  DEPS
+    arrow_shared
+)
 
-set(COMMON_HEADERS
-        src/fletcher/common/status.h
-        src/fletcher/common/arrow-utils.h
-        src/fletcher/common/hex-view.h
-        src/fletcher/common/timer.h)
+add_compile_unit(
+    OPT
+    NAME fletcher::test_generate
+    TYPE EXECUTABLE
+    PRPS
+      CXX_STANDARD 11
+      CXX_STANDARD_REQUIRED ON
+    SRCS
+      test/fletcher/test_generate.cc
+    DEPS
+      fletcher::common
+      arrow_shared
+)
 
-include_directories(../c/src)
-
-add_library(${FLETCHER_COMMON} STATIC ${COMMON_HEADERS} ${COMMON_SOURCES})
-
-find_library(LIB_ARROW arrow)
-target_link_libraries(${FLETCHER_COMMON} ${REQUIRED} ${LIB_ARROW})
-
-########################################################################################################################
-# Tests
-########################################################################################################################
-
-if (FLETCHER_TESTS)
-
-    enable_testing()
-
-    # File generation for Arrow objects in e.g. fletchgen or other tools. Schemas, recordbatches, etc...
-    set(TEST_GEN fletcher-test-generate)
-
-    set(TEST_GEN_HEADERS
-            test/test_schemas.h
-            test/test_recordbatches.h)
-
-    set(TEST_GEN_SOURCES
-            test/test_schemas.cc
-            test/test_recordbatches.cc)
-
-    add_executable(${TEST_GEN} ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES} test/test-generate.cc)
-    target_link_libraries(${TEST_GEN} ${LIB_ARROW})
-    target_link_libraries(${TEST_GEN} ${FLETCHER_COMMON})
-
-    # Common library unit tests
-
-    # Include GoogleTest CMake functionality
-    include(GoogleTest)
-    find_package(GTest REQUIRED)
-
-    # Test common library functions
-    set(TEST_COMMON fletcher-test-common)
-    set(TEST_COMMON_HEADERS)
-    set(TEST_COMMON_SOURCES test/test-common.cc)
-
-    add_executable(${TEST_COMMON}
-            ${TEST_GEN_HEADERS} ${TEST_GEN_SOURCES}
-            ${TEST_COMMON_HEADERS} ${TEST_COMMON_SOURCES})
-    target_link_libraries(${TEST_COMMON} ${LIB_ARROW})
-    target_link_libraries(${TEST_COMMON} ${FLETCHER_COMMON})
-    target_link_libraries(${TEST_COMMON} GTest::GTest GTest::Main)
-    include_directories(${TEST_COMMON} src)
-
-    gtest_discover_tests(${TEST_COMMON})
-
-endif (FLETCHER_TESTS)
+compile_units()

@@ -12,199 +12,113 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
+#include <arrow/api.h>
+#include <fletcher/common.h>
 #include <vector>
 #include <memory>
 
-#include <arrow/util/logging.h>
-#include <arrow/record_batch.h>
-
-#include "fletcher/common/status.h"
-#include "fletcher/common/arrow-utils.h"
-
-#include "./context.h"
+#include "fletcher/context.h"
 
 namespace fletcher {
-
-DeviceArray::DeviceArray(const std::shared_ptr<arrow::Array> &array,
-                         const std::shared_ptr<arrow::Field> &field,
-                         Mode access_mode,
-                         DeviceArray::memory_t memory_type)
-    : host_array(array), field(field), mode(access_mode), memory(memory_type) {
-  std::vector<arrow::Buffer *> host_buffers;
-  if (field != nullptr) {
-    flattenArrayBuffers(&host_buffers, host_array, field);
-  } else {
-    ARROW_LOG(WARNING) << "Flattening of array buffers without field specification may lead to discrepancy between "
-                          "hardware and software implementation.";
-    flattenArrayBuffers(&host_buffers, host_array);
-  }
-  buffers.reserve(buffers.size());
-  for (const auto &buf : host_buffers) {
-    if (buf != nullptr) {
-      buffers.emplace_back(buf->data(), buf->size(), access_mode);
-    } else {
-      buffers.emplace_back(nullptr, 0, access_mode);
-    }
-  }
-  memory_type = DeviceArray::PREPARE;
-}
 
 Status Context::Make(std::shared_ptr<Context> *context, const std::shared_ptr<Platform> &platform) {
   *context = std::make_shared<Context>(platform);
   return Status::OK();
 }
 
-Status Context::prepareArray(const std::shared_ptr<arrow::Array> &array,
-                             Mode access_mode,
-                             const std::shared_ptr<arrow::Field> &field) {
-  // Check if this Array was already queued (cached or prepared).
-  // If so, we can refer to the cached version. Since Arrow Arrays are immutable, we don't have to make a copy.
-  for (const auto &a : device_arrays) {
-    if (array == a->host_array) {
-      ARROW_LOG(WARNING) << array->type()->ToString() + " array already queued to device. Duplicating reference.";
-      device_arrays.push_back(a);
-      device_arrays.back()->field = field;
-      return Status::OK();
-    }
-  }
-  // Otherwise add it to the queue
-  device_arrays.emplace_back(std::make_shared<DeviceArray>(array, field, access_mode, DeviceArray::PREPARE));
-  return Status::OK();
-}
-
-Status Context::cacheArray(const std::shared_ptr<arrow::Array> &array,
-                           Mode access_mode,
-                           const std::shared_ptr<arrow::Field> &field) {
-  // Check if this Array is already referred to in the queue
-  size_t array_cnt = device_arrays.size();
-  bool queued = false;
-  for (size_t i = 0; i < array_cnt && !queued; i++) {
-    if (array == device_arrays[i]->host_array) {
-      ARROW_LOG(WARNING) << array->type()->ToString() + " array already queued to device."
-                                                        " Ensuring caching and duplicating reference.";
-      device_arrays[i]->memory = DeviceArray::CACHE;
-      device_arrays.push_back(device_arrays[i]);
-      device_arrays.back()->field = field;
-      queued = true;
-    }
-  }
-
-  // Otherwise add it to the queue
-  if (!queued) {
-    device_arrays.emplace_back(std::make_shared<DeviceArray>(array, field, access_mode, DeviceArray::CACHE));
-  }
-  return Status::OK();
-}
-
 Context::~Context() {
-  for (const auto &array : device_arrays) {
-    if (array->on_device) {
-      for (const auto &buf : array->buffers) {
-        if (buf.was_alloced) {
-          platform->deviceFree(buf.device_address);
-        }
+  Status status;
+  FLETCHER_LOG(DEBUG, "Destructing Context...");
+  for (const auto &buf : device_buffers_) {
+    if (buf.was_alloced) {
+      status = platform_->DeviceFree(buf.device_address);
+      if (!status.ok()) {
+        FLETCHER_LOG(ERROR, "Could not properly free context. Device memory may be corrupted. "
+                            "Status: " + status.message);
       }
     }
   }
 }
 
-Status Context::enable() {
-  for (const auto &array : device_arrays) {
-    if (array->memory == DeviceArray::PREPARE) {
-      if (!array->on_device) {
-        for (auto &buffer : array->buffers) {
-          if (buffer.mode == Mode::READ) {
-            // Buffers for reading:
-            platform->prepareHostBuffer(buffer.host_address,
-                                        &buffer.device_address,
-                                        buffer.size,
-                                        &buffer.was_alloced).ewf();
-          } else {
-            // TODO(johanpel): Solve this for platforms such as SNAP
-            platform->deviceMalloc(&buffer.device_address, static_cast<size_t>(buffer.size)).ewf();
-            buffer.was_alloced = true;
-          }
+Status Context::Enable() {
+  auto num_batches = host_batches_.size();
+  // Sanity check
+  assert(num_batches == host_batch_desc_.size());
+  assert(num_batches == host_batch_memtype_.size());
+
+  FLETCHER_LOG(DEBUG, "Enabling context for " << num_batches << " queued RecordBatch(es)");
+
+  // Loop over all batches queued on host
+  for (size_t i = 0; i < num_batches; i++) {
+    auto rbd = host_batch_desc_[i];
+    auto type = host_batch_memtype_[i];
+    for (const auto &f : rbd.fields) {
+      for (const auto &b : f.buffers) {
+        fletcher::Status status;
+        DeviceBuffer device_buf(b.raw_buffer_, b.size_, type, rbd.mode);
+        if (type == MemType::ANY) {
+          status = platform_->PrepareHostBuffer(device_buf.host_address,
+                                                &device_buf.device_address,
+                                                device_buf.size,
+                                                &device_buf.was_alloced);
+        } else if (type == MemType::CACHE) {
+          status = platform_->CacheHostBuffer(device_buf.host_address,
+                                              &device_buf.device_address,
+                                              device_buf.size);
+          // Cache always allocates on device.
+          device_buf.was_alloced = true;
+        } else {
+          status = Status::ERROR("Invalid / unsupported MemType.");
         }
-      }
-      array->on_device = true;
-    } else {
-      if (!array->on_device) {
-        for (auto &buffer : array->buffers) {
-          if (buffer.mode == Mode::READ) {
-            platform->cacheHostBuffer(buffer.host_address,
-                                      &buffer.device_address,
-                                      buffer.size).ewf();
-            buffer.was_alloced = true;
-          } else {
-            // Simply allocate buffers for writing:
-            // TODO(johanpel): Implement dynamic buffer management for FPGA device
-            platform->deviceMalloc(&buffer.device_address, static_cast<size_t>(buffer.size)).ewf();
-            buffer.was_alloced = true;
-          }
+        if (!status.ok()) {
+          return status;
         }
+        device_buffers_.push_back(device_buf);
       }
-      array->on_device = true;
     }
   }
 
-  uint64_t off = FLETCHER_REG_BUFFER_OFFSET;
-  for (const auto &array : device_arrays) {
-    for (const auto &buf : array->buffers) {
-      dau_t address;
-      address.full = buf.device_address;
-      platform->writeMMIO(off, address.lo);
-      off++;
-      platform->writeMMIO(off, address.hi);
-      off++;
-    }
+  FLETCHER_LOG(DEBUG, "Context contains " << device_buffers_.size() << " device buffer(s).");
+  return Status::OK();
+}
+
+Status Context::QueueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch, MemType mem_type) {
+  // Sanity check the recordbatch
+  if (record_batch == nullptr) {
+    return Status::ERROR("RecordBatch is nullptr.");
   }
 
-  written = true;
+  host_batches_.push_back(record_batch);
+
+  // Create a description of the RecordBatch
+  RecordBatchDescription rbd;
+  RecordBatchAnalyzer rba(&rbd);
+  rba.Analyze(*record_batch);
+  host_batch_desc_.push_back(rbd);
+
+  // Put the desired memory type of the RecordBatch
+  host_batch_memtype_.push_back(mem_type);
 
   return Status::OK();
 }
 
-Status Context::queueArray(const std::shared_ptr<arrow::Array> &array,
-                           const std::shared_ptr<arrow::Field> &field,
-                           Mode access_mode,
-                           bool cache) {
-  if (cache) {
-    return cacheArray(array, access_mode, field);
-  } else {
-    return prepareArray(array, access_mode, field);
-  }
-}
-
-Status Context::queueRecordBatch(const std::shared_ptr<arrow::RecordBatch> &record_batch,
-                                 bool cache) {
-  auto access_mode = getMode(record_batch->schema());
-
-  if (record_batch != nullptr) {
-    for (int c = 0; c < record_batch->num_columns(); c++) {
-      if (!mustIgnore(record_batch->schema()->field(c))) {
-        queueArray(record_batch->column(c), record_batch->schema()->field(c), access_mode, cache);
-      }
+uint64_t Context::num_buffers() const {
+  uint64_t ret = 0;
+  for (const auto &rbd : host_batch_desc_) {
+    for (const auto &f : rbd.fields) {
+      ret += f.buffers.size();
     }
-    return Status::OK();
-  } else {
-    return Status::ERROR();
   }
+  return ret;
 }
 
-uint64_t Context::num_buffers() {
-  uint64_t cnt = 0;
-  for (const auto &arr : device_arrays) {
-    cnt += arr->buffers.size();
-  }
-  return cnt;
-}
-
-size_t Context::getQueueSize() {
+size_t Context::GetQueueSize() const {
   size_t size = 0;
-  for (const auto &arr : device_arrays) {
-    for (const auto &buf : arr->buffers) {
-      size += buf.size;
+  for (const auto &desc : host_batch_desc_) {
+    for (const auto &f : desc.fields) {
+      for (const auto &buf : f.buffers) {
+        size += buf.size_;
+      }
     }
   }
   return size;

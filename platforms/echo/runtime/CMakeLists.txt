@@ -1,28 +1,30 @@
-cmake_minimum_required(VERSION 3.10)
-include(GNUInstallDirs)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletcher_echo VERSION 0.0.1 DESCRIPTION "Fletcher Echo platform")
+project(fletcher_echo VERSION 0.0.0 LANGUAGES C CXX)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_FLAGS "-Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG "-g")
-set(CMAKE_C_FLAGS_RELEASE "-Ofast -march=native")
+include(FetchContent)
 
-set(SOURCES
-        src/fletcher_echo.c)
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmake-modules)
 
-set(HEADERS
-        src/fletcher_echo.h)
+include(CompileUnits)
 
-add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
-include_directories(../../../common/c/src)
+if(NOT TARGET fletcher::c)
+  add_subdirectory(../../../common/c c)
+endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
+add_compile_unit(
+  NAME fletcher::echo
+  TYPE SHARED
+  PRPS
+    C_STANDARD 99
+  SRCS
+    src/fletcher_echo.c
+  DEPS
+    fletcher::c
+)
 
-install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fletcher)
-
-message("[FLETCHER] After running installation, please refresh your dynamic library cache (e.g. sudo ldconfig).")
+compile_units()

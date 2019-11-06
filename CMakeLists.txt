@@ -1,61 +1,55 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 
-# Tests for any subproject
-option(FLETCHER_TESTS "Build tests." OFF)
+project(fletcher)
 
-if (FLETCHER_TESTS)
-  enable_testing()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+
+option(FLETCHER_BUILD_CERATA "Build cerata library" OFF)
+option(FLETCHER_BUILD_FLETCHGEN "Build fletchgen" OFF)
+option(FLETCHER_BUILD_COMMON "Build common library" OFF)
+option(FLETCHER_BUILD_AWS "Build aws platform library" OFF)
+option(FLETCHER_BUILD_ECHO "Build echo platform library" OFF)
+option(FLETCHER_BUILD_SNAP "Build snap platform library" OFF)
+option(FLETCHER_BUILD_RUNTIME "Build runtime library" ON)
+
+include(FetchContent)
+
+FetchContent_Declare(cmake-modules
+    GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+    GIT_TAG         master
+    )
+FetchContent_MakeAvailable(cmake-modules)
+
+include(CompileUnits)
+
+if(FLETCHER_BUILD_CERATA)
+  add_subdirectory(codegen/cpp/cerata)
 endif()
 
-########################################################################################################################
-# Runtimes
-########################################################################################################################
-
-# CPP runtime
-option(FLETCHER_CPP "Build Fletcher C++ run-time library" ON)
-if (FLETCHER_CPP)
-    add_subdirectory(runtime/cpp)
+if(FLETCHER_BUILD_FLETCHGEN)
+  add_subdirectory(codegen/cpp/fletchgen)
 endif()
 
-########################################################################################################################
-# Platforms:
-########################################################################################################################
+if(FLETCHER_BUILD_C)
+  add_subdirectory(common/c)
+endif()
 
-# Echo: the default platform that just outputs your fpga interactions on stdout
-option(FLETCHER_ECHO "Build with ECHO support (simulating platform interface on STDOUT)" ON)
-if (FLETCHER_ECHO)
-    message("[FLETCHER] Building \"echo\" platform")
-    add_subdirectory(platforms/echo/runtime)
-endif ()
+if(FLETCHER_BUILD_COMMON)
+  add_subdirectory(common/cpp)
+endif()
 
-# AWS EC2 f1
-option(FLETCHER_AWS "Build with AWS EC2 f1 support." OFF)
-if (FLETCHER_AWS)
-    message("[FLETCHER] Building AWS EC2 f1 support...")
-    add_subdirectory(platforms/aws-f1/runtime)
-endif ()
+if(FLETCHER_BUILD_AWS)
+  add_subdirectory(platforms/aws-f1/runtime)
+endif()
 
-# OpenPOWER SNAP
-option(FLETCHER_SNAP "Build with OpenPOWER SNAP support." OFF)
-if (FLETCHER_SNAP)
-    message("[FLETCHER] Building with SNAP support...")
-    add_subdirectory(platforms/snap/runtime)
-endif ()
+if(FLETCHER_BUILD_ECHO)
+  add_subdirectory(platforms/echo/runtime)
+endif()
 
-########################################################################################################################
-# Tools
-########################################################################################################################
+if(FLETCHER_BUILD_SNAP)
+  add_subdirectory(platforms/snap/runtime)
+endif()
 
-# Fletcher wrapper generator
-option(FLETCHER_GEN "Build with Fletchgen - Fletcher's HDL wrapper generator." ON)
-if (FLETCHER_GEN)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
-            message(WARNING "Skipping Fletchgen compilation. This requires a GCC version of 4.9+")
-        else ()
-            add_subdirectory(codegen/fletchgen)
-        endif ()
-    else ()
-        add_subdirectory(codegen/fletchgen)
-    endif ()
-endif ()
+if(FLETCHER_BUILD_RUNTIME)
+  add_subdirectory(runtime/cpp)
+endif()

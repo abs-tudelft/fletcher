@@ -1,0 +1,6 @@
+.eggs
+pyfletcher.egg-info
+dist
+pyfletcher/lib.cpp
+pyfletcher/lib.h
+pyfletcher/lib_api.h

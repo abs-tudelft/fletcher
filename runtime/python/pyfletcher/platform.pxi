@@ -14,10 +14,14 @@
 
 import numpy as np
 
+cdef extern from * nogil:
+    float uint32_to_float "reinterpret_cast<float &>"(uint32_t)
+    double uint64_to_double "reinterpret_cast<double &>"(uint64_t)
+
 cdef class Platform:
     """Python wrapper for Fletcher Platforms.
 
-    Most functions are exposed for completeness, but for mose uses cases Context and UserCore are more suited.
+    Most functions are exposed for completeness, but for mose uses cases Context and Kernel are more suited.
 
     Args:
         name (:obj:'str', optional): Which platform driver to use. Leave empty to autodetect.
@@ -38,11 +42,11 @@ cdef class Platform:
         else:
             check_fletcher_status(CPlatform.createNamed(name.encode("utf-8"), &self.platform, quiet))
 
-    def get_name(self):
-        return self.platform.get().getName().decode("utf-8")
+    def name(self):
+        return self.platform.get().name().decode("utf-8")
 
     def init(self):
-        check_fletcher_status(self.platform.get().init())
+        check_fletcher_status(self.platform.get().Init())
 
     def write_mmio(self, uint64_t offset, uint32_t value):
         """Write to MMIO register.
@@ -52,23 +56,55 @@ cdef class Platform:
             value (int): Value to write.
 
         """
-        check_fletcher_status(self.platform.get().writeMMIO(offset, value))
+        check_fletcher_status(self.platform.get().WriteMMIO(offset, value))
 
-    def read_mmio(self, uint64_t offset):
+    def read_mmio(self, uint64_t offset, str type="uint"):
         """Read from MMIO register.
 
 
         Args:
             offset (int): Register offset.
+            type (str): How to interpret register. Can be "uint" (default), "int" or "float".
 
         Returns:
-            int: Read value.
+            Read value.
 
         """
         cdef uint32_t value
-        check_fletcher_status(self.platform.get().readMMIO(offset, &value))
+        check_fletcher_status(self.platform.get().ReadMMIO(offset, &value))
 
-        return value
+        if type == "uint":
+            return value
+        elif type == "int":
+            return <int32_t> value
+        elif type == "float":
+            return uint32_to_float(value)
+        else:
+            raise ValueError("Invalid type in read_mmio(). Options: 'uint' (default), 'int' or 'float'")
+
+    def read_mmio_64(self, uint64_t offset, str type="uint"):
+        """Read 64 bit value from two 32 bit MMIO registers.
+
+
+        Args:
+            offset (int): Register offset.
+            type (str): How to interpret register. Can be "uint" (default), "int" or "double".
+
+        Returns:
+            Read value.
+
+        """
+        cdef uint64_t value
+        check_fletcher_status(self.platform.get().ReadMMIO64(offset, &value))
+
+        if type == "uint":
+            return value
+        elif type == "int":
+            return <int64_t> value
+        elif type == "double":
+            return uint64_to_double(value)
+        else:
+            raise ValueError("Invalid type in read_mmio_64(). Options: 'uint' (default), 'int' or 'double'")
 
     def device_malloc(self, size_t size):
         """Allocate a region of memory on the device.
@@ -81,7 +117,7 @@ cdef class Platform:
 
         """
         cdef da_t device_address
-        check_fletcher_status(self.platform.get().deviceMalloc(&device_address, size))
+        check_fletcher_status(self.platform.get().DeviceMalloc(&device_address, size))
 
         return device_address
 
@@ -92,7 +128,7 @@ cdef class Platform:
             device_address (int): Device address of the memory region.
 
         """
-        check_fletcher_status(self.platform.get().deviceFree(device_address))
+        check_fletcher_status(self.platform.get().DeviceFree(device_address))
 
     def copy_host_to_device(self, host_bytes, da_t device_destination, uint64_t size):
         """Copy a memory region from device memory to host memory.
@@ -106,27 +142,32 @@ cdef class Platform:
         cdef const uint8_t[:] host_source_view = host_bytes
         cdef const uint8_t *host_source = &host_source_view[0]
 
-        check_fletcher_status(self.platform.get().copyHostToDevice(<uint8_t*>host_source, device_destination, size))
+        check_fletcher_status(self.platform.get().CopyHostToDevice(<uint8_t*>host_source, device_destination, size))
 
-    def copy_device_to_host(self, da_t device_source, uint64_t size):
+    def copy_device_to_host(self, da_t device_source, uint64_t size, buffer=None):
         """Copy a memory region from device memory to host memory.
 
         Args:
             device_source (int): Source in device memory
             size (int): The amount of bytes
+            buffer: Pyarrow buffer to copy bytes to
 
         Returns:
             ndarray: Read bytes
         """
-        buffer = np.zeros((size,), dtype=np.uint8)
-        cdef const uint8_t[:] buffer_view = buffer
-        cdef const uint8_t *host_destination = &buffer_view[0]
+        cdef const uint8_t[:] buffer_view
+        cdef const uint8_t *host_destination
 
-        check_fletcher_status(self.platform.get().copyDeviceToHost(device_source, <uint8_t*>host_destination, size))
+        if buffer is None:
+            buffer = np.zeros((size,), dtype=np.uint8)
+            buffer_view = buffer
+            host_destination = &buffer_view[0]
+        else:
+            host_destination = pyarrow_unwrap_buffer(buffer).get().mutable_data()
+
+        check_fletcher_status(self.platform.get().CopyDeviceToHost(device_source, <uint8_t*>host_destination, size))
 
         return buffer
 
     def terminate(self):
-        check_fletcher_status(self.platform.get().terminate())
-
-
+        check_fletcher_status(self.platform.get().Terminate())

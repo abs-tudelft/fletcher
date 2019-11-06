@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # distutils: language = c++
+# cython: language_level=3
 
 import cython
 import pyarrow
@@ -29,6 +30,6 @@ include "public-api.pxi"
 
 include "platform.pxi"
 
-include "usercore.pxi"
+include "kernel.pxi"
 
 include "context.pxi"

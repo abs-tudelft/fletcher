@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # distutils: language = c++
+# cython: language_level=3
 
 cimport cython
 
@@ -29,10 +30,16 @@ cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long da_t
     ctypedef unsigned int freg_t
 
-cdef extern from "fletcher/common/arrow-utils.h" namespace "fletcher" nogil:
-    ctypedef enum Mode:
-        READ "fletcher::Mode::READ",
+cdef extern from "fletcher/arrow-utils.h" namespace "fletcher":
+    cdef enum Mode:
+        READ  "fletcher::Mode::READ",
         WRITE "fletcher::Mode::WRITE"
+
+cdef extern from "fletcher/context.h" namespace "fletcher":
+    cdef enum MemType:
+        ANY   "fletcher::MemType::ANY",
+        CACHE "fletcher::MemType::CACHE"
+  
 
 cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
     cdef cppclass Status:
@@ -43,6 +50,16 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         void ewf()
         Status OK()
         Status ERROR()
+        
+    cdef cppclass CDeviceBuffer" fletcher::DeviceBuffer":
+        const uint8_t *host_address
+        da_t device_address
+        int64_t size
+        MemType memory
+        Mode mode
+        cpp_bool available_to_device
+        cpp_bool was_alloced
+        CDeviceBuffer()
 
     cdef cppclass CPlatform" fletcher::Platform":
         #Renamed create function because overloading of static functions causes errors
@@ -51,43 +68,42 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         @staticmethod
         Status createUnnamed"Make"(shared_ptr[CPlatform] *platform)
 
-        cpp_string getName()
-        Status init()
-        Status writeMMIO(uint64_t offset, uint32_t value)
-        Status readMMIO(uint64_t offset, uint32_t *value)
-        Status deviceMalloc(da_t *device_address, size_t size)
-        Status deviceFree(da_t device_address)
-        Status copyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
-        Status copyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size)
-        Status prepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, cpp_bool *alloced)
-        Status cacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size)
-        Status terminate()
+        cpp_string name()
+        Status Init()
+        Status WriteMMIO(uint64_t offset, uint32_t value)
+        Status ReadMMIO(uint64_t offset, uint32_t *value)
+        Status ReadMMIO64(uint64_t offset, uint64_t *value)
+        Status DeviceMalloc(da_t *device_address, size_t size)
+        Status DeviceFree(da_t device_address)
+        Status CopyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size)
+        Status CopyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size)
+        Status PrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, cpp_bool *alloced)
+        Status CacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size)
+        Status Terminate()
 
     cdef cppclass CContext" fletcher::Context":
         @staticmethod
         Status Make(shared_ptr[CContext] *context, const shared_ptr[CPlatform] &platform)
-        Status queueArray(const shared_ptr[CArray] &array, Mode access_mode, cpp_bool cache)
-        Status queueArray(const shared_ptr[CArray] &array, const shared_ptr[CField] field, Mode access_mode, cpp_bool cache)
-        Status queueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, cpp_bool cache)
-        size_t getQueueSize()
+        Status QueueRecordBatch(const shared_ptr[CRecordBatch] &record_batch, MemType mem_type)
+        size_t GetQueueSize()
         uint64_t num_buffers()
-        Status enable()
+        Status Enable()
+        CDeviceBuffer device_buffer(size_t i)
 
-    cdef cppclass CUserCore" fletcher::UserCore":
+    cdef cppclass CKernel" fletcher::Kernel":
         # Control and status values
         uint32_t ctrl_start
         uint32_t ctrl_reset
         uint32_t done_status
         uint32_t done_status_mask
 
-        CUserCore(shared_ptr[CContext] context)
-        cpp_bool implementsSchema(const shared_ptr[CSchema] &schema)
-        Status reset()
-        Status setRange(int32_t first, int32_t last)
-        Status setArguments(vector[uint32_t] arguments)
-        Status start()
-        Status getStatus(uint32_t *status)
-        Status getReturn(uint32_t *ret0, uint32_t *ret1)
-        Status waitForFinish(unsigned int poll_interval_usec)
-        shared_ptr[CPlatform] platform()
+        CKernel(shared_ptr[CContext] context)
+        cpp_bool ImplementsSchemaSet(const vector[shared_ptr[CSchema]] &schema)
+        Status Reset()
+        Status SetRange(size_t recordbatch_index, int32_t first, int32_t last)
+        Status SetArguments(vector[uint32_t] arguments)
+        Status Start()
+        Status GetStatus(uint32_t *status)
+        Status GetReturn(uint32_t *ret0, uint32_t *ret1)
+        Status WaitForFinish(unsigned int poll_interval_usec)
         shared_ptr[CContext] context()

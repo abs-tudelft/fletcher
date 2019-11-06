@@ -18,22 +18,22 @@ Adapted from code in pyarrow.
 """
 
 
-cdef public api bint pyfletcher_is_usercore(object usercore):
-    return isinstance(usercore, UserCore)
+cdef public api bint pyfletcher_is_kernel(object kernel):
+    return isinstance(kernel, Kernel)
 
-cdef public api object pyfletcher_wrap_usercore(const shared_ptr[CUserCore]& uc):
-    cdef UserCore result = UserCore.__new__(UserCore)
+cdef public api object pyfletcher_wrap_kernel(const shared_ptr[CKernel]& uc):
+    cdef Kernel result = Kernel.__new__(Kernel)
     result.from_pointer(uc)
     return result
 
-cdef public api shared_ptr[CUserCore] pyfletcher_unwrap_usercore(object usercore):
-    cdef UserCore uc
+cdef public api shared_ptr[CKernel] pyfletcher_unwrap_kernel(object kernel):
+    cdef Kernel k
 
-    if pyfletcher_is_usercore(usercore):
-        uc = <UserCore>(usercore)
-        return uc.usercore
+    if pyfletcher_is_kernel(kernel):
+        k = <Kernel>(kernel)
+        return k.Kernel
 
-    return shared_ptr[CUserCore]()
+    return shared_ptr[CKernel]()
 
 cdef public api bint pyfletcher_is_platform(object platform):
     return isinstance(platform, Platform)
