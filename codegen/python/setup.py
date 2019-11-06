@@ -115,6 +115,7 @@ setup(
             extra_link_args=["-std=c++11"]
         )
     ],
+    entry_points = {'console_scripts': ['fletchgen=pyfletchgen:_run']},
     install_requires=[
         'numpy >= 1.14',
         'pandas',
