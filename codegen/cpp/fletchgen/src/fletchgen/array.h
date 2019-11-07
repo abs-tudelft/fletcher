@@ -103,11 +103,10 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other);
 /**
  * @brief Convert an Arrow::Field into a stream type.
  * @param arrow_field The Arrow::Field to convert.
- * @param mode Whether this stream is used for reading or writing.
  * @param level Nesting level.
  * @return The Stream Type.
  */
-std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::Mode mode, int level = 0);
+std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, int level = 0);
 
 /**
  * @brief Get the ArrayR/W number of streams and data width from an Arrow Field.

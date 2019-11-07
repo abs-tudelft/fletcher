@@ -331,7 +331,7 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other) 
   return result;
 }
 
-std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::Mode mode, int level) {
+std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, int level) {
   // The ordering of the record fields in this function determines the order in which a nested stream is type converted
   // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented.
   // More specifically, this is how the data, count and validity fields are currently concatenated onto one big data
@@ -396,7 +396,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
         FLETCHER_LOG(FATAL, "Elements per cycle on non-primitive list is unsupported.");
       }
       auto arrow_child = arrow_field.type()->child(0);
-      auto element_type = GetStreamType(*arrow_child, mode, level + 1);
+      auto element_type = GetStreamType(*arrow_child, level + 1);
       auto length_width = 32;
 
       auto child = stream(record({field("dvalid", dvalid()),
@@ -416,7 +416,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
       }
       std::vector<std::shared_ptr<cerata::Field>> children;
       for (const auto &f : arrow_field.type()->children()) {
-        auto child_type = GetStreamType(*f, mode, level + 1);
+        auto child_type = GetStreamType(*f, level + 1);
         children.push_back(field(f->name(), child_type));
       }
       type = record(name + "_rec", children);

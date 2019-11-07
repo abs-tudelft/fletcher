@@ -201,7 +201,7 @@ std::shared_ptr<FieldPort> arrow_port(const std::shared_ptr<FletcherSchema> &fle
                                       bool reverse,
                                       const std::shared_ptr<ClockDomain> &domain) {
   auto name = fletcher_schema->name() + "_" + field->name();
-  auto type = GetStreamType(*field, fletcher_schema->mode());
+  auto type = GetStreamType(*field);
   Port::Dir dir;
   if (reverse) {
     dir = Term::Reverse(mode2dir(fletcher_schema->mode()));

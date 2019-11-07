@@ -65,7 +65,7 @@ TEST(Array, TypeMapper) {
   // Generate types as seen by array(reader/writer) and kernel, and auto-generate mappers.
   for (int i = 0; i < n_tests; i++) {
     array_types[i] = array_reader_out(specs[i]);
-    kernel_types[i] = GetStreamType(*fields[i], fletcher::Mode::READ);
+    kernel_types[i] = GetStreamType(*fields[i]);
     mappers[i] = GetStreamTypeMapper(kernel_types[i].get(), array_types[i].get());
     std::cout << mappers[i]->ToString() << std::endl;
   }
