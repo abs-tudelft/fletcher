@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "fletchgen/dag/composer.h"
+#include "fletchgen/dag/dag.h"
 
 #pragma once
 

@@ -18,8 +18,7 @@
 #include <fstream>
 
 #include "fletchgen/dag/test_utils.h"
-#include "fletchgen/dag/composer.h"
-#include "fletchgen/dag/compop.h"
+#include "fletchgen/dag/api.h"
 
 namespace fletchgen::dag {
 

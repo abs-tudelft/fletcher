@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/composer.h"
+#include "fletchgen/dag/dag.h"
 
-#include <arrow/api.h>
 #include <sstream>
 
 #include "fletchgen/dag/types.h"
@@ -199,68 +198,15 @@ Edge operator<<(const Transform &dst, const Transform &src) {
   return Edge(dst.inputs[0].get(), src.outputs[0].get());
 }
 
-Transform Source(const std::string &name, const TypeRef &output) {
-  Transform result;
-  result.name = "Source";
-  result += out(name, output);
-  return result;
-}
-
-Transform DesyncedSource(const std::string &name, const StructRef &output) {
-  Transform result;
-  result.name = "DesyncedSource";
-  for (const auto &f : output->fields) {
-    result += out(f->name, f->type);
+Edge::Edge(const Vertex *dst, const Vertex *src) : src_(src), dst_(dst) {
+  if (!src_->type->Equals(*dst_->type)) {
+    throw std::runtime_error("Can't connect type " + src_->type->name + " to " + dst_->type->name);
   }
-  return result;
 }
 
-Transform Sink(const std::string &name, const TypeRef &input) {
-  Transform result;
-  result.name = "Sink";
-  result += in(name, input);
-  return result;
-}
-
-Transform DesyncedSink(const std::string &name, const StructRef &input) {
-  Transform result;
-  result.name = "DesyncedSink";
-  for (const auto &f : input->fields) {
-    result += in(f->name, f->type);
-  }
-  return result;
-}
-
-Transform Duplicate(const TypeRef &input, uint32_t num_outputs) {
-  Transform result;
-  result.name = "Duplicate";
-  result += in("in", input);
-  for (size_t o = 0; o < num_outputs; o++) {
-    result += out("out_" + std::to_string(o), input);
-  }
-  return result;
-}
-
-Transform Split(const StructRef &input) {
-  Transform result;
-  result.name = "Split";
-  result += in("in", input);
-  for (size_t i = 0; i < input->fields.size(); i++) {
-    result += out("out_" + std::to_string(i), input->fields[i]->type);
-  }
-  return result;
-}
-
-Transform Merge(const std::vector<TypeRef> &inputs) {
-  Transform result;
-  result.name = "Merge";
-  std::vector<FieldRef> fields;
-  for (size_t i = 0; i < inputs.size(); i++) {
-    result += in("in_" + std::to_string(i), inputs[i]);
-    fields.push_back(field("f" + std::to_string(i), inputs[i]));
-  }
-  result += out("out", struct_(fields));
-  return result;
+Edge &Edge::named(std::string new_name) {
+  this->name = std::move(new_name);
+  return *this;
 }
 
 }  // namespace fletchgen::dag

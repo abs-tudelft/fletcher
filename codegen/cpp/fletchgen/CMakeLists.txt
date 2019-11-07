@@ -67,8 +67,10 @@ add_compile_unit(
 
     src/fletchgen/dag/binop.cc
     src/fletchgen/dag/compop.cc
-    src/fletchgen/dag/composer.cc
-    src/fletchgen/dag/ceratizer.cc
+    src/fletchgen/dag/streamop.cc
+    src/fletchgen/dag/indexop.cc
+    src/fletchgen/dag/memop.cc
+    src/fletchgen/dag/dag.cc
     src/fletchgen/dag/transformations.cc
     src/fletchgen/dag/dot.cc
     src/fletchgen/dag/types.cc
@@ -85,8 +87,7 @@ add_compile_unit(
     test/fletchgen/srec/test_srec.cc
     test/fletchgen/dag/test_binop.cc
     test/fletchgen/dag/test_compop.cc
-        test/fletchgen/dag/test_examples.cc
-    test/fletchgen/dag/test_ceratizer.cc
+    test/fletchgen/dag/test_examples.cc
   DEPS
     cerata
     arrow_shared

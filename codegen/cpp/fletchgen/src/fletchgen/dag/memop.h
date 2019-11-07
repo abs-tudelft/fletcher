@@ -21,9 +21,14 @@
 
 namespace fletchgen::dag {
 
-Transform Sum(const PrimRef &type);
-Transform SplitByRegex(const std::string &regex);
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+/// @brief Create a transformation that sources a stream from memory.
+Transform Source(const std::string &name, const TypeRef &output);
+/// @brief Create a transformation that sources a stream from memory, and desynchronizes all struct fields.
+Transform DesyncedSource(const std::string &name, const StructRef &output);
+
+/// @brief Create a transformation that sinks a stream to memory.
+Transform Sink(const std::string &name, const TypeRef &input);
+/// @brief Create a transformation that sinks a stream to memory, and desynchronizes all struct fields.
+Transform DesyncedSink(const std::string &name, const StructRef &input);
 
 }  // namespace fletchgen::dag

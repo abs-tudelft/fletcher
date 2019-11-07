@@ -19,6 +19,8 @@
 
 namespace fletchgen::dag {
 
+bool Type::Equals(const Type &other) const { return id == other.id; }
+
 PrimRef prim(const std::string &name, uint32_t width) { return std::make_shared<Prim>(name, width); }
 
 #define PRIM_IMPL_FACTORY(NAME, WIDTH) PrimRef NAME() { static PrimRef result = prim(#NAME, WIDTH); return result; }
@@ -45,11 +47,11 @@ ListRef list(const std::string &name, const FieldRef &item) {
 }
 
 ListRef list(const std::string &name, const TypeRef &item_type) {
-  return std::make_shared<List>(name, field("item", item_type));
+  return list(name, field("item", item_type));
 }
 
 ListRef list(const TypeRef &item_type) {
-  return std::make_shared<List>("list<" + item_type->name + ">", field("item", item_type));
+  return list("list<" + item_type->name + ">", item_type);
 }
 
 StructRef struct_(const std::vector<FieldRef> &fields) {
@@ -71,5 +73,32 @@ StructRef struct_(const std::string &name, const std::vector<FieldRef> &fields) 
 
 ListRef utf8() { return list("utf8", field("char", u8())); }
 ListRef bin() { return list("binary", field("byte", u8())); }
+
+bool Prim::Equals(const Type &other) const {
+  return (other.id == TypeID::PRIM) && (other.AsRef<Prim>()->width == this->width);
+}
+
+bool List::Equals(const Type &other) const {
+  if (other.IsList()) {
+    return item->type->Equals(*other.AsRef<List>()->item->type);
+  }
+  return false;
+}
+
+bool Struct::Equals(const Type &other) const {
+  if (other.IsStruct()) {
+    const auto &other_struct = dynamic_cast<const Struct &>(other);
+    if (fields.size() == other_struct.fields.size()) {
+      for (size_t i = 0; i < fields.size(); i++) {
+        if (!fields[i]->type->Equals(*other_struct.fields[i]->type)) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace fletchgen::dag

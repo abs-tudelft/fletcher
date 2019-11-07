@@ -16,8 +16,7 @@
 #include <vector>
 
 #include "fletchgen/dag/test_utils.h"
-#include "fletchgen/dag/composer.h"
-#include "fletchgen/dag/binop.h"
+#include "fletchgen/dag/api.h"
 
 namespace fletchgen::dag {
 

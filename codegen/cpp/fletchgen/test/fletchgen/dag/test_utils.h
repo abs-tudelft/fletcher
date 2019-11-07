@@ -16,7 +16,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "fletchgen/dag/dot.h"
+#include "fletchgen/dag/api.h"
 
 namespace fletchgen::dag {
 

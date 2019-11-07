@@ -12,18 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "fletchgen/dag/indexop.h"
+
 #include <string>
-#include <vector>
 
 #include "fletchgen/dag/dag.h"
 
-#pragma once
-
 namespace fletchgen::dag {
 
-Transform Sum(const PrimRef &type);
-Transform SplitByRegex(const std::string &regex);
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+Transform IndexIfTrue(const PrimRef &index_type) {
+  Transform result;
+  result.name = "IndexIfTrue";
+  result += in("in", list(boolean()));
+  result += out("out", list(index_type));
+  return result;
+}
+
+Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
+  Transform result;
+  result.name = "FilterByIndex";
+  result += in("in", list(t));
+  result += in("index", list(index_type));
+  result += out("out", t);
+  return result;
+}
 
 }  // namespace fletchgen::dag

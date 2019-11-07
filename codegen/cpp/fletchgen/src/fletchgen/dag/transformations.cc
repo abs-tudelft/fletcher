@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "fletchgen/dag/composer.h"
+#include "fletchgen/dag/dag.h"
 
 namespace fletchgen::dag {
 
@@ -34,47 +34,6 @@ Transform SplitByRegex(const std::string &regex) {
   result.constants.push_back(constant("expr", regex));
   result += in("in", list(utf8()));
   result += out("out", list(utf8()));
-  return result;
-}
-
-Transform Zip(const std::vector<TypeRef> &inputs) {
-  Transform result;
-  result.name = "Zip";
-  std::vector<FieldRef> fields;
-  for (size_t i = 0; i < inputs.size(); i++) {
-    result += in("in_" + std::to_string(i), inputs[i]);
-    fields.push_back(field(std::to_string(i), inputs[i]));
-  }
-  result += out("out", struct_("zipped", fields));
-  return result;
-}
-
-Transform Zip(const ListRef &t0, const PrimRef &t1) {
-  Transform result;
-  result.name = "Zip";
-  result += in("in_0", t0);
-  result += in("in_1", t1);
-  result += out("out", list(struct_({field("out_0", t0->item->type),
-                                     field("out_1", t1)})));
-  return result;
-}
-
-Transform IndexOfComparison(const ListRef &list_type, const std::string &op) {
-  Transform result;
-  result.name = "IndexOfComparison";
-  result.constants.push_back(constant("op", op));
-  result += in("in", list_type);
-  result += in("val", list_type->item->type);
-  result += out("out", idx32());
-  return result;
-}
-
-Transform Select(const ListRef &t) {
-  Transform result;
-  result.name = "Select";
-  result += in("index", idx32());
-  result += in("in", t);
-  result += out("out", t);
   return result;
 }
 

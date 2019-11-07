@@ -16,9 +16,11 @@
 
 #include <string>
 
-#include "fletchgen/dag/composer.h"
+#include "fletchgen/dag/dag.h"
 
 namespace fletchgen::dag {
+
+constexpr char DOT_FONT[] = "Bitstream Charter";
 
 std::string Name(const Vertex &v);
 std::string Name(const Edge &e);
@@ -31,6 +33,7 @@ std::string Label(const Transform &t);
 std::string Style(const Vertex &v);
 std::string Style(const Edge &e);
 std::string Style(const Transform &t);
+std::string Style(const Graph &t);
 
 std::string AsDotGraph(const Graph &g);
 

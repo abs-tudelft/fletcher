@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-
-#include "fletchgen/dag/dag.h"
-
 #pragma once
 
-namespace fletchgen::dag {
+#include "fletchgen/dag/dag.h"
+#include "fletchgen/dag/memop.h"
+#include "fletchgen/dag/streamop.h"
+#include "fletchgen/dag/indexop.h"
+#include "fletchgen/dag/binop.h"
+#include "fletchgen/dag/compop.h"
 
-Transform Sum(const PrimRef &type);
-Transform SplitByRegex(const std::string &regex);
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+#include "fletchgen/dag/transformations.h"
 
-}  // namespace fletchgen::dag
+#include "fletchgen/dag/dot.h"

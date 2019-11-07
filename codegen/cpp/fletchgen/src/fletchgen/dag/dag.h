@@ -78,13 +78,12 @@ std::shared_ptr<In> in(const std::string &name, const TypeRef &type);
 std::shared_ptr<Out> out(const std::string &name, const TypeRef &type);
 
 struct Edge {
-  Edge(const Vertex *dst, const Vertex *src) : src_(src), dst_(dst) {
-    if (src_->type->id != dst_->type->id) {
-      throw std::runtime_error("Can't connect type " + src_->type->name + " to " + dst_->type->name);
-    }
-  }
+  Edge(const Vertex *dst, const Vertex *src);
+  std::string name;
   const Vertex *src_;
   const Vertex *dst_;
+
+  Edge& named(std::string name);
 };
 
 struct Transform {
@@ -92,6 +91,10 @@ struct Transform {
   std::vector<std::shared_ptr<Constant>> constants;
   std::vector<std::shared_ptr<In>> inputs;
   std::vector<std::shared_ptr<Out>> outputs;
+
+  // placeholder for something more elaborate:
+  bool reads_memory = false;
+  bool writes_memory = false;
 
   [[nodiscard]] Constant &c(const std::string &constant_name) const;
   [[nodiscard]] const Vertex &o(const std::string &output_name) const;
@@ -129,15 +132,5 @@ struct Graph {
 
   [[nodiscard]] const Transform &ParentOf(const Vertex &v) const;
 };
-
-Transform Source(const std::string &name, const TypeRef &output);
-Transform DesyncedSource(const std::string &name, const StructRef &output);
-
-Transform Sink(const std::string &name, const TypeRef &input);
-Transform DesyncedSink(const std::string &name, const StructRef &input);
-
-Transform Duplicate(const TypeRef &input, uint32_t num_outputs);
-Transform Split(const StructRef &input);
-Transform Merge(const std::vector<TypeRef> &inputs);
 
 }  // namespace fletchgen::dag

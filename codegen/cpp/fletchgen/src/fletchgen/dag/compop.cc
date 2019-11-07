@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "fletchgen/dag/composer.h"
+#include "fletchgen/dag/dag.h"
 
 namespace fletchgen::dag {
 
@@ -63,7 +63,7 @@ Transform CompOp(const StructRef &t0, const std::string &op, const PrimRef &t1) 
   // TODO(johanpel): this one is weird, as it could be expected that it would compare every struct field.
   std::vector<FieldRef> comp_result_fields;
   for (const auto &f : t0->fields) {
-    if (!f->type->IsList() || f->type->As<List>()->item->type != t1) {
+    if (!f->type->IsList() || f->type->AsRef<List>()->item->type != t1) {
       throw std::runtime_error("Can only perform element-wise comparison operation of struct and primitive if struct "
                                "fields are all lists of same primitive type.");
     }
@@ -80,7 +80,7 @@ Transform CompOp(const StructRef &t0, const std::string &op, const PrimRef &t1) 
 
 Transform CompOp(const StructRef &t0, const std::string &op, const ListRef &t1) {
   for (const auto &f : t0->fields) {
-    if (!f->type->IsList() || f->type->As<List>()->item->type != t1->item->type) {
+    if (!f->type->IsList() || f->type->AsRef<List>()->item->type != t1->item->type) {
       throw std::runtime_error("Can only perform element-wise comparison operation of struct and list if struct fields "
                                "are all lists of same type.");
     }

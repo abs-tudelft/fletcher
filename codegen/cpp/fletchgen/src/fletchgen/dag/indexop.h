@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-
 #include "fletchgen/dag/dag.h"
 
 #pragma once
 
 namespace fletchgen::dag {
 
-Transform Sum(const PrimRef &type);
-Transform SplitByRegex(const std::string &regex);
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+/// @brief Transform a list of booleans into a list of indices for which the booleans are true.
+Transform IndexIfTrue(const PrimRef &index_type = idx32());
+
+/// @brief Select elements from a list of t's by index.
+Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type = idx32());
 
 }  // namespace fletchgen::dag

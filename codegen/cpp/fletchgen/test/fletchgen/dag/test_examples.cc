@@ -16,8 +16,7 @@
 #include <vector>
 
 #include "fletchgen/dag/test_utils.h"
-#include "fletchgen/dag/composer.h"
-#include "fletchgen/dag/transformations.h"
+#include "fletchgen/dag/api.h"
 
 namespace fletchgen::dag {
 
@@ -37,34 +36,43 @@ TEST(Example, Sum) {
 
 TEST(Example, WhereSelect) {
   auto g = Graph();
-  auto table = struct_({field("name", list(utf8())), field("age", list(u8()))});
+  auto liststr = list(utf8());
+  auto listu8 = list(u8());
+
+  auto table = struct_({field("name", liststr), field("age", listu8)});
 
   auto source = g <<= DesyncedSource("table", table);
-  auto where = g <<= IndexOfComparison(list(u8()), ">");
-  auto select = g <<= Select(list(utf8()));
+  auto limit = g <<= Source("limit", u8());
+  auto where = g <<= CompOp(listu8, ">", u8());
+  auto index = g <<= IndexIfTrue();
+  auto select = g <<= SelectByIndex(utf8());
   auto sink = g <<= Sink("name", utf8());
 
-  g <<= where("in") << source.o("age");
+  g <<= where(0) << source.o("age");
+  g <<= where(1) << limit;
+  g <<= index << where;
   g <<= select("in") << source.o("name");
-  g <<= select("index") << where;
+  g <<= select("index") << index;
   g <<= sink << select;
 
   DumpToDot(g);
 }
 
 TEST(Example, WordCount) {
+  auto strings = list(utf8());
   auto g = Graph();
 
-  auto source = g <<= Source("sentences", list(utf8()));
-  auto c = g <<= Source("c", u32());
+  auto source = g <<= Source("sentences", strings);
+  auto constant = g <<= Source("constant", u32());
   auto split = g <<= SplitByRegex(R"(\s)");
-  auto zip = g <<= Zip(list(utf8()), u32());
-  auto sink = g <<= Sink("result", list(struct_({field("word", utf8()), field("count", u32())})));
+  auto dupl = g <<= DuplicateForEach(strings, u32());
+  auto sink = g <<= DesyncedSink("result", struct_({field("word", list(utf8())), field("count", list(u32()))}));
 
   g <<= split("in") << source;
-  g <<= zip(0) << split;
-  g <<= zip(1) << c;
-  g <<= sink << zip;
+  g <<= (dupl(0) << split).named("words");
+  g <<= dupl(1) << constant;
+  g <<= sink(0) << dupl.o(0);
+  g <<= sink(1) << dupl.o(1);
 
   DumpToDot(g);
 }
