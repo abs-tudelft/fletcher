@@ -6,7 +6,7 @@ resources:
     name: abs-tudelft/azure-pipelines-templates
 
 variables:
-  arrowVersion: 0.15.0
+  arrowVersion: 0.15.1
 
 jobs:
 
@@ -54,9 +54,13 @@ jobs:
   strategy:
     matrix:
       stringwrite:
-        source: examples/stringwrite
+        source: examples/stringwrite/hardware
       sum:
-        source: examples/sum
+        source: examples/sum/hardware
+      primmap:
+        source: codegen/test/primmap
+      stringread:
+        source: codegen/test/stringread
   pool:
     vmImage: ubuntu-latest
   steps:
@@ -85,11 +89,11 @@ jobs:
     displayName: Fletcher env
   - script: |
       make
-    workingDirectory: $(Build.SourcesDirectory)/$(source)/hardware
+    workingDirectory: $(Build.SourcesDirectory)/$(source)
     displayName: Generate hardware
   - script: |
       make sim
-    workingDirectory: $(Build.SourcesDirectory)/$(source)/hardware
+    workingDirectory: $(Build.SourcesDirectory)/$(source)
     displayName: Simulate hardware
 
 - job:

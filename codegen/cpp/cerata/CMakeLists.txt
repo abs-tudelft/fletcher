@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(cerata VERSION 0.0.0 LANGUAGES CXX)
+project(cerata VERSION 0.0.10 LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -103,3 +103,6 @@ add_compile_unit(
 )
 
 compile_units()
+
+configure_file(src/cerata/config.h.in cerata_config/config.h)
+include_directories(${PROJECT_BINARY_DIR})
