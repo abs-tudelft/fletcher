@@ -65,7 +65,13 @@ add_compile_unit(
 
     src/fletchgen/hls/vivado.cc
 
-    src/fletchgen/compose/compose.cc
+    src/fletchgen/dag/binop.cc
+    src/fletchgen/dag/compop.cc
+    src/fletchgen/dag/composer.cc
+    src/fletchgen/dag/ceratizer.cc
+    src/fletchgen/dag/transformations.cc
+    src/fletchgen/dag/dot.cc
+    src/fletchgen/dag/types.cc
   TSTS
     test/fletchgen/test_array.cc
     test/fletchgen/test_bus.cc
@@ -77,7 +83,10 @@ add_compile_unit(
     test/fletchgen/test_types.cc
     test/fletchgen/test_profiler.cc
     test/fletchgen/srec/test_srec.cc
-    test/fletchgen/compose/test_compose.cc
+    test/fletchgen/dag/test_binop.cc
+    test/fletchgen/dag/test_compop.cc
+        test/fletchgen/dag/test_examples.cc
+    test/fletchgen/dag/test_ceratizer.cc
   DEPS
     cerata
     arrow_shared
