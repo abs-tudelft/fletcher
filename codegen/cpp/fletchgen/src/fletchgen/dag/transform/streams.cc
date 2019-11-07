@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/streamop.h"
+#include "fletchgen/dag/transform/streams.h"
 
 #include <string>
 
 #include "fletchgen/dag/dag.h"
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
 Transform Duplicate(const TypeRef &t, uint32_t num_outputs) {
   Transform result;
@@ -71,4 +71,4 @@ Transform Buffer(const TypeRef &t, uint32_t depth) {
   return result;
 }
 
-}  // namespace fletchgen::dag
+}  // namespace fletchgen::dag::transform

@@ -19,11 +19,8 @@
 
 #pragma once
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-Transform Sum(const PrimRef &type);
-Transform SplitByRegex(const std::string &regex);
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+Transform Cast(const TypeRef &from, const TypeRef &to);
 
-}  // namespace fletchgen::dag
+}  // namespace fletchgen::dag::transform

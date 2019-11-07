@@ -12,24 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/transformations.h"
+#include "fletchgen/dag/transform/meta.h"
 
 #include <memory>
+#include <utility>
 
 #include "fletchgen/dag/dag.h"
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-Transform Sum(const PrimRef &type) {
+Transform Map(std::string name, const TypeRef &t, const TypeRef &u) {
   Transform result;
-  result.name = "Sum";
-  result += in("in", list(type));
-  result += out("out", type);
+  result.name = std::move(name);
+  result += in("in", list(t));
+  result += out("out", list(u));
+  return result;
+}
+
+Transform Reduce(std::string name, const TypeRef &t, const TypeRef &u) {
+  Transform result;
+  result.name = std::move(name);
+  result += in("in", list(t));
+  result += out("out", u);
   return result;
 }
 
 Transform SplitByRegex(const std::string &regex) {
-  static Transform result;
+  Transform result;
   result.name = "SplitByRegex";
   result.constants.push_back(constant("expr", regex));
   result += in("in", list(utf8()));
@@ -58,4 +67,4 @@ Transform SortBy(const Struct &input, size_t field_idx) {
   return result;
 }
 
-}  // namespace fletchgen::dag
+}  // namespace fletchgen::dag::transform

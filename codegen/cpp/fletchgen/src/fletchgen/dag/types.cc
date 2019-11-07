@@ -19,8 +19,6 @@
 
 namespace fletchgen::dag {
 
-bool Type::Equals(const Type &other) const { return id == other.id; }
-
 PrimRef prim(const std::string &name, uint32_t width) { return std::make_shared<Prim>(name, width); }
 
 #define PRIM_IMPL_FACTORY(NAME, WIDTH) PrimRef NAME() { static PrimRef result = prim(#NAME, WIDTH); return result; }
@@ -78,11 +76,19 @@ bool Prim::Equals(const Type &other) const {
   return (other.id == TypeID::PRIM) && (other.AsRef<Prim>()->width == this->width);
 }
 
+bool Prim::NestedEquals(const Prim &other) const {
+  return Equals(other);
+}
+
 bool List::Equals(const Type &other) const {
   if (other.IsList()) {
     return item->type->Equals(*other.AsRef<List>()->item->type);
   }
   return false;
+}
+
+bool List::NestedEquals(const Prim &other) const {
+  return item->type->NestedEquals(other);
 }
 
 bool Struct::Equals(const Type &other) const {
@@ -95,6 +101,15 @@ bool Struct::Equals(const Type &other) const {
         }
       }
     } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Struct::NestedEquals(const Prim &other) const {
+  for (const auto & field : fields) {
+    if (!field->type->NestedEquals(other)) {
       return false;
     }
   }

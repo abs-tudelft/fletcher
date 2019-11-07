@@ -29,6 +29,10 @@ enum class TypeID {
   STRUCT
 };
 
+struct Prim;
+struct List;
+struct Struct;
+
 struct Type : public std::enable_shared_from_this<Type> {
   explicit Type(TypeID id, std::string name) : id(id), name(std::move(name)) {}
   virtual ~Type() = default;
@@ -58,7 +62,8 @@ struct Type : public std::enable_shared_from_this<Type> {
     return std::static_pointer_cast<const T>(shared_from_this());
   }
 
-  virtual bool Equals(const Type &other) const;
+  virtual bool Equals(const Type &other) const = 0;
+  virtual bool NestedEquals(const Prim &other) const = 0;
 };
 
 typedef std::shared_ptr<arrow::DataType> ATypeRef;
@@ -68,6 +73,7 @@ struct Prim : Type {
   Prim(std::string name, uint32_t width) : Type(TypeID::PRIM, std::move(name)), width(width) {}
   uint32_t width;
   bool Equals(const Type &other) const override;
+  bool NestedEquals(const Prim &other) const override;
 };
 typedef std::shared_ptr<Prim> PrimRef;
 PrimRef prim(const std::string &name, uint32_t width);
@@ -84,6 +90,7 @@ struct List : Type {
   List(std::string name, FieldRef item) : Type(TypeID::LIST, std::move(name)), item(std::move(item)) {}
   FieldRef item;
   bool Equals(const Type &other) const override;
+  bool NestedEquals(const Prim &other) const override;
 };
 typedef std::shared_ptr<List> ListRef;
 ListRef list(const std::string &name, const FieldRef &item);
@@ -95,6 +102,7 @@ struct Struct : Type {
       : Type(TypeID::STRUCT, std::move(name)), fields(std::move(fields)) {}
   std::vector<FieldRef> fields;
   bool Equals(const Type &other) const override;
+  bool NestedEquals(const Prim &other) const override;
 };
 typedef std::shared_ptr<Struct> StructRef;
 StructRef struct_(const std::string &name, const std::vector<FieldRef> &fields);

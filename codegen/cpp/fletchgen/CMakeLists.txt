@@ -65,15 +65,18 @@ add_compile_unit(
 
     src/fletchgen/hls/vivado.cc
 
-    src/fletchgen/dag/binop.cc
-    src/fletchgen/dag/compop.cc
-    src/fletchgen/dag/streamop.cc
-    src/fletchgen/dag/indexop.cc
-    src/fletchgen/dag/memop.cc
     src/fletchgen/dag/dag.cc
-    src/fletchgen/dag/transformations.cc
     src/fletchgen/dag/dot.cc
     src/fletchgen/dag/types.cc
+
+    src/fletchgen/dag/transform/arith.cc
+    src/fletchgen/dag/transform/cast.cc
+    src/fletchgen/dag/transform/comparison.cc
+    src/fletchgen/dag/transform/index.cc
+    src/fletchgen/dag/transform/memory.cc
+    src/fletchgen/dag/transform/meta.cc
+    src/fletchgen/dag/transform/statistics.cc
+    src/fletchgen/dag/transform/streams.cc
   TSTS
     test/fletchgen/test_array.cc
     test/fletchgen/test_bus.cc

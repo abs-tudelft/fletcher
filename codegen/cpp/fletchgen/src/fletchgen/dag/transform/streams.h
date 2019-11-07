@@ -19,16 +19,12 @@
 
 #pragma once
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-/// @brief Create a transformation that sources a stream from memory.
-Transform Source(const std::string &name, const TypeRef &output);
-/// @brief Create a transformation that sources a stream from memory, and desynchronizes all struct fields.
-Transform DesyncedSource(const std::string &name, const StructRef &output);
+Transform Duplicate(const TypeRef &t, uint32_t num_outputs);
+Transform DuplicateForEach(const ListRef &l, const TypeRef& t);
+Transform Split(const StructRef &s);
+Transform Merge(const std::vector<TypeRef> &ts);
+Transform Buffer(const TypeRef &t, uint32_t depth);
 
-/// @brief Create a transformation that sinks a stream to memory.
-Transform Sink(const std::string &name, const TypeRef &input);
-/// @brief Create a transformation that sinks a stream to memory, and desynchronizes all struct fields.
-Transform DesyncedSink(const std::string &name, const StructRef &input);
-
-}  // namespace fletchgen::dag
+} // namespace fletchgen::dag::transform

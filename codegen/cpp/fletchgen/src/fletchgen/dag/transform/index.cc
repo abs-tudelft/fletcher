@@ -12,18 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "fletchgen/dag/transform/index.h"
+
+#include <string>
 
 #include "fletchgen/dag/dag.h"
-#include "fletchgen/dag/dot.h"
-#include "fletchgen/dag/types.h"
 
-#include "fletchgen/dag/transform/arith.h"
-#include "fletchgen/dag/transform/cast.h"
-#include "fletchgen/dag/transform/comparison.h"
-#include "fletchgen/dag/transform/index.h"
-#include "fletchgen/dag/transform/memory.h"
-#include "fletchgen/dag/transform/meta.h"
-#include "fletchgen/dag/transform/statistics.h"
-#include "fletchgen/dag/transform/streams.h"
+namespace fletchgen::dag::transform {
 
+Transform IndexIfTrue(const PrimRef &index_type) {
+  Transform result;
+  result.name = "IndexIfTrue";
+  result += in("in", list(boolean()));
+  result += out("out", list(index_type));
+  return result;
+}
+
+Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
+  Transform result;
+  result.name = "FilterByIndex";
+  result += in("in", list(t));
+  result += in("index", list(index_type));
+  result += out("out", t);
+  return result;
+}
+
+}  // namespace fletchgen::dag::transform

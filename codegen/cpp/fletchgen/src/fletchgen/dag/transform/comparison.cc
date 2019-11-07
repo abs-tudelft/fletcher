@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/compop.h"
+#include "fletchgen/dag/transform/comparison.h"
 
 #include <memory>
 
 #include "fletchgen/dag/dag.h"
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
 Transform CompOp(const PrimRef &t0, const std::string &op, const PrimRef &t1) {
   if (t0 != t1) {
@@ -112,4 +112,4 @@ Transform CompOp(const StructRef &t0, const std::string &op, const StructRef &t1
   return result;
 }
 
-}  // namespace fletchgen::dag
+}  // namespace fletchgen::dag::transform

@@ -19,10 +19,11 @@
 
 #pragma once
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-// Binary operations:
+// Binary operators:
 
+// TODO(johanpel): these can be simplified to not take the second type argument.
 /// @brief Binary operation of primitive t0 with primitive t1.
 Transform BinOp(const PrimRef &t0, const std::string &op, const PrimRef &t1);
 /// @brief Element-wise binary-operation of t0 elements with primitive t1.
@@ -36,4 +37,11 @@ Transform BinOp(const StructRef &t0, const std::string &op, const ListRef &t1);
 /// @brief Element-wise binary-operation of t0 elements with t1 elements.
 Transform BinOp(const StructRef &t0, const std::string &op, const StructRef &t1);
 
-}  // namespace fletchgen::dag
+// Unary operators:
+
+Transform abs(const TypeRef &t);
+Transform sin(const TypeRef &t);
+Transform cos(const TypeRef &t);
+Transform tan(const TypeRef &t);
+
+}  // namespace fletchgen::dag::transform

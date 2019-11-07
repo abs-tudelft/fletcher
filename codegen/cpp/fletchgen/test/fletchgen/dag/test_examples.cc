@@ -18,6 +18,8 @@
 #include "fletchgen/dag/test_utils.h"
 #include "fletchgen/dag/api.h"
 
+using namespace fletchgen::dag::transform;
+
 namespace fletchgen::dag {
 
 TEST(Example, Sum) {
@@ -25,7 +27,7 @@ TEST(Example, Sum) {
   auto g = Graph();
 
   auto source = g <<= Source("number", list(u32()));
-  auto sum = g <<= Sum(u32());
+  auto sum = g <<= Sum(list(u32()));
   auto sink = g <<= Sink("result", u32());
 
   g <<= sum << source;

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/memop.h"
+#include "fletchgen/dag/transform/memory.h"
 
 #include <string>
 
 #include "fletchgen/dag/dag.h"
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
 Transform Source(const std::string &name, const TypeRef &output) {
   Transform result;
@@ -56,4 +56,4 @@ Transform DesyncedSink(const std::string &name, const StructRef &input) {
   return result;
 }
 
-} // namespace fletchgen::dag
+} // namespace fletchgen::dag::transform

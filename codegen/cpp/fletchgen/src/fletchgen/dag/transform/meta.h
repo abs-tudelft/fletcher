@@ -19,12 +19,13 @@
 
 #pragma once
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-Transform Duplicate(const TypeRef &t, uint32_t num_outputs);
-Transform DuplicateForEach(const ListRef &l, const TypeRef& t);
-Transform Split(const StructRef &s);
-Transform Merge(const std::vector<TypeRef> &ts);
-Transform Buffer(const TypeRef &t, uint32_t depth);
+Transform Map(std::string name, const TypeRef &t, const TypeRef &u);
+Transform Reduce(std::string name, const TypeRef &t, const TypeRef &u);
 
-} // namespace fletchgen::dag
+Transform SplitByRegex(const std::string &regex);
+Transform Sort(const ListRef &list_type);
+Transform SortBy(const Struct &input, size_t field_idx);
+
+}  // namespace fletchgen::dag::transform

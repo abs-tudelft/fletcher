@@ -12,29 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/dag/indexop.h"
+#include "fletchgen/dag/transform/cast.h"
 
-#include <string>
+#include <memory>
 
 #include "fletchgen/dag/dag.h"
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
-Transform IndexIfTrue(const PrimRef &index_type) {
+Transform Cast(const TypeRef &from, const TypeRef &to) {
   Transform result;
-  result.name = "IndexIfTrue";
-  result += in("in", list(boolean()));
-  result += out("out", list(index_type));
+  result += in("in", from);
+  result += out("out", to);
   return result;
 }
 
-Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
-  Transform result;
-  result.name = "FilterByIndex";
-  result += in("in", list(t));
-  result += in("index", list(index_type));
-  result += out("out", t);
-  return result;
-}
-
-}  // namespace fletchgen::dag
+}  // namespace fletchgen::dag::transform

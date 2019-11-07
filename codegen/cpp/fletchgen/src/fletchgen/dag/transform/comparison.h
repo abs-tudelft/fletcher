@@ -19,7 +19,7 @@
 
 #pragma once
 
-namespace fletchgen::dag {
+namespace fletchgen::dag::transform {
 
 // Comparison operations:
 
@@ -36,4 +36,4 @@ Transform CompOp(const StructRef &t0, const std::string &op, const ListRef &t1);
 /// @brief Element-wise comparison of t0 elements with t1 elements.
 Transform CompOp(const StructRef &t0, const std::string &op, const StructRef &t1);
 
-} // namespace fletchgen::dag
+} // namespace fletchgen::dag::transform
