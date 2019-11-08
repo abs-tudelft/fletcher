@@ -64,19 +64,6 @@ add_compile_unit(
     src/fletchgen/top/axi.cc
 
     src/fletchgen/hls/vivado.cc
-
-    src/fletchgen/dag/dag.cc
-    src/fletchgen/dag/dot.cc
-    src/fletchgen/dag/types.cc
-
-    src/fletchgen/dag/transform/arith.cc
-    src/fletchgen/dag/transform/cast.cc
-    src/fletchgen/dag/transform/comparison.cc
-    src/fletchgen/dag/transform/index.cc
-    src/fletchgen/dag/transform/memory.cc
-    src/fletchgen/dag/transform/meta.cc
-    src/fletchgen/dag/transform/statistics.cc
-    src/fletchgen/dag/transform/streams.cc
   TSTS
     test/fletchgen/test_array.cc
     test/fletchgen/test_bus.cc
@@ -88,9 +75,6 @@ add_compile_unit(
     test/fletchgen/test_types.cc
     test/fletchgen/test_profiler.cc
     test/fletchgen/srec/test_srec.cc
-    test/fletchgen/dag/test_binop.cc
-    test/fletchgen/dag/test_compop.cc
-    test/fletchgen/dag/test_examples.cc
   DEPS
     cerata
     arrow_shared

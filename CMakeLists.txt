@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 
 option(FLETCHER_BUILD_CERATA "Build cerata library" OFF)
 option(FLETCHER_BUILD_FLETCHGEN "Build fletchgen" OFF)
+option(FLETCHER_BUILD_DAG "Build DAG composer" OFF)
 option(FLETCHER_BUILD_COMMON "Build common library" OFF)
 option(FLETCHER_BUILD_AWS "Build aws platform library" OFF)
 option(FLETCHER_BUILD_ECHO "Build echo platform library" OFF)
@@ -28,6 +29,10 @@ endif()
 
 if(FLETCHER_BUILD_FLETCHGEN)
   add_subdirectory(codegen/cpp/fletchgen)
+endif()
+
+if(FLETCHER_BUILD_DAG)
+  add_subdirectory(codegen/cpp/dag)
 endif()
 
 if(FLETCHER_BUILD_C)
