@@ -26,9 +26,9 @@ TEST(Example, Sum) {
 
   auto g = Graph();
 
-  auto source = g <<= Source("number", list(u32()));
+  auto source = g <<= Load("number", list(u32()));
   auto sum = g <<= Sum(list(u32()));
-  auto sink = g <<= Sink("result", u32());
+  auto sink = g <<= Store("result", u32());
 
   g <<= sum << source;
   g <<= sink << sum;
@@ -41,19 +41,18 @@ TEST(Example, WhereSelect) {
   auto liststr = list(utf8());
   auto listu8 = list(u8());
 
-  auto table = struct_({field("name", liststr), field("age", listu8)});
-
-  auto source = g <<= DesyncedSource("table", table);
-  auto limit = g <<= Source("limit", u8());
+  auto name = g <<= Load("name", liststr);
+  auto age = g <<= Load("age", listu8);
+  auto limit = g <<= Load("limit", u8());
   auto where = g <<= CompOp(listu8, ">", u8());
   auto index = g <<= IndexIfTrue();
   auto select = g <<= SelectByIndex(utf8());
-  auto sink = g <<= Sink("name", utf8());
+  auto sink = g <<= Store("name", utf8());
 
-  g <<= where.i(0) << source("age");
+  g <<= where.i(0) << age;
   g <<= where.i(1) << limit;
   g <<= index << where;
-  g <<= select("in") << source("name");
+  g <<= select("in") << name;
   g <<= select("index") << index;
   g <<= sink << select;
 
@@ -64,17 +63,18 @@ TEST(Example, WordCount) {
   auto strings = list(utf8());
   auto g = Graph();
 
-  auto source = g <<= Source("sentences", strings);
-  auto constant = g <<= Source("constant", u32());
-  auto split = g <<= SplitByRegex(R"(\s)");
-  auto dupl = g <<= DuplicateForEach(strings, u32());
-  auto sink = g <<= DesyncedSink("result", struct_({field("word", list(utf8())), field("count", list(u32()))}));
+  auto sentences = g <<= Load("sentences", strings);
+  auto constant = g <<= Load("constant", u32());
+  auto words = g <<= SplitByRegex(R"(\s)");
+  auto tuple = g <<= DuplicateForEach(strings, u32());
+  auto word = g <<= Store("word", list(utf8()));
+  auto count = g <<= Store("count", list(u32()));
 
-  g <<= split("in") << source;
-  g <<= (dupl.i(0) << split).named("words");
-  g <<= dupl.i(1) << constant;
-  g <<= sink.i(0) << dupl.o(0);
-  g <<= sink.i(1) << dupl.o(1);
+  g <<= words << sentences;
+  g <<= (tuple.i(0) << words).named("words");
+  g <<= tuple.i(1) << constant;
+  g <<= word << tuple.o(0);
+  g <<= count << tuple.o(1);
 
   DumpToDot(g);
 }
@@ -82,21 +82,31 @@ TEST(Example, WordCount) {
 TEST(Example, MatchCompressedText) {
   auto g = Graph();
 
-  auto title = g <<= Source("title", list(utf8()));
-  auto text = g <<= Source("text", list(binary()));
-  auto matched = g <<= Sink("title", list(utf8()));
-  auto total = g <<= Sink("total", u32());
+  auto title = g <<= Load("titles", list(utf8()));
+  auto compressed_texts = g <<= Load("compressed_texts", list(binary()));
+  auto matched = g <<= Store("titles", list(utf8()));
+  auto total = g <<= Store("total", u32());
 
-  // this should create a sub-graph:
-  auto map = g <<= Map(Match("covfefe"));
-  auto split = g <<= Duplicate(list(boolean()), 2);
+  // This could create a sub-graph:
+  auto flat_d = g <<= Flatten(binary());
+  auto decompress = g <<= DecompressSnappy();
+  auto match = g <<= Match("covfefe");
+  auto seq_m = g <<= Sequence(bool_());
+
+  auto split = g <<= Duplicate(list(bool_()), 2);
   auto index = g <<= IndexIfTrue();
   auto select = g <<= SelectByIndex(utf8());
-  auto cast = g <<= Cast(list(boolean()), list(u32()));
+  auto cast = g <<= Cast(list(bool_()), list(u32()));
   auto sum = g <<= Sum(list(u32()));
 
-  g <<= map("in_0") << text;
-  g <<= split << map;
+  g <<= flat_d << compressed_texts;
+
+  g <<= decompress << flat_d("out");
+  g <<= match << decompress;
+  g <<= seq_m("in") << match;
+  g <<= seq_m("size") << flat_d("size");
+
+  g <<= split << seq_m;
   g <<= index << split.o(0);
   g <<= select("index") << index;
   g <<= select("in") << title;

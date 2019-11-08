@@ -23,19 +23,18 @@ namespace dag::transform {
 
 Transform DecompressSnappyBuffered() {
   Transform result;
-  result.name = "DecompressSnappy";
-  result += in("in", list(prim(256)));
-  result += out("out", list(prim(256)));
+  result.name = "SnappyDecompressBuffered";
+  result += in("in", binary());
+  result += out("out", binary());
   return result;
 }
 
 Transform DecompressSnappy() {
   Transform result;
-  result.name = "DecompressSnappy";
-  result += in("in", list(prim(64)));
-  result += out("out", list(prim(64)));
+  result.name = "SnappyDecompress";
+  result += in("in", binary());
+  result += out("out", binary());
   return result;
 }
-
 
 }

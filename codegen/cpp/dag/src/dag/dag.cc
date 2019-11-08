@@ -185,18 +185,20 @@ Edge operator<<(const Transform &dst, const Transform &src) {
   }
   if (dst.inputs.size() > 1) {
     throw std::runtime_error("Cannot implicitly select input of " + dst.ToString()
-                                 + " because transformation has multiple inputs.");
+                                 + " because transformation has multiple inputs: "
+                                 + dst.ToStringInputs());
   }
   if (src.outputs.size() > 1) {
     throw std::runtime_error("Cannot implicitly select output of " + src.ToString()
-                                 + " because transformation has multiple outputs.");
+                                 + " because transformation has multiple outputs: "
+                                 + src.ToStringOutputs());
   }
   return Edge(dst.inputs[0].get(), src.outputs[0].get());
 }
 
 Edge::Edge(const Vertex *dst, const Vertex *src) : src_(src), dst_(dst) {
   if (!src_->type->Equals(*dst_->type)) {
-    throw std::runtime_error("Can't connect type " + src_->type->name + " to " + dst_->type->name);
+    throw std::runtime_error("Can't connect type " + src_->type->name() + " to " + dst_->type->name());
   }
 }
 

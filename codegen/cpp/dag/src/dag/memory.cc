@@ -20,39 +20,19 @@
 
 namespace dag {
 
-Transform Source(const std::string &name, const TypeRef &output) {
+Transform Load(const std::string &name, const TypeRef &output) {
   Transform result;
-  result.name = "Source";
+  result.name = "Load";
   result.reads_memory = true;
   result += out(name, output);
   return result;
 }
 
-Transform DesyncedSource(const std::string &name, const StructRef &output) {
+Transform Store(const std::string &name, const TypeRef &input) {
   Transform result;
-  result.name = "DesyncedSource";
-  result.reads_memory = true;
-  for (const auto &f : output->fields) {
-    result += out(f->name, f->type);
-  }
-  return result;
-}
-
-Transform Sink(const std::string &name, const TypeRef &input) {
-  Transform result;
-  result.name = "Sink";
+  result.name = "Store";
   result.writes_memory = true;
   result += in(name, input);
-  return result;
-}
-
-Transform DesyncedSink(const std::string &name, const StructRef &input) {
-  Transform result;
-  result.name = "DesyncedSink";
-  result.writes_memory = true;
-  for (const auto &f : input->fields) {
-    result += in(f->name, f->type);
-  }
   return result;
 }
 

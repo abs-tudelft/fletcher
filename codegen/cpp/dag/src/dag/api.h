@@ -25,6 +25,7 @@
 
 #include "dag/transform/arith.h"
 #include "dag/transform/comparison.h"
+#include "dag/transform/compress.h"
 #include "dag/transform/statistics.h"
 #include "dag/transform/string.h"
 #include "dag/transform/misc.h"

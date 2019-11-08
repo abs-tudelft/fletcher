@@ -22,13 +22,9 @@
 namespace dag {
 
 /// @brief Create a transformation that sources a stream from memory.
-Transform Source(const std::string &name, const TypeRef &output);
-/// @brief Create a transformation that sources a stream from memory, and desynchronizes all struct fields.
-Transform DesyncedSource(const std::string &name, const StructRef &output);
+Transform Load(const std::string &name, const TypeRef &output);
 
 /// @brief Create a transformation that sinks a stream to memory.
-Transform Sink(const std::string &name, const TypeRef &input);
-/// @brief Create a transformation that sinks a stream to memory, and desynchronizes all struct fields.
-Transform DesyncedSink(const std::string &name, const StructRef &input);
+Transform Store(const std::string &name, const TypeRef &input);
 
 }  // namespace dag

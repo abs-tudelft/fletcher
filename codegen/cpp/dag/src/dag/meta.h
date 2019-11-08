@@ -21,9 +21,10 @@
 
 namespace dag {
 
-Transform Map(std::string name, const TypeRef &t, const TypeRef &u);
+Transform Flatten(const TypeRef &t, const PrimRef &index_type = idx32());
+Transform Sequence(const TypeRef &t, const PrimRef &index_type = idx32());
 
-Transform Map(const Transform &function);
+Transform Map(std::string name, const TypeRef &t, const TypeRef &u);
 
 Transform Reduce(std::string name, const TypeRef &t, const TypeRef &u);
 

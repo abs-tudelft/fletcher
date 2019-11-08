@@ -25,7 +25,7 @@ Transform Match(const std::string &str) {
   result.name = "Match";
   result.constants.push_back(constant("match", str));
   result += in("in", utf8());
-  result += out("out", boolean());
+  result += out("out", bool_());
   return result;
 }
 

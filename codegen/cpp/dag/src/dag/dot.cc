@@ -68,25 +68,33 @@ std::string Name(const Transform &t) {
 std::string Label(const Type &t) {
   std::stringstream str;
   switch (t.id) {
-    case TypeID::PRIM: str << Sanitize(t.name);
+    case TypeID::PRIM: str << Sanitize(t.name());
       break;
     case TypeID::LIST: {
       const auto &l = t.As<List>();
-      str << R"(<TABLE border="0" cellspacing="0" cellborder="0">)";
-      str << R"(<TR><TD>)" << "list" << R"(</TD>)";
-      str << R"(<TD>)" << Label(*l.item->type) << R"(</TD></TR>)";
-      str << R"(</TABLE>)";
+      if (l.canonical_name() == l.name()) {
+        str << R"(<TABLE border="0" cellspacing="0" cellborder="0">)";
+        str << R"(<TR><TD>)" << "list" << R"(</TD>)";
+        str << R"(<TD>)" << Label(*l.item->type) << R"(</TD></TR>)";
+        str << R"(</TABLE>)";
+      } else {
+        str << l.name();
+      }
       break;
     }
       break;
     case TypeID::STRUCT: {
       const auto &s = t.As<Struct>();
-      str << R"(<TABLE border="0" cellspacing="0" cellborder="0">)";
-      for (const auto &f : s.fields) {
-        str << R"(<TR><TD>)" << Sanitize(f->name) << R"(</TD>)";
-        str << R"(<TD>)" << Label(*f->type) << R"(</TD></TR>)";
+      if (s.canonical_name() == s.name()) {
+        str << R"(<TABLE border="0" cellspacing="0" cellborder="0">)";
+        for (const auto &f : s.fields) {
+          str << R"(<TR><TD>)" << Sanitize(f->name) << R"(</TD>)";
+          str << R"(<TD>)" << Label(*f->type) << R"(</TD></TR>)";
+        }
+        str << R"(</TABLE>)";
+      } else {
+        str << s.name();
       }
-      str << R"(</TABLE>)";
       break;
     }
   }

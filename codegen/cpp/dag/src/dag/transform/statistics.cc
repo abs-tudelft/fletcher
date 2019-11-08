@@ -24,7 +24,7 @@ Transform All(const TypeRef &t) {
   Transform result;
   result.name = "All";
   result += in("in", t);
-  result += out("out", boolean());
+  result += out("out", bool_());
   return result;
 }
 
@@ -32,7 +32,7 @@ Transform Any(const TypeRef &t) {
   Transform result;
   result.name = "Any";
   result += in("in", t);
-  result += out("out", boolean());
+  result += out("out", bool_());
   return result;
 }
 

@@ -34,10 +34,10 @@ struct List;
 struct Struct;
 
 struct Type : public std::enable_shared_from_this<Type> {
-  explicit Type(TypeID id, std::string name) : id(id), name(std::move(name)) {}
+  explicit Type(TypeID id, std::string name) : id(id), name_(std::move(name)) {}
   virtual ~Type() = default;
   TypeID id;
-  std::string name;
+  std::string name_;
   bool IsPrim() const { return id == TypeID::PRIM; }
   bool IsList() const { return id == TypeID::LIST; }
   bool IsStruct() const { return id == TypeID::STRUCT; }
@@ -61,6 +61,8 @@ struct Type : public std::enable_shared_from_this<Type> {
   std::shared_ptr<const T> AsRef() const {
     return std::static_pointer_cast<const T>(shared_from_this());
   }
+  std::string name() const;
+  virtual std::string canonical_name() const = 0;
 
   virtual bool Equals(const Type &other) const = 0;
   virtual bool NestedEquals(const Prim &other) const = 0;
@@ -73,6 +75,7 @@ struct Prim : Type {
   uint32_t width;
   bool Equals(const Type &other) const override;
   bool NestedEquals(const Prim &other) const override;
+  std::string canonical_name() const override;
 };
 typedef std::shared_ptr<Prim> PrimRef;
 PrimRef prim(const std::string &name, uint32_t width);
@@ -91,6 +94,7 @@ struct List : Type {
   FieldRef item;
   bool Equals(const Type &other) const override;
   bool NestedEquals(const Prim &other) const override;
+  std::string canonical_name() const override;
 };
 typedef std::shared_ptr<List> ListRef;
 ListRef list(const std::string &name, const FieldRef &item);
@@ -103,6 +107,7 @@ struct Struct : Type {
   std::vector<FieldRef> fields;
   bool Equals(const Type &other) const override;
   bool NestedEquals(const Prim &other) const override;
+  std::string canonical_name() const override;
 };
 typedef std::shared_ptr<Struct> StructRef;
 StructRef struct_(const std::string &name, const std::vector<FieldRef> &fields);
@@ -110,7 +115,8 @@ StructRef struct_(const std::vector<FieldRef> &fields);
 
 #define PRIM_DECL_FACTORY(NAME) PrimRef NAME();
 
-PRIM_DECL_FACTORY(boolean)
+PRIM_DECL_FACTORY(bit)
+PRIM_DECL_FACTORY(byte)
 PRIM_DECL_FACTORY(i8)
 PRIM_DECL_FACTORY(i16)
 PRIM_DECL_FACTORY(i32)
@@ -125,6 +131,7 @@ PRIM_DECL_FACTORY(f64)
 PRIM_DECL_FACTORY(idx32)
 PRIM_DECL_FACTORY(idx64)
 
+PrimRef bool_();
 ListRef utf8();
 ListRef binary();
 

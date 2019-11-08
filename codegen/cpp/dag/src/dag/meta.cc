@@ -29,30 +29,29 @@ Transform Map(std::string name, const TypeRef &t, const TypeRef &u) {
   return result;
 }
 
-Transform Map(const Transform &function) {
-  Transform result;
-  result.name = "Map(" + function.name + ")";
-
-  for (const auto& co : function.constants) {
-    result += constant(co->name, co->value);
-  }
-
-  for (size_t i = 0; i < function.inputs.size(); i++) {
-    auto t = function.inputs[i]->type;
-    result += in("in_" + std::to_string(i), list(t));
-  }
-  for (size_t o = 0; o < function.outputs.size(); o++) {
-    auto t = function.outputs[o]->type;
-    result += out("out_" + std::to_string(o), list(t));
-  }
-  return result;
-}
-
 Transform Reduce(std::string name, const TypeRef &t, const TypeRef &u) {
   Transform result;
   result.name = std::move(name);
   result += in("in", list(t));
   result += out("out", u);
+  return result;
+}
+
+Transform Flatten(const TypeRef &t, const PrimRef& index_type) {
+  Transform result;
+  result.name = "Flatten";
+  result += in("in", list(t));
+  result += out("out", t);
+  result += out("size", index_type);
+  return result;
+}
+
+Transform Sequence(const TypeRef &t, const PrimRef& index_type) {
+  Transform result;
+  result.name = "Sequence";
+  result += in("in", t);
+  result += in("size", index_type);
+  result += out("out", list(t));
   return result;
 }
 

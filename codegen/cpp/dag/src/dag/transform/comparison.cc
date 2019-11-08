@@ -29,7 +29,7 @@ Transform CompOp(const PrimRef &t0, const std::string &op, const PrimRef &t1) {
   result += constant("op", op);
   result += in("in_0", t0);
   result += in("in_1", t1);
-  result += out("out", boolean());
+  result += out("out", bool_());
   return result;
 }
 
@@ -42,7 +42,7 @@ Transform CompOp(const ListRef &t0, const std::string &op, const PrimRef &t1) {
   result += constant("op", op);
   result += in("in_0", t0);
   result += in("in_1", t1);
-  result += out("out", list(boolean()));
+  result += out("out", list(bool_()));
   return result;
 }
 
@@ -55,7 +55,7 @@ Transform CompOp(const ListRef &t0, const std::string &op, const ListRef &t1) {
   result += constant("op", op);
   result += in("in_0", t0);
   result += in("in_1", t1);
-  result += out("out", list(boolean()));
+  result += out("out", list(bool_()));
   return result;
 }
 
@@ -67,7 +67,7 @@ Transform CompOp(const StructRef &t0, const std::string &op, const PrimRef &t1) 
       throw std::runtime_error("Can only perform element-wise comparison operation of struct and primitive if struct "
                                "fields are all lists of same primitive type.");
     }
-    comp_result_fields.push_back(field("", list(boolean())));
+    comp_result_fields.push_back(field("", list(bool_())));
   }
   Transform result;
   result.name = "StructCompOpPrim";

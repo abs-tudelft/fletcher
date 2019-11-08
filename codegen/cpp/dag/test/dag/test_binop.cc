@@ -24,17 +24,17 @@ TEST(BinOps, Prim) {
 
   auto g = Graph();
 
-  auto a = g <<= Source("a", u32());
+  auto a = g <<= Load("a", u32());
   auto split_a = g <<= Duplicate(u32(), 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", u32());
+  auto b = g <<= Load("b", u32());
   auto split_b = g <<= Duplicate(u32(), 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", u32());
-  auto r = g <<= Sink("r", u32());
-  auto s = g <<= Sink("s", u32());
-  auto t = g <<= Sink("t", u32());
+  auto q = g <<= Store("q", u32());
+  auto r = g <<= Store("r", u32());
+  auto s = g <<= Store("s", u32());
+  auto t = g <<= Store("t", u32());
 
   auto add = g <<= BinOp(u32(), "+", u32());
   g <<= add(0) << split_a.o(0);
@@ -63,17 +63,17 @@ TEST(BinOps, ListPrim) {
 
   auto g = Graph();
   auto lu32 = list(u32());
-  auto a = g <<= Source("a", lu32);
+  auto a = g <<= Load("a", lu32);
   auto split_a = g <<= Duplicate(lu32, 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", u32());
+  auto b = g <<= Load("b", u32());
   auto split_b = g <<= Duplicate(u32(), 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", lu32);
-  auto r = g <<= Sink("r", lu32);
-  auto s = g <<= Sink("s", lu32);
-  auto t = g <<= Sink("t", lu32);
+  auto q = g <<= Store("q", lu32);
+  auto r = g <<= Store("r", lu32);
+  auto s = g <<= Store("s", lu32);
+  auto t = g <<= Store("t", lu32);
 
   auto add = g <<= BinOp(lu32, "+", u32());
   g <<= add(0) << split_a.o(0);
@@ -102,17 +102,17 @@ TEST(BinOps, ListList) {
 
   auto g = Graph();
   auto lu32 = list(u32());
-  auto a = g <<= Source("a", lu32);
+  auto a = g <<= Load("a", lu32);
   auto split_a = g <<= Duplicate(lu32, 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", lu32);
+  auto b = g <<= Load("b", lu32);
   auto split_b = g <<= Duplicate(lu32, 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", lu32);
-  auto r = g <<= Sink("r", lu32);
-  auto s = g <<= Sink("s", lu32);
-  auto t = g <<= Sink("t", lu32);
+  auto q = g <<= Store("q", lu32);
+  auto r = g <<= Store("r", lu32);
+  auto s = g <<= Store("s", lu32);
+  auto t = g <<= Store("t", lu32);
 
   auto add = g <<= BinOp(lu32, "+", lu32);
   g <<= add(0) << split_a.o(0);
@@ -144,17 +144,17 @@ TEST(BinOps, StructPrim) {
 
   auto g = Graph();
 
-  auto a = g <<= Source("a", su32);
+  auto a = g <<= Load("a", su32);
   auto split_a = g <<= Duplicate(su32, 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", u32());
+  auto b = g <<= Load("b", u32());
   auto split_b = g <<= Duplicate(u32(), 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", su32);
-  auto r = g <<= Sink("r", su32);
-  auto s = g <<= Sink("s", su32);
-  auto t = g <<= Sink("t", su32);
+  auto q = g <<= Store("q", su32);
+  auto r = g <<= Store("r", su32);
+  auto s = g <<= Store("s", su32);
+  auto t = g <<= Store("t", su32);
 
   auto add = g <<= BinOp(su32, "+", u32());
   g <<= add(0) << split_a.o(0);
@@ -186,17 +186,17 @@ TEST(BinOps, StructList) {
 
   auto g = Graph();
 
-  auto a = g <<= Source("a", su32);
+  auto a = g <<= Load("a", su32);
   auto split_a = g <<= Duplicate(su32, 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", lu32);
+  auto b = g <<= Load("b", lu32);
   auto split_b = g <<= Duplicate(lu32, 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", su32);
-  auto r = g <<= Sink("r", su32);
-  auto s = g <<= Sink("s", su32);
-  auto t = g <<= Sink("t", su32);
+  auto q = g <<= Store("q", su32);
+  auto r = g <<= Store("r", su32);
+  auto s = g <<= Store("s", su32);
+  auto t = g <<= Store("t", su32);
 
   auto add = g <<= BinOp(su32, "+", lu32);
   g <<= add(0) << split_a.o(0);
@@ -228,17 +228,17 @@ TEST(BinOps, StructStruct) {
 
   auto g = Graph();
 
-  auto a = g <<= Source("a", su32);
+  auto a = g <<= Load("a", su32);
   auto split_a = g <<= Duplicate(su32, 4);
   g <<= split_a << a;
-  auto b = g <<= Source("b", su32);
+  auto b = g <<= Load("b", su32);
   auto split_b = g <<= Duplicate(su32, 4);
   g <<= split_b << b;
 
-  auto q = g <<= Sink("q", su32);
-  auto r = g <<= Sink("r", su32);
-  auto s = g <<= Sink("s", su32);
-  auto t = g <<= Sink("t", su32);
+  auto q = g <<= Store("q", su32);
+  auto r = g <<= Store("r", su32);
+  auto s = g <<= Store("s", su32);
+  auto t = g <<= Store("t", su32);
 
   auto add = g <<= BinOp(su32, "+", su32);
   g <<= add(0) << split_a.o(0);

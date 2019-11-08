@@ -23,7 +23,7 @@ namespace dag {
 Transform IndexIfTrue(const PrimRef &index_type) {
   Transform result;
   result.name = "IndexIfTrue";
-  result += in("in", list(boolean()));
+  result += in("in", list(bool_()));
   result += out("out", list(index_type));
   return result;
 }

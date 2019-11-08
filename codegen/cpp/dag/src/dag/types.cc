@@ -18,12 +18,20 @@
 
 namespace dag {
 
+std::string Type::name() const {
+  if (name_.empty())
+    return canonical_name();
+  else
+    return name_;
+}
+
 PrimRef prim(const std::string &name, uint32_t width) { return std::make_shared<Prim>(name, width); }
-PrimRef prim(uint32_t width) { return prim("b" + std::to_string(width), width); }
+PrimRef prim(uint32_t width) { return prim("", width); }
 
 #define PRIM_IMPL_FACTORY(NAME, WIDTH) PrimRef NAME() { static PrimRef result = prim(#NAME, WIDTH); return result; }
 
-PRIM_IMPL_FACTORY(boolean, 8)
+PRIM_IMPL_FACTORY(bit, 1)
+PRIM_IMPL_FACTORY(byte, 8)
 PRIM_IMPL_FACTORY(i8, 8)
 PRIM_IMPL_FACTORY(i16, 16)
 PRIM_IMPL_FACTORY(i32, 32)
@@ -38,6 +46,11 @@ PRIM_IMPL_FACTORY(f64, 64)
 PRIM_IMPL_FACTORY(idx32, 32)
 PRIM_IMPL_FACTORY(idx64, 64)
 
+PrimRef bool_() {
+  static PrimRef result = prim("bool", 1);
+  return result;
+}
+
 FieldRef field(const std::string &name, const TypeRef &type) { return std::make_shared<Field>(name, type); }
 
 ListRef list(const std::string &name, const FieldRef &item) {
@@ -49,20 +62,11 @@ ListRef list(const std::string &name, const TypeRef &item_type) {
 }
 
 ListRef list(const TypeRef &item_type) {
-  return list("list<" + item_type->name + ">", item_type);
+  return list("", item_type);
 }
 
 StructRef struct_(const std::vector<FieldRef> &fields) {
-  std::stringstream name;
-  name << "struct<";
-  for (const auto &f : fields) {
-    name << f->name << ": " << f->type->name;
-    if (f != fields.back()) {
-      name << ", ";
-    }
-  }
-  name << ">";
-  return std::make_shared<Struct>(name.str(), fields);
+  return std::make_shared<Struct>("", fields);
 }
 
 StructRef struct_(const std::string &name, const std::vector<FieldRef> &fields) {
@@ -114,6 +118,20 @@ bool Struct::NestedEquals(const Prim &other) const {
     }
   }
   return true;
+}
+
+std::string Prim::canonical_name() const { return "B" + std::to_string(width); }
+std::string List::canonical_name() const { return "list<" + item->type->canonical_name() + ">"; }
+std::string Struct::canonical_name() const {
+  std::stringstream str;
+  str << "struct<";
+  for (const auto &f : fields) {
+    str << f->name;
+    str << ":";
+    str << f->type->canonical_name();
+  }
+  str << ">";
+  return str.str();
 }
 
 }  // namespace dag
