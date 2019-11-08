@@ -22,9 +22,9 @@
 namespace dag {
 
 /// @brief Create a transformation that sources a stream from memory.
-Transform Load(const std::string &name, const TypeRef &output);
+Graph Load(const std::string &name, const TypeRef &output);
 
 /// @brief Create a transformation that sinks a stream to memory.
-Transform Store(const std::string &name, const TypeRef &input);
+Graph Store(const std::string &name, const TypeRef &input);
 
 }  // namespace dag

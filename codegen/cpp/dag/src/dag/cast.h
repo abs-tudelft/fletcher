@@ -21,6 +21,6 @@
 
 namespace dag {
 
-Transform Cast(const TypeRef &from, const TypeRef &to);
+Graph Cast(const TypeRef &from, const TypeRef &to);
 
 }  // namespace dag

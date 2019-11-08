@@ -20,22 +20,22 @@
 
 namespace dag::transform {
 
-Transform Sort(const ListRef &list_type) {
-  Transform result;
+Graph Sort(const ListRef &list_type) {
+  Graph result;
   result.name = "Sort";
-  result += in("in", list_type);
-  result += out("out", list_type);
+  result += In("in", list_type);
+  result += Out("out", list_type);
   return result;
 }
 
-Transform SortBy(const Struct &input, size_t field_idx) {
-  Transform result;
+Graph SortBy(const Struct &input, size_t field_idx) {
+  Graph result;
   result.name = "SortBy";
   int i = 0;
-  result += constant("column", std::to_string(field_idx));
+  result += Constant("column", std::to_string(field_idx));
   for (const auto &f : input.fields) {
-    result += in("in_" + std::to_string(i), f->type);
-    result += out("out_" + std::to_string(i), f->type);
+    result += In("in_" + std::to_string(i), f->type);
+    result += Out("out_" + std::to_string(i), f->type);
     i++;
   }
   return result;

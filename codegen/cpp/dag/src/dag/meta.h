@@ -21,11 +21,14 @@
 
 namespace dag {
 
-Transform Flatten(const TypeRef &t, const PrimRef &index_type = idx32());
-Transform Sequence(const TypeRef &t, const PrimRef &index_type = idx32());
+Graph Flatten(const TypeRef &t, const PrimRef &index_type = idx32());
+Graph Sequence(const TypeRef &t, const PrimRef &index_type = idx32());
 
-Transform Map(std::string name, const TypeRef &t, const TypeRef &u);
+Graph Map(Graph f);
+Graph FlatMap(Graph f);
 
-Transform Reduce(std::string name, const TypeRef &t, const TypeRef &u);
+Graph MergeLists(const std::vector<ListRef>& list_types);
+
+Graph Reduce(std::string name, const TypeRef &t, const TypeRef &u);
 
 }  // namespace dag

@@ -21,7 +21,7 @@
 
 namespace dag::transform {
 
-Transform Sort(const ListRef &list_type);
-Transform SortBy(const Struct &input, size_t field_idx);
+Graph Sort(const ListRef &list_type);
+Graph SortBy(const Struct &input, size_t field_idx);
 
 }  // namespace dag::transform

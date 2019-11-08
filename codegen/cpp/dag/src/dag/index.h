@@ -19,9 +19,9 @@
 namespace dag {
 
 /// @brief Transform a list of booleans into a list of indices for which the booleans are true.
-Transform IndexIfTrue(const PrimRef &index_type = idx32());
+Graph IndexIfTrue(const PrimRef &index_type = idx32());
 
 /// @brief Select elements from a list of t's by index.
-Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type = idx32());
+Graph SelectByIndex(const TypeRef &t, const PrimRef &index_type = idx32());
 
 }  // namespace dag

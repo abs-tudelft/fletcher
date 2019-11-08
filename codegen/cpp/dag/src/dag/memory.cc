@@ -20,19 +20,19 @@
 
 namespace dag {
 
-Transform Load(const std::string &name, const TypeRef &output) {
-  Transform result;
+Graph Load(const std::string &name, const TypeRef &output) {
+  Graph result;
   result.name = "Load";
   result.reads_memory = true;
-  result += out(name, output);
+  result += Out(name, output);
   return result;
 }
 
-Transform Store(const std::string &name, const TypeRef &input) {
-  Transform result;
+Graph Store(const std::string &name, const TypeRef &input) {
+  Graph result;
   result.name = "Store";
   result.writes_memory = true;
-  result += in(name, input);
+  result += In(name, input);
   return result;
 }
 

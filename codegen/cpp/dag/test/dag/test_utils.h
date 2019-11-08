@@ -20,16 +20,20 @@
 
 namespace dag {
 
-inline void DumpToDot(const Graph &g) {
-  std::stringstream name;
-  name << ::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name();
-  name << "_";
-  name << ::testing::UnitTest::GetInstance()->current_test_info()->test_case_name();\
-  name << "_";
-  name << ::testing::UnitTest::GetInstance()->current_test_info()->name();
-  std::cout << std::endl << AsDotGraph(g) << std::endl;
+inline void DumpToDot(const Graph &g, std::string name = "", bool simple = false) {
+  if (name.empty()) {
+    std::stringstream n;
+    n << ::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name();
+    n << "_";
+    n << ::testing::UnitTest::GetInstance()->current_test_info()->test_case_name();
+    n << "_";
+    n << ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    name = n.str();
+  }
+  auto graph = AsDotGraph(g, simple);
+  std::cout << std::endl << graph << std::endl;
   system("mkdir -p test_graphs");
-  std::ofstream("test_graphs/" + name.str() + ".dot") << AsDotGraph(g);
+  std::ofstream("test_graphs/" + name + ".dot") << graph;
 }
 
 } // namespace dag

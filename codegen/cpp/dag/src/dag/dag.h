@@ -39,41 +39,42 @@ typedef std::vector<VertexProfile> ProfileParam;
 typedef std::function<std::string(ProfileParam)> ProfileParamFunc;
 typedef std::variant<std::string, ProfileParamFunc> AnyParamFunc;
 
+struct Graph;
+
 struct Constant {
-  Constant(std::string name, AnyParamFunc value) : name(std::move(name)), value(std::move(value)) {}
+  Constant(std::string name, AnyParamFunc value)
+      : name(std::move(name)), value(std::move(value)), parent(nullptr) {}
+  Constant(std::string name, AnyParamFunc value, Graph *parent)
+      : name(std::move(name)), value(std::move(value)), parent(parent) {}
   std::string name;
   AnyParamFunc value;
-
+  Graph *parent;
   Constant &operator=(AnyParamFunc func);
 };
 
-std::shared_ptr<Constant> constant(const std::string &name, const AnyParamFunc &value);
-
-struct Transform;
-
-struct Vertex {
-  Vertex(std::string name, TypeRef type) : name(std::move(name)), type(std::move(type)) {}
-  virtual ~Vertex() = default;
+struct Vertex : public std::enable_shared_from_this<Vertex> {
+  Vertex(std::string name, TypeRef type, bool is_input = true, Graph *parent = nullptr)
+      : name(std::move(name)), type(std::move(type)), input(is_input), parent(parent) {}
   std::string name;
   TypeRef type;
-  [[nodiscard]] virtual bool IsInput() const = 0;
-  [[nodiscard]] virtual bool IsOutput() const = 0;
+  bool input;
+  Graph *parent;
+  [[nodiscard]] bool IsInput() const { return input; }
+  [[nodiscard]] bool IsOutput() const { return !input; }
 };
 
-struct In : public Vertex {
-  In(std::string name, TypeRef type) : Vertex(std::move(name), std::move(type)) {}
-  [[nodiscard]] bool IsInput() const override { return true; }
-  [[nodiscard]] bool IsOutput() const override { return false; }
-};
-
-struct Out : public Vertex {
-  Out(std::string name, TypeRef type) : Vertex(std::move(name), std::move(type)) {}
-  [[nodiscard]] bool IsInput() const override { return false; }
-  [[nodiscard]] bool IsOutput() const override { return true; }
-};
-
-std::shared_ptr<In> in(const std::string &name, const TypeRef &type);
-std::shared_ptr<Out> out(const std::string &name, const TypeRef &type);
+inline Vertex In(std::string name, TypeRef type) {
+  return Vertex(std::move(name), std::move(type), true);
+}
+inline Vertex In(std::string name, TypeRef type, Graph *parent) {
+  return Vertex(std::move(name), std::move(type), true, parent);
+}
+inline Vertex Out(std::string name, TypeRef type) {
+  return Vertex(std::move(name), std::move(type), false);
+}
+inline Vertex Out(std::string name, TypeRef type, Graph *parent) {
+  return Vertex(std::move(name), std::move(type), false, parent);
+}
 
 struct Edge {
   Edge(const Vertex *dst, const Vertex *src);
@@ -84,51 +85,51 @@ struct Edge {
   Edge &named(std::string name);
 };
 
-struct Transform {
+struct Graph {
+  Graph() = default;
+  Graph(Graph &&other) noexcept;
+  explicit Graph(std::string name) : name(std::move(name)) {}
   std::string name;
-  std::vector<std::shared_ptr<Constant>> constants;
-  std::vector<std::shared_ptr<In>> inputs;
-  std::vector<std::shared_ptr<Out>> outputs;
-
-  // placeholder for something more elaborate:
+  std::vector<std::unique_ptr<Constant>> constants;
+  std::vector<std::unique_ptr<Vertex>> inputs;
+  std::vector<std::unique_ptr<Vertex>> outputs;
+  std::vector<std::unique_ptr<Graph>> children;
+  std::vector<std::unique_ptr<Edge>> edges;
   bool reads_memory = false;
   bool writes_memory = false;
 
-  [[nodiscard]] Constant &c(const std::string &constant_name) const;
+  // Functions to copy objects onto the graph.
+  Constant &Add(const Constant &c);
+  Vertex &Add(const Vertex &v);
+  Edge &Add(const Edge &e);
+  Graph &Add(Graph g);
+
+  Constant &operator+=(Constant c);
+  Vertex &operator+=(Vertex v);
+  Edge &operator+=(Edge e);
+  Graph &operator+=(Graph t);
+
+  // Functions to copy objects onto the graph, losing the reference to the object.
+  Graph &operator<<(Constant c);
+  Graph &operator<<(Vertex v);
+  Graph &operator<<(Edge e);
+  Graph &operator<<(Graph g);
+
+  [[nodiscard]] Constant &c(const std::string &Constant_name);
   [[nodiscard]] const Vertex &o(size_t i) const;
   [[nodiscard]] const Vertex &i(size_t i) const;
 
   const Vertex &operator()(const std::string &vertex_name) const;
-
-  Transform &operator+=(const std::shared_ptr<Constant> &c);
-  Transform &operator+=(const std::shared_ptr<Vertex> &v);
-
-  [[nodiscard]] bool Has(const Vertex &v) const;
 
   [[nodiscard]] std::string ToString() const;
   [[nodiscard]] std::string ToStringInputs() const;
   [[nodiscard]] std::string ToStringOutputs() const;
 };
 
-void operator<<(const Constant &dst, const std::string &src);
-
-Edge operator<<(const Vertex &dst, const Vertex &src);
-Edge operator<<(const Transform &dst, const Vertex &src);
-Edge operator<<(const Vertex &dst, const Transform &src);
-Edge operator<<(const Transform &dst, const Transform &src);
-
-struct Graph {
-  std::string name = "FletcherDAG";
-  std::vector<std::shared_ptr<Transform>> transformations;
-  std::vector<std::shared_ptr<Edge>> edges;
-
-  const Transform &Add(const Transform &t);
-  const Edge &Add(const Edge &e);
-
-  const Transform &operator<<=(const Transform &t);
-  const Edge &operator<<=(const Edge &e);
-
-  [[nodiscard]] const Transform &ParentOf(const Vertex &v) const;
-};
+void operator<<=(const Constant &dst, const std::string &src);
+Edge operator<<=(const Vertex &dst, const Vertex &src);
+Edge operator<<=(const Graph &dst, const Vertex &src);
+Edge operator<<=(const Vertex &dst, const Graph &src);
+Edge operator<<=(const Graph &dst, const Graph &src);
 
 }  // namespace dag

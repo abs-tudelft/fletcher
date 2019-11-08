@@ -21,9 +21,9 @@
 
 namespace dag::transform {
 
-Transform Match(const std::string& str);
-Transform Split(const std::string& str);
+Graph Match(const std::string& str);
+Graph Split(const std::string& str);
 
-Transform SplitByRegex(const std::string &regex);
+Graph SplitByRegex(const std::string &regex);
 
 }  // namespace dag::transform

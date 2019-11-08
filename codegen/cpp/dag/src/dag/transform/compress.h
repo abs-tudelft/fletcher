@@ -22,8 +22,8 @@
 namespace dag::transform {
 
 /// @brief Snappy Decompressor
-Transform DecompressSnappy();
+Graph DecompressSnappy();
 /// @brief Snappy Decompressor, buffered version.
-Transform DecompressSnappyBuffered();
+Graph DecompressSnappyBuffered();
 
 } // namespace dag::transform

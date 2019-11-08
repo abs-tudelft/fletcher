@@ -24,16 +24,16 @@ namespace dag::transform {
 // Comparison operations:
 
 /// @brief Comparison of primitive t0 with primitive t1.
-Transform CompOp(const PrimRef &t0, const std::string &op, const PrimRef &t1);
+Graph CompOp(const PrimRef &t0, const std::string &op, const PrimRef &t1);
 /// @brief Element-wise comparison of t0 elements with primitive t1.
-Transform CompOp(const ListRef &t0, const std::string &op, const PrimRef &t1);
+Graph CompOp(const ListRef &t0, const std::string &op, const PrimRef &t1);
 /// @brief Element-wise comparison of t0 elements with t1 elements.
-Transform CompOp(const ListRef &t0, const std::string &op, const ListRef &t1);
+Graph CompOp(const ListRef &t0, const std::string &op, const ListRef &t1);
 /// @brief Element-wise comparison of t0 elements with primitive t1.
-Transform CompOp(const StructRef &t0, const std::string &op, const PrimRef &t1);
+Graph CompOp(const StructRef &t0, const std::string &op, const PrimRef &t1);
 /// @brief Element-wise comparison of every column element of t0, with every element at the same row index of t1.
-Transform CompOp(const StructRef &t0, const std::string &op, const ListRef &t1);
+Graph CompOp(const StructRef &t0, const std::string &op, const ListRef &t1);
 /// @brief Element-wise comparison of t0 elements with t1 elements.
-Transform CompOp(const StructRef &t0, const std::string &op, const StructRef &t1);
+Graph CompOp(const StructRef &t0, const std::string &op, const StructRef &t1);
 
 } // namespace dag::transform

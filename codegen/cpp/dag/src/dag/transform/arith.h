@@ -23,29 +23,18 @@ namespace dag::transform {
 
 // Binary operators:
 
-// TODO(johanpel): these can be simplified to not take the second type argument.
 /// @brief Binary operation of primitive t0 with primitive t1.
-Transform BinOp(const PrimRef &t0, const std::string &op, const PrimRef &t1);
-/// @brief Element-wise binary-operation of t0 elements with primitive t1.
-Transform BinOp(const ListRef &t0, const std::string &op, const PrimRef &t1);
-/// @brief Element-wise binary-operation of t0 elements with t1 elements.
-Transform BinOp(const ListRef &t0, const std::string &op, const ListRef &t1);
-/// @brief Element-wise binary-operation of t0 elements with primitive t1.
-Transform BinOp(const StructRef &t0, const std::string &op, const PrimRef &t1);
-/// @brief Element-wise binary-operation of every column element of t0, with every element at the same row index of t1.
-Transform BinOp(const StructRef &t0, const std::string &op, const ListRef &t1);
-/// @brief Element-wise binary-operation of t0 elements with t1 elements.
-Transform BinOp(const StructRef &t0, const std::string &op, const StructRef &t1);
+Graph BinOp(const TypeRef &t, const std::string &op);
 
 // Unary operators:
 
-Transform inverse(const PrimRef &t);
-Transform abs(const PrimRef &t);
-Transform clip(const PrimRef &t);
+Graph inverse(const PrimRef &t);
+Graph abs(const PrimRef &t);
+Graph clip(const PrimRef &t);
 
 // Trigonometry:
-Transform sin(const PrimRef &t);
-Transform cos(const PrimRef &t);
-Transform tan(const PrimRef &t);
+Graph sIn(const PrimRef &t);
+Graph cos(const PrimRef &t);
+Graph tan(const PrimRef &t);
 
 }  // namespace dag::transform

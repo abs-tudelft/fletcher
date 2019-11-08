@@ -20,54 +20,54 @@
 
 namespace dag {
 
-Transform Duplicate(const TypeRef &t, uint32_t num_outputs) {
-  Transform result;
+Graph Duplicate(const TypeRef &t, uint32_t num_outputs) {
+  Graph result;
   result.name = "Duplicate";
-  result += in("in", t);
+  result += In("in", t);
   for (size_t o = 0; o < num_outputs; o++) {
-    result += out("out_" + std::to_string(o), t);
+    result += Out("out_" + std::to_string(o), t);
   }
   return result;
 }
 
-Transform DuplicateForEach(const ListRef &l, const TypeRef &t) {
-  Transform result;
+Graph DuplicateForEach(const ListRef &l, const TypeRef &t) {
+  Graph result;
   result.name = "DuplicateForEach";
-  result += in("in_0", l);
-  result += in("in_1", t);
-  result += out("out_0", l);
-  result += out("out_1", list(t));
+  result += In("in_0", l);
+  result += In("in_1", t);
+  result += Out("out_0", l);
+  result += Out("out_1", list(t));
   return result;
 }
 
-Transform Split(const StructRef &s) {
-  Transform result;
+Graph Split(const StructRef &s) {
+  Graph result;
   result.name = "Split";
-  result += in("in", s);
+  result += In("in", s);
   for (size_t i = 0; i < s->fields.size(); i++) {
-    result += out("out_" + std::to_string(i), s->fields[i]->type);
+    result += Out("out_" + std::to_string(i), s->fields[i]->type);
   }
   return result;
 }
 
-Transform Merge(const std::vector<TypeRef> &ts) {
-  Transform result;
+Graph Merge(const std::vector<TypeRef> &ts) {
+  Graph result;
   result.name = "Merge";
   std::vector<FieldRef> fields;
   for (size_t i = 0; i < ts.size(); i++) {
-    result += in("in_" + std::to_string(i), ts[i]);
+    result += In("in_" + std::to_string(i), ts[i]);
     fields.push_back(field("f" + std::to_string(i), ts[i]));
   }
-  result += out("out", struct_(fields));
+  result += Out("out", struct_(fields));
   return result;
 }
 
-Transform Buffer(const TypeRef &t, uint32_t depth) {
-  Transform result;
+Graph Buffer(const TypeRef &t, uint32_t depth) {
+  Graph result;
   result.name = "Buffer";
-  result += constant("depth", std::to_string(depth));
-  result += in("in", t);
-  result += out("out", t);
+  result += Constant("depth", std::to_string(depth));
+  result += In("in", t);
+  result += Out("out", t);
   return result;
 }
 

@@ -22,23 +22,18 @@
 namespace dag::transform {
 
 /// @brief Return whether all boolean primitive elements are true.
-Transform All(const TypeRef &t);
+Graph All(const TypeRef &t);
 /// @brief Return whether any boolean primitive element is true.
-Transform Any(const TypeRef &t);
+Graph Any(const TypeRef &t);
 
-Transform Min(const ListRef &t);
-Transform Max(const ListRef &t);
-Transform Sum(const ListRef &type);
-Transform Prod(const ListRef &type);
+Graph Min(const ListRef &t);
+Graph Max(const ListRef &t);
+Graph Sum(const ListRef &type);
+Graph Prod(const ListRef &type);
 
-Transform Mean(const ListRef &t);
-Transform Median(const ListRef &t);
-Transform Std(const ListRef &t);
-Transform Mad(const ListRef &t);
-
-Transform CumMin(const ListRef &t);
-Transform CumMax(const ListRef &t);
-Transform CumProd(const ListRef &t);
-Transform CumSum(const ListRef &t);
+Graph Mean(const ListRef &t);
+Graph Median(const ListRef &t);
+Graph Std(const ListRef &t);
+Graph Mad(const ListRef &t);
 
 }  // namespace dag::transform

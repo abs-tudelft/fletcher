@@ -20,20 +20,20 @@
 
 namespace dag {
 
-Transform IndexIfTrue(const PrimRef &index_type) {
-  Transform result;
+Graph IndexIfTrue(const PrimRef &index_type) {
+  Graph result;
   result.name = "IndexIfTrue";
-  result += in("in", list(bool_()));
-  result += out("out", list(index_type));
+  result += In("in", list(bool_()));
+  result += Out("out", list(index_type));
   return result;
 }
 
-Transform SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
-  Transform result;
+Graph SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
+  Graph result;
   result.name = "FilterByIndex";
-  result += in("in", list(t));
-  result += in("index", list(index_type));
-  result += out("out", list(t));
+  result += In("in", list(t));
+  result += In("index", list(index_type));
+  result += Out("out", list(t));
   return result;
 }
 

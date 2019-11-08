@@ -20,30 +20,30 @@
 
 namespace dag::transform {
 
-Transform Match(const std::string &str) {
-  Transform result;
+Graph Match(const std::string &str) {
+  Graph result;
   result.name = "Match";
-  result.constants.push_back(constant("match", str));
-  result += in("in", utf8());
-  result += out("out", bool_());
+  result += Constant("match", str);
+  result += In("in", utf8());
+  result += Out("out", bool_());
   return result;
 }
 
-Transform Split(const std::string &str) {
-  Transform result;
+Graph Split(const std::string &str) {
+  Graph result;
   result.name = "SplitBy";
-  result.constants.push_back(constant("match", str));
-  result += in("in", utf8());
-  result += out("out", list(utf8()));
+  result += Constant("match", str);
+  result += In("in", utf8());
+  result += Out("out", list(utf8()));
   return result;
 }
 
-Transform SplitByRegex(const std::string &regex) {
-  Transform result;
+Graph SplitByRegex(const std::string &regex) {
+  Graph result;
   result.name = "SplitByRegex";
-  result.constants.push_back(constant("expr", regex));
-  result += in("in", utf8());
-  result += out("out", utf8());
+  result += Constant("expr", regex);
+  result += In("in", utf8());
+  result += Out("out", list(utf8()));
   return result;
 }
 

@@ -90,6 +90,7 @@ typedef std::shared_ptr<Field> FieldRef;
 FieldRef field(const std::string &name, const TypeRef &type);
 
 struct List : Type {
+  List() : Type(TypeID::LIST, "") {};
   List(std::string name, FieldRef item) : Type(TypeID::LIST, std::move(name)), item(std::move(item)) {}
   FieldRef item;
   bool Equals(const Type &other) const override;

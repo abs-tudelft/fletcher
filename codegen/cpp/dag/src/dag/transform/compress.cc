@@ -21,19 +21,19 @@
 
 namespace dag::transform {
 
-Transform DecompressSnappyBuffered() {
-  Transform result;
+Graph DecompressSnappyBuffered() {
+  Graph result;
   result.name = "SnappyDecompressBuffered";
-  result += in("in", binary());
-  result += out("out", binary());
+  result += In("in", binary());
+  result += Out("out", binary());
   return result;
 }
 
-Transform DecompressSnappy() {
-  Transform result;
+Graph DecompressSnappy() {
+  Graph result;
   result.name = "SnappyDecompress";
-  result += in("in", binary());
-  result += out("out", binary());
+  result += In("in", binary());
+  result += Out("out", binary());
   return result;
 }
 

@@ -20,11 +20,11 @@
 
 namespace dag {
 
-Transform Cast(const TypeRef &from, const TypeRef &to) {
-  Transform result;
+Graph Cast(const TypeRef &from, const TypeRef &to) {
+  Graph result;
   result.name = "Cast";
-  result += in("in", from);
-  result += out("out", to);
+  result += In("in", from);
+  result += Out("out", to);
   return result;
 }
 

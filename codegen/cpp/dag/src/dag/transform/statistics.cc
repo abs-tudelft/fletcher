@@ -20,35 +20,30 @@
 
 namespace dag::transform {
 
-Transform All(const TypeRef &t) {
-  Transform result;
+Graph All(const TypeRef &t) {
+  Graph result;
   result.name = "All";
-  result += in("in", t);
-  result += out("out", bool_());
+  result += In("in", t);
+  result += Out("out", bool_());
   return result;
 }
 
-Transform Any(const TypeRef &t) {
-  Transform result;
+Graph Any(const TypeRef &t) {
+  Graph result;
   result.name = "Any";
-  result += in("in", t);
-  result += out("out", bool_());
+  result += In("in", t);
+  result += Out("out", bool_());
   return result;
 }
 
-Transform Min(const ListRef &t) { return Reduce("Min", t->item->type, t->item->type); }
-Transform Max(const ListRef &t) { return Reduce("Max", t->item->type, t->item->type); }
-Transform Sum(const ListRef &t) { return Reduce("Sum", t->item->type, t->item->type); }
-Transform Prod(const ListRef &t) { return Reduce("Sum", t->item->type, t->item->type); }
+Graph Min(const ListRef &t) { return Reduce("Min", t->item->type, t->item->type); }
+Graph Max(const ListRef &t) { return Reduce("Max", t->item->type, t->item->type); }
+Graph Sum(const ListRef &t) { return Reduce("Sum", t->item->type, t->item->type); }
+Graph Prod(const ListRef &t) { return Reduce("Sum", t->item->type, t->item->type); }
 
-Transform Mean(const ListRef &t) { return Reduce("Mean", t->item->type, t->item->type); }
-Transform Median(const ListRef &t) { return Reduce("Median", t->item->type, t->item->type); }
-Transform Std(const ListRef &t) { return Reduce("Std", t->item->type, t->item->type); }
-Transform Mad(const ListRef &t) { return Reduce("Mad", t->item->type, t->item->type); }
-
-Transform CumMin(const ListRef &t) { return Map("Min", t->item->type, t->item->type); }
-Transform CumMax(const ListRef &t) { return Map("Max", t->item->type, t->item->type); }
-Transform CumSum(const ListRef &t) { return Map("Sum", t->item->type, t->item->type); }
-Transform CumProd(const ListRef &t) { return Map("Sum", t->item->type, t->item->type); }
+Graph Mean(const ListRef &t) { return Reduce("Mean", t->item->type, t->item->type); }
+Graph Median(const ListRef &t) { return Reduce("Median", t->item->type, t->item->type); }
+Graph Std(const ListRef &t) { return Reduce("Std", t->item->type, t->item->type); }
+Graph Mad(const ListRef &t) { return Reduce("Mad", t->item->type, t->item->type); }
 
 }  // namespace dag::transform

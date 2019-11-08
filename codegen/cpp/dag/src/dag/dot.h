@@ -24,17 +24,18 @@ constexpr char DOT_FONT[] = "Bitstream Charter";
 
 std::string Name(const Vertex &v);
 std::string Name(const Edge &e);
-std::string Name(const Transform &t);
+std::string Name(const Graph &t);
 
-std::string Label(const Vertex &v);
+std::string Label(const Constant &c, bool simple);
+std::string Label(const Vertex &v, bool simple);
+std::string Label(const Type &t, bool simple);
 std::string Label(const Edge &e);
-std::string Label(const Transform &t);
+std::string Label(const Graph &g);
 
 std::string Style(const Vertex &v);
 std::string Style(const Edge &e);
-std::string Style(const Transform &t);
-std::string Style(const Graph &t);
+std::string Style(const Graph &g, int l);
 
-std::string AsDotGraph(const Graph &g);
+std::string AsDotGraph(const Graph &g, bool simple, int l = 0);
 
 }  // namespace dag
