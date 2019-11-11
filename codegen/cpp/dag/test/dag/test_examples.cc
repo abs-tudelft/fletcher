@@ -63,10 +63,11 @@ TEST(Example, WhereSelect) {
   auto &name = g += Load("name", liststr);
   auto &age = g += Load("age", listu8);
   auto &limit = g += Load("limit", u8());
+
   auto &where = g += CompOp(listu8, ">", u8());
   auto &index = g += IndexIfTrue();
   auto &select = g += SelectByIndex(utf8());
-  auto &sink = g += Store("name", utf8());
+  auto &sink = g += Store("name", list(utf8()));
 
   g += where.i(0) <<= age;
   g += where.i(1) <<= limit;

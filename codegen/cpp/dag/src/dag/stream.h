@@ -23,8 +23,9 @@ namespace dag {
 
 Graph Duplicate(const TypeRef &t, uint32_t num_outputs);
 Graph DuplicateForEach(const ListRef &l, const TypeRef& t);
-Graph Split(const StructRef &s);
 Graph Merge(const std::vector<TypeRef> &ts);
+
+Graph Split(const StructRef &s);
 Graph Buffer(const TypeRef &t, uint32_t depth);
 
 } // namespace dag

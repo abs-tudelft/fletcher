@@ -37,4 +37,13 @@ Graph SelectByIndex(const TypeRef &t, const PrimRef &index_type) {
   return result;
 }
 
+Graph IndexOf(const ListRef &list_type, const PrimRef &index_type) {
+  Graph result;
+  result.name = "IndexOf";
+  result += In("in", list_type);
+  result += Out("out", list_type);
+  result += Out("count", list(index_type));
+  return result;
+}
+
 }  // namespace dag

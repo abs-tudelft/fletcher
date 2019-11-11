@@ -18,6 +18,9 @@
 
 namespace dag {
 
+/// @brief Cumulatively count the number of elements passed through.
+Graph IndexOf(const ListRef& list_type, const PrimRef &index_type = idx32());
+
 /// @brief Transform a list of booleans into a list of indices for which the booleans are true.
 Graph IndexIfTrue(const PrimRef &index_type = idx32());
 
