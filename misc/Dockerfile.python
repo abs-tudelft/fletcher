@@ -6,9 +6,10 @@ ARG ARROW_VERSION=0.15.1
 
 ENV PATH /opt/python/cp37-cp37m/bin:$PATH
 RUN yum install -y boost-devel && \
-    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; \
+    for PIP in /opt/python/cp3{5,6,7,8}*/bin/pip3; \
       do $PIP install --upgrade \
-        auditwheel \
+        pip \
+        auditwheel==3.0.0.0rc1 \
         numpy \
     ;done && \
     curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1 && \
@@ -23,11 +24,11 @@ RUN yum install -y boost-devel && \
     make install
 
 RUN cd arrow-apache-arrow-${ARROW_VERSION}/python && \
-    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; \
+    for PIP in /opt/python/cp3{5,6,7,8}*/bin/pip3; \
       do $PIP install --upgrade \
         Cython \
     ;done && \
-    for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; \
+    for PYTHON in /opt/python/cp3{5,6,7,8}*/bin/python3; \
       do $PYTHON setup.py build install \
     ;done
 
@@ -36,4 +37,4 @@ FROM fletcher-python-base
 ARG PACKAGE=
 
 WORKDIR /io/${PACKAGE}
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7,8}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
