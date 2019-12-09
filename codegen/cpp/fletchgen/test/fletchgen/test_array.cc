@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <arrow/api.h>
 #include <string>
+#include <memory>
 
 #include "fletcher/common.h"
 #include "fletchgen/array.h"
@@ -29,7 +30,7 @@ TEST(Array, TypeMapper) {
   using std::pair;
   using fletcher::WithMetaEPC;
 
-  constexpr int n_tests = 7;
+  constexpr int n_tests = 8;
 
   std::vector<std::shared_ptr<arrow::Field>> fields(n_tests);
   std::vector<pair<int, int>> specs(n_tests);
@@ -47,6 +48,7 @@ TEST(Array, TypeMapper) {
                     arrow::list(
                         field("inner", arrow::utf8(), false)), false);       // 3, 32+32+8 + 1+1   +   0
   fields[6] = WithMetaEPC(*field("test", arrow::utf8(), false), 64);         // 2, 32+512  + 1+7   +   0
+  fields[7] = WithMetaEPC(*field("test", arrow::float16(), false), 2);       // 1, 32      + 2     +   0
 
   // Array data spec must return correct pair.
   for (int i = 0; i < n_tests; i++) {
@@ -61,6 +63,7 @@ TEST(Array, TypeMapper) {
   ASSERT_EQ(specs[4], pair(2, 8 * 8 + 32 + 1 + 4 + 1));
   ASSERT_EQ(specs[5], pair(3, 32 + 32 + 8 + 1 + 1));
   ASSERT_EQ(specs[6], pair(2, 32 + 512 + 1 + 7));
+  ASSERT_EQ(specs[7], pair(1, 32 + 2 + 0));
 
   // Generate types as seen by array(reader/writer) and kernel, and auto-generate mappers.
   for (int i = 0; i < n_tests; i++) {

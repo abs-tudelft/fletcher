@@ -130,21 +130,29 @@ std::shared_ptr<Type> last(int width, bool on_primitive) {
   return result;
 }
 
-std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type) {
-  // Only need to cover fixed-width data types in this function
-  switch (arrow_type->id()) {
-    case arrow::Type::UINT8: return uint8();
-    case arrow::Type::UINT16: return uint16();
-    case arrow::Type::UINT32: return uint32();
-    case arrow::Type::UINT64: return uint64();
-    case arrow::Type::INT8: return int8();
-    case arrow::Type::INT16: return int16();
-    case arrow::Type::INT32: return int32();
-    case arrow::Type::INT64: return int64();
-    case arrow::Type::HALF_FLOAT: return float16();
-    case arrow::Type::FLOAT: return float32();
-    case arrow::Type::DOUBLE: return float64();
-    default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
+std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type, int epc) {
+  if (epc == 1) {
+    // Only need to cover fixed-width data types in this function
+    switch (arrow_type->id()) {
+      case arrow::Type::UINT8: return uint8();
+      case arrow::Type::UINT16: return uint16();
+      case arrow::Type::UINT32: return uint32();
+      case arrow::Type::UINT64: return uint64();
+      case arrow::Type::INT8: return int8();
+      case arrow::Type::INT16: return int16();
+      case arrow::Type::INT32: return int32();
+      case arrow::Type::INT64: return int64();
+      case arrow::Type::HALF_FLOAT: return float16();
+      case arrow::Type::FLOAT: return float32();
+      case arrow::Type::DOUBLE: return float64();
+      default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
+    }
+  } else {
+    auto fwt = std::dynamic_pointer_cast<arrow::FixedWidthType>(arrow_type);
+    if (fwt == nullptr) {
+      FLETCHER_LOG(ERROR, "Not fixed width Arrow type: " + arrow_type->ToString());
+    }
+    return cerata::vector(epc * fwt->bit_width());
   }
 }
 
