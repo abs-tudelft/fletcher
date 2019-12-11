@@ -121,7 +121,7 @@ std::shared_ptr<Type> last(int width = 1, bool on_primitive = false);
  * @param arrow_type    The arrow::DataType.
  * @return              The corresponding Type
  */
-std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type);
+std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type, int epc = 1);
 
 /**
  * @brief Return the clock/reset port of a graph for a specific clock domain, if it exists.

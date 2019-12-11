@@ -425,7 +425,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
 
       // Non-nested types
     default: {
-      type = ConvertFixedWidthType(arrow_field.type());
+      type = ConvertFixedWidthType(arrow_field.type(), epc);
       break;
     }
   }
@@ -519,7 +519,7 @@ std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field) 
       if (fwt == nullptr) {
         FLETCHER_LOG(ERROR, "Unsupported Arrow type: " + arrow_field.type()->ToString());
       }
-      return {1, fwt->bit_width() + validity_bit};
+      return {1, (epc > 1 ? e_count_width : 0) + epc * (fwt->bit_width() + validity_bit)};
     }
   }
 }
