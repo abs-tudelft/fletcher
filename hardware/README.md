@@ -10,7 +10,7 @@
 
 ## Introduction
 If you are just getting started with Fletcher, you will use
-[Fletchgen](../codegen/fletchgen/README.md) to automatically generate a design.
+[Fletchgen](../codegen/cpp/fletchgen/README.md) to automatically generate a design.
 Somewhere, beneath several layers of magically generated hierarchies and
 structures, your kernel will reside. The kernel will be the only thing a
 hardware developer should have to implement. In terms of interfacing with Arrow
@@ -102,7 +102,7 @@ in the memory. This stream has the following fields:
 ### Arrow data streams
 This is either an input stream or an output stream for your kernel, depending on
 the `fletcher_mode` metadata value of your schema (see
-[Fletchgen](../codegen/fletchgen/README.md)). This simply depends on whether you
+[Fletchgen](../codegen/cpp/fletchgen/README.md)). This simply depends on whether you
 are reading from or writing to an Arrow RecordBatch in memory.
 
 The number of data streams depends on the Arrow type of the field that
@@ -198,7 +198,7 @@ layout/structure of the Array in memory. There are some additional
 options to tweak internals (like FIFO depths), but we will ignore them
 for now.
 
-[ArrayConfig.vhd](arrays/ArrayConfig.vhd) contains an in-depth guide
+[ArrayConfig_pkg.vhd](arrays/ArrayConfig_pkg.vhd) contains an in-depth guide
 on which entries of the config string are supported.
 
 **Make sure not to use any whitespace characters in the configuration
