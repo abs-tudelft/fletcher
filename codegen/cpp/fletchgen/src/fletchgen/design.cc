@@ -205,7 +205,7 @@ void Design::RunVhdmmio(const std::vector<std::vector<MmioReg>*>& regs) {
   ofs.close();
 
   // Run vhdmmio
-  auto vhdmmio_result = system("vhdmmio -V vhdl -H -P vhdl > vhdmmio.log");
+  auto vhdmmio_result = system("python3 -m vhdmmio -V vhdl -H -P vhdl > vhdmmio.log");
   if (vhdmmio_result != 0) {
     FLETCHER_LOG(FATAL, "vhdmmio exited with status " << vhdmmio_result);
   }
