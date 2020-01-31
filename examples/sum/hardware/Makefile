@@ -2,7 +2,7 @@
 
 all:
 	python generate-input.py
-	fletchgen -n Sum -r recordbatch.rb -s memory.srec -l vhdl --sim
+	fletchgen -n Sum -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
 
 sim:
 	rm -f vhdl/Sum.gen.vhd
