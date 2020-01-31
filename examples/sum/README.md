@@ -12,7 +12,7 @@ The examples in this part of the tutorial are written in Python, so you'll need
 
 Furthermore you'll need to build and install Fletchgen - the Fletcher design
 generator tool.
-* Build and install [Fletchgen](../../codegen/fletchgen/README.md).
+* Build and install [Fletchgen](../../codegen/cpp/fletchgen/README.md).
 
 Also, we make use of vhdmmio - A code generator for AXI4-lite compatible
 memory-mapped I/O.
