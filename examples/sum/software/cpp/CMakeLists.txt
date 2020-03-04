@@ -11,7 +11,7 @@ include(CompileUnits)
 
 project(sum VERSION 0.0.0 LANGUAGES CXX)
 
-find_package(arrow 0.15 CONFIG REQUIRED)
+find_package(Arrow 0.16 CONFIG REQUIRED)
 find_package(fletcher CONFIG)
 
 if (NOT fletcher)
