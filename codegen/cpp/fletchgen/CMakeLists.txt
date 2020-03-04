@@ -26,9 +26,10 @@ FetchContent_Declare(cerata
 FetchContent_GetProperties(cerata)
 if(NOT cerata_POPULATED)
   FetchContent_Populate(cerata)
+  set(BUILD_CERATA_TESTS OFF CACHE BOOL "")
   set(BUILD_CERATA_DOT ON CACHE BOOL "")
   set(BUILD_CERATA_VHDL ON CACHE BOOL "")
-  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR} EXCLUDE_FROM_ALL)
+  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR})
 endif()
 
 include(CompileUnits)
