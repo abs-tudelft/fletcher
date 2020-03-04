@@ -17,8 +17,6 @@ jobs:
         source: common/c
       common:
         source: common/cpp
-      cerata:
-        source: codegen/cpp/cerata
       fletchgen:
         source: codegen/cpp/fletchgen
       runtime:
@@ -175,15 +173,10 @@ jobs:
       displayName: Doxygen (fletchgen)
     - script: |
         doxygen
-      workingDirectory: $(Build.SourcesDirectory)/codegen/cpp/cerata
-      displayName: Doxygen (cerata)
-    - script: |
-        doxygen
       workingDirectory: $(Build.SourcesDirectory)/runtime/cpp
       displayName: Doxygen (C++ runtime)
     beforePublishSteps:
     - script: |
-        mkdir -p docs/book/api/cerata && mv codegen/cpp/cerata/docs/html docs/book/api/cerata &&
         mkdir -p docs/book/api/fletchgen && mv codegen/cpp/fletchgen/docs/html docs/book/api/fletchgen &&
         mkdir -p docs/book/api/fletcher-cpp && mv runtime/cpp/docs/html docs/book/api/fletcher-cpp
       workingDirectory: $(Build.SourcesDirectory)
