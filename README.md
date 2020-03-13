@@ -84,6 +84,11 @@ such as Amazon's EC F1). For now, these larger examples and platform support
 resides in separate repositories and are tested against a specific tag of this
 repository.
 
+As of 2020, the main developers are focusing on generalizing the Fletcher
+framework in the form of Tydi, a streaming interface specification and 
+toolchain based on some initial findings during the work on Fletcher. 
+[This project can be found here.](https://github.com/abs-tudelft/tydi)
+
 ## Further reading
   Tutorials:
   * [Simple column sum example](examples/sum/README.md) - The "Hello, World!"
