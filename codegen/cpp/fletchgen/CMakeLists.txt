@@ -19,13 +19,21 @@ FetchContent_Declare(cmake-modules
 )
 FetchContent_MakeAvailable(cmake-modules)
 
+FetchContent_Declare(cerata
+    GIT_REPOSITORY  https://github.com/abs-tudelft/cerata.git
+    GIT_TAG         develop
+)
+FetchContent_GetProperties(cerata)
+if(NOT cerata_POPULATED)
+  FetchContent_Populate(cerata)
+  set(BUILD_CERATA_TESTS OFF CACHE BOOL "")
+  set(BUILD_CERATA_DOT ON CACHE BOOL "")
+  set(BUILD_CERATA_VHDL ON CACHE BOOL "")
+  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR})
+endif()
+
 include(CompileUnits)
 
-set(BUILD_CERATA_DOT ON)
-set(BUILD_CERATA_VHDL ON)
-if(NOT TARGET cerata)
-  add_subdirectory(../cerata cerata)
-endif()
 if(NOT TARGET fletcher::common)
   add_subdirectory(../../../common/cpp common-cpp)
 endif()
