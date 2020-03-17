@@ -2,7 +2,7 @@
 
 all:
 	python generate-schema.py
-	fletchgen -i stringwrite.as -t memory.srec -l vhdl dot --sim --axi --regs c:32:strlen_min c:32:strlen_mask
+	fletchgen -i stringwrite.as -t memory.srec -l vhdl dot --sim --regs c:32:strlen_min c:32:strlen_mask
 
 sim:
 	rm -f vhdl/Kernel.gen.vhd
