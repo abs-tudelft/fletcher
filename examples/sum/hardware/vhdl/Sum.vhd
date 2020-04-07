@@ -82,8 +82,7 @@ begin
   -- Combinatorial part:
   combinatorial_proc : process (ExampleBatch_number, ExampleBatch_number_last, 
 ExampleBatch_number_valid, accumulator, ExampleBatch_firstIdx, 
-ExampleBatch_lastIdx, state, start, reset, ExampleBatch_number_cmd_ready, 
-ExampleBatch_number_unl_valid) is 
+ExampleBatch_lastIdx, state) is 
   begin
     
     -- We first determine the default outputs of our combinatorial circuit.
