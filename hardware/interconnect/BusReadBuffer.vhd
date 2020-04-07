@@ -205,7 +205,7 @@ begin
           -- Check if the request burst length is not larger than the FIFO depth
           assert unsigned(ms_req_len) < 2**DEPTH_LOG2
             report "Violated burst length requirement. ms_req_len(=" & slvToUDec(ms_req_len) & ") < 2**DEPTH_LOG2(=" & integer'image(2**DEPTH_LOG2) & ") not met, deadlock!"
-            severity WARNING;
+            severity FAILURE;
 
           -- Check if either the amount of space reserved is larger than 0 or the fifo is ready
           assert reserved_v > 0 or fifo_ready = '1'
@@ -218,7 +218,7 @@ begin
                    "Check if BUS_LEN_WIDTH is wide enough to contain log2(slv_rreq_len)+2 bits. " &
                    "reserved_v=" & sgnToDec(reserved_v) & ">= 0. " &
                    "Reserved (if accepted):" & sgnToDec(reserved_if_accepted)
-            severity WARNING;
+            severity FAILURE;
 
           -- pragma translate_on
 
