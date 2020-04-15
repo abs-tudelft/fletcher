@@ -153,30 +153,40 @@ bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Sch
   std::shared_ptr<arrow::io::ReadableFile> fis = result.ValueOrDie();
 
   // Dictionaries are not supported yet, hence nullptr.
-  arrow::Status status;
-  status = arrow::ipc::ReadSchema(fis.get(), nullptr, out);
-  if (!status.ok()) {
-    FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + status.ToString() + "]");
+  arrow::Result<std::shared_ptr<arrow::Schema>> schema_result;
+    schema_result = arrow::ipc::ReadSchema(fis.get(), nullptr);
+  if (schema_result.ok()) {
+    *out = schema_result.ValueOrDie();
+  } else {
+    FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + schema_result.status().ToString() + "]");
     return false;
   }
-  status = fis->Close();
+  fis->Close();
 
   return true;
 }
 
 void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema) {
   std::shared_ptr<arrow::ResizableBuffer> resizable_buffer;
-  if (!arrow::AllocateResizableBuffer(arrow::default_memory_pool(), 0, &resizable_buffer).ok()) {
+  arrow::Result<std::shared_ptr<arrow::ResizableBuffer>> resbuffer_result;
+    resbuffer_result = arrow::AllocateResizableBuffer(0);
+  if (resbuffer_result.ok()) {
+      resizable_buffer = resbuffer_result.ValueOrDie();
+  } else {
     throw std::runtime_error("Could not allocate resizable Arrow buffer.");
   }
   auto buffer = std::dynamic_pointer_cast<arrow::Buffer>(resizable_buffer);
   // Dictionaries are not supported yet, hence nullptr.
-  if (!arrow::ipc::SerializeSchema(schema, nullptr, arrow::default_memory_pool(), &buffer).ok()) {
+  arrow::Result<std::shared_ptr<arrow::Buffer>> ser_result;
+  ser_result = arrow::ipc::SerializeSchema(schema, nullptr, arrow::default_memory_pool());
+  if (ser_result.ok()) {
+    buffer = ser_result.ValueOrDie();
+  } else {
     throw std::runtime_error("Could not serialize schema into buffer.");
   }
-  arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>> result = arrow::io::FileOutputStream::Open(file_name);
-  if (result.ok()) {
-    std::shared_ptr<arrow::io::FileOutputStream> fos = result.ValueOrDie();
+  arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>> filestream_result = arrow::io::FileOutputStream::Open(file_name);
+  if (filestream_result.ok()) {
+    std::shared_ptr<arrow::io::FileOutputStream> fos = filestream_result.ValueOrDie();
     if (!fos->Write(buffer->data(), buffer->size()).ok()) {
       throw std::runtime_error("Could not write schema buffer to file output stream.");
     }
@@ -190,19 +200,22 @@ void WriteRecordBatchesToFile(const std::string &filename,
   arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>> result = arrow::io::FileOutputStream::Open(filename);
   std::shared_ptr<arrow::io::FileOutputStream> file = result.ValueOrDie();
 
+  arrow::Result<std::shared_ptr<arrow::ipc::RecordBatchWriter>> write_result;
   arrow::Status status;
 
   for (const auto &rb : recordbatches) {
     std::shared_ptr<arrow::ipc::RecordBatchWriter> writer;
-    status = arrow::ipc::RecordBatchFileWriter::Open(file.get(), rb->schema(), &writer);
+    write_result = arrow::ipc::NewFileWriter(file.get(), rb->schema());
     status = writer->WriteRecordBatch(*rb);
+    if (!status.ok()) {
+      throw std::runtime_error("Error writing recordbatches to file " + filename);
+    }
     status = writer->Close();
   }
   status = file->Close();
 }
 
 bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out) {
-  arrow::Status status;
   std::shared_ptr<arrow::ipc::RecordBatchFileReader> reader;
 
   arrow::Result<std::shared_ptr<arrow::io::ReadableFile>> result = arrow::io::ReadableFile::Open(file_name);
@@ -212,17 +225,23 @@ bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
   }
   std::shared_ptr<arrow::io::ReadableFile> file = result.ValueOrDie();
 
-  status = arrow::ipc::RecordBatchFileReader::Open(file, &reader);
-  if (!status.ok()) {
-    FLETCHER_LOG(ERROR, "Could not open RecordBatchFileReader. ARROW:[" + status.ToString() + "]");
+  arrow::Result<std::shared_ptr<arrow::ipc::RecordBatchFileReader>> file_result;
+  file_result = arrow::ipc::RecordBatchFileReader::Open(file);
+  if (file_result.ok()) {
+    reader = file_result.ValueOrDie();
+  } else {
+    FLETCHER_LOG(ERROR, "Could not open RecordBatchFileReader. ARROW:[" + file_result.status().ToString() + "]");
     return false;
   }
 
   for (int i = 0; i < reader->num_record_batches(); i++) {
     std::shared_ptr<arrow::RecordBatch> recordbatch;
-    status = reader->ReadRecordBatch(i, &recordbatch);
-    if (!status.ok()) {
-      FLETCHER_LOG(ERROR, "Could not read RecordBatch " << i << " from file. ARROW:[" + status.ToString() + "]");
+    arrow::Result<std::shared_ptr<arrow::RecordBatch>> rb_result;
+    rb_result = reader->ReadRecordBatch(i);
+    if (rb_result.ok()) {
+      recordbatch = rb_result.ValueOrDie();
+    } else {
+      FLETCHER_LOG(ERROR, "Could not read RecordBatch " << i << " from file. ARROW:[" + rb_result.status().ToString() + "]");
       return false;
     }
     out->push_back(recordbatch);
