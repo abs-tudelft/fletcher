@@ -48,6 +48,7 @@ VEC_FACTORY(float32, 32)
 VEC_FACTORY(float64, 64)
 VEC_FACTORY(date32, 32)
 VEC_FACTORY(date64, 64)
+VEC_FACTORY(decimal128, 128)
 VEC_FACTORY(utf8c, 8)
 VEC_FACTORY(byte, 8)
 VEC_FACTORY(offset, 32)
@@ -145,6 +146,10 @@ std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataTyp
       case arrow::Type::HALF_FLOAT: return float16();
       case arrow::Type::FLOAT: return float32();
       case arrow::Type::DOUBLE: return float64();
+      case arrow::Type::DECIMAL: return decimal128();
+      case arrow::Type::DATE32: return date32();
+      case arrow::Type::DATE64: return date32();
+      case arrow::Type::FIXED_SIZE_BINARY: return vector(std::dynamic_pointer_cast<arrow::FixedSizeBinaryType>(arrow_type)->bit_width());
       default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
     }
   } else {

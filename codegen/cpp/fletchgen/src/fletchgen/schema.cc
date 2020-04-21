@@ -73,9 +73,13 @@ void SchemaSet::AppendSchema(const std::shared_ptr<arrow::Schema> &arrow_schema)
     schemas_.push_back(fs);
   } else {
     // If a schema with this name already exists. If so, check if its equal.
+    // This would not be an error, since it may come from a recordbatch with the same schema.
     auto other = GetSchema(name);
     if ((*other)->arrow_schema()->Equals(*arrow_schema)) {
       FLETCHER_LOG(INFO, "Duplicate but equal schema in SchemaSet: " + name);
+    } else {
+      // If it's not equal, it's quite fatal. The user should fix their schema.
+      FLETCHER_LOG(FATAL, "Duplicate schema detected in SchemaSet: " + name);
     }
   }
 }
