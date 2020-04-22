@@ -197,15 +197,10 @@ void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema
 
 void WriteRecordBatchesToFile(const std::string &filename,
                               const std::vector<std::shared_ptr<arrow::RecordBatch>> &recordbatches) {
-  arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>> result = arrow::io::FileOutputStream::Open(filename);
-  std::shared_ptr<arrow::io::FileOutputStream> file = result.ValueOrDie();
-
-  arrow::Result<std::shared_ptr<arrow::ipc::RecordBatchWriter>> write_result;
+  std::shared_ptr<arrow::io::FileOutputStream> file = arrow::io::FileOutputStream::Open(filename).ValueOrDie();
   arrow::Status status;
-
   for (const auto &rb : recordbatches) {
-    std::shared_ptr<arrow::ipc::RecordBatchWriter> writer;
-    write_result = arrow::ipc::NewFileWriter(file.get(), rb->schema());
+    std::shared_ptr<arrow::ipc::RecordBatchWriter> writer = arrow::ipc::NewFileWriter(file.get(), rb->schema()).ValueOrDie();
     status = writer->WriteRecordBatch(*rb);
     if (!status.ok()) {
       throw std::runtime_error("Error writing recordbatches to file " + filename);

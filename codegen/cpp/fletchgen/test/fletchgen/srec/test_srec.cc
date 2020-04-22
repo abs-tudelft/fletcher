@@ -91,10 +91,11 @@ TEST(SREC, RecordBatchRoundTrip) {
   EXPECT_TRUE(result.ok());
   std::shared_ptr<arrow::io::OutputStream> aos = result.ValueOrDie();
   // Create a RecordBatchFile writer
-  std::shared_ptr<arrow::ipc::RecordBatchWriter> afw;
-  EXPECT_TRUE(arrow::ipc::RecordBatchFileWriter::Open(aos.get(), rb->schema(), &afw).ok());
+  arrow::Result<std::shared_ptr<arrow::ipc::RecordBatchWriter>> afw = arrow::ipc::NewFileWriter(aos.get(), rb->schema());
+  EXPECT_TRUE(afw.ok());
+
   // Write the RecordBatch to the FileOutputStream
-  EXPECT_TRUE(afw->WriteRecordBatch(*rb).ok());
+  EXPECT_TRUE(afw.ValueOrDie()->WriteRecordBatch(*rb).ok());
 }
 
 }  // namespace fletchgen::srec
