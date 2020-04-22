@@ -148,8 +148,10 @@ jobs:
     vmImage: ubuntu-latest
   steps:
   - script: |
-      docker build --build-arg ARROW_VERSION=$(arrowVersion) --build-arg MANYLINUX=2010 --build-arg PACKAGE=$(source) -t $(package)-manylinux:2010 - < misc/Dockerfile.python &&
-      docker run --rm -v $(Build.SourcesDirectory):/io $(package)-manylinux:2010
+      for manylinux in 2010 2014; do
+        docker build --build-arg ARROW_VERSION=$(arrowVersion) --build-arg MANYLINUX=$manylinux --build-arg PACKAGE=$(source) -t $(package)-manylinux:$manylinux - < misc/Dockerfile.python &&
+        docker run --rm -v $(Build.SourcesDirectory):/io $(package)-manylinux:$manylinux
+      done
     displayName: Build manylinux wheels
   - template: steps/install-python.yml@abs-tudelft
   - script: |

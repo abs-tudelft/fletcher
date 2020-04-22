@@ -9,7 +9,7 @@ RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION
 
 WORKDIR arrow-apache-arrow-${ARROW_VERSION}
 RUN for PIP in /opt/python/cp3{6,7,8}*/bin/pip3; \
-      do $PIP install -r python/requirements-build.txt -r python/requirements-test.txt \
+      do $PIP install auditwheel -r python/requirements-build.txt -r python/requirements-test.txt \
     ;done && \
     # taken from: https://github.com/apache/arrow/blob/apache-arrow-0.17.0/python/manylinux1/build_arrow.sh#L70-L73
     for PYDIR in /opt/python/cp3{6,7,8}*; \

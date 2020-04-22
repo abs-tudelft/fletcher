@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script builds manylinux{1, 2010} wheels in runtime/python/build/dist
+# This script builds manylinux{2010, 2014} wheel
 # Usage: ./manylinux_wheels.sh
 
 set -e -x
@@ -19,7 +19,9 @@ for package in runtime/python codegen/python; do
   eggs="$project/$package/.eggs"
   rm -rf $eggs
 
-  docker build --build-arg MANYLINUX=2010 --build-arg PACKAGE=$package -t manylinux-$package:2010 -f "$cwd/Dockerfile.python" "$cwd"
-  docker run --rm -v "$project":/io manylinux-$package:2010
+  for manylinux in 2010 2014; do
+    docker build --build-arg MANYLINUX=$manylinux --build-arg PACKAGE=$package -t manylinux-$package:$manylinux  -f "$cwd/Dockerfile.python" "$cwd"
+    docker run --rm -v "$project":/io manylinux-$package:$manylinux
+  done
 done
 
