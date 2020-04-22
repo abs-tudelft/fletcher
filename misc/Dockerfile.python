@@ -1,19 +1,22 @@
 ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64:latest as fletcher-python-base
 
-ARG CMAKE_VERSION=3.14.5
-ARG ARROW_VERSION=0.16.0
+ARG CMAKE_VERSION=3.16.6
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1
 
-ENV PATH /opt/python/cp37-cp37m/bin:$PATH
-RUN yum install -y boost-devel && \
-    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; \
-      do $PIP install --upgrade \
-        auditwheel \
-        numpy \
+ARG ARROW_VERSION=0.17.0
+RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION}.tar.gz | tar xz
+
+WORKDIR arrow-apache-arrow-${ARROW_VERSION}
+RUN for PIP in /opt/python/cp3{6,7,8}*/bin/pip3; \
+      do $PIP install -r python/requirements-build.txt -r python/requirements-test.txt \
     ;done && \
-    curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1 && \
-    curl -L https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION}.tar.gz | tar xz && \
-    cd arrow-apache-arrow-${ARROW_VERSION} && \
+    # taken from: https://github.com/apache/arrow/blob/apache-arrow-0.17.0/python/manylinux1/build_arrow.sh#L70-L73
+    for PYDIR in /opt/python/cp3{6,7,8}*; \
+      do touch ${PYDIR}/`${PYDIR}/bin/python3 -c "import sysconfig; print(sysconfig.get_config_var('LDLIBRARY'))"` \
+    ;done
+
+RUN PATH=/opt/python/cp38-cp38/bin/:$PATH \
     cmake \
       -DARROW_PYTHON=On \
       -DCMAKE_BUILD_TYPE=Release \
@@ -22,13 +25,9 @@ RUN yum install -y boost-devel && \
     make -j4 && \
     make install
 
-RUN cd arrow-apache-arrow-${ARROW_VERSION}/python && \
-    for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; \
-      do $PIP install --upgrade \
-        Cython \
-    ;done && \
-    for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; \
-      do $PYTHON setup.py build install \
+RUN cd python && \
+    for PYDIR in /opt/python/cp3{6,7,8}*/bin; \
+      do export PATH=${PYDIR}:${PATH} && ${PYDIR}/python3 setup.py install \
     ;done
 
 FROM fletcher-python-base
@@ -36,4 +35,4 @@ FROM fletcher-python-base
 ARG PACKAGE=
 
 WORKDIR /io/${PACKAGE}
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{6,7,8}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
