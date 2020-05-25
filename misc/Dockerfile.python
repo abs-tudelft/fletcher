@@ -1,7 +1,7 @@
-ARG MANYLINUX=1
+ARG MANYLINUX=2014
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64:latest as fletcher-python-base
 
-ARG CMAKE_VERSION=3.16.6
+ARG CMAKE_VERSION=3.17.2
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1
 
 ARG ARROW_VERSION=0.17.1
@@ -35,4 +35,4 @@ FROM fletcher-python-base
 ARG PACKAGE=
 
 WORKDIR /io/${PACKAGE}
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{6,7,8}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{6,7,8}*/bin/python3; do $PYTHON setup.py bdist_wheel || exit 1; done; for WHL in build/dist/*.whl; do $PYTHON -m auditwheel show $WHL && $PYTHON -m auditwheel repair $WHL || exit 1; done; rm -rf build/python build/CMakeCache.txt"]
