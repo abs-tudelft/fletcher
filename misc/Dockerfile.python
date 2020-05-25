@@ -4,7 +4,7 @@ FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64:latest as fletcher-python-base
 ARG CMAKE_VERSION=3.16.6
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar xz -C /usr/local --strip-components=1
 
-ARG ARROW_VERSION=0.17.0
+ARG ARROW_VERSION=0.17.1
 RUN curl -L https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION}.tar.gz | tar xz
 
 WORKDIR arrow-apache-arrow-${ARROW_VERSION}
