@@ -1,0 +1,4 @@
+<map id="fletchgen::BusDimParams" name="fletchgen::BusDimParams">
+<area shape="rect" id="node1" title="Holds bus parameters based on bus dimensions, that has actual nodes representing the dimensions." alt="" coords="5,95,180,121"/>
+<area shape="rect" id="node2" href="$structfletchgen_1_1_bus_dim.html" title="Holds bus interface dimensions." alt="" coords="27,5,158,32"/>
+</map>

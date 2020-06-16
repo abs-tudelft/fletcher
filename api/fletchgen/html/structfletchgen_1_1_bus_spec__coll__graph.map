@@ -1,0 +1,4 @@
+<map id="fletchgen::BusSpec" name="fletchgen::BusSpec">
+<area shape="rect" id="node1" title="Holds bus dimensions and function, without instantiating Cerata nodes." alt="" coords="5,95,141,121"/>
+<area shape="rect" id="node2" href="$structfletchgen_1_1_bus_dim.html" title="Holds bus interface dimensions." alt="" coords="8,5,139,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="fletchgen::BusPort" name="fletchgen::BusPort">
+<area shape="rect" id="node1" title="A port derived from bus parameters." alt="" coords="5,80,136,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="47,5,94,32"/>
+</map>

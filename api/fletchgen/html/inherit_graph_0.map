@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,81,52,108"/>
+<area shape="rect" id="node2" href="$structfletchgen_1_1_axi4_lite_port.html" title="An AXI4&#45;lite port derived from an AXI&#45;lite width specification." alt="" coords="100,5,255,32"/>
+<area shape="rect" id="node3" href="$structfletchgen_1_1_bus_port.html" title="A port derived from bus parameters." alt="" coords="112,56,243,83"/>
+<area shape="rect" id="node4" href="$structfletchgen_1_1_field_port.html" title="A port derived from an Arrow field." alt="" coords="110,107,245,133"/>
+<area shape="rect" id="node5" href="$structfletchgen_1_1_mmio_port.html" title="A port on the vhdmmio component. Remembers what register spec it came from." alt="" coords="108,157,247,184"/>
+</map>

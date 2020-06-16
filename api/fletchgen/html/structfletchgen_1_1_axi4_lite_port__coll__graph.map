@@ -1,0 +1,5 @@
+<map id="fletchgen::Axi4LitePort" name="fletchgen::Axi4LitePort">
+<area shape="rect" id="node1" title="An AXI4&#45;lite port derived from an AXI&#45;lite width specification." alt="" coords="15,95,170,121"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,5,52,32"/>
+<area shape="rect" id="node3" href="$structfletchgen_1_1_axi4_lite_spec.html" title="AXI&#45;lite bus width specification. Address is always 32, but data can also be 64. Modifiable." alt="" coords="77,5,237,32"/>
+</map>

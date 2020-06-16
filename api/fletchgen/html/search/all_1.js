@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['backup',['backup',['../structfletchgen_1_1_options.html#a7bed7d4018665be24f8d8c30dc97d0c4',1,'fletchgen::Options']]],
+  ['batch',['BATCH',['../namespacefletchgen.html#a81bb2df9bbc0f4f52fd3dfd0b9c625c4a3dba7f2d2578ffb4bd657af94b1add80',1,'fletchgen']]],
+  ['batch_5fdesc',['batch_desc',['../structfletchgen_1_1_design.html#adf3eaf3cfc9f4789bc94ec58d173d486',1,'fletchgen::Design::batch_desc()'],['../structfletchgen_1_1_record_batch.html#ae831859a7435a5615f0d236882d63e8a',1,'fletchgen::RecordBatch::batch_desc()']]],
+  ['batch_5fdesc_5f',['batch_desc_',['../structfletchgen_1_1_record_batch.html#a5db800425d7474c53cb890a2911e539a',1,'fletchgen::RecordBatch']]],
+  ['behavior',['behavior',['../structfletchgen_1_1_mmio_reg.html#a3dff0b6923aeb56b578afe2bcea84d54',1,'fletchgen::MmioReg']]],
+  ['bm',['bm',['../structfletchgen_1_1_bus_dim.html#ad5699810a24d4332a6d47c055149132d',1,'fletchgen::BusDim::bm()'],['../structfletchgen_1_1_bus_dim_params.html#aeffd205e2fb8b2e35fe3f621975f9474',1,'fletchgen::BusDimParams::bm()']]],
+  ['bs',['bs',['../structfletchgen_1_1_bus_dim.html#aa6c1d47cff00a68bdbccb472d2d340e6',1,'fletchgen::BusDim::bs()'],['../structfletchgen_1_1_bus_dim_params.html#ae76832dfb261eea69dd172ede63945cf',1,'fletchgen::BusDimParams::bs()']]],
+  ['buffer',['BUFFER',['../namespacefletchgen.html#a81bb2df9bbc0f4f52fd3dfd0b9c625c4a17de626bcae5109bb2f7a66dfc4a8a1d',1,'fletchgen']]],
+  ['bus',['bus',['../namespacefletchgen.html#a69b552aa73c157cc1142bf831d4779d7',1,'fletchgen']]],
+  ['bus_5farbiter',['bus_arbiter',['../namespacefletchgen.html#a5f62bb38651a9829aaa9cf87c2637307',1,'fletchgen']]],
+  ['bus_5fcd',['bus_cd',['../namespacefletchgen.html#ac22a45a63daae5ae216eba3bffe8f4bb',1,'fletchgen']]],
+  ['bus_5fdim_5f',['bus_dim_',['../classfletchgen_1_1_mantle.html#aa8b7b05e9da16b0ad8ecb3e9b31a83d9',1,'fletchgen::Mantle']]],
+  ['bus_5fdims',['bus_dims',['../structfletchgen_1_1_options.html#aab4d4dbb2beceeafccfbe335a5d3efd0',1,'fletchgen::Options']]],
+  ['bus_5fport',['bus_port',['../namespacefletchgen.html#ad30a14baa1575f9de19297b4e1b6b92e',1,'fletchgen::bus_port(const std::string &amp;name, Port::Dir dir, const BusSpecParams &amp;params)'],['../namespacefletchgen.html#a8f7938abacb37f5876ed089fc6ab6e18',1,'fletchgen::bus_port(Port::Dir dir, const BusSpecParams &amp;params)']]],
+  ['bus_5fread',['bus_read',['../namespacefletchgen.html#a2a0ebb4914f0d9736ef8bf32b1ad043b',1,'fletchgen']]],
+  ['bus_5fwrite',['bus_write',['../namespacefletchgen.html#a291cc8d90a91ee4ffe0b5b028a49b7ac',1,'fletchgen']]],
+  ['busdim',['BusDim',['../structfletchgen_1_1_bus_dim.html',1,'fletchgen']]],
+  ['busdimparams',['BusDimParams',['../structfletchgen_1_1_bus_dim_params.html',1,'fletchgen::BusDimParams'],['../structfletchgen_1_1_bus_dim_params.html#a99af884d1559708a8eb96c94dc765ce6',1,'fletchgen::BusDimParams::BusDimParams(cerata::Graph *parent, BusDim dim=BusDim{}, const std::string &amp;prefix=&quot;&quot;)'],['../structfletchgen_1_1_bus_dim_params.html#a7879bfa265c17abe159d088e69ead8cd',1,'fletchgen::BusDimParams::BusDimParams(const std::shared_ptr&lt; cerata::Graph &gt; &amp;parent, BusDim spec=BusDim{}, const std::string &amp;prefix=&quot;&quot;)']]],
+  ['busfunction',['BusFunction',['../namespacefletchgen.html#ae105d4405c76792418550227d7dd9f69',1,'fletchgen']]],
+  ['busport',['BusPort',['../structfletchgen_1_1_bus_port.html',1,'fletchgen::BusPort'],['../structfletchgen_1_1_bus_port.html#aa521dda977e9ff24c6cb36925af19fe3',1,'fletchgen::BusPort::BusPort()']]],
+  ['busreadserializer',['BusReadSerializer',['../namespacefletchgen.html#a4db57a341becc129e0afe7f1c04a0e47',1,'fletchgen']]],
+  ['busspec',['BusSpec',['../structfletchgen_1_1_bus_spec.html',1,'fletchgen::BusSpec'],['../structfletchgen_1_1_bus_spec.html#aed21723a418a405de91fc850e65ed11e',1,'fletchgen::BusSpec::BusSpec()=default'],['../structfletchgen_1_1_bus_spec.html#a08f43bf5a824c57fbb856c9390071e14',1,'fletchgen::BusSpec::BusSpec(const BusSpecParams &amp;params)']]],
+  ['busspecparams',['BusSpecParams',['../structfletchgen_1_1_bus_spec_params.html',1,'fletchgen']]],
+  ['buswriteserializer',['BusWriteSerializer',['../namespacefletchgen.html#a289305aee9b4e809ae6597bdf4caeea1',1,'fletchgen']]]
+];

@@ -1,0 +1,4 @@
+<map id="fletchgen::MmioPort" name="fletchgen::MmioPort">
+<area shape="rect" id="node1" title="A port on the vhdmmio component. Remembers what register spec it came from." alt="" coords="5,80,144,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="51,5,98,32"/>
+</map>
