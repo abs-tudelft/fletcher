@@ -59,6 +59,8 @@ jobs:
         source: codegen/test/primmap
       stringread:
         source: codegen/test/stringread
+      listprim:
+        source: codegen/test/listprim
   pool:
     vmImage: ubuntu-latest
   steps:
