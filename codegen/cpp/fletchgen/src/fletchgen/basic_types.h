@@ -74,6 +74,7 @@ std::shared_ptr<Parameter> NAME(int64_t value, const std::string& prefix) { \
 
 // Arrow equivalent Cerata types:
 BIT_DECL_FACTORY(validity)
+VEC_DECL_FACTORY(bool_, 1)
 VEC_DECL_FACTORY(int8, 8)
 VEC_DECL_FACTORY(uint8, 8)
 VEC_DECL_FACTORY(int16, 16)
@@ -88,6 +89,12 @@ VEC_DECL_FACTORY(float32, 32)
 VEC_DECL_FACTORY(float64, 64)
 VEC_DECL_FACTORY(date32, 32)
 VEC_DECL_FACTORY(date64, 64)
+VEC_DECL_FACTORY(date32, 32)
+VEC_DECL_FACTORY(date64, 64)
+VEC_DECL_FACTORY(time32, 32)
+VEC_DECL_FACTORY(time64, 64)
+VEC_DECL_FACTORY(timestamp, 64)
+VEC_DECL_FACTORY(decimal128, 128)
 VEC_DECL_FACTORY(utf8c, 8)
 VEC_DECL_FACTORY(byte, 8)
 VEC_DECL_FACTORY(offset, 32)
@@ -130,5 +137,13 @@ std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataTyp
  * @return        Optionally, the port node that holds the clock/reset record.
  */
 std::optional<cerata::Port *> GetClockResetPort(cerata::Graph *graph, const ClockDomain &domain);
+
+
+/**
+ * @brief Returns the bit-width of a fixed-width Arrow type. Throws if it's not a fixed-width type.
+ * @param arrow_type The type to inspect.
+ * @return The bit width of the fixed type.
+ */
+int GetFixedWidthTypeBitWidth(const arrow::DataType &arrow_type);
 
 }  // namespace fletchgen

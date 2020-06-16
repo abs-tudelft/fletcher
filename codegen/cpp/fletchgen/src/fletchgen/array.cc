@@ -43,6 +43,10 @@ using fletcher::Mode;
 PARAM_FACTORY(index_width)
 PARAM_FACTORY(tag_width)
 
+// The width of the indices or Arrow.
+// TODO(johanpel): support LARGE_LIST, LARGE_BINARY, LARGE_STRING, etc...
+static const int ARROW_OFFSET_WIDTH = 32;
+
 size_t GetCtrlBufferCount(const arrow::Field &field) {
   fletcher::FieldMetadata field_meta;
   fletcher::FieldAnalyzer fa(&field_meta);
@@ -180,22 +184,29 @@ Component *array(Mode mode) {
   return result.get();
 }
 
-ConfigType GetConfigType(const arrow::DataType *type) {
-  ConfigType ret = ConfigType::PRIM;
+ConfigType GetConfigType(const arrow::DataType &type) {
+  if (type.id() == arrow::Type::LIST) {
+    // Detect listprim:
+    // Elements must be non-nullable.
+    if (!type.child(0)->nullable() && (GetConfigType(*type.child(0)->type()) == ConfigType::PRIM)) {
+      return ConfigType::LIST_PRIM;
+    } else { // otherwise it's just a normal list
+      return ConfigType::LIST;
+    }
+  }
+  // listprim(8) types:
+  if (type.id() == arrow::Type::BINARY) return ConfigType::LIST_PRIM;
+  if (type.id() == arrow::Type::STRING) return ConfigType::LIST_PRIM;
 
-  // Lists:
-  if (type->id() == arrow::Type::LIST) ret = ConfigType::LIST;
-  else if (type->id() == arrow::Type::BINARY) ret = ConfigType::LIST_PRIM;
-  else if (type->id() == arrow::Type::STRING) ret = ConfigType::LIST_PRIM;
+  // Structs
+  if (type.id() == arrow::Type::STRUCT) return ConfigType::STRUCT;
 
-    // Structs
-  else if (type->id() == arrow::Type::STRUCT) ret = ConfigType::STRUCT;
-
-  return ret;
+  // Anything else should be a primitive.
+  return ConfigType::PRIM;
 }
 
-std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
-  switch (type->id()) {
+std::shared_ptr<Node> GetWidthNode(const arrow::DataType &type) {
+  switch (type.id()) {
     // Fixed-width:
     case arrow::Type::BOOL: return intl(1);
     case arrow::Type::DATE32: return intl(32);
@@ -214,6 +225,7 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
     case arrow::Type::UINT16: return intl(16);
     case arrow::Type::UINT32: return intl(32);
     case arrow::Type::UINT64: return intl(64);
+    case arrow::Type::DECIMAL: return intl(128);
 
       // Lists:
     case arrow::Type::LIST: return strl("OFFSET_WIDTH");
@@ -227,18 +239,14 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
       // case arrow::Type::NA: return 0;
       // case arrow::Type::DICTIONARY: return 0;
       // case arrow::Type::UNION: return 0;
-      throw std::domain_error("Arrow type " + type->ToString() + " not supported.");
+      throw std::domain_error("Arrow type " + type.ToString() + " not supported.");
 
       // Structs have no width
     case arrow::Type::STRUCT: return intl(0);
 
       // Other width types:
     case arrow::Type::FIXED_SIZE_BINARY: {
-      auto t = dynamic_cast<const arrow::FixedSizeBinaryType *>(type);
-      return intl(t->bit_width());
-    }
-    case arrow::Type::DECIMAL: {
-      auto t = dynamic_cast<const arrow::DecimalType *>(type);
+      const auto *t = dynamic_cast<const arrow::FixedSizeBinaryType *>(&type);
       return intl(t->bit_width());
     }
   }
@@ -246,7 +254,7 @@ std::shared_ptr<Node> GetWidth(const arrow::DataType *type) {
 
 std::string GenerateConfigString(const arrow::Field &field, int level) {
   std::string ret;
-  ConfigType ct = GetConfigType(field.type().get());
+  ConfigType ct = GetConfigType(*field.type());
 
   if (field.nullable()) {
     ret += "null(";
@@ -256,21 +264,28 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
   int epc = fletcher::GetUIntMeta(field, fletcher::meta::VALUE_EPC, 1);
   int lepc = fletcher::GetUIntMeta(field, fletcher::meta::LIST_EPC, 1);
 
+  bool has_children = false;
+
   if (ct == ConfigType::PRIM) {
-    auto w = GetWidth(field.type().get());
+    auto w = GetWidthNode(*field.type());
     ret += "prim(" + w->ToString();
     level++;
   } else if (ct == ConfigType::LIST_PRIM) {
-    ret += "listprim(8";
+    ret += "listprim(";
     level++;
-  } else if (ct == ConfigType::LIST) {
-    if (GetConfigType(field.type()->child(0)->type().get()) == ConfigType::PRIM) {
-      ret += "list";
+    // Binary and string have no child, so we can't inspect it for the width, which is always 8.
+    if ((field.type()->id() == arrow::Type::BINARY) || (field.type()->id() == arrow::Type::STRING)) {
+      ret += "8";
     } else {
-      ret += "list(";
+      // Other list of non-nullable primitives:
+      ret += std::to_string(GetFixedWidthTypeBitWidth(*field.type()->child(0)->type()));
     }
+  } else if (ct == ConfigType::LIST) {
+    has_children = true;
+    ret += "list(";
     level++;
   } else if (ct == ConfigType::STRUCT) {
+    has_children = true;
     ret += "struct(";
     level++;
   }
@@ -288,12 +303,14 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
     ret += "lepc=" + std::to_string(epc);
   }
 
-  // Append children
-  for (int c = 0; c < field.type()->num_children(); c++) {
-    auto child = field.type()->child(c);
-    ret += GenerateConfigString(*child);
-    if (c != field.type()->num_children() - 1)
-      ret += ",";
+  if (has_children) {
+    // Append children
+    for (int c = 0; c < field.type()->num_children(); c++) {
+      auto child = field.type()->child(c);
+      ret += GenerateConfigString(*child);
+      if (c != field.type()->num_children() - 1)
+        ret += ",";
+    }
   }
 
   for (; level > 0; level--)
@@ -331,6 +348,23 @@ std::shared_ptr<TypeMapper> GetStreamTypeMapper(Type *stream_type, Type *other) 
   return result;
 }
 
+std::shared_ptr<Type> ListPrimType(int val_epc, int list_epc, int val_width, int idx_width, const std::string &name) {
+  auto data_width = val_epc * val_width;
+  auto lengths_width = list_epc * idx_width;
+
+  auto e_count_width = static_cast<int>(ceil(log2(val_epc + 1)));
+  auto l_count_width = static_cast<int>(ceil(log2(list_epc + 1)));
+
+  return record({field("", stream(record({field("dvalid", dvalid()),
+                                          field("last", last()),
+                                          field("length", length(lengths_width)),
+                                          field("count", count(l_count_width))}))),
+                 field(name, stream(record({field("dvalid", dvalid()),
+                                            field("last", last()),
+                                            field("", data(data_width)),
+                                            field("count", count(e_count_width))})))});
+}
+
 std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::Mode mode, int level) {
   // The ordering of the record fields in this function determines the order in which a nested stream is type converted
   // automatically using GetStreamTypeConverter. This corresponds to how the hardware is implemented.
@@ -339,73 +373,61 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
   //
   // WARNING: Modifications to this function must be reflected in the manual hardware implementation of Fletcher
   //  components! See: hardware/arrays/ArrayConfig_pkg.vhd
+
+  // Get the EPC values
   int epc = fletcher::GetUIntMeta(arrow_field, fletcher::meta::VALUE_EPC, 1);
   int lepc = fletcher::GetUIntMeta(arrow_field, fletcher::meta::LIST_EPC, 1);
 
+  // Get their ceiled log2 to determine the count width
   auto e_count_width = static_cast<int>(ceil(log2(epc + 1)));
   auto l_count_width = static_cast<int>(ceil(log2(lepc + 1)));
 
+  // Placeholder for the returning type.
   std::shared_ptr<Type> type;
 
-  auto arrow_id = arrow_field.type()->id();
-  const auto &name = arrow_field.name();
-
-  switch (arrow_id) {
-    case arrow::Type::BINARY: {
-      // Special case: binary type has a length stream and byte stream.
+  // Determine what Cerata type to generate from the Arrow field type.
+  switch (arrow_field.type()->id()) {
+    // Special case: binary type has a length stream and non-nullable byte stream.
+    // The EPC is assumed to relate to the list values.
+    // The LEPC can be used for the length stream.
+    case arrow::Type::BINARY: return ListPrimType(epc, lepc, 8, ARROW_OFFSET_WIDTH, "bytes");
+      // Special case: string type has a length stream and non-nullable utf8 character stream.
       // The EPC is assumed to relate to the list values.
       // The LEPC can be used for the length stream.
-      auto data_width = epc * 8;
-      auto length_width = lepc * 32;
+      // TODO(johanpel): reconsider the name of the chars stream.
+    case arrow::Type::STRING: return ListPrimType(epc, lepc, 8, ARROW_OFFSET_WIDTH, "chars");
 
-      type = record({field("", stream(record({field("dvalid", dvalid()),
-                                              field("last", last()),
-                                              field("length", length(length_width)),
-                                              field("count", count(l_count_width))}))),
-                     field("bytes", stream(record({field("dvalid", dvalid()),
-                                                   field("last", last()),
-                                                   field("", data(data_width)),
-                                                   field("count", count(e_count_width))})))});
-      return type;
-    }
-
-    case arrow::Type::STRING: {
-      // Special case: string type has a length stream and utf8 character stream.
-      // The EPC is assumed to relate to the list values.
-      // The LEPC can be used for the length stream.
-      auto data_width = epc * 8;
-      auto length_width = lepc * 32;
-
-      type = record({field("", stream(record({field("dvalid", dvalid()),
-                                              field("last", last()),
-                                              field("length", length(length_width)),
-                                              field("count", count(l_count_width))}))),
-                     field("chars", stream(record({field("dvalid", dvalid()),
-                                                   field("last", last()),
-                                                   field("", data(data_width)),
-                                                   field("count", count(e_count_width))})))});
-      return type;
-    }
-
-      // Lists
+      // Lists could be either lists of non-nullable primitives, or of something else.
+      // If the values are non-nullable primitives, we can use the "listprim" configuration, which has some additional
+      // options.
     case arrow::Type::LIST: {
+      // Sanity check, a list should only have one child field.
       if (arrow_field.type()->num_children() != 1) {
         FLETCHER_LOG(FATAL, "Encountered Arrow list type with other than 1 child.");
       }
-      if (epc > 1) {
-        FLETCHER_LOG(FATAL, "Elements per cycle on non-primitive list is unsupported.");
+      // Inspect the child field.
+      auto child_field = arrow_field.type()->child(0);
+      // First handle the special case where this can be made a listprim
+      if (GetConfigType(*child_field->type()) == ConfigType::PRIM) {
+        auto w = GetFixedWidthTypeBitWidth(*child_field->type());
+        FLETCHER_LOG(DEBUG, "Using \"listprim\" configuration for list of non-nullable primitives of width " << w);
+        auto values_type = ConvertFixedWidthType(arrow_field.type()->child(0)->type(), epc);
+        return ListPrimType(epc, lepc, w, ARROW_OFFSET_WIDTH, child_field->name());
+      } else {
+        // Lists of non-primitive types or nullable primitive types.
+        // EPC or LEPC are not supported.
+        if ((epc > 1) || (lepc > 1)) {
+          FLETCHER_LOG(FATAL, "(Length)-elements-per-cycle > 1 on non-primitive list is not supported.");
+        }
+        auto values_type = GetStreamType(*child_field, mode, level + 1);
+        auto child = stream(record({field("dvalid", dvalid()),
+                                    field("last", last()),
+                                    field("data", values_type),
+                                    field("count", count(e_count_width))}));
+        type = record({field("length", length(ARROW_OFFSET_WIDTH)),
+                       field(child_field->name(), child)});
+        e_count_width = l_count_width;
       }
-      auto arrow_child = arrow_field.type()->child(0);
-      auto element_type = GetStreamType(*arrow_child, mode, level + 1);
-      auto length_width = 32;
-
-      auto child = stream(record({field("dvalid", dvalid()),
-                                  field("last", last()),
-                                  field("data", element_type),
-                                  field("count", count(e_count_width))}));
-      type = record({field("length", length(length_width)),
-                     field(arrow_child->name(), child)});
-      e_count_width = l_count_width;
       break;
     }
 
@@ -419,7 +441,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
         auto child_type = GetStreamType(*f, mode, level + 1);
         children.push_back(field(f->name(), child_type));
       }
-      type = record(name + "_rec", children);
+      type = record(arrow_field.name() + "_rec", children);
       break;
     }
 
@@ -453,6 +475,7 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
 
 // TODO(johanpel): move this into GetStreamType
 std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field) {
+
   uint32_t epc = fletcher::GetUIntMeta(arrow_field, fletcher::meta::VALUE_EPC, 1);
   uint32_t lepc = fletcher::GetUIntMeta(arrow_field, fletcher::meta::LIST_EPC, 1);
 
@@ -476,20 +499,16 @@ std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field) 
 
       // Lists
     case arrow::Type::LIST: {
-      if (arrow_field.type()->num_children() != 1) {
-        FLETCHER_LOG(ERROR, "Encountered Arrow list type with other than 1 child.");
+      auto child_field = arrow_field.type()->child(0);
+      if (GetConfigType(*child_field->type()) == ConfigType::PRIM) {
+        auto data_width = GetFixedWidthTypeBitWidth(*child_field->type());
+        return {2, e_count_width + l_count_width + data_width * epc + ARROW_OFFSET_WIDTH * lepc + validity_bit};
+      } else {
+        auto arrow_child = arrow_field.type()->child(0);
+        auto elem_spec = GetArrayDataSpec(*arrow_child);
+        // Add a length stream to number of streams, and length width to data width.
+        return {elem_spec.first + 1, elem_spec.second + ARROW_OFFSET_WIDTH + validity_bit};
       }
-      if (epc > 1) {
-        FLETCHER_LOG(ERROR, "Multi-elements-per-cycle on non-primitive list is unsupported.");
-      }
-      if (lepc > 1) {
-        FLETCHER_LOG(ERROR, "Multi-lengths-per-cycle on non-primitive list is unsupported.");
-      }
-      auto arrow_child = arrow_field.type()->child(0);
-      auto elem_spec = GetArrayDataSpec(*arrow_child);
-      auto length_width = 32;
-      // Add a length stream to number of streams, and length width to data width.
-      return {elem_spec.first + 1, elem_spec.second + length_width + validity_bit};
     }
 
       // Structs

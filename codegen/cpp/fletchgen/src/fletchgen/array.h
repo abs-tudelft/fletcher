@@ -73,14 +73,14 @@ enum class ConfigType {
  * @param type  The arrow::DataType.
  * @return      A Literal Node representing the width.
  */
-std::shared_ptr<Node> GetWidth(const arrow::DataType *type);
+std::shared_ptr<Node> GetWidthNode(const arrow::DataType &type);
 
 /**
  * @brief Return the configuration string type version of an arrow::DataType.
  * @param type  The arrow::DataType.
  * @return      The equivalent ConfigType.
  */
-ConfigType GetConfigType(const arrow::DataType *type);
+ConfigType GetConfigType(const arrow::DataType &type);
 
 /**
  * @brief Return the configuration string for a ArrayReader/Writer.
