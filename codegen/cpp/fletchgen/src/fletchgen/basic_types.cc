@@ -34,6 +34,7 @@ using cerata::stream;
 BIT_FACTORY(validity)
 
 // Non-nullable fixed-width types.
+VEC_FACTORY(bool_, 1)
 VEC_FACTORY(int8, 8)
 VEC_FACTORY(uint8, 8)
 VEC_FACTORY(int16, 16)
@@ -48,6 +49,10 @@ VEC_FACTORY(float32, 32)
 VEC_FACTORY(float64, 64)
 VEC_FACTORY(date32, 32)
 VEC_FACTORY(date64, 64)
+VEC_FACTORY(time32, 32)
+VEC_FACTORY(time64, 64)
+VEC_FACTORY(timestamp, 64)
+VEC_FACTORY(decimal128, 128)
 VEC_FACTORY(utf8c, 8)
 VEC_FACTORY(byte, 8)
 VEC_FACTORY(offset, 32)
@@ -130,6 +135,14 @@ std::shared_ptr<Type> last(int width, bool on_primitive) {
   return result;
 }
 
+int GetFixedWidthTypeBitWidth(const arrow::DataType &arrow_type) {
+  auto fwt = dynamic_cast<const arrow::FixedWidthType *>(&arrow_type);
+  if (fwt == nullptr) {
+    FLETCHER_LOG(ERROR, "Not a fixed-width Arrow type: " + arrow_type.ToString());
+  }
+  return fwt->bit_width();
+}
+
 std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataType> &arrow_type, int epc) {
   if (epc == 1) {
     // Only need to cover fixed-width data types in this function
@@ -145,12 +158,19 @@ std::shared_ptr<Type> ConvertFixedWidthType(const std::shared_ptr<arrow::DataTyp
       case arrow::Type::HALF_FLOAT: return float16();
       case arrow::Type::FLOAT: return float32();
       case arrow::Type::DOUBLE: return float64();
+      case arrow::Type::BOOL: return bool_();
+      case arrow::Type::DATE32: return date32();
+      case arrow::Type::DATE64: return date64();
+      case arrow::Type::TIME32: return time32();
+      case arrow::Type::TIME64: return time64();
+      case arrow::Type::TIMESTAMP: return timestamp();
+      case arrow::Type::DECIMAL: return decimal128();
       default:throw std::runtime_error("Unsupported Arrow DataType: " + arrow_type->ToString());
     }
   } else {
     auto fwt = std::dynamic_pointer_cast<arrow::FixedWidthType>(arrow_type);
     if (fwt == nullptr) {
-      FLETCHER_LOG(ERROR, "Not fixed width Arrow type: " + arrow_type->ToString());
+      FLETCHER_LOG(ERROR, "Not a fixed-width Arrow type: " + arrow_type->ToString());
     }
     return cerata::vector(epc * fwt->bit_width());
   }
