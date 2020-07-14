@@ -1,0 +1,64 @@
+name: Assets
+
+on:
+  release:
+    types:
+    - created
+  pull_request:
+
+env:
+  CMAKE_VERSION: '3.17.3'
+  ARROW_VERSION: '0.17.1'
+
+jobs:
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+        - codegen/python
+        - runtime/python
+        manylinux:
+        - 2014
+        cpython_version:
+        - 'cp35-cp35m'
+        - 'cp36-cp36m'
+        - 'cp37-cp37m'
+        - 'cp38-cp38'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Apache Arrow
+      run: |
+        yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
+        yum install -y --enablerepo=epel arrow-devel-$ARROW_VERSION-1.el7
+    - name: Install cmake
+      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+    - name: Install dependencies
+      run: /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install pyarrow==$ARROW_VERSION auditwheel
+    - name: Build wheel
+      working-directory: ${{ matrix.source }}
+      run: |
+        /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
+        /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair build/dist/*.whl
+    - name: Wheel path
+      id: wheel
+      working-directory: ${{ matrix.source }}/wheelhouse
+      run: echo "##[set-output name=wheel;]$(ls *.whl)"
+    - uses: actions/upload-release-asset@v1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ matrix.source }}/wheelhouse/${{ steps.wheel.outputs.wheel }}
+        asset_name: ${{ steps.wheel.outputs.wheel }}
+        asset_content_type: application/zip
+    - uses: pypa/gh-action-pypi-publish@v1.3.1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        packages_dir: ${{ matrix.source }}/wheelhouse
