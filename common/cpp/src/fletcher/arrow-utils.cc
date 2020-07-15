@@ -161,7 +161,7 @@ bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Sch
     FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + schema_result.status().ToString() + "]");
     return false;
   }
-  fis->Close();
+  auto status = fis->Close();
 
   return true;
 }

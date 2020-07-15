@@ -153,6 +153,6 @@ setup(
     license='Apache License, Version 2.0',
     zip_safe = False,
     data_files= [
-        ('lib', glob.glob('build/install/lib*/libfletcher_echo.so')),
+        ('lib', [output_dir + '/lib64/libfletcher_echo.so'] if 'AUDITWHEEL_PLAT' in os.environ else []),
     ],
 )
