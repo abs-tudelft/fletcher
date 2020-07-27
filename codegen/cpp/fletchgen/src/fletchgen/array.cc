@@ -188,7 +188,7 @@ ConfigType GetConfigType(const arrow::DataType &type) {
   if (type.id() == arrow::Type::LIST) {
     // Detect listprim:
     // Elements must be non-nullable.
-    if (!type.child(0)->nullable() && (GetConfigType(*type.child(0)->type()) == ConfigType::PRIM)) {
+    if (!type.field(0)->nullable() && (GetConfigType(*type.field(0)->type()) == ConfigType::PRIM)) {
       return ConfigType::LIST_PRIM;
     } else { // otherwise it's just a normal list
       return ConfigType::LIST;
@@ -278,7 +278,7 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
       ret += "8";
     } else {
       // Other list of non-nullable primitives:
-      ret += std::to_string(GetFixedWidthTypeBitWidth(*field.type()->child(0)->type()));
+      ret += std::to_string(GetFixedWidthTypeBitWidth(*field.type()->field(0)->type()));
     }
   } else if (ct == ConfigType::LIST) {
     has_children = true;
@@ -305,10 +305,10 @@ std::string GenerateConfigString(const arrow::Field &field, int level) {
 
   if (has_children) {
     // Append children
-    for (int c = 0; c < field.type()->num_children(); c++) {
-      auto child = field.type()->child(c);
+    for (int c = 0; c < field.type()->num_fields(); c++) {
+      auto child = field.type()->field(c);
       ret += GenerateConfigString(*child);
-      if (c != field.type()->num_children() - 1)
+      if (c != field.type()->num_fields() - 1)
         ret += ",";
     }
   }
@@ -402,16 +402,16 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
       // options.
     case arrow::Type::LIST: {
       // Sanity check, a list should only have one child field.
-      if (arrow_field.type()->num_children() != 1) {
+      if (arrow_field.type()->num_fields() != 1) {
         FLETCHER_LOG(FATAL, "Encountered Arrow list type with other than 1 child.");
       }
       // Inspect the child field.
-      auto child_field = arrow_field.type()->child(0);
+      auto child_field = arrow_field.type()->field(0);
       // First handle the special case where this can be made a listprim
       if (GetConfigType(*child_field->type()) == ConfigType::PRIM) {
         auto w = GetFixedWidthTypeBitWidth(*child_field->type());
         FLETCHER_LOG(DEBUG, "Using \"listprim\" configuration for list of non-nullable primitives of width " << w);
-        auto values_type = ConvertFixedWidthType(arrow_field.type()->child(0)->type(), epc);
+        auto values_type = ConvertFixedWidthType(arrow_field.type()->field(0)->type(), epc);
         return ListPrimType(epc, lepc, w, ARROW_OFFSET_WIDTH, child_field->name());
       } else {
         // Lists of non-primitive types or nullable primitive types.
@@ -433,11 +433,11 @@ std::shared_ptr<Type> GetStreamType(const arrow::Field &arrow_field, fletcher::M
 
       // Structs
     case arrow::Type::STRUCT: {
-      if (arrow_field.type()->num_children() < 1) {
+      if (arrow_field.type()->num_fields() < 1) {
         FLETCHER_LOG(FATAL, "Encountered Arrow struct type without any children.");
       }
       std::vector<std::shared_ptr<cerata::Field>> children;
-      for (const auto &f : arrow_field.type()->children()) {
+      for (const auto &f : arrow_field.type()->fields()) {
         auto child_type = GetStreamType(*f, mode, level + 1);
         children.push_back(field(f->name(), child_type));
       }
@@ -499,12 +499,12 @@ std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field) 
 
       // Lists
     case arrow::Type::LIST: {
-      auto child_field = arrow_field.type()->child(0);
+      auto child_field = arrow_field.type()->field(0);
       if (GetConfigType(*child_field->type()) == ConfigType::PRIM) {
         auto data_width = GetFixedWidthTypeBitWidth(*child_field->type());
         return {2, e_count_width + l_count_width + data_width * epc + ARROW_OFFSET_WIDTH * lepc + validity_bit};
       } else {
-        auto arrow_child = arrow_field.type()->child(0);
+        auto arrow_child = arrow_field.type()->field(0);
         auto elem_spec = GetArrayDataSpec(*arrow_child);
         // Add a length stream to number of streams, and length width to data width.
         return {elem_spec.first + 1, elem_spec.second + ARROW_OFFSET_WIDTH + validity_bit};
@@ -520,11 +520,11 @@ std::pair<uint32_t, uint32_t> GetArrayDataSpec(const arrow::Field &arrow_field) 
       if (lepc > 1) {
         FLETCHER_LOG(ERROR, "Struct delivers no length stream.");
       }
-      if (arrow_field.type()->num_children() < 1) {
+      if (arrow_field.type()->num_fields() < 1) {
         FLETCHER_LOG(ERROR, "Encountered Arrow struct type without any children.");
       }
       auto spec = std::pair<int, int>{0, 0};
-      for (const auto &f : arrow_field.type()->children()) {
+      for (const auto &f : arrow_field.type()->fields()) {
         auto child_spec = GetArrayDataSpec(*f);
         spec.first += child_spec.first;
         spec.second += child_spec.second;
