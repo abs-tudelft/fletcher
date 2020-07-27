@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['rbvector_441',['RBVector',['../namespacefletchgen.html#a11e5a137c642ba21be810f5a60b8d77f',1,'fletchgen']]]
+  ['rbvector_439',['RBVector',['../namespacefletchgen.html#a11e5a137c642ba21be810f5a60b8d77f',1,'fletchgen']]]
 ];

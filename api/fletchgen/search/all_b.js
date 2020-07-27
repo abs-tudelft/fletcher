@@ -20,8 +20,7 @@ var searchData=
   ['mode_138',['mode',['../structfletchgen_1_1_record_batch.html#a07d7804f9551fc7fe448951af65b0774',1,'fletchgen::RecordBatch::mode()'],['../classfletchgen_1_1_fletcher_schema.html#af1b4078f4abe570375bbaa1434a156b0',1,'fletchgen::FletcherSchema::mode()']]],
   ['mode2dir_139',['mode2dir',['../namespacefletchgen.html#afdd617db4a30cbd3c2c56edbbc6e12d8',1,'fletchgen']]],
   ['mode_5f_140',['mode_',['../structfletchgen_1_1_record_batch.html#ae7049bf7d2705af2977772799044b01a',1,'fletchgen::RecordBatch']]],
-  ['mustgeneratedesign_141',['MustGenerateDesign',['../structfletchgen_1_1_options.html#a3ee81a6c4b13d30c3599ee329d401af5',1,'fletchgen::Options']]],
-  ['mustgeneratedot_142',['MustGenerateDOT',['../structfletchgen_1_1_options.html#a1862f138f891bb4f72267098675f25a0',1,'fletchgen::Options']]],
-  ['mustgeneratesrec_143',['MustGenerateSREC',['../structfletchgen_1_1_options.html#a61bbddc5eea9382e7fb15831fe5fe6a4',1,'fletchgen::Options']]],
-  ['mustgeneratevhdl_144',['MustGenerateVHDL',['../structfletchgen_1_1_options.html#a9d8192a0a85d5d78e1c1f537ef9ca3bf',1,'fletchgen::Options']]]
+  ['mustgenerate_141',['MustGenerate',['../structfletchgen_1_1_options.html#abd9c4ab85f9645af6f47d4bce46dcdb9',1,'fletchgen::Options']]],
+  ['mustgeneratedesign_142',['MustGenerateDesign',['../structfletchgen_1_1_options.html#a3ee81a6c4b13d30c3599ee329d401af5',1,'fletchgen::Options']]],
+  ['mustgeneratesrec_143',['MustGenerateSREC',['../structfletchgen_1_1_options.html#a61bbddc5eea9382e7fb15831fe5fe6a4',1,'fletchgen::Options']]]
 ];
