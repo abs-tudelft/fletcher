@@ -98,17 +98,21 @@ Status Kernel::WaitForFinish() {
 }
 
 Status Kernel::WaitForFinish(unsigned int poll_interval_usec) {
-  FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
+  bool done = false;
   uint32_t status = 0;
+  FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
   if (poll_interval_usec == 0) {
-    do {
+    while (!done) {
       context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-    } while ((status & done_status_mask) != this->done_status);
+      done = (status & done_status_mask) == this->done_status;
+    }
   } else {
-    do {
-      usleep(poll_interval_usec);
+    while (!done) {
       context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-    } while ((status & done_status_mask) != this->done_status);
+      done = (status & done_status_mask) == this->done_status;
+      if (done) break;
+      usleep(poll_interval_usec);
+    }
   }
   FLETCHER_LOG(DEBUG, "Kernel status done bit asserted.");
   return Status::OK();
