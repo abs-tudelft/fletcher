@@ -107,12 +107,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a91bc1a7dadc25b9c355905168bf5697a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfletcher_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a91bc1a7dadc25b9c355905168bf5697a">GetReturn</a> (uint32_t *ret0, uint32_t *ret1=nullptr)</td></tr>
 <tr class="memdesc:a91bc1a7dadc25b9c355905168bf5697a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the return registers of the <a class="el" href="classfletcher_1_1_kernel.html" title="The Kernel class is used to manage the computational kernel of the accelerator.">Kernel</a>. If ret1 is nullptr, REG_RETURN1 is ignored.  <a href="classfletcher_1_1_kernel.html#a91bc1a7dadc25b9c355905168bf5697a">More...</a><br /></td></tr>
 <tr class="separator:a91bc1a7dadc25b9c355905168bf5697a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a81a3debcb0ca6ca6616d7166a7d5948b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfletcher_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a81a3debcb0ca6ca6616d7166a7d5948b">WaitForFinish</a> (unsigned int poll_interval_usec)</td></tr>
-<tr class="memdesc:a81a3debcb0ca6ca6616d7166a7d5948b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for the kernel to finish (blocking).  <a href="classfletcher_1_1_kernel.html#a81a3debcb0ca6ca6616d7166a7d5948b">More...</a><br /></td></tr>
-<tr class="separator:a81a3debcb0ca6ca6616d7166a7d5948b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03583fab9e3763765600f9cddd9c0d56"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfletcher_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a03583fab9e3763765600f9cddd9c0d56">WaitForFinish</a> ()</td></tr>
-<tr class="memdesc:a03583fab9e3763765600f9cddd9c0d56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for the kernel to finish (blocking). Polls at maximum speed.  <a href="classfletcher_1_1_kernel.html#a03583fab9e3763765600f9cddd9c0d56">More...</a><br /></td></tr>
-<tr class="separator:a03583fab9e3763765600f9cddd9c0d56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55833505ecd41a35cf03b61fc4b33d97"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfletcher_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a55833505ecd41a35cf03b61fc4b33d97">PollUntilDoneInterval</a> (unsigned int poll_interval_usec)</td></tr>
+<tr class="memdesc:a55833505ecd41a35cf03b61fc4b33d97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll (blocking) the done flag of the status register for assertion with an interval.  <a href="classfletcher_1_1_kernel.html#a55833505ecd41a35cf03b61fc4b33d97">More...</a><br /></td></tr>
+<tr class="separator:a55833505ecd41a35cf03b61fc4b33d97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f7012b8c1f05de11093296d151c6d64"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfletcher_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a2f7012b8c1f05de11093296d151c6d64">PollUntilDone</a> ()</td></tr>
+<tr class="memdesc:a2f7012b8c1f05de11093296d151c6d64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll the done flag of the status register for assertion (blocking). Polls at maximum speed.  <a href="classfletcher_1_1_kernel.html#a2f7012b8c1f05de11093296d151c6d64">More...</a><br /></td></tr>
+<tr class="separator:a2f7012b8c1f05de11093296d151c6d64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d5e6c17a79daf7b16dafc47dd1939a5"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classfletcher_1_1_context.html">Context</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classfletcher_1_1_kernel.html#a3d5e6c17a79daf7b16dafc47dd1939a5">context</a> ()</td></tr>
 <tr class="memdesc:a3d5e6c17a79daf7b16dafc47dd1939a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the context of this <a class="el" href="classfletcher_1_1_kernel.html" title="The Kernel class is used to manage the computational kernel of the accelerator.">Kernel</a>.  <a href="classfletcher_1_1_kernel.html#a3d5e6c17a79daf7b16dafc47dd1939a5">More...</a><br /></td></tr>
 <tr class="separator:a3d5e6c17a79daf7b16dafc47dd1939a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -295,6 +295,54 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a2f7012b8c1f05de11093296d151c6d64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f7012b8c1f05de11093296d151c6d64">&#9670;&nbsp;</a></span>PollUntilDone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structfletcher_1_1_status.html">Status</a> fletcher::Kernel::PollUntilDone </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Poll the done flag of the status register for assertion (blocking). Polls at maximum speed. </p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structfletcher_1_1_status.html#a81fae1810a6a1ff19a13da301accfa01" title="Return an OK status.">Status::OK()</a> when the kernel is finished, otherwise a descriptive error status.</dd></dl>
+<p>Polling at maximum speed can cause a significant amount of traffic on the accelerator interface; use with care. </p>
+
+</div>
+</div>
+<a id="a55833505ecd41a35cf03b61fc4b33d97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55833505ecd41a35cf03b61fc4b33d97">&#9670;&nbsp;</a></span>PollUntilDoneInterval()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structfletcher_1_1_status.html">Status</a> fletcher::Kernel::PollUntilDoneInterval </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>poll_interval_usec</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Poll (blocking) the done flag of the status register for assertion with an interval. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">poll_interval_usec</td><td>The interval at which to poll the <a class="el" href="classfletcher_1_1_kernel.html" title="The Kernel class is used to manage the computational kernel of the accelerator.">Kernel</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structfletcher_1_1_status.html#a81fae1810a6a1ff19a13da301accfa01" title="Return an OK status.">Status::OK()</a> when the kernel is finished, otherwise a descriptive error status. </dd></dl>
+
+</div>
+</div>
 <a id="af42132372ede01ac8b1be667c814e455"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af42132372ede01ac8b1be667c814e455">&#9670;&nbsp;</a></span>Reset()</h2>
 
@@ -407,53 +455,6 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a03583fab9e3763765600f9cddd9c0d56"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03583fab9e3763765600f9cddd9c0d56">&#9670;&nbsp;</a></span>WaitForFinish() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structfletcher_1_1_status.html">Status</a> fletcher::Kernel::WaitForFinish </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Wait for the kernel to finish (blocking). Polls at maximum speed. </p>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structfletcher_1_1_status.html#a81fae1810a6a1ff19a13da301accfa01" title="Return an OK status.">Status::OK()</a> when the kernel is finished, otherwise a descriptive error status. </dd></dl>
-
-</div>
-</div>
-<a id="a81a3debcb0ca6ca6616d7166a7d5948b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81a3debcb0ca6ca6616d7166a7d5948b">&#9670;&nbsp;</a></span>WaitForFinish() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structfletcher_1_1_status.html">Status</a> fletcher::Kernel::WaitForFinish </td>
-          <td>(</td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>poll_interval_usec</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Wait for the kernel to finish (blocking). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">poll_interval_usec</td><td>The interval at which to poll the <a class="el" href="classfletcher_1_1_kernel.html" title="The Kernel class is used to manage the computational kernel of the accelerator.">Kernel</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structfletcher_1_1_status.html#a81fae1810a6a1ff19a13da301accfa01" title="Return an OK status.">Status::OK()</a> when the kernel is finished, otherwise a descriptive error status. </dd></dl>
-
-</div>
-</div>
 <a id="a2b83f8947513e77c3e38d30e97d3a791"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2b83f8947513e77c3e38d30e97d3a791">&#9670;&nbsp;</a></span>WriteMetaData()</h2>
 
@@ -497,7 +498,7 @@ Protected Attributes</h2></td></tr>
 
 <p>The context that this kernel should operate on. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00123">123</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00125">125</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>
@@ -515,7 +516,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Control register reset command value. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00113">113</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00115">115</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>
@@ -533,7 +534,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Control register start command value. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00111">111</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00113">113</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>
@@ -551,7 +552,7 @@ Protected Attributes</h2></td></tr>
 
 <p><a class="el" href="structfletcher_1_1_status.html" title="Status return value of all Fletcher run-time functions.">Status</a> register done value. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00115">115</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00117">117</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>
@@ -569,7 +570,7 @@ Protected Attributes</h2></td></tr>
 
 <p><a class="el" href="structfletcher_1_1_status.html" title="Status return value of all Fletcher run-time functions.">Status</a> register done mask bits. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00117">117</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00119">119</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>
@@ -595,7 +596,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Whether RecordBatch metadata was written. </p>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00121">121</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8h_source.html#l00123">123</a> of file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 
 </div>
 </div>

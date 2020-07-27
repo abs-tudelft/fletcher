@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['platform_5f_146',['platform_',['../classfletcher_1_1_context.html#a6d8419c0a914c1a9cf9f4dcca5504fb7',1,'fletcher::Context']]]
+  ['platform_5f_148',['platform_',['../classfletcher_1_1_context.html#a6d8419c0a914c1a9cf9f4dcca5504fb7',1,'fletcher::Context']]]
 ];
