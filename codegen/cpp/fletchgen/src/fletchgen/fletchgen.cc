@@ -82,20 +82,35 @@ int fletchgen(int argc, char **argv) {
     srec_out.close();
   }
 
-  // Generate DOT output first.
-  if (options->MustGenerateDOT()) {
+  auto &l = options->languages;
+
+  // Generate DOT output.
+  if (options->MustGenerate("dot")) {
     FLETCHER_LOG(INFO, "Generating DOT output.");
     auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
     dot.Generate();
+    // Remove dot from the list of target languages
+    l.erase(std::remove(l.begin(), l.end(), std::string("dot")), l.end());
   }
 
   // Generate VHDL output
-  if (options->MustGenerateVHDL()) {
+  if (options->MustGenerate("vhdl")) {
     FLETCHER_LOG(INFO, "Generating VHDL output.");
     auto vhdl = cerata::vhdl::VHDLOutputGenerator(options->output_dir,
                                                   design.GetOutputSpec(),
                                                   fletchgen::DEFAULT_NOTICE);
     vhdl.Generate();
+    // Remove vhdl from the list of target languages
+    l.erase(std::remove(l.begin(), l.end(), std::string("vhdl")), l.end());
+  }
+
+  // Check if any other languages were requested; they are not supported.
+  // Generate warnings.
+  if (!l.empty()) {
+    // Print all unsupported languages
+    for (const auto &t : l) {
+      FLETCHER_LOG(WARNING, "Unknown target language: " << t);
+    }
   }
 
   // Generate simulation top level

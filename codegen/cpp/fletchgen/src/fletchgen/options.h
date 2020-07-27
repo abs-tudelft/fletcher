@@ -83,10 +83,8 @@ struct Options {
   [[nodiscard]] bool MustGenerateDesign() const;
   /// @brief Return true if an SREC file must be generated.
   [[nodiscard]] bool MustGenerateSREC() const;
-  /// @brief Return true if the design must be outputted as VHDL.
-  [[nodiscard]] bool MustGenerateVHDL() const;
-  /// @brief Return true if the design must be outputted as DOT.
-  [[nodiscard]] bool MustGenerateDOT() const;
+  /// @brief Return true if generation must take place for some target.
+  [[nodiscard]] bool MustGenerate(const std::string &target) const;
 
   /// @brief Load all specified RecordBatches. Returns true if successful, false otherwise.
   [[nodiscard]] bool LoadRecordBatches();
