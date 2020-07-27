@@ -85,17 +85,19 @@ class Kernel {
   Status GetReturn(uint32_t *ret0, uint32_t *ret1 = nullptr);
 
   /**
-   * @brief Wait for the kernel to finish (blocking).
+   * @brief Poll (blocking) the done flag of the status register for assertion with an interval.
    * @param[in] poll_interval_usec The interval at which to poll the Kernel.
    * @return Status::OK() when the kernel is finished, otherwise a descriptive error status.
    */
-  Status WaitForFinish(unsigned int poll_interval_usec);
+  Status PollUntilDoneInterval(unsigned int poll_interval_usec);
 
   /**
-   * @brief Wait for the kernel to finish (blocking). Polls at maximum speed.
+   * @brief Poll the done flag of the status register for assertion (blocking). Polls at maximum speed.
    * @return Status::OK() when the kernel is finished, otherwise a descriptive error status.
+   *
+   * Polling at maximum speed can cause a significant amount of traffic on the accelerator interface; use with care.
    */
-  Status WaitForFinish();
+  Status PollUntilDone();
 
   /// @brief Return the context of this Kernel.
   std::shared_ptr<Context> context();

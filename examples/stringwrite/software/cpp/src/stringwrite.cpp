@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
 
   t.start();
   kernel.Start();
-  kernel.WaitForFinish(100);
+  kernel.PollUntilDoneInterval(100);
   t.stop();
   std::cout << "FPGA Process stream              : " << t.seconds() << std::endl;
 

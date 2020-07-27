@@ -136,14 +136,14 @@ cdef class Kernel:
 
         return cast_scalar.item()
 
-    def wait_for_finish(self, int poll_interval_usec=0):
+    def poll_until_done(self, int poll_interval_usec=0):
         """A blocking function that waits for the Kernel to finish.
 
         Args:
             poll_interval_usec (int): Polling interval in microseconds.
 
         """
-        check_fletcher_status(self.Kernel.get().WaitForFinish(poll_interval_usec))
+        check_fletcher_status(self.Kernel.get().PollUntilDoneInterval(poll_interval_usec))
 
     def get_context(self):
         """Get associated context.
