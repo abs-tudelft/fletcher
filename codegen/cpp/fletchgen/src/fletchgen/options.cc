@@ -138,12 +138,8 @@ static bool HasLanguage(const std::vector<std::string> &languages, const std::st
   return false;
 }
 
-bool Options::MustGenerateVHDL() const {
-  return HasLanguage(languages, "vhdl") && Options::MustGenerateDesign();
-}
-
-bool Options::MustGenerateDOT() const {
-  return HasLanguage(languages, "dot") && Options::MustGenerateDesign();
+bool Options::MustGenerate(const std::string& lang) const {
+  return HasLanguage(languages, lang) && Options::MustGenerateDesign();
 }
 
 bool Options::MustGenerateDesign() const {
