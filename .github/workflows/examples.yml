@@ -20,7 +20,7 @@ jobs:
     - name: Install Apache Arrow
       run: |
         yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
-        yum install -y --enablerepo=epel arrow-devel-$ARROW_VERSION-1.el7
+        yum install -y --enablerepo=epel arrow-devel-$ARROW_VERSION-1.el7 arrow-python-devel-$ARROW_VERSION-1.el7
     - name: Install cmake
       run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
     - name: Install dependencies
