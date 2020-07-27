@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletcher VERSION 0.0.10 LANGUAGES CXX)
 
-find_package(Arrow 0.17 CONFIG REQUIRED)
+find_package(Arrow 1.0 CONFIG REQUIRED)
 
 include(FetchContent)
 
