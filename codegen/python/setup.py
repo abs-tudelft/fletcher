@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from setuptools.command.egg_info import egg_info as _egg_info
+from setuptools import setup, Extension, find_packages
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
-from setuptools.command.egg_info import egg_info as _egg_info
-from setuptools import setup, Extension, find_packages
 
 import os, platform, shutil
 import numpy as np
