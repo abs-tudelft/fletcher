@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
   Kernel kernel(context);                       // Set up an interface to the Kernel, supplying the Context.
   kernel.Start();                               // Start the kernel.
-  kernel.WaitForFinish();                       // Wait for the kernel to finish.
+  kernel.PollUntilDone();                       // Wait for the kernel to finish.
 
   kernel.GetReturn(&result);                    // Obtain the result.
   std::cout << "Sum: " << result << std::endl;  // Print the result.

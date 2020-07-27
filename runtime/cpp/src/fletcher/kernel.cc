@@ -58,7 +58,7 @@ Status Kernel::SetRange(size_t recordbatch_index, int32_t first, int32_t last) {
   return Status::OK();
 }
 
-Status Kernel::SetArguments(const std::vector<uint32_t>& arguments) {
+Status Kernel::SetArguments(const std::vector<uint32_t> &arguments) {
   for (int i = 0; (size_t) i < arguments.size(); i++) {
     context_->platform()->WriteMMIO(
         FLETCHER_REG_SCHEMA + 2 * context_->num_recordbatches() + 2 * context_->num_buffers() + i, arguments[i]);
@@ -93,22 +93,26 @@ Status Kernel::GetReturn(uint32_t *ret0, uint32_t *ret1) {
   return status;
 }
 
-Status Kernel::WaitForFinish() {
-  return WaitForFinish(0);
+Status Kernel::PollUntilDone() {
+  return PollUntilDoneInterval(0);
 }
 
-Status Kernel::WaitForFinish(unsigned int poll_interval_usec) {
-  FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
+Status Kernel::PollUntilDoneInterval(unsigned int poll_interval_usec) {
+  bool done = false;
   uint32_t status = 0;
+  FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
   if (poll_interval_usec == 0) {
-    do {
+    while (!done) {
       context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-    } while ((status & done_status_mask) != this->done_status);
+      done = (status & done_status_mask) == this->done_status;
+    }
   } else {
-    do {
-      usleep(poll_interval_usec);
+    while (!done) {
       context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-    } while ((status & done_status_mask) != this->done_status);
+      done = (status & done_status_mask) == this->done_status;
+      if (done) break;
+      usleep(poll_interval_usec);
+    }
   }
   FLETCHER_LOG(DEBUG, "Kernel status done bit asserted.");
   return Status::OK();

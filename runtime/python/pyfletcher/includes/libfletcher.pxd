@@ -105,5 +105,5 @@ cdef extern from "fletcher/api.h" namespace "fletcher" nogil:
         Status Start()
         Status GetStatus(uint32_t *status)
         Status GetReturn(uint32_t *ret0, uint32_t *ret1)
-        Status WaitForFinish(unsigned int poll_interval_usec)
+        Status PollUntilDoneInterval(unsigned int poll_interval_usec)
         shared_ptr[CContext] context()

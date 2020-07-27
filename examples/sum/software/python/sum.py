@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     kernel = pf.Kernel(context)                      # Set up an interface to the Kernel, supplying the Context.
     kernel.start()                                   # Start the kernel.
-    kernel.wait_for_finish()                         # Wait for the kernel to finish.
+    kernel.poll_until_done()                         # Wait for the kernel to finish.
 
     result = kernel.get_return(np.dtype(np.uint32))  # Obtain the result.
     print("Sum: " + str(result))                     # Print the result.
