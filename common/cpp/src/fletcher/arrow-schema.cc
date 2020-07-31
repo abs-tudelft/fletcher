@@ -101,24 +101,24 @@ arrow::Status FieldAnalyzer::Visit(const arrow::ListType &type) {
   // Advance to the next nesting level.
   level++;
   // A list should only have one child.
-  if (type.num_children() != 1) {
+  if (type.num_fields() != 1) {
     return arrow::Status::TypeError("List type does not have exactly one child.");
   }
   // Visit the nested values array
-  return VisitType(*type.child(0)->type());
+  return VisitType(*type.field(0)->type());
 }
 
 arrow::Status FieldAnalyzer::Visit(const arrow::StructType &type) {
   arrow::Status status;
   // Remember this nesting level name
   auto struct_name = buf_name_;
-  for (int i = 0; i < type.num_children(); i++) {
-    std::shared_ptr<arrow::DataType> child_type = type.child(i)->type();
+  for (int i = 0; i < type.num_fields(); i++) {
+    std::shared_ptr<arrow::DataType> child_type = type.field(i)->type();
     // Go down one nesting level
     level++;
     // Reset the buffer name
     buf_name_ = struct_name;
-    buf_name_.push_back(type.child(i)->name());
+    buf_name_.push_back(type.field(i)->name());
     // Visit the child array
     status = VisitType(*child_type);
     if (!status.ok())

@@ -7,7 +7,7 @@ on:
   pull_request:
 
 env:
-  ARROW_VERSION: '0.17.1'
+  ARROW_VERSION: '1.0.0'
 
 jobs:
   cpp:
@@ -36,7 +36,10 @@ jobs:
         sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
     - name: Install Apache Arrow
       if: matrix.os == 'macos-latest'
-      run: brew install apache-arrow
+      run: |
+        brew update
+        brew install apache-arrow
+        brew switch apache-arrow $ARROW_VERSION
     - name: Configure
       run: |
         cmake ${{ matrix.source }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
@@ -75,10 +78,13 @@ jobs:
         wget https://apache.bintray.com/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get update
-        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
+        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow-python-dev=$ARROW_VERSION-1
     - name: Install Apache Arrow
       if: matrix.os == 'macos-latest'
-      run: brew install apache-arrow
+      run: |
+        brew update
+        brew install apache-arrow
+        brew switch apache-arrow $ARROW_VERSION
     - name: Install pyarrow
       run: pip3 install pyarrow==$ARROW_VERSION setuptools wheel
     - name: Build and install

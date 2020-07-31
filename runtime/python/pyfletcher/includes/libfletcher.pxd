@@ -23,7 +23,7 @@ from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector
 from libcpp cimport bool as cpp_bool
 
-from pyarrow.lib cimport *
+from pyarrow.lib cimport CRecordBatch, CSchema, pyarrow_unwrap_buffer, pyarrow_unwrap_schema, pyarrow_unwrap_batch
 
 cdef extern from "fletcher/fletcher.h" nogil:
     ctypedef unsigned long long fstatus_t
