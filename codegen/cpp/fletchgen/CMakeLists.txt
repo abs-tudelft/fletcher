@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletchgen VERSION 0.0.10 LANGUAGES CXX)
+project(fletchgen VERSION 0.0.11 LANGUAGES CXX)
 
-find_package(arrow 0.15 CONFIG REQUIRED)
+find_package(Arrow 1.0 CONFIG REQUIRED)
 
 include(FindThreads)
 include(FetchContent)
 
 FetchContent_Declare(CLI11
   GIT_REPOSITORY  https://github.com/CLIUtils/CLI11.git
-  GIT_TAG         master
+  GIT_TAG         v1.8.0
 )
 FetchContent_MakeAvailable(CLI11)
 
@@ -19,13 +19,21 @@ FetchContent_Declare(cmake-modules
 )
 FetchContent_MakeAvailable(cmake-modules)
 
+FetchContent_Declare(cerata
+    GIT_REPOSITORY  https://github.com/abs-tudelft/cerata.git
+    GIT_TAG         develop
+)
+FetchContent_GetProperties(cerata)
+if(NOT cerata_POPULATED)
+  FetchContent_Populate(cerata)
+  set(BUILD_CERATA_TESTS OFF CACHE BOOL "")
+  set(BUILD_CERATA_DOT ON CACHE BOOL "")
+  set(BUILD_CERATA_VHDL ON CACHE BOOL "")
+  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR})
+endif()
+
 include(CompileUnits)
 
-set(BUILD_CERATA_DOT ON)
-set(BUILD_CERATA_VHDL ON)
-if(NOT TARGET cerata)
-  add_subdirectory(../cerata cerata)
-endif()
 if(NOT TARGET fletcher::common)
   add_subdirectory(../../../common/cpp common-cpp)
 endif()

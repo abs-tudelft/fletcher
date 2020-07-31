@@ -86,13 +86,16 @@ TEST(SREC, RecordBatchRoundTrip) {
   // Get a recordbatch with some integers
   auto rb = fletcher::GetStringRB();
   // Open an Arrow FileOutputStream
-  std::shared_ptr<arrow::io::OutputStream> aos;
-  EXPECT_TRUE(arrow::io::FileOutputStream::Open("test.rbf", &aos).ok());
+  arrow::Result<std::shared_ptr<arrow::io::OutputStream>> result = arrow::io::FileOutputStream::Open("test.rbf");
+
+  EXPECT_TRUE(result.ok());
+  std::shared_ptr<arrow::io::OutputStream> aos = result.ValueOrDie();
   // Create a RecordBatchFile writer
-  std::shared_ptr<arrow::ipc::RecordBatchWriter> afw;
-  EXPECT_TRUE(arrow::ipc::RecordBatchFileWriter::Open(aos.get(), rb->schema(), &afw).ok());
+  arrow::Result<std::shared_ptr<arrow::ipc::RecordBatchWriter>> afw = arrow::ipc::NewFileWriter(aos.get(), rb->schema());
+  EXPECT_TRUE(afw.ok());
+
   // Write the RecordBatch to the FileOutputStream
-  EXPECT_TRUE(afw->WriteRecordBatch(*rb).ok());
+  EXPECT_TRUE(afw.ValueOrDie()->WriteRecordBatch(*rb).ok());
 }
 
 }  // namespace fletchgen::srec

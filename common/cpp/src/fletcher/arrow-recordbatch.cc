@@ -81,10 +81,10 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::ListArray &array) {
   // Advance to the next nesting level.
   level++;
   // A list should only have one child.
-  if (field->type()->num_children() != 1) {
+  if (field->type()->num_fields() != 1) {
     return arrow::Status::TypeError("List type does not have exactly one child.");
   }
-  field = field->type()->child(0);
+  field = field->type()->field(0);
   // Visit the nested values array
   return VisitArray(*array.values());
 }
@@ -95,7 +95,7 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::StructArray &array) {
   std::shared_ptr<arrow::Field> struct_field = field;
   auto struct_name = buf_name;
   // Check if number of child arrays is the same as the number of child fields in the struct type.
-  if (array.num_fields() != struct_field->type()->num_children()) {
+  if (array.num_fields() != struct_field->type()->num_fields()) {
     return arrow::Status::TypeError(
         "Number of child arrays for struct does not match number of child fields for field type.");
   }
@@ -104,7 +104,7 @@ arrow::Status RecordBatchAnalyzer::Visit(const arrow::StructArray &array) {
     // Go down one nesting level
     level++;
     // Select the struct field
-    field = struct_field->type()->child(i);
+    field = struct_field->type()->field(i);
     buf_name = struct_name;
     buf_name.push_back(field->name());
     // Visit the child array

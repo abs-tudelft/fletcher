@@ -34,10 +34,10 @@ fstatus_t platformGetName(char *name, size_t size);
 /// arguments.
 fstatus_t platformInit(void *arg);
 
-/// @brief Write \p value to MMIO register \p offset
+/// @brief Write \p value to MMIO register \p offset.
 fstatus_t platformWriteMMIO(uint64_t offset, uint32_t value);
 
-/// @brief Read MMIO register \p offset into \p value
+/// @brief Read MMIO register \p offset into \p value. For the Echo platform, the value is taken from stdin.
 fstatus_t platformReadMMIO(uint64_t offset, uint32_t *value);
 
 /// @brief Copy \p size bytes from host address \p host_source to device address \p device_destination.
@@ -46,7 +46,12 @@ fstatus_t platformCopyHostToDevice(const uint8_t *host_source, da_t device_desti
 /// @brief Copy \p size bytes from device address \p device_source to host address \p host_destination.
 fstatus_t platformCopyDeviceToHost(da_t device_source, uint8_t *host_destination, int64_t size);
 
-/// @brief Allocate \p size bytes on the device.
+/**
+ * @brief Allocate \p size bytes on the device.
+ *
+ * For the Echo platform, this just allocates host memory.
+ * The host memory address will be stored at device_address.
+ */
 fstatus_t platformDeviceMalloc(da_t *device_address, int64_t size);
 
 /// @brief Free the memory allocated at \p device_address.

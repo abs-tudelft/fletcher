@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from setuptools.command.egg_info import egg_info as _egg_info
+from setuptools import setup, Extension, find_packages
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
-from setuptools.command.egg_info import egg_info as _egg_info
-from setuptools import setup, Extension, find_packages
 
 import os, platform, shutil, glob
 import numpy as np
@@ -89,7 +89,7 @@ class egg_info(_egg_info):
 
 setup(
     name="pyfletcher",
-    version="0.0.10",
+    version="0.0.11",
     author="Accelerated Big Data Systems, Delft University of Technology",
     packages=find_packages(),
     description="A Python wrapper for the Fletcher runtime library",
@@ -124,12 +124,12 @@ setup(
     install_requires=[
         'numpy >= 1.14',
         'pandas',
-        'pyarrow == 0.15.1',
+        'pyarrow == 1.0.0',
     ],
     setup_requires=[
         'cython',
         'numpy',
-        'pyarrow == 0.15.1',
+        'pyarrow == 1.0.0',
         'plumbum',
         'pytest-runner'
     ],
@@ -153,6 +153,6 @@ setup(
     license='Apache License, Version 2.0',
     zip_safe = False,
     data_files= [
-        ('lib', glob.glob('build/install/lib*/libfletcher_echo.so')),
+        ('lib', [output_dir + '/lib64/libfletcher_echo.so'] if 'AUDITWHEEL_PLAT' in os.environ else []),
     ],
 )

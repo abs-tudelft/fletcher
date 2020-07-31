@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   status = platform->Init();
 
   if (!status.ok()) {
-    std::cerr << "Could not create Fletcher platform." << std::endl;
+    std::cerr << "Could not initialize Fletcher platform." << std::endl;
     return -1;
   }
 
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
   }
 
   // Wait for the kernel to finish.
-  status = kernel.WaitForFinish();
+  status = kernel.PollUntilDone();
 
   if (!status.ok()) {
     std::cerr << "Something went wrong waiting for the kernel to finish." << std::endl;
