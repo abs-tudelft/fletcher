@@ -13,8 +13,7 @@ targeting large datasets and provides libraries for various languages to
 interface with the data in that format. Arrow prevents the need for
 serialization between different language run-times and provides zero-copy
 inter-process communication of datasets. Languages that have Arrow libraries
-(under development) include C, C++, Go, Java, JavaScript, Python, Ruby and
-Rust.
+(under development) include C, C++, Go, Java, JavaScript, Python, Ruby and Rust.
 
 While many software projects can benefit from these advantages, hardware
 accelerated applications have also seen serious serialization bottlenecks.
@@ -22,8 +21,9 @@ Fletcher focuses on FPGA accelerators. Through Fletcher and Arrow, interfacing
 _efficiently_ between FPGA accelerator and high-level language runtimes is made
 available to all the supported languages.
 
-Given a set of Arrow [Schemas](https://arrow.apache.org/docs/metadata.html),
-Fletcher generates the following:
+Given a set of Arrow
+[Schemas](https://arrow.apache.org/docs/format/Columnar.html), Fletcher
+generates the following:
 
 - A **high-performance, easy-to-use hardware interface** for your accelerator
   kernel:
@@ -65,9 +65,12 @@ Fletcher generates the following:
   [GHDL](https://github.com/ghdl/ghdl) and the proprietary Mentor Graphics
   Questa/Modelsim, and Xilinx Vivado XSIM.
 
-- We provide top-level wrappers for the following platforms:
-  - [Amazon EC2 F1](https://github.com/aws/aws-fpga)
-  - [OpenPOWER CAPI SNAP](https://github.com/open-power/snap)
+- The following platforms are (partially) supported (may be work-in-progress):
+  - [Amazon EC2 F1](https://github.com/abs-tudelft/fletcher-aws)
+  - [Xilinx Alveo](https://github.com/abs-tudelft/fletcher-alveo)
+  - [Intel OPAE](https://github.com/abs-tudelft/fletcher-opae)
+  - [OpenPOWER CAPI SNAP](https://github.com/abs-tudelft/fletcher-snap)
+  - [OpenPOWER OpenCAPI OC-Accel](https://github.com/abs-tudelft/fletcher-oc-accel)
   - Our top-level can be generated to speak AXI, so it should be easy to
     integrate with many existing systems. Requirements for a platform are that
     it provides:
@@ -77,20 +80,14 @@ Fletcher generates the following:
 
 ## Current state
 
-Our framework is functional, but at the same time it is under heavy development.
+Our framework is functional, but experimental and under heavy development.
 
-Especially the development branch (which is currently our main branch) is very
-active and may break without notice. Some larger examples and the several
-supported platforms are quite hard to integrate in a CI pipeline (they would
-take multiple days to complete and would incur significant costs for platforms
-such as Amazon's EC F1). For now, these larger examples and platform support
-resides in separate repositories and are tested against a specific tag of this
-repository.
-
-As of 2020, the main developers are focusing on generalizing the Fletcher
-framework in the form of Tydi, a streaming interface specification and
-toolchain based on some initial findings during the work on Fletcher.
-[This project can be found here.](https://github.com/abs-tudelft/tydi)
+Especially the development branch (which is currently our main branch) may break
+without notice. Some larger examples and the supported platforms are quite hard
+to integrate in a CI pipeline (they would take multiple days to complete and
+would incur significant costs for platforms such as Amazon's EC F1). For now,
+these larger examples and platform support resides in separate repositories
+(shown above) and are tested against a specific tag of this repository.
 
 ## Further reading
 
@@ -129,3 +126,17 @@ External projects using Fletcher:
 - [K-Means clustering](https://github.com/abs-tudelft/fletcher-example-kmeans)
 - [Posit BLAS operations](https://github.com/lvandam/posit_blas_hdl)
 - [Posit PairHMM](https://github.com/lvandam/pairhmm_posit_hdl_arrow)
+
+## Publications
+If you used or studied Fletcher, please cite:
+- J. Peltenburg, J. van Straten, L. Wijtemans, L. van Leeuwen, Z. Al-Ars, and
+  H.P. Hofstee, Fletcher: A Framework to Efficiently Integrate FPGA Accelerators
+  with Apache Arrow*, in 29th International Conference on Field Programmable 
+  Logic and Applications (FPL) (2019) pp. 270–277.
+
+Additional publications:
+- J. Peltenburg, J. van Straten, M. Brobbel, H.P. Hofstee, and Z. Al-Ars,
+  Supporting Columnar In-memory Formats on FPGA: The Hardware Design of Fletcher
+  for Apache Arrow*, in Applied Reconfigurable Computing, edited by 
+  C. Hochberger, B. Nelson, A. Koch, R. Woods, and P. Diniz (Springer 
+  International Publishing, Cham, 2019) pp. 32–47
