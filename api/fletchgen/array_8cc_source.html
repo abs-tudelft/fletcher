@@ -242,7 +242,7 @@ $(function() {
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  <span class="keywordflow">if</span> (type.id() == arrow::Type::LIST) {</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    <span class="comment">// Detect listprim:</span></div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="comment">// Elements must be non-nullable.</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keywordflow">if</span> (!type.child(0)-&gt;nullable() &amp;&amp; (<a class="code" href="namespacefletchgen.html#aececf976e80d382891312fa633558890">GetConfigType</a>(*type.child(0)-&gt;type()) == <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa954b965bc0539f07ab3090129a0d4b2d">ConfigType::PRIM</a>)) {</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keywordflow">if</span> (!type.field(0)-&gt;nullable() &amp;&amp; (<a class="code" href="namespacefletchgen.html#aececf976e80d382891312fa633558890">GetConfigType</a>(*type.field(0)-&gt;type()) == <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa954b965bc0539f07ab3090129a0d4b2d">ConfigType::PRIM</a>)) {</div>
 <div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aaa8a76626a0a9404b2776727cc0d92c5f">ConfigType::LIST_PRIM</a>;</div>
 <div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    } <span class="keywordflow">else</span> { <span class="comment">// otherwise it&#39;s just a normal list</span></div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa298cb25408234de02baf2085803a464a">ConfigType::LIST</a>;</div>
@@ -332,7 +332,7 @@ $(function() {
 <div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;      ret += <span class="stringliteral">&quot;8&quot;</span>;</div>
 <div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    } <span class="keywordflow">else</span> {</div>
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;      <span class="comment">// Other list of non-nullable primitives:</span></div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;      ret += std::to_string(<a class="code" href="namespacefletchgen.html#abfc32b488a86ce07980d40216b415b44">GetFixedWidthTypeBitWidth</a>(*field.type()-&gt;child(0)-&gt;type()));</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;      ret += std::to_string(<a class="code" href="namespacefletchgen.html#abfc32b488a86ce07980d40216b415b44">GetFixedWidthTypeBitWidth</a>(*field.type()-&gt;field(0)-&gt;type()));</div>
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    }</div>
 <div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ct == <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa298cb25408234de02baf2085803a464a">ConfigType::LIST</a>) {</div>
 <div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    has_children = <span class="keyword">true</span>;</div>
@@ -359,10 +359,10 @@ $(function() {
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
 <div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;  <span class="keywordflow">if</span> (has_children) {</div>
 <div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="comment">// Append children</span></div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> c = 0; c &lt; field.type()-&gt;num_children(); c++) {</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;      <span class="keyword">auto</span> child = field.type()-&gt;child(c);</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> c = 0; c &lt; field.type()-&gt;num_fields(); c++) {</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;      <span class="keyword">auto</span> child = field.type()-&gt;field(c);</div>
 <div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;      ret += <a class="code" href="namespacefletchgen.html#a33ab2865b9a4aaafb0f828fbdb596bf1">GenerateConfigString</a>(*child);</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      <span class="keywordflow">if</span> (c != field.type()-&gt;num_children() - 1)</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      <span class="keywordflow">if</span> (c != field.type()-&gt;num_fields() - 1)</div>
 <div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;        ret += <span class="stringliteral">&quot;,&quot;</span>;</div>
 <div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    }</div>
 <div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;  }</div>
@@ -456,16 +456,16 @@ $(function() {
 <div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;      <span class="comment">// options.</span></div>
 <div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    <span class="keywordflow">case</span> arrow::Type::LIST: {</div>
 <div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;      <span class="comment">// Sanity check, a list should only have one child field.</span></div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_children() != 1) {</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_fields() != 1) {</div>
 <div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        FLETCHER_LOG(FATAL, <span class="stringliteral">&quot;Encountered Arrow list type with other than 1 child.&quot;</span>);</div>
 <div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;      }</div>
 <div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;      <span class="comment">// Inspect the child field.</span></div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;      <span class="keyword">auto</span> child_field = arrow_field.type()-&gt;child(0);</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;      <span class="keyword">auto</span> child_field = arrow_field.type()-&gt;field(0);</div>
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;      <span class="comment">// First handle the special case where this can be made a listprim</span></div>
 <div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="namespacefletchgen.html#aececf976e80d382891312fa633558890">GetConfigType</a>(*child_field-&gt;type()) == <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa954b965bc0539f07ab3090129a0d4b2d">ConfigType::PRIM</a>) {</div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        <span class="keyword">auto</span> w = <a class="code" href="namespacefletchgen.html#abfc32b488a86ce07980d40216b415b44">GetFixedWidthTypeBitWidth</a>(*child_field-&gt;type());</div>
 <div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        FLETCHER_LOG(DEBUG, <span class="stringliteral">&quot;Using \&quot;listprim\&quot; configuration for list of non-nullable primitives of width &quot;</span> &lt;&lt; w);</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keyword">auto</span> values_type = <a class="code" href="namespacefletchgen.html#a6cdf3e4bb7b4f402e318a4849ce79d9c">ConvertFixedWidthType</a>(arrow_field.type()-&gt;child(0)-&gt;type(), epc);</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keyword">auto</span> values_type = <a class="code" href="namespacefletchgen.html#a6cdf3e4bb7b4f402e318a4849ce79d9c">ConvertFixedWidthType</a>(arrow_field.type()-&gt;field(0)-&gt;type(), epc);</div>
 <div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keywordflow">return</span> ListPrimType(epc, lepc, w, ARROW_OFFSET_WIDTH, child_field-&gt;name());</div>
 <div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;      } <span class="keywordflow">else</span> {</div>
 <div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;        <span class="comment">// Lists of non-primitive types or nullable primitive types.</span></div>
@@ -487,11 +487,11 @@ $(function() {
 <div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160; </div>
 <div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;      <span class="comment">// Structs</span></div>
 <div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;    <span class="keywordflow">case</span> arrow::Type::STRUCT: {</div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_children() &lt; 1) {</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_fields() &lt; 1) {</div>
 <div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;        FLETCHER_LOG(FATAL, <span class="stringliteral">&quot;Encountered Arrow struct type without any children.&quot;</span>);</div>
 <div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;      }</div>
 <div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;      std::vector&lt;std::shared_ptr&lt;cerata::Field&gt;&gt; children;</div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;f : arrow_field.type()-&gt;children()) {</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;f : arrow_field.type()-&gt;fields()) {</div>
 <div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;        <span class="keyword">auto</span> child_type = <a class="code" href="namespacefletchgen.html#a80d70a438f6cad5ed37f2b35b83e420c">GetStreamType</a>(*f, mode, level + 1);</div>
 <div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;        children.push_back(field(f-&gt;name(), child_type));</div>
 <div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;      }</div>
@@ -553,12 +553,12 @@ $(function() {
 <div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160; </div>
 <div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;      <span class="comment">// Lists</span></div>
 <div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;    <span class="keywordflow">case</span> arrow::Type::LIST: {</div>
-<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;      <span class="keyword">auto</span> child_field = arrow_field.type()-&gt;child(0);</div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;      <span class="keyword">auto</span> child_field = arrow_field.type()-&gt;field(0);</div>
 <div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="namespacefletchgen.html#aececf976e80d382891312fa633558890">GetConfigType</a>(*child_field-&gt;type()) == <a class="code" href="namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa954b965bc0539f07ab3090129a0d4b2d">ConfigType::PRIM</a>) {</div>
 <div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;        <span class="keyword">auto</span> data_width = <a class="code" href="namespacefletchgen.html#abfc32b488a86ce07980d40216b415b44">GetFixedWidthTypeBitWidth</a>(*child_field-&gt;type());</div>
 <div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;        <span class="keywordflow">return</span> {2, e_count_width + l_count_width + data_width * epc + ARROW_OFFSET_WIDTH * lepc + validity_bit};</div>
 <div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;        <span class="keyword">auto</span> arrow_child = arrow_field.type()-&gt;child(0);</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;        <span class="keyword">auto</span> arrow_child = arrow_field.type()-&gt;field(0);</div>
 <div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;        <span class="keyword">auto</span> elem_spec = <a class="code" href="namespacefletchgen.html#a4861f35dc6842b83bea911302c0aa402">GetArrayDataSpec</a>(*arrow_child);</div>
 <div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;        <span class="comment">// Add a length stream to number of streams, and length width to data width.</span></div>
 <div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;        <span class="keywordflow">return</span> {elem_spec.first + 1, elem_spec.second + ARROW_OFFSET_WIDTH + validity_bit};</div>
@@ -574,11 +574,11 @@ $(function() {
 <div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;      <span class="keywordflow">if</span> (lepc &gt; 1) {</div>
 <div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;        FLETCHER_LOG(ERROR, <span class="stringliteral">&quot;Struct delivers no length stream.&quot;</span>);</div>
 <div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;      }</div>
-<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_children() &lt; 1) {</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;      <span class="keywordflow">if</span> (arrow_field.type()-&gt;num_fields() &lt; 1) {</div>
 <div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;        FLETCHER_LOG(ERROR, <span class="stringliteral">&quot;Encountered Arrow struct type without any children.&quot;</span>);</div>
 <div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;      }</div>
 <div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;      <span class="keyword">auto</span> spec = std::pair&lt;int, int&gt;{0, 0};</div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;f : arrow_field.type()-&gt;children()) {</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;f : arrow_field.type()-&gt;fields()) {</div>
 <div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;        <span class="keyword">auto</span> child_spec = <a class="code" href="namespacefletchgen.html#a4861f35dc6842b83bea911302c0aa402">GetArrayDataSpec</a>(*f);</div>
 <div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;        spec.first += child_spec.first;</div>
 <div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;        spec.second += child_spec.second;</div>
