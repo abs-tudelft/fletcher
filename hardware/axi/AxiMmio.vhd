@@ -74,7 +74,7 @@ entity AxiMmio is
     clk                         : in  std_logic;
     reset_n                     : in  std_logic;
     
-    -- Write adress channel
+    -- Write address channel
     s_axi_awvalid               : in  std_logic;
     s_axi_awready               : out std_logic;
     s_axi_awaddr                : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
