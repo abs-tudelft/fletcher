@@ -110,7 +110,7 @@ static char axi_source[] =
     "    ---------------------------------------------------------------------------\n"
     "    -- AXI4-lite Slave as MMIO interface\n"
     "    ---------------------------------------------------------------------------\n"
-    "    -- Write adress channel\n"
+    "    -- Write address channel\n"
     "    s_axi_awvalid               : in std_logic;\n"
     "    s_axi_awready               : out std_logic;\n"
     "    s_axi_awaddr                : in std_logic_vector(MMIO_ADDR_WIDTH-1 downto 0);\n"
