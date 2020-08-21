@@ -37,9 +37,8 @@ jobs:
     - name: Install Apache Arrow
       if: matrix.os == 'macos-latest'
       run: |
-        brew update
         brew install apache-arrow
-        brew switch apache-arrow $ARROW_VERSION
+        brew info apache-arrow | head -n1 | grep "$ARROW_VERSION"
     - name: Configure
       run: |
         cmake ${{ matrix.source }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
@@ -82,9 +81,8 @@ jobs:
     - name: Install Apache Arrow
       if: matrix.os == 'macos-latest'
       run: |
-        brew update
         brew install apache-arrow
-        brew switch apache-arrow $ARROW_VERSION
+        brew info apache-arrow | head -n1 | grep "$ARROW_VERSION"
     - name: Install pyarrow
       run: pip3 install pyarrow==$ARROW_VERSION setuptools wheel
     - name: Build and install
