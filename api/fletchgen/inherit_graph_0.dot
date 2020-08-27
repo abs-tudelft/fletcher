@@ -1,16 +1,15 @@
 digraph "Graphical Class Hierarchy"
 {
- // LATEX_PDF_SIZE
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
-  Node15 [label="Port",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
-  Node15 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node0 [label="fletchgen::Axi4LitePort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_axi4_lite_port.html",tooltip="An AXI4-lite port derived from an AXI-lite width specification."];
-  Node15 -> Node17 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node17 [label="fletchgen::BusPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_bus_port.html",tooltip="A port derived from bus parameters."];
-  Node15 -> Node18 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node18 [label="fletchgen::FieldPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_field_port.html",tooltip="A port derived from an Arrow field."];
-  Node15 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node19 [label="fletchgen::MmioPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_mmio_port.html",tooltip="A port on the vhdmmio component. Remembers what register spec it came from."];
+  Node14 [label="Port",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node14 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node0 [label="fletchgen::Axi4LitePort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_axi4_lite_port.html",tooltip="An AXI4-lite port derived from an AXI-lite width specification. "];
+  Node14 -> Node16 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node16 [label="fletchgen::BusPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_bus_port.html",tooltip="A port derived from bus parameters. "];
+  Node14 -> Node17 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 [label="fletchgen::FieldPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_field_port.html",tooltip="A port derived from an Arrow field. "];
+  Node14 -> Node18 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node18 [label="fletchgen::MmioPort",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_mmio_port.html",tooltip="A port on the vhdmmio component. Remembers what register spec it came from. "];
 }
