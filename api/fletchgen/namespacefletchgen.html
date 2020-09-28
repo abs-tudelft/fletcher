@@ -83,10 +83,10 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_axi4_lite_port.html">Axi4LitePort</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An AXI4-lite port derived from an AXI-lite width specification.  <a href="structfletchgen_1_1_axi4_lite_port.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An AXI4-lite port derived from an AXI4-lite specification.  <a href="structfletchgen_1_1_axi4_lite_port.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">AXI-lite bus width specification. Address is always 32, but data can also be 64. Modifiable.  <a href="structfletchgen_1_1_axi4_lite_spec.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">AXI4-lite bus specification.  <a href="structfletchgen_1_1_axi4_lite_spec.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_bus_dim.html">BusDim</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds bus interface dimensions.  <a href="structfletchgen_1_1_bus_dim.html#details">More...</a><br /></td></tr>
@@ -121,7 +121,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A port on the vhdmmio component. Remembers what register spec it came from.  <a href="structfletchgen_1_1_mmio_port.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent an mmio register.  <a href="structfletchgen_1_1_mmio_reg.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent an MMIO register.  <a href="structfletchgen_1_1_mmio_reg.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_nucleus.html">Nucleus</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">It's like a kernel, but there is a kernel inside.  <a href="structfletchgen_1_1_nucleus.html#details">More...</a><br /></td></tr>
@@ -348,22 +348,22 @@ std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bo
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aecaa6f7eb60b2c5e6b7f469f38709d20">fletchgen</a> (int argc, char **argv)</td></tr>
 <tr class="memdesc:aecaa6f7eb60b2c5e6b7f469f38709d20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fletchgen main entry. Used to wrap into PyFletchgen. <br /></td></tr>
 <tr class="separator:aecaa6f7eb60b2c5e6b7f469f38709d20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa97849c9d0e69c4b58ea612004fe296b"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_kernel.html">Kernel</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aa97849c9d0e69c4b58ea612004fe296b">kernel</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; Component &gt; &amp;<a class="el" href="namespacefletchgen.html#a23e1aee7a028879557e2d0a093bc31f7">mmio</a>)</td></tr>
+<tr class="memitem:aa97849c9d0e69c4b58ea612004fe296b"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_kernel.html">Kernel</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aa97849c9d0e69c4b58ea612004fe296b">kernel</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; Component &gt; &amp;<a class="el" href="namespacefletchgen.html#afe871dfa41237c8e28b2266afe29e27a">mmio</a>)</td></tr>
 <tr class="memdesc:aa97849c9d0e69c4b58ea612004fe296b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make a kernel component based on <a class="el" href="structfletchgen_1_1_record_batch.html" title="A RecordBatch aggregating ArrayReaders/Writers. ">RecordBatch</a> and MMIO components.  <a href="#aa97849c9d0e69c4b58ea612004fe296b">More...</a><br /></td></tr>
 <tr class="separator:aa97849c9d0e69c4b58ea612004fe296b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34e3e7ec54bb891d7c25f12ba0988fc8"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classfletchgen_1_1_mantle.html">Mantle</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a34e3e7ec54bb891d7c25f12ba0988fc8">mantle</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_nucleus.html">Nucleus</a> &gt; &amp;<a class="el" href="namespacefletchgen.html#aa9119b11eff82634e6bb7729e0ed688b">nucleus</a>, <a class="el" href="structfletchgen_1_1_bus_dim.html">BusDim</a> bus_spec)</td></tr>
-<tr class="memdesc:a34e3e7ec54bb891d7c25f12ba0988fc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="classfletchgen_1_1_mantle.html" title="A component that wraps a Kernel and all ArrayReaders/Writers resulting from a Schema set...">Mantle</a> and return a shared pointer to it.  <a href="#a34e3e7ec54bb891d7c25f12ba0988fc8">More...</a><br /></td></tr>
-<tr class="separator:a34e3e7ec54bb891d7c25f12ba0988fc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10c2e86a82a643b31dbda1d7978f9ac0"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classfletchgen_1_1_mantle.html">Mantle</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a10c2e86a82a643b31dbda1d7978f9ac0">mantle</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_nucleus.html">Nucleus</a> &gt; &amp;<a class="el" href="namespacefletchgen.html#a1a46ba5ead92bd11ff3e4f4b0bca0cb4">nucleus</a>, <a class="el" href="structfletchgen_1_1_bus_dim.html">BusDim</a> bus_spec, <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a> axi_spec)</td></tr>
+<tr class="memdesc:a10c2e86a82a643b31dbda1d7978f9ac0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="classfletchgen_1_1_mantle.html" title="A component that wraps a Kernel and all ArrayReaders/Writers resulting from a Schema set...">Mantle</a> and return a shared pointer to it.  <a href="#a10c2e86a82a643b31dbda1d7978f9ac0">More...</a><br /></td></tr>
+<tr class="separator:a10c2e86a82a643b31dbda1d7978f9ac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a023c355a58fa66bbc6339a76efd98ce5"><td class="memItemLeft" align="right" valign="top"><a id="a023c355a58fa66bbc6339a76efd98ce5"></a>
 std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_mmio_port.html">MmioPort</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a023c355a58fa66bbc6339a76efd98ce5">mmio_port</a> (Port::Dir dir, const <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &amp;reg, const std::shared_ptr&lt; ClockDomain &gt; &amp;domain=cerata::default_domain())</td></tr>
 <tr class="memdesc:a023c355a58fa66bbc6339a76efd98ce5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an mmio port. <br /></td></tr>
 <tr class="separator:a023c355a58fa66bbc6339a76efd98ce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23e1aee7a028879557e2d0a093bc31f7"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a23e1aee7a028879557e2d0a093bc31f7">mmio</a> (const std::vector&lt; fletcher::RecordBatchDescription &gt; &amp;batches, const std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; &amp;regs)</td></tr>
-<tr class="memdesc:a23e1aee7a028879557e2d0a093bc31f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate the MMIO component for the nucleus.  <a href="#a23e1aee7a028879557e2d0a093bc31f7">More...</a><br /></td></tr>
-<tr class="separator:a23e1aee7a028879557e2d0a093bc31f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fb76035d87f35dc92d9fa252f6b0cfb"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a8fb76035d87f35dc92d9fa252f6b0cfb">GenerateVhdmmioYaml</a> (const std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; * &gt; &amp;regs, std::optional&lt; size_t * &gt; next_addr=std::nullopt)</td></tr>
-<tr class="memdesc:a8fb76035d87f35dc92d9fa252f6b0cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a YAML string for the vhdmmio tool based on a set of registers.  <a href="#a8fb76035d87f35dc92d9fa252f6b0cfb">More...</a><br /></td></tr>
-<tr class="separator:a8fb76035d87f35dc92d9fa252f6b0cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe871dfa41237c8e28b2266afe29e27a"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#afe871dfa41237c8e28b2266afe29e27a">mmio</a> (const std::vector&lt; fletcher::RecordBatchDescription &gt; &amp;batches, const std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; &amp;regs, <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a> axi_spec)</td></tr>
+<tr class="memdesc:afe871dfa41237c8e28b2266afe29e27a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate the MMIO component for the nucleus.  <a href="#afe871dfa41237c8e28b2266afe29e27a">More...</a><br /></td></tr>
+<tr class="separator:afe871dfa41237c8e28b2266afe29e27a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af422c172be7671d1b4008e74da197638"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#af422c172be7671d1b4008e74da197638">GenerateVhdmmioYaml</a> (const std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; * &gt; &amp;regs, <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a> axi_spec, std::optional&lt; size_t * &gt; next_addr=std::nullopt)</td></tr>
+<tr class="memdesc:af422c172be7671d1b4008e74da197638"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a YAML string for the vhdmmio tool based on a set of registers.  <a href="#af422c172be7671d1b4008e74da197638">More...</a><br /></td></tr>
+<tr class="separator:af422c172be7671d1b4008e74da197638"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2537f73729b311f1a1272cc9a8d9d9c"><td class="memItemLeft" align="right" valign="top"><a id="ab2537f73729b311f1a1272cc9a8d9d9c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#ab2537f73729b311f1a1272cc9a8d9d9c">ExposeToKernel</a> (<a class="el" href="namespacefletchgen.html#a81bb2df9bbc0f4f52fd3dfd0b9c625c4">MmioFunction</a> fun)</td></tr>
 <tr class="memdesc:ab2537f73729b311f1a1272cc9a8d9d9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if an mmio register's function must cause it to be exposed to the user kernel. <br /></td></tr>
@@ -372,10 +372,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 Component *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#abc41a2c0a91da545e46ff6857cf99fb3">accm</a> ()</td></tr>
 <tr class="memdesc:abc41a2c0a91da545e46ff6857cf99fb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ArrayCmdCtrlMerger component. <br /></td></tr>
 <tr class="separator:abc41a2c0a91da545e46ff6857cf99fb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9119b11eff82634e6bb7729e0ed688b"><td class="memItemLeft" align="right" valign="top"><a id="aa9119b11eff82634e6bb7729e0ed688b"></a>
-std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_nucleus.html">Nucleus</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aa9119b11eff82634e6bb7729e0ed688b">nucleus</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_kernel.html">Kernel</a> &gt; &amp;<a class="el" href="namespacefletchgen.html#aa97849c9d0e69c4b58ea612004fe296b">kernel</a>, const std::shared_ptr&lt; Component &gt; &amp;<a class="el" href="namespacefletchgen.html#a23e1aee7a028879557e2d0a093bc31f7">mmio</a>)</td></tr>
-<tr class="memdesc:aa9119b11eff82634e6bb7729e0ed688b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make an <a class="el" href="structfletchgen_1_1_nucleus.html" title="It&#39;s like a kernel, but there is a kernel inside. ">Nucleus</a> component based on <a class="el" href="structfletchgen_1_1_record_batch.html" title="A RecordBatch aggregating ArrayReaders/Writers. ">RecordBatch</a> components. Returns a shared pointer to the new <a class="el" href="structfletchgen_1_1_nucleus.html" title="It&#39;s like a kernel, but there is a kernel inside. ">Nucleus</a>. <br /></td></tr>
-<tr class="separator:aa9119b11eff82634e6bb7729e0ed688b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a46ba5ead92bd11ff3e4f4b0bca0cb4"><td class="memItemLeft" align="right" valign="top"><a id="a1a46ba5ead92bd11ff3e4f4b0bca0cb4"></a>
+std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_nucleus.html">Nucleus</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a1a46ba5ead92bd11ff3e4f4b0bca0cb4">nucleus</a> (const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches, const std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_kernel.html">Kernel</a> &gt; &amp;<a class="el" href="namespacefletchgen.html#aa97849c9d0e69c4b58ea612004fe296b">kernel</a>, const std::shared_ptr&lt; Component &gt; &amp;<a class="el" href="namespacefletchgen.html#afe871dfa41237c8e28b2266afe29e27a">mmio</a>, <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a> axi_spec)</td></tr>
+<tr class="memdesc:a1a46ba5ead92bd11ff3e4f4b0bca0cb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make an <a class="el" href="structfletchgen_1_1_nucleus.html" title="It&#39;s like a kernel, but there is a kernel inside. ">Nucleus</a> component based on <a class="el" href="structfletchgen_1_1_record_batch.html" title="A RecordBatch aggregating ArrayReaders/Writers. ">RecordBatch</a> components. Returns a shared pointer to the new <a class="el" href="structfletchgen_1_1_nucleus.html" title="It&#39;s like a kernel, but there is a kernel inside. ">Nucleus</a>. <br /></td></tr>
+<tr class="separator:a1a46ba5ead92bd11ff3e4f4b0bca0cb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed3d74701f43f4250b4af57e65971f53"><td class="memItemLeft" align="right" valign="top"><a id="aed3d74701f43f4250b4af57e65971f53"></a>
 std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aed3d74701f43f4250b4af57e65971f53">GetProfilingRegs</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">RecordBatch</a> &gt;&gt; &amp;recordbatches)</td></tr>
 <tr class="memdesc:aed3d74701f43f4250b4af57e65971f53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the registers that should be reserved in the mmio component for profiling. <br /></td></tr>
@@ -551,7 +551,7 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="mmio_8h_source.html#l00059">59</a> of file <a class="el" href="mmio_8h_source.html">mmio.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mmio_8h_source.html#l00061">61</a> of file <a class="el" href="mmio_8h_source.html">mmio.h</a>.</p>
 
 </div>
 </div>
@@ -589,7 +589,7 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="mmio_8h_source.html#l00050">50</a> of file <a class="el" href="mmio_8h_source.html">mmio.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mmio_8h_source.html#l00052">52</a> of file <a class="el" href="mmio_8h_source.html">mmio.h</a>.</p>
 
 </div>
 </div>
@@ -975,8 +975,8 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 
 </div>
 </div>
-<a id="a8fb76035d87f35dc92d9fa252f6b0cfb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fb76035d87f35dc92d9fa252f6b0cfb">&#9670;&nbsp;</a></span>GenerateVhdmmioYaml()</h2>
+<a id="af422c172be7671d1b4008e74da197638"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af422c172be7671d1b4008e74da197638">&#9670;&nbsp;</a></span>GenerateVhdmmioYaml()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -986,6 +986,12 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
           <td>(</td>
           <td class="paramtype">const std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; * &gt; &amp;&#160;</td>
           <td class="paramname"><em>regs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a>&#160;</td>
+          <td class="paramname"><em>axi_spec</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1006,12 +1012,13 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">regs</td><td>A vector of pointers to vectors of registers. Will be modified in case address was not set. </td></tr>
+    <tr><td class="paramname">axi_spec</td><td>Specification of the AXI4 lite mmio bus. </td></tr>
     <tr><td class="paramname">next_addr</td><td>Optionally outputs the byte address offset of the next free register address. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="mmio_8cc_source.html#l00092">92</a> of file <a class="el" href="mmio_8cc_source.html">mmio.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mmio_8cc_source.html#l00098">98</a> of file <a class="el" href="mmio_8cc_source.html">mmio.cc</a>.</p>
 
 </div>
 </div>
@@ -1365,8 +1372,8 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 
 </div>
 </div>
-<a id="a34e3e7ec54bb891d7c25f12ba0988fc8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a34e3e7ec54bb891d7c25f12ba0988fc8">&#9670;&nbsp;</a></span>mantle()</h2>
+<a id="a10c2e86a82a643b31dbda1d7978f9ac0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10c2e86a82a643b31dbda1d7978f9ac0">&#9670;&nbsp;</a></span>mantle()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1393,7 +1400,13 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structfletchgen_1_1_bus_dim.html">BusDim</a>&#160;</td>
-          <td class="paramname"><em>bus_spec</em>&#160;</td>
+          <td class="paramname"><em>bus_spec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a>&#160;</td>
+          <td class="paramname"><em>axi_spec</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1411,17 +1424,18 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
     <tr><td class="paramname">recordbatches</td><td>The <a class="el" href="structfletchgen_1_1_record_batch.html" title="A RecordBatch aggregating ArrayReaders/Writers. ">RecordBatch</a> components to instantiate. </td></tr>
     <tr><td class="paramname">nucleus</td><td>The <a class="el" href="structfletchgen_1_1_nucleus.html" title="It&#39;s like a kernel, but there is a kernel inside. ">Nucleus</a> to instantiate. </td></tr>
     <tr><td class="paramname">bus_spec</td><td>The specification of the top-level bus. </td></tr>
+    <tr><td class="paramname">axi_spec</td><td>The specification of the AXI4-lite MMIO interface. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A shared pointer to the mantle component. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="mantle_8cc_source.html#l00179">179</a> of file <a class="el" href="mantle_8cc_source.html">mantle.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mantle_8cc_source.html#l00180">180</a> of file <a class="el" href="mantle_8cc_source.html">mantle.cc</a>.</p>
 
 </div>
 </div>
-<a id="a23e1aee7a028879557e2d0a093bc31f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a23e1aee7a028879557e2d0a093bc31f7">&#9670;&nbsp;</a></span>mmio()</h2>
+<a id="afe871dfa41237c8e28b2266afe29e27a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe871dfa41237c8e28b2266afe29e27a">&#9670;&nbsp;</a></span>mmio()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1436,7 +1450,13 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>regs</em>&#160;</td>
+          <td class="paramname"><em>regs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a>&#160;</td>
+          <td class="paramname"><em>axi_spec</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1452,6 +1472,7 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">batches</td><td>The RecordBatchDescriptions of the recordbatches in the design. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">regs</td><td>A list of custom 32-bit register names. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">axi_spec</td><td>Specification of the AXI4-lite interface </td></tr>
   </table>
   </dd>
 </dl>

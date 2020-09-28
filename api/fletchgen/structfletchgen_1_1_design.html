@@ -77,6 +77,13 @@ $(function() {
  <a href="structfletchgen_1_1_design.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="design_8h_source.html">design.h</a>&gt;</code></p>
+<div class="dynheader">
+Collaboration diagram for fletchgen::Design:</div>
+<div class="dyncontent">
+<div class="center"><img src="structfletchgen_1_1_design__coll__graph.png" border="0" usemap="#fletchgen_1_1_design_coll__map" alt="Collaboration graph"/></div>
+<map name="fletchgen_1_1_design_coll__map" id="fletchgen_1_1_design_coll__map">
+</map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -106,10 +113,10 @@ Static Public Member Functions</h2></td></tr>
 static std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#a8058b4b0467ce9fbdbe85d3eb5c3f617">ParseCustomRegs</a> (const std::vector&lt; std::string &gt; &amp;regs)</td></tr>
 <tr class="memdesc:a8058b4b0467ce9fbdbe85d3eb5c3f617"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain required custom registers based on a vector of strings. <br /></td></tr>
 <tr class="separator:a8058b4b0467ce9fbdbe85d3eb5c3f617"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23573571e36113c268d41d317195d7d9"><td class="memItemLeft" align="right" valign="top"><a id="a23573571e36113c268d41d317195d7d9"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#a23573571e36113c268d41d317195d7d9">RunVhdmmio</a> (const std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; *&gt; &amp;regs)</td></tr>
-<tr class="memdesc:a23573571e36113c268d41d317195d7d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate vhdmmio yaml and run it. <br /></td></tr>
-<tr class="separator:a23573571e36113c268d41d317195d7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32f2a4fdd86ef540c16a4027bcb9c882"><td class="memItemLeft" align="right" valign="top"><a id="a32f2a4fdd86ef540c16a4027bcb9c882"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#a32f2a4fdd86ef540c16a4027bcb9c882">RunVhdmmio</a> (const std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; *&gt; &amp;regs, <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a> axi_spec)</td></tr>
+<tr class="memdesc:a32f2a4fdd86ef540c16a4027bcb9c882"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate vhdmmio yaml and run it. <br /></td></tr>
+<tr class="separator:a32f2a4fdd86ef540c16a4027bcb9c882"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -141,6 +148,9 @@ std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</
 std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg.html">MmioReg</a> &gt; * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#aa160488a6743795f17cc5a73c30302b1">all_regs</a> = {&amp;<a class="el" href="structfletchgen_1_1_design.html#a8cb6d2cf9c1f5930dfad10deadf0b37b">default_regs</a>, &amp;<a class="el" href="structfletchgen_1_1_design.html#a2b63230e0ba602687ec2cad33c9b3e6e">recordbatch_regs</a>, &amp;<a class="el" href="structfletchgen_1_1_design.html#a17fe18b1d2ec61b78e5af96c4de77ea0">kernel_regs</a>, &amp;<a class="el" href="structfletchgen_1_1_design.html#a0e32b6776f49e596a0af54aa6140f6d8">profiling_regs</a>}</td></tr>
 <tr class="memdesc:aa160488a6743795f17cc5a73c30302b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointers to all registers vectors. <br /></td></tr>
 <tr class="separator:aa160488a6743795f17cc5a73c30302b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd51ca708a17c5ec82a276d0b844f7e3"><td class="memItemLeft" align="right" valign="top"><a id="abd51ca708a17c5ec82a276d0b844f7e3"></a>
+<a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mmio_spec</b></td></tr>
+<tr class="separator:abd51ca708a17c5ec82a276d0b844f7e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf3eaf3cfc9f4789bc94ec58d173d486"><td class="memItemLeft" align="right" valign="top"><a id="adf3eaf3cfc9f4789bc94ec58d173d486"></a>
 std::vector&lt; fletcher::RecordBatchDescription &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#adf3eaf3cfc9f4789bc94ec58d173d486">batch_desc</a></td></tr>
 <tr class="memdesc:adf3eaf3cfc9f4789bc94ec58d173d486"><td class="mdescLeft">&#160;</td><td class="mdescRight">The RecordBatchDescriptions to use in SREC generation. <br /></td></tr>
@@ -214,7 +224,7 @@ std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bo
 </div><div class="memdoc">
 <p>The top-level wrapper (mantle) of the design. This is not called wrapper because this is reserved for future top levels that instantiate multiple mantles to operate in parallel. </p>
 
-<p class="definition">Definition at line <a class="el" href="design_8h_source.html#l00072">72</a> of file <a class="el" href="design_8h_source.html">design.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="design_8h_source.html#l00074">74</a> of file <a class="el" href="design_8h_source.html">design.h</a>.</p>
 
 </div>
 </div>

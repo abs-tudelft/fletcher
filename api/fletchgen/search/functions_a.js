@@ -1,8 +1,8 @@
 var searchData=
 [
   ['make',['Make',['../classfletchgen_1_1_fletcher_schema.html#a8d15260ccff417ef86854cfb69407fb9',1,'fletchgen::FletcherSchema::Make()'],['../classfletchgen_1_1_schema_set.html#a861809dfd35f5140b8285375870f3a8c',1,'fletchgen::SchemaSet::Make()']]],
-  ['mantle',['Mantle',['../classfletchgen_1_1_mantle.html#a7387c7fa94e8663037f8ef5b98a37217',1,'fletchgen::Mantle::Mantle()'],['../namespacefletchgen.html#a34e3e7ec54bb891d7c25f12ba0988fc8',1,'fletchgen::mantle()']]],
-  ['mmio',['mmio',['../namespacefletchgen.html#a23e1aee7a028879557e2d0a093bc31f7',1,'fletchgen']]],
+  ['mantle',['Mantle',['../classfletchgen_1_1_mantle.html#a6fdcf56bdac6992011c2852421d2acb5',1,'fletchgen::Mantle::Mantle()'],['../namespacefletchgen.html#a10c2e86a82a643b31dbda1d7978f9ac0',1,'fletchgen::mantle()']]],
+  ['mmio',['mmio',['../namespacefletchgen.html#afe871dfa41237c8e28b2266afe29e27a',1,'fletchgen']]],
   ['mmio_5fport',['mmio_port',['../namespacefletchgen.html#a023c355a58fa66bbc6339a76efd98ce5',1,'fletchgen']]],
   ['mmioport',['MmioPort',['../structfletchgen_1_1_mmio_port.html#afffcb0d48c3da48bfd878d13669dfc5c',1,'fletchgen::MmioPort']]],
   ['mmioreg',['MmioReg',['../structfletchgen_1_1_mmio_reg.html#aab449b0aa79a7fded08a2dba6363d5dd',1,'fletchgen::MmioReg::MmioReg()=default'],['../structfletchgen_1_1_mmio_reg.html#aad30acc37eefd26bb18072b77455f33a',1,'fletchgen::MmioReg::MmioReg(MmioFunction function, MmioBehavior behavior, std::string name, std::string desc, uint32_t width, uint32_t index=0, std::optional&lt; uint32_t &gt; addr=std::nullopt, std::optional&lt; uint64_t &gt; init=std::nullopt)']]],

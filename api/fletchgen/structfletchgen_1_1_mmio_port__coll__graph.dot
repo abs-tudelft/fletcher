@@ -6,5 +6,5 @@ digraph "fletchgen::MmioPort"
   Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node3 [label="Port",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
   Node4 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" reg" ,fontname="Helvetica"];
-  Node4 [label="fletchgen::MmioReg",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_mmio_reg.html",tooltip="Structure to represent an mmio register. "];
+  Node4 [label="fletchgen::MmioReg",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structfletchgen_1_1_mmio_reg.html",tooltip="Structure to represent an MMIO register. "];
 }
