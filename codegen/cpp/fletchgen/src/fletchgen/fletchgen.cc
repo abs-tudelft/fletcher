@@ -71,7 +71,7 @@ int fletchgen(int argc, char **argv) {
   // Generate the whole Cerata design.
   fletchgen::Design design(options);
   // Run vhdmmio to generate the mmio infrastructure.
-  std::thread vhdmmio(Design::RunVhdmmio, design.all_regs);
+  std::thread vhdmmio(Design::RunVhdmmio, design.all_regs, design.mmio_spec);
 
 
   // Generate SREC output
@@ -139,7 +139,7 @@ int fletchgen(int argc, char **argv) {
     std::string axi_file_path = options->output_dir + "/vhdl/AxiTop.gen.vhd";
     FLETCHER_LOG(INFO, "Saving AXI top-level design to: " + axi_file_path);
     axi_file = std::ofstream(axi_file_path);
-    fletchgen::top::GenerateAXITop(*design.mantle_comp, *design.schema_set, {&axi_file});
+    fletchgen::top::GenerateAXITop(*design.mantle_comp, *design.schema_set, {&axi_file}, design.mmio_spec);
     axi_file.close();
   }
 

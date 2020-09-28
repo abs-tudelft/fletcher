@@ -25,19 +25,27 @@ using cerata::ClockDomain;
 using cerata::Type;
 using cerata::Port;
 
-/// @brief AXI-lite bus width specification. Address is always 32, but data can also be 64. Modifiable.
+/// @brief AXI4-lite bus specification.
 struct Axi4LiteSpec {
-  /// The MMIO bus data width.
+  explicit Axi4LiteSpec(size_t data_width = 32, size_t addr_width = 32, size_t offset = 0)
+      : data_width(data_width), addr_width(addr_width), offset(offset) {
+    if (offset % (data_width / 8) != 0) {
+      throw std::runtime_error("Offset must be integer multiple of data width / 8.");
+    }
+  }
+  /// The data width.
   size_t data_width = 32;
-  /// The MMIO bus address width.
+  /// The address width.
   size_t addr_width = 32;
+  /// The offset for all registers.
+  size_t offset = 0;
   /// @brief Return a human-readable representation of this Axi4LiteSpec.
   [[nodiscard]] std::string ToString() const;
   /// @brief Return a Cerata type name based on this Axi4LiteSpec.
   [[nodiscard]] std::string ToAxiTypeName() const;
 };
 
-/// An AXI4-lite port derived from an AXI-lite width specification.
+/// An AXI4-lite port derived from an AXI4-lite specification.
 struct Axi4LitePort : public Port {
   /// The specification this port was derived from.
   Axi4LiteSpec spec_;

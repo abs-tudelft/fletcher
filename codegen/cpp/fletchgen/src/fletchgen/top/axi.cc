@@ -26,7 +26,8 @@ using cerata::vhdl::Template;
 
 std::string GenerateAXITop(const Mantle &mantle,
                            const SchemaSet &schema_set,
-                           const std::vector<std::ostream *> &outputs) {
+                           const std::vector<std::ostream *> &outputs,
+                           Axi4LiteSpec axi_spec) {
   // Template for AXI top level
   auto t = Template::FromString(axi_source);
 
@@ -38,8 +39,8 @@ std::string GenerateAXITop(const Mantle &mantle,
   t.Replace("BUS_BURST_MAX_LEN", 64);
 
   // MMIO properties
-  t.Replace("MMIO_ADDR_WIDTH", 32);
-  t.Replace("MMIO_DATA_WIDTH", 32);
+  t.Replace("MMIO_ADDR_WIDTH", axi_spec.addr_width);
+  t.Replace("MMIO_DATA_WIDTH", axi_spec.data_width);
 
   // Do not change this order, TODO: fix this in replacement code
   t.Replace("FLETCHER_WRAPPER_NAME", mantle.name());

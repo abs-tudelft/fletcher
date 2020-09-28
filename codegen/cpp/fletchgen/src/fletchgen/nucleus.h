@@ -27,6 +27,7 @@
 #include "fletchgen/kernel.h"
 #include "fletchgen/array.h"
 #include "fletchgen/mmio.h"
+#include "fletchgen/axi4_lite.h"
 
 namespace fletchgen {
 
@@ -42,7 +43,8 @@ struct Nucleus : Component {
   explicit Nucleus(const std::string &name,
                    const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                    const std::shared_ptr<Kernel> &kernel,
-                   const std::shared_ptr<Component> &mmio);
+                   const std::shared_ptr<Component> &mmio,
+                   Axi4LiteSpec axi_spec);
 
   /// @brief Return all field-derived ports with a specific function.
   std::vector<FieldPort *> GetFieldPorts(FieldPort::Function fun) const;
@@ -60,6 +62,7 @@ struct Nucleus : Component {
 std::shared_ptr<Nucleus> nucleus(const std::string &name,
                                  const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                                  const std::shared_ptr<Kernel> &kernel,
-                                 const std::shared_ptr<Component> &mmio);
+                                 const std::shared_ptr<Component> &mmio,
+                                 Axi4LiteSpec axi_spec);
 
 }  // namespace fletchgen

@@ -35,7 +35,7 @@ static void TestReadKernel(const std::string &test_name, const std::shared_ptr<a
   fletcher::SchemaAnalyzer sa(&rbd);
   sa.Analyze(*schema);
   auto rbr = record_batch("Test_" + fs->name(), fs, rbd);
-  auto mmio_comp = mmio({rbd}, {});
+  auto mmio_comp = mmio({rbd}, {}, Axi4LiteSpec());
   auto top = kernel("Test" + test_name, {rbr}, mmio_comp);
   GenerateTestAll(top);
 }

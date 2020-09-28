@@ -11,3 +11,5 @@ transcript
 *.cf
 vhdmmio-doc/*
 fletchgen.mmio.yaml
+vhdmmio.log
+

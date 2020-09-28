@@ -39,10 +39,10 @@ static void TestReadMantle(const std::shared_ptr<arrow::Schema> &schema) {
   std::vector<MmioReg> regs;
   regs.insert(regs.end(), rb_regs.begin(), rb_regs.end());
   regs.insert(regs.end(), pr_regs.begin(), pr_regs.end());
-  auto m = mmio({rbd}, regs);
+  auto m = mmio({rbd}, regs, Axi4LiteSpec());
   auto k = kernel("Test_Kernel", {r}, m);
-  auto n = nucleus("Test_Nucleus", {r}, k, m);
-  auto man = mantle("Test_Mantle", {r}, n, BusDim());
+  auto n = nucleus("Test_Nucleus", {r}, k, m, Axi4LiteSpec());
+  auto man = mantle("Test_Mantle", {r}, n, BusDim(), Axi4LiteSpec());
   GenerateTestAll(man);
 }
 

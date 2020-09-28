@@ -41,9 +41,9 @@ static void TestNucleus(const std::string &test_name, const std::shared_ptr<arro
   std::vector<MmioReg> regs;
   regs.insert(regs.end(), rb_regs.begin(), rb_regs.end());
   regs.insert(regs.end(), pr_regs.begin(), pr_regs.end());
-  auto m = mmio({rbd}, regs);
+  auto m = mmio({rbd}, regs, Axi4LiteSpec());
   auto k = kernel("Test_Kernel", {r}, m);
-  auto n = nucleus("Test_Nucleus", {r}, k, m);
+  auto n = nucleus("Test_Nucleus", {r}, k, m, Axi4LiteSpec());
   GenerateTestAll(n);
 }
 

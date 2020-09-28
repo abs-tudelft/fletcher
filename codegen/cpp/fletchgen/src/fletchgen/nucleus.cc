@@ -71,7 +71,8 @@ static void CopyFieldPorts(Component *nucleus, const RecordBatch &record_batch, 
 Nucleus::Nucleus(const std::string &name,
                  const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                  const std::shared_ptr<Kernel> &kernel,
-                 const std::shared_ptr<Component> &mmio)
+                 const std::shared_ptr<Component> &mmio,
+                 Axi4LiteSpec axi_spec)
     : Component(name) {
   cerata::NodeMap rebinding;
 
@@ -83,7 +84,7 @@ Nucleus::Nucleus(const std::string &name,
   auto kcd = port("kcd", cr(), Port::Dir::IN, kernel_cd());
   Add(kcd);
   // Add AXI4-lite interface
-  auto axi = axi4_lite(Port::Dir::IN, bus_cd());
+  auto axi = axi4_lite(Port::Dir::IN, bus_cd(), axi_spec);
   Add(axi);
 
   // Instantiate the kernel and connect the clock/reset.
@@ -212,8 +213,9 @@ Nucleus::Nucleus(const std::string &name,
 std::shared_ptr<Nucleus> nucleus(const std::string &name,
                                  const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                                  const std::shared_ptr<Kernel> &kernel,
-                                 const std::shared_ptr<Component> &mmio) {
-  return std::make_shared<Nucleus>(name, recordbatches, kernel, mmio);
+                                 const std::shared_ptr<Component> &mmio,
+                                 Axi4LiteSpec axi_spec) {
+  return std::make_shared<Nucleus>(name, recordbatches, kernel, mmio, axi_spec);
 }
 
 std::vector<FieldPort *> Nucleus::GetFieldPorts(FieldPort::Function fun) const {

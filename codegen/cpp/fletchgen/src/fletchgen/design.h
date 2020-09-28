@@ -59,6 +59,8 @@ struct Design {
   /// Pointers to all registers vectors.
   std::vector<std::vector<MmioReg> *> all_regs = {&default_regs, &recordbatch_regs, &kernel_regs, &profiling_regs};
 
+  Axi4LiteSpec mmio_spec;
+
   /// The RecordBatchDescriptions to use in SREC generation.
   std::vector<fletcher::RecordBatchDescription> batch_desc;
 
@@ -87,7 +89,7 @@ struct Design {
   static std::vector<MmioReg> ParseCustomRegs(const std::vector<std::string> &regs);
 
   /// @brief Generate vhdmmio yaml and run it.
-  static void RunVhdmmio(const std::vector<std::vector<MmioReg> *>& regs);
+  static void RunVhdmmio(const std::vector<std::vector<MmioReg> *> &regs, Axi4LiteSpec axi_spec);
 };
 
 }  // namespace fletchgen

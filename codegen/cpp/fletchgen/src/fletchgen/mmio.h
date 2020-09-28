@@ -22,6 +22,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include "fletchgen/axi4_lite.h"
+
 namespace fletchgen {
 
 using cerata::Component;
@@ -62,7 +64,7 @@ enum class MmioBehavior {
   STROBE,    ///< Register contents is asserted for one cycle by host software.
 };
 
-/// @brief Structure to represent an mmio register
+/// @brief Structure to represent an MMIO register
 struct MmioReg {
   /// @brief MmioReg default constructor.
   MmioReg() = default;
@@ -122,9 +124,11 @@ std::shared_ptr<MmioPort> mmio_port(Port::Dir dir, const MmioReg &reg,
  * Any fixed addresses in the MmioReg.address field can only occur at the start of the vector set and must be ordered.
  *
  * @param regs       A vector of pointers to vectors of registers. Will be modified in case address was not set.
+ * @param axi_spec   Specification of the AXI4 lite mmio bus.
  * @param next_addr  Optionally outputs the byte address offset of the next free register address.
  */
 std::string GenerateVhdmmioYaml(const std::vector<std::vector<MmioReg> *> &regs,
+                                Axi4LiteSpec axi_spec,
                                 std::optional<size_t *> next_addr = std::nullopt);
 
 /**
@@ -134,10 +138,12 @@ std::string GenerateVhdmmioYaml(const std::vector<std::vector<MmioReg> *> &regs,
  * an identical component interface.
  *
  * @param[in]  batches         The RecordBatchDescriptions of the recordbatches in the design.
- * @param[in]  regs             A list of custom 32-bit register names.
+ * @param[in]  regs            A list of custom 32-bit register names.
+ * @param[in]  axi_spec        Specification of the AXI4-lite interface
  * @return A component.
  */
 std::shared_ptr<Component> mmio(const std::vector<fletcher::RecordBatchDescription> &batches,
-                                const std::vector<MmioReg> &regs);
+                                const std::vector<MmioReg> &regs,
+                                Axi4LiteSpec axi_spec);
 
 }  // namespace fletchgen

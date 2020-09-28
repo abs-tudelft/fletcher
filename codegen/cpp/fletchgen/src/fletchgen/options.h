@@ -46,6 +46,12 @@ struct Options {
   std::vector<std::string> regs;
   /// Bus dimensions strings.
   std::vector<std::string> bus_dims = {"64,512,8,1,16"};
+  /// Use 64-bits data width for AXI4-lite MMIO bus when true.
+  bool mmio64 = false;
+  /// AXI4-lite address bus width
+  size_t mmio_addr_width = 32;
+  /// AXI4-lite offset address for Fletcher registers.
+  size_t mmio_offset = 0;
 
   /// Whether to generate an AXI top level.
   bool axi_top = false;
