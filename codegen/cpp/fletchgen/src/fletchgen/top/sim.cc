@@ -30,7 +30,7 @@ using cerata::vhdl::Template;
 
 static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string &comment = "") {
   std::stringstream str;
-  str << "    mmio_write("
+  str << "    mmio_write32("
       << std::dec << idx << ", "
       << "X\"" << std::setfill('0') << std::setw(8) << std::hex << value << "\","
       << " mmio_source, mmio_sink, bcd_clk, bcd_reset);";
@@ -42,11 +42,11 @@ static std::string GenMMIOWrite(uint32_t idx, uint32_t value, const std::string 
 }
 
 static std::string GenMMIORead(uint32_t idx,
-                               const std::string& print_prefix,
+                               const std::string &print_prefix,
                                bool hex_ndec = true,
                                const std::string &comment = "") {
   std::stringstream str;
-  str << "    mmio_read("
+  str << "    mmio_read32("
       << std::dec << idx << ", "
       << " read_data, "
       << " mmio_source, mmio_sink, bcd_clk, bcd_reset);";
@@ -100,6 +100,13 @@ std::string GenerateSimTop(const Design &design,
   t.Replace("BUS_LEN_WIDTH", 8);
   t.Replace("BUS_BURST_STEP_LEN", 1);
   t.Replace("BUS_BURST_MAX_LEN", 64);
+
+  t.Replace("MMIO_DATA_WIDTH", design.mmio_spec.data_width);
+  t.Replace("MMIO_ADDR_WIDTH", design.mmio_spec.addr_width);
+  t.Replace("MMIO_STRB", design.mmio_spec.data_width == 64 ? R"(X"0F" when idx mod 2 = 0 else X"F0")" : R"(X"F")");
+  t.Replace("MMIO_RW_DATA_RANGE",
+            design.mmio_spec.data_width == 64 ? R"((32 * (1 + idx mod 2)-1 downto 32 * (idx mod 2)))" : "");
+  t.Replace("MMIO_OFFSET", design.mmio_spec.offset);
 
   // Do not change this order, TODO: fix this in replacement code
   t.Replace("FLETCHER_WRAPPER_NAME", design.mantle_comp->name());

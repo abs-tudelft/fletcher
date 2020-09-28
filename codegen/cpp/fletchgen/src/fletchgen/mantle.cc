@@ -39,7 +39,8 @@ using cerata::intl;
 Mantle::Mantle(std::string name,
                const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                const std::shared_ptr<Nucleus> &nucleus,
-               BusDim bus_dim)
+               BusDim bus_dim,
+               Axi4LiteSpec axi_spec)
     : Component(std::move(name)), bus_dim_(bus_dim) {
 
   using std::pair;
@@ -59,7 +60,7 @@ Mantle::Mantle(std::string name,
   // Add default ports; bus clock/reset, kernel clock/reset and AXI4-lite port.
   auto bcr = port("bcd", cr(), Port::Dir::IN, bus_cd());
   auto kcr = port("kcd", cr(), Port::Dir::IN, kernel_cd());
-  auto axi = axi4_lite(Port::Dir::IN, bus_cd());
+  auto axi = axi4_lite(Port::Dir::IN, bus_cd(), axi_spec);
   Add({bcr, kcr, axi});
 
   // Handle the Nucleus.
@@ -179,8 +180,9 @@ Mantle::Mantle(std::string name,
 std::shared_ptr<Mantle> mantle(const std::string &name,
                                const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                                const std::shared_ptr<Nucleus> &nucleus,
-                               BusDim bus_spec) {
-  return std::make_shared<Mantle>(name, recordbatches, nucleus, bus_spec);
+                               BusDim bus_spec,
+                               Axi4LiteSpec axi_spec) {
+  return std::make_shared<Mantle>(name, recordbatches, nucleus, bus_spec, axi_spec);
 }
 
 }  // namespace fletchgen

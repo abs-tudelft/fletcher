@@ -39,7 +39,8 @@ class Mantle : public Component {
   explicit Mantle(std::string name,
                   const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                   const std::shared_ptr<Nucleus> &nucleus,
-                  BusDim bus_dim);
+                  BusDim bus_dim,
+                  Axi4LiteSpec axi_spec);
   /// @brief Return the kernel component of this Mantle.
   std::shared_ptr<Nucleus> nucleus() const { return nucleus_; }
   /// @brief Return all RecordBatch(Reader/Writer) instances of this Mantle.
@@ -68,11 +69,13 @@ class Mantle : public Component {
  * @param recordbatches The RecordBatch components to instantiate.
  * @param nucleus       The Nucleus to instantiate.
  * @param bus_spec      The specification of the top-level bus.
+ * @param axi_spec      The specification of the AXI4-lite MMIO interface.
  * @return              A shared pointer to the mantle component.
  */
 std::shared_ptr<Mantle> mantle(const std::string &name,
                                const std::vector<std::shared_ptr<RecordBatch>> &recordbatches,
                                const std::shared_ptr<Nucleus> &nucleus,
-                               BusDim bus_spec);
+                               BusDim bus_spec,
+                               Axi4LiteSpec axi_spec);
 
 }  // namespace fletchgen

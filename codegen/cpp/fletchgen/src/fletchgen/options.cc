@@ -79,8 +79,12 @@ bool Options::Parse(Options *options, int argc, char **argv) {
                  "  bm : Bus maximum burst size.\n"
                  "Currently supports only one top-level bus specification. Default: \"64,512,64,8,1,16\"");
 
-  app.add_flag("--axi", options->axi_top,
-               "Generate AXI top-level template (VHDL only).");
+  app.add_flag("--mmio64", options->mmio64, "Use a 64-bits AXI4-lite MMIO data bus instead of 32-bits.");
+  app.add_option("--mmio-offset", options->mmio_offset, "AXI4 offset address for Fletcher registers.");
+  //app.add_option("--axi4l-addr-width", options->axi4_lite_aw, "TODO: Width of the AXI4-lite address bus (Default:32).");
+
+  app.add_flag("--axi", options->axi_top, "Generate AXI top-level template (VHDL only).");
+
   app.add_flag("--sim", options->sim_top,
                "Generate simulation top-level template (VHDL only).");
   app.add_flag("--vivado_hls", options->vivado_hls,
@@ -138,7 +142,7 @@ static bool HasLanguage(const std::vector<std::string> &languages, const std::st
   return false;
 }
 
-bool Options::MustGenerate(const std::string& lang) const {
+bool Options::MustGenerate(const std::string &lang) const {
   return HasLanguage(languages, lang) && Options::MustGenerateDesign();
 }
 

@@ -186,25 +186,31 @@ Design::Design(const std::shared_ptr<Options> &opts) {
   kernel_regs = ParseCustomRegs(opts->regs);
   profiling_regs = GetProfilingRegs(recordbatch_comps);
 
+  // Parse the memory bus specification.
   auto bus_spec = BusDim::FromString(opts->bus_dims[0], BusDim());
 
+  // Determine width of the AXI4-lite MMIO.
+  mmio_spec = Axi4LiteSpec(opts->mmio64 ? 64 : 32, opts->mmio_addr_width, opts->mmio_offset);
+
   // Generate the MMIO component.
-  mmio_comp = mmio(batch_desc, cerata::Merge({default_regs, recordbatch_regs, kernel_regs, profiling_regs}));
+  mmio_comp =
+      mmio(batch_desc, cerata::Merge({default_regs, recordbatch_regs, kernel_regs, profiling_regs}), mmio_spec);
   // Generate the kernel.
   kernel_comp = kernel(opts->kernel_name, recordbatch_comps, mmio_comp);
   // Generate the nucleus.
-  nucleus_comp = nucleus(opts->kernel_name + "_Nucleus", recordbatch_comps, kernel_comp, mmio_comp);
+  nucleus_comp = nucleus(opts->kernel_name + "_Nucleus", recordbatch_comps, kernel_comp, mmio_comp, mmio_spec);
   // Generate the mantle.
-  mantle_comp = mantle(opts->kernel_name + "_Mantle", recordbatch_comps, nucleus_comp, bus_spec);
+  mantle_comp = mantle(opts->kernel_name + "_Mantle", recordbatch_comps, nucleus_comp, bus_spec, mmio_spec);
 }
 
-void Design::RunVhdmmio(const std::vector<std::vector<MmioReg>*>& regs) {
+void Design::RunVhdmmio(const std::vector<std::vector<MmioReg> *> &regs, Axi4LiteSpec axi_spec) {
   // Generate a Yaml file for vhdmmio based on the recordbatch description
   auto ofs = std::ofstream("fletchgen.mmio.yaml");
-  ofs << GenerateVhdmmioYaml(regs);
+  ofs << GenerateVhdmmioYaml(regs, axi_spec);
   ofs.close();
 
   // Run vhdmmio
+  // TODO(johanpel): don't do this:
   auto vhdmmio_result = system("python3 -m vhdmmio -V vhdl -H -P vhdl > vhdmmio.log");
   if (vhdmmio_result != 0) {
     FLETCHER_LOG(FATAL, "vhdmmio exited with status " << vhdmmio_result);
