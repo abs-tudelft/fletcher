@@ -8,7 +8,7 @@ on:
 
 env:
   CMAKE_VERSION: '3.17.3'
-  ARROW_VERSION: '1.0.1'
+  ARROW_VERSION: '2.0.0'
 
 jobs:
   python:

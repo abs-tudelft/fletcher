@@ -21,13 +21,18 @@ from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
 
-import os, platform, shutil, glob
+import os
+import platform
+import shutil
+import glob
 import numpy as np
 import pyarrow as pa
+
 
 def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
         return f.read()
+
 
 target_dir = os.getcwd() + "/build"
 output_dir = target_dir + "/install"
@@ -38,6 +43,7 @@ py_target_dir = target_dir + "/python"
 py_build_dir = py_target_dir + "/build"
 py_dist_dir = target_dir + "/dist"
 
+
 class clean(_clean):
     def run(self):
         _clean.run(self)
@@ -46,6 +52,7 @@ class clean(_clean):
         except:
             pass
         shutil.rmtree(target_dir)
+
 
 class build(_build):
     def initialize_options(self):
@@ -63,29 +70,30 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            cmake['../../..']\
-                 ['-DFLETCHER_BUILD_ECHO=ON']\
-                 ['-DCMAKE_BUILD_TYPE=Release']\
-                 ['-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0']\
-                 ['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
+            cmake['../../..']['-DFLETCHER_BUILD_ECHO=ON']['-DCMAKE_BUILD_TYPE=Release'][
+                '-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
             make['-j4'] & FG
             make['install'] & FG
         _build.run(self)
+
 
 class bdist(_bdist):
     def finalize_options(self):
         _bdist.finalize_options(self)
         self.dist_dir = py_dist_dir
 
+
 class sdist(_sdist):
     def finalize_options(self):
         _sdist.finalize_options(self)
         self.dist_dir = py_dist_dir
 
+
 class egg_info(_egg_info):
     def initialize_options(self):
         _egg_info.initialize_options(self)
         self.egg_base = os.path.relpath(py_target_dir)
+
 
 setup(
     name="pyfletcher",
@@ -96,7 +104,7 @@ setup(
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     url="https://github.com/abs-tudelft/fletcher",
-    project_urls = {
+    project_urls={
         "Bug Tracker": "https://github.com/abs-tudelft/fletcher/issues",
         "Documentation": "https://abs-tudelft.github.io/fletcher/",
         "Source Code": "https://github.com/abs-tudelft/fletcher/",
@@ -124,12 +132,12 @@ setup(
     install_requires=[
         'numpy >= 1.14',
         'pandas',
-        'pyarrow == 1.0.1',
+        'pyarrow == 2.0.0',
     ],
     setup_requires=[
         'cython',
         'numpy',
-        'pyarrow == 1.0.1',
+        'pyarrow == 2.0.0',
         'plumbum',
         'pytest-runner'
     ],
@@ -143,7 +151,7 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: POSIX :: Linux"
     ],
-    cmdclass = {
+    cmdclass={
         'bdist': bdist,
         'build': build,
         'clean': clean,
@@ -151,8 +159,9 @@ setup(
         'sdist': sdist,
     },
     license='Apache License, Version 2.0',
-    zip_safe = False,
-    data_files= [
-        ('lib', [output_dir + '/lib64/libfletcher_echo.so'] if 'AUDITWHEEL_PLAT' in os.environ else []),
+    zip_safe=False,
+    data_files=[
+        ('lib', [output_dir + '/lib64/libfletcher_echo.so']
+         if 'AUDITWHEEL_PLAT' in os.environ else []),
     ],
 )
