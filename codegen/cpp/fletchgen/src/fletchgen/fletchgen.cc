@@ -15,6 +15,8 @@
 #include "fletchgen/fletchgen.h"
 
 #include <cerata/api.h>
+#include <cerata/dot/dot.h>
+#include <cerata/vhdl/vhdl.h>
 #include <fletcher/common.h>
 
 #include <fstream>
