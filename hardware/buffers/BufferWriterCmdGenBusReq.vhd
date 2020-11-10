@@ -285,7 +285,7 @@ begin
   -----------------------------------------------------------------------------
   comb_proc : process (
     r,
-    cmdIn_valid, cmdIn_firstIdx, cmdIn_baseAddr, cmdIn_implicit,
+    cmdIn_valid, cmdIn_firstIdx, cmdIn_lastIdx, cmdIn_baseAddr, cmdIn_implicit,
     busReq_ready,
     byte_address,
     steps_last, steps_valid,
