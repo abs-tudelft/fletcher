@@ -17,6 +17,7 @@
 #include <fletcher/fletcher.h>
 #include <fletcher/common.h>
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
 #include <memory>
 #include <string>
 #include <fstream>

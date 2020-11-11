@@ -15,6 +15,7 @@
 #include "fletchgen/top/axi.h"
 
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
 #include <memory>
 
 #include "fletchgen/top/axi_template.h"

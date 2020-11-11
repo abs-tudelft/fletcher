@@ -29,6 +29,7 @@ if(NOT cerata_POPULATED)
   set(BUILD_CERATA_TESTS OFF CACHE BOOL "")
   set(BUILD_CERATA_DOT ON CACHE BOOL "")
   set(BUILD_CERATA_VHDL ON CACHE BOOL "")
+  set(BUILD_CERATA_YAML ON CACHE BOOL "")
   add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR})
 endif()
 

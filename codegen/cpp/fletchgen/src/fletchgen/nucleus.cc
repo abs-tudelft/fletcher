@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/nucleus.h"
-
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
 #include <vector>
 #include <string>
 #include <cerata/parameter.h>
 
+#include "fletchgen/nucleus.h"
 #include "fletchgen/basic_types.h"
 #include "fletchgen/recordbatch.h"
 #include "fletchgen/kernel.h"

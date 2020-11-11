@@ -15,6 +15,7 @@
 #include "fletchgen/basic_types.h"
 
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
 #include <fletcher/common.h>
 
 #include <memory>
@@ -73,6 +74,7 @@ std::shared_ptr<Type> cr() {
   static std::shared_ptr<Type> result = record("cr", {
       field("clk", bit()),
       field("reset", bit())});
+  result->meta[cerata::vhdl::meta::NO_INSERT_SIGNAL] = "true";
   return result;
 }
 

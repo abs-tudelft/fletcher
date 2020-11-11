@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
 
 #include <string>
 #include <vector>
