@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <optional>
 
 #include "fletchgen/mantle.h"
 
@@ -25,7 +26,8 @@ namespace fletchgen::top {
 /// @brief Generate an AXI top level on supplied output streams from a ColumnWrapper
 std::string GenerateAXITop(const Mantle &mantle,
                            const SchemaSet &schema_set,
-                           const std::vector<std::ostream *> &outputs,
-                           Axi4LiteSpec axi_spec);
+                           Axi4LiteSpec axi_spec,
+                           std::optional<std::shared_ptr<Type>> external,
+                           const std::vector<std::ostream *> &outputs);
 
 }  // namespace fletchgen::top

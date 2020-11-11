@@ -44,6 +44,8 @@ struct Options {
   std::string kernel_name = "Kernel";
   /// Custom 32-bit registers.
   std::vector<std::string> regs;
+  /// File to parse for external signals to/from top level to kernel.
+  std::string externals_yaml;
   /// Bus dimensions strings.
   std::vector<std::string> bus_dims = {"64,512,8,1,16"};
   /// Use 64-bits data width for AXI4-lite MMIO bus when true.

@@ -18,6 +18,9 @@
 #include <cerata/vhdl/vhdl.h>
 #include <memory>
 
+#include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
+
 #include "fletchgen/top/axi_template.h"
 #include "fletchgen/mantle.h"
 
@@ -27,8 +30,9 @@ using cerata::vhdl::Template;
 
 std::string GenerateAXITop(const Mantle &mantle,
                            const SchemaSet &schema_set,
-                           const std::vector<std::ostream *> &outputs,
-                           Axi4LiteSpec axi_spec) {
+                           Axi4LiteSpec axi_spec,
+                           std::optional<std::shared_ptr<Type>> external,
+                           const std::vector<std::ostream *> &outputs) {
   // Template for AXI top level
   auto t = Template::FromString(axi_source);
 
@@ -184,6 +188,25 @@ std::string GenerateAXITop(const Mantle &mantle,
     t.Replace("MST_WREQ_DECLARE", "");
     t.Replace("MST_WREQ_INSTANTIATE", "");
     t.Replace("AXI_WRITE_CONVERTER", "");
+  }
+
+  t.Replace("MANTLE_DECL", cerata::vhdl::Decl::Generate(mantle, false, 1).ToString());
+
+  if (external) {
+    auto p_mantle = cerata::port("ext", external.value(), cerata::Port::Dir::OUT);
+    auto p_top = cerata::port("ext", external.value(), cerata::Port::Dir::OUT);
+    cerata::Connect(p_top, p_mantle);
+
+    auto decl_block = cerata::vhdl::Decl::Generate(*p_mantle, 2);
+    decl_block <<= ";";
+    auto inst_block = cerata::vhdl::Inst::GeneratePortMaps(*p_mantle);
+    inst_block.indent = 3;
+    inst_block << ",";
+
+    t.Replace("EXTERNAL_PORT_DECL", decl_block.ToString());
+    t.Replace("EXTERNAL_INST_MAP", inst_block.ToString());
+  } else {
+    t.Replace("EXTERNAL_PORT_DECL", "");
   }
 
   for (auto &o : outputs) {

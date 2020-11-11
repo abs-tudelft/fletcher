@@ -14,6 +14,7 @@
 
 #include <cerata/api.h>
 #include <cerata/vhdl/vhdl.h>
+#include <cerata/yaml/yaml.h>
 
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "fletchgen/mmio.h"
 #include "fletchgen/profiler.h"
 #include "fletchgen/bus.h"
+#include "fletchgen/external.h"
 
 namespace fletchgen {
 
@@ -160,6 +162,7 @@ Design::Design(const std::shared_ptr<Options> &opts) {
   // Analyze schemas and recordbatches to get schema_set and batch_desc
   AnalyzeSchemas();
   AnalyzeRecordBatches();
+  AnalyzeExternalIO();
   // Sanity check our design for equal number of schemas and recordbatch descriptions.
   if (schema_set->schemas().size() != batch_desc.size()) {
     FLETCHER_LOG(FATAL, "Number of Schemas and RecordBatchDescriptions does not match.");
@@ -248,6 +251,29 @@ std::vector<cerata::OutputSpec> Design::GetOutputSpec() {
   }
 
   return result;
+}
+
+void Design::AnalyzeExternalIO() {
+  if (!options->externals_yaml.empty()) {
+    // Read YAML
+    auto fs = std::ifstream(options->externals_yaml);
+    std::stringstream yaml;
+    yaml << fs.rdbuf();
+
+    // Convert to field
+    std::shared_ptr<cerata::Field> field;
+    auto converter = cerata::yaml::YamlConverter(yaml.str(), &field);
+    auto status = converter.Convert();
+    if (!status.ok()) {
+      FLETCHER_LOG(FATAL, status.msg());
+    }
+
+    // Extract and store type
+    auto ext_type = field->type();
+    ext_type->SetName("_external");
+    cerata::default_type_pool()->Add(ext_type);
+    external = ext_type;
+  }
 }
 
 }  // namespace fletchgen

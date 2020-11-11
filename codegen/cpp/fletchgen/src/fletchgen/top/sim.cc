@@ -116,6 +116,9 @@ std::string GenerateSimTop(const Design &design,
   t.Replace("READ_SREC_PATH", read_srec_path);
   t.Replace("WRITE_SREC_PATH", write_srec_path);
 
+  // Mantle declaration
+  t.Replace("MANTLE_DECL", cerata::vhdl::Decl::Generate(*design.mantle_comp, false, 1).ToString());
+
   // Generate all the buffer and recordbatch metadata
   std::stringstream buffer_meta;
   std::stringstream rb_meta;
@@ -163,6 +166,7 @@ std::string GenerateSimTop(const Design &design,
     t.Replace("KERNEL_REGS_INIT", "");
   }
 
+  // Profiling registers.
   if (!design.profiling_regs.empty()) {
     std::stringstream profile_reads;
     uint32_t addr = 0;
@@ -298,7 +302,24 @@ std::string GenerateSimTop(const Design &design,
     t.Replace("MST_WREQ_INSTANTIATE", "");
   }
 
-  // Profiling registers.
+  if (design.external) {
+    auto ext = design.external.value();
+    auto p_mantle = cerata::port("ext", ext, cerata::Port::Dir::IN);
+    auto s_top = cerata::signal("ext", ext);
+    cerata::Connect(p_mantle, s_top);
+
+    auto inst_block = cerata::vhdl::Inst::GeneratePortMaps(*p_mantle);
+    inst_block.indent = 3;
+    inst_block << ",";
+
+    auto decl_block = cerata::vhdl::Decl::Generate(*s_top, 1);
+
+    t.Replace("EXTERNAL_SIG_DECL", decl_block.ToString());
+    t.Replace("EXTERNAL_INST_MAP", inst_block.ToString());
+  } else {
+    t.Replace("EXTERNAL_SIG_DECL", "");
+    t.Replace("EXTERNAL_INST_MAP", "");
+  }
 
   for (auto &o : outputs) {
     o->flush();

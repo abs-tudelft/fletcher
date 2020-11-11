@@ -22,6 +22,7 @@
 #include "fletchgen/basic_types.h"
 #include "fletchgen/mmio.h"
 #include "fletchgen/array.h"
+#include "fletchgen/external.h"
 
 namespace fletchgen {
 
@@ -46,6 +47,7 @@ Kernel::Kernel(std::string name,
 
   auto iw = index_width();
   auto tw = tag_width();
+
   Add({iw, tw});
 
   // Add ports going to/from RecordBatches.
@@ -81,6 +83,11 @@ Kernel::Kernel(std::string name,
     }
   }
 
+  // Add custom I/O
+  auto ext = external();
+  if (ext) {
+    Add(cerata::port("ext", ext.value(), Port::Dir::OUT));
+  }
 }
 
 std::shared_ptr<Kernel> kernel(const std::string &name,

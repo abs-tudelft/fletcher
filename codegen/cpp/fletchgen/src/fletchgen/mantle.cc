@@ -27,6 +27,7 @@
 #include "fletchgen/bus.h"
 #include "fletchgen/nucleus.h"
 #include "fletchgen/axi4_lite.h"
+#include "fletchgen/external.h"
 
 namespace fletchgen {
 
@@ -173,6 +174,14 @@ Mantle::Mantle(std::string name,
     auto array = arb->prt_arr("bsv");
     // Append the PortArray and connect.
     Connect(array->Append(), bp);
+  }
+
+  // Add and connect platform IO
+  auto ext = external();
+  if (ext) {
+    auto pf = cerata::port("ext", ext.value(), Port::Dir::OUT);
+    Add(pf);
+    Connect(pf, nucleus_inst_->prt("ext"));
   }
 }
 
