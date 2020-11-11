@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['mmiobehavior',['MmioBehavior',['../namespacefletchgen.html#a52970d51825f5b1189d88480cc9fa0d0',1,'fletchgen']]],
-  ['mmiofunction',['MmioFunction',['../namespacefletchgen.html#a81bb2df9bbc0f4f52fd3dfd0b9c625c4',1,'fletchgen']]]
+  ['function',['Function',['../structfletchgen_1_1_field_port.html#a629c02a0a2e2f3078e8e586b465c143a',1,'fletchgen::FieldPort']]]
 ];

@@ -131,6 +131,15 @@ $(function() {
 <tr>
 <td>fletcher_tag_width </td><td>1 / 2 / 3 / ... </td><td>1 </td><td>Width of the <code>tag</code> field of commands and unlock streams of RecordBatchReaders/Writers. Can be used to identify commands. </td></tr>
 </table>
+<h1>Custom MMIO registers</h1>
+<p>You can add custom MMIO registers to your kernel using <code>--reg</code>. More information ../../../docs/mmio.md "can be found here".</p>
+<h1>Custom external I/O</h1>
+<p>Sometimes, your kernel requires other I/O signals than just Arrow data streams in and out, and MMIO registers. There may be some other type of data source or sink in your design, there may be some platform-specific things you want to use, or etcetera.</p>
+<p>You can supply Fletchgen with a YAML file describing what signals you want to draw between the kernel and the top-level. An example is shown below, where we want to handshake completion from the platform top-level with a <code>req</code> and <code>ack</code> bit.</p>
+<div class="fragment"><div class="line">- record:</div><div class="line">  name: platform</div><div class="line">  fields:</div><div class="line">  - record:</div><div class="line">    name: complete</div><div class="line">    fields:</div><div class="line">    - field:</div><div class="line">      name: req</div><div class="line">      width: 1</div><div class="line">    - field:</div><div class="line">      name: ack</div><div class="line">      width: 1</div><div class="line">      reverse: true</div></div><!-- fragment --><p>This will result in the following signals appearing at the top-level: </p><div class="fragment"><div class="line"><span class="vhdlchar">ext_platform_complete_req</span> <span class="vhdlchar">:</span> <span class="keywordflow">out</span> <span class="comment">std_logic</span>;</div><div class="line"><span class="vhdlchar">ext_platform_complete_ack</span> <span class="vhdlchar">:</span> <span class="keywordflow">in</span>  <span class="comment">std_logic</span></div></div><!-- fragment --><ul>
+<li>The signals are assumed to be driven by the kernel. To drive them from the top level, use: <div class="fragment"><div class="line">reverse: true</div></div><!-- fragment --></li>
+<li>Fields with a width of 1 can be forced to be <code>std_logic_vector</code> instead of <code>std_logic</code> by using: <div class="fragment"><div class="line">vector: true</div></div><!-- fragment --></li>
+</ul>
 <h1>Further reading</h1>
 <p>You can generate a simulation top level and provide a Flatbuffer file with a RecordBatch to the simulation environment. You can use this to debug your designs in simulation, independent of an FPGA platform specific simulation environment. ../../test/stringread/README.md "An example is shown here.". </p>
 </div></div><!-- contents -->

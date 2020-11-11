@@ -1,7 +1,7 @@
 var searchData=
 [
   ['languages',['languages',['../structfletchgen_1_1_options.html#a4cada0dac0d3b3c92b3c399cc5d9440c',1,'fletchgen::Options']]],
-  ['last',['LAST',['../namespacefletchgen_1_1meta.html#a06bb319bd27e26998602856c03c08ae6',1,'fletchgen::meta::LAST()'],['../namespacefletchgen.html#ac3b72a224a6d9724333cc3752457b378',1,'fletchgen::last()']]],
+  ['last',['last',['../namespacefletchgen.html#ac3b72a224a6d9724333cc3752457b378',1,'fletchgen::last()'],['../namespacefletchgen_1_1meta.html#a06bb319bd27e26998602856c03c08ae6',1,'fletchgen::meta::LAST()']]],
   ['length',['length',['../namespacefletchgen.html#a847921467aa34155af0818c60ffc69ac',1,'fletchgen']]],
   ['list',['LIST',['../namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aa298cb25408234de02baf2085803a464a',1,'fletchgen']]],
   ['list_5fprim',['LIST_PRIM',['../namespacefletchgen.html#aabc1aa5af7c948aeb93dddcb947fbb6aaa8a76626a0a9404b2776727cc0d92c5f',1,'fletchgen']]],

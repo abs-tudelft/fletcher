@@ -99,6 +99,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stru
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#acb22edfeda332d0da652fd937d5edc80">AnalyzeRecordBatches</a> ()</td></tr>
 <tr class="memdesc:acb22edfeda332d0da652fd937d5edc80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Analyze the supplied RecordBatches. <br /></td></tr>
 <tr class="separator:acb22edfeda332d0da652fd937d5edc80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecba00540522ca8d4101a19fc8e5f8f0"><td class="memItemLeft" align="right" valign="top"><a id="aecba00540522ca8d4101a19fc8e5f8f0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#aecba00540522ca8d4101a19fc8e5f8f0">AnalyzeExternalIO</a> ()</td></tr>
+<tr class="memdesc:aecba00540522ca8d4101a19fc8e5f8f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Analyze custom IO. <br /></td></tr>
+<tr class="separator:aecba00540522ca8d4101a19fc8e5f8f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d17b00234099ddfc6a6b725b987ea8d"><td class="memItemLeft" align="right" valign="top"><a id="a8d17b00234099ddfc6a6b725b987ea8d"></a>
 std::vector&lt; cerata::OutputSpec &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#a8d17b00234099ddfc6a6b725b987ea8d">GetOutputSpec</a> ()</td></tr>
 <tr class="memdesc:a8d17b00234099ddfc6a6b725b987ea8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain a Cerata OutputSpec from this design for Cerata back-ends to generate output. <br /></td></tr>
@@ -151,6 +155,10 @@ std::vector&lt; std::vector&lt; <a class="el" href="structfletchgen_1_1_mmio_reg
 <tr class="memitem:abd51ca708a17c5ec82a276d0b844f7e3"><td class="memItemLeft" align="right" valign="top"><a id="abd51ca708a17c5ec82a276d0b844f7e3"></a>
 <a class="el" href="structfletchgen_1_1_axi4_lite_spec.html">Axi4LiteSpec</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mmio_spec</b></td></tr>
 <tr class="separator:abd51ca708a17c5ec82a276d0b844f7e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8e929ff3c1b2679325ce36a5e0d4e29"><td class="memItemLeft" align="right" valign="top"><a id="ad8e929ff3c1b2679325ce36a5e0d4e29"></a>
+std::optional&lt; std::shared_ptr&lt; Type &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#ad8e929ff3c1b2679325ce36a5e0d4e29">external</a></td></tr>
+<tr class="memdesc:ad8e929ff3c1b2679325ce36a5e0d4e29"><td class="mdescLeft">&#160;</td><td class="mdescRight">External signals type. <br /></td></tr>
+<tr class="separator:ad8e929ff3c1b2679325ce36a5e0d4e29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf3eaf3cfc9f4789bc94ec58d173d486"><td class="memItemLeft" align="right" valign="top"><a id="adf3eaf3cfc9f4789bc94ec58d173d486"></a>
 std::vector&lt; fletcher::RecordBatchDescription &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfletchgen_1_1_design.html#adf3eaf3cfc9f4789bc94ec58d173d486">batch_desc</a></td></tr>
 <tr class="memdesc:adf3eaf3cfc9f4789bc94ec58d173d486"><td class="mdescLeft">&#160;</td><td class="mdescRight">The RecordBatchDescriptions to use in SREC generation. <br /></td></tr>
@@ -206,7 +214,7 @@ std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bo
 <p>Obtain requited mmio registers based on the <a class="el" href="structfletchgen_1_1_record_batch.html" title="A RecordBatch aggregating ArrayReaders/Writers. ">RecordBatch</a> descriptions. </p>
 <p>Generate mmio registers from properly ordered RecordBatchDescriptions. </p>
 
-<p class="definition">Definition at line <a class="el" href="design_8cc_source.html#l00123">123</a> of file <a class="el" href="design_8cc_source.html">design.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="design_8cc_source.html#l00125">125</a> of file <a class="el" href="design_8cc_source.html">design.cc</a>.</p>
 
 </div>
 </div>
@@ -224,7 +232,7 @@ std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bo
 </div><div class="memdoc">
 <p>The top-level wrapper (mantle) of the design. This is not called wrapper because this is reserved for future top levels that instantiate multiple mantles to operate in parallel. </p>
 
-<p class="definition">Definition at line <a class="el" href="design_8h_source.html#l00074">74</a> of file <a class="el" href="design_8h_source.html">design.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="design_8h_source.html#l00079">79</a> of file <a class="el" href="design_8h_source.html">design.h</a>.</p>
 
 </div>
 </div>

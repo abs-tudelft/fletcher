@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data',['data',['../classfletchgen_1_1srec_1_1_record.html#aa1557859d649bf4ef5d6db5aee82e419',1,'fletchgen::srec::Record::data() const'],['../classfletchgen_1_1srec_1_1_record.html#ac0127805090b127c5c2f895b870b61c8',1,'fletchgen::srec::Record::Data(uint32_t srec_address, const uint8_t *data, size_t size)'],['../namespacefletchgen.html#a53160305950fb6c565c66494fa0859a2',1,'fletchgen::data()']]],
+  ['data',['Data',['../classfletchgen_1_1srec_1_1_record.html#ac0127805090b127c5c2f895b870b61c8',1,'fletchgen::srec::Record::Data(uint32_t srec_address, const uint8_t *data, size_t size)'],['../classfletchgen_1_1srec_1_1_record.html#aa1557859d649bf4ef5d6db5aee82e419',1,'fletchgen::srec::Record::data() const'],['../namespacefletchgen.html#a53160305950fb6c565c66494fa0859a2',1,'fletchgen::data()']]],
   ['data_5fwidth',['data_width',['../structfletchgen_1_1_axi4_lite_spec.html#ac03192d89cebc6653f4f1ba6a847a498',1,'fletchgen::Axi4LiteSpec']]],
   ['default',['DEFAULT',['../namespacefletchgen.html#a81bb2df9bbc0f4f52fd3dfd0b9c625c4a5b39c8b553c821e7cddc6da64b5bd2ee',1,'fletchgen']]],
   ['default_5fnotice',['DEFAULT_NOTICE',['../namespacefletchgen.html#a10c7c1970a991a0af03263eb25c2c561',1,'fletchgen']]],

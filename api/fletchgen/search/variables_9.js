@@ -1,7 +1,16 @@
 var searchData=
 [
-  ['name',['name',['../structfletchgen_1_1_mmio_reg.html#ab20a337ec230cdc7523669442fff5fd1',1,'fletchgen::MmioReg']]],
-  ['nucleus_5f',['nucleus_',['../classfletchgen_1_1_mantle.html#a884779eab15abead5b3d924ce37ceed5',1,'fletchgen::Mantle']]],
-  ['nucleus_5fcomp',['nucleus_comp',['../structfletchgen_1_1_design.html#ae5bf664d78cb624e9dca981a7422823c',1,'fletchgen::Design']]],
-  ['nucleus_5finst_5f',['nucleus_inst_',['../classfletchgen_1_1_mantle.html#af1dc63072c73f51aea74f1eb50c3acf8',1,'fletchgen::Mantle']]]
+  ['mantle_5fcomp',['mantle_comp',['../structfletchgen_1_1_design.html#a4ba2edac305e02da2e2035ab630e6c77',1,'fletchgen::Design']]],
+  ['max_5fdata_5fbytes',['MAX_DATA_BYTES',['../classfletchgen_1_1srec_1_1_record.html#a15ba28c394d3253834ec30e225dd6b99',1,'fletchgen::srec::Record']]],
+  ['meta',['meta',['../structfletchgen_1_1_mmio_reg.html#ad4d97f4bebeb241cdc52a6c35befcb3e',1,'fletchgen::MmioReg']]],
+  ['mmio64',['mmio64',['../structfletchgen_1_1_options.html#a7334ee2effaa4ddc88e1d23c1ca24c6d',1,'fletchgen::Options']]],
+  ['mmio_5faddr_5fwidth',['mmio_addr_width',['../structfletchgen_1_1_options.html#abbaaa10e9d4695af33052584239b2f41',1,'fletchgen::Options']]],
+  ['mmio_5fbatch',['MMIO_BATCH',['../namespacefletchgen.html#a02d5ce70d1b5f47c9e720e4ddef7fd09',1,'fletchgen']]],
+  ['mmio_5fbuffer',['MMIO_BUFFER',['../namespacefletchgen.html#a980c799e6ee6af7de7110930b02e15c3',1,'fletchgen']]],
+  ['mmio_5fcomp',['mmio_comp',['../structfletchgen_1_1_design.html#a709db8779fecd9dad2522f6d3dd6c9ef',1,'fletchgen::Design']]],
+  ['mmio_5fdefault',['MMIO_DEFAULT',['../namespacefletchgen.html#a11a3e18d30a82bc760dd210e4ddf0ff7',1,'fletchgen']]],
+  ['mmio_5fkernel',['MMIO_KERNEL',['../namespacefletchgen.html#a5cf4447f9b91f087d2a54e3b09866315',1,'fletchgen']]],
+  ['mmio_5foffset',['mmio_offset',['../structfletchgen_1_1_options.html#aec59387ccc8f2b34eba99067eedf2c58',1,'fletchgen::Options']]],
+  ['mmio_5fprofile',['MMIO_PROFILE',['../namespacefletchgen.html#a2a1e87daa86a7c8cae80a1363b8909ce',1,'fletchgen']]],
+  ['mode_5f',['mode_',['../structfletchgen_1_1_record_batch.html#ae7049bf7d2705af2977772799044b01a',1,'fletchgen::RecordBatch']]]
 ];

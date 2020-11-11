@@ -146,6 +146,9 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="nam
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a5f8522273f3602bf48837f1a6930520b">NodeProfilerPorts</a> = std::map&lt; Node *, std::pair&lt; std::vector&lt; Instance * &gt;, std::vector&lt; Port * &gt; &gt;&gt;</td></tr>
 <tr class="memdesc:a5f8522273f3602bf48837f1a6930520b"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mapping from nodes to profiler instances and ports. <br /></td></tr>
 <tr class="separator:a5f8522273f3602bf48837f1a6930520b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bdd714a10405ea5ac07e72860741bad"><td class="memItemLeft" align="right" valign="top"><a id="a8bdd714a10405ea5ac07e72860741bad"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Status</b> = putong::Status&lt; <a class="el" href="namespacefletchgen.html#a202f040e54b3beba93c85c62cd8ff543">Error</a> &gt;</td></tr>
+<tr class="separator:a8bdd714a10405ea5ac07e72860741bad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -183,6 +186,11 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:a52970d51825f5b1189d88480cc9fa0d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register access behavior enumeration.  <a href="namespacefletchgen.html#a52970d51825f5b1189d88480cc9fa0d0">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a52970d51825f5b1189d88480cc9fa0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a202f040e54b3beba93c85c62cd8ff543"><td class="memItemLeft" align="right" valign="top"><a id="a202f040e54b3beba93c85c62cd8ff543"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a202f040e54b3beba93c85c62cd8ff543">Error</a> { <b>GenericError</b>, 
+<b>YAMLError</b>
+ }<tr class="memdesc:a202f040e54b3beba93c85c62cd8ff543"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error types. <br /></td></tr>
+</td></tr>
+<tr class="separator:a202f040e54b3beba93c85c62cd8ff543"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -344,6 +352,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 std::shared_ptr&lt; Component &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a289305aee9b4e809ae6597bdf4caeea1">BusWriteSerializer</a> ()</td></tr>
 <tr class="memdesc:a289305aee9b4e809ae6597bdf4caeea1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a BusWriteSerializer component. <br /></td></tr>
 <tr class="separator:a289305aee9b4e809ae6597bdf4caeea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adce9c36d091f8fed4a41812cb5965391"><td class="memItemLeft" align="right" valign="top"><a id="adce9c36d091f8fed4a41812cb5965391"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>external</b> () -&gt; std::optional&lt; std::shared_ptr&lt; cerata::Type &gt;&gt;</td></tr>
+<tr class="separator:adce9c36d091f8fed4a41812cb5965391"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aecaa6f7eb60b2c5e6b7f469f38709d20"><td class="memItemLeft" align="right" valign="top"><a id="aecaa6f7eb60b2c5e6b7f469f38709d20"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#aecaa6f7eb60b2c5e6b7f469f38709d20">fletchgen</a> (int argc, char **argv)</td></tr>
 <tr class="memdesc:aecaa6f7eb60b2c5e6b7f469f38709d20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fletchgen main entry. Used to wrap into PyFletchgen. <br /></td></tr>
@@ -1308,7 +1319,7 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A shared pointer to the new kernel component. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="kernel_8cc_source.html#l00086">86</a> of file <a class="el" href="kernel_8cc_source.html">kernel.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="kernel_8cc_source.html#l00093">93</a> of file <a class="el" href="kernel_8cc_source.html">kernel.cc</a>.</p>
 
 </div>
 </div>
@@ -1430,7 +1441,7 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A shared pointer to the mantle component. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="mantle_8cc_source.html#l00180">180</a> of file <a class="el" href="mantle_8cc_source.html">mantle.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mantle_8cc_source.html#l00189">189</a> of file <a class="el" href="mantle_8cc_source.html">mantle.cc</a>.</p>
 
 </div>
 </div>

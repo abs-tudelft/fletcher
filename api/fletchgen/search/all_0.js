@@ -7,6 +7,7 @@ var searchData=
   ['address',['address',['../classfletchgen_1_1srec_1_1_record.html#a934ceb1b3369c59769973776b362774b',1,'fletchgen::srec::Record']]],
   ['all',['all',['../structfletchgen_1_1_bus_dim_params.html#aaf42514dc1402f2940f26516b65abed5',1,'fletchgen::BusDimParams']]],
   ['all_5fregs',['all_regs',['../structfletchgen_1_1_design.html#aa160488a6743795f17cc5a73c30302b1',1,'fletchgen::Design']]],
+  ['analyzeexternalio',['AnalyzeExternalIO',['../structfletchgen_1_1_design.html#aecba00540522ca8d4101a19fc8e5f8f0',1,'fletchgen::Design']]],
   ['analyzerecordbatches',['AnalyzeRecordBatches',['../structfletchgen_1_1_design.html#acb22edfeda332d0da652fd937d5edc80',1,'fletchgen::Design']]],
   ['analyzeschemas',['AnalyzeSchemas',['../structfletchgen_1_1_design.html#a30e42eecbca03aed50eb73ba0e492c1a',1,'fletchgen::Design']]],
   ['appendschema',['AppendSchema',['../classfletchgen_1_1_schema_set.html#ac8e325720c011c1bd373b557adeb21fc',1,'fletchgen::SchemaSet']]],
