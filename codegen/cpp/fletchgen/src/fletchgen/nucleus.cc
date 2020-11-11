@@ -25,6 +25,7 @@
 #include "fletchgen/mmio.h"
 #include "fletchgen/profiler.h"
 #include "fletchgen/axi4_lite.h"
+#include "fletchgen/external.h"
 
 namespace fletchgen {
 
@@ -208,6 +209,14 @@ Nucleus::Nucleus(const std::string &name,
 
   // Gather all Field-derived ports that require profiling on this Nucleus.
   ProfileDataStreams(mmio_inst);
+
+  // Add and connect platform IO
+  auto ext = external();
+  if (ext) {
+    auto pf = cerata::port("ext", ext.value(), Port::Dir::OUT);
+    Add(pf);
+    Connect(pf, kernel_inst->prt("ext"));
+  }
 }
 
 std::shared_ptr<Nucleus> nucleus(const std::string &name,

@@ -41,6 +41,8 @@ struct Design {
   void AnalyzeSchemas();
   /// @brief Analyze the supplied RecordBatches.
   void AnalyzeRecordBatches();
+  /// @brief Analyze custom IO.
+  void AnalyzeExternalIO();
 
   /// The program options.
   std::shared_ptr<Options> options;
@@ -60,6 +62,9 @@ struct Design {
   std::vector<std::vector<MmioReg> *> all_regs = {&default_regs, &recordbatch_regs, &kernel_regs, &profiling_regs};
 
   Axi4LiteSpec mmio_spec;
+
+  /// External signals type
+  std::optional<std::shared_ptr<Type>> external;
 
   /// The RecordBatchDescriptions to use in SREC generation.
   std::vector<fletcher::RecordBatchDescription> batch_desc;
