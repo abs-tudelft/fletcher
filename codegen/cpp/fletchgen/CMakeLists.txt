@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletchgen VERSION 0.0.12 LANGUAGES CXX)
+project(fletchgen VERSION 0.0.13 LANGUAGES CXX)
 
 find_package(Arrow 1.0 CONFIG REQUIRED)
 
@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(cmake-modules)
 
 FetchContent_Declare(cerata
     GIT_REPOSITORY  https://github.com/abs-tudelft/cerata.git
-    GIT_TAG         develop
+    GIT_TAG         0.0.11
 )
 FetchContent_GetProperties(cerata)
 if(NOT cerata_POPULATED)
