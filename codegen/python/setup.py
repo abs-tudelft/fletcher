@@ -21,13 +21,17 @@ from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
 
-import os, platform, shutil
+import os
+import platform
+import shutil
 import numpy as np
 import pyarrow as pa
+
 
 def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
         return f.read()
+
 
 target_dir = os.getcwd() + "/build"
 output_dir = target_dir + "/install"
@@ -38,14 +42,17 @@ py_target_dir = target_dir + "/python"
 py_build_dir = py_target_dir + "/build"
 py_dist_dir = target_dir + "/dist"
 
+
 class clean(_clean):
     def run(self):
         _clean.run(self)
         try:
-            [os.remove('pyfletchgen/lib' + x) for x in ['.cpp', '.h', '_api.h']]
+            [os.remove('pyfletchgen/lib' + x)
+             for x in ['.cpp', '.h', '_api.h']]
         except:
             pass
         shutil.rmtree(target_dir)
+
 
 class build(_build):
     def initialize_options(self):
@@ -63,37 +70,38 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            cmake['../../cpp/fletchgen']\
-                 ['-DBUILD_FLETCHGEN_LIB=On']\
-                 ['-DBUILD_FLETCHGEN=Off']\
-                 ['-DCMAKE_BUILD_TYPE=Release']\
-                 ['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
+            cmake['../../cpp/fletchgen']['-DBUILD_FLETCHGEN_LIB=On']['-DBUILD_FLETCHGEN=Off'][
+                '-DCMAKE_BUILD_TYPE=Release']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
             make['-j4'] & FG
             make['install'] & FG
         _build.run(self)
+
 
 class bdist(_bdist):
     def finalize_options(self):
         _bdist.finalize_options(self)
         self.dist_dir = py_dist_dir
 
+
 class sdist(_sdist):
     def finalize_options(self):
         _sdist.finalize_options(self)
         self.dist_dir = py_dist_dir
+
 
 class egg_info(_egg_info):
     def initialize_options(self):
         _egg_info.initialize_options(self)
         self.egg_base = py_target_dir
 
+
 setup(
     name="pyfletchgen",
-    version="0.0.12",
+    version="0.0.13",
     author="Accelerated Big Data Systems, Delft University of Technology",
     packages=find_packages(),
     url="https://github.com/abs-tudelft/fletcher",
-    project_urls = {
+    project_urls={
         "Bug Tracker": "https://github.com/abs-tudelft/fletcher/issues",
         "Documentation": "https://abs-tudelft.github.io/fletcher/",
         "Source Code": "https://github.com/abs-tudelft/fletcher/",
@@ -115,7 +123,7 @@ setup(
             extra_link_args=["-std=c++11"]
         )
     ],
-    entry_points = {'console_scripts': ['fletchgen=pyfletchgen:_run']},
+    entry_points={'console_scripts': ['fletchgen=pyfletchgen:_run']},
     install_requires=[
         'numpy >= 1.14',
         'pandas',
@@ -134,7 +142,7 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: POSIX :: Linux"
     ],
-    cmdclass = {
+    cmdclass={
         'bdist': bdist,
         'build': build,
         'clean': clean,
@@ -142,5 +150,5 @@ setup(
         'sdist': sdist,
     },
     license='Apache License, Version 2.0',
-    zip_safe = False,
+    zip_safe=False,
 )
