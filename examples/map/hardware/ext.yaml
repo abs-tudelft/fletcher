@@ -1,0 +1,14 @@
+- record:
+  name: platform
+  fields:
+  - record:
+    name: complete
+    fields:
+    - field:
+      name: req
+      width: 1
+    - field:
+      name: ack
+      width: 1
+      reverse: true
+
