@@ -135,7 +135,7 @@ architecture Behavioral of BufferWriterPre is
   -- Padded stream
   signal pad_valid              : std_logic;
   signal pad_ready              : std_logic;
-  signal pad_dvalid             : std_logic;
+  signal pad_dvalid             : std_logic := '1';
   signal pad_data               : std_logic_vector(ELEMENT_COUNT_MAX*ELEMENT_WIDTH-1 downto 0);
   signal pad_strobe             : std_logic_vector(ELEMENT_COUNT_MAX-1 downto 0);
   signal pad_data_strobe        : std_logic_vector(ELEMENT_COUNT_MAX * (ELEMENT_WIDTH + 1) - 1 downto 0);
