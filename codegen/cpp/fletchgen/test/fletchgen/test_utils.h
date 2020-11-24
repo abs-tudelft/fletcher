@@ -15,8 +15,8 @@
 #pragma once
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
-#include <cerata/dot/dot.h>
+#include <cerata/vhdl/api.h>
+#include <cerata/dot/api.h>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -35,7 +35,7 @@ inline std::string GenerateTestDecl(cerata::Component *comp, std::string name = 
   std::cout << "VHDL SOURCE:\n";
   std::cout << src << std::endl;
 
-  cerata::dot::Grapher dot;
+  cerata::dot::GraphGenerator dot;
   dot.style.config = cerata::dot::Config::all();
   dot.GenFile(*comp, name);
 
@@ -56,7 +56,7 @@ inline std::string GenerateTestAll(cerata::Component *comp, std::string name = "
   std::cout << "VHDL SOURCE:\n";
   std::cout << src << std::endl;
 
-  cerata::dot::Grapher dot;
+  cerata::dot::GraphGenerator dot;
   dot.style.config = cerata::dot::Config::all();
   dot.GenFile(*comp, name);
 

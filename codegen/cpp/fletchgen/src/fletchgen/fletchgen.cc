@@ -15,8 +15,8 @@
 #include "fletchgen/fletchgen.h"
 
 #include <cerata/api.h>
-#include <cerata/dot/dot.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/dot/api.h>
+#include <cerata/vhdl/api.h>
 #include <fletcher/common.h>
 
 #include <fstream>
@@ -66,7 +66,8 @@ int fletchgen(int argc, char **argv) {
 
   // Generate designs in Cerata
   if (!options->MustGenerateDesign()) {
-    FLETCHER_LOG(INFO, "No schemas or recordbatches were supplied. No design was generated.");
+    FLETCHER_LOG(INFO,
+                 "No schemas or recordbatches were supplied. No design was generated.");
     exit(0);
   }
 
@@ -89,7 +90,8 @@ int fletchgen(int argc, char **argv) {
   // Generate DOT output.
   if (options->MustGenerate("dot")) {
     FLETCHER_LOG(INFO, "Generating DOT output.");
-    auto dot = cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
+    auto dot =
+        cerata::dot::DOTOutputGenerator(options->output_dir, design.GetOutputSpec());
     dot.Generate();
     // Remove dot from the list of target languages
     l.erase(std::remove(l.begin(), l.end(), std::string("dot")), l.end());
@@ -122,7 +124,7 @@ int fletchgen(int argc, char **argv) {
     FLETCHER_LOG(INFO, "Saving simulation top-level design to: " + sim_file_path);
     sim_file = std::ofstream(sim_file_path);
     // If the srec simulation dump path doesn't exist, it can't be canonicalized later on.
-    if (!cerata::FileExists(options->srec_sim_dump)) {
+    if (!std::filesystem::exists(options->srec_sim_dump)) {
       // Just touch the file.
       std::ofstream srec_out(options->srec_sim_dump);
       srec_out.close();

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 #include <gtest/gtest.h>
 #include <memory>
 

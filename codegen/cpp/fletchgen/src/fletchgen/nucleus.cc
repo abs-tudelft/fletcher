@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 #include <vector>
 #include <string>
 #include <cerata/parameter.h>
@@ -47,7 +47,7 @@ Component *accm() {
   auto num_addr = parameter("num_addr", 0);
   auto kernel_side_cmd = port("kernel_cmd", cmd_type(iw, tw), Port::Dir::IN, kernel_cd());
   auto nucleus_side_cmd = port("nucleus_cmd", cmd_type(iw, tw, num_addr * ba), Port::Dir::OUT, kernel_cd());
-  auto ctrl = port_array("ctrl", vector(ba), num_addr, Port::Dir::IN, kernel_cd());
+  auto ctrl = PortArray::Make("ctrl", vector(ba), num_addr, Port::Dir::IN, kernel_cd()).value();
   auto result = component("ArrayCmdCtrlMerger", {num_addr, ba, iw, tw, kernel_side_cmd, nucleus_side_cmd, ctrl});
 
   // This is a primitive component from the hardware lib
@@ -149,9 +149,9 @@ Nucleus::Nucleus(const std::string &name,
       auto nucleus_data = prt(ap->name());
       std::shared_ptr<cerata::Edge> edge;
       if (ap->dir() == Port::OUT) {
-        edge = Connect(kernel_data, nucleus_data);
+        edge = Connect(kernel_data, nucleus_data).value();
       } else {
-        edge = Connect(nucleus_data, kernel_data);
+        edge = Connect(nucleus_data, kernel_data).value();
       }
     }
 

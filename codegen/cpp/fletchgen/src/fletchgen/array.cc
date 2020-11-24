@@ -15,7 +15,7 @@
 #include "fletchgen/array.h"
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 #include <fletcher/common.h>
 #include <utility>
 #include <memory>

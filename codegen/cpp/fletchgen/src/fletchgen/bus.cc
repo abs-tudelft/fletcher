@@ -15,7 +15,7 @@
 #include "fletchgen/bus.h"
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 
 #include <memory>
 #include <vector>
@@ -71,7 +71,8 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
 }
 
 static std::string GetBusArbiterName(BusFunction function) {
-  return std::string("Bus") + (function == BusFunction::READ ? "Read" : "Write") + "ArbiterVec";
+  return std::string("Bus") + (function == BusFunction::READ ? "Read" : "Write")
+      + "ArbiterVec";
 }
 
 Component *bus_arbiter(BusFunction function) {
@@ -118,7 +119,7 @@ Component *bus_arbiter(BusFunction function) {
   auto slv_base = bus_port("slv", Port::Dir::OUT, spec);
   slv_base->SetName("bsv");
   slv_base->Reverse();
-  auto slv_arr = port_array(slv_base, num_slv);
+  auto slv_arr = PortArray::Make(slv_base, num_slv).value();
   // Add all ports.
   result->Add({clk_rst, mst, slv_arr});
 
@@ -167,7 +168,9 @@ std::shared_ptr<Type> bus(const BusSpecParams &spec) {
   }
 }
 
-std::shared_ptr<BusPort> bus_port(const std::string &name, Port::Dir dir, const BusSpecParams &params) {
+std::shared_ptr<BusPort> bus_port(const std::string &name,
+                                  Port::Dir dir,
+                                  const BusSpecParams &params) {
   return std::make_shared<BusPort>(name, dir, params);
 }
 
@@ -197,7 +200,8 @@ void ConnectBusParam(cerata::Graph *dst,
 #undef BUS_PARAM_CONNECTION_FACTORY
 
 bool operator==(const BusDim &lhs, const BusDim &rhs) {
-  return (lhs.aw == rhs.aw) && (lhs.dw == rhs.dw) && (lhs.lw == rhs.lw) && (lhs.bs == rhs.bs) && (lhs.bm == rhs.bm);
+  return (lhs.aw == rhs.aw) && (lhs.dw == rhs.dw) && (lhs.lw == rhs.lw)
+      && (lhs.bs == rhs.bs) && (lhs.bm == rhs.bm);
 }
 
 std::shared_ptr<cerata::Object> BusPort::Copy() const {
@@ -260,7 +264,8 @@ std::vector<std::shared_ptr<Object>> BusDimParams::all() const {
   return std::vector<std::shared_ptr<Object>>({aw, dw, lw, bs, bm});
 }
 
-BusDimParams::BusDimParams(cerata::Graph *parent, BusDim dim, const std::string &prefix) : plain(dim) {
+BusDimParams::BusDimParams(cerata::Graph *parent, BusDim dim, const std::string &prefix)
+    : plain(dim) {
   aw = bus_addr_width(dim.aw, prefix);
   dw = bus_data_width(dim.dw, prefix);
   lw = bus_len_width(dim.lw, prefix);

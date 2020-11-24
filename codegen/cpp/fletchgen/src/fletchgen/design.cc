@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
-#include <cerata/yaml/yaml.h>
+#include <cerata/vhdl/api.h>
+#include <cerata/yaml/api.h>
 
 #include <string>
 #include <vector>
@@ -84,13 +84,55 @@ void Design::AnalyzeRecordBatches() {
 
 static std::vector<MmioReg> GetDefaultRegs() {
   std::vector<MmioReg> result;
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STROBE, "start", "Start the kernel.", 1, 0, 0);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STROBE, "stop", "Stop the kernel.", 1, 1, 0);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STROBE, "reset", "Reset the kernel.", 1, 2, 0);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STATUS, "idle", "Kernel idle status.", 1, 0, 4);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STATUS, "busy", "Kernel busy status.", 1, 1, 4);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STATUS, "done", "Kernel done status.", 1, 2, 4);
-  result.emplace_back(MmioFunction::DEFAULT, MmioBehavior::STATUS, "result", "Result.", 64, 0, 8);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STROBE,
+                      "start",
+                      "Start the kernel.",
+                      1,
+                      0,
+                      0);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STROBE,
+                      "stop",
+                      "Stop the kernel.",
+                      1,
+                      1,
+                      0);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STROBE,
+                      "reset",
+                      "Reset the kernel.",
+                      1,
+                      2,
+                      0);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STATUS,
+                      "idle",
+                      "Kernel idle status.",
+                      1,
+                      0,
+                      4);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STATUS,
+                      "busy",
+                      "Kernel busy status.",
+                      1,
+                      1,
+                      4);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STATUS,
+                      "done",
+                      "Kernel done status.",
+                      1,
+                      2,
+                      4);
+  result.emplace_back(MmioFunction::DEFAULT,
+                      MmioBehavior::STATUS,
+                      "result",
+                      "Result.",
+                      64,
+                      0,
+                      8);
   return result;
 }
 
@@ -104,7 +146,8 @@ std::vector<MmioReg> Design::ParseCustomRegs(const std::vector<std::string> &reg
     if (std::regex_search(text, sub_match, regex)) {
       MmioReg reg;
       reg.function = MmioFunction::KERNEL;
-      reg.behavior = sub_match[1].str() == "c" ? MmioBehavior::CONTROL : MmioBehavior::STATUS;
+      reg.behavior =
+          sub_match[1].str() == "c" ? MmioBehavior::CONTROL : MmioBehavior::STATUS;
       reg.name = sub_match[3].str();
       reg.desc = "Custom register " + reg.name;
       reg.width = std::strtoul(sub_match[2].str().c_str(), nullptr, 10);
@@ -115,7 +158,9 @@ std::vector<MmioReg> Design::ParseCustomRegs(const std::vector<std::string> &reg
       reg.meta["kernel"] = "true";
       result.push_back(reg);
     } else {
-      FLETCHER_LOG(ERROR, "Custom register argument " + text + " invalid. Should match: " + regex_str);
+      FLETCHER_LOG(ERROR,
+                   "Custom register argument " + text + " invalid. Should match: "
+                       + regex_str);
     }
   }
   return result;
@@ -148,7 +193,8 @@ std::vector<MmioReg> Design::GetRecordBatchRegs(const std::vector<fletcher::Reco
         result.emplace_back(MmioFunction::BUFFER,
                             MmioBehavior::CONTROL,
                             buffer_port_name,
-                            "Buffer address for " + r.name + " " + fletcher::ToString(b.desc_),
+                            "Buffer address for " + r.name + " "
+                                + fletcher::ToString(b.desc_),
                             64);
       }
     }
@@ -194,20 +240,32 @@ Design::Design(const std::shared_ptr<Options> &opts) {
   auto bus_spec = BusDim::FromString(opts->bus_dims[0], BusDim());
 
   // Determine width of the AXI4-lite MMIO.
-  mmio_spec = Axi4LiteSpec(opts->mmio64 ? 64 : 32, opts->mmio_addr_width, opts->mmio_offset);
+  mmio_spec =
+      Axi4LiteSpec(opts->mmio64 ? 64 : 32, opts->mmio_addr_width, opts->mmio_offset);
 
   // Generate the MMIO component.
   mmio_comp =
-      mmio(batch_desc, cerata::Merge({default_regs, recordbatch_regs, kernel_regs, profiling_regs}), mmio_spec);
+      mmio(batch_desc,
+           cerata::Merge({default_regs, recordbatch_regs, kernel_regs, profiling_regs}),
+           mmio_spec);
   // Generate the kernel.
   kernel_comp = kernel(opts->kernel_name, recordbatch_comps, mmio_comp);
   // Generate the nucleus.
-  nucleus_comp = nucleus(opts->kernel_name + "_Nucleus", recordbatch_comps, kernel_comp, mmio_comp, mmio_spec);
+  nucleus_comp = nucleus(opts->kernel_name + "_Nucleus",
+                         recordbatch_comps,
+                         kernel_comp,
+                         mmio_comp,
+                         mmio_spec);
   // Generate the mantle.
-  mantle_comp = mantle(opts->kernel_name + "_Mantle", recordbatch_comps, nucleus_comp, bus_spec, mmio_spec);
+  mantle_comp = mantle(opts->kernel_name + "_Mantle",
+                       recordbatch_comps,
+                       nucleus_comp,
+                       bus_spec,
+                       mmio_spec);
 }
 
-void Design::RunVhdmmio(const std::vector<std::vector<MmioReg> *> &regs, Axi4LiteSpec axi_spec) {
+void Design::RunVhdmmio(const std::vector<std::vector<MmioReg> *> &regs,
+                        Axi4LiteSpec axi_spec) {
   // Generate a Yaml file for vhdmmio based on the recordbatch description
   auto ofs = std::ofstream("fletchgen.mmio.yaml");
   ofs << GenerateVhdmmioYaml(regs, axi_spec);

@@ -16,7 +16,7 @@
 
 #include <fletcher/fletcher.h>
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 #include <string>
 #include <iomanip>
 #include <cstdlib>

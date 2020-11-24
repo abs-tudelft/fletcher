@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fletchgen/top/axi.h"
-
-#include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
 #include <memory>
-
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 
+#include "fletchgen/top/axi.h"
 #include "fletchgen/top/axi_template.h"
 #include "fletchgen/mantle.h"
 
