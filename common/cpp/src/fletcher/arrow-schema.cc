@@ -108,6 +108,18 @@ arrow::Status FieldAnalyzer::Visit(const arrow::ListType &type) {
   return VisitType(*type.field(0)->type());
 }
 
+arrow::Status FieldAnalyzer::Visit(const arrow::FixedSizeListType &type) {
+  // We don't expect an offsets buffer.
+  // Advance to the next nesting level.
+  level++;
+  // A fixed size list should only have one child.
+  if (type.num_fields() != 1) {
+    return arrow::Status::TypeError("List type does not have exactly one child.");
+  }
+  // Visit the nested values array
+  return VisitType(*type.field(0)->type());
+}
+
 arrow::Status FieldAnalyzer::Visit(const arrow::StructType &type) {
   arrow::Status status;
   // Remember this nesting level name

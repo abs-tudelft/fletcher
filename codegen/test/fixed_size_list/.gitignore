@@ -1,0 +1,7 @@
+dst.as
+src.rb
+*.gen.vhd
+*.srec
+*.yaml
+*.log
+vhdmmio-doc/

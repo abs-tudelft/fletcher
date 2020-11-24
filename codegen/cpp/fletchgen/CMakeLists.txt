@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(cmake-modules)
 
 FetchContent_Declare(cerata
     GIT_REPOSITORY  https://github.com/abs-tudelft/cerata.git
-    GIT_TAG         0.0.11
+    GIT_TAG         origin/clean
 )
 FetchContent_GetProperties(cerata)
 if(NOT cerata_POPULATED)

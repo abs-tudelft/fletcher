@@ -49,6 +49,7 @@ class FieldAnalyzer : public arrow::TypeVisitor {
   arrow::Status Visit(const arrow::StringType &type) override { return VisitBinary(type); }
   arrow::Status Visit(const arrow::BinaryType &type) override { return VisitBinary(type); }
   arrow::Status Visit(const arrow::ListType &type) override;
+  arrow::Status Visit(const arrow::FixedSizeListType &type) override;
   arrow::Status Visit(const arrow::StructType &type) override;
 
 #define VISIT_FIXED_WIDTH(TYPE) \
