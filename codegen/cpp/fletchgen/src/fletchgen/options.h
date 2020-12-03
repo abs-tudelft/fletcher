@@ -59,6 +59,8 @@ struct Options {
   bool axi_top = false;
   /// Whether to simulate an AXI top level.
   bool sim_top = false;
+  /// Whether to generate static VHDL files (copied from hardware directory, embedded as resources).
+  bool static_vhdl = false;
   /// Whether to backup any existing generated files.
   bool backup = false;
 

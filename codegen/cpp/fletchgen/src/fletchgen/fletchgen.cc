@@ -28,10 +28,12 @@
 #include "fletchgen/srec/recordbatch.h"
 #include "fletchgen/top/sim.h"
 #include "fletchgen/top/axi.h"
+#include "fletchgen/static_vhdl.h"
 
 namespace fletchgen {
 
 int fletchgen(int argc, char **argv) {
+
   // Start logging
   std::string program_name = fletchgen::GetProgramName(argv[0]);
   fletcher::StartLogging(program_name, FLETCHER_LOG_DEBUG, program_name + ".log");
@@ -159,6 +161,11 @@ int fletchgen(int argc, char **argv) {
     auto hls_template_file = std::ofstream(hls_template_path);
     hls_template_file << fletchgen::hls::GenerateVivadoHLSTemplate(*design.kernel);
     */
+  }
+
+  // Write static VHDL support files for Fletcher.
+  if (options->static_vhdl) {
+    write_static_vhdl("vhdl/support");
   }
 
   // Wait for vhdmmio.

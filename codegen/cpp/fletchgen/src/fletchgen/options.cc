@@ -93,6 +93,8 @@ bool Options::Parse(Options *options, int argc, char **argv) {
   app.add_flag("--vivado_hls", options->vivado_hls,
                "Generate a Vivado HLS kernel template.");
 
+  app.add_flag("--static-vhdl", options->static_vhdl, "Write static VHDL support files.");
+
   // Other options:
   app.add_flag("-v,--version", options->version,
                "Show version.");
