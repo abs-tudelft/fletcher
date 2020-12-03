@@ -152,19 +152,17 @@ std::string GenerateSimTop(const Design &design,
   t.Replace("SREC_BUFFER_ADDRESSES", buffer_meta.str());
   t.Replace("SREC_FIRSTLAST_INDICES", rb_meta.str());
 
+  std::stringstream kri;
   if (!design.kernel_regs.empty()) {
-    std::stringstream kri;
     for (const auto &cr : design.kernel_regs) {
       if (cr.behavior == MmioBehavior::CONTROL) {
         // TODO(johanpel): fix this for non-32 bit regs
         auto val = cr.init ? *cr.init : 0;
         kri << GenMMIOWrite(cr.addr.value() / 4, val, "Write register \"" + cr.name + "\" initial value.");
-        t.Replace("KERNEL_REGS_INIT", kri.str());
       }
     }
-  } else {
-    t.Replace("KERNEL_REGS_INIT", "");
   }
+  t.Replace("KERNEL_REGS_INIT", kri.str());
 
   // Profiling registers.
   if (!design.profiling_regs.empty()) {
