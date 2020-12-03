@@ -207,6 +207,7 @@ std::string GenerateAXITop(const Mantle &mantle,
     t.Replace("EXTERNAL_INST_MAP", inst_block.ToString());
   } else {
     t.Replace("EXTERNAL_PORT_DECL", "");
+    t.Replace("EXTERNAL_INST_MAP", "");
   }
 
   for (auto &o : outputs) {
