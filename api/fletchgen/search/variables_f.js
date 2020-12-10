@@ -6,5 +6,6 @@ var searchData=
   ['sim_5ftop',['sim_top',['../structfletchgen_1_1_options.html#abd84158d4d55a59d15fb253ec98c93c6',1,'fletchgen::Options']]],
   ['spec_5f',['spec_',['../structfletchgen_1_1_axi4_lite_port.html#a62fd6b3d478af137886b426a00a414a4',1,'fletchgen::Axi4LitePort::spec_()'],['../structfletchgen_1_1_bus_port.html#a6402cab4fd4223a750a0228bc9052581',1,'fletchgen::BusPort::spec_()']]],
   ['srec_5fout_5fpath',['srec_out_path',['../structfletchgen_1_1_options.html#a715df782b2083f68b6732a469051b28e',1,'fletchgen::Options']]],
-  ['srec_5fsim_5fdump',['srec_sim_dump',['../structfletchgen_1_1_options.html#abcb536ee95c650c0c02095f984ec6f7e',1,'fletchgen::Options']]]
+  ['srec_5fsim_5fdump',['srec_sim_dump',['../structfletchgen_1_1_options.html#abcb536ee95c650c0c02095f984ec6f7e',1,'fletchgen::Options']]],
+  ['static_5fvhdl',['static_vhdl',['../structfletchgen_1_1_options.html#a8b869ed6287a6c3fe3e4a54909dce2e6',1,'fletchgen::Options']]]
 ];

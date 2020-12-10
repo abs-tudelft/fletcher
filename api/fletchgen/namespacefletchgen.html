@@ -415,6 +415,9 @@ std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_record_batch.html">R
 <tr class="memitem:abf32a9249a6e66d6b1166eecb77afde9"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="structfletchgen_1_1_field_port.html">FieldPort</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#abf32a9249a6e66d6b1166eecb77afde9">unlock_port</a> (const std::shared_ptr&lt; <a class="el" href="classfletchgen_1_1_fletcher_schema.html">FletcherSchema</a> &gt; &amp;schema, const std::shared_ptr&lt; arrow::Field &gt; &amp;field, const std::shared_ptr&lt; Node &gt; &amp;tag_width, const std::shared_ptr&lt; ClockDomain &gt; &amp;domain=default_domain())</td></tr>
 <tr class="memdesc:abf32a9249a6e66d6b1166eecb77afde9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a field-derived unlock port.  <a href="#abf32a9249a6e66d6b1166eecb77afde9">More...</a><br /></td></tr>
 <tr class="separator:abf32a9249a6e66d6b1166eecb77afde9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41126102d1a6cffdea215caa4b017433"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a41126102d1a6cffdea215caa4b017433">write_static_vhdl</a> (const std::string &amp;real_dir, const std::string &amp;emb_dir=&quot;hardware&quot;)</td></tr>
+<tr class="memdesc:a41126102d1a6cffdea215caa4b017433"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes Fletcher's static VHDL files to the given directory.  <a href="#a41126102d1a6cffdea215caa4b017433">More...</a><br /></td></tr>
+<tr class="separator:a41126102d1a6cffdea215caa4b017433"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a336ac22636b2968462818721e2a514ca"><td class="memItemLeft" align="right" valign="top"><a id="a336ac22636b2968462818721e2a514ca"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefletchgen.html#a336ac22636b2968462818721e2a514ca">GetProgramName</a> (char *argv0)</td></tr>
 <tr class="memdesc:a336ac22636b2968462818721e2a514ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the name of this program executable. <br /></td></tr>
@@ -1544,6 +1547,45 @@ constexpr char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" 
 <dl class="section return"><dt>Returns</dt><dd>A shared pointer to a new <a class="el" href="structfletchgen_1_1_field_port.html" title="A port derived from an Arrow field. ">FieldPort</a>. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="recordbatch_8cc_source.html#l00235">235</a> of file <a class="el" href="recordbatch_8cc_source.html">recordbatch.cc</a>.</p>
+
+</div>
+</div>
+<a id="a41126102d1a6cffdea215caa4b017433"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41126102d1a6cffdea215caa4b017433">&#9670;&nbsp;</a></span>write_static_vhdl()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fletchgen::write_static_vhdl </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>real_dir</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>emb_dir</em> = <code>&quot;hardware&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Writes Fletcher's static VHDL files to the given directory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">real_dir</td><td>The real directory to write to. </td></tr>
+    <tr><td class="paramname">emb_dir</td><td>The embedded filesystem directory to read from, defaulting to the toplevel resource directory ("hardware"). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="static__vhdl_8cc_source.html#l00027">27</a> of file <a class="el" href="static__vhdl_8cc_source.html">static_vhdl.cc</a>.</p>
 
 </div>
 </div>

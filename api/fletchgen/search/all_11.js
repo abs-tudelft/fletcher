@@ -11,6 +11,7 @@ var searchData=
   ['spec_5f',['spec_',['../structfletchgen_1_1_axi4_lite_port.html#a62fd6b3d478af137886b426a00a414a4',1,'fletchgen::Axi4LitePort::spec_()'],['../structfletchgen_1_1_bus_port.html#a6402cab4fd4223a750a0228bc9052581',1,'fletchgen::BusPort::spec_()']]],
   ['srec_5fout_5fpath',['srec_out_path',['../structfletchgen_1_1_options.html#a715df782b2083f68b6732a469051b28e',1,'fletchgen::Options']]],
   ['srec_5fsim_5fdump',['srec_sim_dump',['../structfletchgen_1_1_options.html#abcb536ee95c650c0c02095f984ec6f7e',1,'fletchgen::Options']]],
+  ['static_5fvhdl',['static_vhdl',['../structfletchgen_1_1_options.html#a8b869ed6287a6c3fe3e4a54909dce2e6',1,'fletchgen::Options']]],
   ['status',['STATUS',['../namespacefletchgen.html#a52970d51825f5b1189d88480cc9fa0d0a5f241c8c8f985b3c51e05d39cf030f4c',1,'fletchgen']]],
   ['stream_5fprobe',['stream_probe',['../namespacefletchgen.html#ab564a40fb9b2c35fd000da35dec49e3a',1,'fletchgen']]],
   ['strobe',['STROBE',['../namespacefletchgen.html#a52970d51825f5b1189d88480cc9fa0d0ad28ce717364dabaaea18e45cf3c2ada0',1,'fletchgen']]],
