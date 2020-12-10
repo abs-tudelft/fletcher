@@ -19,26 +19,15 @@ jobs:
         - codegen/cpp/fletchgen
         - runtime/cpp
         - platforms/echo/runtime
-        os:
-        - ubuntu-latest
-        include:
-        - source: codegen/cpp/fletchgen
-          os: macos-latest
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Install Apache Arrow
-      if: matrix.os == 'ubuntu-latest'
       run: |
         wget https://apache.bintray.com/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get update
-        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow100=$ARROW_VERSION-1
-    - name: Install Apache Arrow
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install apache-arrow
-        brew info apache-arrow | head -n1 | grep "$ARROW_VERSION"
+        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
     - name: Configure
       run: |
         cmake ${{ matrix.source }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
@@ -57,32 +46,20 @@ jobs:
         source:
         - runtime/python
         - codegen/python
-        os:
-        - ubuntu-latest
-        - macos-latest
-        exclude:
-        - source: runtime/python
-          os: macos-latest
         include:
         - source: runtime/python
           package: pyfletcher
         - source: codegen/python
           package: pyfletchgen
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Install Apache Arrow
-      if: matrix.os == 'ubuntu-latest'
       run: |
         wget https://apache.bintray.com/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get update
-        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow100=$ARROW_VERSION-1 libarrow-python-dev=$ARROW_VERSION-1 libarrow-python100=$ARROW_VERSION-1
-    - name: Install Apache Arrow
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install apache-arrow
-        brew info apache-arrow | head -n1 | grep "$ARROW_VERSION"
+        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow-python-dev=$ARROW_VERSION-1
     - name: Install pyarrow
       run: pip3 install pyarrow==$ARROW_VERSION setuptools wheel
     - name: Build and install
