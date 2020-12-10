@@ -42,7 +42,13 @@ if(NOT TARGET fletcher::c)
   add_subdirectory(../../../common/c common-c)
 endif()
 
-include(CMakeRC.cmake)
+
+FetchContent_Declare(cmakerc
+  GIT_REPOSITORY  https://github.com/vector-of-bool/cmrc.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmakerc)
+
 file(
     GLOB_RECURSE RESOURCE_FILES
     LIST_DIRECTORIES false
