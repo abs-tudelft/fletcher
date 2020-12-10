@@ -42,6 +42,30 @@ if(NOT TARGET fletcher::c)
   add_subdirectory(../../../common/c common-c)
 endif()
 
+
+FetchContent_Declare(cmakerc
+  GIT_REPOSITORY  https://github.com/vector-of-bool/cmrc.git
+  GIT_TAG         master
+)
+FetchContent_MakeAvailable(cmakerc)
+
+file(
+    GLOB_RECURSE RESOURCE_FILES
+    LIST_DIRECTORIES false
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../hardware/**/*"
+)
+cmrc_add_resource_library(
+    fletchgen-resources
+    ALIAS fletchgen::resources
+    NAMESPACE fletchgen
+    WHENCE "${CMAKE_CURRENT_SOURCE_DIR}/../../.."
+    ${RESOURCE_FILES}
+)
+set_property(
+    TARGET fletchgen-resources
+    PROPERTY POSITION_INDEPENDENT_CODE ON
+)
+
 add_compile_unit(
   OPT
   NAME fletchgen::obj
@@ -66,6 +90,7 @@ add_compile_unit(
     src/fletchgen/profiler.cc
     src/fletchgen/axi4_lite.cc
     src/fletchgen/external.cc
+    src/fletchgen/static_vhdl.cc
 
     src/fletchgen/srec/recordbatch.cc
     src/fletchgen/srec/srec.cc
@@ -92,6 +117,7 @@ add_compile_unit(
     fletcher::c
     CLI11::CLI11
     Threads::Threads
+    fletchgen::resources
 )
 
 add_compile_unit(
