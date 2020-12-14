@@ -29,6 +29,8 @@ jobs:
         - 'cp38-cp38'
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: true
     - name: Install Apache Arrow
       run: |
         yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
