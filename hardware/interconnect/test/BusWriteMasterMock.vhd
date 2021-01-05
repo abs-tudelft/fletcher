@@ -53,11 +53,15 @@ entity BusWriteMasterMock is
     wreq_ready                  : in  std_logic;
     wreq_addr                   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     wreq_len                    : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    wreq_last                   : out std_logic;
     wdat_valid                  : out std_logic;
     wdat_ready                  : in  std_logic;
     wdat_data                   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     wdat_strobe                 : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    wdat_last                   : out std_logic
+    wdat_last                   : out std_logic;
+    wrep_valid                  : in  std_logic;
+    wrep_ready                  : out std_logic;
+    wrep_ok                     : in  std_logic
   );
 end BusWriteMasterMock;
 
@@ -86,6 +90,7 @@ begin
       wreq_int_valid <= '0';
       wreq_addr <= (others => '0');
       wreq_len <= (others => '0');
+      wreq_last <= '0';
       wreq_valid <= '0';
       wdat_valid <= '0';
 
@@ -142,6 +147,9 @@ begin
       end loop;
     end loop;
   end process;
+
+  -- Ignore responses.
+  wrep_ready <= '1';
 
 end Behavioral;
 

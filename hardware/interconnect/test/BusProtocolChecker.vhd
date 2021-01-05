@@ -46,11 +46,15 @@ entity BusProtocolChecker is
     bus_wreq_ready              : in std_logic;
     bus_wreq_addr               : in std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     bus_wreq_len                : in std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_last               : in std_logic;
     bus_wdat_valid              : in std_logic;
     bus_wdat_ready              : in std_logic;
     bus_wdat_data               : in std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : in std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    bus_wdat_last               : in std_logic
+    bus_wdat_last               : in std_logic;
+    bus_wrep_valid              : in std_logic;
+    bus_wrep_ready              : in std_logic;
+    bus_wrep_ok                 : in std_logic
   );
 end BusProtocolChecker;
 
