@@ -115,11 +115,15 @@ entity ArrayWriterArb is
     bus_wreq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wreq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
     bus_wreq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_valid              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_ready              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_ok                 : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -162,11 +166,15 @@ architecture Behavioral of ArrayWriterArb is
   signal a_bus_wreq_ready       : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wreq_addr        : std_logic_vector(A_BUS_COUNT*BUS_ADDR_WIDTH-1 downto 0);
   signal a_bus_wreq_len         : std_logic_vector(A_BUS_COUNT*BUS_LEN_WIDTH-1 downto 0);
+  signal a_bus_wreq_last        : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wdat_valid       : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wdat_ready       : std_logic_vector(A_BUS_COUNT-1 downto 0);
   signal a_bus_wdat_data        : std_logic_vector(A_BUS_COUNT*BUS_DATA_WIDTH-1 downto 0);
   signal a_bus_wdat_strobe      : std_logic_vector(A_BUS_COUNT*BUS_DATA_WIDTH/8-1 downto 0);
   signal a_bus_wdat_last        : std_logic_vector(A_BUS_COUNT-1 downto 0);
+  signal a_bus_wrep_valid       : std_logic_vector(A_BUS_COUNT-1 downto 0);
+  signal a_bus_wrep_ready       : std_logic_vector(A_BUS_COUNT-1 downto 0);
+  signal a_bus_wrep_ok          : std_logic_vector(A_BUS_COUNT-1 downto 0);
 
   signal a_in_valid             : std_logic_vector(A_USER_COUNT-1 downto 0);
   signal a_in_ready             : std_logic_vector(A_USER_COUNT-1 downto 0);
@@ -285,22 +293,30 @@ begin
         bsv_wreq_ready          => a_bus_wreq_ready,
         bsv_wreq_addr           => a_bus_wreq_addr,
         bsv_wreq_len            => a_bus_wreq_len,
+        bsv_wreq_last           => a_bus_wreq_last,
         bsv_wdat_valid          => a_bus_wdat_valid,
         bsv_wdat_ready          => a_bus_wdat_ready,
         bsv_wdat_data           => a_bus_wdat_data,
         bsv_wdat_strobe         => a_bus_wdat_strobe,
         bsv_wdat_last           => a_bus_wdat_last,
+        bsv_wrep_valid          => a_bus_wrep_valid,
+        bsv_wrep_ready          => a_bus_wrep_ready,
+        bsv_wrep_ok             => a_bus_wrep_ok,
 
         -- Master port (output)
         mst_wreq_valid          => bus_wreq_valid(0),
         mst_wreq_ready          => bus_wreq_ready(0),
         mst_wreq_addr           => bus_wreq_addr,
         mst_wreq_len            => bus_wreq_len,
+        mst_wreq_last           => bus_wreq_last(0),
         mst_wdat_valid          => bus_wdat_valid(0),
         mst_wdat_ready          => bus_wdat_ready(0),
         mst_wdat_data           => bus_wdat_data,
         mst_wdat_strobe         => bus_wdat_strobe,
-        mst_wdat_last           => bus_wdat_last(0)
+        mst_wdat_last           => bus_wdat_last(0),
+        mst_wrep_valid          => bus_wrep_valid(0),
+        mst_wrep_ready          => bus_wrep_ready(0),
+        mst_wrep_ok             => bus_wrep_ok(0)
       );
   end generate;
   no_arb_gen: if A_BUS_COUNT = 1 generate
@@ -311,11 +327,15 @@ begin
     a_bus_wreq_ready  <=   bus_wreq_ready;
       bus_wreq_addr   <= a_bus_wreq_addr;
       bus_wreq_len    <= a_bus_wreq_len;
+      bus_wreq_last   <= a_bus_wreq_last;
       bus_wdat_valid  <= a_bus_wdat_valid;
     a_bus_wdat_ready  <=   bus_wdat_ready;
       bus_wdat_data   <= a_bus_wdat_data;
       bus_wdat_strobe <= a_bus_wdat_strobe;
       bus_wdat_last   <= a_bus_wdat_last;
+    a_bus_wrep_valid  <=   bus_wrep_valid;
+      bus_wrep_ready  <= a_bus_wrep_ready;
+    a_bus_wrep_ok     <=   bus_wrep_ok;
   end generate;
 
   -- Optional user stream slices.
@@ -393,11 +413,15 @@ begin
       bus_wreq_ready            => a_bus_wreq_ready,
       bus_wreq_addr             => a_bus_wreq_addr,
       bus_wreq_len              => a_bus_wreq_len,
+      bus_wreq_last             => a_bus_wreq_last,
       bus_wdat_valid            => a_bus_wdat_valid,
       bus_wdat_ready            => a_bus_wdat_ready,
       bus_wdat_data             => a_bus_wdat_data,
       bus_wdat_strobe           => a_bus_wdat_strobe,
       bus_wdat_last             => a_bus_wdat_last,
+      bus_wrep_valid            => a_bus_wrep_valid,
+      bus_wrep_ready            => a_bus_wrep_ready,
+      bus_wrep_ok               => a_bus_wrep_ok,
 
       in_valid                  => a_in_valid,
       in_ready                  => a_in_ready,

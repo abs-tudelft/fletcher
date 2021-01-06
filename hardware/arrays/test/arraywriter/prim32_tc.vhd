@@ -69,11 +69,15 @@ architecture tb of prim32_tc is
   signal bus_wreq_ready         : std_logic;
   signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_wreq_last          : std_logic;
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
   signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wdat_last          : std_logic;
+  signal bus_wrep_valid         : std_logic;
+  signal bus_wrep_ready         : std_logic;
+  signal bus_wrep_ok            : std_logic;
 
   signal in_valid               : std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
   signal in_ready               : std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -86,22 +90,6 @@ architecture tb of prim32_tc is
   signal num_data               : std_logic_vector(ELEMENT_WIDTH-1 downto 0);
   signal num_last               : std_logic;
   signal num_dvalid             : std_logic;
-
-  ---------------------------------------------------------------------------
-  -- Master bus Result
-  ---------------------------------------------------------------------------
-  -- Write request channel
-  signal bus_result_wreq_addr   : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal bus_result_wreq_len    : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal bus_result_wreq_valid  : std_logic;
-  signal bus_result_wreq_ready  : std_logic;
-
-  -- Write response channel
-  signal bus_result_wdat_data   : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal bus_result_wdat_strobe : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);  -- TODO Laurens: "/8"?
-  signal bus_result_wdat_last   : std_logic;
-  signal bus_result_wdat_valid  : std_logic;
-  signal bus_result_wdat_ready  : std_logic;
 
   -- Other stuff
   signal clock_stop             : boolean := false;
@@ -281,11 +269,15 @@ begin
       bus_wreq_ready            => bus_wreq_ready,
       bus_wreq_addr             => bus_wreq_addr,
       bus_wreq_len              => bus_wreq_len,
+      bus_wreq_last             => bus_wreq_last,
       bus_wdat_valid            => bus_wdat_valid,
       bus_wdat_ready            => bus_wdat_ready,
       bus_wdat_data             => bus_wdat_data,
       bus_wdat_strobe           => bus_wdat_strobe,
-      bus_wdat_last             => bus_wdat_last
+      bus_wdat_last             => bus_wdat_last,
+      bus_wrep_valid            => bus_wrep_valid,
+      bus_wrep_ready            => bus_wrep_ready,
+      bus_wrep_ok               => bus_wrep_ok
     );
 
   uut : ArrayWriter
@@ -318,11 +310,15 @@ begin
       bus_wreq_ready            => bus_wreq_ready,
       bus_wreq_addr             => bus_wreq_addr,
       bus_wreq_len              => bus_wreq_len,
+      bus_wreq_last             => bus_wreq_last,
       bus_wdat_valid            => bus_wdat_valid,
       bus_wdat_ready            => bus_wdat_ready,
       bus_wdat_data             => bus_wdat_data,
       bus_wdat_strobe           => bus_wdat_strobe,
       bus_wdat_last             => bus_wdat_last,
+      bus_wrep_valid            => bus_wrep_valid,
+      bus_wrep_ready            => bus_wrep_ready,
+      bus_wrep_ok               => bus_wrep_ok,
       in_valid                  => in_valid,
       in_ready                  => in_ready,
       in_last                   => in_last,

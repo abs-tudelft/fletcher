@@ -76,11 +76,15 @@ architecture tb of listprim8epc4_tc is
   signal bus_wreq_ready       : std_logic;
   signal bus_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal bus_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_wreq_last        : std_logic;
   signal bus_wdat_valid       : std_logic;
   signal bus_wdat_ready       : std_logic;
   signal bus_wdat_data        : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wdat_strobe      : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
   signal bus_wdat_last        : std_logic;
+  signal bus_wrep_valid       : std_logic;
+  signal bus_wrep_ready       : std_logic;
+  signal bus_wrep_ok          : std_logic;
 
   signal in_valid             : std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
   signal in_ready             : std_logic_vector(arcfg_userCount(CFG)-1 downto 0);
@@ -364,8 +368,27 @@ begin
 
   end process;
 
-  bus_wreq_ready <= '1';
   bus_wdat_ready <= '1';
+
+  req_to_rep_buffer_inst: StreamBuffer
+    generic map (
+      MIN_DEPTH                 => 2,
+      DATA_WIDTH                => 1
+    )
+    port map (
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
+
+      in_valid                  => bus_wreq_valid,
+      in_ready                  => bus_wreq_ready,
+      in_data                   => "0",
+
+      out_valid                 => bus_wrep_valid,
+      out_ready                 => bus_wrep_ready,
+      out_data                  => open
+    );
+
+  bus_wrep_ok <= '1';
 
   uut : ArrayWriter
     generic map (
@@ -397,11 +420,15 @@ begin
       bus_wreq_ready      => bus_wreq_ready,
       bus_wreq_addr       => bus_wreq_addr,
       bus_wreq_len        => bus_wreq_len,
+      bus_wreq_last       => bus_wreq_last,
       bus_wdat_valid      => bus_wdat_valid,
       bus_wdat_ready      => bus_wdat_ready,
       bus_wdat_data       => bus_wdat_data,
       bus_wdat_strobe     => bus_wdat_strobe,
       bus_wdat_last       => bus_wdat_last,
+      bus_wrep_valid      => bus_wrep_valid,
+      bus_wrep_ready      => bus_wrep_ready,
+      bus_wrep_ok         => bus_wrep_ok,
       in_valid            => in_valid,
       in_ready            => in_ready,
       in_last             => in_last,

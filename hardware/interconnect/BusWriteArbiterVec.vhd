@@ -128,6 +128,7 @@ architecture Behavioral of BusWriteArbiterVec is
 
   -- Bus request channel serialization indices.
   constant BQI : nat_array := cumulative((
+    2 => 1,
     1 => BUS_ADDR_WIDTH,
     0 => BUS_LEN_WIDTH
   ));
@@ -209,6 +210,7 @@ architecture Behavioral of BusWriteArbiterVec is
   -- Arbiter output stream handshake.
   signal arb_out_valid          : std_logic;
   signal arb_out_ready          : std_logic;
+  signal arb_out_index          : std_logic_vector(INDEX_WIDTH-1 downto 0);
 
   -- Index stream stage A (between sync and buffer for req-data timing).
   signal idxA_valid             : std_logic;
@@ -465,8 +467,11 @@ begin
       out_valid                         => arb_out_valid,
       out_ready                         => arb_out_ready,
       out_data                          => arbo_sData,
-      out_index                         => idxA_index
+      out_index                         => arb_out_index
     );
+
+  idxA_index <= arb_out_index;
+  idxC_index <= arb_out_index;
 
   bms_wreq_last                          <= arbo_sData(BQI(2));
   bms_wreq_addr                          <= arbo_sData(BQI(2)-1 downto BQI(1));
