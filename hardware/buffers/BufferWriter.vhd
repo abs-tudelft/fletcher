@@ -165,17 +165,19 @@ entity BufferWriter is
     bus_wreq_ready              : in  std_logic;
     bus_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     bus_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_last               : out std_logic;
 
     -- Data channel
     bus_wdat_valid              : out std_logic;
     bus_wdat_ready              : in  std_logic;
     bus_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : out std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-    bus_wdat_last               : out std_logic
+    bus_wdat_last               : out std_logic;
 
-
-    -- TODO in entity:
-    --  - status/error flags
+    -- Response channel
+    bus_wrep_valid              : in  std_logic;
+    bus_wrep_ready              : out std_logic;
+    bus_wrep_ok                 : in  std_logic
 
   );
 end BufferWriter;
@@ -191,12 +193,24 @@ architecture Behavioral of BufferWriter is
   signal writebuf_ready         : std_logic;
   signal writebuf_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal writebuf_strobe        : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-  signal writebuf_last          : std_logic;
 
-  signal req_ready              : std_logic;
   signal req_valid              : std_logic;
+  signal req_ready              : std_logic;
   signal req_addr               : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal req_len                : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal req_last               : std_logic;
+  signal req_valid_A            : std_logic;
+  signal req_ready_A            : std_logic;
+  signal req_valid_B            : std_logic;
+  signal req_ready_B            : std_logic;
+
+  signal req_done_valid         : std_logic;
+  signal req_done_ready         : std_logic;
+  signal req_done_last          : std_logic;
+
+  signal rep_valid              : std_logic;
+  signal rep_ready              : std_logic;
+  signal rep_ok                 : std_logic;
 
   signal cmdIn_ready_pre        : std_logic;
   signal cmdIn_ready_bus        : std_logic;
@@ -229,18 +243,6 @@ architecture Behavioral of BufferWriter is
   signal buffer_full            : std_logic;
   signal buffer_empty           : std_logic;
   signal buffer_count           : std_logic_vector(log2ceil(WRITE_BUFFER_DEPTH) downto 0);
-
-  signal int_bus_wreq_valid     : std_logic;
-  signal int_bus_wreq_ready     : std_logic;
-  signal int_bus_wreq_addr      : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-  signal int_bus_wreq_len       : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal int_bus_wdat_valid     : std_logic;
-  signal int_bus_wdat_ready     : std_logic;
-  signal int_bus_wdat_data      : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-  signal int_bus_wdat_strobe    : std_logic_vector(BUS_STROBE_WIDTH-1 downto 0);
-  signal int_bus_wdat_last      : std_logic;
-
-  signal last_in_cmd            : std_logic;
 
   signal unl_i_valid            : std_logic;
   signal unl_i_ready            : std_logic := '1';
@@ -341,7 +343,6 @@ begin
 
   writebuf_strobe               <= pre_strobe;
   writebuf_data                 <= pre_data;
-  writebuf_last                 <= pre_last;
 
   -- Generate signals for word_last to Write Buffer
   word_last                     <= pre_last;
@@ -481,7 +482,47 @@ begin
       busReq_valid              => req_valid,
       busReq_ready              => req_ready,
       busReq_addr               => req_addr,
-      busReq_len                => req_len
+      busReq_len                => req_len,
+      busReq_last               => req_last
+    );
+
+  -----------------------------------------------------------------------------
+  -- Request to response buffer and sync
+  -----------------------------------------------------------------------------
+  -- We need the request last signal synchronized with the response channel
+  -- to determine when to unlock.
+  req_sync_inst: StreamSync
+    generic map (
+      NUM_INPUTS => 1,
+      NUM_OUTPUTS => 2
+    )
+    port map (
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
+      in_valid(0)               => req_valid,
+      in_ready(0)               => req_ready,
+      out_valid(0)              => req_valid_A,
+      out_valid(1)              => req_valid_B,
+      out_ready(0)              => req_ready_A,
+      out_ready(1)              => req_ready_B
+    );
+
+  req_to_rep_buffer_inst: StreamBuffer
+    generic map (
+      MIN_DEPTH                 => 16, -- TODO: should probably be configurable
+      DATA_WIDTH                => 1
+    )
+    port map (
+      clk                       => kcd_clk,
+      reset                     => kcd_reset,
+
+      in_valid                  => req_valid_B,
+      in_ready                  => req_ready_B,
+      in_data(0)                => req_last,
+
+      out_valid                 => req_done_valid,
+      out_ready                 => req_done_ready,
+      out_data(0)               => req_done_last
     );
 
   -----------------------------------------------------------------------------
@@ -505,36 +546,33 @@ begin
       empty                     => buffer_empty,
       count                     => buffer_count,
 
-      slv_wreq_valid            => req_valid,
-      slv_wreq_ready            => req_ready,
+      slv_wreq_valid            => req_valid_A,
+      slv_wreq_ready            => req_ready_A,
       slv_wreq_addr             => req_addr,
       slv_wreq_len              => req_len,
+      slv_wreq_last             => req_last,
       slv_wdat_valid            => writebuf_valid,
       slv_wdat_ready            => writebuf_ready,
       slv_wdat_data             => writebuf_data,
       slv_wdat_strobe           => writebuf_strobe,
-      -- Last is actually the last word in the data stream of this command, so
-      -- pass it through using the control signal. Actual last will be
-      -- generated.
-      slv_wdat_ctrl(0)          => writebuf_last,
-      slv_wdat_last             => '0',
+      slv_wrep_valid            => rep_valid,
+      slv_wrep_ready            => rep_ready,
+      slv_wrep_ok               => rep_ok,
 
-      mst_wreq_valid            => int_bus_wreq_valid,
-      mst_wreq_ready            => int_bus_wreq_ready,
-      mst_wreq_addr             => int_bus_wreq_addr,
-      mst_wreq_len              => int_bus_wreq_len,
-      mst_wdat_valid            => int_bus_wdat_valid,
-      mst_wdat_ready            => int_bus_wdat_ready,
-      mst_wdat_data             => int_bus_wdat_data,
-      mst_wdat_strobe           => int_bus_wdat_strobe,
-      mst_wdat_ctrl(0)          => last_in_cmd,
-      mst_wdat_last             => int_bus_wdat_last
+      mst_wreq_valid            => bus_wreq_valid,
+      mst_wreq_ready            => bus_wreq_ready,
+      mst_wreq_addr             => bus_wreq_addr,
+      mst_wreq_len              => bus_wreq_len,
+      mst_wreq_last             => bus_wreq_last,
+      mst_wdat_valid            => bus_wdat_valid,
+      mst_wdat_ready            => bus_wdat_ready,
+      mst_wdat_data             => bus_wdat_data,
+      mst_wdat_strobe           => bus_wdat_strobe,
+      mst_wdat_last             => bus_wdat_last,
+      mst_wrep_valid            => bus_wrep_valid,
+      mst_wrep_ready            => bus_wrep_ready,
+      mst_wrep_ok               => bus_wrep_ok
     );
-
-  int_bus_wreq_ready            <= bus_wreq_ready;
-  bus_wreq_valid                <= int_bus_wreq_valid;
-  bus_wreq_addr                 <= int_bus_wreq_addr;
-  bus_wreq_len                  <= int_bus_wreq_len;
 
   -- Input buffer for the unlock stream to prevent blocking the command stream
   unlock_input_buffer_inst: StreamBuffer
@@ -559,37 +597,30 @@ begin
   -- both the data and command stream.
   unlock_bus_sync_inst: StreamSync
     generic map (
-      NUM_INPUTS => 2,
-      NUM_OUTPUTS => 2
+      NUM_INPUTS => 3,
+      NUM_OUTPUTS => 1
     )
     port map (
       clk                       => kcd_clk,
       reset                     => kcd_reset,
 
-      in_valid(0)               => int_bus_wdat_valid,
-      in_valid(1)               => unl_i_valid,
+      in_valid(2)               => req_done_valid,
+      in_valid(1)               => rep_valid,
+      in_valid(0)               => unl_i_valid,
 
-      in_advance(0)             => '1',
-      in_advance(1)             => last_in_cmd,
+      in_ready(2)               => req_done_ready,
+      in_ready(1)               => rep_ready,
+      in_ready(0)               => unl_i_ready,
 
-      in_ready(0)               => int_bus_wdat_ready,
-      in_ready(1)               => unl_i_ready,
+      in_advance(2)             => '1',
+      in_advance(1)             => '1',
+      in_advance(0)             => req_done_last,
 
-      out_valid(0)              => bus_wdat_valid,
-      out_valid(1)              => unl_o_valid,
-
-      out_ready(0)              => bus_wdat_ready,
-      out_ready(1)              => unl_o_ready,
-
-      out_enable(0)             => '1',
-      out_enable(1)             => last_in_cmd
+      out_valid(0)              => unl_o_valid,
+      out_ready(0)              => unl_o_ready,
+      out_enable(0)             => req_done_last
 
     );
-
-  -- Connect to output
-  bus_wdat_data                 <= int_bus_wdat_data;
-  bus_wdat_strobe               <= int_bus_wdat_strobe;
-  bus_wdat_last                 <= int_bus_wdat_last;
 
   -- Connect the input buffer to the output buffer.
   unl_o_tag                     <= unl_i_tag;
@@ -604,7 +635,6 @@ begin
       clk                       => kcd_clk,
       reset                     => kcd_reset,
 
-      -- Only valid when last_in_cmd is high
       in_valid                  => unl_o_valid,
       in_ready                  => unl_o_ready,
       in_data                   => unl_o_tag,

@@ -181,6 +181,7 @@ package Interconnect_pkg is
       reset                     : in  std_logic;
       full                      : out std_logic;
       empty                     : out std_logic;
+      error                     : out std_logic;
       count                     : out std_logic_vector(log2ceil(FIFO_DEPTH) downto 0);
       
       slv_wreq_valid            : in  std_logic;
@@ -192,8 +193,8 @@ package Interconnect_pkg is
       slv_wdat_ready            : out std_logic;
       slv_wdat_data             : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       slv_wdat_strobe           : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      slv_wdat_last             : in  std_logic := '0';
       slv_wdat_ctrl             : in  std_logic_vector(CTRL_WIDTH-1 downto 0)  := (others => 'U');
-      slv_wdat_last             : in  std_logic;
       slv_wrep_valid            : out std_logic;
       slv_wrep_ready            : in  std_logic;
       slv_wrep_ok               : out std_logic;
@@ -207,8 +208,8 @@ package Interconnect_pkg is
       mst_wdat_ready            : in  std_logic;
       mst_wdat_data             : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
       mst_wdat_strobe           : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-      mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
       mst_wdat_last             : out std_logic;
+      mst_wdat_ctrl             : out std_logic_vector(CTRL_WIDTH-1 downto 0);
       mst_wrep_valid            : in  std_logic;
       mst_wrep_ready            : out std_logic;
       mst_wrep_ok               : in  std_logic

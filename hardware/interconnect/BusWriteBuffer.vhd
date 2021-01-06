@@ -107,7 +107,7 @@ entity BusWriteBuffer is
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     slv_wdat_strobe             : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    slv_wdat_last               : in  std_logic;
+    slv_wdat_last               : in  std_logic := '0';
     slv_wdat_ctrl               : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => 'U');
 
     slv_wrep_valid              : out std_logic;
@@ -164,16 +164,16 @@ architecture Behavioral of BusWriteBuffer is
   signal s_mst_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_mst_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal s_mst_wreq_last        : std_logic;
-  signal s_mst_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
-  signal mst_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+  signal s_mst_wreq_all         : std_logic_vector(RSI(3)-1 downto 0);
+  signal mst_wreq_all           : std_logic_vector(RSI(3)-1 downto 0);
 
   signal s_slv_wreq_valid       : std_logic;
   signal s_slv_wreq_ready       : std_logic;
   signal s_slv_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_slv_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal s_slv_wreq_last        : std_logic;
-  signal s_slv_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
-  signal slv_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+  signal s_slv_wreq_all         : std_logic_vector(RSI(3)-1 downto 0);
+  signal slv_wreq_all           : std_logic_vector(RSI(3)-1 downto 0);
 
   signal s_slv_wdat_valid       : std_logic;
   signal s_slv_wdat_ready       : std_logic;
