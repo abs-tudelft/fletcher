@@ -125,22 +125,32 @@ std::string GenerateAXITop(const Mantle &mantle,
               "      wr_mst_wreq_ready        : in std_logic;\n"
               "      wr_mst_wreq_addr         : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);\n"
               "      wr_mst_wreq_len          : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);\n"
+              "      wr_mst_wreq_last         : out std_logic;\n"
               "      wr_mst_wdat_valid        : out std_logic;\n"
               "      wr_mst_wdat_ready        : in std_logic;\n"
               "      wr_mst_wdat_data         : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);\n"
               "      wr_mst_wdat_strobe       : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);\n"
-              "      wr_mst_wdat_last         : out std_logic;");
+              "      wr_mst_wdat_last         : out std_logic;"
+              "      wr_mst_wrep_valid        : in  std_logic;"
+              "      wr_mst_wrep_ready        : out std_logic;"
+              "      wr_mst_wrep_ok           : in  std_logic;"
+    );
 
     t.Replace("MST_WREQ_INSTANTIATE",
               "      wr_mst_wreq_valid         => wr_mst_wreq_valid,\n"
               "      wr_mst_wreq_ready         => wr_mst_wreq_ready,\n"
               "      wr_mst_wreq_addr          => wr_mst_wreq_addr,\n"
               "      wr_mst_wreq_len           => wr_mst_wreq_len,\n"
+              "      wr_mst_wreq_last          => wr_mst_wreq_last,\n"
               "      wr_mst_wdat_valid         => wr_mst_wdat_valid,\n"
               "      wr_mst_wdat_ready         => wr_mst_wdat_ready,\n"
               "      wr_mst_wdat_data          => wr_mst_wdat_data,\n"
               "      wr_mst_wdat_strobe        => wr_mst_wdat_strobe,\n"
-              "      wr_mst_wdat_last          => wr_mst_wdat_last,");
+              "      wr_mst_wdat_last          => wr_mst_wdat_last,\n"
+              "      wr_mst_wrep_valid         => wr_mst_wrep_valid,\n"
+              "      wr_mst_wrep_ready         => wr_mst_wrep_ready,\n"
+              "      wr_mst_wrep_ok            => wr_mst_wrep_ok,");
+
     t.Replace("AXI_WRITE_CONVERTER",
               "  -----------------------------------------------------------------------------\n"
               "  -- AXI write converter\n"
@@ -168,21 +178,29 @@ std::string GenerateAXITop(const Mantle &mantle,
               "      slv_bus_wreq_len          => wr_mst_wreq_len,\n"
               "      slv_bus_wreq_valid        => wr_mst_wreq_valid,\n"
               "      slv_bus_wreq_ready        => wr_mst_wreq_ready,\n"
+              "      slv_bus_wreq_last         => wr_mst_wreq_last,\n"
               "      slv_bus_wdat_data         => wr_mst_wdat_data,\n"
               "      slv_bus_wdat_strobe       => wr_mst_wdat_strobe,\n"
               "      slv_bus_wdat_last         => wr_mst_wdat_last,\n"
               "      slv_bus_wdat_valid        => wr_mst_wdat_valid,\n"
               "      slv_bus_wdat_ready        => wr_mst_wdat_ready,\n"
+              "      slv_bus_wrep_valid        => wr_mst_wrep_valid,\n"
+              "      slv_bus_wrep_ready        => wr_mst_wrep_ready,\n"
+              "      slv_bus_wrep_ok           => wr_mst_wrep_ok,\n"
               "      m_axi_awaddr              => m_axi_awaddr,\n"
               "      m_axi_awlen               => m_axi_awlen,\n"
               "      m_axi_awvalid             => m_axi_awvalid,\n"
               "      m_axi_awready             => m_axi_awready,\n"
               "      m_axi_awsize              => m_axi_awsize,\n"
+              "      m_axi_awuser              => m_axi_awuser,\n"
               "      m_axi_wdata               => m_axi_wdata,\n"
               "      m_axi_wstrb               => m_axi_wstrb,\n"
               "      m_axi_wlast               => m_axi_wlast,\n"
               "      m_axi_wvalid              => m_axi_wvalid,\n"
-              "      m_axi_wready              => m_axi_wready\n"
+              "      m_axi_wready              => m_axi_wready,\n"
+              "      m_axi_bvalid              => m_axi_bvalid,\n"
+              "      m_axi_bready              => m_axi_bready,\n"
+              "      m_axi_bresp               => m_axi_bresp\n"
               "    );");
   } else {
     t.Replace("MST_WREQ_DECLARE", "");

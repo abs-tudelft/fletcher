@@ -47,42 +47,51 @@ architecture Behavioral of SimTop_tc is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-  component Kernel_Mantle is
-    generic(
-      BUS_ADDR_WIDTH            : natural
+    component Kernel_Mantle is
+    generic (
+      INDEX_WIDTH        : integer := 32;
+      TAG_WIDTH          : integer := 1;
+      BUS_ADDR_WIDTH     : integer := 64;
+      BUS_DATA_WIDTH     : integer := 512;
+      BUS_LEN_WIDTH      : integer := 8;
+      BUS_BURST_STEP_LEN : integer := 1;
+      BUS_BURST_MAX_LEN  : integer := 16
     );
-    port(
-      bcd_clk                   : in  std_logic;
-      bcd_reset                 : in  std_logic;
-      kcd_clk                   : in  std_logic;
-      kcd_reset                 : in  std_logic;
-
-      wr_mst_wreq_valid          : out std_logic;
-      wr_mst_wreq_ready          : in std_logic;
-      wr_mst_wreq_addr           : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-      wr_mst_wreq_len            : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-      wr_mst_wdat_valid          : out std_logic;
-      wr_mst_wdat_ready          : in std_logic;
-      wr_mst_wdat_data           : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
-      wr_mst_wdat_strobe         : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-      wr_mst_wdat_last           : out std_logic;
-      mmio_awvalid              : in  std_logic;
-      mmio_awready              : out std_logic;
-      mmio_awaddr               : in  std_logic_vector(31 downto 0);
-      mmio_wvalid               : in  std_logic;
-      mmio_wready               : out std_logic;
-      mmio_wdata                : in  std_logic_vector(31 downto 0);
-      mmio_wstrb                : in  std_logic_vector(3 downto 0);
-      mmio_bvalid               : out std_logic;
-      mmio_bready               : in  std_logic;
-      mmio_bresp                : out std_logic_vector(1 downto 0);
-      mmio_arvalid              : in  std_logic;
-      mmio_arready              : out std_logic;
-      mmio_araddr               : in  std_logic_vector(31 downto 0);
-      mmio_rvalid               : out std_logic;
-      mmio_rready               : in  std_logic;
-      mmio_rdata                : out std_logic_vector(31 downto 0);
-      mmio_rresp                : out std_logic_vector(1 downto 0)
+    port (
+      bcd_clk            : in  std_logic;
+      bcd_reset          : in  std_logic;
+      kcd_clk            : in  std_logic;
+      kcd_reset          : in  std_logic;
+      mmio_awvalid       : in  std_logic;
+      mmio_awready       : out std_logic;
+      mmio_awaddr        : in  std_logic_vector(31 downto 0);
+      mmio_wvalid        : in  std_logic;
+      mmio_wready        : out std_logic;
+      mmio_wdata         : in  std_logic_vector(31 downto 0);
+      mmio_wstrb         : in  std_logic_vector(3 downto 0);
+      mmio_bvalid        : out std_logic;
+      mmio_bready        : in  std_logic;
+      mmio_bresp         : out std_logic_vector(1 downto 0);
+      mmio_arvalid       : in  std_logic;
+      mmio_arready       : out std_logic;
+      mmio_araddr        : in  std_logic_vector(31 downto 0);
+      mmio_rvalid        : out std_logic;
+      mmio_rready        : in  std_logic;
+      mmio_rdata         : out std_logic_vector(31 downto 0);
+      mmio_rresp         : out std_logic_vector(1 downto 0);
+      wr_mst_wreq_valid  : out std_logic;
+      wr_mst_wreq_ready  : in  std_logic;
+      wr_mst_wreq_addr   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+      wr_mst_wreq_len    : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+      wr_mst_wreq_last   : out std_logic;
+      wr_mst_wdat_valid  : out std_logic;
+      wr_mst_wdat_ready  : in  std_logic;
+      wr_mst_wdat_data   : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
+      wr_mst_wdat_strobe : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
+      wr_mst_wdat_last   : out std_logic;
+      wr_mst_wrep_valid  : in  std_logic;
+      wr_mst_wrep_ready  : out std_logic;
+      wr_mst_wrep_ok     : in  std_logic
     );
   end component;
   -----------------------------------------------------------------------------
@@ -175,6 +184,7 @@ architecture Behavioral of SimTop_tc is
   signal bus_rdat_valid         : std_logic;
   signal bus_rdat_ready         : std_logic;
   signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
+  signal bus_wreq_last          : std_logic;
   signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
   signal bus_wreq_valid         : std_logic;
   signal bus_wreq_ready         : std_logic;
@@ -183,6 +193,9 @@ architecture Behavioral of SimTop_tc is
   signal bus_wdat_last          : std_logic;
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
+  signal bus_wrep_ok            : std_logic;
+  signal bus_wrep_valid         : std_logic;
+  signal bus_wrep_ready         : std_logic;
 
   procedure mmio_write (constant idx    : in  natural;
                         constant data   : in  std_logic_vector(31 downto 0);
@@ -392,11 +405,15 @@ begin
     wreq_ready                  => bus_wreq_ready,
     wreq_addr                   => bus_wreq_addr,
     wreq_len                    => bus_wreq_len,
+    wreq_last                   => bus_wreq_last,
     wdat_valid                  => bus_wdat_valid,
     wdat_ready                  => bus_wdat_ready,
     wdat_data                   => bus_wdat_data,
     wdat_strobe                 => bus_wdat_strobe,
-    wdat_last                   => bus_wdat_last
+    wdat_last                   => bus_wdat_last,
+    wrep_valid                  => bus_wrep_valid,
+    wrep_ready                  => bus_wrep_ready,
+    wrep_ok                     => bus_wrep_ok
   );
 
 
@@ -413,15 +430,19 @@ begin
       bcd_clk                   => bcd_clk,
       bcd_reset                 => bcd_reset,
 
-      wr_mst_wreq_valid          => bus_wreq_valid,
-      wr_mst_wreq_ready          => bus_wreq_ready,
-      wr_mst_wreq_addr           => bus_wreq_addr,
-      wr_mst_wreq_len            => bus_wreq_len,
-      wr_mst_wdat_valid          => bus_wdat_valid,
-      wr_mst_wdat_ready          => bus_wdat_ready,
-      wr_mst_wdat_data           => bus_wdat_data,
-      wr_mst_wdat_strobe         => bus_wdat_strobe,
-      wr_mst_wdat_last           => bus_wdat_last,
+      wr_mst_wreq_valid         => bus_wreq_valid,
+      wr_mst_wreq_ready         => bus_wreq_ready,
+      wr_mst_wreq_addr          => bus_wreq_addr,
+      wr_mst_wreq_len           => bus_wreq_len,
+      wr_mst_wreq_last          => bus_wreq_last,
+      wr_mst_wdat_valid         => bus_wdat_valid,
+      wr_mst_wdat_ready         => bus_wdat_ready,
+      wr_mst_wdat_data          => bus_wdat_data,
+      wr_mst_wdat_strobe        => bus_wdat_strobe,
+      wr_mst_wdat_last          => bus_wdat_last,
+      wr_mst_wrep_valid         => bus_wrep_valid,
+      wr_mst_wrep_ready         => bus_wrep_ready,
+      wr_mst_wrep_ok            => bus_wrep_ok,
       mmio_awvalid              => mmio_awvalid,
       mmio_awready              => mmio_awready,
       mmio_awaddr               => mmio_awaddr,
