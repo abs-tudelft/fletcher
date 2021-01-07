@@ -1,7 +1,7 @@
 .PHONY: sim clean
 
 all:
-	python generate-schema.py
+	python3 generate-input.py
 	fletchgen -i stringwrite.as -t memory.srec -l vhdl dot --sim --regs c:32:strlen_min c:32:strlen_mask
 
 sim:
