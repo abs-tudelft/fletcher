@@ -26,16 +26,15 @@ jobs:
         sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get update
         sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
-        rm arrow*.deb
     - name: Configure
       run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
     - name: Package
       run: make -j package
     - id: packages
       run: |
-        echo "##[set-output name=deb;]$(ls *.deb)"
-        echo "##[set-output name=rpm;]$(ls *.rpm)"
-        echo "##[set-output name=tgz;]$(ls *.tar.gz)"
+        echo "##[set-output name=deb;]$(ls fletcher*.deb)"
+        echo "##[set-output name=rpm;]$(ls fletcher*.rpm)"
+        echo "##[set-output name=tgz;]$(ls fletcher*.tar.gz)"
     - name: Upload DEB
       uses: actions/upload-release-asset@v1
       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
