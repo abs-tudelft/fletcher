@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletcher 
   VERSION 0.0.15
-  DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications"
+  DESCRIPTION "The Fletcher runtime library"
   HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
   LANGUAGES CXX
 )
@@ -75,8 +75,6 @@ set(CPACK_COMPONENTS_ALL library)
 
 set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
 set(CPACK_PACKAGE_DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Fletcher runtime library")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher")
 set(CPACK_PACKAGE_VERSION_MAJOR "${fletcher_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${fletcher_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${fletcher_VERSION_PATCH}")
@@ -85,9 +83,10 @@ set(CPACK_PACKAGE_RELOCATABLE ON)
 
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow-dev (>= 1.0.1)")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Accelerated Big Data Systems, Delft University of Technology")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
 
 set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_PACKAGE_LICENSE "ASL 2.0")
 set(CPACK_RPM_PACKAGE_REQUIRES "arrow-libs >= 1.0.1")
 
