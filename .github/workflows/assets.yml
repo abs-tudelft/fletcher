@@ -11,6 +11,61 @@ env:
   ARROW_VERSION: '1.0.1'
 
 jobs:
+  packages:
+    name: Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        source:
+        - runtime/cpp
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Apache Arrow
+      run: |
+        wget https://apache.bintray.com/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
+        sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
+        sudo apt-get update
+        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
+    - name: Configure
+      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+    - name: Package
+      run: make package
+    - id: packages
+      run: |
+        echo "##[set-output name=deb;]$(ls *.deb)"
+        echo "##[set-output name=rpm;]$(ls *.rpm)"
+        echo "##[set-output name=tgz;]$(ls *.tgz)"
+    - name: Upload DEB
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ steps.packages.outputs.deb }}
+        asset_name: ${{ steps.packages.outputs.deb }}
+        asset_content_type: application/octet-stream
+    - name: Upload RPM
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ steps.packages.outputs.rpm }}
+        asset_name: ${{ steps.packages.outputs.rpm }}
+        asset_content_type: application/octet-stream
+    - name: Upload TGZ
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ steps.packages.outputs.tgz }}
+        asset_name: ${{ steps.packages.outputs.tgz }}
+        asset_content_type: application/octet-stream
+
   python:
     name: Python
     runs-on: ubuntu-latest
