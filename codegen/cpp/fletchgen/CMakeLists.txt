@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletchgen VERSION 0.0.15 LANGUAGES CXX)
+project(fletchgen VERSION 0.0.16 LANGUAGES CXX)
 
 find_package(Arrow 1.0 CONFIG REQUIRED)
 
