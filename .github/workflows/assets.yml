@@ -34,7 +34,7 @@ jobs:
       run: |
         echo "##[set-output name=deb;]$(ls *.deb)"
         echo "##[set-output name=rpm;]$(ls *.rpm)"
-        echo "##[set-output name=tgz;]$(ls *.tgz)"
+        echo "##[set-output name=tgz;]$(ls *.tar.gz)"
     - name: Upload DEB
       uses: actions/upload-release-asset@v1
       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
