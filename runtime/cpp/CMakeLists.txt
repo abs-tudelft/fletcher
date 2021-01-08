@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletcher 
-  VERSION 0.0.15
+  VERSION 0.0.16
   DESCRIPTION "The Fletcher runtime library"
   HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
   LANGUAGES CXX
