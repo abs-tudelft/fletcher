@@ -30,7 +30,7 @@ jobs:
         yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
         yum install -y arrow-devel-$ARROW_VERSION-1.el7
     - name: Configure
-      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+      run: cmake3 ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
     - name: Package
       run: make -j package
     - id: packages
