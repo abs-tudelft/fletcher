@@ -146,7 +146,7 @@ jobs:
     - name: Install
       run: |
         sudo apt-get --purge autoremove libarrow-dev
-        sudo apt-get install -y ./${{ steps.deb.outputs.name }}
+        sudo apt-get install -y ./${{ steps.deb.outputs.name }} libarrow-dev=${ARROW_VERSION}-1
     - name: Upload deb
       uses: actions/upload-release-asset@v1
       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
