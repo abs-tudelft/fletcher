@@ -7,66 +7,138 @@ on:
   pull_request:
 
 env:
-  CMAKE_VERSION: '3.17.3'
+  CMAKE_VERSION: '3.19.2'
   ARROW_VERSION: '1.0.1'
 
 jobs:
-  packages:
-    name: Packages
+  archive:
+    name: Linux
     runs-on: ubuntu-latest
     container: centos:7
-    strategy:
-      matrix:
-        source:
-        - runtime/cpp
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
       run: |
         yum install -y epel-release
-        yum install -y git make cmake3 gcc gcc-c++ rpm-build dpkg-dev
+        yum install -y curl git make gcc gcc-c++ rpm-build
+    - name: Install CMake
+      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
     - name: Install Apache Arrow
       run: |
         yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
         yum install -y arrow-devel-$ARROW_VERSION-1.el7
     - name: Configure
-      run: cmake3 ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
     - name: Package
       run: make -j package
-    - id: packages
+    - id: tarball
+      run: echo "##[set-output name=name;]$(ls fletcher*.tar.gz)"
+    - name: Install
+      run: tar xvfz ./${{ steps.tarball.outputs.name }} -C /usr
+    - name: Upload tarball
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ steps.tarball.outputs.name }}
+        asset_name: ${{ steps.tarball.outputs.name }}
+        asset_content_type: application/octet-stream
+
+  centos:
+    name: CentOS
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version:
+        - 7
+        - 8
+        source:
+        - runtime/cpp
+    container: centos:${{ matrix.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
       run: |
-        echo "##[set-output name=deb;]$(ls fletcher*.deb)"
-        echo "##[set-output name=rpm;]$(ls fletcher*.rpm)"
-        echo "##[set-output name=tgz;]$(ls fletcher*.tar.gz)"
-    - name: Upload DEB
+        yum install -y epel-release
+        yum install -y curl git make gcc gcc-c++ rpm-build
+    - name: Install CMake
+      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+    - name: Install Apache Arrow
+      if: ${{ matrix.version == '7' }}
+      run: |
+        yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
+        yum install -y arrow-devel-$ARROW_VERSION-1.el${{ matrix.version }}
+    - name: Install Apache Arrow
+      if: ${{ matrix.version == '8' }}
+      run: |
+        dnf install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)/apache-arrow-release-latest.rpm
+        dnf config-manager --set-enabled epel || :
+        dnf config-manager --set-enabled powertools || :
+        dnf config-manager --set-enabled codeready-builder-for-rhel-$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)-rhui-rpms || :
+        subscription-manager repos --enable codeready-builder-for-rhel-$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)-$(arch)-rpms || :
+        dnf install -y arrow-devel-$ARROW_VERSION-1.el${{ matrix.version }}
+    - name: Configure
+      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+    - name: Package
+      run: make -j package
+    - id: rpm
+      run: echo "##[set-output name=name;]$(ls fletcher*.rpm)"
+    - name: Install
+      run: |
+        yum remove -y arrow-devel
+        yum autoremove -y
+        yum localinstall -y ./${{ steps.rpm.outputs.name }}
+    - name: Upload rpm
       uses: actions/upload-release-asset@v1
       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.packages.outputs.deb }}
-        asset_name: ${{ steps.packages.outputs.deb }}
+        asset_path: ${{ steps.rpm.outputs.name }}
+        asset_name: ${{ steps.rpm.outputs.name }}
         asset_content_type: application/octet-stream
-    - name: Upload RPM
+  
+  ubuntu:
+    name: Ubuntu
+    strategy:
+      matrix:
+        version:
+        - 16.04
+        - 18.04
+        - 20.04
+        source:
+        - runtime/cpp
+    runs-on: ubuntu-${{ matrix.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Apache Arrow
+      run: |
+        wget https://apache.bintray.com/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
+        sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
+        sudo apt-get update
+        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
+    - name: Configure
+      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+    - name: Package
+      run: make -j package
+    - id: deb
+      run: echo "##[set-output name=name;]$(ls fletcher*.deb)"
+    - name: Install
+      run: |
+        sudo apt-get --purge autoremove libarrow-dev
+        sudo apt-get install -y ./${{ steps.deb.outputs.name }}
+    - name: Upload deb
       uses: actions/upload-release-asset@v1
       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.packages.outputs.rpm }}
-        asset_name: ${{ steps.packages.outputs.rpm }}
-        asset_content_type: application/octet-stream
-    - name: Upload TGZ
-      uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.packages.outputs.tgz }}
-        asset_name: ${{ steps.packages.outputs.tgz }}
+        asset_path: ${{ steps.deb.outputs.name }}
+        asset_name: ${{ steps.deb.outputs.name }}
         asset_content_type: application/octet-stream
 
   python:

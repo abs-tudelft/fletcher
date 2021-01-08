@@ -70,19 +70,39 @@ add_compile_unit(
 
 compile_units()
 
+execute_process (
+    COMMAND bash -c "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+    OUTPUT_VARIABLE OS_NAME
+)
+
+execute_process (
+    COMMAND bash -c "awk -F= '/^VERSION_ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+    OUTPUT_VARIABLE OS_VERSION
+)
+
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL library)
-
 set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
 set(CPACK_PACKAGE_DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications")
 set(CPACK_PACKAGE_VERSION_MAJOR "${fletcher_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${fletcher_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${fletcher_VERSION_PATCH}")
-set(CPACK_GENERATOR "RPM;DEB;TGZ")
 set(CPACK_PACKAGE_RELOCATABLE ON)
 
+if(OS_NAME MATCHES "ubuntu")
+  set(CPACK_DEBIAN_PACKAGE_RELEASE "ubuntu${OS_VERSION}")
+  set(CPACK_GENERATOR "DEB")
+elseif(OS_NAME MATCHES "centos")
+  set(CPACK_RPM_PACKAGE_RELEASE_DIST "el${OS_VERSION}")
+  if(OS_VERSION MATCHES "7")
+    set(CPACK_GENERATOR "RPM;TGZ")
+  else()
+    set(CPACK_GENERATOR "RPM")
+  endif()
+endif()
+
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow-dev (= 1.0.1-1)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow100")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
 
 set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
