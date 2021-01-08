@@ -80,15 +80,6 @@ execute_process (
     OUTPUT_VARIABLE OS_VERSION
 )
 
-set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_ALL library)
-set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
-set(CPACK_PACKAGE_DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications")
-set(CPACK_PACKAGE_VERSION_MAJOR "${fletcher_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${fletcher_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${fletcher_VERSION_PATCH}")
-set(CPACK_PACKAGE_RELOCATABLE ON)
-
 if(OS_NAME MATCHES "ubuntu")
   set(CPACK_DEBIAN_PACKAGE_RELEASE "ubuntu${OS_VERSION}")
   set(CPACK_GENERATOR "DEB")
@@ -100,6 +91,15 @@ elseif(OS_NAME MATCHES "centos")
     set(CPACK_GENERATOR "RPM")
   endif()
 endif()
+
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL library)
+set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
+set(CPACK_PACKAGE_DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications")
+set(CPACK_PACKAGE_VERSION_MAJOR "${fletcher_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${fletcher_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${fletcher_VERSION_PATCH}")
+set(CPACK_PACKAGE_RELOCATABLE ON)
 
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow100")

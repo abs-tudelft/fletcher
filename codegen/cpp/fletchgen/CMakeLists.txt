@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletchgen VERSION 0.0.15 LANGUAGES CXX)
+project(fletchgen
+  VERSION 0.0.15
+  DESCRIPTION "The Fletcher design generator"
+  HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
+  LANGUAGES CXX
+)
 
 find_package(Arrow 1.0 CONFIG REQUIRED)
 
@@ -30,18 +35,17 @@ if(NOT cerata_POPULATED)
   set(BUILD_CERATA_DOT ON CACHE BOOL "")
   set(BUILD_CERATA_VHDL ON CACHE BOOL "")
   set(BUILD_CERATA_YAML ON CACHE BOOL "")
-  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR})
+  add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 include(CompileUnits)
 
 if(NOT TARGET fletcher::common)
-  add_subdirectory(../../../common/cpp common-cpp)
+  add_subdirectory(../../../common/cpp common-cpp EXCLUDE_FROM_ALL)
 endif()
 if(NOT TARGET fletcher::c)
-  add_subdirectory(../../../common/c common-c)
+  add_subdirectory(../../../common/c common-c EXCLUDE_FROM_ALL)
 endif()
-
 
 FetchContent_Declare(cmakerc
   GIT_REPOSITORY  https://github.com/vector-of-bool/cmrc.git
@@ -134,6 +138,7 @@ add_compile_unit(
 add_compile_unit(
   NAME fletchgen
   TYPE EXECUTABLE
+  COMPONENT binary
   PRPS
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
@@ -147,3 +152,47 @@ compile_units()
 
 configure_file(src/fletchgen/config.h.in fletchgen_config/config.h)
 include_directories(${PROJECT_BINARY_DIR})
+
+execute_process (
+    COMMAND bash -c "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+    OUTPUT_VARIABLE OS_NAME
+)
+
+execute_process (
+    COMMAND bash -c "awk -F= '/^VERSION_ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+    OUTPUT_VARIABLE OS_VERSION
+)
+
+if(OS_NAME MATCHES "ubuntu")
+  set(CPACK_DEBIAN_PACKAGE_RELEASE "ubuntu${OS_VERSION}")
+  set(CPACK_GENERATOR "DEB")
+elseif(OS_NAME MATCHES "centos")
+  set(CPACK_RPM_PACKAGE_RELEASE_DIST "el${OS_VERSION}")
+  if(OS_VERSION MATCHES "7")
+    set(CPACK_GENERATOR "RPM;TGZ")
+  else()
+    set(CPACK_GENERATOR "RPM")
+  endif()
+endif()
+
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL binary)
+set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
+set(CPACK_PACKAGE_DESCRIPTION "The Fletcher design generator")
+set(CPACK_PACKAGE_VERSION_MAJOR "${fletchgen_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${fletchgen_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${fletchgen_VERSION_PATCH}")
+set(CPACK_PACKAGE_RELOCATABLE ON)
+
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow100")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+
+set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
+set(CPACK_RPM_PACKAGE_LICENSE "ASL 2.0")
+set(CPACK_RPM_PACKAGE_REQUIRES "arrow-libs >= 1.0.1, arrow-libs < 2.0.0")
+
+set(CPACK_ARCHIVE_BINARY_FILE_NAME "${CMAKE_PROJECT_NAME}-${fletchgen_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+include(CPack)
