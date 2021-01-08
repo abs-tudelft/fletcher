@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         yum install -y epel-release
-        yum install -y git make cmake3 gcc g++ rpm-build dpkg-dev
+        yum install -y git make cmake3 gcc gcc-c++ rpm-build dpkg-dev
     - name: Install Apache Arrow
       run: |
         yum install -y https://apache.bintray.com/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
