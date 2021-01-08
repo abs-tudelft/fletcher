@@ -36,15 +36,21 @@ if(NOT cerata_POPULATED)
   set(BUILD_CERATA_VHDL ON CACHE BOOL "")
   set(BUILD_CERATA_YAML ON CACHE BOOL "")
   add_subdirectory(${cerata_SOURCE_DIR} ${cerata_BINARY_DIR} EXCLUDE_FROM_ALL)
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/20212
+  add_custom_target(exclude_cerata_tests ALL COMMAND rm -f "${cerata_BINARY_DIR}/CTestTestfile.cmake")
 endif()
 
 include(CompileUnits)
 
 if(NOT TARGET fletcher::common)
   add_subdirectory(../../../common/cpp common-cpp EXCLUDE_FROM_ALL)
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/20212
+  add_custom_target(exclude_fletcher_common_tests ALL COMMAND rm -f "common-cpp/CTestTestfile.cmake")
 endif()
 if(NOT TARGET fletcher::c)
   add_subdirectory(../../../common/c common-c EXCLUDE_FROM_ALL)
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/20212
+  add_custom_target(exclude_fletcher_common_c_tests ALL COMMAND rm -f "common-c/CTestTestfile.cmake")
 endif()
 
 FetchContent_Declare(cmakerc
