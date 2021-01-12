@@ -110,11 +110,15 @@ architecture tb of BufferWriter_tb is
   signal bus_wreq_ready         : std_logic;
   signal bus_wreq_addr          : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal bus_wreq_len           : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+  signal bus_wreq_last          : std_logic;
   signal bus_wdat_valid         : std_logic;
   signal bus_wdat_ready         : std_logic;
   signal bus_wdat_data          : std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
   signal bus_wdat_strobe        : std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
   signal bus_wdat_last          : std_logic;
+  signal bus_wrep_valid         : std_logic;
+  signal bus_wrep_ready         : std_logic;
+  signal bus_wrep_ok            : std_logic;
 
   signal cycle                  : unsigned(63 downto 0) := (others => '0');
 
@@ -467,17 +471,15 @@ begin
     variable elem_written       : unsigned(ELEMENT_WIDTH-1 downto 0);
     variable elem_expected      : unsigned(ELEMENT_WIDTH-1 downto 0);
   begin
-    bus_wreq_ready               <= '1';
-    bus_wdat_ready               <= '0';
+    bus_wreq_ready              <= '1';
+    bus_wdat_ready              <= '0';
+    bus_wrep_valid              <= '0';
     loop
-      -- Exit when all writes are done
-      if write_done then
-        exit;
-      end if;
       -- Wait for a bus request
-      wait until rising_edge(kcd_clk) and (bus_wreq_ready = '1' and bus_wreq_valid = '1');
-      bus_wreq_ready             <= '0';
-      bus_wdat_ready             <= '1';
+      wait until rising_edge(kcd_clk) and (sim_done or (bus_wreq_ready = '1' and bus_wreq_valid = '1'));
+      exit when sim_done;
+      bus_wreq_ready            <= '0';
+      bus_wdat_ready            <= '1';
 
       -- Remember the burst length
       len                       := unsigned(bus_wreq_len);
@@ -550,9 +552,16 @@ begin
         -- Increase current index
         index                   := index + BUS_DATA_WIDTH / ELEMENT_WIDTH;
       end loop;
+      bus_wdat_ready            <= '0';
+
+      -- Send response
+      bus_wrep_valid            <= '1';
+      bus_wrep_ok               <= '1';
+      wait until rising_edge(kcd_clk) and (bus_wrep_ready = '1');
+      bus_wrep_valid            <= '0';
+
       -- Start accepting new requests
-      bus_wreq_ready             <= '1';
-      bus_wdat_ready             <= '0';
+      bus_wreq_ready            <= '1';
     end loop;
     wait;
   end process;
@@ -640,11 +649,15 @@ begin
       bus_wreq_ready            => bus_wreq_ready,
       bus_wreq_addr             => bus_wreq_addr,
       bus_wreq_len              => bus_wreq_len,
+      bus_wreq_last             => bus_wreq_last,
       bus_wdat_valid            => bus_wdat_valid,
       bus_wdat_ready            => bus_wdat_ready,
       bus_wdat_data             => bus_wdat_data,
       bus_wdat_strobe           => bus_wdat_strobe,
-      bus_wdat_last             => bus_wdat_last
+      bus_wdat_last             => bus_wdat_last,
+      bus_wrep_valid            => bus_wrep_valid,
+      bus_wrep_ready            => bus_wrep_ready,
+      bus_wrep_ok               => bus_wrep_ok
     );
 
 end architecture;

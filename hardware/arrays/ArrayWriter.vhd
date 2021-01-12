@@ -121,11 +121,15 @@ entity ArrayWriter is
     bus_wreq_ready              : in  std_logic;
     bus_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     bus_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_last               : out std_logic;
     bus_wdat_valid              : out std_logic;
     bus_wdat_ready              : in  std_logic;
     bus_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : out std_logic;
+    bus_wrep_valid              : in  std_logic;
+    bus_wrep_ready              : out std_logic;
+    bus_wrep_ok                 : in  std_logic;
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -191,11 +195,15 @@ begin
       bus_wreq_ready(0)         => bus_wreq_ready,
       bus_wreq_addr             => bus_wreq_addr,
       bus_wreq_len              => bus_wreq_len,
+      bus_wreq_last(0)          => bus_wreq_last,
       bus_wdat_valid(0)         => bus_wdat_valid,
       bus_wdat_ready(0)         => bus_wdat_ready,
       bus_wdat_strobe           => bus_wdat_strobe,
       bus_wdat_data             => bus_wdat_data,
       bus_wdat_last(0)          => bus_wdat_last,
+      bus_wrep_valid(0)         => bus_wrep_valid,
+      bus_wrep_ready(0)         => bus_wrep_ready,
+      bus_wrep_ok(0)            => bus_wrep_ok,
       
       in_valid                  => in_valid,
       in_ready                  => in_ready,

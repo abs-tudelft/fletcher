@@ -73,7 +73,10 @@ entity BusWriteBuffer is
     SLV_DAT_SLICE               : boolean := true;
 
     -- Instantiate a slice on the write data channel on the master port
-    MST_DAT_SLICE               : boolean := true
+    MST_DAT_SLICE               : boolean := true;
+
+    -- Instantiate a slice on the write response channel
+    REP_SLICE                   : boolean := true
 
   );
   port (
@@ -98,13 +101,18 @@ entity BusWriteBuffer is
     slv_wreq_ready              : out std_logic;
     slv_wreq_addr               : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     slv_wreq_len                : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    slv_wreq_last               : in  std_logic;
 
     slv_wdat_valid              : in  std_logic;
     slv_wdat_ready              : out std_logic;
     slv_wdat_data               : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     slv_wdat_strobe             : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    slv_wdat_last               : in  std_logic;
+    slv_wdat_last               : in  std_logic := '0';
     slv_wdat_ctrl               : in  std_logic_vector(CTRL_WIDTH-1 downto 0) := (others => 'U');
+
+    slv_wrep_valid              : out std_logic;
+    slv_wrep_ready              : in  std_logic;
+    slv_wrep_ok                 : out std_logic;
 
     ---------------------------------------------------------------------------
     -- Master ports.
@@ -113,13 +121,18 @@ entity BusWriteBuffer is
     mst_wreq_ready              : in  std_logic;
     mst_wreq_addr               : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     mst_wreq_len                : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_wreq_last               : out std_logic;
 
     mst_wdat_valid              : out std_logic;
     mst_wdat_ready              : in  std_logic;
     mst_wdat_data               : out std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     mst_wdat_strobe             : out std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
     mst_wdat_last               : out std_logic;
-    mst_wdat_ctrl               : out std_logic_vector(CTRL_WIDTH-1 downto 0)
+    mst_wdat_ctrl               : out std_logic_vector(CTRL_WIDTH-1 downto 0);
+
+    mst_wrep_valid              : in  std_logic;
+    mst_wrep_ready              : out std_logic;
+    mst_wrep_ok                 : in  std_logic
 
   );
 end BusWriteBuffer;
@@ -132,6 +145,7 @@ architecture Behavioral of BusWriteBuffer is
 
   -- Request stream serialization indices.
   constant RSI : nat_array := cumulative((
+    2 => 1,
     1 => BUS_LEN_WIDTH,
     0 => BUS_ADDR_WIDTH
   ));
@@ -149,15 +163,17 @@ architecture Behavioral of BusWriteBuffer is
   signal s_mst_wreq_ready       : std_logic;
   signal s_mst_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_mst_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_mst_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
-  signal mst_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+  signal s_mst_wreq_last        : std_logic;
+  signal s_mst_wreq_all         : std_logic_vector(RSI(3)-1 downto 0);
+  signal mst_wreq_all           : std_logic_vector(RSI(3)-1 downto 0);
 
   signal s_slv_wreq_valid       : std_logic;
   signal s_slv_wreq_ready       : std_logic;
   signal s_slv_wreq_addr        : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal s_slv_wreq_len         : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
-  signal s_slv_wreq_all         : std_logic_vector(RSI(2)-1 downto 0);
-  signal slv_wreq_all           : std_logic_vector(RSI(2)-1 downto 0);
+  signal s_slv_wreq_last        : std_logic;
+  signal s_slv_wreq_all         : std_logic_vector(RSI(3)-1 downto 0);
+  signal slv_wreq_all           : std_logic_vector(RSI(3)-1 downto 0);
 
   signal s_slv_wdat_valid       : std_logic;
   signal s_slv_wdat_ready       : std_logic;
@@ -194,6 +210,7 @@ architecture Behavioral of BusWriteBuffer is
 
     wreq_addr                    : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     wreq_len                     : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    wreq_last                    : std_logic;
   end record;
 
   signal r : reg_record;
@@ -205,6 +222,7 @@ architecture Behavioral of BusWriteBuffer is
     mst_wreq_valid               : std_logic;
     mst_wreq_addr                : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     mst_wreq_len                 : std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    mst_wreq_last                : std_logic;
 
     fifo_out_ready               : std_logic;
 
@@ -237,7 +255,7 @@ begin
   comb_proc: process(r,
     fifo_in_valid, fifo_in_ready,
     fifo_out_valid, fifo_out_data(FDI(0)),
-    s_slv_wreq_len, s_slv_wreq_addr, s_slv_wreq_valid,
+    s_slv_wreq_last, s_slv_wreq_len, s_slv_wreq_addr, s_slv_wreq_valid,
     s_mst_wreq_ready,
     s_mst_wdat_ready
   ) is
@@ -260,6 +278,7 @@ begin
 
     vo.mst_wreq_addr            := vr.wreq_addr;
     vo.mst_wreq_len             := vr.wreq_len;
+    vo.mst_wreq_last            := vr.wreq_last;
 
     case vr.state is
       when IDLE =>
@@ -267,6 +286,7 @@ begin
 
         -- A request is made, register it.
         if s_slv_wreq_valid = '1' then
+          vr.wreq_last          := s_slv_wreq_last;
           vr.wreq_len           := s_slv_wreq_len;
           vr.wreq_addr          := s_slv_wreq_addr;
           vr.state              := REQ;
@@ -276,6 +296,7 @@ begin
         -- Make the request valid on the master port
         vo.mst_wreq_addr        := vr.wreq_addr;
         vo.mst_wreq_len         := vr.wreq_len;
+        vo.mst_wreq_last        := vr.wreq_last;
 
         -- Validate only when enough words have been loaded into the FIFO
         if vr.count >= unsigned(vr.wreq_len) then
@@ -326,6 +347,7 @@ begin
           -- A request is made, register it.
           if s_slv_wreq_valid = '1' then
             vo.slv_wreq_ready   := '1';
+            vr.wreq_last        := s_slv_wreq_last;
             vr.wreq_len         := s_slv_wreq_len;
             vr.wreq_addr        := s_slv_wreq_addr;
             vr.state            := REQ;
@@ -363,6 +385,7 @@ begin
     s_mst_wreq_valid            <= vo.mst_wreq_valid;
     s_mst_wreq_addr             <= vo.mst_wreq_addr;
     s_mst_wreq_len              <= vo.mst_wreq_len;
+    s_mst_wreq_last             <= vo.mst_wreq_last;
 
     s_mst_wdat_valid            <= vo.mst_wdat_valid;
     s_mst_wdat_last             <= vo.mst_wdat_last;
@@ -475,13 +498,14 @@ begin
   -----------------------------------------------------------------------------
   -- Slave write request channel slice
   -----------------------------------------------------------------------------
+  slv_wreq_all(RSI(2)) <= slv_wreq_last;
   slv_wreq_all(RSI(2)-1 downto RSI(1)) <= slv_wreq_len;
   slv_wreq_all(RSI(1)-1 downto RSI(0)) <= slv_wreq_addr;
 
   slave_wreq_slice : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(SLV_REQ_SLICE, 2, 0),
-      DATA_WIDTH                => RSI(2)
+      DATA_WIDTH                => RSI(3)
     )
     port map (
       clk                       => clk,
@@ -496,19 +520,21 @@ begin
       out_data                  => s_slv_wreq_all
     );
 
+  s_slv_wreq_last <= s_slv_wreq_all(RSI(2));
   s_slv_wreq_len  <= s_slv_wreq_all(RSI(2)-1 downto RSI(1));
   s_slv_wreq_addr <= s_slv_wreq_all(RSI(1)-1 downto RSI(0));
 
   -----------------------------------------------------------------------------
   -- Master write request channel slice
   -----------------------------------------------------------------------------
+  s_mst_wreq_all(RSI(2)) <= s_mst_wreq_last;
   s_mst_wreq_all(RSI(2)-1 downto RSI(1)) <= s_mst_wreq_len;
   s_mst_wreq_all(RSI(1)-1 downto RSI(0)) <= s_mst_wreq_addr;
 
   master_wreq_slice : StreamBuffer
     generic map (
       MIN_DEPTH                 => sel(MST_REQ_SLICE, 2, 0),
-      DATA_WIDTH                => RSI(2)
+      DATA_WIDTH                => RSI(3)
     )
     port map (
       clk                       => clk,
@@ -523,8 +549,29 @@ begin
       out_data                  => mst_wreq_all
     );
 
+  mst_wreq_last <= mst_wreq_all(RSI(2));
   mst_wreq_len  <= mst_wreq_all(RSI(2)-1 downto RSI(1));
   mst_wreq_addr <= mst_wreq_all(RSI(1)-1 downto RSI(0));
 
+  -----------------------------------------------------------------------------
+  -- Write response channel slice
+  -----------------------------------------------------------------------------
+  wrep_slice : StreamBuffer
+    generic map (
+      MIN_DEPTH                 => sel(REP_SLICE, 2, 0),
+      DATA_WIDTH                => 1
+    )
+    port map (
+      clk                       => clk,
+      reset                     => reset,
+
+      in_valid                  => mst_wrep_valid,
+      in_ready                  => mst_wrep_ready,
+      in_data(0)                => mst_wrep_ok,
+
+      out_valid                 => slv_wrep_valid,
+      out_ready                 => slv_wrep_ready,
+      out_data(0)               => slv_wrep_ok
+    );
 
 end Behavioral;

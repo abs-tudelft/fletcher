@@ -37,6 +37,7 @@ using cerata::parameter;
 using cerata::stream;
 using cerata::field;
 using cerata::vector;
+using cerata::bit;
 
 PARAM_FACTORY(bus_addr_width)
 PARAM_FACTORY(bus_data_width)
@@ -61,17 +62,21 @@ std::shared_ptr<Type> bus_write(const std::shared_ptr<Node> &addr_width,
                                 const std::shared_ptr<Node> &data_width,
                                 const std::shared_ptr<Node> &len_width) {
   auto wreq = stream(record("", {field("addr", vector(addr_width)),
-                                 field("len", vector(len_width))}));
+                                 field("len", vector(len_width)),
+                                 field("last", last())}));
   auto wdat = stream(record("", {field("data", vector(data_width)),
                                  field("strobe", vector(data_width / 8)),
                                  field("last", last())}));
+  auto wrep = stream(record("", {field("ok", bit())}));
   auto result = record("", {field("wreq", wreq),
-                            field("wdat", wdat)});
+                            field("wdat", wdat),
+                            field("wrep", wrep)->Reverse()});
   return result;
 }
 
 static std::string GetBusArbiterName(BusFunction function) {
-  return std::string("Bus") + (function == BusFunction::READ ? "Read" : "Write") + "ArbiterVec";
+  return std::string("Bus") + (function == BusFunction::READ ? "Read" : "Write")
+      + "ArbiterVec";
 }
 
 Component *bus_arbiter(BusFunction function) {

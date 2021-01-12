@@ -1,7 +1,8 @@
 .PHONY: clean sim
 
 all:
-	fletchgen -r twoprimread.rb -i twoprimwrite.as -s memory.srec -l dot vhdl --sim --regs c:8:add:0x01 s:32:sum
+	python3 generate-input.py
+	fletchgen -r in.rb -i out.as -s memory.srec -l vhdl dot --sim --regs c:8:add:0x01 s:32:sum
 
 sim:
 	rm -f vhdl/Kernel.gen.vhd

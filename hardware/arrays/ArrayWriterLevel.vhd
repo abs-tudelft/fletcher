@@ -114,11 +114,15 @@ entity ArrayWriterLevel is
     bus_wreq_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wreq_addr               : out std_logic_vector(arcfg_busCount(CFG)*BUS_ADDR_WIDTH-1 downto 0);
     bus_wreq_len                : out std_logic_vector(arcfg_busCount(CFG)*BUS_LEN_WIDTH-1 downto 0);
+    bus_wreq_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_valid              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_ready              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
     bus_wdat_data               : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH-1 downto 0);
     bus_wdat_strobe             : out std_logic_vector(arcfg_busCount(CFG)*BUS_DATA_WIDTH/8-1 downto 0);
     bus_wdat_last               : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_valid              : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_ready              : out std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
+    bus_wrep_ok                 : in  std_logic_vector(arcfg_busCount(CFG)-1 downto 0);
 
     ---------------------------------------------------------------------------
     -- User streams
@@ -201,11 +205,15 @@ begin
         bus_wreq_ready          => bus_wreq_ready(0),
         bus_wreq_addr           => bus_wreq_addr,
         bus_wreq_len            => bus_wreq_len,
+        bus_wreq_last           => bus_wreq_last(0),
         bus_wdat_valid          => bus_wdat_valid(0),
         bus_wdat_ready          => bus_wdat_ready(0),
         bus_wdat_data           => bus_wdat_data,
         bus_wdat_strobe         => bus_wdat_strobe,
         bus_wdat_last           => bus_wdat_last(0),
+        bus_wrep_valid          => bus_wrep_valid(0),
+        bus_wrep_ready          => bus_wrep_ready(0),
+        bus_wrep_ok             => bus_wrep_ok(0),
 
         in_valid                => in_valid(0),
         in_ready                => in_ready(0),
@@ -253,11 +261,15 @@ begin
         bus_wreq_ready            => bus_wreq_ready,
         bus_wreq_addr             => bus_wreq_addr,
         bus_wreq_len              => bus_wreq_len,
+        bus_wreq_last             => bus_wreq_last,
         bus_wdat_valid            => bus_wdat_valid,
         bus_wdat_ready            => bus_wdat_ready,
         bus_wdat_data             => bus_wdat_data,
         bus_wdat_strobe           => bus_wdat_strobe,
         bus_wdat_last             => bus_wdat_last,
+        bus_wrep_valid            => bus_wrep_valid,
+        bus_wrep_ready            => bus_wrep_ready,
+        bus_wrep_ok               => bus_wrep_ok,
 
         in_valid                  => in_valid,
         in_ready                  => in_ready,
@@ -322,11 +334,15 @@ begin
   --      bus_wreq_ready            => bus_wreq_ready,
   --      bus_wreq_addr             => bus_wreq_addr,
   --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wreq_last             => bus_wreq_last,
   --      bus_wdat_valid            => bus_wdat_valid,
   --      bus_wdat_ready            => bus_wdat_ready,
   --      bus_wdat_data             => bus_wdat_data,
   --      bus_wdat_strobe           => bus_wdat_strobe,
   --      bus_wdat_last             => bus_wdat_last,
+  --      bus_wrep_valid            => bus_wrep_valid,
+  --      bus_wrep_ready            => bus_wrep_ready,
+  --      bus_wrep_ok               => bus_wrep_ok,
   --
   --      in_valid                  => in_valid,
   --      in_ready                  => in_ready,
@@ -397,11 +413,15 @@ begin
   --      bus_wreq_ready            => bus_wreq_ready,
   --      bus_wreq_addr             => bus_wreq_addr,
   --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wreq_last             => bus_wreq_last,
   --      bus_wdat_valid            => bus_wdat_valid,
   --      bus_wdat_ready            => bus_wdat_ready,
   --      bus_wdat_data             => bus_wdat_data,
   --      bus_wdat_strobe           => bus_wdat_strobe,
   --      bus_wdat_last             => bus_wdat_last,
+  --      bus_wrep_valid            => bus_wrep_valid,
+  --      bus_wrep_ready            => bus_wrep_ready,
+  --      bus_wrep_ok               => bus_wrep_ok,
   --
   --      in_valid                  => in_valid,
   --      in_ready                  => in_ready,
@@ -455,11 +475,15 @@ begin
         bus_wreq_ready            => bus_wreq_ready,
         bus_wreq_addr             => bus_wreq_addr,
         bus_wreq_len              => bus_wreq_len,
+        bus_wreq_last             => bus_wreq_last,
         bus_wdat_valid            => bus_wdat_valid,
         bus_wdat_ready            => bus_wdat_ready,
         bus_wdat_data             => bus_wdat_data,
         bus_wdat_strobe           => bus_wdat_strobe,
         bus_wdat_last             => bus_wdat_last,
+        bus_wrep_valid            => bus_wrep_valid,
+        bus_wrep_ready            => bus_wrep_ready,
+        bus_wrep_ok               => bus_wrep_ok,
 
         in_valid                  => in_valid,
         in_ready                  => in_ready,
@@ -508,11 +532,15 @@ begin
   --      bus_wreq_ready            => bus_wreq_ready,
   --      bus_wreq_addr             => bus_wreq_addr,
   --      bus_wreq_len              => bus_wreq_len,
+  --      bus_wreq_last             => bus_wreq_last,
   --      bus_wdat_valid            => bus_wdat_valid,
   --      bus_wdat_ready            => bus_wdat_ready,
   --      bus_wdat_data             => bus_wdat_data,
   --      bus_wdat_strobe           => bus_wdat_strobe,
   --      bus_wdat_last             => bus_wdat_last,
+  --      bus_wrep_valid            => bus_wrep_valid,
+  --      bus_wrep_ready            => bus_wrep_ready,
+  --      bus_wrep_ok               => bus_wrep_ok,
   --
   --      in_valid                  => in_valid,
   --      in_ready                  => in_ready,

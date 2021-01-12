@@ -1,0 +1,11 @@
+work
+vsim.wlf
+transcript
+dot/
+vhdmmio-doc/
+*.gen.*
+fletchgen.mmio.yaml
+memory.srec
+vhdmmio.log
+in.rb
+out.as

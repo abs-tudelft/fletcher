@@ -113,7 +113,8 @@ entity BufferWriterCmdGenBusReq is
     busReq_valid                : out std_logic;
     busReq_ready                : in  std_logic;
     busReq_addr                 : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0)
+    busReq_len                  : out std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    busReq_last                 : out std_logic
 
   );
 end BufferWriterCmdGenBusReq;
@@ -149,6 +150,7 @@ architecture rtl of BufferWriterCmdGenBusReq is
   type master_record is record
     addr                        : unsigned(BUS_ADDR_WIDTH-1 downto 0);
     len                         : unsigned(BUS_LEN_WIDTH-1 downto 0);
+    last                        : std_logic;
     valid                       : std_logic;
   end record;
 
@@ -301,6 +303,7 @@ begin
     vo.master.addr              := byte_address;
     vo.master.len               := STEP_LEN;
     vo.master.valid             := '0';
+    vo.master.last              := '0';
     vo.cnt_ctrl.step_sub        := '0';
     vo.cnt_ctrl.max_sub         := '0';
     vo.cnt_ctrl.reset           := '0';
@@ -354,10 +357,22 @@ begin
         -- Make bus request valid
         vo.master.valid         := '1';
 
+        -- Set the last flag for the bus request if we've seen the last data
+        -- word and only a single step remains (after the last transfer has
+        -- been accumulated in the counter)
+        if vr.last = '1' and counter.step = 1 then
+          vo.master.last        := '1';
+        end if;
+
         -- Invalidate if we've reached the alignment boundary
         if isAligned(byte_address, log2floor(BYTE_ALIGN)) then
           vo.master.valid       := '0';
           vr.state              := MAX;
+        end if;
+
+        -- Check if a last step is at the input of the steps counter stream
+        if steps_last = '1' and steps_valid = '1' then
+          vr.last               := '1';
         end if;
 
         -- Invalidate if there is no burst step in the FIFO
@@ -365,11 +380,9 @@ begin
           vo.master.valid       := '0';
         end if;
 
-        -- Invalidate if this is the last word; the POST_STEP state should
-        -- handle this
-        if steps_last = '1' and steps_valid = '1' then
-          vo.master.valid       := '0';
-          vr.last               := '1';
+        -- Go to the POST_STEP state if this is the last word of this command
+        -- and there is no outstanding bus request
+        if vo.master.valid = '0' and vr.last = '1' then
           vr.state              := POST_STEP;
         end if;
 
@@ -377,6 +390,10 @@ begin
         if busReq_ready = '1' and vo.master.valid = '1' then
           vo.cnt_ctrl.step_sub  := '1';
           vr.index.current      := vr.index.current + ELEMS_PER_STEP;
+
+          if vr.last = '1' then
+            vr.state            := POST_STEP;
+          end if;
         end if;
 
       -------------------------------------------------------------------------
@@ -393,12 +410,19 @@ begin
         -- Make bus request valid
         vo.master.valid         := '1';
 
+        -- Set the last flag for the bus request if we've seen the last data
+        -- word and exactly a max burst remains (after the last transfer has
+        -- been accumulated in the counter)
+        if vr.last = '1' and counter.step = MAX_STEPS then
+          vo.master.last        := '1';
+        end if;
+
         -- Check if a last step is at the input of the steps counter stream
         if steps_last = '1' and steps_valid = '1' then
           vr.last               := '1';
         end if;
 
-       -- Invalidate if there is no max burst step in the FIFO
+        -- Invalidate if there is no max burst step in the FIFO
         if counter.step < MAX_STEPS then
           vo.master.valid       := '0';
         end if;
@@ -438,6 +462,20 @@ begin
         -- Make bus request valid
         vo.master.valid         := '1';
 
+        -- Set the last flag for the bus request if we're sending the last
+        -- step
+        if vr.last = '1' then
+          if counter.step < MAX_STEPS then
+            if counter.step = 1 then
+              vo.master.last    := '1';
+            end if;
+          else
+            if counter.step = MAX_STEPS then
+              vo.master.last    := '1';
+            end if;
+          end if;
+        end if;
+
         -- Stop when all steps have been requested.
         if counter.step = 0 then
           vo.master.valid       := '0';
@@ -463,12 +501,13 @@ begin
 
     busReq_addr                 <= slv(vo.master.addr);
     busReq_len                  <= slv(vo.master.len);
+    busReq_last                 <= vo.master.last;
     busReq_valid                <= vo.master.valid;
     cnt_ctrl                    <= vo.cnt_ctrl;
     int_steps_ready             <= vo.steps_ready;
 
   end process;
-  
+
   steps_ready                   <= int_steps_ready;
 
 end rtl;

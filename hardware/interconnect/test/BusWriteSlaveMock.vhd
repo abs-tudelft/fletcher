@@ -66,11 +66,15 @@ entity BusWriteSlaveMock is
     wreq_ready                  : out std_logic;
     wreq_addr                   : in  std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     wreq_len                    : in  std_logic_vector(BUS_LEN_WIDTH-1 downto 0);
+    wreq_last                   : in  std_logic;
     wdat_valid                  : in  std_logic;
     wdat_ready                  : out std_logic;
     wdat_data                   : in  std_logic_vector(BUS_DATA_WIDTH-1 downto 0);
     wdat_strobe                 : in  std_logic_vector(BUS_DATA_WIDTH/8-1 downto 0);
-    wdat_last                   : in  std_logic
+    wdat_last                   : in  std_logic;
+    wrep_valid                  : out std_logic;
+    wrep_ready                  : in  std_logic;
+    wrep_ok                     : out std_logic
 
   );
 end BusWriteSlaveMock;
@@ -157,6 +161,20 @@ begin
       
       -- Stop accepting data
       wdat_ready <= '0';
+      
+      -- Send response
+      wrep_valid <= '1';
+      wrep_ok <= '1';
+      
+      -- Wait for response acknowledgement
+      loop
+        wait until rising_edge(clk);
+        exit state when reset = '1';
+        exit when wrep_ready = '1';
+      end loop;
+      
+      -- Stop sending response
+      wrep_valid <= '0';
       
     end loop;
   end process;
