@@ -262,6 +262,7 @@ begin
     int_slv_bus_wreq_ready      <= int_m_axi_awready;
     int_m_axi_awaddr            <= int_slv_bus_wreq_addr;
     int_m_axi_awlen             <= slv(resize(u(int_slv_bus_wreq_len) - 1, MASTER_LEN_WIDTH));
+    int_m_axi_awuser(0)         <= int_slv_bus_wreq_last;
 
     int_m_axi_wvalid            <= int_slv_bus_wdat_valid;
     int_slv_bus_wdat_ready      <= int_m_axi_wready;
@@ -295,6 +296,7 @@ begin
     int_m_axi_awaddr            <= buf_slv_wreq_addr;
     -- Convert to AXI spec:
     int_m_axi_awlen             <= slv(resize(u(buf_slv_wreq_len) - 1, MASTER_LEN_WIDTH));
+    int_m_axi_awuser(0)         <= buf_slv_wreq_last;
     -----------------------------------------------------------------------------
     -- Write Data channel
     -----------------------------------------------------------------------------
@@ -613,4 +615,3 @@ begin
 
     
 end architecture rtl;
-
