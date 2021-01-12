@@ -405,7 +405,7 @@ begin
       bus_wreq_ready            => bus_wreq_ready(1),
       bus_wreq_addr             => bus_wreq_addr(2*BUS_ADDR_WIDTH-1 downto BUS_ADDR_WIDTH),
       bus_wreq_len              => bus_wreq_len(2*BUS_LEN_WIDTH-1 downto BUS_LEN_WIDTH),
-      bus_wreq_last             => bus_wreq_len(1),
+      bus_wreq_last             => bus_wreq_last(1),
 
       bus_wdat_valid            => bus_wdat_valid(1),
       bus_wdat_ready            => bus_wdat_ready(1),
