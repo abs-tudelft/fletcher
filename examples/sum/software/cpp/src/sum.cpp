@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
   // "Enable" the context, potentially copying the recordbatch to the device. This depends on your platform.
   // AWS EC2 F1 requires a copy, but OpenPOWER SNAP doesn't.
-  context->Enable();
+  status = context->Enable();
 
   if (!status.ok()) {
     std::cerr << "Could not enable the context." << std::endl;
