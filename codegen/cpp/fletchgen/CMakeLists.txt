@@ -7,7 +7,7 @@ project(fletchgen
   LANGUAGES CXX
 )
 
-find_package(Arrow 1.0 CONFIG REQUIRED)
+find_package(Arrow 3.0.0 CONFIG REQUIRED)
 
 include(FindThreads)
 include(FetchContent)
