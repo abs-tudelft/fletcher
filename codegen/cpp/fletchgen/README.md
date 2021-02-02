@@ -37,7 +37,7 @@ It currently supports only two top-level platforms.
 # Prerequisites
 
 - [C++17 compliant compiler](https://clang.llvm.org/)
-- [Apache Arrow 1.0+](https://github.com/apache/arrow)
+- [Apache Arrow 3.0+](https://github.com/apache/arrow)
 - [CMake 3.14+](https://cmake.org/)
 
 # Build & install
@@ -95,6 +95,7 @@ your kernel implementation.
 | fletcher_tag_width | 1 / 2 / 3 / ... | 1       | Width of the `tag` field of commands and unlock streams of RecordBatchReaders/Writers. Can be used to identify commands.              |
 
 # Custom MMIO registers
+
 You can add custom MMIO registers to your kernel using `--reg`.
 More information [can be found here](../../../docs/mmio.md).
 
@@ -114,32 +115,35 @@ bit.
 - record:
   name: platform
   fields:
-  - record:
-    name: complete
-    fields:
-    - field:
-      name: req
-      width: 1
-    - field:
-      name: ack
-      width: 1
-      reverse: true
+    - record:
+      name: complete
+      fields:
+        - field:
+          name: req
+          width: 1
+        - field:
+          name: ack
+          width: 1
+          reverse: true
 ```
 
 This will result in the following signals appearing at the top-level:
+
 ```vhdl
 ext_platform_complete_req : out std_logic;
 ext_platform_complete_ack : in  std_logic
 ```
 
-* The signals are assumed to be driven by the kernel. To drive them from the top
+- The signals are assumed to be driven by the kernel. To drive them from the top
   level, use:
+
 ```yaml
 reverse: true
 ```
 
-* Fields with a width of 1 can be forced to be `std_logic_vector` instead of 
+- Fields with a width of 1 can be forced to be `std_logic_vector` instead of
   `std_logic` by using:
+
 ```yaml
 vector: true
 ```

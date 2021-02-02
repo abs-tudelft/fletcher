@@ -60,16 +60,21 @@ jobs:
         sudo apt-get install -y ./apache-arrow-archive-keyring-latest-$(lsb_release --codename --short).deb
         sudo apt-get update
         sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow-python-dev=$ARROW_VERSION-1
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
     - name: Install pyarrow
-      run: pip3 install pyarrow==$ARROW_VERSION setuptools wheel
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install pyarrow==$ARROW_VERSION
     - name: Build and install
       working-directory: ${{ matrix.source }}
       run: |
-        python3 setup.py build
-        python3 setup.py bdist_wheel
-        pip3 install build/dist/*.whl
+        python setup.py build
+        python setup.py bdist_wheel
+        python -m pip install build/dist/*.whl
     - name: Import
-      run: python3 -c "import ${{ matrix.package }}"
+      run: python -c "import ${{ matrix.package }}"
 
   vhdl:
     name: VHDL

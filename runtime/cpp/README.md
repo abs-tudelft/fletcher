@@ -6,8 +6,9 @@ applications.
 # Build & install
 
 ## Requirements
-- [Apache Arrow 1.0+ C++ run-time and development headers.](https://arrow.apache.org/install)
--  A C++17 compliant compiler
+
+- [Apache Arrow 3.0+ C++ run-time and development headers.](https://arrow.apache.org/install)
+- A C++17 compliant compiler
 - CMake 3.14
 
 ## Build
@@ -22,11 +23,13 @@ sudo make install
 ## Example usage
 
 Include:
+
 ```c++
 #include <fletcher/api.h>
 ```
 
 Example snippet:
+
 ```c++
 using fletcher::Platform;
 using fletcher::Context;
