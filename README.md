@@ -50,8 +50,7 @@ generates the following:
   - Structs
   - Validity bitmaps
 
-- Once the Arrow reference implementation and format specific reaches ensured
-  stability (i.e. version 1.0), we would like to support:
+- In the future we would like to support:
   - Sparse and dense unions
   - Dictionaries
   - Chunked tabular structures (`Arrow::Table`)
@@ -128,15 +127,18 @@ External projects using Fletcher:
 - [Posit PairHMM](https://github.com/lvandam/pairhmm_posit_hdl_arrow)
 
 ## Publications
+
 If you used or studied Fletcher, please cite:
+
 - J. Peltenburg, J. van Straten, L. Wijtemans, L. van Leeuwen, Z. Al-Ars, and
   H.P. Hofstee, Fletcher: A Framework to Efficiently Integrate FPGA Accelerators
-  with Apache Arrow*, in 29th International Conference on Field Programmable 
+  with Apache Arrow\*, in 29th International Conference on Field Programmable
   Logic and Applications (FPL) (2019) pp. 270–277.
 
 Additional publications:
+
 - J. Peltenburg, J. van Straten, M. Brobbel, H.P. Hofstee, and Z. Al-Ars,
   Supporting Columnar In-memory Formats on FPGA: The Hardware Design of Fletcher
-  for Apache Arrow*, in Applied Reconfigurable Computing, edited by 
-  C. Hochberger, B. Nelson, A. Koch, R. Woods, and P. Diniz (Springer 
+  for Apache Arrow\*, in Applied Reconfigurable Computing, edited by
+  C. Hochberger, B. Nelson, A. Koch, R. Woods, and P. Diniz (Springer
   International Publishing, Cham, 2019) pp. 32–47

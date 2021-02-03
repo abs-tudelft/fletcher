@@ -8,7 +8,7 @@ on:
 
 env:
   CMAKE_VERSION: '3.19.2'
-  ARROW_VERSION: '1.0.1'
+  ARROW_VERSION: '3.0.0'
 
 jobs:
   archive:
@@ -172,6 +172,7 @@ jobs:
         - 'cp36-cp36m'
         - 'cp37-cp37m'
         - 'cp38-cp38'
+        - 'cp39-cp39'
     steps:
     - uses: actions/checkout@v2
       with:

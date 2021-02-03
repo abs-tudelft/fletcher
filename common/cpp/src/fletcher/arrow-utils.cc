@@ -117,8 +117,9 @@ std::shared_ptr<arrow::Schema> WithMetaBusSpec(const arrow::Schema &schema,
                                                int bm) {
   std::stringstream ss;
   ss << aw << "," << aw << "," << dw << "," << sw << "," << lw << "," << bs << "," << bm;
-  auto meta = std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({meta::BUS_SPEC}),
-                                                        std::vector<std::string>({ss.str()}));
+  auto meta =
+      std::make_shared<arrow::KeyValueMetadata>(std::vector<std::string>({meta::BUS_SPEC}),
+                                                std::vector<std::string>({ss.str()}));
   return schema.WithMetadata(meta);
 }
 
@@ -143,22 +144,28 @@ std::shared_ptr<arrow::Field> WithMetaProfile(const arrow::Field &field) {
   return field.WithMetadata(meta);
 }
 
-bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Schema> *out) {
+bool ReadSchemaFromFile(const std::string &file_name,
+                        std::shared_ptr<arrow::Schema> *out) {
   std::shared_ptr<arrow::Schema> schema;
-  arrow::Result<std::shared_ptr<arrow::io::ReadableFile>> result = arrow::io::ReadableFile::Open(file_name);
+  arrow::Result<std::shared_ptr<arrow::io::ReadableFile>>
+      result = arrow::io::ReadableFile::Open(file_name);
   if (!result.ok()) {
-    FLETCHER_LOG(ERROR, "Could not open file for reading: " + file_name + " ARROW:[" + result.status().ToString() + "]");
+    FLETCHER_LOG(ERROR,
+                 "Could not open file for reading: " + file_name + " ARROW:["
+                     + result.status().ToString() + "]");
     return false;
   }
   std::shared_ptr<arrow::io::ReadableFile> fis = result.ValueOrDie();
 
   // Dictionaries are not supported yet, hence nullptr.
   arrow::Result<std::shared_ptr<arrow::Schema>> schema_result;
-    schema_result = arrow::ipc::ReadSchema(fis.get(), nullptr);
+  schema_result = arrow::ipc::ReadSchema(fis.get(), nullptr);
   if (schema_result.ok()) {
     *out = schema_result.ValueOrDie();
   } else {
-    FLETCHER_LOG(ERROR, "Could not read schema from file file: " + file_name + " ARROW:[" + schema_result.status().ToString() + "]");
+    FLETCHER_LOG(ERROR,
+                 "Could not read schema from file file: " + file_name + " ARROW:["
+                     + schema_result.status().ToString() + "]");
     return false;
   }
   auto status = fis->Close();
@@ -169,22 +176,23 @@ bool ReadSchemaFromFile(const std::string &file_name, std::shared_ptr<arrow::Sch
 void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema) {
   std::shared_ptr<arrow::ResizableBuffer> resizable_buffer;
   arrow::Result<std::shared_ptr<arrow::ResizableBuffer>> resbuffer_result;
-    resbuffer_result = arrow::AllocateResizableBuffer(0);
+  resbuffer_result = arrow::AllocateResizableBuffer(0);
   if (resbuffer_result.ok()) {
-      resizable_buffer = resbuffer_result.ValueOrDie();
+    resizable_buffer = resbuffer_result.ValueOrDie();
   } else {
     throw std::runtime_error("Could not allocate resizable Arrow buffer.");
   }
   auto buffer = std::dynamic_pointer_cast<arrow::Buffer>(resizable_buffer);
   // Dictionaries are not supported yet, hence nullptr.
   arrow::Result<std::shared_ptr<arrow::Buffer>> ser_result;
-  ser_result = arrow::ipc::SerializeSchema(schema, nullptr, arrow::default_memory_pool());
+  ser_result = arrow::ipc::SerializeSchema(schema, arrow::default_memory_pool());
   if (ser_result.ok()) {
     buffer = ser_result.ValueOrDie();
   } else {
     throw std::runtime_error("Could not serialize schema into buffer.");
   }
-  arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>> filestream_result = arrow::io::FileOutputStream::Open(file_name);
+  arrow::Result<std::shared_ptr<arrow::io::FileOutputStream>>
+      filestream_result = arrow::io::FileOutputStream::Open(file_name);
   if (filestream_result.ok()) {
     std::shared_ptr<arrow::io::FileOutputStream> fos = filestream_result.ValueOrDie();
     if (!fos->Write(buffer->data(), buffer->size()).ok()) {
@@ -197,10 +205,12 @@ void WriteSchemaToFile(const std::string &file_name, const arrow::Schema &schema
 
 void WriteRecordBatchesToFile(const std::string &filename,
                               const std::vector<std::shared_ptr<arrow::RecordBatch>> &recordbatches) {
-  std::shared_ptr<arrow::io::FileOutputStream> file = arrow::io::FileOutputStream::Open(filename).ValueOrDie();
+  std::shared_ptr<arrow::io::FileOutputStream>
+      file = arrow::io::FileOutputStream::Open(filename).ValueOrDie();
   arrow::Status status;
   for (const auto &rb : recordbatches) {
-    std::shared_ptr<arrow::ipc::RecordBatchWriter> writer = arrow::ipc::NewFileWriter(file.get(), rb->schema()).ValueOrDie();
+    std::shared_ptr<arrow::ipc::RecordBatchWriter>
+        writer = arrow::ipc::MakeFileWriter(file.get(), rb->schema()).ValueOrDie();
     status = writer->WriteRecordBatch(*rb);
     if (!status.ok()) {
       throw std::runtime_error("Error writing recordbatches to file " + filename);
@@ -210,12 +220,16 @@ void WriteRecordBatchesToFile(const std::string &filename,
   status = file->Close();
 }
 
-bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::shared_ptr<arrow::RecordBatch>> *out) {
+bool ReadRecordBatchesFromFile(const std::string &file_name,
+                               std::vector<std::shared_ptr<arrow::RecordBatch>> *out) {
   std::shared_ptr<arrow::ipc::RecordBatchFileReader> reader;
 
-  arrow::Result<std::shared_ptr<arrow::io::ReadableFile>> result = arrow::io::ReadableFile::Open(file_name);
+  arrow::Result<std::shared_ptr<arrow::io::ReadableFile>>
+      result = arrow::io::ReadableFile::Open(file_name);
   if (!result.ok()) {
-    FLETCHER_LOG(ERROR, "Could not open file for reading: " + file_name + " ARROW:[" + result.status().ToString() + "]");
+    FLETCHER_LOG(ERROR,
+                 "Could not open file for reading: " + file_name + " ARROW:["
+                     + result.status().ToString() + "]");
     return false;
   }
   std::shared_ptr<arrow::io::ReadableFile> file = result.ValueOrDie();
@@ -225,7 +239,9 @@ bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
   if (file_result.ok()) {
     reader = file_result.ValueOrDie();
   } else {
-    FLETCHER_LOG(ERROR, "Could not open RecordBatchFileReader. ARROW:[" + file_result.status().ToString() + "]");
+    FLETCHER_LOG(ERROR,
+                 "Could not open RecordBatchFileReader. ARROW:["
+                     + file_result.status().ToString() + "]");
     return false;
   }
 
@@ -236,7 +252,9 @@ bool ReadRecordBatchesFromFile(const std::string &file_name, std::vector<std::sh
     if (rb_result.ok()) {
       recordbatch = rb_result.ValueOrDie();
     } else {
-      FLETCHER_LOG(ERROR, "Could not read RecordBatch " << i << " from file. ARROW:[" + rb_result.status().ToString() + "]");
+      FLETCHER_LOG(ERROR,
+                   "Could not read RecordBatch " << i << " from file. ARROW:["
+                       + rb_result.status().ToString() + "]");
       return false;
     }
     out->push_back(recordbatch);
