@@ -8,7 +8,7 @@ on:
 
 env:
   CMAKE_VERSION: '3.19.2'
-  ARROW_VERSION: '3.0.0'
+  ARROW_VERSION: '4.0.0'
 
 jobs:
   archive:
