@@ -121,6 +121,10 @@ Software design flow:
 
 External projects using Fletcher:
 
+- [Bolson - A JSON-to-Arrow IPC conversion and Pulsar publish tool.](https://github.com/teratide/bolson)
+- [An FPGA-based Parquet-to-Arrow converter](https://github.com/abs-tudelft/fast-p2a)
+- [Tidre - Demo application for the Tidre regular expression accelerator](https://github.com/teratide/tidre-demo)
+- [Wiki search with Alveo - Very rapidly search a Snappy-compressed version of a Wikipedia database dump](https://github.com/abs-tudelft/wiki-search-alveo)
 - [Regular Expression Matching](https://github.com/abs-tudelft/fletcher-example-regexp)
 - [K-Means clustering](https://github.com/abs-tudelft/fletcher-example-kmeans)
 - [Posit BLAS operations](https://github.com/lvandam/posit_blas_hdl)
