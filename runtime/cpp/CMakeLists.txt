@@ -7,7 +7,7 @@ project(fletcher
   LANGUAGES CXX
 )
 
-find_package(Arrow 4.0.1 CONFIG REQUIRED)
+find_package(Arrow 5.0.0 CONFIG REQUIRED)
 
 include(FetchContent)
 

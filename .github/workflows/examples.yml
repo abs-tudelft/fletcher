@@ -13,7 +13,7 @@ jobs:
     container: quay.io/pypa/manylinux2014_x86_64:latest
     env:
       CMAKE_VERSION: '3.17.3'
-      ARROW_VERSION: '4.0.1'
+      ARROW_VERSION: '5.0.0'
       CPYTHON_VERSION: 'cp36-cp36m'
     steps:
     - uses: actions/checkout@v2
