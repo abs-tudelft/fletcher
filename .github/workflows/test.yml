@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - develop
+    - staging
+    - trying
   pull_request:
 
 env:
