@@ -292,7 +292,7 @@ begin
 
     -- From BusBuffer to AXI master port
     int_m_axi_awvalid           <= buf_slv_wreq_valid;
-    buf_slv_wreq_ready          <= m_axi_awready;
+    buf_slv_wreq_ready          <= int_m_axi_awready;
     int_m_axi_awaddr            <= buf_slv_wreq_addr;
     -- Convert to AXI spec:
     int_m_axi_awlen             <= slv(resize(u(buf_slv_wreq_len) - 1, MASTER_LEN_WIDTH));
@@ -422,32 +422,32 @@ begin
         port map (                  
           clk                   => clk,
           reset                 => reset,
-          mst_wreq_valid        => buf_mst_wreq_valid,
-          mst_wreq_ready        => buf_mst_wreq_ready,
-          mst_wreq_addr         => buf_mst_wreq_addr,
-          mst_wreq_len          => buf_mst_wreq_len,
-          mst_wreq_last         => buf_mst_wreq_last,
-          mst_wdat_valid        => buf_mst_wdat_valid,
-          mst_wdat_ready        => buf_mst_wdat_ready,
-          mst_wdat_data         => buf_mst_wdat_data,
-          mst_wdat_strobe       => buf_mst_wdat_strobe,
-          mst_wdat_last         => buf_mst_wdat_last,
-          mst_wrep_valid        => buf_mst_wrep_valid,
-          mst_wrep_ready        => buf_mst_wrep_ready,
-          mst_wrep_ok           => buf_mst_wrep_ok,
-          slv_wreq_valid        => buf_slv_wreq_valid,
-          slv_wreq_ready        => buf_slv_wreq_ready,
-          slv_wreq_addr         => buf_slv_wreq_addr,
-          slv_wreq_len          => buf_slv_wreq_len,
-          slv_wreq_last         => buf_slv_wreq_last,
-          slv_wdat_valid        => buf_slv_wdat_valid,
-          slv_wdat_ready        => buf_slv_wdat_ready,
-          slv_wdat_data         => buf_slv_wdat_data,
-          slv_wdat_strobe       => buf_slv_wdat_strobe,
-          slv_wdat_last         => buf_slv_wdat_last,
-          slv_wrep_valid        => buf_slv_wrep_valid,
-          slv_wrep_ready        => buf_slv_wrep_ready,
-          slv_wrep_ok           => buf_slv_wrep_ok
+          slv_wreq_valid        => buf_mst_wreq_valid,
+          slv_wreq_ready        => buf_mst_wreq_ready,
+          slv_wreq_addr         => buf_mst_wreq_addr,
+          slv_wreq_len          => buf_mst_wreq_len,
+          slv_wreq_last         => buf_mst_wreq_last,
+          slv_wdat_valid        => buf_mst_wdat_valid,
+          slv_wdat_ready        => buf_mst_wdat_ready,
+          slv_wdat_data         => buf_mst_wdat_data,
+          slv_wdat_strobe       => buf_mst_wdat_strobe,
+          slv_wdat_last         => buf_mst_wdat_last,
+          slv_wrep_valid        => buf_mst_wrep_valid,
+          slv_wrep_ready        => buf_mst_wrep_ready,
+          slv_wrep_ok           => buf_mst_wrep_ok,
+          mst_wreq_valid        => buf_slv_wreq_valid,
+          mst_wreq_ready        => buf_slv_wreq_ready,
+          mst_wreq_addr         => buf_slv_wreq_addr,
+          mst_wreq_len          => buf_slv_wreq_len,
+          mst_wreq_last         => buf_slv_wreq_last,
+          mst_wdat_valid        => buf_slv_wdat_valid,
+          mst_wdat_ready        => buf_slv_wdat_ready,
+          mst_wdat_data         => buf_slv_wdat_data,
+          mst_wdat_strobe       => buf_slv_wdat_strobe,
+          mst_wdat_last         => buf_slv_wdat_last,
+          mst_wrep_valid        => buf_slv_wrep_valid,
+          mst_wrep_ready        => buf_slv_wrep_ready,
+          mst_wrep_ok           => buf_slv_wrep_ok
         );
     end generate;
     
