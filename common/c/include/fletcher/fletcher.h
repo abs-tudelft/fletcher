@@ -25,7 +25,7 @@
  *
  * Echo should always be the last platform to test for, as the platforms are attempted in the order of this list.
  */
-#define FLETCHER_AUTODETECT_PLATFORMS "snap", "aws", "echo"
+#define FLETCHER_AUTODETECT_PLATFORMS "oc-accel", "snap", "aws", "echo"
 
 #define FLETCHER_STATUS_OK 0
 #define FLETCHER_STATUS_ERROR 1
