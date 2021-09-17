@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(fletchgen
-  VERSION 0.0.19
+  VERSION 0.0.20
   DESCRIPTION "The Fletcher design generator"
   HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
   LANGUAGES CXX
