@@ -3,7 +3,7 @@ name: Assets
 on:
   release:
     types:
-    - created
+      - created
   pull_request:
   push:
     branches:
@@ -12,8 +12,8 @@ on:
       - trying
 
 env:
-  CMAKE_VERSION: '3.19.2'
-  ARROW_VERSION: '7.0.0'
+  CMAKE_VERSION: "3.19.2"
+  ARROW_VERSION: "7.0.0"
 
 jobs:
   archive:
@@ -23,37 +23,37 @@ jobs:
     strategy:
       matrix:
         source:
-        - runtime/cpp
+          - runtime/cpp
     steps:
-    - name: Install dependencies
-      run: |
-        yum install -y epel-release
-        yum install -y curl make gcc-c++ rpm-build git
-    - name: Install CMake
-      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
-    - name: Install Apache Arrow
-      run: |
-        yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
-        yum install -y arrow-devel-$ARROW_VERSION-1.el7
-    - uses: actions/checkout@v2
-    - name: Configure
-      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
-    - name: Package
-      run: make -j package
-    - id: tarball
-      run: echo "##[set-output name=name;]$(ls fletch*.tar.gz)"
-    - name: Install
-      run: tar xvfz ./${{ steps.tarball.outputs.name }} -C /usr
-    - name: Upload tarball
-      uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.tarball.outputs.name }}
-        asset_name: ${{ steps.tarball.outputs.name }}
-        asset_content_type: application/octet-stream
+      - name: Install dependencies
+        run: |
+          yum install -y epel-release
+          yum install -y curl make gcc-c++ rpm-build git
+      - name: Install CMake
+        run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+      - name: Install Apache Arrow
+        run: |
+          yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
+          yum install -y arrow-devel-$ARROW_VERSION-1.el7
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+      - name: Package
+        run: make -j package
+      - id: tarball
+        run: echo "##[set-output name=name;]$(ls fletch*.tar.gz)"
+      - name: Install
+        run: tar xvfz ./${{ steps.tarball.outputs.name }} -C /usr
+      - name: Upload tarball
+        uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.tarball.outputs.name }}
+          asset_name: ${{ steps.tarball.outputs.name }}
+          asset_content_type: application/octet-stream
 
   centos:
     name: CentOS
@@ -61,105 +61,85 @@ jobs:
     strategy:
       matrix:
         version:
-        - 7
-        - 8
+          - 7
         source:
-        - runtime/cpp
-        - codegen/cpp/fletchgen
-        exclude:
-        - version: 7
-          source: codegen/cpp/fletchgen
+          - runtime/cpp
     container: centos:${{ matrix.version }}
     steps:
-    - name: Install dependencies
-      run: |
-        yum install -y epel-release
-        yum install -y curl make rpm-build gcc-c++ git
-    - name: Install CMake
-      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
-    - name: Install Apache Arrow
-      if: ${{ matrix.version == '7' }}
-      run: |
-        yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
-        yum install -y arrow-devel-$ARROW_VERSION-1.el${{ matrix.version }}
-    - name: Install Apache Arrow
-      if: ${{ matrix.version == '8' }}
-      run: |
-        dnf install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)/apache-arrow-release-latest.rpm
-        dnf config-manager --set-enabled epel || :
-        dnf config-manager --set-enabled powertools || :
-        dnf config-manager --set-enabled codeready-builder-for-rhel-$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)-rhui-rpms || :
-        subscription-manager repos --enable codeready-builder-for-rhel-$(cut -d: -f5 /etc/system-release-cpe | cut -d. -f1)-$(arch)-rpms || :
-        dnf install -y arrow-devel-$ARROW_VERSION-1.el${{ matrix.version }}
-    - uses: actions/checkout@v2
-      if: ${{ matrix.source == 'codegen/cpp/fletchgen' }}
-      with:
-        submodules: true
-    - uses: actions/checkout@v2
-      if: ${{ matrix.source != 'codegen/cpp/fletchgen' }}
-    - name: Configure
-      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
-    - name: Package
-      run: make -j package
-    - id: rpm
-      run: echo "##[set-output name=name;]$(ls fletch*.rpm)"
-    - name: Install
-      run: |
-        yum remove -y arrow-devel
-        yum autoremove -y
-        yum localinstall -y ./${{ steps.rpm.outputs.name }}
-    - name: Upload rpm
-      uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.rpm.outputs.name }}
-        asset_name: ${{ steps.rpm.outputs.name }}
-        asset_content_type: application/octet-stream
-  
+      - name: Install dependencies
+        run: |
+          yum install -y epel-release
+          yum install -y curl make rpm-build gcc-c++ git
+      - name: Install CMake
+        run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+      - name: Install Apache Arrow
+        run: |
+          yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
+          yum install -y arrow-devel-$ARROW_VERSION-1.el${{ matrix.version }}
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+      - name: Package
+        run: make -j package
+      - id: rpm
+        run: echo "##[set-output name=name;]$(ls fletch*.rpm)"
+      - name: Install
+        run: |
+          yum remove -y arrow-devel
+          yum autoremove -y
+          yum localinstall -y ./${{ steps.rpm.outputs.name }}
+      - name: Upload rpm
+        uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.rpm.outputs.name }}
+          asset_name: ${{ steps.rpm.outputs.name }}
+          asset_content_type: application/octet-stream
+
   ubuntu:
     name: Ubuntu
     strategy:
       matrix:
         version:
-        - 18.04
-        - 20.04
+          - 18.04
+          - 20.04
         source:
-        - runtime/cpp
-        - codegen/cpp/fletchgen
+          - runtime/cpp
+          - codegen/cpp/fletchgen
     runs-on: ubuntu-${{ matrix.version }}
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: Install Apache Arrow
-      run: |
-        wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-        sudo apt-get install -y ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-        sudo apt-get update
-        sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
-    - name: Configure
-      run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
-    - name: Package
-      run: make -j package
-    - id: deb
-      run: echo "##[set-output name=name;]$(ls fletch*.deb)"
-    - name: Install
-      run: |
-        sudo apt-get --purge autoremove libarrow-dev
-        sudo apt-get install -y ./${{ steps.deb.outputs.name }} libarrow-dev=${ARROW_VERSION}-1
-    - name: Upload deb
-      uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ steps.deb.outputs.name }}
-        asset_name: ${{ steps.deb.outputs.name }}
-        asset_content_type: application/octet-stream
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install Apache Arrow
+        run: |
+          wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt-get install -y ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt-get update
+          sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
+      - name: Configure
+        run: cmake ${{ matrix.source }} -DCMAKE_BUILD_TYPE=Release
+      - name: Package
+        run: make -j package
+      - id: deb
+        run: echo "##[set-output name=name;]$(ls fletch*.deb)"
+      - name: Install
+        run: |
+          sudo apt-get --purge autoremove libarrow-dev
+          sudo apt-get install -y ./${{ steps.deb.outputs.name }} libarrow-dev=${ARROW_VERSION}-1
+      - name: Upload deb
+        uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.deb.outputs.name }}
+          asset_name: ${{ steps.deb.outputs.name }}
+          asset_content_type: application/octet-stream
 
   python:
     name: Python
@@ -169,48 +149,47 @@ jobs:
       fail-fast: false
       matrix:
         source:
-        - codegen/python
-        - runtime/python
+          - codegen/python
+          - runtime/python
         manylinux:
-        - 2014
+          - 2014
         cpython_version:
-        - 'cp36-cp36m'
-        - 'cp37-cp37m'
-        - 'cp38-cp38'
-        - 'cp39-cp39'
+          - "cp37-cp37m"
+          - "cp38-cp38"
+          - "cp39-cp39"
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: Install Apache Arrow
-      run: |
-        yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
-        yum install -y --enablerepo=epel arrow-devel-$ARROW_VERSION-1.el7 arrow-libs-$ARROW_VERSION-1.el7 arrow-python-devel-$ARROW_VERSION-1.el7 arrow-python-libs-$ARROW_VERSION-1.el7
-    - name: Install cmake
-      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
-    - name: Install dependencies
-      run: /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install pyarrow==$ARROW_VERSION auditwheel
-    - name: Build wheel
-      working-directory: ${{ matrix.source }}
-      run: |
-        /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
-        /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair build/dist/*.whl
-    - name: Wheel path
-      id: wheel
-      working-directory: ${{ matrix.source }}/wheelhouse
-      run: echo "##[set-output name=wheel;]$(ls *.whl)"
-    - uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ matrix.source }}/wheelhouse/${{ steps.wheel.outputs.wheel }}
-        asset_name: ${{ steps.wheel.outputs.wheel }}
-        asset_content_type: application/zip
-    - uses: pypa/gh-action-pypi-publish@v1.3.1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
-        packages_dir: ${{ matrix.source }}/wheelhouse
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install Apache Arrow
+        run: |
+          yum install -y https://apache.jfrog.io/artifactory/arrow/centos/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
+          yum install -y --enablerepo=epel arrow-devel-$ARROW_VERSION-1.el7 arrow-libs-$ARROW_VERSION-1.el7 arrow-python-devel-$ARROW_VERSION-1.el7 arrow-python-libs-$ARROW_VERSION-1.el7
+      - name: Install cmake
+        run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+      - name: Install dependencies
+        run: /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install pyarrow==$ARROW_VERSION auditwheel
+      - name: Build wheel
+        working-directory: ${{ matrix.source }}
+        run: |
+          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair build/dist/*.whl
+      - name: Wheel path
+        id: wheel
+        working-directory: ${{ matrix.source }}/wheelhouse
+        run: echo "##[set-output name=wheel;]$(ls *.whl)"
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ matrix.source }}/wheelhouse/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
+      - uses: pypa/gh-action-pypi-publish@v1.3.1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages_dir: ${{ matrix.source }}/wheelhouse
