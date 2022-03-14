@@ -13,7 +13,7 @@ on:
 
 env:
   CMAKE_VERSION: '3.19.2'
-  ARROW_VERSION: '6.0.0'
+  ARROW_VERSION: '7.0.0'
 
 jobs:
   archive:

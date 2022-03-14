@@ -1,20 +1,20 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(fletcher 
+project(
+  fletcher
   VERSION 0.0.21
   DESCRIPTION "The Fletcher runtime library"
   HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
-  LANGUAGES CXX
-)
+  LANGUAGES CXX)
 
-find_package(Arrow 6.0.0 CONFIG REQUIRED)
+find_package(Arrow 7.0.0 CONFIG REQUIRED)
 
 include(FetchContent)
 
-FetchContent_Declare(cmake-modules
-  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
-  GIT_TAG         master
-)
+FetchContent_Declare(
+  cmake-modules
+  GIT_REPOSITORY https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG master)
 FetchContent_MakeAvailable(cmake-modules)
 
 include(CompileUnits)
@@ -38,47 +38,55 @@ if(NOT TARGET fletcher::c)
 endif()
 
 add_compile_unit(
-  NAME fletcher
-  TYPE SHARED
-  COMPONENT library
+  NAME
+  fletcher
+  TYPE
+  SHARED
+  COMPONENT
+  library
   PRPS
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED ON
+  CXX_STANDARD
+  11
+  CXX_STANDARD_REQUIRED
+  ON
   SRCS
-    src/fletcher/platform.cc
-    src/fletcher/context.cc
-    src/fletcher/kernel.cc
+  src/fletcher/platform.cc
+  src/fletcher/context.cc
+  src/fletcher/kernel.cc
   DEPS
-    fletcher::c
-    fletcher::common
-    arrow_shared
-    ${CMAKE_DL_LIBS}
-)
+  fletcher::c
+  fletcher::common
+  arrow_shared
+  ${CMAKE_DL_LIBS})
 
 add_compile_unit(
-  NAME fletcher::test
-  TYPE TESTS
+  NAME
+  fletcher::test
+  TYPE
+  TESTS
   PRPS
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED ON
+  CXX_STANDARD
+  11
+  CXX_STANDARD_REQUIRED
+  ON
   SRCS
-    test/fletcher/test.cpp
+  test/fletcher/test.cpp
   DEPS
-    fletcher
-    ${TEST_PLATFORM_DEPS}
-)
+  fletcher
+  ${TEST_PLATFORM_DEPS})
 
 compile_units()
 
-execute_process (
-    COMMAND bash -c "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
-    OUTPUT_VARIABLE OS_NAME
-)
+execute_process(
+  COMMAND bash -c
+          "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+  OUTPUT_VARIABLE OS_NAME)
 
-execute_process (
-    COMMAND bash -c "awk -F= '/^VERSION_ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
-    OUTPUT_VARIABLE OS_VERSION
-)
+execute_process(
+  COMMAND
+    bash -c
+    "awk -F= '/^VERSION_ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+  OUTPUT_VARIABLE OS_VERSION)
 
 if(OS_NAME MATCHES "ubuntu")
   set(CPACK_DEBIAN_PACKAGE_RELEASE "ubuntu${OS_VERSION}")
@@ -94,23 +102,27 @@ endif()
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL library)
-set(CPACK_PACKAGE_VENDOR "Accelerated Big Data Systems, Delft University of Technology")
-set(CPACK_PACKAGE_DESCRIPTION "The Fletcher C++ runtime library for Fletcher-based applications")
+set(CPACK_PACKAGE_VENDOR
+    "Accelerated Big Data Systems, Delft University of Technology")
+set(CPACK_PACKAGE_DESCRIPTION
+    "The Fletcher C++ runtime library for Fletcher-based applications")
 set(CPACK_PACKAGE_VERSION_MAJOR "${fletcher_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${fletcher_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${fletcher_VERSION_PATCH}")
 set(CPACK_PACKAGE_RELOCATABLE ON)
 
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libarrow-dev (>= 6.0.0), libarrow-dev (<< 7.0.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "libarrow-dev (>= 7.0.0), libarrow-dev (<< 8.0.0)")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
 
 set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_PACKAGE_LICENSE "ASL 2.0")
 # fletcher-devel
-set(CPACK_RPM_PACKAGE_REQUIRES "arrow-devel >= 6.0.0, arrow-devel < 7.0.0")
+set(CPACK_RPM_PACKAGE_REQUIRES "arrow-devel >= 7.0.0, arrow-devel < 8.0.0")
 
-set(CPACK_ARCHIVE_LIBRARY_FILE_NAME "${CMAKE_PROJECT_NAME}-${fletcher_VERSION}-${CMAKE_SYSTEM_NAME}")
+set(CPACK_ARCHIVE_LIBRARY_FILE_NAME
+    "${CMAKE_PROJECT_NAME}-${fletcher_VERSION}-${CMAKE_SYSTEM_NAME}")
 
 include(CPack)
