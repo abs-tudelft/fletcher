@@ -7,7 +7,7 @@ applications.
 
 ## Requirements
 
-- [Apache Arrow 6.0+ C++ run-time and development headers.](https://arrow.apache.org/install)
+- [Apache Arrow 7.0+ C++ run-time and development headers.](https://arrow.apache.org/install)
 - A C++17 compliant compiler
 - CMake 3.14
 
