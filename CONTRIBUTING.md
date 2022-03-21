@@ -33,5 +33,5 @@ The development of Fletcher currently relies on research grants and sponsorship
 from FPGA vendors. If you'd like to sponsor the development of Fletcher, please
 send an e-mail to:
 <!-- markdown-link-check-disable -->
-<j.w.peltenburg@tudelft.nl>
+<johan.peltenburg+code@gmail.com>
 <!-- markdown-link-check-enable-->
