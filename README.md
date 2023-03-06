@@ -79,7 +79,9 @@ generates the following:
 
 ## Current state
 
-Our framework is functional, but experimental and under heavy development.
+Our framework is functional, but experimental. 
+
+#### ⚠️ This project is currently not actively worked on. ⚠️
 
 Especially the development branch (which is currently our main branch) may break
 without notice. Some larger examples and the supported platforms are quite hard
