@@ -2,6 +2,7 @@
 
 # Fletcher: A framework to integrate FPGA accelerators with Apache Arrow
 
+[![Inactively Maintained](https://img.shields.io/badge/Maintenance%20Level-Inactively%20Maintained-yellowgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 [![License](https://badgen.net/github/license/abs-tudelft/fletcher)](https://github.com/abs-tudelft/fletcher/blob/develop/LICENSE)
 [![Last Commit](https://badgen.net/github/last-commit/abs-tudelft/fletcher/develop)](https://badgen.net/github/last-commit/abs-tudelft/fletcher/develop)
 
