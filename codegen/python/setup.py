@@ -127,7 +127,7 @@ setup(
     install_requires=[
         'numpy >= 1.14',
         'pandas',
-        'pyarrow == 7.0',
+        'pyarrow == 14.0.1',
     ],
     setup_requires=[
         'cython',
