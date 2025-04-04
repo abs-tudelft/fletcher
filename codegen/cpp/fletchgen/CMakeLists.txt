@@ -7,7 +7,7 @@ project(
   HOMEPAGE_URL "https://github.com/abs-tudelft/fletcher"
   LANGUAGES CXX)
 
-find_package(Arrow 7.0.0 CONFIG REQUIRED)
+find_package(Arrow 17.0.0 CONFIG REQUIRED)
 
 include(FindThreads)
 include(FetchContent)

@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  ARROW_VERSION: "7.0.0"
+  ARROW_VERSION: "17.0.0"
 
 jobs:
   cpp:

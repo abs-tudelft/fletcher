@@ -103,8 +103,11 @@ std::shared_ptr<arrow::StringArray> DeserializeToArrow(const std::shared_ptr<std
 
   // Allocate space for values buffer
   std::shared_ptr<arrow::Buffer> val_buffer;
-  if (!arrow::AllocateBuffer(values->size(), &val_buffer).ok()) {
+  auto val_res = arrow::AllocateBuffer(values->size());
+  if (!val_res.ok()) {
     throw std::runtime_error("Could not allocate values buffer.");
+  } else {
+    val_buffer = val_res.MoveValueUnsafe();
   }
 
   // Copy the values buffer
@@ -112,8 +115,11 @@ std::shared_ptr<arrow::StringArray> DeserializeToArrow(const std::shared_ptr<std
 
   // Allocate space for offsets buffer
   std::shared_ptr<arrow::Buffer> off_buffer;
-  if (!arrow::AllocateBuffer((lengths->size() + 1) * sizeof(int32_t), &off_buffer).ok()) {
+  auto off_res = arrow::AllocateBuffer((lengths->size() + 1) * sizeof(int32_t));
+  if (!off_res.ok()) {
     throw std::runtime_error("Could not allocate offsets buffer.");
+  } else {
+    off_buffer = off_res.MoveValueUnsafe();
   }
 
   // Lengths need to be converted into offsets
@@ -140,11 +146,17 @@ std::shared_ptr<arrow::RecordBatch> PrepareRecordBatch(const std::shared_ptr<arr
   std::shared_ptr<arrow::Buffer> offsets;
   std::shared_ptr<arrow::Buffer> values;
 
-  if (!arrow::AllocateBuffer(arrow::default_memory_pool(), sizeof(int32_t) * (num_strings + 1), &offsets).ok()) {
+  auto off_res = arrow::AllocateBuffer(sizeof(int32_t) * (num_strings + 1));
+  if (!off_res.ok()) {
     throw std::runtime_error("Could not allocate offsets buffer.");
+  } else {
+    offsets = off_res.MoveValueUnsafe();
   }
-  if (!arrow::AllocateBuffer(arrow::default_memory_pool(), num_chars, &values).ok()) {
+  auto val_res = arrow::AllocateBuffer(num_chars);
+  if (!val_res.ok()) {
     throw std::runtime_error("Could not allocate values buffer.");
+  } else {
+    values = val_res.MoveValueUnsafe();
   }
 
   auto array = std::make_shared<arrow::StringArray>(num_strings, offsets, values);
