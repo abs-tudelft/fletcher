@@ -125,8 +125,8 @@ setup(
             libraries=pa.get_libraries() + ["fletcher"],
             library_dirs=pa.get_library_dirs() + lib_dirs,
             runtime_library_dirs=pa.get_library_dirs() + lib_dirs,
-            extra_compile_args=["-std=c++11", "-O3"],
-            extra_link_args=["-std=c++11"]
+            extra_compile_args=["-std=c++17", "-O3"],
+            extra_link_args=["-std=c++17"]
         )
     ],
     install_requires=[
