@@ -77,6 +77,28 @@ add_compile_unit(
 
 compile_units()
 
+install(TARGETS fletcher fletcher_c fletcher_common
+    EXPORT fletcherTargets
+    FILE_SET HEADERS
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include)
+
+install(EXPORT fletcherTargets
+    FILE fletcherTargets.cmake
+    NAMESPACE fletcher::
+    DESTINATION lib/cmake/fletcher)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "fletcherConfigVersion.cmake"
+    VERSION ${fletcher_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+install(FILES "fletcherConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/fletcherConfigVersion.cmake"
+    DESTINATION lib/cmake/fletcher)
+
 execute_process(
   COMMAND bash -c
           "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
@@ -109,14 +131,14 @@ set(CPACK_PACKAGE_RELOCATABLE ON)
 
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-    "libarrow-dev (>= 7.0.0), libarrow-dev (<< 8.0.0)")
+    "libarrow-dev (>= 17.0.0), libarrow-dev (<< 18.0.0)")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
 
 set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_PACKAGE_LICENSE "ASL 2.0")
 # fletcher-devel
-set(CPACK_RPM_PACKAGE_REQUIRES "arrow-devel >= 7.0.0, arrow-devel < 8.0.0")
+set(CPACK_RPM_PACKAGE_REQUIRES "arrow-devel >= 17.0.0, arrow-devel < 18.0.0")
 
 set(CPACK_ARCHIVE_LIBRARY_FILE_NAME
     "${CMAKE_PROJECT_NAME}-${fletcher_VERSION}-${CMAKE_SYSTEM_NAME}")
