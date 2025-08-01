@@ -15,7 +15,7 @@ include(FetchContent)
 FetchContent_Declare(
   CLI11
   GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
-  GIT_TAG v1.8.0)
+  GIT_TAG v2.5.0)
 FetchContent_MakeAvailable(CLI11)
 
 FetchContent_Declare(
@@ -27,7 +27,7 @@ FetchContent_MakeAvailable(cmake-modules)
 FetchContent_Declare(
   cerata
   GIT_REPOSITORY https://github.com/abs-tudelft/cerata.git
-  GIT_TAG 0.0.11)
+  GIT_TAG develop)
 FetchContent_GetProperties(cerata)
 if(NOT cerata_POPULATED)
   FetchContent_Populate(cerata)
@@ -189,8 +189,8 @@ execute_process(
 if(OS_NAME MATCHES "ubuntu")
   set(CPACK_DEBIAN_PACKAGE_RELEASE "ubuntu${OS_VERSION}")
   set(CPACK_GENERATOR "DEB")
-elseif(OS_NAME MATCHES "centos")
-  set(CPACK_RPM_PACKAGE_RELEASE_DIST "el${OS_VERSION}")
+elseif(OS_NAME MATCHES "almalinux")
+  set(CPACK_RPM_PACKAGE_RELEASE_DIST "el$(echo $OS_VERSION | cut -d . -f 1)")
   set(CPACK_GENERATOR "RPM;TGZ")
 endif()
 
