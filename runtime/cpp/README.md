@@ -9,7 +9,7 @@ applications.
 
 - [Apache Arrow 17.0+ C++ run-time and development headers.](https://arrow.apache.org/install)
 - A C++17 compliant compiler
-- CMake 3.14
+- CMake 3.14+
 
 ## Build
 
