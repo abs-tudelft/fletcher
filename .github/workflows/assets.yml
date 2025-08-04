@@ -153,15 +153,14 @@ jobs:
           yum install -y https://apache.jfrog.io/artifactory/arrow/almalinux/$(cut -d: -f5 /etc/system-release-cpe)/apache-arrow-release-latest.rpm
           yum install -y arrow-devel-$ARROW_VERSION-1.el8 arrow$(echo $ARROW_VERSION | cut -d . -f 1)00-dataset-libs
       - name: Install dependencies
-        run: /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip setuptools wheel auditwheel pyarrow==$ARROW_VERSION
+        run: /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip setuptools wheel pyarrow==$ARROW_VERSION
       - name: Build wheel
         working-directory: ${{ matrix.source }}
         run: |
-          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair build/dist/*.whl
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m build --wheel
       - name: Wheel path
         id: wheel
-        working-directory: ${{ matrix.source }}/wheelhouse
+        working-directory: ${{ matrix.source }}/dist
         run: echo "##[set-output name=wheel;]$(ls *.whl)"
       - uses: actions/upload-release-asset@v1
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
