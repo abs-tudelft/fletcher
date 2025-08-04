@@ -22,7 +22,7 @@ jobs:
     env:
       MDBOOK_VERSION: '0.4.6'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install mdbook
       run: |
         mkdir -p $HOME/mdbook
@@ -31,7 +31,7 @@ jobs:
     - name: Build
       run: mdbook build
       working-directory: docs
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: book
         path: docs/book
@@ -47,13 +47,13 @@ jobs:
         - module: runtime
           source: runtime/cpp
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install doxygen
       run: sudo apt-get install -y doxygen
     - name: Doxygen
       run: doxygen
       working-directory: ${{ matrix.source }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.module }}
         path: ${{ matrix.source }}/docs/html
@@ -64,14 +64,14 @@ jobs:
     needs: [book, cpp]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: book
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: fletchgen
         path: api/fletchgen
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: runtime
         path: api/fletcher-cpp

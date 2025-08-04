@@ -15,7 +15,7 @@ metadata = {b'fletcher_mode': b'read',
             b'fletcher_name': b'ExampleBatch'}
 
 # Add the metadata to the schema
-schema = schema.add_metadata(metadata)
+schema = schema.with_metadata(metadata)
 
 # Create a list of PyArrow Arrays. Every Array can be seen 
 # as a 'Column' of the RecordBatch we will create.

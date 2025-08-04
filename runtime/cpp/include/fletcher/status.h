@@ -18,52 +18,52 @@
 #include <cstdlib>
 #include <string>
 #include <iostream>
-#include <utility>
 
 namespace fletcher {
 
 /// Status return value of all Fletcher run-time functions
 struct Status {
   /// The raw status value.
-  fstatus_t val = static_cast<fstatus_t>(FLETCHER_STATUS_ERROR);
+  fstatus_t val = FLETCHER_STATUS_ERROR;
   /// Optional message.
-  std::string message = "";
+  std::string message;
 
   /// @brief Construct a new status.
-  explicit Status(fstatus_t val = FLETCHER_STATUS_ERROR, std::string msg = "") : val(val), message(std::move(msg)) {}
+  explicit Status(const fstatus_t val, std::string msg) : val(val), message(std::move(msg)) {}
+  explicit Status(const fstatus_t val = FLETCHER_STATUS_ERROR) : val(val) {}
 
   /// @brief Return true if the status is OK.
-  inline bool ok() { return val == FLETCHER_STATUS_OK; }
+  [[nodiscard]] bool ok() const { return val == FLETCHER_STATUS_OK; }
 
   /// @brief Exit the program on a failure status, with some message. If no message is supplied, use the status message.
-  inline void ewf(const std::string &msg = "") {
+  void ewf(const std::string &msg = "") const {
     if (!ok()) {
       if (!msg.empty()) {
         std::cerr << msg << std::endl;
       } else {
-        std::cerr << msg << std::endl;
+        std::cerr << message << std::endl;
       }
       exit(EXIT_FAILURE);
     }
   }
 
   /// @brief Compare raw status values for equality.
-  inline bool operator==(const Status &rhs) const {
+  bool operator==(const Status &rhs) const {
     return val == rhs.val;
   }
 
   /// @brief Return an OK status.
-  inline static Status OK() { return Status(FLETCHER_STATUS_OK); }
+  static Status OK() { return Status(FLETCHER_STATUS_OK); }
 
   /// @brief Return an ERROR status with some message.
-  inline static Status ERROR(std::string msg = "") {
-    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_ERROR), std::move(msg));
+  static Status ERROR(std::string msg = "") {
+    return Status(FLETCHER_STATUS_ERROR, std::move(msg));
   }
 
   // Helper macro for error states.
 #define STATUS_FACTORY(RAW_ID, MESSAGE)                                       \
-  inline static Status RAW_ID() {                                             \
-    return Status(static_cast<fstatus_t>(FLETCHER_STATUS_##RAW_ID), MESSAGE); \
+  static Status RAW_ID() {                                                    \
+    return Status(FLETCHER_STATUS_##RAW_ID, MESSAGE); \
   }
 
   // Other error states:

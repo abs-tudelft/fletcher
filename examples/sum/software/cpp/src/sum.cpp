@@ -116,9 +116,13 @@ int main(int argc, char **argv) {
     std::cerr << "Could not obtain the return value." << std::endl;
     return -1;
   }
+  // combine the 2 32-bit values into the 64-bit endresult
+  int64_t result = return_value_0;
+  result |= static_cast<int64_t>(return_value_1) << 32;
+
 
   // Print the return value.
-  std::cout << *reinterpret_cast<int32_t*>(&return_value_0) << std::endl;
+  std::cout << result << std::endl;
 
   return 0;
 }

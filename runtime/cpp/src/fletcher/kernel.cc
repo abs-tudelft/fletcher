@@ -101,16 +101,13 @@ Status Kernel::PollUntilDoneInterval(unsigned int poll_interval_usec) {
   bool done = false;
   uint32_t status = 0;
   FLETCHER_LOG(DEBUG, "Polling kernel for completion.");
-  if (poll_interval_usec == 0) {
-    while (!done) {
-      context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-      done = (status & done_status_mask) == this->done_status;
+  while (!done) {
+    Status cmd_status = context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
+    if (!cmd_status.ok()) {
+      return cmd_status;
     }
-  } else {
-    while (!done) {
-      context_->platform()->ReadMMIO(FLETCHER_REG_STATUS, &status);
-      done = (status & done_status_mask) == this->done_status;
-      if (done) break;
+    done = (status & done_status_mask) == this->done_status;
+    if (poll_interval_usec) {
       usleep(poll_interval_usec);
     }
   }

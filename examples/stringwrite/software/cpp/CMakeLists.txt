@@ -13,7 +13,7 @@ project(
   VERSION 0.0.0
   LANGUAGES CXX)
 
-find_package(Arrow 7.0.0 CONFIG REQUIRED)
+find_package(Arrow 17.0.0 CONFIG REQUIRED)
 find_package(fletcher CONFIG)
 
 if(NOT fletcher)
