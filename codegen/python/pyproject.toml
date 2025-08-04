@@ -1,0 +1,11 @@
+# pyproject.toml
+[build-system]
+requires = [
+  "setuptools >= 42.0.0",
+  "cython",
+  "numpy",
+  "pyarrow == 17.0.0",
+  "plumbum",
+  "pytest-runner"
+]
+build-backend = "setuptools.build_meta"
