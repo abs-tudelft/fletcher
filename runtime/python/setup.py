@@ -70,8 +70,7 @@ class build(_build):
             except ImportError:
                 # TODO: download cmake 3.14 and extract in build dir
                 raise ImportError('CMake or make not found')
-            cmake['../../..']['-DFLETCHER_BUILD_ECHO=ON']['-DCMAKE_BUILD_TYPE=Release'][
-                '-DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=0']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
+            cmake['../../..']['-DFLETCHER_BUILD_ECHO=ON']['-DCMAKE_BUILD_TYPE=Release']['-DCMAKE_INSTALL_PREFIX={}'.format(output_dir)] & FG
             make['-j4'] & FG
             make['install'] & FG
         _build.run(self)
@@ -114,9 +113,6 @@ setup(
             "pyfletcher.lib",
             ["pyfletcher/lib.pyx"],
             language="c++",
-            define_macros=[
-                ("_GLIBCXX_USE_CXX11_ABI", "0")
-            ],
             include_dirs=[
                 np.get_include(),
                 pa.get_include(),

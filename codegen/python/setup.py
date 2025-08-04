@@ -28,11 +28,6 @@ import numpy as np
 import pyarrow as pa
 
 
-def read(fname):
-    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
-        return f.read()
-
-
 target_dir = os.getcwd() + "/build"
 output_dir = target_dir + "/install"
 include_dir = output_dir + "/include"
