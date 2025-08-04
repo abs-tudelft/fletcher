@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['implementsschemaset_35',['ImplementsSchemaSet',['../classfletcher_1_1_kernel.html#a4098b0fac41a0c93e5942fb09cb9a079',1,'fletcher::Kernel']]],
-  ['init_36',['Init',['../classfletcher_1_1_platform.html#a78fe96f5a73e79eb937b5618d9845879',1,'fletcher::Platform']]],
-  ['init_5fdata_37',['init_data',['../classfletcher_1_1_platform.html#adc919fb4849005afd8eaef0d553f7eaa',1,'fletcher::Platform']]]
+  ['implementsschemaset_0',['ImplementsSchemaSet',['../classfletcher_1_1_kernel.html#a66994a9dc2d4c05f600243240afd1930',1,'fletcher::Kernel']]],
+  ['init_1',['Init',['../classfletcher_1_1_platform.html#a4b0d32e5bba483c45406ea120d434d2f',1,'fletcher::Platform']]],
+  ['init_5fdata_2',['init_data',['../classfletcher_1_1_platform.html#adc919fb4849005afd8eaef0d553f7eaa',1,'fletcher::Platform']]]
 ];

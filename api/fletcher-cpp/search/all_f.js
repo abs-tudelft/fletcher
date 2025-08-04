@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['setarguments_66',['SetArguments',['../classfletcher_1_1_kernel.html#affb152ca58e04ff111ed0ccd0c5c60de',1,'fletcher::Kernel']]],
-  ['setrange_67',['SetRange',['../classfletcher_1_1_kernel.html#a92d6d09f55706be9d9bed1f31df0123a',1,'fletcher::Kernel']]],
-  ['size_68',['size',['../structfletcher_1_1_device_buffer.html#afb3b0cb917a5aef3c4704f58eb16e63e',1,'fletcher::DeviceBuffer']]],
-  ['start_69',['Start',['../classfletcher_1_1_kernel.html#aeb0cf56f5b8a3707a8bb38dff3c9540d',1,'fletcher::Kernel']]],
-  ['status_70',['Status',['../structfletcher_1_1_status.html',1,'fletcher::Status'],['../structfletcher_1_1_status.html#aaabcc9119c1ed8124c7895533e6e40d6',1,'fletcher::Status::Status()']]],
-  ['status_2eh_71',['status.h',['../status_8h.html',1,'']]],
-  ['status_5ffactory_72',['STATUS_FACTORY',['../status_8h.html#a2987236db2e9eb4230bc59c3f0e11eb1',1,'status.h']]]
+  ['readme_2emd_0',['README.md',['../_r_e_a_d_m_e_8md.html',1,'']]],
+  ['readmmio_1',['ReadMMIO',['../classfletcher_1_1_platform.html#a063e2ed3f74fc0145f0fc19d2a60a08d',1,'fletcher::Platform']]],
+  ['readmmio64_2',['ReadMMIO64',['../classfletcher_1_1_platform.html#aa0b8e8a4ef8befc9f5176dd20307d572',1,'fletcher::Platform']]],
+  ['recordbatch_3',['recordbatch',['../classfletcher_1_1_context.html#a38675b392b1559a1336dcbeea5f2e61b',1,'fletcher::Context']]],
+  ['reset_4',['Reset',['../classfletcher_1_1_kernel.html#af42132372ede01ac8b1be667c814e455',1,'fletcher::Kernel']]],
+  ['run_20time_20library_5',['Fletcher C++ Run-time Library',['../index.html',1,'']]]
 ];

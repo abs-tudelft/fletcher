@@ -8,7 +8,7 @@ var indexSectionsWithContent =
   5: "nr",
   6: "bcefmt",
   7: "abcdklnprsuw",
-  8: "fr"
+  8: "dfgrt"
 };
 
 var indexSectionNames =
