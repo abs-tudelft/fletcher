@@ -47,7 +47,7 @@ architecture Behavioral of SimTop_tc is
   -----------------------------------------------------------------------------
   -- Default wrapper component.
   -----------------------------------------------------------------------------
-    component Stringwrite_Mantle is
+    component Kernel_Mantle is
     generic (
       INDEX_WIDTH        : integer := 32;
       TAG_WIDTH          : integer := 1;
@@ -420,7 +420,7 @@ begin
   -----------------------------------------------------------------------------
   -- Fletcher generated wrapper
   -----------------------------------------------------------------------------
-  Kernel_Mantle_inst : Stringwrite_Mantle
+  Kernel_Mantle_inst : Kernel_Mantle
     generic map (
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH
     )
