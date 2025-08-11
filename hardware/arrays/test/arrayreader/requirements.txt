@@ -1,2 +1,2 @@
-pyarrow==0.13.0
+pyarrow==14.0.1
 enum==0.4.6
