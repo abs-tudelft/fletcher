@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  ARROW_VERSION: "7.0.0"
+  ARROW_VERSION: "17.0.0"
 
 jobs:
   cpp:
@@ -23,13 +23,15 @@ jobs:
           - platforms/echo/runtime
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Apache Arrow
         run: |
-          wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-          sudo apt-get install -y ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-          sudo apt-get update
-          sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1
+          sudo apt update
+          sudo apt install -y -V ca-certificates lsb-release wget
+          wget https://packages.apache.org/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt update
+          sudo apt install -y -V libarrow-dev=${ARROW_VERSION}-1
       - name: Configure
         run: |
           cmake ${{ matrix.source }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
@@ -55,26 +57,25 @@ jobs:
             package: pyfletchgen
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Apache Arrow
         run: |
-          wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-          sudo apt-get install -y ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-          sudo apt-get update
-          sudo apt-get install -y libarrow-dev=$ARROW_VERSION-1 libarrow-python-dev=$ARROW_VERSION-1
-      - uses: actions/setup-python@v2
+          sudo apt update
+          sudo apt install -y -V ca-certificates lsb-release wget
+          wget https://packages.apache.org/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+          sudo apt update
+          sudo apt install -y -V libarrow-dev=${ARROW_VERSION}-1
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.10"
       - name: Install pyarrow
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install pyarrow==$ARROW_VERSION
       - name: Build and install
         working-directory: ${{ matrix.source }}
-        run: |
-          python setup.py build
-          python setup.py bdist_wheel
-          python -m pip install build/dist/*.whl
+        run: python -m pip install .
       - name: Import
         run: python -c "import ${{ matrix.package }}"
 
@@ -82,13 +83,11 @@ jobs:
     name: VHDL
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: ghdl/setup-ghdl-ci@master
-        with:
-          backend: llvm
-      - uses: actions/setup-python@v2
+      - uses: ghdl/setup-ghdl@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies

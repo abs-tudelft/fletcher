@@ -15,7 +15,6 @@
 #pragma once
 
 #include <dlfcn.h>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <cassert>
@@ -64,7 +63,7 @@ class Platform {
   Status MmioToString(std::string *str, uint64_t start, uint64_t stop, bool quiet = false);
 
   /// @brief Initialize the platform.
-  inline Status Init() { return Status(platformInit(init_data)); }
+  [[nodiscard]] Status Init() const { return Status(platformInit(init_data)); }
 
   /**
    * @brief Write to an MMIO register.
@@ -72,7 +71,7 @@ class Platform {
    * @param[in] value   Value to write.
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status WriteMMIO(uint64_t offset, uint32_t value) { return Status(platformWriteMMIO(offset, value)); }
+  [[nodiscard]] Status WriteMMIO(uint64_t offset, uint32_t value) const { return Status(platformWriteMMIO(offset, value)); }
 
   /**
   * @brief Read from an MMIO register.
@@ -80,7 +79,7 @@ class Platform {
   * @param[out] value   Pointer to a value to store the result.
   * @return Status::OK() if successful, otherwise a descriptive error status.
   */
-  inline Status ReadMMIO(uint64_t offset, uint32_t *value) { return Status(platformReadMMIO(offset, value)); }
+  Status ReadMMIO(uint64_t offset, uint32_t *value) const { return Status(platformReadMMIO(offset, value)); }
 
   /**
   * @brief Read 64 bit value from two successive 32 bit MMIO registers. The lower register will go to the lower bits.
@@ -96,7 +95,7 @@ class Platform {
    * @param[in]  size            The amount of bytes to allocate
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status DeviceMalloc(da_t *device_address, size_t size) {
+  Status DeviceMalloc(da_t *device_address, const int64_t size) const {
     return Status(platformDeviceMalloc(device_address, size));
   }
 
@@ -105,7 +104,7 @@ class Platform {
    * @param[in] device_address  The device address of the memory region.
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status DeviceFree(da_t device_address) { return Status(platformDeviceFree(device_address)); }
+  [[nodiscard]] Status DeviceFree(const da_t device_address) const { return Status(platformDeviceFree(device_address)); }
 
   /**
    * @brief Copy data from host memory to device memory.
@@ -114,7 +113,7 @@ class Platform {
    * @param[in] size                The amount of bytes to copy.
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status CopyHostToDevice(uint8_t *host_source, da_t device_destination, uint64_t size) {
+  Status CopyHostToDevice(const uint8_t *host_source, const da_t device_destination, const int64_t size) const {
     return Status(platformCopyHostToDevice(host_source, device_destination, size));
   }
 
@@ -125,7 +124,7 @@ class Platform {
    * @param[in] size                The amount of bytes to copy.
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status CopyDeviceToHost(da_t device_source, uint8_t *host_destination, uint64_t size) {
+  Status CopyDeviceToHost(const da_t device_source, uint8_t *host_destination, const int64_t size) const {
     return Status(platformCopyDeviceToHost(device_source, host_destination, size));
   }
 
@@ -137,7 +136,7 @@ class Platform {
    * @param[out] alloced              Whether or not an allocation was made in device memory (that needs to be freed).
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status PrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) {
+  Status PrepareHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size, bool *alloced) const {
     assert(platformPrepareHostBuffer != nullptr);
     int ll_alloced = 0;
     auto stat = platformPrepareHostBuffer(host_source, device_destination, size, &ll_alloced);
@@ -152,7 +151,7 @@ class Platform {
   * @param[in]  size                 The amount of bytes to copy.
   * @return Status::OK() if successful, otherwise a descriptive error status.
   */
-  inline Status CacheHostBuffer(const uint8_t *host_source, da_t *device_destination, int64_t size) {
+  Status CacheHostBuffer(const uint8_t *host_source, da_t *device_destination, const int64_t size) const {
     assert(platformCacheHostBuffer != nullptr);
     return Status(platformCacheHostBuffer(host_source, device_destination, size));
   }
@@ -161,7 +160,7 @@ class Platform {
    * @brief Terminate the platform
    * @return Status::OK() if successful, otherwise a descriptive error status.
    */
-  inline Status Terminate() {
+  Status Terminate() {
     assert(platformTerminate != nullptr);
     terminated = true;
     return Status(platformTerminate(terminate_data));

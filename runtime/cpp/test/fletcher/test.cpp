@@ -19,9 +19,12 @@
 #include <fletcher_echo.h>
 #include <gtest/gtest.h>
 
+#include <cstdio>
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "fletcher/platform.h"
 #include "fletcher/context.h"
@@ -52,10 +55,41 @@ TEST(Platform, EchoPlatform) {
 
   // MMIO:
   ASSERT_TRUE(platform->WriteMMIO(0, 0).ok());
+
+  // Normally, echo asks the user what to return for MMIO reads via stdin.
+  // Override that for this test
+  FILE* original_stdin = stdin;
+  std::ofstream ofs("mmio_input");
+  if (!ofs.is_open()) {
+      throw std::runtime_error("Failed to open temporary file for writing.");
+  }
+  ofs << "12345678\nabcdef0\n12345678\n";
+  ofs.close();
+  if (freopen("mmio_input", "r", stdin) == NULL) {
+    perror("freopen failed for stdin");
+    FAIL() << "Failed to redirect C stdin.";
+  }
+
+  // Run the MMIO read tests
   uint32_t val;
   ASSERT_TRUE(platform->ReadMMIO(0, &val).ok());
+  ASSERT_EQ(val, 0x12345678);
   uint64_t val64;
   ASSERT_TRUE(platform->ReadMMIO64(0, &val64).ok());
+  ASSERT_EQ(val64, 0xabcdef012345678ull);
+
+  // restore stdin
+  int original_stdin_fd = dup(fileno(original_stdin));
+  if (original_stdin_fd == -1) {
+    perror("dup failed");
+    FAIL() << "Failed to duplicate original stdin FD.";
+  }
+  if (dup2(original_stdin_fd, fileno(stdin)) == -1) {
+    perror("dup2 failed to restore stdin");
+    FAIL() << "Failed to restore C stdin.";
+  }
+  close(original_stdin_fd);
+  std::remove("mmio_input");
 
   // Buffers:
   char buffer[128];
